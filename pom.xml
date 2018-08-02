@@ -47,7 +47,6 @@
             <configuration>
               <target>
                 <copy file="${basedir}/lib/JIntellitype.dll" tofile="${basedir}/target/JIntellitype.dll"/>
-                <copy file="${basedir}/lib/jxbrowser-license.jar" tofile="${basedir}/target/lib/jxbrowser-license.jar"/>
               </target>
             </configuration>
           </execution>
