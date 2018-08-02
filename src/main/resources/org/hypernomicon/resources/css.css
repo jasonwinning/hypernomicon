@@ -1,0 +1,49 @@
+.tab-pane .tab
+{
+  -fx-background-color: #e4e4e4;
+}
+
+#selectorTabPane .tab-header-area .tab-header-background
+{
+  -fx-opacity: 0;
+}
+
+#selectorTabPane .tab
+{
+  -fx-background-color: #e4e4e4;
+}
+
+.tab-pane .tab:selected
+{
+  -fx-background-color: #ffffff;
+}
+
+#selectorTabPane .tab:selected
+{
+  -fx-background-color: #9cd5e8;
+}
+
+.tab-pane:bottom > .tab-header-area
+{
+  -fx-padding: 0 0 0 -0.083333em;
+}
+
+.tab-pane .tab-header-area .tab-header-background 
+{
+  -fx-background-color: #d4d4d4;
+}
+
+.wizard 
+{
+  -fx-tab-max-height: 0;
+} 
+
+.wizard .tab-header-area 
+{
+  visibility: hidden;
+}
+
+.nonwizard .tab-header-area
+{
+  visibility: visible;
+}

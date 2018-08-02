@@ -1,0 +1,48 @@
+.anchor-pane
+{
+  -fx-background-color: #241f24; 
+}
+
+.text-area 
+{
+  -fx-background-color: transparent;
+  -fx-text-fill: #906f6f;
+}
+
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: #584343;
+}
+
+.tab
+{
+  -fx-background-color: #241f24;
+  -fx-text-base-color: #906f6f;  
+}
+
+.tab:selected
+{
+  -fx-text-base-color: #b88d8d;
+  -fx-font-weight: bold;
+}
+
+.label
+{
+  -fx-text-fill: #906f6f;
+  -fx-font-size: 13px;
+}
+
+.text-area .scroll-pane 
+{
+  -fx-background-color: transparent;
+}
+
+.text-area .scroll-pane .viewport
+{
+  -fx-background-color: transparent;
+}
+
+
+.text-area .scroll-pane .content
+{
+  -fx-background-color: transparent;
+}

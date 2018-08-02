@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<properties>
+  <recentfiles>
+  </recentfiles>
+  <!--Flag to show popup information first time viewer is used-->
+  <showfirsttimepopup value="false"/>
+  <!--The amount of days left of the trial-->
+  <daysLeft value=""/>
+  <!--Show message about rhino and it's use-->
+  <showrhinomessage value="false"/>
+  <!--Set how the search functionality is displayed
+0 : External Window
+1 : Side Tab Bar
+2 : Menu bar-->
+  <searchWindowType value="1"/>
+  <!--Set if border should be shown
+0 : Hide Border
+1 : Show Border-->
+  <borderType value="0"/>
+  <!--This is set the number of pixels used to represent an inch on screen-->
+  <resolution value="110"/>
+  <!--Flag to allow cursor to change such as when over text-->
+  <allowCursorToChange value="true"/>
+  <!--Flag to allow view to scroll when dragging the mouse-->
+  <autoScroll value="true"/>
+  <!--No longer used, please use startView-->
+  <pageMode value="1"/>
+  <!--Flag to allow tips to be displayed at start up-->
+  <displaytipsonstartup value="false"/>
+  <!--Flag to allow the viewer to auto update-->
+  <automaticupdate value="true"/>
+  <!--Value shows what version of the library is being used-->
+  <currentversion value="7.8.22"/>
+  <!--Show message when using tiffs-->
+  <showtiffmessage value="true"/>
+  <!--The maximum number of viewers when using the multi viewer example-->
+  <maxmultiviewers value="20"/>
+  <!--Shows the contents of the menu bar, menubar remains but empty if set to false-->
+  <MenuBarMenu value="false">
+    <!--Shows the File menu on the menu bar-->
+    <FileMenu value="true">
+      <!--Shows the Open menu on the File menu-->
+      <OpenMenu value="false">
+        <!--Shows the Open menuitem on the Open menu-->
+        <Open value="true"/>
+        <!--Shows the Open url menuitem on the Open menu-->
+        <Openurl value="true"/>
+      </OpenMenu>
+      <!--Shows the Save menuitem on the File menu-->
+      <Save value="false"/>
+      <!--Shows the Resave forms menuitem on the File menu-->
+      <Resaveasforms value="false"/>
+      <!--Shows the Find menuitem on the File menu-->
+      <Find value="true"/>
+      <!--Shows the Document Properties menuitem on the File menu-->
+      <Documentproperties value="true"/>
+      <!--Shows the Sign pdf menuitem on the File menu-->
+      <Signpdf value="true"/>
+      <!--Shows the Print menuitem on the File menu-->
+      <Print value="true"/>
+      <!--Shows the Recent Documents menuitem on the File menu-->
+      <Recentdocuments value="false"/>
+      <!--Shows the Exit menuitem on the File menu-->
+      <Exit value="false"/>
+    </FileMenu>
+    <!--Shows the Edit menu on the menu bar-->
+    <EditMenu value="true">
+      <!--Shows the Copy menuitem on the Edit menu-->
+      <Copy value="true"/>
+      <!--Shows the Select all menuitem on the Edit menu-->
+      <Selectall value="true"/>
+      <!--Shows the Deselect all menuitem on the Edit menu-->
+      <Deselectall value="true"/>
+      <!--Shows the Preferences menuitem on the Edit menu-->
+      <Preferences value="true"/>
+    </EditMenu>
+    <!--Shows the View menu on the menu bar-->
+    <ViewMenu value="true">
+      <!--Shows the Goto menu on the View menu-->
+      <GotoMenu value="true">
+        <!--Shows the First Page menuitem on the GoTo menu-->
+        <Firstpage value="true"/>
+        <!--Shows the Back Page menuitem on the GoTo menu-->
+        <Backpage value="true"/>
+        <!--Shows the Next Page menuitem on the GoTo menu-->
+        <Forwardpage value="true"/>
+        <!--Shows the Last Page menuitem on the GoTo menu-->
+        <Lastpage value="true"/>
+        <!--Shows the GoTo Page menuitem on the GoTo menu-->
+        <Goto value="true"/>
+        <!--Shows the Previous Document menuitem on the GoTo menu-->
+        <Previousdocument value="false"/>
+        <!--Shows the Next Document menuitem on the GoTo menu-->
+        <Nextdocument value="false"/>
+      </GotoMenu>
+      <!--Shows the PageLayout menu on the View menu-->
+      <PagelayoutMenu value="true">
+        <!--Shows the Single Page Mode menuitem on the PageLayout menu-->
+        <Single value="true"/>
+        <!--Shows the Continuous Page Mode menuitem on the PageLayout menu-->
+        <Continuous value="true"/>
+        <!--Shows the Facing Page Mode menuitem on the PageLayout menu-->
+        <Facing value="true"/>
+        <!--Shows the Continuous Facing Page Mode menuitem on the PageLayout menu-->
+        <Continuousfacing value="true"/>
+        <!--Shows the PageFlow Page Mode menuitem on the PageLayout menu-->
+        <PageFlow value="false"/>
+      </PagelayoutMenu>
+      <!--Shows the Separate Cover menuitem on the View menu-->
+      <separateCover value="true"/>
+      <!--Shows the Text Select Mouse Mode menuitem on the View menu-->
+      <textSelect value="true"/>
+      <!--Shows the Pan Mouse Mode menuitem on the View menu-->
+      <panMode value="true"/>
+      <!--Shows the Fullscreen menuitem on the View menu-->
+      <Fullscreen value="false"/>
+    </ViewMenu>
+    <!--Shows the Window menu on the menu bar-->
+    <WindowMenu value="false">
+      <!--Shows the Cascade windows menuitem on the Window menu-->
+      <Cascade value="true"/>
+      <!--Shows the Tile windows menuitem on the Window menu-->
+      <Tile value="true"/>
+    </WindowMenu>
+    <!--Shows the Export menu on the menu bar-->
+    <ExportMenu value="false">
+      <!--Shows the Pdf menu on the Export menu-->
+      <PdfMenu value="true">
+        <!--Shows the One per page menuitem on the Pdf menu-->
+        <Oneperpage value="true"/>
+        <!--Shows the Nup menuitem on the Pdf menu-->
+        <Nup value="true"/>
+      </PdfMenu>
+      <!--Shows the Content menu on the Export menu-->
+      <ContentMenu value="true">
+        <!--Shows the Images menuitem on the Content menu-->
+        <Images value="true"/>
+        <!--Shows the Text menuitem on the Content menu-->
+        <Text value="true"/>
+      </ContentMenu>
+      <!--Shows the Bitmap menuitem on the Export menu-->
+      <Bitmap value="true"/>
+    </ExportMenu>
+    <!--Shows the Help menu on the menu bar-->
+    <HelpMenu value="false">
+      <!--Shows the Visit website menuitem on the help menu-->
+      <Visitwebsite value="true"/>
+      <!--Shows the tip of the day menuitem on the help menu-->
+      <Tipoftheday value="true"/>
+      <!--Shows the check for updates menuitem on the help menu-->
+      <Checkupdates value="true"/>
+      <!--Shows the about menuitem on the help menu-->
+      <About value="true"/>
+      <!--Shows the help forum menuitem on the help menu-->
+      <Helpforum value="true"/>
+    </HelpMenu>
+  </MenuBarMenu>
+  <!--Show the content of the Button bar, button bar remain but empty if false-->
+  <ButtonsMenu value="false">
+    <!--Show the open file button on the button bar-->
+    <Openfilebutton value="false"/>
+    <!--Show the save file button on the button bar-->
+    <Savefilebutton value="false"/>
+    <!--Show the print button on the button bar-->
+    <Printbutton value="false"/>
+    <!--Show the search button on the button bar-->
+    <Searchbutton value="false"/>
+    <!--Show the document properties button on the button bar-->
+    <Propertiesbutton value="false"/>
+    <!--Show the about button on the button bar-->
+    <Aboutbutton value="false"/>
+    <!--Show the snapshot button on the button bar-->
+    <Snapshotbutton value="false"/>
+    <!--Show the Zoom in button on the button bar-->
+    <ZoomInbutton value="false"/>
+    <!--Show the Zoom out button on the button bar-->
+    <ZoomOutbutton value="false"/>
+    <!--Show the Rotate left button on the button bar-->
+    <RotateLeftbutton value="false"/>
+    <!--Show the Rotate right button on the button bar-->
+    <RotateRightbutton value="false"/>
+    <!--Show the help button on the button bar-->
+    <Helpbutton value="false"/>
+    <!--Show the rss feed button on the button bar-->
+    <RSSbutton value="false"/>
+    <!--Show the cursor button on the button bar-->
+    <CursorButton value="false"/>
+    <!--Show the mouse mode button on the button bar-->
+    <MouseModeButton value="false"/>
+    <!--Show the open in system default button on the button bar-->
+    <OpenSystemDefault value="false"/>
+  </ButtonsMenu>
+  <!--Show the contents of the display options bar, Display options bar remain empty if false-->
+  <DisplayOptionsMenu value="true">
+    <!--Show the scaling options on the display options bar-->
+    <Scalingdisplay value="true"/>
+    <!--Show the rotation options on the display options bar-->
+    <Rotationdisplay value="false"/>
+    <!--Show the progress bar / display on the display options bar-->
+    <Progressdisplay value="true"/>
+    <!--Show the download progress display on the display options bar-->
+    <Downloadprogressdisplay value="true"/>
+  </DisplayOptionsMenu>
+  <!--Show the contents of the navigation bar, navigation bar remains but empty if false-->
+  <NavigationBarMenu value="true">
+    <!--Show the memory diplay on the navigation bar-->
+    <Memorybottom value="true"/>
+    <!--Show the first page button on the navigation bar-->
+    <Firstbottom value="true"/>
+    <!--Show the back 10 pages button on the navigation bar-->
+    <Back10bottom value="true"/>
+    <!--Show the back 1 page button on the navigation bar-->
+    <Backbottom value="true"/>
+    <!--Show the goto page button on the navigation bar-->
+    <Gotobottom value="true"/>
+    <!--Show the forward 1 page button on the navigation bar-->
+    <Forwardbottom value="true"/>
+    <!--Show the forward 10 page button on the navigation bar-->
+    <Forward10bottom value="true"/>
+    <!--Show the last page button on the navigation bar-->
+    <Lastbottom value="true"/>
+    <!--Show the single page display button on the navigation bar-->
+    <Singlebottom value="true"/>
+    <!--Show the continuous page display button on the navigation bar-->
+    <Continuousbottom value="true"/>
+    <!--Show the continuous facing page display button on the navigation bar-->
+    <Continuousfacingbottom value="true"/>
+    <!--Show the facing page display button on the navigation bar-->
+    <Facingbottom value="true"/>
+    <!--Show the pageflow page display button on the navigation bar-->
+    <PageFlowbottom value="true"/>
+  </NavigationBarMenu>
+  <!--Show the contents of the side tab bar, side tab remain but is empty if false-->
+  <SideTabBarMenu value="false">
+    <!--Show the page tab, when applicable, on the side tab bar-->
+    <Pagetab value="false"/>
+    <!--Show the bookmarks tab, when applicable, on the side tab bar-->
+    <Bookmarkstab value="false"/>
+    <!--Show the layers tab, when applicable, on the side tab bar-->
+    <Layerstab value="false"/>
+    <!--Show the signatures tab, when applicable, on the side tab bar-->
+    <Signaturestab value="false"/>
+    <!--Show the annotations tab, when applicable, on the side tab bar-->
+    <AnnotationTab value="false"/>
+  </SideTabBarMenu>
+  <!--This removes the menu bar entirely if set to false-->
+  <ShowMenubar value="false"/>
+  <!--This removes the button bar entirely if set to false-->
+  <ShowButtons value="false"/>
+  <!--This removes the display options bar entirely if set to false-->
+  <ShowDisplayoptions value="true"/>
+  <!--This removes the navigation bar entirely if set to false-->
+  <ShowNavigationbar value="false"/>
+  <!--This removes the side tab bar entirely if set to false-->
+  <ShowSidetabbar value="true"/>
+  <!--The integer RGB value for the highlight color-->
+  <highlightBoxColor value="-16777216"/>
+  <!--The integer RGB value for the highlighted text color-->
+  <highlightTextColor value="16750900"/>
+  <!--Flag to replace document text colors with user defined value-->
+  <replaceDocumentTextColors value="false"/>
+  <!--Integer RGB value for replace text colors-->
+  <vfgColor value="0"/>
+  <!--Integer RGB value to replace document page color-->
+  <vbgColor value="16777215"/>
+  <!--All color values (R,G and B), must be under this value in order to change text color-->
+  <TextColorThreshold value="255"/>
+  <!--Flag to replace the background color of the display pane-->
+  <replacePdfDisplayBackground value="false"/>
+  <!--Color to use as display pane color if flag is set-->
+  <pdfDisplayBackground value="16777215"/>
+  <!--Allows text color change to also change color of shapes and line art-->
+  <changeTextAndLineart value="false"/>
+  <!--Transparency value to be used for the highlight box color-->
+  <highlightComposite value="0.35"/>
+  <!--This overrides the highlight box color and inverts the color of anything within the highlight area-->
+  <invertHighlights value="false"/>
+  <!--Flag to open last document upon openning the viewer-->
+  <openLastDocument value="false"/>
+  <!--Page to open last document to-->
+  <lastDocumentPage value="1"/>
+  <!--The inset of the page in the play area-->
+  <pageInsets value="25"/>
+  <!--The length of the tabbed pane when it has been collapsed-->
+  <sideTabBarCollapseLength value="32"/>
+  <!--The length of the tabbed pane when it has been expanded-->
+  <sideTabBarExpandLength value="190"/>
+  <!--Keep side tab bar consitent across multiple files, overrides startSideTabOpen on file open-->
+  <consistentTabBar value="false"/>
+  <!--Flag to allow for the right click menu to be used in the viewer-->
+  <allowRightClick value="true"/>
+  <!--Flag to allow the mouse scroll wheel to zoom in / out of display-->
+  <allowScrollwheelZoom value="true"/>
+  <!--Flag to set if the properties file can be modified using the preferences window-->
+  <readOnly value="true"/>
+  <!--Flag to use enhanced viewer mode-->
+  <enhancedViewerMode value="true"/>
+  <!--Flag to use enhanced facing mode-->
+  <enhancedFacingMode value="true"/>
+  <!--Text to use in the window title-->
+  <windowTitle value=""/>
+  <!--Flag to control if we requestion confirmation to close the viewer-->
+  <confirmClose value="false"/>
+  <!--Location where the icons to be used by the viewer are stored-->
+  <iconLocation value="/org/jpedal/examples/viewer/res/new/"/>
+  <!--Flag to control if we show a message when entering page flow mode-->
+  <showpageflowmessage value="true"/>
+  <!--Specify a default printer to use when first opening the print dialog-->
+  <defaultPrinter value=""/>
+  <!--Flag to output additional printer / printing info-->
+  <debugPrinter value="false"/>
+  <!--Default printing DPI-->
+  <defaultDPI value="600"/>
+  <!--Default printing page size-->
+  <defaultPagesize value=""/>
+  <!--List of printers to ignore-->
+  <printerBlacklist value=""/>
+  <!--Flag to allow the use of hinting for true type fonts-->
+  <useHinting value="false"/>
+  <!--Voice name to be used for text to speech functionality-->
+  <voice value="kevin16(general domain)"/>
+  <!--Flag to turn on previews in single page mode when scrolling-->
+  <previewOnSingleScroll value="true"/>
+  <!--Flag to show the bounding box of the mouse selection-->
+  <showMouseSelectionBox value="false"/>
+  <!--Flag if we should separate the cover of document when in facing mode-->
+  <separateCoverOn value="true"/>
+  <!--Flag to set the JavaFX transition type-->
+  <transitionType value="None"/>
+  <!--Flag to track the users scaling between sessions-->
+  <trackScaling value="false"/>
+  <!--Scaling value to use on viewer start up, used/modified when tracking between sessions-->
+  <startScaling value="Fit Page"/>
+  <!--Flag to track the users display mode between sessions-->
+  <trackView value="false"/>
+  <!--Display Mode value to use on viewer start up, used/modified when tracking between sessions-->
+  <startView value="1"/>
+  <!--Flag to track the if the side bar tab is open between sessions-->
+  <trackSideTabOpen value="false"/>
+  <!--Flag if side tab bar should be open on viewer start up and file opening, used/modified when tracking between sessions-->
+  <startSideTabOpen value="false"/>
+  <!--Flag to track the currently selected tab on side bar between sessions-->
+  <trackSelectedSideTab value="false"/>
+  <!--Side tab bar to be selected on viewer start up / file openning, used/modified when tracking between sessions-->
+  <startSelectedSideTab value=""/>
+  <!--Flag to track the viewer window size between sessions-->
+  <trackViewerSize value="false"/>
+  <!--Viewer width to use on viewer start up, used/modified when tracking between sessions-->
+  <startViewerWidth value="960"/>
+  <!--Viewer height to use on viewer start up, used/modified when tracking between sessions-->
+  <startViewerHeight value="526"/>
+  <!--Flag to track the side tab bar expanded width between sessions-->
+  <trackSideTabExpandedSize value="false"/>
+  <!--Allow search result list to update during search (SWING VERSION ONLY)-->
+  <updateResultsDuringSearch value="true"/>
+  <!--Allow thin lines (width less than 1) to be made wider and clearly visible-->
+  <enhanceFractionalLines value="true"/>
+</properties>

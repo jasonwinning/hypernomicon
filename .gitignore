@@ -1,0 +1,8 @@
+*~
+.DS_Store
+.settings
+sh.exe.stackdump
+.classpath
+.project
+target
+pom2.xml
