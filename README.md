@@ -26,6 +26,10 @@ Hypernomicon keeps track of all of the above in a highly structured, thoroughly 
 The best way to get started with Hypernomicon is by downloading and installing on your developer machine the latest
 [Hypernomicon release](http://hypernomicon.org/download).
 
+Or you can clone this repository and build from source (see below).
+
+Either way, you will also need some data. You can download a starter database [here](http://jasonwinning.com/starter_db.zip).
+
 ## Issues and Contributions ##
 
 Issues can be reported to the [Issue tracker](https://github.com/jasonwinning/hypernomicon/issues/)
