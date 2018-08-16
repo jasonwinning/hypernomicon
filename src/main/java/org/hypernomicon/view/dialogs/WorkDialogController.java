@@ -1065,7 +1065,7 @@ public class WorkDialogController extends HyperDialog
   public void populateFieldsFromBibData(BibData bd, boolean populateAuthors)
   {   
     if (bd != curBD)
-      curBD.copyAllFieldsFrom(bd, populateAuthors);
+      curBD.copyAllFieldsFrom(bd, populateAuthors, true);
     
     if (curBD.entryTypeNotEmpty())
       cbEntryType.setValue(curBD.getEntryType());

@@ -18,7 +18,8 @@
 package org.hypernomicon.view.fileManager;
 
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
-import static org.hypernomicon.util.Util.noOp;
+import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.App.*;
 
 import java.io.IOException;
 import java.nio.file.DirectoryIteratorException;
@@ -125,7 +126,7 @@ public class FileTable implements DragNDropContainer<FileRow>
     contextMenuSchemata = new ArrayList<>();
     
     if (prefID.length() > 0)
-      HyperTable.registerTable(fileTV, prefID);
+      HyperTable.registerTable(fileTV, prefID, fileManagerDlg);
     
     fileTV.setItems(rows);
     fileTV.setPlaceholder(new Text("This folder is empty."));

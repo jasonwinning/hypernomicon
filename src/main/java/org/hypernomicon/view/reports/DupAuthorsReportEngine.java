@@ -17,6 +17,7 @@
 
 package org.hypernomicon.view.reports;
 
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
@@ -68,6 +69,11 @@ public class DupAuthorsReportEngine extends ReportEngine
 
   @Override public void generate(HyperTask task, HyperTableCell param1, HyperTableCell param2, HyperTableCell param3) throws TerminateTaskException
   {
+    rows.clear();
+    rowToMatch.clear();
+
+    if (db.isLoaded() == false) return;
+    
     ArrayList<Author> matchedAuthors;
     LinkedHashMap<Author, List<Author>> matchMap = new LinkedHashMap<>();
     LinkedList<PersonForDupCheck> list = createListForDupCheck();

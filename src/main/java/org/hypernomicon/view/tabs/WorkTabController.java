@@ -2000,8 +2000,8 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
         BibEntry entry = db.getBibLibrary().addEntry(wdc.getEntryType());      
         curWork.setBibEntryKey(entry.getEntryKey());
       }
-      
-      curWork.getBibData().copyAllFieldsFrom(wdc.getBibDataFromGUI(), false);
+
+      curWork.getBibData().copyAllFieldsFrom(wdc.getBibDataFromGUI(), false, false);
 
       curWork.setAuthors(wdc.htAuthors.getAuthorGroups(curWork, 0, 2, 3, 4));
       

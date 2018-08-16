@@ -64,7 +64,7 @@ public class ContentsWindow extends HyperDialog
 
   private void init()
   {
-    htContents = new HyperTable(tvContents, 2, false, PREF_KEY_HT_CONTENTS_DLG);
+    htContents = new HyperTable(tvContents, 2, false, PREF_KEY_HT_CONTENTS_DLG, this);
     
     htContents.addCol(hdtPerson, ctNone);
     htContents.addCol(hdtWorkType, ctNone);

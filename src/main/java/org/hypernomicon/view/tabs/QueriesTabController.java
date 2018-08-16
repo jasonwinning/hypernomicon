@@ -382,7 +382,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
     
     private boolean showSearch(boolean doSearch, QueryType type, int query, QueryFavorite newFav, HyperTableCell op1, HyperTableCell op2, String caption)
     {   
-      if (db.isLoaded() == false) return false;
+      if ((type != qtReport) && (db.isLoaded() == false)) return false;
            
       fav = newFav;
       
@@ -630,9 +630,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
  // if any of the queries are unfiltered, they will all be treated as unfiltered
     
     private boolean btnExecuteClick(boolean setCaption)
-    {
-      if (db.isLoaded() == false) return false;
-      
+    {     
       for (int rowNdx = 0; rowNdx < htFields.getDataRowCount(); rowNdx++)
       {
         if (QueryType.codeToVal(htFields.getID(0, rowNdx)) == QueryType.qtReport)
@@ -647,6 +645,8 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
           return true;
         }
       }
+     
+      if (db.isLoaded() == false) return false;
       
       switchToRecordMode();
       
@@ -1334,7 +1334,6 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
                         excludeAnnots = new SimpleBooleanProperty();
 
   @Override public HDT_RecordType getType()              { return hdtNone; }
-  @Override public void enable(boolean enabled)          { ui.tabQueries.getContent().setDisable(enabled == false); }
   @Override public boolean update()                      { return true; }
   @Override public void focusOnSearchKey()               { return; }
   @Override public void setRecord(HDT_Base activeRecord) { if (curQV != null) curQV.setRecord(activeRecord); }
@@ -1742,7 +1741,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
   public boolean showSearch(boolean doSearch, QueryType type, int query, QueryFavorite fav, HyperTableCell op1, HyperTableCell op2, String caption)
   {   
-    if (db.isLoaded() == false) return false;
+    if ((type != qtReport) && (db.isLoaded() == false)) return false;
     
     QueryView qV = addQueryView();
     tabPane.getSelectionModel().select(qV.tab);
@@ -1917,6 +1916,19 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
     tabPane.getSelectionModel().select(nextNdx);
     
     tabPane.getTabs().remove(ndx);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void enable(boolean enabled) 
+  { 
+    AnchorPane.class.cast(ui.tabQueries.getContent()).getChildren().forEach(node ->
+    {
+      if (node == tabPane) return;
+      
+      node.setDisable(enabled == false);
+    });
   }
 
 //---------------------------------------------------------------------------

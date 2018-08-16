@@ -39,6 +39,7 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.NestedValue;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
+import org.hypernomicon.view.dialogs.HyperDialog;
 import org.hypernomicon.view.dialogs.ObjectOrderDialogController;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
@@ -99,7 +100,8 @@ public class HyperTable implements RecordListView
   private double rowHeight = 0;
   private HashMap<Orientation, ScrollBar> sbMap = new HashMap<>();
   
-  public static final HashMap<String, TableView<?>> registry = new HashMap<>();
+  private static final HashMap<String, TableView<?>> registry = new HashMap<>();
+  private static final HashMap<String, HyperDialog> dialogs = new HashMap<>();
 
 //---------------------------------------------------------------------------  
 
@@ -128,7 +130,17 @@ public class HyperTable implements RecordListView
 
   public static void saveColWidthsToPrefs()
   {
-    registry.entrySet().forEach(entry -> saveColWidthsForTable(entry.getValue(), entry.getKey(), true));
+    registry.entrySet().forEach(entry -> 
+    {
+      String prefID = entry.getKey();      
+      HyperDialog dialog = dialogs.get(prefID);
+      
+      if (dialog != null)
+        if (dialog.shownAlready() == false)
+          return;
+      
+      saveColWidthsForTable(entry.getValue(), entry.getKey(), true); 
+    });
   }
 
 //---------------------------------------------------------------------------  
@@ -142,7 +154,7 @@ public class HyperTable implements RecordListView
       double width = col.getWidth();
       
       if (rescale)
-        width = width / displayScale; 
+        width = width / displayScale;
   
       if (width > 0)
       {
@@ -178,11 +190,14 @@ public class HyperTable implements RecordListView
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
-  public static <RowType> void registerTable(TableView<RowType> tv, String prefID)
+  public static <RowType> void registerTable(TableView<RowType> tv, String prefID, HyperDialog dialog)
   {
     if (prefID.length() < 1) return;
     
     registry.put(prefID, tv);
+    
+    if (dialog != null)
+      dialogs.put(prefID, dialog);
     
     loadColWidthsForTable(tv, prefID);    
   }
@@ -190,15 +205,20 @@ public class HyperTable implements RecordListView
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked")
   public HyperTable(TableView<HyperTableRow> tv, int mainCol, boolean canAddRows, String prefID)
+  {
+    this(tv, mainCol, canAddRows, prefID, null);
+  }
+  
+  @SuppressWarnings("unchecked")
+  public HyperTable(TableView<HyperTableRow> tv, int mainCol, boolean canAddRows, String prefID, HyperDialog dialog)
   {
     this.tv = tv;
     this.mainCol = mainCol;
     this.canAddRows = canAddRows;
     
     if (prefID.length() > 0)
-      registerTable(tv, prefID);
+      registerTable(tv, prefID, dialog);
     
     cols = new ArrayList<HyperTableColumn>();
     rows = FXCollections.observableArrayList();

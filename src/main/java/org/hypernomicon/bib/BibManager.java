@@ -192,6 +192,7 @@ public class BibManager extends HyperDialog
       collTree.refresh(libraryWrapper.getKeyToColl());
       refresh();
            
+      ui.update();
       ui.saveAllToDisk(true, true, true);         
     });
     
@@ -326,7 +327,7 @@ public class BibManager extends HyperDialog
 
       HDT_Work work = db.createNewBlankRecord(hdtWork);
 
-      work.getBibData().copyAllFieldsFrom(row.getEntry(), false);
+      work.getBibData().copyAllFieldsFrom(row.getEntry(), false, false);
       work.getAuthors().setAll(row.getEntry().getAuthors());
       work.setBibEntryKey(row.getEntry().getEntryKey());
 
@@ -655,6 +656,8 @@ public class BibManager extends HyperDialog
 
   public void getDividerPositions()
   {
+    if (shownAlready() == false) return;
+    
     getDividerPosition(spMain, PREF_KEY_BIB_LEFT_HORIZ, 0);
     getDividerPosition(spMain, PREF_KEY_BIB_RIGHT_HORIZ, 1);
   }

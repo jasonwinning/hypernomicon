@@ -368,7 +368,31 @@ public class MainController
           return;
       
       if (newValue != null)      
-        appPrefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, newValue.booleanValue());
+        if (newValue)
+          appPrefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true);
+    });
+
+    btnPointerPreview.selectedProperty().addListener((observable, oldValue, newValue) ->
+    {
+      if ((oldValue != null) && (newValue != null))
+        if (oldValue.booleanValue() == newValue.booleanValue())
+          return;
+      
+      if (newValue != null)
+        if (newValue)
+          appPrefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, false);
+    });
+
+    btnPointerLaunch.setOnAction(event ->
+    {
+      if (appPrefs.getBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true))
+        btnPointerLaunch.setSelected(true);
+    });
+    
+    btnPointerPreview.setOnAction(event ->
+    {
+      if (appPrefs.getBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true) == false)
+        btnPointerPreview.setSelected(true);
     });
     
     btnIncrement.setOnAction(event -> incDecClick(true));
@@ -1115,31 +1139,33 @@ public class MainController
 
   public void enableAll(boolean enabled)
   {
-    gpBottom.getChildren().forEach(node -> node.setDisable(enabled == false));
+    boolean disabled = (enabled == false);
+    
+    gpBottom.getChildren().forEach(node -> node.setDisable(disabled));
     
     apStatus.setDisable(false);
     
     getHyperTabs().forEach(hyperTab -> hyperTab.enable(enabled));
     
-    mnuNewDatabase.setDisable(enabled == false);
-    mnuCloseDatabase.setDisable(enabled == false);
-    mnuExitNoSave.setDisable(enabled == false);
-    mnuChangeID.setDisable(enabled == false);
-    mnuNewField.setDisable(enabled == false);
-    mnuNewCountry.setDisable(enabled == false);
-    mnuNewRank.setDisable(enabled == false);
-    mnuNewPersonStatus.setDisable(enabled == false);    
-    mnuSaveReloadAll.setDisable(enabled == false);
-    mnuRevertToDiskCopy.setDisable(enabled == false);
-    mnuAddToQueryResults.setDisable(enabled == false);
-    btnFileMgr.setDisable(enabled == false);
-    btnBibMgr.setDisable(enabled == false);
-    btnPreviewWindow.setDisable(enabled == false);
-    btnMentions.setDisable(enabled == false);
-    btnAdvancedSearch.setDisable(enabled == false);
-    btnSaveAll.setDisable(enabled == false);
+    mnuNewDatabase.setDisable(disabled);
+    mnuCloseDatabase.setDisable(disabled);
+    mnuExitNoSave.setDisable(disabled);
+    mnuChangeID.setDisable(disabled);
+    mnuNewField.setDisable(disabled);
+    mnuNewCountry.setDisable(disabled);
+    mnuNewRank.setDisable(disabled);
+    mnuNewPersonStatus.setDisable(disabled);    
+    mnuSaveReloadAll.setDisable(disabled);
+    mnuRevertToDiskCopy.setDisable(disabled);
+    mnuAddToQueryResults.setDisable(disabled);
+    btnFileMgr.setDisable(disabled);
+    btnBibMgr.setDisable(disabled);
+    btnPreviewWindow.setDisable(disabled);
+    btnMentions.setDisable(disabled);
+    btnAdvancedSearch.setDisable(disabled);
+    btnSaveAll.setDisable(disabled);
     
-    if (enabled == false) 
+    if (disabled) 
       getTree().clear();
       
     hideFindTable();

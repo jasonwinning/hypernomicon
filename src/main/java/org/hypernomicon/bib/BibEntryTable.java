@@ -36,6 +36,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.text.Text;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
 
@@ -97,7 +98,7 @@ public class BibEntryTable
     keyToRow = new HashMap<>();
     
     if (prefID.length() > 0)
-      HyperTable.registerTable(tv, prefID);
+      HyperTable.registerTable(tv, prefID, bibManagerDlg);
     
     tv.setItems(rows);
     tv.setPlaceholder(new Text("There are no entries in the current view."));

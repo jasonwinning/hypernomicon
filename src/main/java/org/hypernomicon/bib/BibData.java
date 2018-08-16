@@ -773,7 +773,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void copyAllFieldsFrom(BibData bd, boolean includeAuthors)
+  public void copyAllFieldsFrom(BibData bd, boolean includeAuthors, boolean includeEntryType)
   {
     for (BibFieldEnum bibFieldEnum : BibFieldEnum.values())
     {
@@ -793,7 +793,7 @@ public abstract class BibData
           
         case bftEntryType :
           
-          setEntryType(bd.getEntryType());
+          if (includeEntryType) setEntryType(bd.getEntryType());
           break;
           
         case bftWorkType :

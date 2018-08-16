@@ -1359,7 +1359,7 @@ public class FileManager extends HyperDialog
     
     folderTree.getTreeModel().addParentChildRelation(rtParentFolderOfFolder, true);
     
-    recordTable = new HyperTable(recordTV, 1, false, PREF_KEY_HT_FM_RECORDS);
+    recordTable = new HyperTable(recordTV, 1, false, PREF_KEY_HT_FM_RECORDS, this);
     
     recordTable.addCol(hdtNone, ctIncremental);
     recordTable.addCol(hdtNone, ctNone);
@@ -1694,6 +1694,8 @@ public class FileManager extends HyperDialog
 
   public void getDividerPositions()
   {
+    if (shownAlready() == false) return;
+    
     getDividerPosition(spMain, PREF_KEY_MGR_MAIN_HORIZ, 0);
     getDividerPosition(spFiles, PREF_KEY_MGR_FILES_VERT, 0);
     getDividerPosition(spRecords, PREF_KEY_MGR_RECORDS_HORIZ, 0);    
