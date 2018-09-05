@@ -236,7 +236,7 @@ public class ContentsWindow extends HyperDialog
       int pageNum = -1;
 
       if (wtc != null)
-        pageNum = wtc.getCurPageNum(workFile, true);
+        pageNum = wtc.getCurPageNum(work, workFile, true);
       
       if (pageNum == -1)
         pageNum = work.getStartPageNum(workFile);
@@ -253,7 +253,7 @@ public class ContentsWindow extends HyperDialog
       pageNum = -1;
       
       if (wtc != null)
-        pageNum = wtc.getCurPageNum(workFile, false);
+        pageNum = wtc.getCurPageNum(work, workFile, false);
 
       if (pageNum == -1)
         pageNum = work.getEndPageNum(workFile);

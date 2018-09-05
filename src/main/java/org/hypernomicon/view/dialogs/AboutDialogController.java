@@ -62,25 +62,26 @@ public class AboutDialogController extends HyperDialog
 
   private void init()
   {
-    String buildDate = manifestValue("Build-Time"); 
+    String buildDate = manifestValue("Build-Time"),
+           version = manifestValue("Impl-Version");
      
     if (safeStr(buildDate).length() == 0)
       buildDate = "not found";
+    
+    if (safeStr(version).length() == 0)
+      version = "1.0.1";
         
-    //getMainPane().setOnMouseClicked(event -> getStage().close());
-       
     String family = Font.getDefault().getFamily();
     
     String htmlStart = "<html><head>" + MainTextWrapper.getScriptContent() +
         "<style>a:link {color:#906f6f; } a:visited {color:#906f6f; }</style>" +
         "</head><body style='margin: 0; padding: 0; font-family: " + family + "; font-size: 10pt; color: #906f6f;' bgcolor=\"#241f24\">";
     
-    tabGeneralHtml = htmlStart + "Version: 1.0.0<br>" +
+    tabGeneralHtml = htmlStart + "Version: " + version + "<br>" +
         "Build date: " + buildDate + "<br>" +
         "Copyright \u00a9 2015-2018 Jason Winning.<br><br>" + 
         "Operating system: " + SystemUtils.OS_NAME + "<br>" +
         "Operating system version: " + SystemUtils.OS_VERSION + "<br>" +
-        //"Java version: " + SystemUtils.JAVA_VERSION + System.lineSeparator() + 
         "Java runtime: " + SystemUtils.JAVA_RUNTIME_NAME + "<br>" +
         "Java runtime version: " + SystemUtils.JAVA_RUNTIME_VERSION + "<br>" +
         anchorTag("Website", "http://hypernomicon.org/") + "&nbsp;&nbsp;&nbsp;" +

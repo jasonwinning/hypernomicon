@@ -613,8 +613,7 @@ public class WorkDialogController extends HyperDialog
     
     if (tfTitle.getText().length() == 0)
       if (tfYear.getText().length() == 0)
-        if (curBD.getAuthors().isEmpty())
-          gotData = extractDataFromPdf(appPrefs.getBoolean(PREF_KEY_AUTO_RETRIEVE_BIB, true), false);
+        gotData = extractDataFromPdf(appPrefs.getBoolean(PREF_KEY_AUTO_RETRIEVE_BIB, true), false);
     
     if ((gotData == false) && appPrefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
       btnLaunchClick();

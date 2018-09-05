@@ -375,7 +375,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     
     htWorkFiles.addCondContextMenuItem(hdtWorkFile, "Launch file", 
         record -> HDT_WorkFile.class.cast(record).getPath().isEmpty() == false,
-        record -> launchWorkFile(HDT_WorkFile.class.cast(record).getPath().getFilePath(), getCurPageNum(HDT_WorkFile.class.cast(record), true)));
+        record -> launchWorkFile(HDT_WorkFile.class.cast(record).getPath().getFilePath(), getCurPageNum(curWork, HDT_WorkFile.class.cast(record), true)));
     
     htWorkFiles.addCondContextMenuItem(hdtWorkFile, "Show in system explorer", 
         record -> HDT_WorkFile.class.cast(record).getPath().isEmpty() == false,
@@ -470,7 +470,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
       workFiles.reorder(newList);
     });
     
-    htWorkFiles.setDblClickHandler((record) -> launchWorkFile(HDT_WorkFile.class.cast(record).getPath().getFilePath(), getCurPageNum(HDT_WorkFile.class.cast(record), true)));
+    htWorkFiles.setDblClickHandler((record) -> launchWorkFile(HDT_WorkFile.class.cast(record).getPath().getFilePath(), getCurPageNum(curWork, HDT_WorkFile.class.cast(record), true)));
     
     tvWorkFiles.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
@@ -479,9 +479,9 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
       
       HDT_WorkFile workFile = (HDT_WorkFile) newValue.getRecord();
       if (workFile == null)
-        previewWindow.setPreview(pvsWorkTab, curWork.getPath().getFilePath(), getCurPageNum(null, true), getCurPageNum(null, false), curWork);
+        previewWindow.setPreview(pvsWorkTab, curWork.getPath().getFilePath(), getCurPageNum(curWork, null, true), getCurPageNum(curWork, null, false), curWork);
       else
-        previewWindow.setPreview(pvsWorkTab, workFile.getPath().getFilePath(), getCurPageNum(workFile, true), getCurPageNum(workFile, false), curWork);
+        previewWindow.setPreview(pvsWorkTab, workFile.getPath().getFilePath(), getCurPageNum(curWork, workFile, true), getCurPageNum(curWork, workFile, false), curWork);
     });
     
     tvSubworks.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
@@ -564,7 +564,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     btnUseDOI.setOnAction(event -> useDOIClick());
     btnUseISBN.setOnAction(event -> useISBNClick());
     
-    btnLaunch.setOnAction(event -> curWork.launch(getCurPageNum(null, true)));
+    btnLaunch.setOnAction(event -> curWork.launch(getCurPageNum(curWork, null, true)));
     
     btnOpenLink.setOnAction(event -> openWebLink(tfLink.getText()));
     
@@ -734,9 +734,9 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 
 
-  public int getCurPageNum(HDT_WorkFile workFile, boolean isStart)
+  public int getCurPageNum(HDT_Work work, HDT_WorkFile workFile, boolean isStart)
   {
-    if (curWork == null) return -1;
+    if ((curWork == null) || (curWork != work)) return -1;
     if (curWork.workFiles.isEmpty()) return -1;
     
     if (workFile == null)
@@ -1256,8 +1256,8 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
    
     int oldNdx = curWork.workFiles.indexOf(workFile);
     
-    int startPage = getCurPageNum(workFile, true),
-        endPage = getCurPageNum(workFile, false);
+    int startPage = getCurPageNum(curWork, workFile, true),
+        endPage = getCurPageNum(curWork, workFile, false);
     
     newWork.addWorkFile(workFile.getID(), false, false);
     
@@ -1298,8 +1298,8 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
       
       int oldNdx = curWork.workFiles.indexOf(workFile);
       
-      int startPage = getCurPageNum(workFile, true),
-          endPage = getCurPageNum(workFile, false);
+      int startPage = getCurPageNum(curWork, workFile, true),
+          endPage = getCurPageNum(curWork, workFile, false);
       
       newWork.addWorkFile(workFile.getID(), false, false);      
       

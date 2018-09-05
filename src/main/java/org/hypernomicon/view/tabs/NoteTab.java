@@ -323,11 +323,11 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     
     DirectoryChooser dirChooser = new DirectoryChooser();
     
-    if (FilePath.isEmpty(folderPath))
+    if (FilePath.isEmpty(folderPath) || (folderPath.exists() == false))
     {
       HDT_Folder folder = curNote.getDefaultFolder();
       
-      if (folder != null)
+      if ((folder != null) && (folder.getPath().getFilePath().exists()))
         dirChooser.setInitialDirectory(folder.getPath().getFilePath().toFile()); 
       else
         dirChooser.setInitialDirectory(db.getPath(PREF_KEY_TOPICAL_PATH, null).toFile());

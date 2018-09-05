@@ -258,6 +258,8 @@ public class BibUtils
   private static void matchISBNiteration(String str, ArrayList<String> list) 
   {
     str = str.replaceAll("\\p{Pd}", "-"); // treat all dashes the same
+    str = str.replaceAll("\\u00AD", "-"); // "soft hyphen" is not included in the \p{Pd} class
+    
     str = str.replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0');
        
     while (str.contains("--"))
@@ -286,7 +288,7 @@ public class BibUtils
           list.add(found);
       }
     }
-    
+       
     p = Pattern.compile("(\\A|\\G|[^0-9\\-])((\\d-?){9}[0-9xX])(\\z|[^0-9xX\\-])");
     m = p.matcher(str);
     
