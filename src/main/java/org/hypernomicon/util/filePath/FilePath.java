@@ -72,7 +72,7 @@ public class FilePath implements Comparable<FilePath>
   
   public boolean renameTo(String newNameStr) throws IOException { return moveOrCopy(getDirOnly().resolve(new FilePath(newNameStr)), false, true); }
   
-  @Override public int hashCode() { return innerVal.hashCode(); }
+  @Override public int hashCode()            { return innerVal.hashCode(); }
   @Override public String toString()         { return innerVal.getPathStr(); }
   @Override public int compareTo(FilePath o) { return toPath().compareTo(o.toPath()); }
   
@@ -82,7 +82,6 @@ public class FilePath implements Comparable<FilePath>
   // If this file is a directory, will return the entire path. If it is not a directory, will return the parent directory  
   public FilePath getDirOnly() { return isDirectory() ? this : new FilePath(FilenameUtils.getFullPathNoEndSeparator(innerVal.getPathStr())); }
 
-  
   // this = base, parameter = relative, output = resolved  
   public FilePath resolve(FilePath relativeFilePath) { return new FilePath(innerVal.getPath().resolve(relativeFilePath.toPath())); }
 

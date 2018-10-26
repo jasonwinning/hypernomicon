@@ -439,11 +439,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     else if (safeStr(work.getWebLink()).length() > 0)
       indicator = "web";
     
-    if (indicator.length() == 0) return str;
-    
-    if (str.length() > 0) str = str + " ";
-    
-    return str + "(" + indicator + ")";
+    return indicator.length() == 0 ? str : new String(str + " (" + indicator + ")").trim();
   }
 
 //---------------------------------------------------------------------------

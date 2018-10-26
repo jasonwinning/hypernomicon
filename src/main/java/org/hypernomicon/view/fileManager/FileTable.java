@@ -298,7 +298,7 @@ public class FileTable implements DragNDropContainer<FileRow>
       if (row.getFilePath().getNameOnly().equals(nameOnly))
       {
         fileTV.getSelectionModel().select(row);
-        fileTV.scrollTo(row);
+        HyperTable.scrollToSelection(fileTV, true);
         return;
       }
     }

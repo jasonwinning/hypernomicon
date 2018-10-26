@@ -18,6 +18,7 @@
 package org.hypernomicon.bib;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.Set;
 import org.hypernomicon.bib.BibData.EntryType;
 import org.hypernomicon.bib.lib.BibEntry;
 import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.util.Util;
 import org.hypernomicon.view.wrappers.HyperTable;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -38,6 +40,8 @@ import javafx.scene.text.Text;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.records.HDT_Record.*;
+import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
 
 //---------------------------------------------------------------------------  
@@ -83,7 +87,6 @@ public class BibEntryTable
 
   public void updateKey(String oldKey, String newKey) { keyToRow.put(newKey, keyToRow.remove(oldKey)); }
   public boolean containsKey(String bibEntryKey)      { return keyToRow.containsKey(bibEntryKey); }
-  public void selectKey(String bibEntryKey)           { tv.getSelectionModel().select(keyToRow.get(bibEntryKey)); }
   public void clear()                                 { rows.clear(); keyToRow.clear(); }
   
 //---------------------------------------------------------------------------  
@@ -111,13 +114,35 @@ public class BibEntryTable
     TableColumn<BibEntryRow, String> tcAssocRecord = (TableColumn<BibEntryRow, String>) tv.getColumns().get(5);
     TableColumn<BibEntryRow, String> tcPublishedIn = (TableColumn<BibEntryRow, String>) tv.getColumns().get(6);
     
-    
     tcEntryKey   .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getEntryKey()));
     tcType       .setCellValueFactory(cellData -> new SimpleStringProperty(BibUtils.getEntryTypeName(cellData.getValue().getEntry().getEntryType())));
     tcAuthors    .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getAuthors().getStr()));
     tcTitle      .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfTitle)));
     tcYear       .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfYear)));
     tcPublishedIn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfContainerTitle)));
+    
+    tcTitle.setComparator((str1, str2) ->
+    {
+      return makeSortKeyByType(str1, hdtWork).compareTo(makeSortKeyByType(str2, hdtWork));
+    });
+    
+    Comparator<String> cmp = (str1, str2) ->
+    {
+      int int1 = Util.parseInt(str1, -1);
+      
+      if (int1 >= 0)
+      {
+        int int2 = Util.parseInt(str2, -1);
+        
+        if (int2 >= 0)
+          return int1 - int2;
+      }
+        
+      return str1.compareTo(str2);
+    };
+    
+    tcYear.setComparator(cmp);
+    tcAssocRecord.setComparator(cmp);
     
     tcAssocRecord.setCellValueFactory(cellData ->
     {
@@ -182,7 +207,18 @@ public class BibEntryTable
  
 //---------------------------------------------------------------------------
 //--------------------------------------------------------------------------- 
-  
+
+  public void selectKey(String bibEntryKey)
+  { 
+    BibEntryRow row = keyToRow.get(bibEntryKey);
+    
+    tv.getSelectionModel().select(row);
+    HyperTable.scrollToSelection(tv, true);
+  }
+
+//---------------------------------------------------------------------------
+//--------------------------------------------------------------------------- 
+
   public BibEntryRowMenuItemSchema addContextMenuItem(String caption, BibEntryRowHandler handler)
   {
     return BibEntryRow.addCondContextMenuItem(caption, row -> true, handler, contextMenuSchemata);

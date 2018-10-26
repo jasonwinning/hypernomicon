@@ -19,14 +19,12 @@ package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.HyperDB.Tag.tagEditor;
-import static org.hypernomicon.model.HyperDB.Tag.tagInFileName;
-import static org.hypernomicon.model.HyperDB.Tag.tagTranslator;
+import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
-import static org.hypernomicon.model.relations.RelationSet.RelationType.rtAuthorOfWork;
+import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
@@ -49,6 +47,8 @@ import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.wrappers.TreeWrapper.TreeTargetType;
 
+import com.google.common.collect.HashBasedTable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -97,8 +98,8 @@ public class HyperTable implements RecordListView
                  autoCommitListSelections = false;
   ComboBoxCell cellBeingEdited = null;
   
-  private double rowHeight = 0;
-  private HashMap<Orientation, ScrollBar> sbMap = new HashMap<>();
+  private static HashMap<TableView<?>, Double> rowHeight = new HashMap<>();
+  private static HashBasedTable<TableView<?>, Orientation, ScrollBar> sbMap = HashBasedTable.create();
   
   private static final HashMap<String, TableView<?>> registry = new HashMap<>();
   private static final HashMap<String, HyperDialog> dialogs = new HashMap<>();
@@ -290,7 +291,7 @@ public class HyperTable implements RecordListView
   public void selectRow(int ndx)                                     
   { 
     tv.getSelectionModel().select(rows.get(ndx));
-    scrollToSelection();
+    scrollToSelection(tv, false);
   }
 
 //---------------------------------------------------------------------------
@@ -1135,13 +1136,13 @@ public class HyperTable implements RecordListView
     
     return list;
   }
-  
+   
 //---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------
-  
-  private ScrollBar getScrollBar(Orientation o)
+//---------------------------------------------------------------------------  
+
+  private static <RowType> ScrollBar getScrollBar(TableView<RowType> tv, Orientation o)
   {
-    ScrollBar sb = sbMap.get(o);
+    ScrollBar sb = sbMap.get(tv, o);
     if (sb != null) return sb;
     
     for (Node n: tv.lookupAll(".scroll-bar")) 
@@ -1151,7 +1152,7 @@ public class HyperTable implements RecordListView
         sb = (ScrollBar) n;        
         if (sb.getOrientation() == o)
         {
-          sbMap.put(o, sb);
+          sbMap.put(tv, o, sb);
           return sb;
         }
       }
@@ -1162,15 +1163,26 @@ public class HyperTable implements RecordListView
   
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
-
-  public void scrollToSelection()
+ 
+  public void scrollToSelection() { scrollToSelection(tv, false); }
+  
+  public static <RowType> void scrollToSelection(TableView<RowType> tv, boolean delay)
   {
-    ScrollBar sb = getScrollBar(Orientation.VERTICAL);
+    if (delay)
+      Platform.runLater(() -> scrollToNdx(tv, tv.getSelectionModel().getSelectedIndex()));
+    else
+      scrollToNdx(tv, tv.getSelectionModel().getSelectedIndex());
+  }
+
+  // The way this works is better than TableView.scrollTo
+  // scrollTo changes the scroll position even if the row in question was already in view
+
+  public static <RowType> void scrollToNdx(TableView<RowType> tv, int ndx)
+  {
+    ScrollBar sb = getScrollBar(tv, Orientation.VERTICAL);
     if (sb == null) return;
     
-    int ndx = tv.getSelectionModel().getSelectedIndex();
-              
-    double rHeight = getRowHeight();
+    double rHeight = getRowHeight(tv);
     
     double allRowsHeight = rHeight * (tv.getItems().size() + 1);
     double dataRowsHeight = rHeight * tv.getItems().size();
@@ -1190,23 +1202,24 @@ public class HyperTable implements RecordListView
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
-  private double getRowHeight()
+  private static <RowType> double getRowHeight(TableView<RowType> tv)
   {
-    if (rowHeight != 0)
-      return rowHeight;
+    Double val = rowHeight.get(tv);
+    if (val != null) return val;
     
-    for (Node rowNode : tv.lookupAll( ".indexed-cell"))
+    for (Node rowNode : tv.lookupAll(".indexed-cell"))
     {        
       if (rowNode instanceof TableRow) 
       {            
-        rowHeight = ((Region) rowNode).getHeight();
-        return rowHeight;
+        double ht = ((Region) rowNode).getHeight();
+        rowHeight.put(tv, ht);
+        return ht;
       }
     }
     
-    return rowHeight;
+    return 0.0;
   }
-    
+     
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
   

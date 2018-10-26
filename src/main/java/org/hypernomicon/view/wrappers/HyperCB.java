@@ -83,9 +83,13 @@ public class HyperCB implements CommitableWrapper
 
   public HyperTableCell selectedHTC()            
   { 
-    HyperTableCell htc = cb.getValue();
+    HyperTableCell htc = cb.getValue();        
+    String str = cb.getEditor().getText();
     
-    return htc == null ? new HyperTableCell(-1, "", selectedType()) : htc;
+    if ((htc == null) || (htc.getText().equals(str) == false))
+      return new HyperTableCell(-1, str, selectedType());
+    
+    return htc;
   }
 
 //---------------------------------------------------------------------------  
@@ -216,16 +220,13 @@ public class HyperCB implements CommitableWrapper
     cb.setOnHidden(event ->
     {
       if (adjusting) return;
+      if ((preShowingValue == null) || (table == null) || (table.autoCommitListSelections == false)) return;
       
-      String newText = HyperTableCell.getCellText(cb.getValue());
-      if (newText.length() > 0)
-        if (preShowingValue != null)
-          if (newText.equals(HyperTableCell.getCellText(preShowingValue)) == false)
-          {
-            if (table != null)
-              if (table.autoCommitListSelections)
-                endEditModeIfInTable();
-          }
+      String newText = HyperTableCell.getCellText(cb.getValue());      
+      if (newText.length() == 0) return;
+      
+      if (newText.equals(HyperTableCell.getCellText(preShowingValue)) == false)
+        endEditModeIfInTable();
     });
     
     cb.getEditor().setOnMouseReleased(event -> 
@@ -569,7 +570,8 @@ public class HyperCB implements CommitableWrapper
           return type;
     }
 
-    return HyperTableCell.getCellType(cb.getValue());
+    HyperTableCell htc = cb.getValue();
+    return htc == null ? hdtNone : HyperTableCell.getCellType(cb.getValue());
   }
   
 //---------------------------------------------------------------------------  
@@ -613,7 +615,7 @@ public class HyperCB implements CommitableWrapper
 
   @Override public void commit()
   {
-    if ((somethingWasTyped) && (typedMatch != null))
+    if (somethingWasTyped && (typedMatch != null))
     {
       somethingWasTyped = false;
       selectID(typedMatch.getID());

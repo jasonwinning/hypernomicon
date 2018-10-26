@@ -1516,7 +1516,7 @@ public class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // This should never be changed. It is the same algorithm as String.hashCode() (as of Java 8u112)
+  // This should never be changed. It is the same algorithm as String.hashCode() as of Java 8u112
   
   public static int stringHash(String value)
   {

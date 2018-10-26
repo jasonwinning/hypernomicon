@@ -1272,7 +1272,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
           if (newValue.getRecord() != null)
           { 
             tvResults.getSelectionModel().select(newValue);
-            if (noScroll == false) tvResults.scrollTo(newValue);
+            if (noScroll == false) HyperTable.scrollToSelection(tvResults, false);
           }
       };
       
