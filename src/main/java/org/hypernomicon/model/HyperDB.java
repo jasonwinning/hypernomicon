@@ -179,7 +179,6 @@ public final class HyperDB
   public List<SearchKeyword> getKeysByRecord(HDT_Base record) { return searchKeys.getKeysByRecord(record); }
   public HDT_Work getWorkByBibEntryKey(String key)            { return bibEntryKeyToWork.get(key); }
   public boolean reindexingMentioners()                       { return mentionsIndex.isRebuilding(); }
-  private void assignIDs()                                    { datasets.entrySet().forEach(entry -> entry.getValue().assignIDs()); }
   public BibEntry getBibEntryByKey(String key)                { return bibLibrary.getEntryByKey(key); }
 
   public void setSearchKey(HDT_Base record, String newKey, boolean noMod) throws SearchKeyException { searchKeys.setSearchKey(record, newKey, noMod); }
@@ -577,7 +576,8 @@ public final class HyperDB
     
       curTaskCount = 0;
       
-      assignIDs();
+      for (HyperDataset<? extends HDT_Base> dataset : datasets.values())
+        dataset.assignIDs();
 
       bringAllRecordsOnline();
       

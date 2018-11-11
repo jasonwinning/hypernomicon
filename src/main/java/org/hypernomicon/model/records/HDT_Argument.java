@@ -44,8 +44,7 @@ public class HDT_Argument extends HDT_RecordWithConnector
 {
   public List<HDT_Position> positions;
   public List<HDT_Argument> counteredArgs;
-  public List<HDT_Work> works;
-  
+  public List<HDT_Work> works;  
   public List<HDT_Argument> counterArgs;
   
   public HDT_Argument(HDT_RecordState xmlState, HyperDataset<HDT_Argument> dataset)
@@ -58,8 +57,7 @@ public class HDT_Argument extends HDT_RecordWithConnector
     {
       positions = Collections.unmodifiableList(getObjList(rtPositionOfArgument));
       counteredArgs = Collections.unmodifiableList(getObjList(rtCounterOfArgument));
-      works = getObjList(rtWorkOfArgument);
-      
+      works = getObjList(rtWorkOfArgument);      
       counterArgs = getSubjList(rtCounterOfArgument);
     }
   }
@@ -101,10 +99,8 @@ public class HDT_Argument extends HDT_RecordWithConnector
       
       return;
     }
-      
-    
-    if (verdict == null)
-      return;
+          
+    if (verdict == null) return;
     
     db.updateNestedPointer(this, countered, tagArgumentVerdict, verdict);
   }

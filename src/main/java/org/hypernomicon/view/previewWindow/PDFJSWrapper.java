@@ -45,6 +45,7 @@ import com.teamdev.jxbrowser.chromium.javafx.DefaultDialogHandler;
 import com.teamdev.jxbrowser.chromium.javafx.internal.dialogs.MessageDialog;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
@@ -236,10 +237,7 @@ public class PDFJSWrapper
           window.asObject().setProperty("javaApp", javascriptToJava);
 
           pdfjsMode = browser.executeJavaScriptAndReturnValue("'PDFViewerApplication' in window").getBooleanValue();
-          
-          if (pdfjsMode)
-            browser.executeJavaScript("PDFViewerApplication.eventBus.on('pagechange', function (e) { javaApp.pageChange(e.pageNumber); });");
-          
+                   
           if (postBrowserLoadCode != null)
           {
             postBrowserLoadCode.run();
@@ -399,6 +397,13 @@ public class PDFJSWrapper
       curPage = newPage;
       pageChangeHndlr.handle(newPage);
     }
+    
+//---------------------------------------------------------------------------
+    
+    public void sidebarChange(int view)
+    {
+      appPrefs.putInt(PREF_KEY_PDFJS_SIDEBAR_VIEW, view);
+    }
 
 //---------------------------------------------------------------------------    
     
@@ -525,12 +530,18 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static final int SidebarView_NONE = 0,
+                          SidebarView_THUMBS = 1,
+                          SidebarView_OUTLINE = 2,
+                          SidebarView_ATTACHMENTS = 3;
+  
   public void loadPdf(FilePath file, int initialPage)
   {
     Runnable runnable = () ->
     {
-      browser.executeJavaScript("openPdfFile(\"" + file.toURLString() + "\", " + String.valueOf(initialPage) + ");");
-      
+      browser.executeJavaScript("openPdfFile(\"" + file.toURLString() + "\", " + 
+                                                   String.valueOf(initialPage) + ", " +
+                                                   appPrefs.getInt(PREF_KEY_PDFJS_SIDEBAR_VIEW, SidebarView_NONE) + ");");      
       ready = false;
       opened = false;      
     };
@@ -600,7 +611,7 @@ public class PDFJSWrapper
       JSObject obj = val.asObject();
       
       for (String propName : obj.getPropertyNames())
-      {
+      {        
         printIndented(propName + ":", indent);
         printJSValue(obj.getProperty(propName), indent + 2);
       }

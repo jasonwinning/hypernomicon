@@ -39,6 +39,7 @@ import org.hypernomicon.view.wrappers.TreeRow;
 import org.hypernomicon.view.wrappers.TreeWrapper;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
@@ -81,16 +82,16 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
   private String lastTextHilited = "";
   public TreeWrapper tree;
   
-  @Override public HDT_RecordType getType()              { return hdtNone; }
-  @Override public void enable(boolean enabled)          { ui.tabTree.getContent().setDisable(enabled == false); }
-  @Override public void clear()                          { tree.clear(); }
-  @Override public boolean saveToRecord(boolean showMessage)     { return true; }
-  @Override public void focusOnSearchKey()               { return; }
-  @Override public void setRecord(HDT_Base activeRecord) { return; }
-  @Override public HDT_Base activeRecord()               { return tree.selectedRecord(); }
-  @Override public TextViewInfo getMainTextInfo()        { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
-  @Override public void setDividerPositions()            { return; }
-  @Override public void getDividerPositions()            { return; }
+  @Override public HDT_RecordType getType()                  { return hdtNone; }
+  @Override public void enable(boolean enabled)              { ui.tabTree.getContent().setDisable(enabled == false); }
+  @Override public void clear()                              { tree.clear(); }
+  @Override public boolean saveToRecord(boolean showMessage) { return true; }
+  @Override public void focusOnSearchKey()                   { return; }
+  @Override public void setRecord(HDT_Base activeRecord)     { return; }
+  @Override public HDT_Base activeRecord()                   { return tree.selectedRecord(); }
+  @Override public TextViewInfo getMainTextInfo()            { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
+  @Override public void setDividerPositions()                { return; }
+  @Override public void getDividerPositions()                { return; }
 
   @Override public void newClick(HDT_RecordType objType, HyperTableRow row) { return; }
   
@@ -254,6 +255,8 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
         textToHilite = "";
       }
     });
+    
+    MainTextWrapper.webViewAddZoom(webView, PREF_KEY_TREETAB_ZOOM);
     
     ttv.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {

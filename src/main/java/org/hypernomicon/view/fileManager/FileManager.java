@@ -1493,6 +1493,8 @@ public class FileManager extends HyperDialog
     });
     
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
+    
+    MainTextWrapper.webViewAddZoom(webView, PREF_KEY_FILEMGR_ZOOM);
   }
 
 //---------------------------------------------------------------------------  

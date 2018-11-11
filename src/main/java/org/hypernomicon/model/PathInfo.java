@@ -97,12 +97,8 @@ public class PathInfo
     }
     
     if (filePath.exists() == false)
-    {
       fileKind = fkUnknown;
-      return;
-    }
-    
-    if (filePath.isDirectory())
+    else if (filePath.isDirectory())
       fileKind = fkFolder;
     else
       fileKind = fkFile;

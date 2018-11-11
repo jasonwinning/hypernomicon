@@ -89,13 +89,13 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   private TabPane tpConcepts;
   private boolean alreadyChangingTab = false, updatingGlossaries = false;
 
-  @Override public HDT_RecordType getType()                 { return hdtTerm; }
-  @Override public void enable(boolean enabled)             { ui.tabTerms.getContent().setDisable(enabled == false); }
-  @Override public void focusOnSearchKey()                  { ctrlr.focusOnSearchKey(); }
-  @Override public void findWithinDesc(String text)         { ctrlr.hilite(text); }
-  @Override public TextViewInfo getMainTextInfo()           { return ctrlr.getMainTextInfo(); }
-  @Override public void setRecord(HDT_Concept activeRecord) { curConcept = activeRecord; curTerm = curConcept == null ? null : curConcept.term.get(); }
-  @Override public boolean saveToRecord(boolean showMessage)        { return ctrlr.save(curConcept, showMessage, this); }
+  @Override public HDT_RecordType getType()                  { return hdtTerm; }
+  @Override public void enable(boolean enabled)              { ui.tabTerms.getContent().setDisable(enabled == false); }
+  @Override public void focusOnSearchKey()                   { ctrlr.focusOnSearchKey(); }
+  @Override public void findWithinDesc(String text)          { ctrlr.hilite(text); }
+  @Override public TextViewInfo getMainTextInfo()            { return ctrlr.getMainTextInfo(); }
+  @Override public void setRecord(HDT_Concept activeRecord)  { curConcept = activeRecord; curTerm = curConcept == null ? null : curConcept.term.get(); }
+  @Override public boolean saveToRecord(boolean showMessage) { return ctrlr.save(curConcept, showMessage, this); }
 
   @Override public void newClick(HDT_RecordType objType, HyperTableRow row) { return; }
   
@@ -137,10 +137,8 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     
     if (!ctrlr.update(curConcept)) return false;
     
-    // Populate glossaries
     populateGlossaries();
     
-    // Populate displayers
     populateDisplayers();
     
     return true;

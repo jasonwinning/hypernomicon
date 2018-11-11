@@ -2246,12 +2246,12 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
       
       if (crossref)
       {
-        bd = BibData.createFromCrossrefJSON(jsonObj);
+        bd = BibData.createFromCrossrefJSON(jsonObj, industryID);
         crossrefBD.set(bd);
       }
       else
       {
-        bd = BibData.createFromGoogleJSON(jsonObj);
+        bd = BibData.createFromGoogleJSON(jsonObj, industryID);
         googleBD.set(bd);
       }
       

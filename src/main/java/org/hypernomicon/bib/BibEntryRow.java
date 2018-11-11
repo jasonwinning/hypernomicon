@@ -23,7 +23,6 @@ import org.hypernomicon.bib.BibEntryTable.*;
 import org.hypernomicon.bib.lib.BibEntry;
 import org.hypernomicon.model.records.HDT_Work;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
 
 public class BibEntryRow
 {
@@ -32,7 +31,8 @@ public class BibEntryRow
   public BibEntryRow(BibEntry entry) { this.entry = entry; }  
   public BibEntry getEntry()         { return entry; }   
   public HDT_Work getWork()          { return entry.getWork(); }
-  
+  public String getURL()             { return entry.getEntryURL(); }
+
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
@@ -67,32 +67,20 @@ public class BibEntryRow
           rowMenu.hide();
           schema.handler.handle(entryRow); 
         });
-        rowMenu.getItems().add(newItem);
         
+        rowMenu.getItems().add(newItem);        
         noneVisible = false;
       }
     }
     
-    rowMenu.setOnShowing(event ->
+    rowMenu.setOnShowing(event -> rowMenu.getItems().forEach(menuItem ->
     {
-      for (MenuItem menuItem : rowMenu.getItems())
-      {
-        BibEntryRowMenuItem rowItem = (BibEntryRowMenuItem)menuItem;
-        rowItem.setVisible(rowItem.schema.visible);
-        rowItem.setDisable(rowItem.schema.disabled);
-      }
-    });
+      BibEntryRowMenuItem rowItem = (BibEntryRowMenuItem)menuItem;
+      rowItem.setVisible(rowItem.schema.visible);
+      rowItem.setDisable(rowItem.schema.disabled);
+    }));
     
-    if (noneVisible) return null;
-    return rowMenu;
-  }
-
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------
-
-  public String getURL()
-  {
-    return entry.getEntryURL();
+    return noneVisible ? null : rowMenu;
   }
 
 //---------------------------------------------------------------------------  

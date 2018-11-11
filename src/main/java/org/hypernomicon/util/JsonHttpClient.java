@@ -71,49 +71,7 @@ public class JsonHttpClient
         failHndlr.handle(e);
     }
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void requestObjAsync(HttpUriRequest request, AsyncHttpClient httpClient, JsonObjHandler successHndlr, ExHandler failHndlr)
-  {
-    doAsyncRequest(request, httpClient, jsonClient -> runInFXThread(() -> successHndlr.handle(jsonClient.jsonObj)), failHndlr);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public JsonArray requestArrayInThisThread(HttpUriRequest request) throws UnsupportedOperationException, ParseException, IOException
-  {
-    if (!doRequestInThisThread(request))
-      return null;
-    
-    if (jsonArray == null)
-    {
-      jsonArray = new JsonArray();      
-      jsonArray.add(jsonObj);      
-    }
-    
-    return jsonArray;
-  }
   
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void requestArrayAsync(HttpUriRequest request, AsyncHttpClient httpClient, JsonArrayHandler successHndlr, ExHandler failHndlr)
-  {
-    doAsyncRequest(request, httpClient, jsonClient -> 
-    {
-      if (jsonArray == null)
-      {
-        jsonArray = new JsonArray();      
-        jsonArray.add(jsonObj);      
-      }
-            
-      runInFXThread(() -> successHndlr.handle(jsonArray)); 
-    }, failHndlr);
-  }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -135,7 +93,24 @@ public class JsonHttpClient
     
     httpClient.doRequest(request, responseHndlr, failHndlr);
   }
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public JsonArray requestArrayInThisThread(HttpUriRequest request) throws UnsupportedOperationException, ParseException, IOException
+  {
+    if (!doRequestInThisThread(request))
+      return null;
+    
+    if (jsonArray == null)
+    {
+      jsonArray = new JsonArray();      
+      jsonArray.add(jsonObj);      
+    }
+    
+    return jsonArray;
+  }
+   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

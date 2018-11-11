@@ -29,37 +29,31 @@ public final class BibAuthor implements Cloneable
   private final PersonName name;
   private final HDT_Person person;
   private final AuthorType type;
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public BibAuthor(AuthorType type, HDT_Person person)
+  private BibAuthor(AuthorType type, HDT_Person person, PersonName name)
   {
     this.type = type;
     this.person = person;
-    this.name = null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public BibAuthor(AuthorType type, PersonName name)
-  {
-    this.type = type;
     this.name = name;
-    this.person = null;
   }
-
+  
+  public BibAuthor(AuthorType type, HDT_Person person) { this(type, person, null); }
+  public BibAuthor(AuthorType type, PersonName name)   { this(type, null, name);   }
+  
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public BibAuthor(AuthorType type, Author author)
   {
     this.type = type;
+    HDT_Person person = author.getPerson();
     
-    if (author.getPerson() != null)
+    if (person != null)
     {
-      this.person = author.getPerson();
+      this.person = person;
       this.name = null;
     }
     else
@@ -69,6 +63,15 @@ public final class BibAuthor implements Cloneable
     }
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public final AuthorType getType()   { return type; }
+  public final String getGiven()      { return getName().getFirst(); }
+  public final String getFamily()     { return getName().getLast(); }
+  public final PersonName getName()   { return person == null ? name : person.getName(); }
+  public final HDT_Person getPerson() { return person; }
+  
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -130,19 +133,9 @@ public final class BibAuthor implements Cloneable
     }
     else if (!person.equals(other.person)) return false;
 
-
-     return true;
+    return true;
   }
   
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public final AuthorType getType()   { return type; }
-  public final String getGiven()      { return getName().getFirst(); }
-  public final String getFamily()     { return getName().getLast(); }
-  public final PersonName getName()   { return person == null ? name : person.getName(); }
-  public final HDT_Person getPerson() { return person; }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

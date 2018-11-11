@@ -355,7 +355,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static BibData createFromGoogleJSON(JsonObj jsonObj)
+  public static BibData createFromGoogleJSON(JsonObj jsonObj, String queryIsbn)
   {
     try
     {
@@ -411,6 +411,9 @@ public abstract class BibData
         }
       }
     }
+    
+    if (bd.fieldNotEmpty(bfISBNs) == false)
+      bd.addStr(bfISBNs, queryIsbn);
     
     return bd;
   }
@@ -633,7 +636,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static BibData createFromCrossrefJSON(JsonObj jsonObj)
+  public static BibData createFromCrossrefJSON(JsonObj jsonObj, String queryDoi)
   { 
     try
     {
@@ -690,6 +693,9 @@ public abstract class BibData
     bd.getAuthors().setFromCrossRefJson(jsonObj.getArray("editor"), AuthorType.editor);
     bd.getAuthors().setFromCrossRefJson(jsonObj.getArray("translator"), AuthorType.translator);
         
+    if (bd.fieldNotEmpty(bfDOI) == false)
+      bd.setStr(bfDOI, queryDoi);
+    
     return bd;
   }
  

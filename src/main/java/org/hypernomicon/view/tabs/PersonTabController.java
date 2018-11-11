@@ -580,27 +580,22 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
   private void refreshPicture()
   {
-    boolean noPic = true;
     Image picture = null;
     
     if (FilePath.isEmpty(curPicture) == false)
     {
       picture = new Image(curPicture.toURI().toString());
       if (!picture.isError())
-        noPic = false;
+      {
+        ivPerson.setImage(picture);      
+        ivPerson.setViewport(viewPort);      
+        lblPicture.setVisible(false);
+        return;
+      }
     }
       
-    if (noPic)
-    {
-      ivPerson.setImage(null);
-      lblPicture.setVisible(true);
-    }
-    else
-    {
-      ivPerson.setImage(picture);      
-      ivPerson.setViewport(viewPort);      
-      lblPicture.setVisible(false);
-    }
+    ivPerson.setImage(null);
+    lblPicture.setVisible(true);
   }
   
 //---------------------------------------------------------------------------  
@@ -1036,7 +1031,9 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
   public void initArgContextMenu()
   {
-    for (HDT_RecordType type : new HDT_RecordType[] { hdtArgument, hdtPosition, hdtDebate, hdtTerm, hdtNote, hdtWork, hdtMiscFile, hdtInvestigation, hdtPerson })
+    for (HDT_RecordType type : new HDT_RecordType[] { hdtArgument, hdtPosition,      hdtDebate, 
+                                                      hdtTerm,     hdtNote,          hdtWork, 
+                                                      hdtMiscFile, hdtInvestigation, hdtPerson })
     {
       htArguments.addContextMenuItem(type, db.getTypeName(type) + " Record...", record -> ui.goToRecord(record, true));
     }    
@@ -1426,15 +1423,11 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     Tab tab = tpPerson.getSelectionModel().getSelectedItem();
     
     if (tab.equals(tabOverview))
-    {
       return mainText.getViewInfo();
-    }
     
     for (InvestigationView iV : invViews)
       if (iV.tab.equals(tab))
-      {
         return iV.textWrapper.getViewInfo();
-      }
 
     return new TextViewInfo();
   }

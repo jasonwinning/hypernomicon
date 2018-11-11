@@ -117,7 +117,7 @@ public class WorkDialogController extends HyperDialog
   @FXML public TableView<HyperTableRow> tvAuthors;
   @FXML public TableView<HyperTableRow> tvISBN;
   @FXML private ComboBox<HyperTableCell> cbType;
-  @FXML private Button btnRegenerate;
+  @FXML private Button btnRegenerateFilename;
   @FXML private RadioButton rbMove;
   @FXML private RadioButton rbCopy;
   @FXML private RadioButton rbCurrent;
@@ -127,13 +127,13 @@ public class WorkDialogController extends HyperDialog
   @FXML public ComboBox<EntryType> cbEntryType;
  
   public HyperCB hcbType;
-  private boolean hereAlready = false;
-  public HDT_WorkFile oldWorkFile = null, newWorkFile = null;
-  private FilePath origFilePath = null;
-  private boolean alreadyChangingTitle = false;
   public HyperTable htAuthors, htISBN;
+  public HDT_WorkFile oldWorkFile = null, newWorkFile = null;
+  
+  private FilePath origFilePath = null;
   private BibData pdfBD = null, curBD = null;
   private HDT_Work curWork;
+  private boolean dontRegenerateFilename = false, alreadyChangingTitle = false;
   
   public static final AsyncHttpClient httpClient = new AsyncHttpClient();
   
@@ -187,8 +187,7 @@ public class WorkDialogController extends HyperDialog
     
     htAuthors.addColWithUpdateHandler(hdtPerson, ctDropDownList, (row, cellVal, nextColNdx, nextPopulator) ->
     {     
-      if (hereAlready) return;
-      hereAlready = true;
+      dontRegenerateFilename = true;
       
       if (HyperTableCell.getCellID(cellVal) > 0)
         htAuthors.setCheckboxValue(1, row, true);
@@ -196,22 +195,14 @@ public class WorkDialogController extends HyperDialog
       if (htAuthors.getDataRowCount() == 1)
         htAuthors.setCheckboxValue(2, row, true);
                    
-      btnRegenerateClick();
+      dontRegenerateFilename = false;
       
-      hereAlready = false;
+      btnRegenerateFilenameClick();      
     });
        
     htAuthors.addCheckboxColWithUpdateHandler(createAuthorRecordHandler(htAuthors, () -> curWork));
         
-    CellUpdateHandler handler = (row, cellVal, nextColNdx, nextPopulator) ->
-    {
-      if (hereAlready) return;
-      hereAlready = true;
-                
-      btnRegenerateClick();
-      
-      hereAlready = false;
-    };
+    CellUpdateHandler handler = (row, cellVal, nextColNdx, nextPopulator) -> btnRegenerateFilenameClick();
         
     htAuthors.addCheckboxColWithUpdateHandler(handler);
     htAuthors.addCheckboxColWithUpdateHandler(handler);
@@ -231,8 +222,8 @@ public class WorkDialogController extends HyperDialog
       int pos;
       String fileTitle = newValue;
 
-      fileTitle = fileTitle.replace('?', ':');
-      fileTitle = fileTitle.replace('/', '-');
+      fileTitle = fileTitle.replace('?', ':')
+                           .replace('/', '-');
       
       pos = fileTitle.indexOf(':');
       if (pos >= 0) fileTitle = fileTitle.substring(0, pos);
@@ -242,7 +233,7 @@ public class WorkDialogController extends HyperDialog
       tfFileTitle.setText(fileTitle.trim());  
     });
     
-    tfFileTitle.textProperty().addListener((observable, oldValue, newValue) -> btnRegenerateClick());
+    tfFileTitle.textProperty().addListener((observable, oldValue, newValue) -> btnRegenerateFilenameClick());
          
     cbType.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {    
@@ -272,7 +263,7 @@ public class WorkDialogController extends HyperDialog
         tfFileTitle.setDisable(true);
         tfYear.setDisable(true);
         chkKeepFilenameUnchanged.setDisable(true);
-        btnRegenerate.setDisable(true);
+        btnRegenerateFilename.setDisable(true);
         rbMove.setDisable(true);
         rbCopy.setDisable(true);
         rbCurrent.setDisable(true);
@@ -283,15 +274,15 @@ public class WorkDialogController extends HyperDialog
         tfYear.setDisable(false);
         chkKeepFilenameUnchanged.setDisable(false);
         tfNewFile.disableProperty().bind(chkKeepFilenameUnchanged.selectedProperty());
-        btnRegenerate.setDisable(false);
+        btnRegenerateFilename.setDisable(false);
         rbMove.setDisable(false);
         rbCopy.setDisable(false);
       }
     });   
     
-    tfYear.textProperty().addListener((observable, oldValue, newValue) -> btnRegenerateClick());
+    tfYear.textProperty().addListener((observable, oldValue, newValue) -> btnRegenerateFilenameClick());
     
-    tfOrigFile.textProperty().addListener((observable, oldValue, newValue) -> btnRegenerateClick());
+    tfOrigFile.textProperty().addListener((observable, oldValue, newValue) -> btnRegenerateFilenameClick());
     
     lblCase.setOnMouseClicked(event ->
     {
@@ -473,8 +464,10 @@ public class WorkDialogController extends HyperDialog
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
-  @FXML private void btnRegenerateClick()
+  @FXML private void btnRegenerateFilenameClick()
   {
+    if (dontRegenerateFilename) return;
+    
     String ext, year, fileName, newFileName = "";
          
     ext = FilenameUtils.getExtension(tfOrigFile.getText());
@@ -588,8 +581,11 @@ public class WorkDialogController extends HyperDialog
 
     rbCurrent.setDisable(db.getRootFilePath().isSubpath(chosenFile) == false);
     
-    if (rbCurrent.isSelected() && rbCurrent.isDisabled())
-      rbMove.setSelected(true);
+    if (rbCurrent.isSelected())
+    {
+      if (rbCurrent.isDisabled() || db.getPath(PREF_KEY_UNENTERED_PATH, null).isSubpath(chosenFile)) 
+        rbMove.setSelected(true);
+    }      
 
     // check if there will be any change in which file record will be assigned to the work.
     // if not, disable the option to "copy" ("copy" creates a new work file record)
@@ -734,22 +730,20 @@ public class WorkDialogController extends HyperDialog
 
   void queryCrossref(String doi)
   {
-    final String finalDOI = doi;
-    
     lblAutoPopulated.setText("");
     btnStop.setVisible(true);
     progressBar.setVisible(true);
     
     JsonHttpClient.getObjAsync(getCrossrefUrl(null, doi), httpClient, jsonObj ->
     {
-      BibData bibData = BibData.createFromCrossrefJSON(jsonObj);
+      BibData bibData = BibData.createFromCrossrefJSON(jsonObj, doi);
       
       if (bibData != null)
       {          
-        tfDOI.setText(finalDOI);
+        tfDOI.setText(doi);
         
         populateFieldsFromBibData(bibData, true);
-        lblAutoPopulated.setText("Fields have been auto-populated from Crossref using doi: " + finalDOI); 
+        lblAutoPopulated.setText("Fields have been auto-populated from Crossref using doi: " + doi); 
       }
       else
       {
@@ -800,20 +794,20 @@ public class WorkDialogController extends HyperDialog
 
   void queryGoogleBooks(Iterator<String> it)
   {
-    final String finalISBN = it.next();
+    String isbn = it.next();
     
     lblAutoPopulated.setText("");
     btnStop.setVisible(true);
     progressBar.setVisible(true);
     
-    JsonHttpClient.getObjAsync(getGoogleUrl(null, finalISBN), httpClient, jsonObj ->
+    JsonHttpClient.getObjAsync(getGoogleUrl(null, isbn), httpClient, jsonObj ->
     {
-      BibData bibData = BibData.createFromGoogleJSON(jsonObj);
+      BibData bibData = BibData.createFromGoogleJSON(jsonObj, isbn);
       
       if (bibData != null)
       {          
         populateFieldsFromBibData(bibData, true);
-        lblAutoPopulated.setText("Fields have been auto-populated from Google Books using isbn: " + finalISBN);
+        lblAutoPopulated.setText("Fields have been auto-populated from Google Books using isbn: " + isbn);
         btnStop.setVisible(false);
         progressBar.setVisible(false); 
       }
@@ -883,7 +877,7 @@ public class WorkDialogController extends HyperDialog
     
     JsonHttpClient.getObjAsync(getCrossrefUrl(null, doi), httpClient, jsonObj ->
     {
-      BibData bd = BibData.createFromCrossrefJSON(jsonObj);
+      BibData bd = BibData.createFromCrossrefJSON(jsonObj, doi);
   
       btnStop.setVisible(false);
       progressBar.setVisible(false);
@@ -928,7 +922,7 @@ public class WorkDialogController extends HyperDialog
     
     JsonHttpClient.getObjAsync(getGoogleUrl(null, isbn), httpClient, jsonObj ->
     {
-      BibData bd = BibData.createFromGoogleJSON(jsonObj);
+      BibData bd = BibData.createFromGoogleJSON(jsonObj, isbn);
       
       btnStop.setVisible(false);
       progressBar.setVisible(false);

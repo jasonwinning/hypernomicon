@@ -153,15 +153,13 @@ public class WindowStack
     if (nonNull(focusingWindow))
     {
       if ((closingWindow.getModality() != Modality.NONE) && (focusingWindow.getModality() == Modality.NONE))
-      {
         itemsDisabled.forEach((menuItem, disabled) -> menuItem.setDisable(disabled));
-      }
       
       if (focusingWindow.isStage())
       {
         Stage stage = StageWrapper.class.cast(focusingWindow).getStage();
         
-        if ((SystemUtils.IS_OS_LINUX) && (stage == app.getPrimaryStage()))                
+        if (SystemUtils.IS_OS_LINUX && (stage == app.getPrimaryStage()))                
         {
           // This is a workaround for:
           // https://bugs.openjdk.java.net/browse/JDK-8140491

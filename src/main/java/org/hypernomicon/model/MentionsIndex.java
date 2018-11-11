@@ -308,12 +308,11 @@ public class MentionsIndex
 
   public void stopRebuild()
   {
-    if (thread != null)
-      if (thread.isAlive())
-      {
-        stopRequested = true;
-        try { thread.join(); } catch (InterruptedException e) { noOp(); }
-      }    
+    if ((thread != null) && thread.isAlive())
+    {
+      stopRequested = true;
+      try { thread.join(); } catch (InterruptedException e) { noOp(); }
+    }    
   }
 
 //---------------------------------------------------------------------------

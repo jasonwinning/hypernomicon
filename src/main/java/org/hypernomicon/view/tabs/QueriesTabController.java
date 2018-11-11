@@ -1333,20 +1333,19 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
   SimpleBooleanProperty includeEdited = new SimpleBooleanProperty(),
                         excludeAnnots = new SimpleBooleanProperty();
 
-  @Override public HDT_RecordType getType()              { return hdtNone; }
-  @Override public boolean update()                      { return true; }
-  @Override public void focusOnSearchKey()               { return; }
-  @Override public void setRecord(HDT_Base activeRecord) { if (curQV != null) curQV.setRecord(activeRecord); }
-  @Override public int getRecordCount()                  { return results().size(); }
-  @Override public TextViewInfo getMainTextInfo()        { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
-  @Override public void setDividerPositions()            { return; }
-  @Override public void getDividerPositions()            { return; }
+  @Override public HDT_RecordType getType()                  { return hdtNone; }
+  @Override public boolean update()                          { return true; }
+  @Override public void focusOnSearchKey()                   { return; }
+  @Override public void setRecord(HDT_Base activeRecord)     { if (curQV != null) curQV.setRecord(activeRecord); }
+  @Override public int getRecordCount()                      { return results().size(); }
+  @Override public TextViewInfo getMainTextInfo()            { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
+  @Override public void setDividerPositions()                { return; }
+  @Override public void getDividerPositions()                { return; }  
+  @Override public boolean saveToRecord(boolean showMessage) { return false; }
+  @FXML private void mnuCopyToFolderClick()                  { copyFilesToFolder(true); }
   
   @Override public void newClick(HDT_RecordType objType, HyperTableRow row) { return; }
-  @Override public boolean saveToRecord(boolean showMessage)                { return false; }
-  
-  @FXML private void mnuCopyToFolderClick()              { copyFilesToFolder(true); }
-  
+   
   public void btnExecuteClick() { curQV.btnExecuteClick(true); }   // if any of the queries are unfiltered, they will all be treated as unfiltered
   
 //---------------------------------------------------------------------------  
@@ -1422,6 +1421,8 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
         textToHilite = "";
       }
     });
+    
+    MainTextWrapper.webViewAddZoom(webView, PREF_KEY_QUERYTAB_ZOOM);
           
     tfName.textProperty().addListener((observable, oldValue, newValue) ->
     {

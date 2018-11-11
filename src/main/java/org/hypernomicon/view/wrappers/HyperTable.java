@@ -1204,16 +1204,16 @@ public class HyperTable implements RecordListView
 
   private static <RowType> double getRowHeight(TableView<RowType> tv)
   {
-    Double val = rowHeight.get(tv);
-    if (val != null) return val;
+    Double heightObj = rowHeight.get(tv);
+    if (heightObj != null) return heightObj.doubleValue();
     
     for (Node rowNode : tv.lookupAll(".indexed-cell"))
     {        
       if (rowNode instanceof TableRow) 
       {            
-        double ht = ((Region) rowNode).getHeight();
-        rowHeight.put(tv, ht);
-        return ht;
+        double height = ((Region) rowNode).getHeight();
+        rowHeight.put(tv, height);
+        return height;
       }
     }
     

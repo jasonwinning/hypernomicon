@@ -17,8 +17,20 @@
  * 
  */
 
-function openPdfFile(fileStr, pageNum) {
-  PDFViewerApplication.initialDestination = [pageNum - 1, { name: 'XYZ' }, null, null, null];
+function openPdfFile(fileStr, pageNum, sidebarView) {
+  
+  if (PDFViewerApplication.initialized == false) {
+    window.setTimeout(openPdfFile, 50, fileStr, pageNum, sidebarView);
+    return;
+  }
+  
+  PDFViewerApplicationOptions.set('initialPage', pageNum);
+  PDFViewerApplicationOptions.set('sidebarViewOnLoad', sidebarView);
+  PDFViewerApplicationOptions.set('disablePageMode', true);
+  PDFViewerApplicationOptions.set('showPreviousViewOnLoad', false);
+  
+  PDFViewerApplication.pdfViewer.eventBus.on('pagechange', function (e) { javaApp.pageChange(e.pageNumber); });
+  PDFViewerApplication.pdfViewer.eventBus.on('sidebarviewchanged', function (e) { javaApp.sidebarChange(e.view); });  
   
   PDFViewerApplication.open(fileStr).then(function() {
     javaApp.openDone(true, { });

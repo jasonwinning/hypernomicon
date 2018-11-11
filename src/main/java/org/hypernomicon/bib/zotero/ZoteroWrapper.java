@@ -682,7 +682,8 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       
       /*********************************************/
       /*        Try sending local updates          */ 
-      /*********************************************/   
+      /*********************************************/
+        
       if (syncChangedEntriesToServer() == false)
         statusCode = HttpStatus.SC_PRECONDITION_FAILED;
       else

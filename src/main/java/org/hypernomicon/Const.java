@@ -74,6 +74,7 @@ public class Const
     PREF_KEY_CHECK_INTERNET = "checkInternet",
     PREF_KEY_AUTO_OPEN_PDF = "autoOpenWorkFile",
     PREF_KEY_AUTO_RETRIEVE_BIB = "autoRetrieveBib",
+    PREF_KEY_PDFJS_SIDEBAR_VIEW = "pdfjsSidebarView",
     PREF_KEY_FONT_SIZE = "fontSize",
     
     PREF_KEY_HT_ARG_PARENTS = "htArgParents",
@@ -113,6 +114,12 @@ public class Const
     PREF_KEY_HT_WORK_MISC = "htWorkMisc",
     PREF_KEY_HT_MGR_FILES = "htMgrFiles",
     PREF_KEY_HT_BIB_ENTRIES = "htBibEntries",
+    
+    PREF_KEY_MAINTEXT_ZOOM = "mainTextZoom",
+    PREF_KEY_BIBMGR_ZOOM = "bibMgrZoom",
+    PREF_KEY_FILEMGR_ZOOM = "fileMgrZoom",
+    PREF_KEY_QUERYTAB_ZOOM = "queryTabZoom",
+    PREF_KEY_TREETAB_ZOOM = "treeTabZoom",
     
     PREF_KEY_WINDOW_X = "windowPositionX",
     PREF_KEY_WINDOW_Y = "windowPositionY",

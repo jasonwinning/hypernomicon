@@ -45,6 +45,7 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.dialogs.HyperDialog;
 import org.hypernomicon.view.dialogs.SelectWorkDialogController;
+import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.view.workMerge.MergeWorksDialogController;
 
@@ -377,6 +378,8 @@ public class BibManager extends HyperDialog
         });
     
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
+    
+    MainTextWrapper.webViewAddZoom(webView, PREF_KEY_BIBMGR_ZOOM);
     
   //---------------------------------------------------------------------------  
   //---------------------------------------------------------------------------

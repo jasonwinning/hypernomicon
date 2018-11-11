@@ -112,10 +112,10 @@ public class Exceptions
       this.recordType = recordType;
       this.key = key;
     }    
-    public boolean getTooShort() { return tooShort; }
-    public int getRecordID() { return recordID; }
+    public boolean getTooShort()          { return tooShort; }
+    public int getRecordID()              { return recordID; }
     public HDT_RecordType getRecordType() { return recordType; }
-    public String getKey() { return key; }
+    public String getKey()                { return key; }
   }
 
 //---------------------------------------------------------------------------
@@ -135,7 +135,7 @@ public class Exceptions
       this.recordType = recordType;
     }
     
-    public int getRecordID() { return recordID; }
+    public int getRecordID()              { return recordID; }
     public HDT_RecordType getRecordType() { return recordType; }
   }
   

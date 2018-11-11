@@ -136,12 +136,10 @@ public class ChooseParentDialogController extends HyperDialog
             }
             break;
             
-          default : break;
-            
+          default : break;            
         }
         
-      default :
-        break;
+      default : break;
     }
     
     return true;

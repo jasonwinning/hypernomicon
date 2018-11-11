@@ -49,7 +49,6 @@ public class HyperSubjListIterator<HDT_SubjType extends HDT_Base, HDT_ObjType ex
   @Override public void set(HDT_SubjType e) { throw new UnsupportedOperationException(modErrMsg); }
   @Override public void add(HDT_SubjType e) { throw new UnsupportedOperationException(modErrMsg); }
 
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

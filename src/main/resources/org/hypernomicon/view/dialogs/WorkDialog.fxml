@@ -86,7 +86,7 @@
             <TableColumn editable="false" maxWidth="153.0" minWidth="30.0" prefWidth="44.0" resizable="false" sortable="false" text="Tr." />
         </columns>
       </TableView>
-      <Button fx:id="btnRegenerate" layoutX="755.0" layoutY="344.0" mnemonicParsing="false" onAction="#btnRegenerateClick" prefHeight="22.0" prefWidth="150.0" text="Regenerate filename" AnchorPane.bottomAnchor="88.0" AnchorPane.rightAnchor="12.0" />
+      <Button fx:id="btnRegenerateFilename" layoutX="755.0" layoutY="344.0" mnemonicParsing="false" onAction="#btnRegenerateFilenameClick" prefHeight="22.0" prefWidth="150.0" text="Regenerate filename" AnchorPane.bottomAnchor="88.0" AnchorPane.rightAnchor="12.0" />
       <Button fx:id="btnOk" layoutX="755.0" layoutY="392.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="22.0" prefWidth="74.0" text="OK" AnchorPane.bottomAnchor="40.0" AnchorPane.rightAnchor="88.0" />
       <Button fx:id="btnCancel" layoutX="830.0" layoutY="392.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="22.0" prefWidth="71.0" text="Cancel" AnchorPane.bottomAnchor="40.0" AnchorPane.rightAnchor="12.0" />
       <Label fx:id="lblCase" layoutX="309.0" layoutY="88.0" text="Try to fix case." underline="true" AnchorPane.leftAnchor="309.0" AnchorPane.topAnchor="88.0">

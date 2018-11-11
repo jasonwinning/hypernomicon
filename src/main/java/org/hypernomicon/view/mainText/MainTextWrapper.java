@@ -19,6 +19,7 @@ package org.hypernomicon.view.mainText;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -61,6 +62,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebEngine;
@@ -111,11 +113,12 @@ public class MainTextWrapper
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-     
+
   public static final void init()
   {
     view = new WebView();
-    
+    webViewAddZoom(view, PREF_KEY_MAINTEXT_ZOOM);
+        
     FXMLLoader loader = new FXMLLoader(App.class.getResource("view/mainText/MainTextEditor.fxml"));
     
     try { bpEditorRoot = loader.load(); } catch (IOException e) { noOp(); }
@@ -1528,6 +1531,31 @@ public class MainTextWrapper
       curRecord.getMainText().setDisplayItemsFromList(displayItems);
       curRecord.getMainText().setKeyWorksFromList(keyWorks, true);
     }
+  }
+  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+     
+  private static List<Integer> zoomFactors = Arrays.asList(25, 33, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500);
+  
+  public static void webViewAddZoom(WebView view, String prefID)
+  {
+    view.addEventFilter(ScrollEvent.SCROLL, (ScrollEvent e) ->
+    {
+      double deltaY = e.getDeltaY();
+      if ((e.isControlDown() == false) || (deltaY == 0)) return;
+      e.consume();
+      
+      int ndx = appPrefs.getInt(prefID, zoomFactors.indexOf(100)) + (deltaY > 0 ? 1 : -1);
+      
+      if ((ndx < 0) || (ndx == zoomFactors.size())) return;
+      
+      appPrefs.putInt(prefID, ndx);
+      view.setZoom(zoomFactors.get(ndx) / 100.0);
+      ui.lblStatus.setText("Zoom: " + String.valueOf(zoomFactors.get(ndx)));
+    });
+    
+    view.setZoom(zoomFactors.get(appPrefs.getInt(prefID, zoomFactors.indexOf(100))) / 100.0);
   }
 
 //---------------------------------------------------------------------------

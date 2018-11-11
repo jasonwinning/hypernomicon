@@ -1787,48 +1787,23 @@ public class Util
 //---------------------------------------------------------------------------
 
   public static JsonObj parseJsonObj(Reader in) throws IOException, org.json.simple.parser.ParseException
-  {
-    return new JsonObj((JSONObject) jsonParser.parse(in));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @SuppressWarnings("unchecked")
-  public static JsonArray parseJson(Reader in) throws IOException, org.json.simple.parser.ParseException
-  {
-    Object obj = jsonParser.parse(in);    
-    
-    if (obj instanceof JSONObject)
-    {
-      JSONArray jArr = new JSONArray();
-      jArr.add(obj);
-      return new JsonArray(jArr);
-    }
-    else if (obj instanceof JSONArray)
-    {
-      return new JsonArray((JSONArray) obj);  
-    }
-    
-    return null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+  { return new JsonObj((JSONObject) jsonParser.parse(in)); }
 
   public static JsonObj parseJsonObj(String str) throws org.json.simple.parser.ParseException
-  {
-    return new JsonObj((JSONObject) jsonParser.parse(str));
-  }
+  { return new JsonObj((JSONObject) jsonParser.parse(str)); }
+
+  public static JsonArray parseJson(String str) throws org.json.simple.parser.ParseException
+  { return wrapJSONObject(jsonParser.parse(str)); }
+
+  public static JsonArray parseJson(Reader in) throws IOException, org.json.simple.parser.ParseException
+  { return wrapJSONObject(jsonParser.parse(in)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public static JsonArray parseJson(String str) throws org.json.simple.parser.ParseException
+  private static JsonArray wrapJSONObject(Object obj)
   {
-    Object obj = jsonParser.parse(str);    
-    
     if (obj instanceof JSONObject)
     {
       JSONArray jArr = new JSONArray();
@@ -1840,7 +1815,7 @@ public class Util
       return new JsonArray((JSONArray) obj);  
     }
     
-    return null;
+    return null;   
   }
 
 //---------------------------------------------------------------------------
@@ -1864,7 +1839,6 @@ public class Util
     return list;
   }
 
-  
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -1909,7 +1883,7 @@ public class Util
         deleteNodes.add(child);
     }
 
-    // remove nodes from row
+    // remove nodes from column
     grid.getChildren().removeAll(deleteNodes);
     
     grid.getColumnConstraints().remove(columnNdx);
@@ -1977,7 +1951,6 @@ public class Util
     {
       @Override public boolean hasNext() { return it.hasNext(); }
       @Override public T next()          { return it.next();    }
-      @Override public void remove()     { throw new UnsupportedOperationException("remove"); }
     };
   }
 

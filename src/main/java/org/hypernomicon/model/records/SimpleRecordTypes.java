@@ -67,23 +67,23 @@ public class SimpleRecordTypes
 //---------------------------------------------------------------------------
 
   public static final class HDT_State extends HDT_SimpleRecord
-  { HDT_State(HDT_RecordState xmlState, HyperDataset<HDT_State> dataset)                            { super(xmlState, dataset);  } 
+  { public HDT_State(HDT_RecordState xmlState, HyperDataset<HDT_State> dataset)                     { super(xmlState, dataset);  } 
     public HDT_RecordType getType()                                                                 { return hdtState;           } }
   
   public static final class HDT_Country extends HDT_SimpleRecord
-  { HDT_Country(HDT_RecordState xmlState, HyperDataset<HDT_Country> dataset)                        { super(xmlState, dataset);  } 
+  { public HDT_Country(HDT_RecordState xmlState, HyperDataset<HDT_Country> dataset)                 { super(xmlState, dataset);  } 
     public HDT_RecordType getType()                                                                 { return hdtCountry;         } }
   
   public static final class HDT_Rank extends HDT_SimpleRecord
-  { HDT_Rank(HDT_RecordState xmlState, HyperDataset<HDT_Rank> dataset)                              { super(xmlState, dataset);  } 
+  { public HDT_Rank(HDT_RecordState xmlState, HyperDataset<HDT_Rank> dataset)                       { super(xmlState, dataset);  } 
     public HDT_RecordType getType()                                                                 { return hdtRank;            } }
   
   public static final class HDT_PersonStatus extends HDT_SimpleRecord
-  { HDT_PersonStatus(HDT_RecordState xmlState, HyperDataset<HDT_PersonStatus> dataset)              { super(xmlState, dataset);  } 
+  { public HDT_PersonStatus(HDT_RecordState xmlState, HyperDataset<HDT_PersonStatus> dataset)       { super(xmlState, dataset);  } 
     public HDT_RecordType getType()                                                                 { return hdtPersonStatus;    } }
  
   public static final class HDT_Field extends HDT_SimpleRecord
-  { HDT_Field(HDT_RecordState xmlState, HyperDataset<HDT_Field> dataset)                            { super(xmlState, dataset);  } 
+  { public HDT_Field(HDT_RecordState xmlState, HyperDataset<HDT_Field> dataset)                     { super(xmlState, dataset);  } 
     public HDT_RecordType getType()                                                                 { return hdtField;           } }
  
   public static final class HDT_PositionVerdict extends HDT_Verdict
@@ -99,7 +99,7 @@ public class SimpleRecordTypes
     public static final int FACULTY_INST_TYPE_ID = 9;
     public static final int DEPARTMENT_INST_TYPE_ID = 10;
     
-    HDT_InstitutionType(HDT_RecordState xmlState, HyperDataset<HDT_InstitutionType> dataset)        { super(xmlState, dataset);  }
+    public HDT_InstitutionType(HDT_RecordState xmlState, HyperDataset<HDT_InstitutionType> dataset) { super(xmlState, dataset);  }
     public HDT_RecordType getType()                                                                 { return hdtInstitutionType; } }
   
 //---------------------------------------------------------------------------
@@ -109,7 +109,7 @@ public class SimpleRecordTypes
   { 
     public List<HDT_MiscFile> miscFiles;
     
-    HDT_FileType(HDT_RecordState xmlState, HyperDataset<HDT_FileType> dataset)               
+    public HDT_FileType(HDT_RecordState xmlState, HyperDataset<HDT_FileType> dataset)               
     { 
       super(xmlState, dataset); 
       miscFiles = getSubjList(rtTypeOfFile);
@@ -123,13 +123,7 @@ public class SimpleRecordTypes
 
   public static enum WorkTypeEnum
   {
-    wtNone,
-    wtPaper,
-    wtBook,
-    wtWebPage,
-    wtChapter,
-    wtRecording,
-    wtUnenteredSet
+    wtNone, wtPaper, wtBook, wtWebPage, wtChapter, wtRecording, wtUnenteredSet
   }
 
 //---------------------------------------------------------------------------
@@ -143,17 +137,14 @@ public class SimpleRecordTypes
     {
       EnumHashBiMap<WorkTypeEnum, Integer> map = EnumHashBiMap.create(WorkTypeEnum.class);
       
-      map.put(wtPaper, 1);
-      map.put(wtBook, 2);
-      map.put(wtWebPage, 3);
-      map.put(wtChapter, 4);
-      map.put(wtRecording, 5);
-      map.put(wtUnenteredSet, 6);
+      map.put(wtPaper, 1);      map.put(wtBook, 2);
+      map.put(wtWebPage, 3);    map.put(wtChapter, 4);
+      map.put(wtRecording, 5);  map.put(wtUnenteredSet, 6);
       
       return map;
     }
     
-    HDT_WorkType(HDT_RecordState xmlState, HyperDataset<HDT_WorkType> dataset) { super(xmlState, dataset); }
+    public HDT_WorkType(HDT_RecordState xmlState, HyperDataset<HDT_WorkType> dataset) { super(xmlState, dataset); }
 
     @Override public HDT_RecordType getType()                { return hdtWorkType; }    
     public WorkTypeEnum getEnumVal()                         { return workTypeIDToEnumVal(getID()); }    

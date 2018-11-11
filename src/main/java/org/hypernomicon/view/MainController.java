@@ -96,7 +96,6 @@ import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
@@ -465,7 +464,7 @@ public class MainController
             else if (fileManagerDlg != null) 
               if (fileManagerDlg.getStage().isShowing() && fileManagerDlg.getStage().isFocused())
                 Platform.runLater(() -> fileManagerDlg.btnForwardClick());
-            return;            
+            return;
         }
       });
     }
@@ -546,23 +545,17 @@ public class MainController
     
     tfOmniGoTo.setOnKeyPressed(event ->
     {
-      if (event.getCode() == KeyCode.DOWN) 
+      switch (event.getCode())
       {
-        showFindTable();
-        tvFind.getSelectionModel().selectNext();
-
-        htFind.scrollToSelection();
-        event.consume();
+        case DOWN : case UP : case PAGE_DOWN : case PAGE_UP :
+          
+          showFindTable();
+          tvFind.fireEvent(event.copyFor(tvFind, tvFind));
+          event.consume();
+          break;
+          
+        default : break;          
       }
-      
-      else if (event.getCode() == KeyCode.UP)
-      {
-        showFindTable();
-        tvFind.getSelectionModel().selectPrevious();
-
-        htFind.scrollToSelection();
-        event.consume();        
-      }      
     });
       
 //---------------------------------------------------------------------------
@@ -2263,69 +2256,69 @@ public class MainController
   public void goToRecord(HDT_Base record, boolean save)
   {
     HDT_Investigation inv = null;
-    StrongLink link;
   
     if (db.isLoaded() == false) return;
     if (record == null) return;
     treeSubjRecord = null;
      
-    if (record.getType() == hdtHub)
+    switch (record.getType())
     {
-      record = getSpokeToGoTo(((HDT_Hub)record).getLink());     
-      if (record == null) return;
-    }
-  
-    else if (record.getType() == hdtGlossary)
-    {
-      goToTreeRecord(record);
-      return;
-    }
-    
-    else if (record.getType() == hdtWorkLabel)
-    {
-      link = ((HDT_WorkLabel)record).getLink();
-      
-      if (link != null)
-        record = getSpokeToGoTo(link);
-      else
-      {
+      case hdtHub :
+        
+        record = getSpokeToGoTo(((HDT_Hub)record).getLink());     
+        if (record == null) return;
+        break;
+        
+      case hdtGlossary :
+        
         goToTreeRecord(record);
-        return;          
-      }
+        return;
+
+      case hdtWorkLabel :
+        
+        StrongLink link = ((HDT_WorkLabel)record).getLink();
+        
+        if (link == null)
+        {
+          goToTreeRecord(record);
+          return;          
+        }
+          
+        record = getSpokeToGoTo(link);
+        break;
+        
+      case hdtFolder :
+        
+        goToFileInManager(HDT_Folder.class.cast(record).getPath().getFilePath());
+        return;
+
+      case hdtInvestigation :
+        
+        inv = (HDT_Investigation)record;
+        record = inv.person.get();
+        break;
+        
+      case hdtWorkFile :
+        
+        HDT_WorkFile workFile = (HDT_WorkFile)record;
+        if (workFile.works.size() > 0)
+          record = workFile.works.get(0);
+        break;
+        
+      case hdtTerm :
+        
+        record = HDT_Term.class.cast(record).concepts.get(0);
+        break;
+
+      default : break;
     }
     
-    else if (record.getType() == hdtFolder)
-    {
-      goToFileInManager(HDT_Folder.class.cast(record).getPath().getFilePath());
-      return;
-    }
-    
-    else if (record.getType() == hdtInvestigation)
-    {
-      inv = (HDT_Investigation)record;
-      record = inv.person.get();
-    }
-  
-    else if (record.getType() == hdtWorkFile)
-    {
-      HDT_WorkFile workFile = (HDT_WorkFile)record;
-      if (workFile.works.size() > 0)
-        record = workFile.works.get(0);
-    }
-    
-    else if (record.getType() == hdtTerm)
-    {
-      HDT_Term term = (HDT_Term)record;
-      record = term.concepts.get(0);
-    }
-    
-    TabEnum tabEnum = HyperTab.getTabEnumByRecordType(record.getType());
-    if ((tabEnum == personTab) && (record.getType() != hdtPerson)) return;
+    if (HyperTab.getTabEnumByRecordType(record.getType()) == personTab)
+      if (record.getType() != hdtPerson) return;
     
     focusStage(primaryStage());
     
-    if (save)
-      if (cantSaveRecord(true)) return;
+    if (save && cantSaveRecord(true)) return;
 
     viewSequence.forwardToNewSlotAndView(HyperViewSequence.createViewForRecord(record));  
     
@@ -3054,7 +3047,7 @@ public class MainController
 //---------------------------------------------------------------------------
     
   private void importBibFile(List<String> lines, FilePath filePath)
-    {
+  {
     if (cantSaveRecord(true)) return;
     
     ImportBibEntryDialogController ibed = ImportBibEntryDialogController.create("Import Bibliography File", lines, filePath);

@@ -563,4 +563,8 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
   {
     return super.hashCode();
   }
+  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

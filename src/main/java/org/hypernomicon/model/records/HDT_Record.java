@@ -235,47 +235,6 @@ public abstract class HDT_Record implements HDT_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked")
-  public final static <HDT_T extends HDT_Base> HDT_T createRecord(HDT_RecordState recordState, HyperDataset<HDT_T> dataset)
-  {
-    switch (recordState.type)
-    {     
-      case hdtPerson :          return (HDT_T) new HDT_Person          (recordState, (HyperDataset<HDT_Person>)          dataset);
-      case hdtPersonStatus :    return (HDT_T) new HDT_PersonStatus    (recordState, (HyperDataset<HDT_PersonStatus>)    dataset); 
-      case hdtRank :            return (HDT_T) new HDT_Rank            (recordState, (HyperDataset<HDT_Rank>)            dataset); 
-      case hdtInstitution :     return (HDT_T) new HDT_Institution     (recordState, (HyperDataset<HDT_Institution>)     dataset); 
-      case hdtInstitutionType : return (HDT_T) new HDT_InstitutionType (recordState, (HyperDataset<HDT_InstitutionType>) dataset); 
-      case hdtInvestigation :   return (HDT_T) new HDT_Investigation   (recordState, (HyperDataset<HDT_Investigation>)   dataset); 
-      case hdtDebate :          return (HDT_T) new HDT_Debate          (recordState, (HyperDataset<HDT_Debate>)          dataset); 
-      case hdtArgument :        return (HDT_T) new HDT_Argument        (recordState, (HyperDataset<HDT_Argument>)        dataset); 
-      case hdtPosition :        return (HDT_T) new HDT_Position        (recordState, (HyperDataset<HDT_Position>)        dataset); 
-      case hdtTerm :            return (HDT_T) new HDT_Term            (recordState, (HyperDataset<HDT_Term>)            dataset); 
-      case hdtConcept :         return (HDT_T) new HDT_Concept         (recordState, (HyperDataset<HDT_Concept>)         dataset); 
-      case hdtField :           return (HDT_T) new HDT_Field           (recordState, (HyperDataset<HDT_Field>)           dataset); 
-      case hdtSubfield :        return (HDT_T) new HDT_Subfield        (recordState, (HyperDataset<HDT_Subfield>)        dataset); 
-      case hdtWorkType :        return (HDT_T) new HDT_WorkType        (recordState, (HyperDataset<HDT_WorkType>)        dataset); 
-      case hdtWorkLabel :       return (HDT_T) new HDT_WorkLabel       (recordState, (HyperDataset<HDT_WorkLabel>)       dataset); 
-      case hdtWork :            return (HDT_T) new HDT_Work            (recordState, (HyperDataset<HDT_Work>)            dataset); 
-      case hdtState :           return (HDT_T) new HDT_State           (recordState, (HyperDataset<HDT_State>)           dataset); 
-      case hdtCountry :         return (HDT_T) new HDT_Country         (recordState, (HyperDataset<HDT_Country>)         dataset); 
-      case hdtPositionVerdict : return (HDT_T) new HDT_PositionVerdict (recordState, (HyperDataset<HDT_PositionVerdict>) dataset); 
-      case hdtArgumentVerdict : return (HDT_T) new HDT_ArgumentVerdict (recordState, (HyperDataset<HDT_ArgumentVerdict>) dataset); 
-      case hdtMiscFile :        return (HDT_T) new HDT_MiscFile        (recordState, (HyperDataset<HDT_MiscFile>)        dataset); 
-      case hdtNote :            return (HDT_T) new HDT_Note            (recordState, (HyperDataset<HDT_Note>)            dataset); 
-      case hdtHub :             return (HDT_T) new HDT_Hub             (recordState, (HyperDataset<HDT_Hub>)             dataset); 
-      case hdtFileType :        return (HDT_T) new HDT_FileType        (recordState, (HyperDataset<HDT_FileType>)        dataset); 
-      case hdtPersonGroup :     return (HDT_T) new HDT_PersonGroup     (recordState, (HyperDataset<HDT_PersonGroup>)     dataset); 
-      case hdtWorkFile :        return (HDT_T) new HDT_WorkFile        (recordState, (HyperDataset<HDT_WorkFile>)        dataset); 
-      case hdtFolder :          return (HDT_T) new HDT_Folder          (recordState, (HyperDataset<HDT_Folder>)          dataset); 
-      case hdtGlossary :        return (HDT_T) new HDT_Glossary        (recordState, (HyperDataset<HDT_Glossary>)        dataset);
-      
-      default :                 return null;
-    }
-  }
-  
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public final boolean changeID(int newID)
   {
     int oldID = id;
@@ -423,12 +382,12 @@ public abstract class HDT_Record implements HDT_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
   
-  @Override public final void assignID(int newID)
+  @Override public final void assignID() throws HDB_InternalError
   {
-    if (id == -1)
-      id = newID;
-    else
-      messageDialog("Internal error #74102", mtError);
+    if (id != -1)
+      throw new HDB_InternalError(74102);
+    
+    id = dataset.recordIDtoAssign(this);
   }
   
 //---------------------------------------------------------------------------
@@ -572,6 +531,7 @@ public abstract class HDT_Record implements HDT_Base
       switch (type)
       {           
         case hdtInstitution :
+          
           HDT_Institution inst = (HDT_Institution)this;
           if (inst.parentInst.isNotNull())
           {
@@ -598,10 +558,9 @@ public abstract class HDT_Record implements HDT_Base
           break;
           
         default :
-          if (sortKeyAttr.length() > 0)
-            sortKey = sortKeyAttr;
-          else
-            sortKey = name.get();
+          
+          sortKey = sortKeyAttr.length() > 0 ? sortKeyAttr : name.get();
+          break;
       }
     }
     catch (NullPointerException e)

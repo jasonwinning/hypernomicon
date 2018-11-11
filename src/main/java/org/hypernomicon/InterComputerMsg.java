@@ -104,9 +104,9 @@ public class InterComputerMsg
 
       switch (s.get(2))
       {
-        case "echo request" : type = hmtEchoRequest; break;
-        case "echo reply" : type = hmtEchoReply; break;
-        case "unlock request" : type = hmtUnlockRequest; break;
+        case "echo request"    : type = hmtEchoRequest;    break;
+        case "echo reply"      : type = hmtEchoReply;      break;
+        case "unlock request"  : type = hmtUnlockRequest;  break;
         case "unlock complete" : type = hmtUnlockComplete; break;
         default : type = hmtNone;
       }
