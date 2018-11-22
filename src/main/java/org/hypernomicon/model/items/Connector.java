@@ -48,13 +48,17 @@ public class Connector
   MainText mainText;
   boolean alreadyModifying = false;
 
-  public HDT_RecordType getType()           { return getSpoke().getType(); }
-  public boolean isLinked()                 { return link != null; }  
-  public StrongLink getLink()               { return link; }
-  public MainText getMainText()             { return mainText; }
-  public HDT_Hub getHub()                   { return link == null ? null : link.getHub(); }
-  public HDT_RecordWithConnector getSpoke() { return record; }
+  public HDT_RecordType getType()            { return getSpoke().getType(); }
+  public boolean isLinked()                  { return link != null; }  
+  public StrongLink getLink()                { return link; }
+  public MainText getMainText()              { return mainText; }
+  public HDT_Hub getHub()                    { return link == null ? null : link.getHub(); }
+  public HDT_RecordWithConnector getSpoke()  { return record; }
+  public String listName()                   { return record == null ? "" : record.listName(); }
+  public static boolean isEmpty(Connector c) { return (c == null) || HDT_Record.isEmpty(c.getSpoke()); }
 
+  @Override public int hashCode()            { return 31 * (record == null ? 0 : record.hashCode()); }
+  
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
@@ -74,20 +78,10 @@ public class Connector
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public String listName()
-  {
-    if (record != null) return record.listName();
-    return "";
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
 
   final void resolvePointers() throws HDB_InternalError
   {
-    HDT_Hub hub = getHub();
-    
-    if (HDT_Record.isEmptyThrowsException(hub))
+    if (HDT_Record.isEmptyThrowsException(getHub()))
       link = null;
     
     mainText.resolvePointers();
@@ -109,40 +103,13 @@ public class Connector
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
   
-  @Override public int hashCode()
-  {
-    int result = 1;
-    result = 31 * result + ((record == null) ? 0 : record.hashCode());
-    return result;
-  }
-  
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
   @Override public boolean equals(Object obj)
   {
     if (this == obj) return true;
     if (obj == null) return false;
-
     if (getClass() != obj.getClass()) return false;
     
-    Connector other = (Connector) obj;
-    
-    if (record != other.record) return false;
-    
-    return true;
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  public static boolean isEmpty(Connector target)
-  {
-    if (target == null) return true;
-    
-    if (HDT_Record.isEmpty(target.getSpoke())) return true;
-    
-    return false;
+    return record == Connector.class.cast(obj).record;
   }
 
   //---------------------------------------------------------------------------

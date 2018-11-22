@@ -43,6 +43,7 @@ import org.hypernomicon.bib.BibUtils.PdfMetadata;
 import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.HyperPath;
+import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -114,8 +115,8 @@ public class WorkDialogController extends HyperDialog
   @FXML private Button btnBrowse;
   @FXML private Button btnLaunch;
   @FXML private Button btnStop;
-  @FXML public TableView<HyperTableRow> tvAuthors;
-  @FXML public TableView<HyperTableRow> tvISBN;
+  @FXML private TableView<HyperTableRow> tvAuthors;
+  @FXML private TableView<HyperTableRow> tvISBN;
   @FXML private ComboBox<HyperTableCell> cbType;
   @FXML private Button btnRegenerateFilename;
   @FXML private RadioButton rbMove;
@@ -190,10 +191,10 @@ public class WorkDialogController extends HyperDialog
       dontRegenerateFilename = true;
       
       if (HyperTableCell.getCellID(cellVal) > 0)
-        htAuthors.setCheckboxValue(1, row, true);
+        row.setCheckboxValue(1, true);
       
       if (htAuthors.getDataRowCount() == 1)
-        htAuthors.setCheckboxValue(2, row, true);
+        row.setCheckboxValue(2, true);
                    
       dontRegenerateFilename = false;
       
@@ -328,7 +329,7 @@ public class WorkDialogController extends HyperDialog
     {
       if (row.getID(0) > 0)
       {
-        Platform.runLater(() -> htAuthors.setCheckboxValue(1, row, true));
+        Platform.runLater(() -> row.setCheckboxValue(1, true));
         return;
       }
       else if (cellVal.equals(HyperTableCell.falseCell))
@@ -359,7 +360,7 @@ public class WorkDialogController extends HyperDialog
         htAuthors.selectID(0, row, npdc.getPerson().getID());
       }
       else
-        Platform.runLater(() -> htAuthors.setCheckboxValue(1, row, false));        
+        Platform.runLater(() -> row.setCheckboxValue(1, false));        
     };
   }
 
@@ -411,16 +412,16 @@ public class WorkDialogController extends HyperDialog
     htAuthors.clear();
     htAuthors.getPopulator(0).populate(null, false);
     
-    for (int rowNdx = 0; rowNdx < workCtrlr.htAuthors.getDataRowCount(); rowNdx++)
-    {
-      HyperTableRow row = workCtrlr.htAuthors.getRowByRowNdx(rowNdx);
-      
-      int authID = row.getID(1);
-      String authName = row.getText(1);
+    boolean atLeastOneInFilename = false;
+    
+    for (HyperTableRow origRow : workCtrlr.htAuthors.getDataRows())
+    {      
+      int authID = origRow.getID(1);
+      String authName = origRow.getText(1);
       Ternary isInFileName = Ternary.Unset;
       
       if (authID > 0)
-        isInFileName = curWork.personIsInFileName(HDT_Person.class.cast(row.getRecord()));
+        isInFileName = curWork.personIsInFileName(HDT_Person.class.cast(origRow.getRecord()));
       else
       {
         htAuthors.getPopulator(0).addEntry(null, -1, authName);
@@ -429,8 +430,9 @@ public class WorkDialogController extends HyperDialog
           isInFileName = auth.getInFileName();
       }
       
-      htAuthors.setDataItem(0, rowNdx, authID, authName, hdtPerson);
-      htAuthors.setCheckboxValue(1, rowNdx, authID > 0);
+      HyperTableRow newRow = htAuthors.newDataRow();
+      newRow.setCellValue(0, authID, authName, hdtPerson);
+      newRow.setCheckboxValue(1, authID > 0);
       
       boolean boolVal;
       
@@ -438,12 +440,12 @@ public class WorkDialogController extends HyperDialog
       {
         case True :  boolVal = true; break;
         case False : boolVal = false; break;
-        default :    boolVal = (rowNdx == 0);
+        default :    boolVal = !atLeastOneInFilename; atLeastOneInFilename = true; break;
       }
       
-      htAuthors.setCheckboxValue(2, rowNdx, boolVal);
-      htAuthors.setCheckboxValue(3, rowNdx, workCtrlr.htAuthors.getCheckboxValue(2, rowNdx));
-      htAuthors.setCheckboxValue(4, rowNdx, workCtrlr.htAuthors.getCheckboxValue(3, rowNdx));
+      newRow.setCheckboxValue(2, boolVal);
+      newRow.setCheckboxValue(3, origRow.getCheckboxValue(2));
+      newRow.setCheckboxValue(4, origRow.getCheckboxValue(3));
     }
            
     if (oldWorkFile != null)
@@ -478,14 +480,12 @@ public class WorkDialogController extends HyperDialog
 
     ArrayList<FileNameAuthor> authors = new ArrayList<>();
     
-    for (int rowNdx = 0; rowNdx < htAuthors.getDataRowCount(); rowNdx++)
+    htAuthors.getDataRows().forEach(row ->
     {
-      HyperTableRow row = htAuthors.getRowByRowNdx(rowNdx);
-      
       if ((row.getRecord() != null) || (row.getText(0).length() > 0))
-        if (htAuthors.getCheckboxValue(2, row))
-          authors.add(new FileNameAuthor(row.getText(0), htAuthors.getCheckboxValue(3, row), htAuthors.getCheckboxValue(4, row)));
-    }
+        if (row.getCheckboxValue(2))
+          authors.add(new FileNameAuthor(row.getText(0), row.getCheckboxValue(3), row.getCheckboxValue(4)));
+    });
     
     fileName = HDT_WorkFile.makeFileName(authors, year, tfFileTitle.getText(), ext);
     
@@ -507,7 +507,7 @@ public class WorkDialogController extends HyperDialog
         break;
       }
       
-      newFileName = FilenameUtils.getBaseName(fileName) + ((ctr == 1) ? "" : "_" + String.valueOf(1000 + (ctr % 1000)).substring(1, 4)) + 
+      newFileName = FilenameUtils.getBaseName(fileName) + (ctr == 1 ? "" : "_" + String.valueOf(1000 + (ctr % 1000)).substring(1, 4)) + 
                     FilenameUtils.EXTENSION_SEPARATOR_STR + FilenameUtils.getExtension(fileName);
       nameTaken = false;
 
@@ -529,9 +529,7 @@ public class WorkDialogController extends HyperDialog
   {
     FileChooser fileChooser = new FileChooser();
 
-    WorkTypeEnum enumVal = curWork.getWorkTypeValue();
-    
-    switch (enumVal)
+    switch (curWork.getWorkTypeValue())
     {
       case wtBook: case wtChapter: case wtNone: case wtPaper:
 
@@ -546,9 +544,7 @@ public class WorkDialogController extends HyperDialog
     
     fileChooser.setInitialDirectory(db.getPath(PREF_KEY_UNENTERED_PATH, null).toFile());
 
-    FilePath chosenFile = new FilePath(fileChooser.showOpenDialog(getStage()));
-
-    useChosenFile(chosenFile);
+    useChosenFile(new FilePath(fileChooser.showOpenDialog(getStage())));
   }
 
 //---------------------------------------------------------------------------  
@@ -639,8 +635,7 @@ public class WorkDialogController extends HyperDialog
     } 
     catch (IOException | XMPException e)
     {
-      messageDialog("Error: " + e.getMessage(), mtError);
-      return false;
+      return falseWithErrorMessage("Error: " + e.getMessage());
     }
 
     List<String> isbns = md.bd.getMultiStr(bfISBNs);
@@ -675,11 +670,8 @@ public class WorkDialogController extends HyperDialog
 
     tfDOI.setText(doi);
     htISBN.clear();
-    int ndx = 0; for (String isbnStr : isbns)
-    {
-      htISBN.setDataItem(0, ndx, -1, isbnStr, hdtNone);
-      ndx++;
-    }
+    
+    htISBN.buildRows(isbns, (row, isbnStr) -> row.setCellValue(0, -1, isbnStr, hdtNone));
          
     if (doWebQuery && dontLaunchPdf)
       pdfBD = md.extractBibData();
@@ -971,30 +963,32 @@ public class WorkDialogController extends HyperDialog
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
-  private static boolean addAuthorToTable(int rowNdx, PersonName authorName, boolean editor, boolean trans, HDT_Person author, HyperTable htAuthors, boolean hasShowInFileCol)
+  private static boolean addAuthorToTable(PersonName authorName, boolean editor, boolean trans, HDT_Person author, HyperTable htAuthors, boolean hasShowInFileCol)
   {
     if (authorName.isEmpty()) return false;
     
+    HyperTableRow row = htAuthors.newDataRow();
+    
     if (author != null)
     {
-      htAuthors.setDataItem(0, rowNdx, author.getID(), author.listName(), hdtPerson);
-      htAuthors.setCheckboxValue(1, rowNdx, true);
+      row.setCellValue(0, author, author.listName());
+      row.setCheckboxValue(1, true);
     }
     else
     {
       String authorStr = authorName.getLastFirst();
       
       htAuthors.getPopulator(0).addEntry(null, -1, authorStr);
-      htAuthors.setDataItem(0, rowNdx, -1, authorStr, hdtPerson);
+      row.setCellValue(0, -1, authorStr, hdtPerson);
     }
     
     int addend = hasShowInFileCol ? 1 : 0;
     
     if (editor)
-      htAuthors.setCheckboxValue(2 + addend, rowNdx, true);
+      row.setCheckboxValue(2 + addend, true);
     
     if (trans)
-      htAuthors.setCheckboxValue(3 + addend, rowNdx, true);
+      row.setCheckboxValue(3 + addend, true);
     
     return true;
   }
@@ -1013,9 +1007,7 @@ public class WorkDialogController extends HyperDialog
     HashMap<PersonName, Boolean> nameToTr = new HashMap<>();
 
     bibAuthors.getListsForWorkMerge(nameList, personList, nameToEd, nameToTr);
-        
-    int rowNdx = 0;
-    
+           
     htAuthors.clear();
     htAuthors.getPopulator(0).populate(null, false);
     
@@ -1023,8 +1015,7 @@ public class WorkDialogController extends HyperDialog
     {
       PersonName name = nameList.get(ndx);
       
-      if (addAuthorToTable(rowNdx, name, nameToEd.get(name), nameToTr.get(name), personList.get(ndx), htAuthors, hasShowInFileCol))
-        rowNdx++;
+      addAuthorToTable(name, nameToEd.get(name), nameToTr.get(name), personList.get(ndx), htAuthors, hasShowInFileCol);
     }
   }  
   
@@ -1042,8 +1033,7 @@ public class WorkDialogController extends HyperDialog
     curBD.setWorkType(hcbType.selectedRecord());    
       
     ArrayList<String> isbns = new ArrayList<>();
-    for (int rowNdx = 0; rowNdx < htISBN.getDataRowCount(); rowNdx++)
-      isbns.add(htISBN.getText(0, rowNdx));
+    htISBN.getDataRows().forEach(row -> isbns.add(row.getText(0)));
     
     curBD.setMultiStr(bfISBNs, isbns);
         
@@ -1073,19 +1063,13 @@ public class WorkDialogController extends HyperDialog
     
     HDT_WorkType workType = curBD.getWorkType();
     
-    if (workType == null)
-      hcbType.selectID(-1);
-    else
-      hcbType.selectID(workType.getID());
+    hcbType.selectID(nullSwitch(workType, -1, HDT_Base::getID));
     
     tfDOI.setText(curBD.getStr(bfDOI));
     
     htISBN.clear();
-    int ndx = 0; for (String isbnStr : curBD.getMultiStr(bfISBNs))
-    {
-      htISBN.setDataItem(0, ndx, -1, isbnStr, hdtNone);
-      ndx++;
-    }
+    
+    htISBN.buildRows(curBD.getMultiStr(bfISBNs), (row, isbnStr) -> row.setCellValue(0, -1, isbnStr, hdtNone));
     
     if (populateAuthors)
       loadFromBibAuthors(curBD.getAuthors(), htAuthors, true);
@@ -1173,20 +1157,14 @@ public class WorkDialogController extends HyperDialog
     if (existingFile != null)
     {
       if (existingFile instanceof HDT_MiscFile)
-      {
-        messageDialog("New file name is already in use as a miscellaneous file, record ID: " + existingFile.getID(), mtError);
-        return false;
-      }
+        return falseWithErrorMessage("New file name is already in use as a miscellaneous file, record ID: " + existingFile.getID());
       
       HDT_WorkFile existingWorkFile = (HDT_WorkFile)existingFile;
       
       if (newWorkFile == null)
       {
         if (existingWorkFile.works.isEmpty())
-        {
-          messageDialog("Internal error #79002", mtError);
-          return false;
-        }
+          return falseWithErrorMessage("Internal error #79002");
 
         int oldWorkFileID = -1;
         if (oldWorkFile != null)
@@ -1195,18 +1173,12 @@ public class WorkDialogController extends HyperDialog
         if (oldWorkFileID == existingWorkFile.getID())
           newWorkFile = existingWorkFile;          
         else
-        {
-          messageDialog("New file name is already in use as a work file, work record ID: " + existingWorkFile.works.get(0).getID(), mtError);
-          return false;
-        }
+          return falseWithErrorMessage("New file name is already in use as a work file, work record ID: " + existingWorkFile.works.get(0).getID());
       }
       else
       {     
         if (newWorkFile.getID() != existingFile.getID())
-        {
-          messageDialog("Another work file already has that file name, record ID: " + existingFile.getID(), mtError);
-          return false;
-        }
+          return falseWithErrorMessage("Another work file already has that file name, record ID: " + existingFile.getID());
       }
     }
     else
@@ -1229,10 +1201,7 @@ public class WorkDialogController extends HyperDialog
           {
             newWorkFile = (HDT_WorkFile) HyperPath.createRecordAssignedToPath(hdtWorkFile, newFilePath);
             if (newWorkFile == null)
-            {
-              messageDialog("Internal error #67830", mtError);
-              return false;
-            }
+              return falseWithErrorMessage("Internal error #67830");
             
             curWork.addWorkFile(newWorkFile.getID(), true, true);
           }
@@ -1259,10 +1228,7 @@ public class WorkDialogController extends HyperDialog
           {
             newWorkFile = (HDT_WorkFile) HyperPath.createRecordAssignedToPath(hdtWorkFile, newFilePath);
             if (newWorkFile == null)
-            {
-              messageDialog("Internal error #67830", mtError);
-              return false;
-            }
+              return falseWithErrorMessage("Internal error #67830");
             
             curWork.addWorkFile(newWorkFile.getID(), true, true);
           }
@@ -1271,22 +1237,18 @@ public class WorkDialogController extends HyperDialog
         {
           if (origFilePath.equals(newFilePath) == false)
           {
-            success = origFilePath.moveTo(newFilePath, true);
-            if (success == false) return false;
+            if (origFilePath.moveTo(newFilePath, true) == false) return false;
            
             db.unmapFilePath(origFilePath);
             newWorkFile.getPath().assign(HyperPath.getFolderFromFilePath(newFilePath.getDirOnly(), true), newFilePath.getNameOnly());
           }
-          else
-            success = true;          
+
+          success = true;          
         }
         else
         {
           if (oldWorkFile != null)
-          {
-            messageDialog("Unable to move the file. Reason: Cannot change assignment from one file to another that is already assigned to a different file record.", mtError);
-            return false;
-          }
+            return falseWithErrorMessage("Unable to move the file. Reason: Cannot change assignment from one file to another that is already assigned to a different file record.");
           
           success = newWorkFile.getPath().moveToFolder(HyperPath.getFolderFromFilePath(newFilePath.getDirOnly(), true).getID(), true, true, newFilePath.getNameOnly().toString());
           if (success) curWork.addWorkFile(newWorkFile.getID(), true, true);
@@ -1295,15 +1257,11 @@ public class WorkDialogController extends HyperDialog
     }
     catch (IOException e)
     {
-      messageDialog("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + "/rename the file. Reason: " + e.getMessage(), mtError);
-      return false;      
+      return falseWithErrorMessage("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + "/rename the file. Reason: " + e.getMessage());     
     }
     
     if (success == false)
-    {
-      messageDialog("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + "/rename the file.", mtError);
-      return false;           
-    }
+      return falseWithErrorMessage("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + "/rename the file.");
     
     if (oldWorkFile != null)
       if (newWorkFile.getID() != oldWorkFile.getID())

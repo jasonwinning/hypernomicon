@@ -61,7 +61,7 @@ public class FavOrderDialogController extends HyperDialog
       @Override public void updateItem(MenuItem item, boolean empty) 
       {
         super.updateItem(item, empty);
-        setText((item == null) ? "" : item.getText());
+        setText(item == null ? "" : item.getText());
       }      
     });
     
@@ -75,7 +75,7 @@ public class FavOrderDialogController extends HyperDialog
       @Override public void updateItem(MenuItem item, boolean empty) 
       {
         super.updateItem(item, empty);
-        setText((item == null) ? "" : item.getText());
+        setText(item == null ? "" : item.getText());
       }      
     });
     

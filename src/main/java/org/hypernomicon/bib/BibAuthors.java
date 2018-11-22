@@ -18,6 +18,7 @@
 package org.hypernomicon.bib;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,6 @@ import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.json.JsonArray;
-import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.dialogs.NewPersonDialogController;
 
 import static org.hypernomicon.model.HyperDB.Tag.tagEditor;
@@ -62,13 +62,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
   {
     if (jsonArr == null) return;
     
-    Iterator<JsonObj> it = jsonArr.objIterator();
-           
-    while (it.hasNext())
-    {
-      JsonObj author = it.next();
-      add(new BibAuthor(aType, new PersonName(author.getStrSafe("given"), author.getStrSafe("family"))));
-    }
+    jsonArr.getObjs().forEach(author -> add(new BibAuthor(aType, new PersonName(author.getStrSafe("given"), author.getStrSafe("family")))));
   }
 
 //---------------------------------------------------------------------------
@@ -76,18 +70,13 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
   public String getStr()
   {
-    ArrayList<BibAuthor> authList = new ArrayList<>();
-    iterator().forEachRemaining(bibAuthor -> authList.add(bibAuthor));
+    StringBuilder auths = new StringBuilder();
     
-    authList.sort((a1, a2) -> a1.getName().compareTo(a2.getName()));
-    
-    String auth = "", auths = "";
-               
-    for (int ndx = 0; ndx < authList.size(); ndx++)
+    forEach(bibAuthor ->
     {
-      auth = authList.get(ndx).getName().getLastFirst();
+      String auth = bibAuthor.getName().getLastFirst();
       
-      switch (authList.get(ndx).getType())
+      switch (bibAuthor.getType())
       {
         case author: break;
         case editor: auth = auth + " (ed)"; break;
@@ -95,23 +84,23 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
         default: break;        
       }
       
-      if (auths.length() > 0) auths = auths + "; ";
-      auths = auths + auth;
-    }
+      if (auths.length() > 0) auths.append("; ");
+      auths.append(auth);      
+    });
     
-    return auths;
+    return auths.toString();
   }
-
+  
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public String getStr(AuthorType authorType)
   {
     ArrayList<BibAuthor> authList = new ArrayList<>();
-    iterator().forEachRemaining(bibAuthor -> 
+    forEach(bibAuthor -> 
     {
       if (bibAuthor.getType() == authorType)
-        authList.add(bibAuthor);  
+        authList.add(bibAuthor);
     });
     
     String auth = "";
@@ -245,7 +234,9 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
           personList.set(nameList.indexOf(name), person);
       }
     }
-
+   
+    removeDupPersonRecordsFromLists(nameList, personList);
+    
     ArrayList<PersonName> nonRecordNames = new ArrayList<>();
     ArrayList<Integer> nameListIndices = new ArrayList<>();
     
@@ -285,6 +276,34 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
         }
       }
     }
+    
+    removeDupPersonRecordsFromLists(nameList, personList);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+  
+  private void removeDupPersonRecordsFromLists(List<PersonName> nameList, List<HDT_Person> personList)
+  {
+    HashSet<Integer> indicesToRemove = new HashSet<>();
+    
+    for (int ndx = 0; ndx < nameList.size(); ndx++)
+    {
+      if (indicesToRemove.contains(ndx)) continue;
+      
+      HDT_Person person1 = personList.get(ndx);      
+      if (person1 == null) continue;
+      
+      for (int ndx2 = ndx + 1; ndx2 < nameList.size(); ndx2++)
+        if (person1 == personList.get(ndx2))
+          indicesToRemove.add(ndx2);
+    }
+    
+    indicesToRemove.forEach(ndx -> 
+    {
+      personList.remove(ndx.intValue());
+      nameList.remove(ndx.intValue());
+    });
   }
  
 //---------------------------------------------------------------------------

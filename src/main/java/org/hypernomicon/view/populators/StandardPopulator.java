@@ -36,12 +36,11 @@ public class StandardPopulator extends Populator
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------    
   
-  public StandardPopulator(HDT_RecordType objType)                                           { init(objType, null, false); }
-  public StandardPopulator(HDT_RecordType objType, boolean nameOnly)                         { init(objType, null, nameOnly); }
-  public StandardPopulator(HDT_RecordType objType, PopulatorFilter filter)                   { init(objType, filter, false); }
-  public StandardPopulator(HDT_RecordType objType, PopulatorFilter filter, boolean nameOnly) { init(objType, filter, nameOnly); }
+  public StandardPopulator(HDT_RecordType objType)                         { this(objType, null, false); }
+  public StandardPopulator(HDT_RecordType objType, boolean nameOnly)       { this(objType, null, nameOnly); }
+  public StandardPopulator(HDT_RecordType objType, PopulatorFilter filter) { this(objType, filter, false); }
 
-  private void init(HDT_RecordType objType, PopulatorFilter filter, boolean nameOnly)
+  public StandardPopulator(HDT_RecordType objType, PopulatorFilter filter, boolean nameOnly)
   {
     this.objType = objType;
     

@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.hypernomicon.model.Exceptions.SearchKeyException;
-import org.hypernomicon.model.items.Connector;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -83,7 +82,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 
 
-  public HyperTable htGlossaries, htDisplayers;
+  private HyperTable htGlossaries, htDisplayers;
   private HDT_Term curTerm;
   private HDT_Concept curConcept;
   private TabPane tpConcepts;
@@ -106,16 +105,6 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
  
   @Override public boolean update()
   {
-    if (db.isLoaded() == false) return false;
-    
-    clear();
-    
-    if (curTerm == null)
-    {
-      enable(false);
-      return false;
-    }
-         
     boolean first = true;
     for (HDT_Concept concept : curTerm.concepts)
     {
@@ -135,7 +124,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     tpConcepts.getTabs().get(0).setContent(null);
     getConceptTab(curConcept).setContent(ctrlr.apDescription);
     
-    if (!ctrlr.update(curConcept)) return false;
+    ctrlr.update(curConcept);
     
     populateGlossaries();
     
@@ -153,11 +142,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     
     htGlossaries.clear();
     
-    int ndx = 0; for (HDT_Glossary glossary : curTerm.getGlossaries())
-    {
-      htGlossaries.setDataItem(1, ndx, glossary.getID(), glossary.name(), hdtGlossary);
-      ndx++;
-    }    
+    htGlossaries.buildRows(curTerm.getGlossaries(), (row, glossary) -> row.setCellValue(1, glossary, glossary.name()));  
     
     updatingGlossaries = false;
   }
@@ -167,16 +152,12 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   private void populateDisplayers()
   {
-    Set<Connector> displayers = curConcept.getMainText().getDisplayers();
-    
-    int rowNdx = 0;
-    for (Connector displayer : displayers)
+    htDisplayers.buildRows(curConcept.getMainText().getDisplayers(), (row, displayer) ->
     {
-      htDisplayers.setDataItem(0, rowNdx, displayer.getSpoke().getID(), "", displayer.getType());
-      htDisplayers.setDataItem(1, rowNdx, displayer.getSpoke().getID(), displayer.getSpoke().getCBText(), displayer.getType());
-      htDisplayers.setDataItem(2, rowNdx, displayer.getSpoke().getID(), displayer.getMainText().getPlainForDisplay(), displayer.getType());
-      rowNdx++;
-    }
+      row.setCellValue(0, displayer.getSpoke(), "");
+      row.setCellValue(1, displayer.getSpoke(), displayer.getSpoke().getCBText());
+      row.setCellValue(2, displayer.getSpoke(), displayer.getMainText().getPlainForDisplay());
+    });
   }
 
 //---------------------------------------------------------------------------  

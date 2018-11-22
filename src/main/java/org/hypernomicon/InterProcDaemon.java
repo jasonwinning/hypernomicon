@@ -29,8 +29,8 @@ public class InterProcDaemon extends Thread
 {
   public static final int PORT = 59346;
 
-  ServerSocket serverSocket = null;
-  Socket clientSocket = null;
+  private ServerSocket serverSocket = null;
+  private Socket clientSocket = null;
 
   public InterProcDaemon()
   {

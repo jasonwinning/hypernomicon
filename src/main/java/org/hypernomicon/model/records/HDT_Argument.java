@@ -25,18 +25,15 @@ import static org.hypernomicon.util.Util.messageDialog;
 import static org.hypernomicon.util.Util.MessageDialogType.mtError;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.model.relations.HyperObjList;
-import org.hypernomicon.view.wrappers.HyperTable;
 
 //---------------------------------------------------------------------------
 
@@ -68,7 +65,7 @@ public class HDT_Argument extends HDT_RecordWithConnector
   @Override public String listName()            { return name(); }
   @Override public HDT_RecordType getType()     { return hdtArgument; }
   
-  public void setWorks(HyperTable ht) { updateObjectsFromHT(rtWorkOfArgument, ht, 2); }
+  public void setWorks(List<HDT_Work> list) { updateObjectsFromList(rtWorkOfArgument, list); }
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -113,32 +110,9 @@ public class HDT_Argument extends HDT_RecordWithConnector
     if (getObjList(rtPositionOfArgument).add(position) == false)
       return;
     
-    if (verdict == null)
-      return;
+    if (verdict == null) return;
     
     db.updateNestedPointer(this, position, tagPositionVerdict, verdict);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void setPositions(HyperTable ht)   
-  { 
-    HashMap<Integer, Tag> colNdxToTag = new HashMap<>();
-    colNdxToTag.put(4, tagPositionVerdict);
-    
-    updateObjectGroupsFromHT(rtPositionOfArgument, ht, 3, colNdxToTag);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void setCounterArgs(HyperTable ht) 
-  { 
-    HashMap<Integer, Tag> colNdxToTag = new HashMap<>();
-    colNdxToTag.put(4, tagArgumentVerdict);
-    
-    updateObjectGroupsFromHT(rtCounterOfArgument, ht, 3, colNdxToTag);
   }
 
 //---------------------------------------------------------------------------
@@ -148,10 +122,7 @@ public class HDT_Argument extends HDT_RecordWithConnector
   {
     HDT_PositionVerdict verdict = this.getPosVerdict(position); 
            
-    if (verdict == null)
-    {
-      return false;
-    }
+    if (verdict == null) return false;
     
     switch (verdict.getID())
     {
@@ -192,7 +163,7 @@ public class HDT_Argument extends HDT_RecordWithConnector
   {
     LinkedHashSet<Author> people = new LinkedHashSet<>();
     
-    works.forEach(work -> work.getAuthors().forEach(author -> people.add(author)));
+    works.forEach(work -> work.getAuthors().forEach(people::add));
     
     return people;
   }

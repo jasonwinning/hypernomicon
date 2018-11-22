@@ -279,10 +279,7 @@ public class OptionsDialogController extends HyperDialog
       refreshExample();
     }
     
-    lblExample.setOnMouseClicked(event ->
-    {
-      refreshExample();
-    });
+    lblExample.setOnMouseClicked(event -> refreshExample());
   }
 
 //---------------------------------------------------------------------------  
@@ -379,7 +376,6 @@ public class OptionsDialogController extends HyperDialog
       
       db.prefs.putInt(prefKey, intVal);
       refreshExample();
-            
     });
   }
 

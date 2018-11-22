@@ -59,6 +59,7 @@ public class FilePath implements Comparable<FilePath>
 
   public File toFile()                  { return innerVal.getFile(); }  
   public Path toPath()                  { return innerVal.getPath(); }
+  public URI toURI()                    { return nullSwitch(innerVal.getFile(), null, File::toURI); }
   public boolean exists()               { return innerVal.getFile().exists(); }
   public long size() throws IOException { return Files.size(innerVal.getPath()); }
   public boolean isFile()               { return innerVal.getFile().isFile();  }
@@ -71,6 +72,8 @@ public class FilePath implements Comparable<FilePath>
   public boolean moveTo(FilePath destFilePath, boolean confirmOverwrite) throws IOException { return moveOrCopy(destFilePath, confirmOverwrite, true); }
   
   public boolean renameTo(String newNameStr) throws IOException { return moveOrCopy(getDirOnly().resolve(new FilePath(newNameStr)), false, true); }
+
+  public static boolean isEmpty(FilePath filePath) { return nullSwitch(filePath, true, () -> safeStr(filePath.toString()).length() == 0); }
   
   @Override public int hashCode()            { return innerVal.hashCode(); }
   @Override public String toString()         { return innerVal.getPathStr(); }
@@ -95,15 +98,6 @@ public class FilePath implements Comparable<FilePath>
     catch (IllegalArgumentException e) { return null; }
   }
   
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static boolean isEmpty(FilePath filePath)
-  {
-    if (filePath == null) return true;    
-    return safeStr(filePath.toString()).length() == 0;
-  }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -183,10 +177,7 @@ public class FilePath implements Comparable<FilePath>
   private boolean moveOrCopy(FilePath destFilePath, boolean confirmOverwrite, boolean move) throws IOException
   {
     if (equals(destFilePath))
-    {
-      messageDialog("Source file is the same as the destination file.", mtError);
-      return false;
-    }
+      return falseWithErrorMessage("Source file is the same as the destination file.");
     
     boolean startWatcher = folderTreeWatcher.stop();
     
@@ -198,10 +189,7 @@ public class FilePath implements Comparable<FilePath>
           return false;
         
         if (destFilePath.toFile().delete() == false)
-        {
-          messageDialog("Unable to delete the file.", mtError);
-          return false;
-        }
+          return falseWithErrorMessage("Unable to delete the file.");
       }
   
       if (move)
@@ -475,15 +463,6 @@ public class FilePath implements Comparable<FilePath>
     return isSubpath(parent);
   }
  
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public URI toURI()
-  {
-    File file = innerVal.getFile();
-    return file == null ? null : file.toURI();
-  }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

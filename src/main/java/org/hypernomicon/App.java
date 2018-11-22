@@ -128,7 +128,7 @@ public class App extends Application
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
-  
+   
   public static void main(String[] args) 
   {                    
     Logger.getLogger("org.apache").setLevel(Level.WARN);    
@@ -150,38 +150,21 @@ public class App extends Application
          PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
          BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())))
     {
-      List<String> args = getParameters().getUnnamed();
-      
-      assert(Boolean.TRUE);
-      
-      out.println(String.valueOf(args.size()));
-      
-      for (String arg : args)
-        out.println(arg);
-      
-      String line = null;
-      
-      while (isNull(line))
-        line = in.readLine();
-      
+      List<String> args = getParameters().getUnnamed();      
+      out.println(String.valueOf(args.size()));      
+      for (String arg : args) out.println(arg);      
+      String line = null;      
+      while (isNull(line)) line = in.readLine();      
       Platform.exit();
       return;
     } 
-    catch (ConnectException e)
-    {      
-      new InterProcDaemon().start();
-    } 
-    catch (IOException e)
-    {
-      Platform.exit();
-      return;
-    }    
+    catch (ConnectException e) { new InterProcDaemon().start(); } 
+    catch (IOException e)      { Platform.exit(); return; }    
     
     BrowserPreferences.setChromiumSwitches("--disable-web-security", "--user-data-dir", "--allow-file-access-from-files", "--enable-local-file-accesses");
     
     // On Mac OS X Chromium engine must be initialized in non-UI thread.
-    if (Environment.isMac()) 
-      initJXBrowser();
+    if (Environment.isMac()) initJXBrowser();
     
     appPrefs = Preferences.userNodeForPackage(App.class);
     
@@ -264,30 +247,16 @@ public class App extends Application
  
   private void testUpdatingAllRecords()
   {   
-    total = db.persons.size() +
-            db.institutions.size() +
-            db.investigations.size() +
-            db.debates.size() +
-            db.positions.size() +
-            db.arguments.size() +
-            db.works.size() +
-            db.terms.size() +
-            db.miscFiles.size() +
-            db.notes.size();
+    total = db.persons.size()   + db.institutions.size() + db.investigations.size() + db.debates.size() + 
+            db.positions.size() + db.arguments.size()    + db.works.size()          + db.terms.size() + 
+            db.miscFiles.size() + db.notes.size();
 
     ctr = 0;
     lastPercent = 0;
     
-    testUpdatingRecords(hdtPerson);
-    testUpdatingRecords(hdtInstitution);
-    testUpdatingRecords(hdtInvestigation);
-    testUpdatingRecords(hdtDebate);
-    testUpdatingRecords(hdtPosition);
-    testUpdatingRecords(hdtArgument);
-    testUpdatingRecords(hdtWork);
-    testUpdatingRecords(hdtTerm);
-    testUpdatingRecords(hdtMiscFile);
-    testUpdatingRecords(hdtNote);
+    testUpdatingRecords(hdtPerson);   testUpdatingRecords(hdtInstitution); testUpdatingRecords(hdtInvestigation); testUpdatingRecords(hdtDebate);    
+    testUpdatingRecords(hdtPosition); testUpdatingRecords(hdtArgument);    testUpdatingRecords(hdtWork);          testUpdatingRecords(hdtTerm);
+    testUpdatingRecords(hdtMiscFile); testUpdatingRecords(hdtNote);
   }
 
 //---------------------------------------------------------------------------
@@ -354,10 +323,10 @@ public class App extends Application
         }
       });
       
-      final KeyCombination keyComb1 = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
+      final KeyCombination keyComb = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
       scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> 
       {
-        if (keyComb1.match(event)) 
+        if (keyComb.match(event)) 
           ui.omniFocus();
       });
       
@@ -408,14 +377,9 @@ public class App extends Application
           if (board.hasFiles()) 
           {
             success = true;
-
             List<String> args = new ArrayList<>();
             
-            board.getFiles().forEach(file -> 
-            {
-              String pathStr = file.getAbsolutePath();
-              args.add(pathStr);              
-            });
+            board.getFiles().forEach(file -> args.add(file.getAbsolutePath()));
             
             Platform.runLater(() -> ui.handleArgs(args));
           }

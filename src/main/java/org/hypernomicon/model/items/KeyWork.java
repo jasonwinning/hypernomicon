@@ -21,8 +21,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
-import org.apache.commons.lang3.mutable.MutableInt;
-
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_MiscFile;
@@ -30,6 +28,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
+import org.hypernomicon.util.SplitString;
 import org.hypernomicon.view.tabs.WorkTabController;
 
 public class KeyWork implements Comparable<KeyWork>
@@ -109,9 +108,9 @@ public class KeyWork implements Comparable<KeyWork>
     {
       final int prime = 31;
       int result = 1;
-      result = prime * result + ((record == null) ? 0 : record.hashCode());
+      result = prime * result + (record == null ? 0 : record.hashCode());
       result = prime * result + id;
-      result = prime * result + ((type == null) ? 0 : type.hashCode());
+      result = prime * result + (type == null ? 0 : type.hashCode());
       return result;
     }
 
@@ -191,7 +190,7 @@ public class KeyWork implements Comparable<KeyWork>
       {
         if (work.largerWork.isNotNull())
         {
-          String lwSearchKey = nextSubString(work.largerWork.get().getSearchKey(), ";", new MutableInt(0));
+          String lwSearchKey = new SplitString(work.largerWork.get().getSearchKey(), ';').next();
           
           if (lwSearchKey.length() == 0)
             lwSearchKey = WorkTabController.makeWorkSearchKey(work.largerWork.get().getAuthors(), work.largerWork.get().getYear(), work);
@@ -199,14 +198,14 @@ public class KeyWork implements Comparable<KeyWork>
           if (lwSearchKey.length() == 0)
             lwSearchKey = (work.largerWork.get().getYear() + " " + work.largerWork.get().name()).trim();
             
-          searchKey = nextSubString(work.name(), ":", new MutableInt(0)) + " in " + 
-                      nextSubString(lwSearchKey, ":", new MutableInt(0));
+          searchKey = new SplitString(work.name(), ':').next() + " in " + 
+                      new SplitString(lwSearchKey, ':').next();
         }
         else
           searchKey = (work.getYear() + " " + work.name()).trim();
       }
         
-      searchKey = nextSubString(searchKey, ":", new MutableInt(0));
+      searchKey = new SplitString(searchKey, ':').next();
     }
     else
       searchKey = HDT_MiscFile.class.cast(record.getRecord()).name();

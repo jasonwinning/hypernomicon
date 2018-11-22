@@ -205,7 +205,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   { 
     if (orphans.isEmpty()) return Collections.unmodifiableSet(orphans);
     
-    return Collections.unmodifiableSet(new HashSet<>(orphans));
+    return Collections.unmodifiableSet(new HashSet<>(orphans)); // Need to make a new copy of the set to prevent concurrent modification exception
   }
 
 //---------------------------------------------------------------------------
@@ -229,8 +229,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 
   public final static RelationType getRelation(HDT_RecordType subjType, HDT_RecordType objType)
   {
-    RelationType relType = typeMappings.get(subjType, objType);    
-    return relType == null ? RelationType.rtNone : relType; 
+    return nullSwitch(typeMappings.get(subjType, objType), RelationType.rtNone);    
   }
   
 //---------------------------------------------------------------------------
@@ -239,7 +238,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   public final static EnumSet<RelationType> getRelationsForObjType(HDT_RecordType objType)
   {
     Collection<RelationType> relTypes = typeMappings.getColumn(objType);    
-    return ((relTypes == null) || (relTypes.isEmpty())) ? EnumSet.noneOf(RelationType.class) : EnumSet.copyOf(relTypes); 
+    return ((relTypes == null) || relTypes.isEmpty()) ? EnumSet.noneOf(RelationType.class) : EnumSet.copyOf(relTypes); 
   }
 
 //---------------------------------------------------------------------------
@@ -248,7 +247,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   public final static EnumSet<RelationType> getRelationsForSubjType(HDT_RecordType subjType)
   {
     Collection<RelationType> relTypes = typeMappings.getRow(subjType);    
-    return ((relTypes == null) || (relTypes.isEmpty())) ? EnumSet.noneOf(RelationType.class) : EnumSet.copyOf(relTypes);  
+    return ((relTypes == null) || relTypes.isEmpty()) ? EnumSet.noneOf(RelationType.class) : EnumSet.copyOf(relTypes);  
   }
   
 //---------------------------------------------------------------------------
@@ -348,8 +347,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 
     HDI_OnlineString item = getNestedItem(subj, obj, tag, isEmpty);
     
-    if (item == null) return false;   
-    if (item.get().equals(str)) return false;
+    if ((item == null) || item.get().equals(str)) return false;
     
     item.set(str);
     return true;
@@ -369,8 +367,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
     
     HDI_OnlineBoolean item = getNestedItem(subj, obj, tag, isEmpty);
     
-    if (item == null) return false;
-    if (item.get() == bool) return false;
+    if ((item == null) || (item.get() == bool)) return false;
     
     item.set(bool);
     return true;
@@ -390,8 +387,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
     
     HDI_OnlineTernary item = getNestedItem(subj, obj, tag, isEmpty);
     
-    if (item == null) return false;
-    if (item.get() == ternary) return false;
+    if ((item == null) || (item.get() == ternary)) return false;
     
     item.set(ternary);
     return true;
@@ -411,8 +407,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
     
     HDI_OnlineNestedPointer item = getNestedItem(subj, obj, tag, isEmpty);
     
-    if (item == null) return false;    
-    if (item.get() == target) return false;
+    if ((item == null) || (item.get() == target)) return false;
     
     item.set(target);
     return true;
@@ -497,8 +492,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   {
     if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49226"); return ""; }
     
-    HDI_OnlineString item = getNestedItem(subj, obj, tag, true);    
-    return item == null ? "" : item.get();
+    return nullSwitch(getNestedItem(subj, obj, tag, true), "", HDI_OnlineString::get);
   }
 
 //---------------------------------------------------------------------------
@@ -508,8 +502,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   {
     if (hasNestedItems == false) return falseWithErrorMessage("Internal error #49227");
 
-    HDI_OnlineBoolean item = getNestedItem(subj, obj, tag, true);
-    return item == null ? false : item.get();
+    return nullSwitch(getNestedItem(subj, obj, tag, true), false, HDI_OnlineBoolean::get);
   }
   
 //---------------------------------------------------------------------------
@@ -519,8 +512,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   {
     if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49227"); return Ternary.Unset; }
 
-    HDI_OnlineTernary item = getNestedItem(subj, obj, tag, true);
-    return item == null ? Ternary.Unset : item.get();
+    return nullSwitch(getNestedItem(subj, obj, tag, true), Ternary.Unset, HDI_OnlineTernary::get);
   }
 
 //---------------------------------------------------------------------------
@@ -530,8 +522,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   {
     if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49228"); return null; }
 
-    HDI_OnlineNestedPointer item = getNestedItem(subj, obj, tag, true);
-    return item == null ? null : item.get();
+    return nullSwitch(getNestedItem(subj, obj, tag, true), null, HDI_OnlineNestedPointer::get);
   }
   
 //---------------------------------------------------------------------------
@@ -647,13 +638,12 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   @SuppressWarnings("unchecked")
   private final void cycleCheck(HDT_Subj subj, HDT_Subj obj, HDT_Obj origObj) throws RelationCycleException
   {
-    for (int ndx = 0; ndx < getObjectCount(obj); ndx++)
+    for (HDT_Obj nextObj : subjToObjList.get(obj))
     { 
-      HDT_Subj nextObj = (HDT_Subj) subjToObjList.get(obj).get(ndx);
       if (nextObj == subj)
         throw new RelationCycleException(subj.getID(), subj.getType(), origObj.getID(), obj.getType());
       
-      cycleCheck(subj, nextObj, origObj);
+      cycleCheck(subj, (HDT_Subj) nextObj, origObj);
     }
   }
 
@@ -854,8 +844,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   final void reorderObjects (HDT_Subj subj, ArrayList<HDT_Obj>  newObjList)  { reorderList(subj, newObjList,  subjToObjList); }
   final void reorderSubjects(HDT_Obj   obj, ArrayList<HDT_Subj> newSubjList) { reorderList(obj,  newSubjList, objToSubjList); }
   
-  private final <HDT_Key extends HDT_Base, HDT_Value extends HDT_Base> void reorderList(HDT_Key key, ArrayList<HDT_Value> newValueList, 
-                                                                                        ArrayListMultimap<HDT_Key, HDT_Value> map)
+  private final <HDT_Key extends HDT_Base, HDT_Value extends HDT_Base> void reorderList(HDT_Key key, ArrayList<HDT_Value> newValueList, ArrayListMultimap<HDT_Key, HDT_Value> map)
   {
     if (key == null) throw new NullPointerException();
     

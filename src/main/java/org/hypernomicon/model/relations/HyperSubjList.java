@@ -151,19 +151,16 @@ public class HyperSubjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HD
 
   @Override public boolean equals(Object o)
   {
-    if (o instanceof List)
-    {
-      List<?> list = List.class.cast(o);
-      
-      if (list.size() != size()) return false;
-      
-      for (int ndx = 0; ndx < list.size(); ndx++)
-        if (list.get(ndx) != get(ndx)) return false;
-     
-      return true;
-    }
-    else
-      return false;
+    if ((o instanceof List) == false) return false;
+
+    List<?> list = List.class.cast(o);
+    
+    if (list.size() != size()) return false;
+    
+    for (int ndx = 0; ndx < list.size(); ndx++)
+      if (list.get(ndx) != get(ndx)) return false;
+   
+    return true;
   }
   
 //---------------------------------------------------------------------------

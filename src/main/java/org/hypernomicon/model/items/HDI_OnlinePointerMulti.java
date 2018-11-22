@@ -73,12 +73,12 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
     
     HDT_RecordType objType = db.getObjType(relType);
     
-    for (int ndx = 0; ndx < val.objIDs.size(); ndx++)
+    val.objIDs.forEach(objID ->
     {
-      HDT_Base obj = db.records(objType).getByID(val.objIDs.get(ndx));
+      HDT_Base obj = db.records(objType).getByID(objID.intValue());
       if (obj != null)
         newList.add(obj);      
-    }
+    });
     
     for (HDT_Base obj : newList)
     {
@@ -131,7 +131,7 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
     {
       oneStr = objRecord.listName();
       if (oneStr.length() > 0)
-        allStr = (allStr.length() == 0) ? oneStr : (allStr + "; " + oneStr);  
+        allStr = allStr.length() == 0 ? oneStr : (allStr + "; " + oneStr);  
     }
     
     return allStr;

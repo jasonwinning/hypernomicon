@@ -18,6 +18,7 @@
 package org.hypernomicon.view.populators;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.HashMap;
@@ -116,13 +117,7 @@ public class HybridSubjectPopulator extends Populator
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
-    if (row == null) row = dummyRow;
-    
-    List<HyperTableCell> choices = populate(row, false);
-    
-    if (choices.contains(cell)) return cell.clone();
-    
-    return null;
+    return populate(nullSwitch(row, dummyRow), false).contains(cell) ?  cell.clone() : null;
   }
 
 //---------------------------------------------------------------------------  

@@ -79,19 +79,14 @@ public class ClickHoldButton
     btnMenu.addEventFilter(ComboBoxBase.ON_SHOWN, event ->  ////////////// 
     {                                                       // 
       if (adjusting) return;                                // 
-                                                            //
-      adjusting = true;                                     // 
+                                                            // This is a workaround for the          
+      adjusting = true;                                     // fact that sometimes, when you show the   
+                                                            // popup list for a control, the popup list    
+      btnMenu.hide();                                       // appears in the wrong place 
+      btnMenu.show();                                       //    
                                                             //    
-      btnMenu.hide();                                       // This is a workaround for the          
-      btnMenu.show();                                       // fact that sometimes, when you show the     
-                                                            // popup list for a control, the popup list   
-      adjusting = false;                                    // appears in the wrong place
-    });                                                     // 
-                                                            // 
-    btnMenu.addEventFilter(ComboBoxBase.ON_HIDDEN, event -> //
-    {                                                       //
-      if (adjusting) return;                                //
-    });                                                     //////////////    
+      adjusting = false;                                    // 
+    });                                                     //////////////  
    
     btn.setOnAction(event ->
     {

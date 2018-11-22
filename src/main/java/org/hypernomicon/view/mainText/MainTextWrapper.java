@@ -60,6 +60,7 @@ import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 
 import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Worker;
+import javafx.event.Event;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.ScrollEvent;
@@ -167,7 +168,7 @@ public class MainTextWrapper
     
     we = view.getEngine();
     
-    view.setOnDragDropped(event -> event.consume());
+    view.setOnDragDropped(Event::consume);
     
     we.titleProperty().addListener((title, oldTitle, newTitle) -> handleJSEvent(curWrapper.completeHtml, we, curWrapper.viewInfo));
     
@@ -535,8 +536,7 @@ public class MainTextWrapper
           noDisplayRecords = false;
     }
     
-    int keyWorksSize = 0;
-    if (keyWorks != null) keyWorksSize = getNestedKeyWorkCount(curRecord, keyWorks);
+    int keyWorksSize = nullSwitch(keyWorks, 0, () -> getNestedKeyWorkCount(curRecord, keyWorks));
     
     if ((Jsoup.parse(html).text().trim().length() == 0) &&
         (keyWorksSize == 0) &&
@@ -620,7 +620,7 @@ public class MainTextWrapper
       linkNdx = 0;        // index of the current keyword link
       curNodeTextNdx = 0; // character position, in the original text of the current element, where the current TextNode starts 
       
-      link = (linkNdx >= list.getLinks().size()) ? null : list.getLinks().get(linkNdx);
+      link = linkNdx >= list.getLinks().size() ? null : list.getLinks().get(linkNdx);
       
       for (oldNdx = 0; oldNdx < oldStr.length();)
       { 
@@ -667,7 +667,7 @@ public class MainTextWrapper
           if (kind == LinkKind.keyword)
           {
             linkNdx++;
-            link = (linkNdx >= list.getLinks().size()) ? null : list.getLinks().get(linkNdx);
+            link = linkNdx >= list.getLinks().size() ? null : list.getLinks().get(linkNdx);
           }
         }
      
@@ -816,13 +816,10 @@ public class MainTextWrapper
       htmlToUse = htmlToUse.replace("<body", "<body onload='window.scrollTo(0," + viewInfo.scrollPos + ")'");
     
     Document doc = makeDocLinksExternal(Jsoup.parse(htmlToUse.replace("contenteditable=\"true\"", "contenteditable=\"false\"")));
-    String hTML;
     
     addLinks(doc.body(), recordToHilite);
        
-    hTML = doc.html().replace("</head>", headContent);
-       
-    weToUse.loadContent(hTML);
+    weToUse.loadContent(doc.html().replace("</head>", headContent));
   }
 
 //---------------------------------------------------------------------------
@@ -832,7 +829,6 @@ public class MainTextWrapper
   {
     if (editing)
     {
-      
       if (editCtrlr.isEmpty())
         return;
       
@@ -1294,7 +1290,6 @@ public class MainTextWrapper
                 appendSubLabelsKeyWorkBody(curLabel, innerHtml, true, tagNdx, viewInfo, "alp" + makeElementID(curLabel));
               }
            
-
             innerHtml.append("</div></details>");          
           }
           else
@@ -1454,8 +1449,8 @@ public class MainTextWrapper
     List<KeyWork> keyWorks = mainText.getKeyWorks();  
     Document doc = Jsoup.parse(mainText.getHtml());
     
-    if (keyWorks == null)      return doc.body().html();
-    if (keyWorks.size() == 0)  return doc.body().html();
+    if ((keyWorks == null) || (keyWorks.size() == 0))
+      return doc.body().html();
     
     boolean sortByName = db.prefs.getBoolean(PREF_KEY_KEY_WORK_SORT_BY_NAME, true);
     
@@ -1512,10 +1507,7 @@ public class MainTextWrapper
 
   public void save()
   {
-    if (curRecord == null)
-      return;
-    
-    if (edited == false)
+    if ((curRecord == null) || (edited == false))
       return;
     
     if (showing && editing)
@@ -1552,7 +1544,7 @@ public class MainTextWrapper
       
       appPrefs.putInt(prefID, ndx);
       view.setZoom(zoomFactors.get(ndx) / 100.0);
-      ui.lblStatus.setText("Zoom: " + String.valueOf(zoomFactors.get(ndx)));
+      ui.lblStatus.setText("Zoom: " + String.valueOf(zoomFactors.get(ndx)) + "%");
     });
     
     view.setZoom(zoomFactors.get(appPrefs.getInt(prefID, zoomFactors.indexOf(100))) / 100.0);

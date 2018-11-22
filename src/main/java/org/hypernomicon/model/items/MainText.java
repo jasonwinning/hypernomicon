@@ -63,8 +63,8 @@ public class MainText
     {
       final int prime = 31;
       int result = 1;
-      result = prime * result + (((type != diRecord) || (record == null)) ? 0 : record.hashCode());
-      result = prime * result + ((type == null) ? 0 : type.hashCode());
+      result = prime * result + ((type != diRecord) || (record == null) ? 0 : record.hashCode());
+      result = prime * result + (type == null ? 0 : type.hashCode());
       return result;
     }
     
@@ -147,8 +147,7 @@ public class MainText
 
   public String getKeyWorksString()
   {
-    if (keyWorks == null) return "";
-    if (keyWorks.size() == 0) return "";
+    if ((keyWorks == null) || (keyWorks.size() == 0)) return "";
 
     String newPlainText = "";
     
@@ -308,12 +307,14 @@ public class MainText
         
     for (int ndx = 0; ndx < src2.displayItems.size(); ndx++)
     {      
-      if (displayItems.contains(src2.displayItems.get(ndx)) == false)
+      DisplayItem displayItem = src2.displayItems.get(ndx);
+      
+      if (displayItems.contains(displayItem) == false)
       {
         if (ndx == 0)
-          displayItems.add(0, src2.displayItems.get(ndx));
+          displayItems.add(0, displayItem);
         else
-          displayItems.add(src2.displayItems.get(ndx));        
+          displayItems.add(displayItem);        
       }
     }  
     
@@ -385,7 +386,7 @@ public class MainText
 
   void setInternal(String newHtmlText, String newPlainText)
   {
-    plainText = newPlainText == null ? "" : newPlainText;
+    plainText = safeStr(newPlainText);
     
     if (ultraTrim(convertToSingleLine(plainText)).length() == 0)
     {      
@@ -393,7 +394,7 @@ public class MainText
       plainText = "";
     }
     else
-      htmlText = newHtmlText == null ? "" : newHtmlText;    
+      htmlText = safeStr(newHtmlText);    
   }
   
 //---------------------------------------------------------------------------

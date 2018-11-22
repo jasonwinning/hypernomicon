@@ -20,6 +20,8 @@ package org.hypernomicon.util;
 import java.util.Collection;
 import java.util.EnumMap;
 
+import static org.hypernomicon.util.Util.*;
+
 public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V>
 {
   private final EnumMap<R, EnumMap<C, V>> rowToColumnToValue; 
@@ -39,32 +41,9 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public V get(R row, C column)
-  {
-    EnumMap<C, V> columnToValue = rowToColumnToValue.get(row);
-
-    return columnToValue == null ? null : columnToValue.get(column);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public Collection<V> getRow(R row)
-  {
-    EnumMap<C, V> columnToValue = rowToColumnToValue.get(row);
-    
-    return columnToValue == null ? null : columnToValue.values();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public Collection<V> getColumn(C column)
-  {
-    EnumMap<R, V> rowToValue = columnToRowToValue.get(column);
-    
-    return rowToValue == null ? null : rowToValue.values();
-  }
+  public V get(R row, C column)            { return nullSwitch(rowToColumnToValue.get(row), null, columnToValue -> columnToValue.get(column)); }
+  public Collection<V> getRow(R row)       { return nullSwitch(rowToColumnToValue.get(row), null, EnumMap::values); }
+  public Collection<V> getColumn(C column) { return nullSwitch(columnToRowToValue.get(column), null, EnumMap::values); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

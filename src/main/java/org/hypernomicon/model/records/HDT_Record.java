@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -41,7 +40,6 @@ import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.model.relations.HyperSubjPointer;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.*;
-import org.hypernomicon.view.wrappers.HyperTable;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
@@ -79,34 +77,39 @@ public abstract class HDT_Record implements HDT_Base
   private NameItem name;
   private String sortKeyAttr = "";
   
-  @Override public final Instant getModifiedDate()     { return getType().getDisregardDates() ? null : modifiedDate; }
-  @Override public final Instant getViewDate()         { return getType().getDisregardDates() ? null : viewDate; }
-  @Override public final Instant getCreationDate()     { return getType().getDisregardDates() ? null : creationDate; }   
-  @Override public final Tag getNameTag()              { return nameTag; }
-  @Override public String getNameEngChar()             { return name.getEngChar(); }
-  @Override public String getCBText()                  { return listName(); }
-  @Override public String getXMLObjectName()           { return listName(); }
-  @Override public boolean isUnitable()                { return false; }
-  @Override public final boolean isDummy()             { return dummyFlag; }
-  @Override public final boolean hasMainText()         { return this instanceof HDT_RecordWithConnector; }
-  @Override public final boolean hasDesc()             { return this instanceof HDT_RecordWithDescription; }
-  @Override public final int getID()                   { return id; }
-  @Override public final void viewNow()                { if (db.viewTestingInProgress == false) viewDate = Instant.now(); } 
-  @Override public final String getSortKeyAttr()       { return sortKeyAttr; }
-  @Override public String name()                       { return name.get(); }
-  @Override public final String getSortKey()           { return dataset.getKeyByID(id); }
-  @Override public String getSearchKey()               { return db.getSearchKey(this); }
-  @Override public List<SearchKeyword> getSearchKeys() { return db.getKeysByRecord(this); }
-  @Override public String getFirstActiveKeyWord()      { return db.getFirstActiveKeyWord(this); }
-  @Override public final boolean isExpired()           { return expired; }
-  @Override public void setName(String str)            { setNameInternal(str, true); }
-  @Override public final Set<Tag> getAllTags()         { return items.keySet().isEmpty() ? EnumSet.noneOf(Tag.class) : EnumSet.copyOf(items.keySet()); }
-  @Override public final boolean hasStoredState()      { return xmlState.stored; }
-  protected final Tag getMainTextTag()                 { return dataset.getMainTextTag(); }
+  @Override public final Instant getModifiedDate()      { return getType().getDisregardDates() ? null : modifiedDate; }
+  @Override public final Instant getViewDate()          { return getType().getDisregardDates() ? null : viewDate; }
+  @Override public final Instant getCreationDate()      { return getType().getDisregardDates() ? null : creationDate; }   
+  @Override public final Tag getNameTag()               { return nameTag; }
+  @Override public String getNameEngChar()              { return name.getEngChar(); }
+  @Override public String getCBText()                   { return listName(); }
+  @Override public String getXMLObjectName()            { return listName(); }
+  @Override public boolean isUnitable()                 { return false; }
+  @Override public final boolean isDummy()              { return dummyFlag; }
+  @Override public final boolean hasMainText()          { return this instanceof HDT_RecordWithConnector; }
+  @Override public final boolean hasDesc()              { return this instanceof HDT_RecordWithDescription; }
+  @Override public final int getID()                    { return id; }
+  @Override public final void viewNow()                 { if (db.viewTestingInProgress == false) viewDate = Instant.now(); } 
+  @Override public final String getSortKeyAttr()        { return sortKeyAttr; }
+  @Override public String name()                        { return name.get(); }
+  @Override public final String getSortKey()            { return dataset.getKeyByID(id); }
+  @Override public String getSearchKey()                { return db.getSearchKey(this); }
+  @Override public List<SearchKeyword> getSearchKeys()  { return db.getKeysByRecord(this); }
+  @Override public String getFirstActiveKeyWord()       { return db.getFirstActiveKeyWord(this); }
+  @Override public final boolean isExpired()            { return expired; }
+  @Override public void setName(String str)             { setNameInternal(str, true); }
+  @Override public final Set<Tag> getAllTags()          { return items.keySet().isEmpty() ? EnumSet.noneOf(Tag.class) : EnumSet.copyOf(items.keySet()); }
+  @Override public final boolean getTagBoolean(Tag tag) { return HDI_OnlineBoolean.class.cast(items.get(tag)).get(); }
+  @Override public final boolean hasStoredState()       { return xmlState.stored; }
+  @Override public final void updateSortKey()           { if (dataset != null) dataset.updateSortKey(makeSortKey(), id); }
+  @Override public final HDI_Schema getSchema(Tag tag)  { return nullSwitch(items.get(tag), null, HDI_Base::getSchema); }
+  
+  protected final Tag getMainTextTag()                  { return dataset.getMainTextTag(); }
   
   @Override public void setSearchKey(String newKey) throws SearchKeyException                { setSearchKey(newKey, false); }
   @Override public void setSearchKey(String newKey, boolean noMod) throws SearchKeyException { db.setSearchKey(this, newKey, noMod); }  
-
+  @Override public final void writeStoredStateToXML(StringBuilder xml)                       { xmlState.writeToXML(xml); }
+  
   @SuppressWarnings("unchecked") 
   protected final <HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> HyperObjList<HDT_SubjType, HDT_ObjType> getObjList(RelationType relType)       
   { return (HyperObjList<HDT_SubjType, HDT_ObjType>) db.getObjectList(relType, this, true); }
@@ -122,10 +125,7 @@ public abstract class HDT_Record implements HDT_Base
   @SuppressWarnings("unchecked") 
   protected final <HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> HyperSubjPointer<HDT_SubjType, HDT_ObjType> getSubjPointer(RelationType relType) 
   { return (HyperSubjPointer<HDT_SubjType, HDT_ObjType>) db.getSubjPointer(relType, this); }
-  
-  @Override public final boolean getTagBoolean(Tag tag)                { return HDI_OnlineBoolean.class.cast(items.get(tag)).get(); }
-  @Override public final void writeStoredStateToXML(StringBuilder xml) { xmlState.writeToXML(xml); }
-
+    
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -209,7 +209,7 @@ public abstract class HDT_Record implements HDT_Base
     if (dummyFlag == false)
       db.getRecordDeleteHandlers().forEach(handler -> handler.handle(this));      
     
-    items.values().forEach(item -> item.expire());
+    items.values().forEach(HDI_OnlineBase::expire);
     
     id = -1;
     expired = true;
@@ -368,12 +368,10 @@ public abstract class HDT_Record implements HDT_Base
     
     newState.items.entrySet().forEach(entry ->
     {
-      HDI_OfflineBase xmlItem = entry.getValue();
-      Tag tag = entry.getKey();
-      
+      Tag tag = entry.getKey();      
       HDI_OnlineBase liveValue = items.get(tag);
       
-      liveValue.getToOfflineValue(xmlItem, tag);
+      liveValue.getToOfflineValue(entry.getValue(), tag);
     });
     
     return newState;
@@ -456,37 +454,28 @@ public abstract class HDT_Record implements HDT_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected final void updateObjectGroupsFromHT(RelationType relType, HyperTable ht, int primaryColNdx, Map<Integer, Tag> colNdxToTag)
+  public final void updateObjectGroups(RelationType relType, List<ObjectGroup> newGroups, Collection<Tag> tags)
   {
     boolean theSame = true;
     
-    List<ObjectGroup> tableGroups  = ht.getObjectGroupList(this, relType, primaryColNdx, colNdxToTag),
-                      recordGroups = db.getObjectGroupList(relType, this, colNdxToTag.values());
+    List<ObjectGroup> oldGroups = db.getObjectGroupList(relType, this, tags);
        
-    if (tableGroups.size() != recordGroups.size())
+    if (newGroups.size() != oldGroups.size())
       theSame = false;
     else
     {     
-      for (int ndx = 0; ndx < tableGroups.size(); ndx++)
+      for (int ndx = 0; ndx < newGroups.size(); ndx++)
       {
-        if (tableGroups.get(ndx).equals(recordGroups.get(ndx)) == false)
+        if (newGroups.get(ndx).equals(oldGroups.get(ndx)) == false)
           theSame = false;
       }
     }
     
     if (theSame) return;
     
-    db.updateObjectGroups(relType, this, tableGroups);
+    db.updateObjectGroups(relType, this, newGroups);
   }
-  
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  protected final void updateObjectsFromHT(RelationType relType, HyperTable ht, int colNdx)
-  {
-    updateObjectsFromList(relType, ht.saveToList(colNdx, db.getObjType(relType)));
-  }
-  
+   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -594,15 +583,7 @@ public abstract class HDT_Record implements HDT_Base
     
     return convertToEnglishChars(base).toLowerCase().replace("\"", "").replace("'", "").replace("(", "").replace(")", "").trim();
   }
-    
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-  
-  @Override public final void updateSortKey()
-  {  
-    if (dataset != null) dataset.updateSortKey(makeSortKey(), id);
-  }
-   
+      
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -629,28 +610,15 @@ public abstract class HDT_Record implements HDT_Base
     if ((tag == nameTag) || (tag == tagName))
       return listName();
       
-    HDI_OnlineBase<? extends HDI_OfflineBase> item = items.get(tag);
-    
-    return item == null ? "" : item.getResultTextForTag(tag);
+    return nullSwitch(items.get(tag), "", item -> item.getResultTextForTag(tag));
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public final HDI_Schema getSchema(Tag tag) 
-  { 
-    HDI_OnlineBase<? extends HDI_OfflineBase> value = items.get(tag);
-    
-    return value == null ? null : value.getSchema();
-  }
-  
+ 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static boolean isEmptyThrowsException(HDT_Base record) throws HDB_InternalError
   {
-    if (record == null) return true;
-    if (record.isExpired()) return true;
+    if ((record == null) || (record.isExpired())) return true;
     
     if (record.getID() < 1)
       throw new HDB_InternalError(28883);

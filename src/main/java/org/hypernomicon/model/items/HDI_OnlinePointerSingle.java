@@ -93,14 +93,7 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
   {
     if (!searchLinkedRecords) return;
     
-    HyperObjList<HDT_Base, HDT_Base> objList = db.getObjectList(relType, record, false);
-    
-    for (HDT_Base objRecord : objList)
-    {
-      list.add(objRecord.listName());
-      
-      
-    }
+    db.getObjectList(relType, record, false).forEach(objRecord -> list.add(objRecord.listName()));
   }
 
 //---------------------------------------------------------------------------
@@ -116,7 +109,7 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
     {
       oneStr = objRecord.listName();
       if (oneStr.length() > 0)
-        allStr = (allStr.length() == 0) ? oneStr : (allStr + "; " + oneStr);  
+        allStr = allStr.length() == 0 ? oneStr : (allStr + "; " + oneStr);  
     }
     
     return allStr;
@@ -129,20 +122,20 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
   {
     HyperObjList<HDT_Base, HDT_Base> objList = db.getObjectList(relType, record, false);
     
-    if (objList.size() > 0)
+    if (objList.isEmpty())
     {
-      val.objID = objList.get(0).getID();
-      
-      if (db.relationHasNestedValues(relType))
-      {
-        if (val.tagToNestedItem == null)
-          val.tagToNestedItem = new LinkedHashMap<>();
-
-        db.saveNestedValuesToOfflineMap(record, objList.get(0), val.tagToNestedItem, val.recordState);
-      }
-    }
-    else
       val.objID = -1;
+      return;
+    }
+    
+    val.objID = objList.get(0).getID();
+    
+    if (db.relationHasNestedValues(relType) == false) return;
+
+    if (val.tagToNestedItem == null)
+      val.tagToNestedItem = new LinkedHashMap<>();
+
+    db.saveNestedValuesToOfflineMap(record, objList.get(0), val.tagToNestedItem, val.recordState);
   }
 
 //---------------------------------------------------------------------------

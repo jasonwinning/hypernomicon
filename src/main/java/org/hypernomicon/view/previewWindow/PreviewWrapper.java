@@ -147,15 +147,14 @@ public class PreviewWrapper
   { 
     pageNumShowing = newPageNumShowing;
     
-    if (pageNum != pageNumShowing)
-    {
-      pageNum = pageNumShowing;
-      
-      incrementNav();
-      
-      if (window.curSource() == src)
-        Platform.runLater(this::refreshControls);
-    }
+    if (pageNum == pageNumShowing) return;
+
+    pageNum = pageNumShowing;
+    
+    incrementNav();
+    
+    if (window.curSource() == src)
+      Platform.runLater(this::refreshControls);
   }
 
 //---------------------------------------------------------------------------  
@@ -180,8 +179,8 @@ public class PreviewWrapper
       return;
     
     jsWrapper = new PDFJSWrapper(ap, 
-        (cmd, success, errMessage) ->              doneHndlr(cmd, success, errMessage),
-        (newPageNumShowing) ->                     pageChangeHndlr(newPageNumShowing),
+        (cmd, success, errMessage)              -> doneHndlr(cmd, success, errMessage),
+        (newPageNumShowing)                     -> pageChangeHndlr(newPageNumShowing),
         (labelToPage, pageToLabel, hilitePages) -> retrievedDataHndlr(labelToPage, pageToLabel, hilitePages));
     
     if (App.jxBrowserDisabled)
@@ -221,7 +220,7 @@ public class PreviewWrapper
     if (curPrevFile == null) return false;
     
     if (isForward)
-      return ((curPrevFile.navNdx + 1) < curPrevFile.navList.size());
+      return (curPrevFile.navNdx + 1) < curPrevFile.navList.size();
 
     return curPrevFile.navNdx >= 1;
   }
@@ -232,7 +231,7 @@ public class PreviewWrapper
   public boolean enableFileNavButton(boolean isForward)
   {
     if (isForward)
-      return ((fileNdx + 1) < fileList.size());
+      return (fileNdx + 1) < fileList.size();
     
     return fileNdx >= 1;
   }
@@ -317,9 +316,7 @@ public class PreviewWrapper
     
     PreviewFile prevFile = fileList.get(fileNdx);
     
-    int pageNum = 1;
-    if (prevFile.navNdx > -1)
-      pageNum = prevFile.navList.get(prevFile.navNdx);
+    int pageNum =  prevFile.navNdx < 0 ? 1 : prevFile.navList.get(prevFile.navNdx);
     
     setPreview(prevFile.filePath, pageNum, prevFile.record, false, prevFile);
   }
@@ -426,13 +423,7 @@ public class PreviewWrapper
   {   
     FilePath filePath = getFilePath();
     
-    if ((pageNum <= 0) || FilePath.isEmpty(filePath) || viewerErrOccurred)
-    {
-      clearPreview();
-      return;
-    }
-    
-    if (filePath.exists() == false)
+    if ((pageNum <= 0) || FilePath.isEmpty(filePath) || viewerErrOccurred || (filePath.exists() == false))
     {
       clearPreview();
       return;
@@ -446,13 +437,7 @@ public class PreviewWrapper
 
   private void finishRefresh(boolean forceReload, boolean incrementNav)
   {
-    if ((pageNum <= 0) || getFilePath() == null || (initialized == false))
-    {
-      clearPreview();
-      return;
-    }
-    
-    if (curPrevFile.filePath.equals(filePathShowing) && viewerErrOccurred)
+    if ((pageNum <= 0) || (getFilePath() == null) || (initialized == false) || (curPrevFile.filePath.equals(filePathShowing) && viewerErrOccurred))
     {
       clearPreview();
       return;
@@ -589,11 +574,10 @@ public class PreviewWrapper
 
   public int getPageByLabel(String label)   
   { 
-    if (labelToPage != null)
-      if (labelToPage.isEmpty() == false)
-        return labelToPage.getOrDefault(label, -1);
-    
-    return parseInt(label, -1);
+    if ((labelToPage == null) || labelToPage.isEmpty())
+      return parseInt(label, -1);
+        
+    return labelToPage.getOrDefault(label, -1);
   }
 
   //---------------------------------------------------------------------------  
@@ -601,11 +585,10 @@ public class PreviewWrapper
 
   public String getLabelByPage(int page)    
   { 
-    if (pageToLabel != null)
-      if (pageToLabel.isEmpty() == false)
-        return pageToLabel.getOrDefault(page, "");
+    if ((pageToLabel == null) || pageToLabel.isEmpty())
+      return String.valueOf(page);
     
-    return String.valueOf(page);
+    return pageToLabel.getOrDefault(page, "");
   }
   
   //---------------------------------------------------------------------------  
@@ -638,13 +621,7 @@ public class PreviewWrapper
 
   public boolean setCurPageAsWorkPage(boolean isStart)
   {
-    if (curPrevFile == null)
-      return false;
-    
-    if (curPrevFile.record == null)
-      return false;
-    
-    if (curPrevFile.record.getType() != hdtWork)
+    if ((curPrevFile == null) || (curPrevFile.record == null) || (curPrevFile.record.getType() != hdtWork))
       return false;
     
     if (isStart)
@@ -674,11 +651,9 @@ public class PreviewWrapper
 
   public int lowestHilitePage()
   {
-    if (hilitePages != null)
-      if (hilitePages.isEmpty() == false)
-        return hilitePages.get(0);
+    if ((hilitePages == null) || hilitePages.isEmpty()) return -1;
     
-    return -1;
+    return hilitePages.get(0);
   }
   
 //---------------------------------------------------------------------------  
@@ -686,11 +661,9 @@ public class PreviewWrapper
 
   public int highestHilitePage()
   {
-    if (hilitePages != null)
-      if (hilitePages.isEmpty() == false)
-        return hilitePages.get(hilitePages.size() - 1);
+    if ((hilitePages == null) || hilitePages.isEmpty()) return -1;
     
-    return -1;
+    return hilitePages.get(hilitePages.size() - 1);
   }
   
 //---------------------------------------------------------------------------  
@@ -698,8 +671,7 @@ public class PreviewWrapper
 
   public int getPrevHilite(int curPage)
   {
-    if (hilitePages == null) return -1;
-    if (hilitePages.isEmpty()) return -1;
+    if ((hilitePages == null) || hilitePages.isEmpty()) return -1;
     
     int newPage = -1;
     
@@ -716,8 +688,7 @@ public class PreviewWrapper
 
   public int getNextHilite(int curPage)
   {
-    if (hilitePages == null) return -1;
-    if (hilitePages.isEmpty()) return -1;
+    if ((hilitePages == null) || hilitePages.isEmpty()) return -1;
     
     int newPage = numPages + 1;
     
@@ -726,8 +697,7 @@ public class PreviewWrapper
         if (page < newPage)
           newPage = page;
       
-    if (newPage > numPages) return -1;
-    return newPage;
+    return newPage > numPages ? -1 : newPage;
   }
   
 //---------------------------------------------------------------------------  

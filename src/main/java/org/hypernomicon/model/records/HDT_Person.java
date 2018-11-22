@@ -27,14 +27,12 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PersonStatus;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Rank;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperObjPointer;
-import org.hypernomicon.view.wrappers.HyperTable;
+import org.hypernomicon.util.SplitString;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javafx.geometry.Rectangle2D;
-
-import org.apache.commons.lang3.mutable.MutableInt;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
@@ -96,12 +94,12 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
   @Override public HDT_RecordType getType()     { return hdtPerson; }
   @Override public String listName()            { return getNameLastFirst(false); }
   
-  void setFirstNameInternal(String newStr, boolean update) { setNameInternal(getLastName() + "|" + newStr.replace("|", ""), update); };
-  void setLastNameInternal(String newStr, boolean update)  { setNameInternal(newStr.replace("|", "") + "|" + getFirstName(), update); };
+  void setFirstNameInternal(String newStr, boolean update) { setNameInternal(getLastName() + "|" + newStr.replace("|", ""), update); }
+  void setLastNameInternal(String newStr, boolean update)  { setNameInternal(newStr.replace("|", "") + "|" + getFirstName(), update); }
   
-  public void setWebLink(String newStr)      { updateTagString(tagWebLink, newStr); };
-  public void setORCID(String newOrcid)      { updateTagString(tagORCID, newOrcid); };
-  public void setInstitutions(HyperTable ht) { updateObjectsFromHT(rtInstOfPerson, ht, 2); };
+  public void setWebLink(String newStr)                   { updateTagString(tagWebLink, newStr); }
+  public void setORCID(String newOrcid)                   { updateTagString(tagORCID, newOrcid); }
+  public void setInstitutions(List<HDT_Institution> list) { updateObjectsFromList(rtInstOfPerson, list); }
   
 //---------------------------------------------------------------------------
   
@@ -198,12 +196,9 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
       }               
     }
     
-    String[] vals = keys.toString().split(";");
-    for (String val : vals)
-    {
+    for (String val : new SplitString(keys.toString(), ';'))
       if (val.trim().equalsIgnoreCase(key))
         return null;
-    }
     
     if (keys.length() > 0) keys.append("; ");
     keys.append(key);
@@ -316,7 +311,6 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
   
   public static String getSearchKeyComponents(String first, String last, ArrayList<String> nameList, ArrayList<String> initialList, StringBuilder nickNames)
   {
-    MutableInt pos = new MutableInt(0);
     String name;
     
     first = first.replace(".", ". ");
@@ -341,9 +335,11 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
       first = first.trim();
     }
     
-    while (pos.intValue() != -1)
+    SplitString splitStr = new SplitString(first, ' ');
+    
+    while (splitStr.hasNext())
     {
-      name = nextSubString(first, " ", pos);
+      name = splitStr.next();
       if (name.length() == 0) continue;
       
       if (name.endsWith("."))
@@ -355,7 +351,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
         }
         else
         {
-          name = name + " " + nextSubString(first, " ", pos);
+          name = name + " " + splitStr.next();
           initialList.add(name.substring(0, 1));
           nameList.add(name);
         }

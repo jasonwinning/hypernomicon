@@ -139,7 +139,7 @@ public class HyperFavorites
           node.node("queries").node("query" + favNdx).node("row" + rowNdx).node("col" + colNdx).put("text", getCellText(cell));
           
           type = getCellType(cell);
-          typeStr = (type == hdtNone) ? "all" : db.getTypeTagStr(type);
+          typeStr = type == hdtNone ? "all" : db.getTypeTagStr(type);
           node.node("queries").node("query" + favNdx).node("row" + rowNdx).node("col" + colNdx).put("type", typeStr);
         }
       }        
@@ -230,11 +230,9 @@ public class HyperFavorites
       FavMenuItem item = (FavMenuItem) mainList.get(ndx);
       
       if (item.isQuery == false)
-      {
         if (getCellID(item.favRecord) == record.getID())
           if (getCellType(item.favRecord) == record.getType())
             return ndx;
-      }
     }
     
     return -1;
@@ -250,11 +248,9 @@ public class HyperFavorites
       FavMenuItem item = (FavMenuItem) mainList.get(ndx);
       
       if (item.isQuery == false)
-      {
         if (getCellID(item.favRecord) == oldID)
           if (getCellType(item.favRecord) == changedType)
             item.favRecord = item.favRecord.getCopyWithID(newID);
-      }
     }    
   }
   

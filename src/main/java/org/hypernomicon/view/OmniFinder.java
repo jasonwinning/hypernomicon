@@ -619,7 +619,7 @@ public class OmniFinder
         if (finalShowingMore)
         {
           htFind.selectRow(ROWS_TO_SHOW - 1);
-          htFind.tv.refresh();
+          htFind.getTV().refresh();
           runDelayedInFXThread(1, 30, (event) -> htFind.scrollToSelection());
         }
         else if (finalFirstBuffer)
@@ -724,7 +724,7 @@ public class OmniFinder
       }
           
     finderThread = null;
-    Platform.runLater(() -> htFind.clear());
+    Platform.runLater(htFind::clear);
     
     return wasRunning;
   }

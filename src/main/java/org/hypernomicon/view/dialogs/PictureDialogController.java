@@ -126,10 +126,10 @@ public class PictureDialogController extends HyperDialog
 
     btnBrowse.setOnAction(event -> btnBrowseClick());
     
-    rbNone.   selectedProperty().addListener((observable, oldValue, newValue) -> { if (newValue) rbNoneSelected();});
-    rbCurrent.selectedProperty().addListener((observable, oldValue, newValue) -> { if (newValue) rbCurrentSelected();});
-    rbFile.   selectedProperty().addListener((observable, oldValue, newValue) -> { if (newValue) rbFileSelected();});
-    rbWeb.    selectedProperty().addListener((observable, oldValue, newValue) -> { if (newValue) rbWebSelected();});
+    rbNone.   selectedProperty().addListener((observable, oldValue, newValue) -> { if (newValue) rbNoneSelected    (); });
+    rbCurrent.selectedProperty().addListener((observable, oldValue, newValue) -> { if (newValue) rbCurrentSelected (); });
+    rbFile.   selectedProperty().addListener((observable, oldValue, newValue) -> { if (newValue) rbFileSelected    (); });
+    rbWeb.    selectedProperty().addListener((observable, oldValue, newValue) -> { if (newValue) rbWebSelected     (); });
        
     UnaryOperator<TextFormatter.Change> filter = (change) ->
     {
@@ -671,10 +671,10 @@ public class PictureDialogController extends HyperDialog
       picture = new Image(tempFile.toURI().toString());
       tempFile.delete(true);
     
-      if (!picture.isError())
-        ivPicture.setImage(picture);
-      else
+      if (picture.isError())
         throw picture.getException();
+        
+      ivPicture.setImage(picture);
       
       tfName.setText(bufferFileName);
       bufferOutOfDate = false;
@@ -762,7 +762,6 @@ public class PictureDialogController extends HyperDialog
       rbFileSelected();
     else
       rbFile.setSelected(true);
-    
   }
 
 //---------------------------------------------------------------------------  
@@ -821,8 +820,7 @@ public class PictureDialogController extends HyperDialog
         }
         catch (IOException e)
         {
-          messageDialog("File cannot be overwritten: " + e.getMessage(), mtError);
-          return false;
+          return falseWithErrorMessage("File cannot be overwritten: " + e.getMessage());
         }
       }
     }
@@ -891,8 +889,7 @@ public class PictureDialogController extends HyperDialog
       } 
       catch (IOException ex) 
       {
-        messageDialog("An error occurred while saving the file: " + ex.getMessage(), mtError);
-        return false;
+        return falseWithErrorMessage("An error occurred while saving the file: " + ex.getMessage());
       }      
     }
     else if (rbFile.isSelected())
@@ -912,8 +909,7 @@ public class PictureDialogController extends HyperDialog
           } 
           catch (IOException e)
           {
-            messageDialog("An error occurred while moving the file: " + e.getMessage(), mtError);
-            return false;
+            return falseWithErrorMessage("An error occurred while moving the file: " + e.getMessage());
           }
           
           db.unmapFilePath(newFileOrig);
@@ -926,8 +922,7 @@ public class PictureDialogController extends HyperDialog
           } 
           catch (IOException e)
           {
-            messageDialog("An error occurred while copying the file: " + e.getMessage(), mtError);
-            return false;
+            return falseWithErrorMessage("An error occurred while copying the file: " + e.getMessage());
           }
         }
       }
@@ -935,10 +930,7 @@ public class PictureDialogController extends HyperDialog
     else if (curFile.equals(newFileNew) == false) // (rbCurrent.isSelected())
     {
       if (newFileNew.exists())
-      {
-        messageDialog("Unable to rename file: A file with that name already exists.", mtError);
-        return false;
-      }
+        return falseWithErrorMessage("Unable to rename file: A file with that name already exists.");
       
       try
       {
@@ -946,8 +938,7 @@ public class PictureDialogController extends HyperDialog
       }
       catch (SecurityException | IOException e)
       {
-        messageDialog("An error occurred while renaming the file: " + e.getMessage(), mtError);
-        return false;
+        return falseWithErrorMessage("An error occurred while renaming the file: " + e.getMessage());
       }
     }
   

@@ -29,7 +29,6 @@ import java.io.File;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.mtError;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
@@ -62,27 +61,20 @@ public class NewDatabaseDialogController extends HyperDialog
     
     try
     {
-      success = new File(newPath + File.separator + tfPictures.getText()).mkdirs();
-      if (success) success = new File(newPath + File.separator + tfBooks.getText()).mkdirs();
-      if (success) success = new File(newPath + File.separator + tfPapers.getText()).mkdirs();
-      if (success) success = new File(newPath + File.separator + tfUnentered.getText()).mkdirs();
-      if (success) success = new File(newPath + File.separator + tfMiscFiles.getText()).mkdirs();
-      if (success) success = new File(newPath + File.separator + tfResults.getText()).mkdirs();
+      success              = new File(newPath + File.separator + tfPictures    .getText()).mkdirs();
+      if (success) success = new File(newPath + File.separator + tfBooks       .getText()).mkdirs();
+      if (success) success = new File(newPath + File.separator + tfPapers      .getText()).mkdirs();
+      if (success) success = new File(newPath + File.separator + tfUnentered   .getText()).mkdirs();
+      if (success) success = new File(newPath + File.separator + tfMiscFiles   .getText()).mkdirs();
+      if (success) success = new File(newPath + File.separator + tfResults     .getText()).mkdirs();
       if (success) success = new File(newPath + File.separator + tfTopicFolders.getText()).mkdirs();
     }
     catch(Exception e)
     {
-      messageDialog("An error occurred while trying to create the directories: " + e.getMessage(), mtError);
-      return false;
+      return falseWithErrorMessage("An error occurred while trying to create the directories: " + e.getMessage());
     }
     
-    if (success == false)
-    {
-      messageDialog("An error occurred while trying to create the directories.", mtError);
-      return false;
-    }
-    
-    return true;
+    return success ? true : falseWithErrorMessage("An error occurred while trying to create the directories.");
   }
 
 //---------------------------------------------------------------------------  
@@ -123,12 +115,12 @@ public class NewDatabaseDialogController extends HyperDialog
 
   private void init(String newPath)
   {
-    tfPictures.setText(DEFAULT_PICTURES_PATH);
-    tfBooks.setText(DEFAULT_BOOKS_PATH);
-    tfPapers.setText(DEFAULT_PAPERS_PATH);
-    tfUnentered.setText(DEFAULT_UNENTERED_PATH);
-    tfMiscFiles.setText(DEFAULT_MISC_FILES_PATH);
-    tfResults.setText(DEFAULT_RESULTS_PATH);
+    tfPictures    .setText(DEFAULT_PICTURES_PATH);
+    tfBooks       .setText(DEFAULT_BOOKS_PATH);
+    tfPapers      .setText(DEFAULT_PAPERS_PATH);
+    tfUnentered   .setText(DEFAULT_UNENTERED_PATH);
+    tfMiscFiles   .setText(DEFAULT_MISC_FILES_PATH);
+    tfResults     .setText(DEFAULT_RESULTS_PATH);
     tfTopicFolders.setText(DEFAULT_TOPICAL_PATH);
     
     this.newPath = newPath;
@@ -141,13 +133,13 @@ public class NewDatabaseDialogController extends HyperDialog
   {
     HashMap<String, String> folders = new HashMap<>();
     
-    folders.put(PREF_KEY_PICTURES_PATH, tfPictures.getText());
-    folders.put(PREF_KEY_BOOKS_PATH, tfBooks.getText());
-    folders.put(PREF_KEY_PAPERS_PATH, tfPapers.getText());
-    folders.put(PREF_KEY_UNENTERED_PATH, tfUnentered.getText());
-    folders.put(PREF_KEY_MISC_FILES_PATH, tfMiscFiles.getText());
-    folders.put(PREF_KEY_RESULTS_PATH, tfResults.getText());
-    folders.put(PREF_KEY_TOPICAL_PATH, tfTopicFolders.getText()); 
+    folders.put(PREF_KEY_PICTURES_PATH  , tfPictures    .getText());
+    folders.put(PREF_KEY_BOOKS_PATH     , tfBooks       .getText());
+    folders.put(PREF_KEY_PAPERS_PATH    , tfPapers      .getText());
+    folders.put(PREF_KEY_UNENTERED_PATH , tfUnentered   .getText());
+    folders.put(PREF_KEY_MISC_FILES_PATH, tfMiscFiles   .getText());
+    folders.put(PREF_KEY_RESULTS_PATH   , tfResults     .getText());
+    folders.put(PREF_KEY_TOPICAL_PATH   , tfTopicFolders.getText()); 
     
     return folders;
   }

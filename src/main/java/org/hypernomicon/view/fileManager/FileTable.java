@@ -133,11 +133,11 @@ public class FileTable implements DragNDropContainer<FileRow>
        
     fileTV.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     
-    TableColumn<FileRow, FileRow> nameCol = (TableColumn<FileRow, FileRow>) fileTV.getColumns().get(0);
+    TableColumn<FileRow, FileRow>                nameCol    = (TableColumn<FileRow, FileRow>)                fileTV.getColumns().get(0);
     TableColumn<FileRow, FileCellValue<Instant>> modDateCol = (TableColumn<FileRow, FileCellValue<Instant>>) fileTV.getColumns().get(1);
-    TableColumn<FileRow, String> typeCol = (TableColumn<FileRow, String>) fileTV.getColumns().get(2);
-    TableColumn<FileRow, FileCellValue<Long>> sizeCol = (TableColumn<FileRow, FileCellValue<Long>>) fileTV.getColumns().get(3);
-    TableColumn<FileRow, String> recordsCol = (TableColumn<FileRow, String>) fileTV.getColumns().get(4);
+    TableColumn<FileRow, String>                 typeCol    = (TableColumn<FileRow, String>)                 fileTV.getColumns().get(2);
+    TableColumn<FileRow, FileCellValue<Long>>    sizeCol    = (TableColumn<FileRow, FileCellValue<Long>>)    fileTV.getColumns().get(3);
+    TableColumn<FileRow, String>                 recordsCol = (TableColumn<FileRow, String>)                 fileTV.getColumns().get(4);
     
     nameCol.setCellValueFactory(cellData -> new SimpleObjectProperty<FileRow>(cellData.getValue()));
     nameCol.setComparator((v1, v2) -> v1.getFileName().compareToIgnoreCase(v2.getFileName()));

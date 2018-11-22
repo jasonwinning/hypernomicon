@@ -22,7 +22,7 @@ import static org.hypernomicon.util.Util.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.mutable.MutableInt;
+import org.hypernomicon.util.SplitString;
 
 public final class PersonName implements Comparable<PersonName>, Cloneable
 {
@@ -184,15 +184,16 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
   public String getBibName()
   {
     List<String> initialList = new ArrayList<>();
-    String nameStr, firstName = getFirst();
-    MutableInt pos = new MutableInt(0);
+    String nameStr, firstName = getFirst();    
     
     while (firstName.contains("("))
       firstName = removeFirstParenthetical(firstName);
-        
-    while (pos.intValue() != -1)
+    
+    SplitString splitStr = new SplitString(firstName, ' ');
+    
+    while (splitStr.hasNext())
     {
-      nameStr = nextSubString(firstName, " ", pos);
+      nameStr = splitStr.next();
       if (nameStr.length() == 0) continue;
       
       if (nameStr.endsWith("."))
@@ -203,7 +204,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
         }
         else
         {
-          nameStr = nameStr + " " + nextSubString(firstName, " ", pos);
+          nameStr = nameStr + " " + splitStr.next();
           initialList.add(nameStr.substring(0, 1));
         }
       }

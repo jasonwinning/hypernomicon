@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.Author;
-import org.hypernomicon.view.wrappers.HyperTable;
 
 public class HDT_Position extends HDT_RecordWithConnector
 {
@@ -59,8 +58,8 @@ public class HDT_Position extends HDT_RecordWithConnector
   @Override public HDT_RecordType getType() { return hdtPosition; }
   @Override public boolean isUnitable()     { return true; }
   
-  public void setLargerPositions(HyperTable ht) { updateObjectsFromHT(rtParentPosOfPos, ht, 3); };
-  public void setDebates(HyperTable ht)         { updateObjectsFromHT(rtDebateOfPosition, ht, 3); };
+  public void setLargerPositions(List<HDT_Position> list) { updateObjectsFromList(rtParentPosOfPos, list); }
+  public void setDebates(List<HDT_Debate> list)           { updateObjectsFromList(rtDebateOfPosition, list); };
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

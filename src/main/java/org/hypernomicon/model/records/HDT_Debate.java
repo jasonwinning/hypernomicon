@@ -24,7 +24,6 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
-import org.hypernomicon.view.wrappers.HyperTable;
 
 public class HDT_Debate extends HDT_RecordWithConnector
 {
@@ -54,7 +53,7 @@ public class HDT_Debate extends HDT_RecordWithConnector
   @Override public HDT_RecordType getType() { return hdtDebate; }
   @Override public boolean isUnitable()     { return true; }
 
-  public void setLargerDebates(HyperTable ht) { updateObjectsFromHT(rtParentDebateOfDebate, ht, 2); }
+  public void setLargerDebates(List<HDT_Debate> list) { updateObjectsFromList(rtParentDebateOfDebate, list); }
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

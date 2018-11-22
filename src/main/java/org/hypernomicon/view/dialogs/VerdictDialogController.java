@@ -74,7 +74,8 @@ public class VerdictDialogController extends HyperDialog
     {
       messageDialog("Internal Error: 90902", mtError);
     }
-    hcbVerdict.addEntry(-2, "", -2);
+    
+    hcbVerdict.addBlankEntry();
   }
 
 //---------------------------------------------------------------------------  
@@ -82,14 +83,11 @@ public class VerdictDialogController extends HyperDialog
 
   @Override protected boolean isValid()
   {
-    if (hcbVerdict.selectedID() < 1)
-    {
-      messageDialog("You must select a verdict.", mtError);
-      safeFocus(cbVerdict);
-      return false;       
-    }
+    if (hcbVerdict.selectedID() > 0) return true;
     
-    return true;
+    messageDialog("You must select a verdict.", mtError);
+    safeFocus(cbVerdict);
+    return false;       
   }
 
 //---------------------------------------------------------------------------  

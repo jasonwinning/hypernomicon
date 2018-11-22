@@ -17,10 +17,10 @@
 
 package org.hypernomicon.view.dialogs;
 
-import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
+import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Institution;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_InstitutionType;
 
@@ -50,17 +50,17 @@ public class NewInstDialogController extends HyperDialog
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  public static NewInstDialogController create(String title, int parentID, String newName, boolean isParent)
+  public static NewInstDialogController create(String title, HDT_Institution parent, String newName, boolean isParent)
   {
     NewInstDialogController ndc = HyperDialog.create("NewInstDialog.fxml", title, true);
-    ndc.init(parentID, newName, isParent);
+    ndc.init(parent, newName, isParent);
     return ndc;
   }
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  private void init(int parentID, String newName, boolean isParent)
+  private void init(HDT_Institution parent, String newName, boolean isParent)
   {
     PopulatorFilter popFilter = record -> HDT_Institution.class.cast(record).subInstitutions.size() > 0;
     
@@ -73,16 +73,13 @@ public class NewInstDialogController extends HyperDialog
     
     tfNewParentName.textProperty().addListener((observable, oldValue, newValue) -> rbNew.setSelected(true));
     
-    if (parentID > 0)
-      hcbParent.addEntry(parentID, db.institutions.getByID(parentID).name(), parentID);
-    else
-      hcbParent.addEntry(-1, "", -1);
+    hcbParent.addAndSelectEntryOrBlank(parent, HDT_Base::name);
     
     if (newName.length() > 0)
     {
       if (isParent)
       {
-        if (parentID < 1)
+        if (parent == null)
           tfNewParentName.setText(newName);
       }
       else

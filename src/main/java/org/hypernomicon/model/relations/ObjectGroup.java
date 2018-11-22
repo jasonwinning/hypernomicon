@@ -49,9 +49,9 @@ public final class ObjectGroup
   {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((map == null) ? 0 : map.hashCode());
-    result = prime * result + ((primary == null) ? 0 : primary.hashCode());
-    result = prime * result + ((primaryStr == null) ? 0 : primaryStr.hashCode());
+    result = prime * result + (map == null ? 0 : map.hashCode());
+    result = prime * result + (primary == null ? 0 : primary.hashCode());
+    result = prime * result + (primaryStr == null ? 0 : primaryStr.hashCode());
     return result;
   }
 //---------------------------------------------------------------------------
@@ -74,13 +74,11 @@ public final class ObjectGroup
       
       if (otherVal == null) 
       {
-        if (entry.getValue().isEmpty() == false)
-          return false;
+        if (entry.getValue().isEmpty() == false) return false;
       }
       else
       {
-        if (otherVal.equals(entry.getValue()) == false) 
-          return false;
+        if (otherVal.equals(entry.getValue()) == false) return false;
       }
     }
     
@@ -90,13 +88,11 @@ public final class ObjectGroup
       
       if (val == null) 
       {
-        if (entry.getValue().isEmpty() == false)
-          return false;
+        if (entry.getValue().isEmpty() == false) return false;
       }
       else
       {
-        if (val.equals(entry.getValue()) == false)
-          return false;
+        if (val.equals(entry.getValue()) == false) return false;
       }
     }
     

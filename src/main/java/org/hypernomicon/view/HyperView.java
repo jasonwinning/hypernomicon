@@ -52,7 +52,7 @@ public class HyperView<HDT_CT extends HDT_Base>
   public TextViewInfo getTextInfo()        { return textInfo; }
   public HDT_RecordType getTabRecordType() { return tabRecordType; }
   public TabEnum getTabEnum()              { return tabEnum; }
-  public HDT_CT getViewRecord()            { return viewRecord == null ? null : viewRecord; }
+  public HDT_CT getViewRecord()            { return viewRecord; }
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -89,10 +89,7 @@ public class HyperView<HDT_CT extends HDT_Base>
   {
     if (viewRecord == null) return;
     
-    int id = viewRecord.getID();
-    HDT_RecordType type = viewRecord.getType();
-    
-    viewRecord = (HDT_CT) db.records(type).getByID(id);
+    viewRecord = (HDT_CT) db.records(viewRecord.getType()).getByID(viewRecord.getID());
   }
   
 //---------------------------------------------------------------------------

@@ -68,7 +68,7 @@ public class VersionNumber implements Comparable<VersionNumber>
     String str = "";
     
     for (int part : parts)
-      str = (str.length() == 0) ? String.valueOf(part) : str + "." + String.valueOf(part);
+      str = str.length() == 0 ? String.valueOf(part) : str + "." + String.valueOf(part);
       
     return str;
   }

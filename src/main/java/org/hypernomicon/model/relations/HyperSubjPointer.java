@@ -19,6 +19,8 @@ package org.hypernomicon.model.relations;
 
 import org.hypernomicon.model.records.HDT_Base;
 
+import static org.hypernomicon.util.Util.*;
+
 public class HyperSubjPointer<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base>
 {
   RelationSet<HDT_SubjType, HDT_ObjType> relSet;
@@ -34,23 +36,12 @@ public class HyperSubjPointer<HDT_SubjType extends HDT_Base, HDT_ObjType extends
 //---------------------------------------------------------------------------
 
   public HDT_SubjType get()       { return relSet.getSubjectCount(obj) == 0 ? null : relSet.getSubject(obj, 0); }
-  public boolean isNull()         { return (get() == null); }
-  public boolean isNotNull()      { return (get() != null); }
-  public int getID()              { return isNull() ? -1 : get().getID(); }
+  public boolean isNull()         { return get() == null; }
+  public boolean isNotNull()      { return get() != null; }
+  public int getID()              { return nullSwitch(get(), -1, HDT_Base::getID); }
 
-  @Override public int hashCode() { return super.hashCode(); }
-  
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean equals(Object o)
-  {
-    if ((o instanceof HyperSubjPointer<?, ?>) == false)
-      return false;
-
-    HyperSubjPointer<?, ?> hsp = (HyperSubjPointer<?, ?>) o;
-    return hsp.get() == get();
-  }
+  @Override public int hashCode()           { return super.hashCode(); }  
+  @Override public boolean equals(Object o) { return o instanceof HyperSubjPointer<?, ?> ? ((HyperSubjPointer<?, ?>) o).get() == get() : false; }
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

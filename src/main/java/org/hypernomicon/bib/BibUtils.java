@@ -743,12 +743,10 @@ public class BibUtils
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-
+ 
   public static String getEntryTypeName(EntryType et)
   {
-    if (et == null) return "";
-    
-    return entryTypeMap.getOrDefault(et, "");
+    return nullSwitch(et, "", t -> entryTypeMap.getOrDefault(t, ""));
   }
 
 //---------------------------------------------------------------------------  

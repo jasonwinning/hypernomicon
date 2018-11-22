@@ -52,7 +52,7 @@ public class PathInfo
   public HyperPath getHyperPath()     { return hyperPath; }
   public FilePath getFilePath()       { return filePath; }
   public FileKind getFileKind()       { return fileKind; }
-  public boolean isDirectory()        { return ((fileKind == fkFolder) || (fileKind == fkFolderRecord)); }
+  public boolean isDirectory()        { return (fileKind == fkFolder) || (fileKind == fkFolderRecord); }
   
   @Override public String toString()  { return filePath.toString(); }
 
@@ -111,14 +111,9 @@ public class PathInfo
 
   private HDT_Folder getParentFolderOfPath(FilePath filePath)
   {
-    FilePath parentPath = filePath.getParent();
-    
-    Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(parentPath);
-    
-    if (set != null)
-      for (HyperPath hyperPath : set)
-        if (hyperPath.getRecordType() == hdtFolder)
-          return (HDT_Folder) hyperPath.getRecord();
+    for (HyperPath hyperPath : HyperPath.getHyperPathSetForFilePath(filePath.getParent()))
+      if (hyperPath.getRecordType() == hdtFolder)
+        return (HDT_Folder) hyperPath.getRecord();
     
     return null;
   }

@@ -20,7 +20,7 @@ package org.hypernomicon.view.populators;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -42,16 +42,12 @@ public class GenericOperandPopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    List<HyperTableCell> choices = new ArrayList<>();
-  
-    choices.add(new HyperTableCell(EQUAL_TO_OPERAND_ID, "Is or includes record", hdtNone));
-    choices.add(new HyperTableCell(NOT_EQUAL_TO_OPERAND_ID, "Excludes record", hdtNone));
-    choices.add(new HyperTableCell(CONTAINS_OPERAND_ID, "Contains text", hdtNone));
-    choices.add(new HyperTableCell(DOES_NOT_CONTAIN_OPERAND_ID, "Doesn't contain text", hdtNone));
-    choices.add(new HyperTableCell(IS_EMPTY_OPERAND_ID, "Is empty", hdtNone));
-    choices.add(new HyperTableCell(IS_NOT_EMPTY_OPERAND_ID, "Is not empty", hdtNone));
-
-    return choices;
+    return Arrays.asList(new HyperTableCell(EQUAL_TO_OPERAND_ID, "Is or includes record", hdtNone),
+                         new HyperTableCell(NOT_EQUAL_TO_OPERAND_ID, "Excludes record", hdtNone),
+                         new HyperTableCell(CONTAINS_OPERAND_ID, "Contains text", hdtNone),
+                         new HyperTableCell(DOES_NOT_CONTAIN_OPERAND_ID, "Doesn't contain text", hdtNone),
+                         new HyperTableCell(IS_EMPTY_OPERAND_ID, "Is empty", hdtNone),
+                         new HyperTableCell(IS_NOT_EMPTY_OPERAND_ID, "Is not empty", hdtNone));
   }
 
 //---------------------------------------------------------------------------  
@@ -59,9 +55,7 @@ public class GenericOperandPopulator extends Populator
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
-    List<HyperTableCell> choices = populate(dummyRow, false);
-    
-    for (HyperTableCell choice : choices)
+    for (HyperTableCell choice : populate(dummyRow, false))
       if (HyperTableCell.getCellID(choice) == HyperTableCell.getCellID(cell))
         return choice;
     
@@ -74,7 +68,8 @@ public class GenericOperandPopulator extends Populator
   public HyperTableCell getChoice(int id)
   {
     for (HyperTableCell cell : populate(dummyRow, false))
-      if (HyperTableCell.getCellID(cell) == id) return cell;
+      if (HyperTableCell.getCellID(cell) == id) 
+        return cell;
     
     return new HyperTableCell(-1, "", hdtNone);
   }

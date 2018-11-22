@@ -94,7 +94,7 @@ public class MergeWorksSLController
 
   @Override public String toString()
   {
-    if (rb1.isSelected()) return tf1.getText();
+    if      (rb1.isSelected()) return tf1.getText();
     else if (rb2.isSelected()) return tf2.getText();
     else if (rb3.isSelected()) return tf3.getText();
     else                       return tf4.getText();

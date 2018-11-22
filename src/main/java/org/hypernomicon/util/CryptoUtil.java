@@ -31,6 +31,9 @@ import javax.crypto.*;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 public class CryptoUtil
 {
   private static Cipher ecipher;
@@ -41,6 +44,9 @@ public class CryptoUtil
   private static int iterationCount = 19;
   private static String defaultK = "pq0bJ2cYgC";
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+  
   /**
    *
    * @param secretKey
@@ -71,6 +77,9 @@ public class CryptoUtil
     return new String(Base64.getEncoder().encode(out));
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+  
   /**
    * @param secretKey
    *          Key used to decrypt data
@@ -99,4 +108,8 @@ public class CryptoUtil
     String plainStr = new String(utf8, "UTF-8");
     return plainStr;
   }
+  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+  
 }

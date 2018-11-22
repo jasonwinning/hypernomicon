@@ -136,10 +136,17 @@ public class FileDialogController extends HyperDialog
       if (FilePath.isEmpty(srcFilePath) == false)
       {
         tfCurrentPath.setText(srcFilePath.toString());
-        tfNewPath.setText(srcFilePath.getDirOnly().toString());
+        
+        if (db.getPath(PREF_KEY_UNENTERED_PATH, null).isSubpath(srcFilePath))
+          tfNewPath.setText(db.getPath(PREF_KEY_MISC_FILES_PATH, null).toString());
+        else
+        {
+          tfNewPath.setText(srcFilePath.getDirOnly().toString());
+          setRB_CurrentLocationOnly();
+        }
       }
-      
-      setRB_CurrentLocationOnly();      
+      else
+        setRB_CurrentLocationOnly();
     }
     
     rbNeither.setDisable(FilePath.isEmpty(srcFilePath));
@@ -166,11 +173,13 @@ public class FileDialogController extends HyperDialog
     }
     else
     {
-      if (FilePath.isEmpty(srcFilePath) == false)
-        tfNewPath.setText(srcFilePath.getDirOnly().toString());
-      
       if (tfNewPath.getText().length() == 0)
-        tfNewPath.setText(db.getPath(PREF_KEY_MISC_FILES_PATH, null).toString());
+      {
+        if (FilePath.isEmpty(srcFilePath) == false)
+          tfNewPath.setText(srcFilePath.getDirOnly().toString());
+        else      
+          tfNewPath.setText(db.getPath(PREF_KEY_MISC_FILES_PATH, null).toString());
+      }
       
       tfRecordName.setText(recordName);
     }
@@ -299,8 +308,7 @@ public class FileDialogController extends HyperDialog
     HDT_RecordWithPath record, firstRecord = null;
     Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
     
-    if (set == null) return null;
-    if (set.size() == 0) return null;
+    if ((set == null) || (set.size() == 0)) return null;
     
     for (HyperPath setPath : set)
     {
@@ -331,8 +339,7 @@ public class FileDialogController extends HyperDialog
 
   @FXML private void btnUseFileClick()
   {
-    String name = FilenameUtils.getBaseName(tfFileName.getText());
-    tfRecordName.setText(name);
+    tfRecordName.setText(FilenameUtils.getBaseName(tfFileName.getText()));
   }
 
 //---------------------------------------------------------------------------  
@@ -377,10 +384,7 @@ public class FileDialogController extends HyperDialog
 //---------------------------------------------------------------------------  
 
   @Override protected boolean isValid()
-  {
-    boolean success = true;
-    FilePath destFilePath = null;
-    
+  {   
     if (FilePath.isEmpty(srcFilePath))
     {
       messageDialog("You must enter a source file name.", mtError);
@@ -405,6 +409,8 @@ public class FileDialogController extends HyperDialog
     // check to see if destination file name currently points to a file in the database
     
     FilePath fileName;
+    boolean success = true;
+    FilePath destFilePath = null;
     
     if (chkDontChangeFilename.isSelected())
       fileName = srcFilePath.getNameOnly();
@@ -427,21 +433,19 @@ public class FileDialogController extends HyperDialog
       else
       {
         if (existingRecord.getType() == hdtMiscFile)
-          messageDialog("Destination file name is already in use as a miscellaneous file, record ID: " + existingRecord.getID(), mtError);
+          return falseWithErrorMessage("Destination file name is already in use as a miscellaneous file, record ID: " + existingRecord.getID());
         else if (existingRecord.getType() == hdtWorkFile)
         {
           HDT_WorkFile workFile = HDT_WorkFile.class.cast(existingRecord);
           if (workFile.works.size() > 0)
-            messageDialog("Destination file name is already in use as a work file, work record ID: " + workFile.works.get(0).getID(), mtError);
+            return falseWithErrorMessage("Destination file name is already in use as a work file, work record ID: " + workFile.works.get(0).getID());
           else
-            messageDialog("Destination file name is already in use as a work file, ID: " + workFile.getID(), mtError);
+            return falseWithErrorMessage("Destination file name is already in use as a work file, ID: " + workFile.getID());
         }
         else if (existingRecord.getType() == hdtPerson)
-          messageDialog("Destination file name is already in use as a picture, person record ID: " + existingRecord.getID(), mtError);
+          return falseWithErrorMessage("Destination file name is already in use as a picture, person record ID: " + existingRecord.getID());
         else
-          messageDialog("Destination file name is already in use, record ID: " + existingRecord.getID(), mtError);
-        
-        return false;
+          return falseWithErrorMessage("Destination file name is already in use, record ID: " + existingRecord.getID());
       }
     }
 
@@ -464,8 +468,7 @@ public class FileDialogController extends HyperDialog
       }
       catch (IOException e)
       {
-        messageDialog("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + " the file. Reason: " + e.getMessage(), mtError);
-        return false;      
+        return falseWithErrorMessage("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + " the file. Reason: " + e.getMessage());     
       }
     }  
     else
@@ -485,48 +488,35 @@ public class FileDialogController extends HyperDialog
         }
         catch (IOException e)
         {
-          success = false;
-          messageDialog("Unable to rename the file: " + e.getMessage(), mtError);
+          return falseWithErrorMessage("Unable to rename the file: " + e.getMessage());
         }
-        
       }
     }
     
-    if (success)
-    {      
-      if ((recordType == hdtWorkFile) && (curFileRecord == null))
-      {
-        HDT_WorkFile workFile;
-        
-        workFile = (HDT_WorkFile) HyperPath.createRecordAssignedToPath(hdtWorkFile, destFilePath);
-        if (workFile == null)
-        {
-          messageDialog("Internal error #67830", mtError);
-          return false;
-        }
-        
-        workFile.setName(tfRecordName.getText());
-        curWork.addWorkFile(workFile.getID(), true, true);
-      }
-      else
-      {
-        if (recordType == hdtWorkFile)
-        {
-          HDT_WorkFile.class.cast(curFileRecord).setName(tfRecordName.getText());
-        }
-        
-        HDT_Folder folder = HyperPath.getFolderFromFilePath(destFilePath.getDirOnly(), true);
-        if (folder == null)
-        {
-          messageDialog("Internal error 22937", mtError);
-          return false;
-        }
-        
-        curFileRecord.getPath().assign(folder, destFilePath.getNameOnly());                
-      }
+    if (!success) return false;
+    
+    if ((recordType == hdtWorkFile) && (curFileRecord == null))
+    {
+      HDT_WorkFile workFile = (HDT_WorkFile) HyperPath.createRecordAssignedToPath(hdtWorkFile, destFilePath);
+      if (workFile == null)
+        return falseWithErrorMessage("Internal error #67830");
+      
+      workFile.setName(tfRecordName.getText());
+      curWork.addWorkFile(workFile.getID(), true, true);
+    }
+    else
+    {
+      if (recordType == hdtWorkFile)
+        HDT_WorkFile.class.cast(curFileRecord).setName(tfRecordName.getText());
+      
+      HDT_Folder folder = HyperPath.getFolderFromFilePath(destFilePath.getDirOnly(), true);
+      if (folder == null)
+        return falseWithErrorMessage("Internal error 22937");
+      
+      curFileRecord.getPath().assign(folder, destFilePath.getNameOnly());                
     }
       
-    return success;
+    return true;
   }
 
 //---------------------------------------------------------------------------  

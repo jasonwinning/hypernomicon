@@ -19,6 +19,7 @@ package org.hypernomicon.view.populators;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,10 +48,9 @@ public class SubjectPopulator extends Populator
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
   
-  public SubjectPopulator(RelationType relType, boolean trackObjByRow)                   { init(relType, trackObjByRow, false); }
-  public SubjectPopulator(RelationType relType, boolean trackObjByRow, boolean nameOnly) { init(relType, trackObjByRow, nameOnly); }
+  public SubjectPopulator(RelationType relType, boolean trackObjByRow) { this(relType, trackObjByRow, false); }
 
-  private void init(RelationType relType, boolean trackObjByRow, boolean nameOnly)
+  public SubjectPopulator(RelationType relType, boolean trackObjByRow, boolean nameOnly)
   {
     rowToChoices = new HashMap<HyperTableRow, List<HyperTableCell>>();
     rowToChanged = new HashMap<HyperTableRow, Boolean>();    
@@ -73,10 +73,8 @@ public class SubjectPopulator extends Populator
   
   public HDT_Base getObj(HyperTableRow row)
   {
-    if (row == null) row = dummyRow;
-    
     if (trackObjByRow)
-      return rowToObj.get(row);
+      return rowToObj.get(nullSwitch(row, dummyRow));
     
     return obj;    
   }
@@ -86,7 +84,6 @@ public class SubjectPopulator extends Populator
 
   public void setObj(HyperTableRow row, HDT_Base newObj)
   {
-    boolean changed; 
     HDT_Base oldObj;
     
     if (row == null) row = dummyRow;
@@ -99,12 +96,7 @@ public class SubjectPopulator extends Populator
       obj = newObj;
     }
     
-    changed = true;
-    if (oldObj != null)
-      if (oldObj == newObj)
-        changed = hasChanged(row);
-    
-    rowToChanged.put(row, changed);
+    rowToChanged.put(row, (oldObj == null) || (oldObj != newObj) || hasChanged(row));
   }
 
 //---------------------------------------------------------------------------  
@@ -124,7 +116,7 @@ public class SubjectPopulator extends Populator
       return choices;
     
     choices.clear();
-    choices.add(new HyperTableCell(-2, "", db.getSubjType(relType)));
+    choices.add(new HyperTableCell(-1, "", hdtNone));
     
     HDT_Base curObj;
     
@@ -164,7 +156,7 @@ public class SubjectPopulator extends Populator
     }
     
     if (noneYet) choices.clear();
-    choices.add(new HyperTableCell(-2, "", db.getSubjType(relType))); // This is -2 instead of -1 to prevent an IndexOutOfBoundsException (I have no idea why the latter occurs)
+    choices.add(new HyperTableCell(-1, "", hdtNone));
   
     rowToChanged.put(row, false);
     return choices;
@@ -175,13 +167,7 @@ public class SubjectPopulator extends Populator
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
-    if (row == null) row = dummyRow;
-    
-    List<HyperTableCell> choices = populate(row, false);
-    
-    if (choices.contains(cell)) return cell.clone();
-    
-    return null;
+    return populate(nullSwitch(row, dummyRow), false).contains(cell) ? cell.clone() : null;
   }
 
 //---------------------------------------------------------------------------  
@@ -200,9 +186,7 @@ public class SubjectPopulator extends Populator
 
   @Override public void setChanged(HyperTableRow row)
   {
-    if (row == null) row = dummyRow;
-    
-    rowToChanged.put(row, true);
+    rowToChanged.put(nullSwitch(row, dummyRow), true);
   }
 
 //---------------------------------------------------------------------------  
@@ -226,7 +210,9 @@ public class SubjectPopulator extends Populator
   {
     if (row == null) row = dummyRow;
     
-    HyperTableCell cell = new HyperTableCell(id, value, db.getSubjType(relType));
+    HDT_RecordType type = ((id > 0) || (safeStr(value).length() > 0)) ? db.getSubjType(relType) : hdtNone;
+    
+    HyperTableCell cell = new HyperTableCell(id, value, type);
     
     if (rowToChoices.containsKey(row) == false)
       rowToChoices.put(row, new ArrayList<>());

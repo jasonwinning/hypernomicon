@@ -217,7 +217,7 @@ public class MainController
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------   
   
-  public ObservableList<ResultsRow> results() { return curQV.resultsTable.tv.getItems(); }
+  public ObservableList<ResultsRow> results() { return curQV.resultsTable.getTV().getItems(); }
   public MenuBar getMenuBar()                 { return menuBar; }
   public TreeWrapper getTree()                { return TreeTabController.class.cast(getHyperTab(treeTab)).tree; }
   public static Stage primaryStage()          { return app.getPrimaryStage(); }
@@ -342,8 +342,8 @@ public class MainController
     hcbGoTo.setInnerOnAction(event -> recordLookup());
     hcbGoTo.dontCreateNewRecord = true;
     
-    mnuImportBibFile     .setOnAction(event -> mnuImportBibFileClick());     
-    mnuImportBibClipboard.setOnAction(event -> mnuImportBibClipboardClick());
+    mnuImportBibFile     .setOnAction(event -> importBibFile(null, null));     
+    mnuImportBibClipboard.setOnAction(event -> importBibFile(convertMultiLineStrToStrList(getClipboardText(false), false), null));
     
     mnuFindNextAll       .setOnAction(event -> getTree().find(cbTreeGoTo.getEditor().getText(), true,  false));
     mnuFindPreviousAll   .setOnAction(event -> getTree().find(cbTreeGoTo.getEditor().getText(), false, false));
@@ -452,18 +452,18 @@ public class MainController
           case JIntellitype.APPCOMMAND_BROWSER_BACKWARD :
             
             if (primaryStage().isFocused())
-              Platform.runLater(() -> btnBackClick());
+              Platform.runLater(this::btnBackClick);
             else if (fileManagerDlg != null)
               if (fileManagerDlg.getStage().isShowing() && fileManagerDlg.getStage().isFocused())
-                Platform.runLater(() -> fileManagerDlg.btnBackClick());
+                Platform.runLater(fileManagerDlg::btnBackClick);
             return;
             
           case JIntellitype.APPCOMMAND_BROWSER_FORWARD :
             if (primaryStage().isFocused())
-              Platform.runLater(() -> btnForwardClick());
+              Platform.runLater(this::btnForwardClick);
             else if (fileManagerDlg != null) 
               if (fileManagerDlg.getStage().isShowing() && fileManagerDlg.getStage().isFocused())
-                Platform.runLater(() -> fileManagerDlg.btnForwardClick());
+                Platform.runLater(fileManagerDlg::btnForwardClick);
             return;
         }
       });
@@ -482,7 +482,7 @@ public class MainController
       
       for (QueryView qv : QueriesTabController.class.cast(HyperTab.getHyperTab(queryTab)).queryViews)
       {
-        Iterator<ResultsRow> i = qv.resultsTable.tv.getItems().iterator();
+        Iterator<ResultsRow> i = qv.resultsTable.getTV().getItems().iterator();
         
         while (i.hasNext())
         {
@@ -620,7 +620,9 @@ public class MainController
       {
         HDT_MiscFile miscFile = (HDT_MiscFile) activeRecord();
         
-        if (miscFile != null)
+        if (miscFile == null)
+          previewWindow.clearPreview(src);
+        else
           previewWindow.setPreview(src, miscFile.getPath().getFilePath(), -1, -1, miscFile);
       }
         
@@ -819,9 +821,7 @@ public class MainController
 
     hideFindTable();
     
-    String str = selectorTF.getText();
-    
-    currentTab().findWithinDesc(str);
+    currentTab().findWithinDesc(selectorTF.getText());
   }
 
 //---------------------------------------------------------------------------  
@@ -833,7 +833,7 @@ public class MainController
     {
       if (activeTab() == queryTab)
       {
-        curQV.resultsTable.dblClick(curQV.resultsTable.tv.getSelectionModel().getSelectedItem());
+        curQV.resultsTable.dblClick(curQV.resultsTable.getTV().getSelectionModel().getSelectedItem());
         return;
       }
   
@@ -1018,7 +1018,7 @@ public class MainController
         saveAllToDisk(false, false, false);
       }
 
-      HyperTab.getHyperTabs().forEach(hyperTab -> hyperTab.clear());
+      HyperTab.getHyperTabs().forEach(HyperTab::clear);
           
       folderTreeWatcher.stop();
      
@@ -1097,7 +1097,7 @@ public class MainController
     }
 
     if (browserCoreInitialized)
-      Platform.runLater(() -> previewWindow.cleanup()); // This eventually closes the application main window
+      Platform.runLater(previewWindow::cleanup); // This eventually closes the application main window
     else
       stage.close();
     
@@ -1203,8 +1203,7 @@ public class MainController
     {
       @Override public String toString(ResultsRow row) 
       {
-        if (row == null) return "";
-        return row.getCBText();
+        return nullSwitch(row, "", ResultsRow::getCBText);
       }
   
       @Override public ResultsRow fromString(String string) 
@@ -1263,7 +1262,7 @@ public class MainController
     db.prefs.putInt(PREF_KEY_TERM_ID, getHyperTab(termTab).getActiveID());
     db.prefs.putInt(PREF_KEY_FILE_ID, getHyperTab(miscFileTab).getActiveID());
     db.prefs.putInt(PREF_KEY_NOTE_ID, getHyperTab(noteTab).getActiveID());
-    db.prefs.put(PREF_KEY_RECORD_TYPE, db.getTypeTagStr((activeType() == hdtNone) ? hdtPerson : activeType()));
+    db.prefs.put(PREF_KEY_RECORD_TYPE, db.getTypeTagStr(activeType() == hdtNone ? hdtPerson : activeType()));
 
     boolean watcherWasRunning = folderTreeWatcher.stop();
     
@@ -1293,7 +1292,7 @@ public class MainController
     {
       viewSequence.refresh();
       
-      HyperTab.getHyperTabs().forEach(hyperTab -> refreshTab(hyperTab));
+      HyperTab.getHyperTabs().forEach(this::refreshTab);
       
       if (activeTab() == queryTab)
         HyperTab.getHyperTab(queryTab).clear();
@@ -1415,7 +1414,7 @@ public class MainController
 
   private void clearAllTabsAndViews()
   {
-    HyperTab.getHyperTabs().forEach(hyperTab -> clearTab(hyperTab));
+    HyperTab.getHyperTabs().forEach(this::clearTab);
     
     previewWindow.clearAll();
   }
@@ -1611,9 +1610,6 @@ public class MainController
   
   @FXML private void mnuChangeIDClick()
   {
-    HDT_RecordType changedType;
-    int oldID, newID;
-    
     if (db.isLoaded() == false)
     {
       messageDialog("No database is currently loaded.", mtError);
@@ -1626,9 +1622,9 @@ public class MainController
     
     if (ctrlr.showModal())
     {
-      changedType = ctrlr.hcbRecord.selectedType();
-      oldID = parseInt(ctrlr.tfOldID.getText(), -100);
-      newID = parseInt(ctrlr.tfNewID.getText(), -1);
+      HDT_RecordType changedType = ctrlr.hcbRecord.selectedType();
+      int oldID = parseInt(ctrlr.tfOldID.getText(), -100),
+          newID = parseInt(ctrlr.tfNewID.getText(), -1);
       
       db.rebuildMentions();
                       
@@ -1813,11 +1809,8 @@ public class MainController
       record ->
       {
         HDT_Position position = (HDT_Position)record;
-        PositionSource ps = position.getLaunchableWork();
-        if (ps != null)
-          goToRecord(ps.work, true);
-        
-        ps = position.getWork();
+                    
+        PositionSource ps = nullSwitch(position.getLaunchableWork(), position.getWork());        
         goToRecord(ps.work, true);
       });
     
@@ -1836,15 +1829,8 @@ public class MainController
       record ->
       {
         HDT_Position position = (HDT_Position)record;
-        PositionSource ps = position.getLaunchableWork();
-        if (ps != null)
-          goToRecord(ps.argument, true);
         
-        ps = position.getWork();
-        if (ps != null)
-          goToRecord(ps.argument, true);
-        
-        ps = position.getArgument();
+        PositionSource ps = nullSwitch(position.getLaunchableWork(), nullSwitch(position.getWork(), position.getArgument()));        
         goToRecord(ps.argument, true);
       });
     
@@ -1952,7 +1938,7 @@ public class MainController
     if (curQV.resultsBackingList == null)
     {
       curQV.clear();
-      curQV.resultsTable.tv.setItems(FXCollections.observableList(curQV.resultsBackingList));
+      curQV.resultsTable.getTV().setItems(FXCollections.observableList(curQV.resultsBackingList));
     }
     
     for (ResultsRow row : curQV.resultsBackingList)
@@ -2159,7 +2145,7 @@ public class MainController
 
     CommitableWrapper.commitWrapper(primaryStage().getScene().getFocusOwner());
     
-    return (currentTab().saveToRecord(showMessage) == false);
+    return currentTab().saveToRecord(showMessage) == false;
   }
   
 //---------------------------------------------------------------------------  
@@ -2331,14 +2317,11 @@ public class MainController
 
   public void update()
   {
-    int count;
-    boolean needNewRecord = false;
-    
     updateTopicFolders();
     
     if (db.isLoaded() == false)
     {
-      getTree().clear();
+      getTree().clear();      
       return;
     }
     
@@ -2353,16 +2336,13 @@ public class MainController
         break;
     }
 
-    count = currentTab().getRecordCount();
+    int count = currentTab().getRecordCount();
     
     treeSubjRecord = null;
     
     if (count > 0)
     {
       if (HDT_Record.isEmpty(activeRecord()))
-        needNewRecord = true;
-        
-      if (needNewRecord)
       {
         int ndx = HyperTab.getHyperTab(activeTab()).getView().getTabRecordKeyNdx();
   
@@ -2388,10 +2368,16 @@ public class MainController
       messageDialog("Internal error #38273", mtError);
     else
     {
-      if (activeRecord() != null) currentTab().enable(true);
-      
       updateBottomPanel(true);
+      currentTab().clear();
+
+      if (activeRecord() == null)
+      {
+        currentTab().enable(false);
+        return;
+      }
       
+      currentTab().enable(true);
       if (currentTab().update())
         activeRecord().viewNow();
     }
@@ -2513,15 +2499,7 @@ public class MainController
         btnCreateNew.setDisable(false);
         
         if (count > 0)
-        {
-          HDT_Base record = null;
-          if (hyperTab != null) record = hyperTab.activeRecord();
-          
-          if (record != null)
-            hcbGoTo.addEntry(record.getID(), record.listName(), record.getID());
-          else
-            hcbGoTo.addEntry(-1, "", -1);
-        }
+          hcbGoTo.addAndSelectEntryOrBlank(nullSwitch(hyperTab, null, HyperTab::activeRecord), HDT_Base::listName);
         
         break;
     }
@@ -2545,42 +2523,37 @@ public class MainController
 
   public void attachOrphansToRoots()
   {
-    Set<HDT_Base> orphans = db.getOrphans(rtParentDebateOfDebate);
-    for (HDT_Base orphan : orphans)
+    for (HDT_Base orphan : db.getOrphans(rtParentDebateOfDebate))
     {
       HDT_Debate debate = (HDT_Debate)orphan;      
       if (debate.getID() != 1)
         debate.largerDebates.add(db.debates.getByID(1));
     }
     
-    orphans = db.getOrphans(rtDebateOfPosition);
     Set<HDT_Base> orphans2 = db.getOrphans(rtParentPosOfPos);
     
-    for (HDT_Base orphan : orphans)
+    for (HDT_Base orphan : db.getOrphans(rtDebateOfPosition))
     {
       HDT_Position position = (HDT_Position)orphan;      
       if (orphans2.contains(position))
         position.debates.add(db.debates.getByID(1));
     }
     
-    orphans = db.getOrphans(rtParentNoteOfNote);
-    for (HDT_Base orphan : orphans)
+    for (HDT_Base orphan : db.getOrphans(rtParentNoteOfNote))
     {
       HDT_Note note = (HDT_Note)orphan;      
       if (note.getID() != 1)
         note.parentNotes.add(db.notes.getByID(1));
     }
     
-    orphans = db.getOrphans(rtParentLabelOfLabel);
-    for (HDT_Base orphan : orphans)
+    for (HDT_Base orphan : db.getOrphans(rtParentLabelOfLabel))
     {
       HDT_WorkLabel label = (HDT_WorkLabel)orphan;      
       if (label.getID() != 1)
         label.parentLabels.add(db.workLabels.getByID(1));
     }
     
-    orphans = db.getOrphans(rtParentGroupOfGroup);
-    for (HDT_Base orphan : orphans)
+    for (HDT_Base orphan : db.getOrphans(rtParentGroupOfGroup))
     {
       HDT_PersonGroup group = (HDT_PersonGroup)orphan;      
       if (group.getID() != 1)
@@ -3081,14 +3054,10 @@ public class MainController
       return;
     }
     
-    HDT_Work work;
     boolean creatingNewWork = ibed.getCreateNewWork(),
             creatingNewEntry = ibed.getCreateNewBibEntry();
     
-    if (creatingNewWork)
-      work = db.createNewBlankRecord(hdtWork);
-    else
-      work = ibed.getRecord();
+    HDT_Work work = creatingNewWork ? db.createNewBlankRecord(hdtWork) : ibed.getRecord();
     
     BibData workBibData = work.getBibData();
     
@@ -3125,23 +3094,7 @@ public class MainController
     if ((filePath == null) || (ibed.getDeleteFile() == false))
       return;
     
-      filePath.deletePromptOnFail(true);
-  }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------
-
-  private void mnuImportBibFileClick()
-  {
-    importBibFile(null, null);
-  }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------
-
-  private void mnuImportBibClipboardClick()
-  {
-    importBibFile(convertMultiLineStrToStrList(getClipboardText(false), false), null);
+    filePath.deletePromptOnFail(true);
   }
 
 //---------------------------------------------------------------------------  

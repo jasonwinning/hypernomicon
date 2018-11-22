@@ -95,8 +95,8 @@ public final class BibAuthor implements Cloneable
     
     result = prime * result + safeStr(last).hashCode();
     result = prime * result + safeStr(first).hashCode();
-    result = prime * result + ((person == null) ? 0 : person.hashCode());
-    result = prime * result + ((type == null) ? 0 : type.hashCode());
+    result = prime * result + (person == null ? 0 : person.hashCode());
+    result = prime * result + (type == null ? 0 : type.hashCode());
     return result;
   }
 

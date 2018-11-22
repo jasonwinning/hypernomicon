@@ -19,6 +19,7 @@ package org.hypernomicon.view.populators;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 
@@ -70,11 +71,7 @@ public class RelationPopulator extends Populator
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
-    if (row == null) row = dummyRow;
-    
-    List<HyperTableCell> choices = populate(row, false);
-    
-    for (HyperTableCell choice : choices)
+    for (HyperTableCell choice : populate(nullSwitch(row, dummyRow), false))
       if (HyperTableCell.getCellID(choice) == HyperTableCell.getCellID(cell))
         return choice;
     

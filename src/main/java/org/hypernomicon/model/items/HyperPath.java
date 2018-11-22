@@ -122,14 +122,15 @@ public class HyperPath
         if (record.getType() == hdtFolder)
           return "Root";
     
-    if (getFileName() == null) return "";    
-    return getFileName().getNameOnly().toString(); 
+    return nullSwitch(getFileName(), "", fn -> fn.getNameOnly().toString());
   }
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear()
+  public void clear() { clear(true); }
+  
+  public void clear(boolean deleteFile)
   {
     FilePath filePath = getFilePath();
     
@@ -143,7 +144,7 @@ public class HyperPath
       {
         Set<HyperPath> paths = getHyperPathSetForFilePath(filePath);
         
-        if (paths.isEmpty())
+        if (deleteFile && paths.isEmpty())
           db.fileNoLongerInUse(filePath);
       }
   }
@@ -183,11 +184,7 @@ public class HyperPath
     HyperPath hPath = folder.getPath();
     if (hPath == null) return getFileName();
     
-    FilePath folderFP = hPath.getFilePath();
-
-    if (folderFP == null) return getFileName();
-    
-    return folderFP.resolve(getFileName());
+    return nullSwitch(hPath.getFilePath(), getFileName(), folderFP -> folderFP.resolve(getFileName()));    
   }
 
 //---------------------------------------------------------------------------
@@ -368,11 +365,8 @@ public class HyperPath
   {    
     if (folderPtr == null)
     {
-      if (record != null)
-      {
-        if (record.getType() != hdtPerson)
-          messageDialog("Internal error #83902", mtError);
-      }
+      if ((record != null) && (record.getType() != hdtPerson))
+        messageDialog("Internal error #83902", mtError);
       
       folder = parentFolder;    
     }
@@ -486,22 +480,16 @@ public class HyperPath
 
   public static boolean renameFile(FilePath filePath, String newNameStr) throws IOException
   {
-    boolean success = true;
-    
     Set<HyperPath> set = getHyperPathSetForFilePath(filePath);
     
     if (set.isEmpty())
       return filePath.renameTo(newNameStr);
 
-    Iterator<HyperPath> it = set.iterator();
+    for (HyperPath hyperPath : set)
+      if (hyperPath.moveToFolder(hyperPath.getParentFolder().getID(), false, true, newNameStr) == false)
+        return false;
     
-    while (it.hasNext() && success)
-    {
-      HyperPath hyperPath = it.next();
-      success = hyperPath.moveToFolder(hyperPath.getParentFolder().getID(), false, true, newNameStr);          
-    }
-    
-    return success;
+    return true;
   }
  
 //---------------------------------------------------------------------------

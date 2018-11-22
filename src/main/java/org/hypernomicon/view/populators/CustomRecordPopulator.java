@@ -60,11 +60,9 @@ public class CustomRecordPopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)  
   { 
-    List<HDT_Base> recordList = handler.handle(row, force);
     List<HyperTableCell> cellList = new ArrayList<>();
     
-    for (HDT_Base record : recordList)
-      cellList.add(new HyperTableCell(record.getID(), record.getCBText(), recordType));
+    handler.handle(row, force).forEach(record -> cellList.add(new HyperTableCell(record.getID(), record.getCBText(), recordType)));
 
     return cellList;
   }

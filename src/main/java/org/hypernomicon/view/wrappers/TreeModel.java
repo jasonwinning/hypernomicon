@@ -38,6 +38,7 @@ import javafx.scene.control.TreeItem;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.util.Util.*;
 
 public class TreeModel<RowType extends AbstractTreeRow<RowType>>
 {
@@ -235,19 +236,13 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
 
   private void addChildRows(RowType parentRow)
   {
-    HDT_Base parent = parentRow.getRecord();
-    
-    Set<HDT_Base> children = parentToChildren.getForwardSet(parent);
-    
-    if (children.isEmpty()) return;
-    
-    for (HDT_Base child : children)
+    parentToChildren.getForwardSet(parentRow.getRecord()).forEach(child ->
     {
       RowType childRow = treeWrapper.newRow(child, this);
       recordToRows.addRow(childRow);
       insertTreeItem(treeWrapper.getTreeItem(parentRow).getChildren(), childRow);
       addChildRows(childRow);
-    }
+    });
   }
   
 //---------------------------------------------------------------------------
@@ -263,9 +258,7 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
 
   public boolean hasParentChildRelation(HDT_RecordType parentType, HDT_RecordType childType)
   {
-    if (parentChildRelations.containsKey(parentType) == false) return false;
-    
-    return parentChildRelations.get(parentType).contains(childType);
+    return nullSwitch(parentChildRelations.get(parentType), false, rels -> rels.contains(childType));
   }
 
 //---------------------------------------------------------------------------

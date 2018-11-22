@@ -36,7 +36,8 @@ public class ExternalColumnPopulator extends Populator
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force) { return hT.getSelByCol(colNdx); }
   @Override public CellValueType getValueType()                                    { return cvtRecord; }
   @Override public HDT_RecordType getRecordType(HyperTableRow row)                 { return hT.getTypeByCol(colNdx); }
-
+  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)    { return hT.getSelByCol(colNdx).contains(cell) ? cell.clone() : null; }
+  
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------    
   
@@ -44,14 +45,6 @@ public class ExternalColumnPopulator extends Populator
   {
     this.hT = hT;
     this.colNdx = colNdx;
-  }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------    
-
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
-  {
-    return hT.getSelByCol(colNdx).contains(cell) ? cell.clone() : null;
   }
   
 //---------------------------------------------------------------------------  

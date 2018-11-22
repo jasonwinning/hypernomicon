@@ -528,7 +528,6 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   private <ZEntity extends ZoteroEntity> boolean getRemoteUpdates(ZoteroCommand versionsCmd, ZoteroCommand readCmd, Map<String, ZEntity> keyToEntity) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
   {
     ArrayList<String> downloadQueue = new ArrayList<>();
-    JsonObj jObj;
     
     JsonArray jArr = doReadCommand(versionsCmd, "", "");
     
@@ -540,7 +539,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     
     if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
     {
-      jObj = jArr.getObj(0);
+      JsonObj jObj = jArr.getObj(0);
 
       for (String key : jObj.keySet())
       {
@@ -586,11 +585,8 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       
       if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
       {
-        Iterator<JsonObj> it = jArr.objIterator();
-        
-        while (it.hasNext())
+        jArr.getObjs().forEach(jObj ->
         {
-          jObj = it.next();
           String key = jObj.getStrSafe("key");          
           ZEntity entity = keyToEntity.get(key);
           jObj.put("synced", "true");
@@ -620,7 +616,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
           }
           
           downloadQueue.remove(key);
-        }
+        });
       }        
     }
         
@@ -719,11 +715,8 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         if (syncTask.isCancelled()) throw new TerminateTaskException();
         if (jsonClient.getStatusCode() != HttpStatus.SC_OK) return false;
         
-        Iterator<String> it = jArr.getObj(0).getArray("items").strIterator();
-        
-        while (it.hasNext())
+        jArr.getObj(0).getArray("items").getStrs().forEach(key ->
         {
-          String key = it.next();
           if (keyToAllEntry.containsKey(key) && (keyToTrashEntry.containsKey(key) == false))
           {
             // A remote deletion will simply override local changes. Undocument code to change this behavior.
@@ -761,13 +754,15 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //              noOp();
 //            }          
           }
-        }
+        });
         
-        it = jArr.getObj(0).getArray("collections").strIterator();
-        
-        while (it.hasNext())
+//        it = jArr.getObj(0).getArray("collections").strIterator();
+//        
+//        while (it.hasNext())
+//        {
+//          String key = it.next();
+        jArr.getObj(0).getArray("collections").getStrs().forEach(key ->
         {
-          String key = it.next();
           if (keyToColl.containsKey(key))
           {
             // A remote deletion will simply override local changes. Undocument code to change this behavior.
@@ -784,7 +779,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //              noOp();
 //            }
           }
-        }
+        });
         
         if (syncTask.isCancelled()) throw new TerminateTaskException();
         
@@ -836,15 +831,11 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   
   private void loadFromJSON(JsonObj jObj)
   {
-    JsonArray jArr = jObj.getArray("items");
-    
-    Iterator<JsonObj> it = jArr.objIterator();
-    
-    while (it.hasNext())
+    jObj.getArray("items").getObjs().forEach(itemJsonObj ->
     {
-      ZoteroEntity entity = ZoteroEntity.create(this, it.next());
+      ZoteroEntity entity = ZoteroEntity.create(this, itemJsonObj);
       
-      if (entity == null) continue;
+      if (entity == null) return;
       
       if (entity.getType() == ZoteroEntityType.zoteroItem)
       {
@@ -852,18 +843,16 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         
         keyToAllEntry.put(entity.getKey(), item);
       }
-    }
+    });
     
-    jArr = jObj.getArray("trash");
+    JsonArray jArr = jObj.getArray("trash");
     if (jArr == null) return;
     
-    it = jArr.objIterator();
-    
-    while (it.hasNext())
+    jArr.getObjs().forEach(itemJsonObj ->
     {
-      ZoteroEntity entity = ZoteroEntity.create(this, it.next());
+      ZoteroEntity entity = ZoteroEntity.create(this, itemJsonObj);
       
-      if (entity == null) continue;
+      if (entity == null) return;
       
       if (entity.getType() == ZoteroEntityType.zoteroItem)
       {
@@ -872,17 +861,13 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         keyToAllEntry.put(entity.getKey(), item);
         keyToTrashEntry.put(entity.getKey(), item);
       }
-    }
+    });
     
-    jArr = jObj.getArray("collections");
-    
-    it = jArr.objIterator();
-    
-    while (it.hasNext())
+    jObj.getArray("collections").getObjs().forEach(collJsonObj ->
     {
-      ZoteroEntity entity = ZoteroEntity.create(this, it.next());
+      ZoteroEntity entity = ZoteroEntity.create(this, collJsonObj);
       
-      if (entity == null) continue;
+      if (entity == null) return;
       
       if (entity.getType() == ZoteroEntityType.zoteroCollection)
       {
@@ -890,7 +875,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         
         keyToColl.put(coll.getKey(), coll);
       }
-    }    
+    });    
   }
 
 //---------------------------------------------------------------------------  
@@ -939,14 +924,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       {
         templates = new EnumMap<>(EntryType.class);
         
-        Iterator<JsonObj> it = jArr.objIterator();
-        
-        while (it.hasNext()) 
-        {
-          JsonObj jObj = it.next();
-          EntryType eType = ZoteroItem.parseZoteroType(jObj.getStrSafe("itemType"));
-          templates.put(eType, jObj);
-        }
+        jArr.getObjs().forEach(jObj -> templates.put(ZoteroItem.parseZoteroType(jObj.getStrSafe("itemType")), jObj));
       }
     }
   }
@@ -1197,7 +1175,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   private static void addCreatorsHtml(JsonArray creatorsArr, StringBuilder html)
   {
-    creatorsArr.objIterator().forEachRemaining(node ->
+    creatorsArr.getObjs().forEach(node ->
     {
       String firstName = "", lastName = "", name = "", type = "";
       

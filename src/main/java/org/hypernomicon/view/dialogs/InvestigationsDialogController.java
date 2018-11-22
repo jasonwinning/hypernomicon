@@ -92,7 +92,7 @@ public class InvestigationsDialogController extends HyperDialog
       chkNew.setSelected(newValue.trim().length() > 0);
     });
     
-    onShown = () -> tfNew.requestFocus();
+    onShown = tfNew::requestFocus;
   }
 
 //---------------------------------------------------------------------------  

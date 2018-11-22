@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.relations.HyperObjPointer;
-import org.hypernomicon.view.wrappers.HyperTable;
 
 public class HDT_Note extends HDT_RecordWithConnector
 {
@@ -54,16 +53,13 @@ public class HDT_Note extends HDT_RecordWithConnector
 
   public String getFolderStr()         
   {  
-    if (folder.isNull())
-      return "";
-    
-    return db.getPath(PREF_KEY_TOPICAL_PATH, null).relativize(folder.get().getPath().getFilePath()).toString();
+    return folder.isNull() ? "" : db.getPath(PREF_KEY_TOPICAL_PATH, null).relativize(folder.get().getPath().getFilePath()).toString();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
   
-  public void setParentNotes(HyperTable ht) { updateObjectsFromHT(rtParentNoteOfNote, ht, 2); }
+  public void setParentNotes(List<HDT_Note> list) { updateObjectsFromList(rtParentNoteOfNote, list); }
   
   @Override public String listName()        { return name(); }
   @Override public HDT_RecordType getType() { return hdtNote; }

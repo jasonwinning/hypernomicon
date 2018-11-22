@@ -57,7 +57,7 @@ import javafx.scene.control.TreeTableColumn.SortType;
 
 public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordListView, DragNDropContainer<TreeRow>
 {
-  public TreeTableView<TreeRow> ttv;
+  private TreeTableView<TreeRow> ttv;
   private boolean hasTerms;
   private TreeCB tcb;
   private List<HyperMenuItem> contextMenuItems;
@@ -354,19 +354,14 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 
   public TreeItem<TreeRow> getNext(TreeItem<TreeRow> item, boolean fromChild)
   {
-    TreeItem<TreeRow> next;
-    
     if (fromChild == false)
       if (item.getChildren().size() > 0)
         return item.getChildren().get(0);
     
-    next = item.nextSibling();
+    TreeItem<TreeRow> next = item.nextSibling();
     if (next != null) return next;
     
-    next = item.getParent();
-    if (next == null) return null;
-    
-    return getNext(next, true);
+    return nullSwitch(item.getParent(), null, n -> getNext(n, true));
   }
 
 //---------------------------------------------------------------------------
@@ -505,7 +500,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
     if (selectedItem().getParent() == null) return false;
     
     TreeRow parentRow = selectedItem().getParent().getValue(),
-                      childRow = selectedItem().getValue();
+                        childRow = selectedItem().getValue();
     
     if (parentRow == null) return false;
     if (childRow == null) return false;

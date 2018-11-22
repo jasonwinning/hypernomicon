@@ -53,7 +53,7 @@ public class ZoteroAuthors extends BibAuthors
   
   @Override public void clear()                   
   { 
-    Iterator<JsonObj> it = creatorsArr.objIterator();
+    Iterator<JsonObj> it = creatorsArr.getObjs();
     
     while (it.hasNext())
     {
@@ -76,7 +76,7 @@ public class ZoteroAuthors extends BibAuthors
     editorList.clear();
     translatorList.clear();
     
-    creatorsArr.objIterator().forEachRemaining(creatorObj ->
+    creatorsArr.getObjs().forEach(creatorObj ->
     {
       String aTypeStr = creatorObj.getStrSafe("creatorType");
       AuthorType aType = getAuthorTypeForStr(aTypeStr);

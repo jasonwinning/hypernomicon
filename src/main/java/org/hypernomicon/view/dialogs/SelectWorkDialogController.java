@@ -20,6 +20,7 @@ package org.hypernomicon.view.dialogs;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 
+import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 
@@ -80,12 +81,9 @@ public class SelectWorkDialogController extends HyperDialog
       }
     });
     
-    if (author == null)
-      hcbAuthor.addEntry(-2, "", -2);
-    else
-      hcbAuthor.addEntry(author.getID(), author.getCBText(), author.getID());
+    hcbAuthor.addAndSelectEntryOrBlank(author, HDT_Base::getCBText);
       
-    hcbWork.addEntry(-2, "", -2);    
+    hcbWork.addBlankEntry();    
   }
 
 //---------------------------------------------------------------------------  
@@ -96,6 +94,7 @@ public class SelectWorkDialogController extends HyperDialog
     if (hcbWork.selectedID() < 1)
     {
       messageDialog("Select a work record.", mtInformation);
+      safeFocus(cbWork);
       return false;
     }
     

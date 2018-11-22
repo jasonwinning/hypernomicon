@@ -126,28 +126,24 @@ public class ChangeIDDialogController extends HyperDialog
     if (hcbRecord.selectedID() < 1)
     {
       messageDialog("You must select a record.", mtError);
+      safeFocus(cbRecord);
       return false;
     }
     
     if ((parseInt(tfNewID.getText(), -1) < 1) || (lblNotAvailable.isVisible()))
     {
       messageDialog("You must enter a valid numeric ID.", mtError);
+      safeFocus(tfNewID);
       return false;
     }
 
     HDT_Base record = db.records(hcbRecord.selectedType()).getByID(parseInt(tfOldID.getText(), -1));
     
-    boolean success = false;
-    
-    if (record != null)
-      success = record.changeID(parseInt(tfNewID.getText(), -1));
+    if ((record == null) || (record.changeID(parseInt(tfNewID.getText(), -1)) == false))
+      return falseWithErrorMessage("Unable to change record ID.");
 
-    if (success)
-      messageDialog("The record ID was changed successfully.", mtInformation);
-    else
-      messageDialog("Unable to change record ID.", mtError);
-    
-    return success;
+    messageDialog("The record ID was changed successfully.", mtInformation);
+    return true;
   }
 
 //---------------------------------------------------------------------------  

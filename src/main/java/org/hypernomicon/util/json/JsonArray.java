@@ -25,6 +25,8 @@ import org.json.simple.JSONObject;
 
 import org.hypernomicon.util.json.JsonObj.JsonNodeType;
 
+import static org.hypernomicon.util.Util.*;
+
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
@@ -45,6 +47,9 @@ public class JsonArray
   public boolean contains(String collKey) { return jArr.contains(collKey); }
   public int size()                       { return jArr.size(); }
   public JsonNodeType getType(int ndx)    { return JsonObj.determineType(jArr.get(ndx)); }
+  public String getLongAsStrSafe(int ndx) { return nullSwitch(jArr.get(ndx), "", obj -> String.valueOf(Long.class.cast(obj).longValue())); }
+  public JsonObjIterator getObjs()        { return new JsonObjIterator(); }
+  public JsonStrIterator getStrs()        { return new JsonStrIterator(); }
   
   @SuppressWarnings("unchecked") public void set(int ndx, JsonObj element)   { jArr.set(ndx, element); }
   @SuppressWarnings("unchecked") public void set(int ndx, JsonArray element) { jArr.set(ndx, element); }
@@ -63,83 +68,79 @@ public class JsonArray
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
-  public Iterator<JsonObj> objIterator()
+  public class JsonObjIterator implements Iterator<JsonObj>, Iterable<JsonObj>
   { 
-    return new Iterator<JsonObj>()
-    {
-      int lastNdx = -1, nextNdx = 0;
+    private int lastNdx = -1, nextNdx = 0;
       
     //---------------------------------------------------------------------------
       
-      @Override public boolean hasNext() { return nextNdx < jArr.size(); }
-      
-    //---------------------------------------------------------------------------
-      
-      @Override public JsonObj next()    
-      { 
-        if (hasNext())
-        {
-          lastNdx = nextNdx;
-          nextNdx++;
-          return getObj(lastNdx);
-        }
-        
-        throw new NoSuchElementException();       
+    @Override public boolean hasNext()            { return nextNdx < jArr.size(); }
+    @Override public Iterator<JsonObj> iterator() { return this; }
+    
+  //---------------------------------------------------------------------------
+    
+    @Override public JsonObj next()    
+    { 
+      if (hasNext())
+      {
+        lastNdx = nextNdx;
+        nextNdx++;
+        return getObj(lastNdx);
       }
       
-    //---------------------------------------------------------------------------
+      throw new NoSuchElementException();       
+    }
+    
+  //---------------------------------------------------------------------------
+    
+    @Override public void remove()
+    {
+      if (lastNdx == -1)
+        throw new IllegalStateException();
       
-      @Override public void remove()
-      {
-        if (lastNdx == -1)
-          throw new IllegalStateException();
-        
-        jArr.remove(lastNdx);
-        nextNdx--;
-        lastNdx = -1;
-      }      
-    };
+      jArr.remove(lastNdx);
+      nextNdx--;
+      lastNdx = -1;
+    }      
   }
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
-  public Iterator<String> strIterator() 
+  public class JsonStrIterator implements Iterator<String>, Iterable<String> 
   { 
-    return new Iterator<String>()
-    {
-      int lastNdx = -1, nextNdx = 0;
-      
-    //---------------------------------------------------------------------------
-      
-      @Override public boolean hasNext() { return nextNdx < jArr.size(); }
-      
-    //---------------------------------------------------------------------------
-      
-      @Override public String next()     
-      { 
-        if (hasNext()) 
-        {
-          lastNdx = nextNdx;
-          nextNdx++;
-          return getStr(lastNdx);
-        }
-        
-        throw new NoSuchElementException();
-      }
-      
-    //---------------------------------------------------------------------------
-      
-      @Override public void remove()
+    private int lastNdx = -1, nextNdx = 0;
+    
+  //---------------------------------------------------------------------------
+    
+    @Override public boolean hasNext()           { return nextNdx < jArr.size(); }
+    @Override public Iterator<String> iterator() { return this; }
+    
+  //---------------------------------------------------------------------------
+    
+    @Override public String next()     
+    { 
+      if (hasNext()) 
       {
-        if (lastNdx == -1)
-          throw new IllegalStateException();
-        
-        jArr.remove(lastNdx);
-        nextNdx--;
-        lastNdx = -1;
+        lastNdx = nextNdx;
+        nextNdx++;
+        return getStr(lastNdx);
       }
-    };
+      
+      throw new NoSuchElementException();
+    }
+    
+  //---------------------------------------------------------------------------
+    
+    @Override public void remove()
+    {
+      if (lastNdx == -1)
+        throw new IllegalStateException();
+      
+      jArr.remove(lastNdx);
+      nextNdx--;
+      lastNdx = -1;
+    }
   }
 
 //---------------------------------------------------------------------------  
@@ -153,18 +154,7 @@ public class JsonArray
     
     return (String) obj;
   }
-
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------
-
-  public String getLongAsStrSafe(int ndx)
-  {
-    Object obj = jArr.get(ndx);
-    if (obj == null) return "";
-    
-    return String.valueOf(Long.class.cast(obj).longValue());
-  }
-  
+ 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 

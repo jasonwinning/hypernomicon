@@ -32,7 +32,6 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.HyperObjPointer;
-import org.hypernomicon.view.wrappers.HyperTable;
 
 public class HDT_MiscFile extends HDT_RecordWithConnector implements HDT_RecordWithPath
 { 
@@ -64,8 +63,8 @@ public class HDT_MiscFile extends HDT_RecordWithConnector implements HDT_RecordW
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setAuthors(HyperTable ht)       { updateObjectsFromHT(rtAuthorOfFile, ht, 1); }
-  public void setWorkLabels(HyperTable ht)    { updateObjectsFromHT(rtLabelOfFile, ht, 2); }
+  public void setAuthors(List<HDT_Person> list)       { updateObjectsFromList(rtAuthorOfFile, list); }
+  public void setWorkLabels(List<HDT_WorkLabel> list) { updateObjectsFromList(rtLabelOfFile, list); }
   
   public boolean getAnnotated()         { return getTagBoolean(tagAnnotated); }
   public void setAnnotated(boolean val) { updateTagBoolean(tagAnnotated, val); }

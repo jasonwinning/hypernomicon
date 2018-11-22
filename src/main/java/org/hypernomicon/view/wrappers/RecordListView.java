@@ -114,29 +114,11 @@ public interface RecordListView
         record -> highlightFileInExplorer(HDT_RecordWithPath.class.cast(record).getPath().getFilePath()));
 
     rlv.addCondContextMenuItem(hdtNote, "Show folder in File Manager",
-        record -> 
-        {
-          HDT_Note note = HDT_Note.class.cast(record);
-          
-          if (note.folder.isNotNull())
-            if (note.folder.get().getPath().isEmpty() == false)
-              return true;
-          
-          return false;
-        },
+        record -> nullSwitch(HDT_Note.class.cast(record), false, note -> note.folder.get().getPath().isEmpty() == false), 
         record -> ui.goToFileInManager(HDT_Note.class.cast(record).folder.get().getPath().getFilePath()));
 
     rlv.addCondContextMenuItem(hdtNote, "Show folder in system explorer",
-        record -> 
-        {
-          HDT_Note note = HDT_Note.class.cast(record);
-          
-          if (note.folder.isNotNull())
-            if (note.folder.get().getPath().isEmpty() == false)
-              return true;
-          
-          return false;
-        },
+        record -> nullSwitch(HDT_Note.class.cast(record), false, note -> note.folder.get().getPath().isEmpty() == false),
         record -> highlightFileInExplorer(HDT_Note.class.cast(record).folder.get().getPath().getFilePath()));
   }
   

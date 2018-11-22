@@ -118,8 +118,7 @@ public class SelectColumnsDialogController extends HyperDialog
             TypeCheckBox tcb = grp.checkBox;
             tcb.setSelected(true);
             
-            for (CheckBox ccb : tcb.children)
-              ccb.setSelected(true);
+            tcb.children.forEach(ccb -> ccb.setSelected(true));
           }
         }
         else
@@ -144,8 +143,7 @@ public class SelectColumnsDialogController extends HyperDialog
             TypeCheckBox tcb = grp.checkBox;
             tcb.setSelected(false);
             
-            for (CheckBox ccb : tcb.children)
-              ccb.setSelected(false);
+            tcb.children.forEach(ccb -> ccb.setSelected(false));
           }
         }
         else
@@ -163,14 +161,12 @@ public class SelectColumnsDialogController extends HyperDialog
         if (newValue)
         {         
           chkSelectNone.setSelected(false);
-          for (CheckBox chk :  chkType.children)
-            chk.setSelected(true);
+          chkType.children.forEach(chk -> chk.setSelected(true));
         }
         else
         {
           chkSelectAll.setSelected(false);
-          for (CheckBox chk :  chkType.children)
-            chk.setSelected(false);
+          chkType.children.forEach(chk -> chk.setSelected(false));
         }        
         
         noListen = false;

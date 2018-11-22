@@ -46,7 +46,7 @@ import javafx.scene.control.TableColumn;
 
 public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 {
-  HyperTable htParents, htArguments, htSubpositions;
+  private HyperTable htParents, htArguments, htSubpositions;
   private HDT_Position curPosition;
   
   @Override public HDT_RecordType getType()                  { return hdtPosition; }
@@ -61,88 +61,69 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
   
   @Override public boolean update()
   {
-    int ndx;
-    HDT_Work work;
-    
-    if (db.isLoaded() == false) return false;
-    
-    clear();
-    
-    if (curPosition == null)
-    {
-      enable(false);
-      return false;
-    }
-    
     curPosition.addParentDisplayRecord();
     
-    if (!ctrlr.update(curPosition)) return false;
+    ctrlr.update(curPosition);
     
  // Select parent records in ComboBoxes
  // -----------------------------------
 
-    ndx = 0; for (HDT_Position otherPos : curPosition.largerPositions)
+    htParents.buildRows(curPosition.largerPositions, (row, otherPos) ->
     {
-      htParents.setDataItem(2, ndx, -1, db.getTypeName(hdtPosition), hdtPosition);
-      htParents.setDataItem(3, ndx, otherPos.getID(), otherPos.listName(), hdtPosition);
-      ndx++;
-    }
+      row.setCellValue(2, -1, db.getTypeName(hdtPosition), hdtPosition);
+      row.setCellValue(3, otherPos, otherPos.listName());
+    });
 
-    ndx = 0; for (HDT_Debate debate : curPosition.debates)
+    htParents.buildRows(curPosition.debates, (row, debate) ->
     {
-      htParents.setDataItem(2, ndx + curPosition.largerPositions.size(), -1, db.getTypeName(hdtDebate), hdtDebate);
-      htParents.setDataItem(3, ndx + curPosition.largerPositions.size(), debate.getID(), debate.listName(), hdtDebate);
-      ndx++;
-    }
+      row.setCellValue(2, -1, db.getTypeName(hdtDebate), hdtDebate);
+      row.setCellValue(3, debate, debate.listName());      
+    });
    
 // Populate arguments
 // ------------------
 
-    ndx = 0; for (HDT_Argument argument : curPosition.arguments)
+    htArguments.buildRows(curPosition.arguments, (row, argument) ->
     { 
-      work = null;
+      HDT_Work work = null;
       
       if (argument.works.size() > 0)
       {
         work = argument.works.get(0);
         if (work.authorRecords.size() > 0)
-          htArguments.setDataItem(1, ndx, work.authorRecords.get(0).getID(), work.getShortAuthorsStr(true), hdtPerson);
+          row.setCellValue(1, work.authorRecords.get(0), work.getShortAuthorsStr(true));
         else
-          htArguments.setDataItem(1, ndx, work.getID(), work.getShortAuthorsStr(true), hdtWork);
+          row.setCellValue(1, work, work.getShortAuthorsStr(true));
       }
       
       if (work != null)
       {
-        htArguments.setDataItem(3, ndx, argument.getID(), work.getYear(), hdtArgument, HyperCellSortMethod.hsmNumeric);
-        htArguments.setDataItem(4, ndx, work.getID(), work.name(), hdtWork);
+        row.setCellValue(3, argument, work.getYear(), HyperCellSortMethod.hsmNumeric);
+        row.setCellValue(4, work, work.name());
       }
       else
-        htArguments.setDataItem(3, ndx, argument.getID(), "", hdtArgument);
+        row.setCellValue(3, argument, "");
   
       HDT_PositionVerdict verdict = argument.getPosVerdict(curPosition);
       if (verdict != null)
-        htArguments.setDataItem(2, ndx, argument.getID(), verdict.listName(), hdtArgument);
+        row.setCellValue(2, argument, verdict.listName());
       
-      htArguments.setDataItem(5, ndx, argument.getID(), argument.listName(), hdtArgument);
-      
-      ndx++;
-    }
+      row.setCellValue(5, argument, argument.listName());
+    });
     
  // Populate subpositions
  // ---------------------
 
-    ndx = 0; for (HDT_Position subPos : curPosition.subPositions)
+    htSubpositions.buildRows(curPosition.subPositions, (row, subPos) ->
     {
-      htSubpositions.setDataItem(1, ndx, subPos.getID(), subPos.getCBText(), hdtPosition);
+      row.setCellValue(1, subPos, subPos.getCBText());
 
       PositionSource ps = subPos.getWorkWithAuthor();
       if (ps != null)
-        htSubpositions.setDataItem(2, ndx, ps.author.getID(), Authors.getShortAuthorsStr(subPos.getPeople(), true, true), hdtPerson);
+        row.setCellValue(2, ps.author, Authors.getShortAuthorsStr(subPos.getPeople(), true, true));
       else
-        htSubpositions.setDataItem(2, ndx, -1, Authors.getShortAuthorsStr(subPos.getPeople(), true, true), hdtPerson);
-      
-      ndx++;
-    }
+        row.setCellValue(2, -1, Authors.getShortAuthorsStr(subPos.getPeople(), true, true), hdtPerson);
+    });
     
     return true;
   }
@@ -191,7 +172,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
       HDT_RecordType parentType = cellVal.getType();
       rbtp.setRecordType(row, parentType);
       rbtp.setChanged(row);
-      row.updateCell(nextColNdx, new HyperTableCell(-1, "", parentType));
+      row.setCellValue(nextColNdx, new HyperTableCell(-1, "", parentType));
     });
     
     htParents.addColAltPopulator(hdtNone, ctDropDownList, new RecordByTypePopulator());
@@ -254,8 +235,8 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
   {   
     if (!ctrlr.save(curPosition, showMessage, this)) return false;
     
-    curPosition.setLargerPositions(htParents);
-    curPosition.setDebates(htParents);
+    curPosition.setLargerPositions(htParents.saveToList(3, hdtPosition));
+    curPosition.setDebates(htParents.saveToList(3, hdtDebate));
     
     ui.attachOrphansToRoots();
     

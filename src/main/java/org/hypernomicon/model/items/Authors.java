@@ -82,9 +82,9 @@ public class Authors implements Iterable<Author>
     objListNoMod = db.getObjectList(rtAuthorOfWork, work, false);
   }
   
-  public final int size()      { return allRecords ? objList.size() : authorList.size(); }
-  public boolean isEmpty()     { return size() == 0; }
-  final void expire()          { clearNoMod(); }
+  public final int size()  { return allRecords ? objList.size() : authorList.size(); }
+  public boolean isEmpty() { return size() == 0; }
+  final void expire()      { clearNoMod(); }
 
   @Override public Iterator<Author> iterator() { return new AuthorIterator(); }
 
@@ -165,8 +165,7 @@ public class Authors implements Iterable<Author>
     authorList = new ArrayList<>();
     allRecords = false;            
 
-    for (HDT_Person person : objListNoMod)
-      authorList.add(new Author(work, person));
+    objListNoMod.forEach(person -> authorList.add(new Author(work, person)));
   }
 
   //---------------------------------------------------------------------------
@@ -186,12 +185,11 @@ public class Authors implements Iterable<Author>
   {
     objList.clear();
     
-    if (authorList != null)
-      if (authorList.isEmpty() == false)
-      {
-        authorList = null;
-        work.modifyNow();
-      }
+    if ((authorList != null) && (authorList.isEmpty() == false))
+    {
+      authorList = null;
+      work.modifyNow();
+    }
       
     allRecords = true;
   }
@@ -231,10 +229,7 @@ public class Authors implements Iterable<Author>
       }
     }
     
-    if (allRecords) 
-      authorList = null;
-    else    
-      authorList = getListFromObjectGroups(objGroups, work);
+    authorList = allRecords ? null : getListFromObjectGroups(objGroups, work);
   }
 
   //---------------------------------------------------------------------------
@@ -244,7 +239,7 @@ public class Authors implements Iterable<Author>
   {
     List<Author> authorList = new ArrayList<>();
     
-    for (ObjectGroup objGroup : objGroups)
+    objGroups.forEach(objGroup ->
     {
       if (objGroup.getPrimary() != null)
         authorList.add(new Author(work, (HDT_Person) objGroup.getPrimary()));
@@ -253,7 +248,7 @@ public class Authors implements Iterable<Author>
                                         objGroup.getValue(tagEditor).bool, 
                                         objGroup.getValue(tagTranslator).bool, 
                                         objGroup.getValue(tagInFileName).ternary));
-    }
+    });
     
     return authorList;
   }
@@ -295,7 +290,7 @@ public class Authors implements Iterable<Author>
   //---------------------------------------------------------------------------
 
   public void add(Author author)
-  {
+  {   
     if (author.getPerson() == null)
       add(author.getName(), author.getIsEditor(), author.getIsTrans(), author.getInFileName());
     else

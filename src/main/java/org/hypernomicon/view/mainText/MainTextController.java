@@ -44,7 +44,6 @@ import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.KeyWork;
 import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.MainText.DisplayItem;
-import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -62,11 +61,11 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.geometry.Side;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
@@ -118,7 +117,12 @@ public class MainTextController
 //---------------------------------------------------------------------------
 
   public List<DisplayItem> getDisplayItems() { return lvRecords.getItems(); }
-  private void clearText()                   { he.setHtmlText(disableLinks(getHtmlEditorText(""))); }
+  public boolean isEmpty()                   { return getHtmlAndKeyWorks(new ArrayList<KeyWork>()).trim().length() == 0; }
+  
+  public int getScrollPos()    { return nullSwitch(getWebView(), 0, webView -> MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
+  
+  private void clearText()     { he.setHtmlText(disableLinks(getHtmlEditorText(""))); }
+  private WebView getWebView() { return (WebView) he.lookup("WebView"); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -137,7 +141,7 @@ public class MainTextController
   { 
     runDelayedInFXThread(5, 100, event ->
     {
-      final WebView view = (WebView) he.lookup("WebView");
+      final WebView view = getWebView();
       Platform.runLater(() -> 
       {
         view.fireEvent(new MouseEvent(MouseEvent.MOUSE_PRESSED, 15, 100, 200, 200, MouseButton.PRIMARY, 1, false, false, false, false, false, false, false, false, false, false, null));
@@ -149,11 +153,11 @@ public class MainTextController
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-
+ 
   @SuppressWarnings("restriction")
   public void init()
   {
-    final WebView webview = (WebView) he.lookup("WebView");
+    final WebView webview = getWebView();
     GridPane.setHgrow(webview, Priority.ALWAYS);
     GridPane.setVgrow(webview, Priority.ALWAYS);
            
@@ -277,16 +281,12 @@ public class MainTextController
     
     cbName.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
-      HDT_RecordWithConnector record = (HDT_RecordWithConnector) HyperTableCell.getRecord(newValue);
-      
-      btnInsert.setDisable(record == null);
+      btnInsert.setDisable(HyperTableCell.getRecord(newValue) == null);
     });
     
     cbKeyName.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
-      HDT_Base record = HyperTableCell.getRecord(newValue);
-      
-      btnAdd.setDisable(record == null);
+      btnAdd.setDisable(HyperTableCell.getRecord(newValue) == null);
     });
     
     lvRecords.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
@@ -332,9 +332,9 @@ public class MainTextController
       setHTMLContextMenu(menuItem1, menuItem2);
     });
     
-    he.setOnMouseClicked(event -> event.consume());
-    he.setOnMousePressed(event -> event.consume());
-    he.setOnMouseReleased(event -> event.consume());
+    he.setOnMouseClicked(Event::consume);
+    he.setOnMousePressed(Event::consume);
+    he.setOnMouseReleased(Event::consume);
     
     ToolBar bar = (ToolBar) he.lookup(".top-toolbar");
     
@@ -527,29 +527,24 @@ public class MainTextController
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
-  
+   
   private void btnLinkClick()
   {
-    Node webNode = he.lookup(".web-view");
-    if (webNode instanceof WebView) 
-    {
-      WebView webView = (WebView) webNode;
-      WebEngine engine = webView.getEngine();
-      
-      String selText = (String) engine.executeScript("window.getSelection().getRangeAt(0).toString()");
-      
-      NewLinkDialogController dlg = NewLinkDialogController.create("Insert Link", convertToSingleLine(selText));
-      
-      if (dlg.showModal() == false) return;
-                
-      String urlText = dlg.tfURL.getText();
-      
-      String anchorTag = "<a title=\"" + htmlEscaper.escape(urlText) + "\" href=\"" + urlText + "\">" + htmlEscaper.escape(dlg.tfDisplayText.getText()) + "</a>";
-      
-      engine.executeScript("insertHtmlAtCursor('" + anchorTag + "')");
-    }
+    WebEngine engine = getWebView().getEngine();
+    
+    String selText = (String) engine.executeScript("window.getSelection().rangeCount < 1 ? \"\" : window.getSelection().getRangeAt(0).toString()");
+    
+    NewLinkDialogController dlg = NewLinkDialogController.create("Insert Link", convertToSingleLine(selText));
+    
+    if (dlg.showModal() == false) return;
+              
+    String urlText = dlg.tfURL.getText();
+    
+    String anchorTag = "<a title=\"" + htmlEscaper.escape(urlText) + "\" href=\"" + urlText + "\">" + htmlEscaper.escape(dlg.tfDisplayText.getText()) + "</a>";
+       
+    engine.executeScript("insertHtmlAtCursor('" + anchorTag + "')");
   }
-
+  
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
 
@@ -569,9 +564,7 @@ public class MainTextController
         text = text.replaceAll("\\v", "<br>");
       }
       
-      WebView webview = (WebView) he.lookup("WebView");
-      WebEngine engine = webview.getEngine();
-      engine.executeScript("insertHtmlAtCursor('" + text + "')");
+      getWebView().getEngine().executeScript("insertHtmlAtCursor('" + text + "')");
     };
   }
   
@@ -586,6 +579,7 @@ public class MainTextController
         "  var range, node;\n" + 
         "  if (window.getSelection && window.getSelection().getRangeAt)\n" +
         "  {\n" +
+        "    if (window.getSelection().rangeCount < 1) window.getSelection().addRange(document.createRange());\n" +
         "    range = window.getSelection().getRangeAt(0);\n" +
         "    range.deleteContents();\n" +
         "    node = range.createContextualFragment(html);\n" +
@@ -620,20 +614,6 @@ public class MainTextController
     editorHtml = doc.html();    
     
     return editorHtml.replace("a { pointer-events: none; }", "");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public int getScrollPos()
-  {
-    WebView webView = (WebView) he.lookup("WebView");
-    if (webView != null) 
-    {
-      WebEngine engine = webView.getEngine();
-      return MainTextWrapper.getWebEngineScrollPos(engine);
-    }
-    return 0;
   }
 
 //---------------------------------------------------------------------------
@@ -789,14 +769,6 @@ public class MainTextController
     
     if (displayItems != null)
       lvRecords.setItems(FXCollections.observableArrayList(displayItems));   
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean isEmpty()
-  {
-    return getHtmlAndKeyWorks(new ArrayList<KeyWork>()).trim().length() == 0;
   }
 
 //---------------------------------------------------------------------------

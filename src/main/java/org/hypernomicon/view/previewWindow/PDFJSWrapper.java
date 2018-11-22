@@ -162,7 +162,7 @@ public class PDFJSWrapper
       try { initViewerHTML(); }
       catch (IOException e)
       {
-        messageDialog("Unable to initialize preview window: Unable to read html file", mtError);
+        messageDialog("Unable to initialize preview window: Unable to read HTML file", mtError);
         jxBrowserDisabled = true;
         return false;      
       }
@@ -539,11 +539,25 @@ public class PDFJSWrapper
   {
     Runnable runnable = () ->
     {
+      opened = false;
+      boolean readyToOpen = false;
+      
+      for (int ndx = 0; (ndx < 100) && !readyToOpen; ndx++)
+      {
+        readyToOpen = browser.executeJavaScriptAndReturnValue("'openPdfFile' in window").getBooleanValue();
+        if (!readyToOpen) sleepForMillis(50);
+      }
+      
+      if (!readyToOpen)
+      {
+        messageDialog("An error occurred while trying to show PDF file preview.", mtError);
+        return;
+      }
+      
       browser.executeJavaScript("openPdfFile(\"" + file.toURLString() + "\", " + 
                                                    String.valueOf(initialPage) + ", " +
                                                    appPrefs.getInt(PREF_KEY_PDFJS_SIDEBAR_VIEW, SidebarView_NONE) + ");");      
-      ready = false;
-      opened = false;      
+      ready = false;           
     };
     
     if (pdfjsMode == false)

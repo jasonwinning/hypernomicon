@@ -71,10 +71,10 @@ public class NestedValue
     final int prime = 31;
     int result = 1;
     result = prime * result + (bool ? 1231 : 1237);
-    result = prime * result + ((hdc == null) ? 0 : hdc.hashCode());
-    result = prime * result + ((str == null) ? 0 : str.hashCode());
-    result = prime * result + ((target == null) ? 0 : target.hashCode());
-    result = prime * result + ((ternary == null) ? 0 : ternary.hashCode());
+    result = prime * result + (hdc == null ? 0 : hdc.hashCode());
+    result = prime * result + (str == null ? 0 : str.hashCode());
+    result = prime * result + (target == null ? 0 : target.hashCode());
+    result = prime * result + (ternary == null ? 0 : ternary.hashCode());
     return result;
   }
   

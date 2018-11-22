@@ -20,13 +20,14 @@ package org.hypernomicon.view.workMerge;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.dialogs.WorkDialogController.createAuthorRecordHandler;
 import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.ctDropDownList;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
 import org.hypernomicon.bib.BibData;
 import org.hypernomicon.bib.BibData.BibFieldEnum;
-import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -53,6 +54,7 @@ public class WorkToMerge
   public List<ObjectGroup> getAuthorGroups(HDT_Work work) { return htAuthors.getAuthorGroups(work, 0, -1, 2, 3); }
   public HDT_WorkType getWorkType()                       { return hcbType.selectedRecord(); }
   public BibData getBibData()                             { return bibData; }
+  public boolean hasField(BibFieldEnum bibFieldEnum)      { return nullSwitch(bibData, false, () -> bibData.fieldNotEmpty(bibFieldEnum)); }
    
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
@@ -99,15 +101,11 @@ public class WorkToMerge
   {    
     if (creatingNewWork)
     {
-      if (workRecord.workType.isNotNull())
-        hcbType.addEntry(workRecord.workType.getID(), workRecord.workType.get().name(), workRecord.workType.getID());
-      else
-        hcbType.addEntry(-1, "", -1);
-        
+      hcbType.addAndSelectEntryOrBlank(workRecord.workType, HDT_Base::name);       
       rbType.setSelected(true);
     }
     
-    int ndx = 0; for (Author author : workRecord.getAuthors())
+    htAuthors.buildRows(workRecord.getAuthors(), (row, author) ->
     {
       HDT_Person authorRecord = author.getPerson();
       
@@ -116,19 +114,17 @@ public class WorkToMerge
         Populator pop = htAuthors.getPopulator(0);
         pop.populate(null, false);
         pop.addEntry(null, -1, author.getNameLastFirst());
-        htAuthors.setDataItem(0, ndx, -1, author.getNameLastFirst(), hdtPerson);
+        row.setCellValue(0, -1, author.getNameLastFirst(), hdtPerson);
       }
       else
       {
-        htAuthors.setDataItem(0, ndx, authorRecord.getID(), authorRecord.listName(), hdtPerson);
-        htAuthors.setCheckboxValue(1, ndx, true);
+        row.setCellValue(0, authorRecord, authorRecord.listName());
+        row.setCheckboxValue(1, true);
       }
 
-      htAuthors.setCheckboxValue(2, ndx, author.getIsEditor());
-      htAuthors.setCheckboxValue(3, ndx, author.getIsTrans());
-
-      ndx++;
-    }
+      row.setCheckboxValue(2, author.getIsEditor());
+      row.setCheckboxValue(3, author.getIsTrans());
+    });
   }
 
 //---------------------------------------------------------------------------  
@@ -140,23 +136,13 @@ public class WorkToMerge
     
     if (workType != null)
     {
-      hcbType.addEntry(workType.getID(), workType.name(), workType.getID());
+      hcbType.addAndSelectEntry(workType, HDT_Base::name);
       rbType.setSelected(true);
     }
     
     htAuthors.getPopulator(0).populate(null, false);
     
     WorkDialogController.loadFromBibAuthors(bibData.getAuthors(), htAuthors, false);
-  }
-
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-
-  public boolean hasField(BibFieldEnum bibFieldEnum)
-  {
-    if (bibData == null) return false;
-    
-    return bibData.fieldNotEmpty(bibFieldEnum);
   }
 
 //---------------------------------------------------------------------------  

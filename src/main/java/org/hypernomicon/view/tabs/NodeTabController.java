@@ -72,7 +72,7 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
   @FXML SplitPane spChildren;
   @FXML ToolBar tbLinks;
 
-  public Label debateLink, noteLink, labelLink, conceptLink;
+  private Label debateLink, noteLink, labelLink, conceptLink;
   private HDT_RecordType recordType;
   private MainTextWrapper mainText;
   private HyperNodeTab<HDT_RT, HDT_CT> hyperTab;
@@ -434,7 +434,7 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
       }
     }
     
-    if (!HyperTab.saveSearchKey(record, tfSearchKey, showMessage, hyperTab)) return false;
+    if (!hyperTab.saveSearchKey(record, tfSearchKey, showMessage)) return false;
     
     record.setName(tfName.getText());
     
@@ -446,7 +446,7 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  public boolean update(HDT_CT record)
+  public void update(HDT_CT record)
   {  
     tfName.setText(record.name());
     tfSearchKey.setText(record.getSearchKey());
@@ -459,8 +459,6 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
     record.viewNow();
     
     safeFocus(tfName);
-    
-    return true;
   }
 
 //---------------------------------------------------------------------------  

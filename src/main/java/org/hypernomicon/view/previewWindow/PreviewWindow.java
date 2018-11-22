@@ -167,8 +167,7 @@ public class PreviewWindow extends HyperDialog
     if (newVal < 0)
       btnStartPage.setText("Start p. " + TEXT_TO_SHOW_IF_NONE);
     else
-      btnStartPage.setText("Start p. " + String.valueOf(newVal));
-    
+      btnStartPage.setText("Start p. " + String.valueOf(newVal));    
   }
 
 //---------------------------------------------------------------------------  
@@ -180,7 +179,6 @@ public class PreviewWindow extends HyperDialog
       btnEndPage.setText("End p. " + TEXT_TO_SHOW_IF_NONE);
     else
       btnEndPage.setText("End p. " + String.valueOf(newVal));
-    
   }
 
 //---------------------------------------------------------------------------  
@@ -448,8 +446,7 @@ public class PreviewWindow extends HyperDialog
     
     dialogStage.focusedProperty().addListener((observable, oldValue, newValue) ->
     {
-      if (newValue == null) return;
-      if (newValue == false) return;
+      if ((newValue == null) || (newValue == false)) return;
       
       ui.windows.push(dialogStage);
     });

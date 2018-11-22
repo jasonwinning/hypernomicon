@@ -54,11 +54,13 @@ import javafx.scene.input.MouseEvent;
 
 public class ResultsTable implements RecordListView
 {
-  public TableView<ResultsRow> tv;
+  private TableView<ResultsRow> tv;
   private boolean datesAdded = false;
   public static final ArrayList<ColumnGroup> colGroups = new ArrayList<ColumnGroup>();
-  public static ColumnGroup generalGroup;
+  private static ColumnGroup generalGroup;
   private List<HyperMenuItem> contextMenuItems;
+  
+  public TableView<ResultsRow> getTV() { return tv; }
 
 //---------------------------------------------------------------------------
 
@@ -412,11 +414,7 @@ public class ResultsTable implements RecordListView
 
   public HDT_Base selectedRecord()
   {
-    ResultsRow row = tv.getSelectionModel().getSelectedItem();
-    HDT_Base record = null;
-    
-    if (row != null) record = row.getRecord();
-    return record;
+    return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, ResultsRow::getRecord);
   }
 
 //---------------------------------------------------------------------------

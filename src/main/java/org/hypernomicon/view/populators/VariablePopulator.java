@@ -19,6 +19,7 @@ package org.hypernomicon.view.populators;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,8 +52,7 @@ public class VariablePopulator extends Populator
   
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    Populator pop = rowToPop.get(row);
-    return pop == null ? new ArrayList<>() : pop.populate(row, force);
+    return nullSwitch(rowToPop.get(row), new ArrayList<>(), pop -> pop.populate(row, force));
   }
   
 //---------------------------------------------------------------------------  
@@ -60,8 +60,7 @@ public class VariablePopulator extends Populator
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
-    Populator pop = rowToPop.get(row);
-    return pop == null ? null : pop.match(row, cell); 
+    return nullSwitch(rowToPop.get(row), null, pop -> pop.match(row, cell));
   }
   
 //---------------------------------------------------------------------------  
@@ -69,8 +68,7 @@ public class VariablePopulator extends Populator
 
   @Override public boolean hasChanged(HyperTableRow row)
   {
-    Populator pop = rowToPop.get(row);
-    return pop == null ? true : pop.hasChanged(row); 
+    return nullSwitch(rowToPop.get(row), true, pop -> pop.hasChanged(row)); 
   }
 
 //---------------------------------------------------------------------------  
@@ -78,9 +76,7 @@ public class VariablePopulator extends Populator
 
   @Override public void setChanged(HyperTableRow row)                                                
   { 
-    Populator pop = rowToPop.get(row);
-    if (pop != null) pop.setChanged(row); 
-
+    nullSwitch(rowToPop.get(row), pop -> pop.setChanged(row)); 
   }
   
 //---------------------------------------------------------------------------  
@@ -88,8 +84,7 @@ public class VariablePopulator extends Populator
 
   @Override public HDT_RecordType getRecordType(HyperTableRow row)
   {
-    Populator pop = rowToPop.get(row);
-    return pop == null ? hdtNone : pop.getRecordType(row); 
+    return nullSwitch(rowToPop.get(row), hdtNone, pop -> pop.getRecordType(row)); 
   }
   
 //---------------------------------------------------------------------------  

@@ -92,7 +92,6 @@ class InnerFilePath
     if ((other instanceof InnerFilePath) == false) return false;
     
     otherFilePath = (InnerFilePath)other;
-
     
     try { return Files.isSameFile(getPath(), otherFilePath.getPath()); } 
     catch (Exception e) { noOp(); }

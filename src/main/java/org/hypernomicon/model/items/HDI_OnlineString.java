@@ -37,16 +37,22 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
     super(newSchema, newRecord);
   }
 
+  public void set(String strValue) { this.strValue = strValue; }
+
+  @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords) { list.add(get()); }
+
+  @Override public String getResultTextForTag(Tag tag) { return get(); }
+  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public String get()              
   { 
-    if (record.getType() == hdtConcept)
-      if (mainTag == record.getNameTag())
-        return HDT_Concept.class.cast(record).term.get().name();
+    if ((record.getType() == hdtConcept) && (mainTag == record.getNameTag()))
+      return HDT_Concept.class.cast(record).term.get().name();
     
     return strValue;
   }
-  
-  public void set(String strValue) { this.strValue = strValue; }
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -62,30 +68,11 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
-  {
-    list.add(get());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public String getResultTextForTag(Tag tag)
-  {
-    return get();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public void getToOfflineValue(HDI_OfflineString val, Tag tag)
   {
-    if (tag == record.getNameTag())
-      val.strValue = record.name();
-    else if (tag == tagListName)
-      val.recordState.listName = strValue;
-    else
-      val.strValue = strValue;
+    if (tag == record.getNameTag()) val.strValue = record.name();
+    else if (tag == tagListName)    val.recordState.listName = strValue;
+    else                            val.strValue = strValue;
   }
   
 //---------------------------------------------------------------------------

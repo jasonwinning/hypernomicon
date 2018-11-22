@@ -35,7 +35,6 @@ import org.apache.pdfbox.multipdf.PDFCloneUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
-import org.apache.tika.mime.MediaType;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
@@ -63,10 +62,8 @@ public class SearchResultFileList
     {
       this.filePath = filePath;
       
-      if (startPage < 1)
-        startPage = 1;
-      if (endPage < 1)
-        endPage = Integer.MAX_VALUE;
+      if (startPage < 1) startPage = 1;
+      if (endPage < 1)   endPage = Integer.MAX_VALUE;
       
       if (endPage < startPage)
       {       
@@ -355,9 +352,7 @@ public class SearchResultFileList
   
   public static boolean fileIsPdf(FilePath filePath)
   {
-    MediaType mimetype = getMediaType(filePath);
-    
-    return mimetype.toString().contains("pdf");
+    return getMediaType(filePath).toString().contains("pdf");
   }
 
   //---------------------------------------------------------------------------

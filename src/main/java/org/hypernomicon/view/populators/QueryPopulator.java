@@ -18,6 +18,7 @@
 package org.hypernomicon.view.populators;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.QueriesTabController.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
@@ -66,11 +67,7 @@ public class QueryPopulator extends Populator
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
-    if (row == null) row = dummyRow;
-    
-    List<HyperTableCell> choices = populate(row, false);
-    
-    for (HyperTableCell choice : choices)
+    for (HyperTableCell choice : populate(nullSwitch(row, dummyRow), false))
       if (HyperTableCell.getCellID(choice) == HyperTableCell.getCellID(cell))
         return choice;
     
@@ -82,9 +79,7 @@ public class QueryPopulator extends Populator
 
   @Override public HDT_RecordType getRecordType(HyperTableRow row)
   {
-    if (row == null) row = dummyRow;
-    
-    switch (rowToQueryType.getOrDefault(row, QueryType.qtNone))
+    switch (rowToQueryType.getOrDefault(nullSwitch(row, dummyRow), QueryType.qtNone))
     {
       case qtAllRecords :    return hdtNone;
       case qtArguments:      return hdtArgument;

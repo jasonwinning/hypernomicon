@@ -20,6 +20,7 @@ package org.hypernomicon.view.wrappers;
 import java.util.HashMap;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Base;
 import javafx.application.Platform;
@@ -85,8 +86,7 @@ public class TreeCB
     {
       @Override public String toString(TreeRow row) 
       {
-        if (row == null) return "";
-        return row.getCBText();
+        return nullSwitch(row, "", TreeRow::getCBText);
       }
 
       @Override public TreeRow fromString(String string) 
@@ -154,15 +154,9 @@ public class TreeCB
 
   public void refresh()
   {
-    HDT_Base record = tree.selectedRecord();
-      
     sorted = false;
     
-    if (record == null)
-      record = db.debates.getByID(1);
-    
-    if (record != null)
-      select(record);
+    nullSwitch(nullSwitch(tree.selectedRecord(), db.debates.getByID(1)), record -> select(record));
   }
 
 //---------------------------------------------------------------------------
@@ -170,13 +164,9 @@ public class TreeCB
 
   public void select(HDT_Base record)
   {
-    TreeRow row = recordToRow.get(record);
-       
     clearSelection();
     
-    if (row == null) return;
-    
-    cb.getSelectionModel().select(row);
+    nullSwitch(recordToRow.get(record), row -> cb.getSelectionModel().select(row));
   }
   
 //---------------------------------------------------------------------------

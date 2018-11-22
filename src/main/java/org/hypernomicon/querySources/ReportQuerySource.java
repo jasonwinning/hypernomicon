@@ -33,15 +33,14 @@ public abstract class ReportQuerySource implements QuerySource
   protected HyperTableCell op1, op2, op3;
   protected HyperDB db;
   
-  public ReportQuerySource(int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { init(query, op1, op2, op3); }
-  public ReportQuerySource(int query, HyperTableCell op1, HyperTableCell op2)                     { init(query, op1, op2, null); }
-  public ReportQuerySource(int query, HyperTableCell op1)                                         { init(query, op1, null, null); }
-  public ReportQuerySource(int query)                                                             { init(query, null, null, null); }
+  public ReportQuerySource(int query, HyperTableCell op1, HyperTableCell op2) { this(query, op1, op2, null); }
+  public ReportQuerySource(int query, HyperTableCell op1)                     { this(query, op1, null, null); }
+  public ReportQuerySource(int query)                                         { this(query, null, null, null); }
   
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 
   
-  private void init(int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+  public ReportQuerySource(int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
   {
     this.query = query;
     this.op1 = op1;

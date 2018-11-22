@@ -86,9 +86,7 @@ public class RecordTypePopulator extends Populator
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
-    List<HyperTableCell> choices = populate(row, false);
-    
-    for (HyperTableCell choice : choices)
+    for (HyperTableCell choice : populate(row, false))
       if (HyperTableCell.getCellType(choice) == HyperTableCell.getCellType(cell))
         return choice;
     

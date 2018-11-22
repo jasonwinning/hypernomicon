@@ -242,7 +242,8 @@ public class HDT_RecordState
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void writePointerTagWithNestedPointers(StringBuilder xml, Tag tag, int objID, String value, Map<Tag, HDI_OfflineBase> map) {
+  public static void writePointerTagWithNestedPointers(StringBuilder xml, Tag tag, int objID, String value, Map<Tag, HDI_OfflineBase> map) 
+  {
     writePointerTagWithNestedPointers(xml, tag, objID, value, map, false);
   }
   
@@ -275,7 +276,8 @@ public class HDT_RecordState
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void writePointerTag(StringBuilder xml, Tag tag, int objID, HDT_RecordType objType, String value) {
+  public static void writePointerTag(StringBuilder xml, Tag tag, int objID, HDT_RecordType objType, String value) 
+  {
     writePointerTag(xml, tag, objID, objType, value, false);
   }
     
@@ -306,7 +308,7 @@ public class HDT_RecordState
 
   public static void writeBooleanTag(StringBuilder xml, Tag tag, boolean tf)
   {
-    xml.append("  <" + db.getTagStr(tag) + ">" + ((tf) ? "true" : "false") + "</" + db.getTagStr(tag) + ">" + System.lineSeparator());
+    xml.append("  <" + db.getTagStr(tag) + ">" + (tf ? "true" : "false") + "</" + db.getTagStr(tag) + ">" + System.lineSeparator());
   }
 
 //---------------------------------------------------------------------------

@@ -17,9 +17,6 @@
 
 package org.hypernomicon.view.wrappers;
 
-import org.apache.commons.lang3.mutable.MutableDouble;
-import org.apache.commons.lang3.mutable.MutableLong;
-
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.Cell;
@@ -37,8 +34,8 @@ import static org.hypernomicon.util.Util.*;
 
 public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
 {
-  private MutableLong ctr; 
-  private MutableDouble lastX, lastY;
+  private long ctr; 
+  private double lastX, lastY;
   private ScrollBar scrollBar = null;
   private static final DataFormat HYPERNOMICON_DATA_FORMAT = new DataFormat("application/Hypernomicon");
 
@@ -47,10 +44,6 @@ public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
 
   public DragNDropHoverHelper()
   {
-    ctr = new MutableLong();
-    lastX = new MutableDouble();
-    lastY = new MutableDouble();
-    
     reset();
   }
   
@@ -77,9 +70,9 @@ public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
 
   public void reset()
   {
-    ctr.setValue(0);
-    lastX.setValue(-1);
-    lastY.setValue(-1);    
+    ctr = 0;
+    lastX = -1;
+    lastY = -1;    
   }
 
 //---------------------------------------------------------------------------
@@ -89,23 +82,23 @@ public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
   {
     ensureScrollBarNotNull(node);
     
-    if ((lastX.doubleValue() != dragEvent.getSceneX()) || (lastY.doubleValue() != dragEvent.getSceneY()))
+    if ((lastX != dragEvent.getSceneX()) || (lastY != dragEvent.getSceneY()))
     {
-      ctr.setValue(System.currentTimeMillis());
-      lastX.setValue(dragEvent.getSceneX());
-      lastY.setValue(dragEvent.getSceneY());
+      ctr = System.currentTimeMillis();
+      lastX = dragEvent.getSceneX();
+      lastY = dragEvent.getSceneY();
     }
         
-    if ((lastY.doubleValue() - 35) < node.localToScene(node.getBoundsInLocal()).getMinY())
+    if ((lastY - 35) < node.localToScene(node.getBoundsInLocal()).getMinY())
     {
       scrollBar.decrement();
-      ctr.setValue(System.currentTimeMillis());
+      ctr = System.currentTimeMillis();
     }
 
-    if ((lastY.doubleValue() + 35) > node.localToScene(node.getBoundsInLocal()).getMaxY())
+    if ((lastY + 35) > node.localToScene(node.getBoundsInLocal()).getMaxY())
     {
       scrollBar.increment();
-      ctr.setValue(System.currentTimeMillis());
+      ctr = System.currentTimeMillis();
     }
   }
   
@@ -114,16 +107,16 @@ public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
 
   public void expand(TreeItem<RowType> treeItem)
   {
-    if (ctr.longValue() != 0)
+    if (ctr != 0)
     {
       runDelayedInFXThread(1, 650, event ->
       {
-        long diff = System.currentTimeMillis() - ctr.longValue();
+        long diff = System.currentTimeMillis() - ctr;
         
         if ((diff > 650) && (treeItem.isExpanded() == false))
         {
           treeItem.setExpanded(true);
-          ctr.setValue(System.currentTimeMillis());
+          ctr = System.currentTimeMillis();
         }
       });
     }

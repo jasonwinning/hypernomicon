@@ -33,11 +33,7 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
 {
   public static enum HyperCellSortMethod
   {
-    hsmStandard,
-    hsmTextSimple,
-    hsmNumeric,
-    hsmLast,
-    hsmWork
+    hsmStandard, hsmTextSimple, hsmNumeric, hsmLast, hsmWork
   }
   
   public static final HyperTableCell trueCell = new HyperTableCell(1, "", hdtNone);
@@ -51,22 +47,23 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
   public int getID()              { return id; }
   public String getText()         { return text; }
   public HDT_RecordType getType() { return type; }
-  
-//---------------------------------------------------------------------------  
-  
-  public HyperTableCell(int newID, String newText, HDT_RecordType newType)
-  {
-    this(newID, newText, newType, hsmStandard);
-  }
-  
-  public HyperTableCell(HDT_Base record)
-  {
-    this(record.getID(), "", record.getType(), hsmStandard);
-  }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+  public static HyperTableCell fromBoolean(boolean boolVal)     { return boolVal ? trueCell : falseCell; }
+  public static int getCellID(HyperTableCell cell)              { return cell == null ? -1 : cell.id; }
+  public static String getCellText(HyperTableCell cell)         { return cell == null ? "" : safeStr(cell.text); }
+  public static HDT_RecordType getCellType(HyperTableCell cell) { return ((cell == null) || (cell.type == null)) ? hdtNone : cell.type; }
 
+  @Override public HyperTableCell clone() 
+  { try { return (HyperTableCell) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }}
+  
+//---------------------------------------------------------------------------  
+  
+  public HyperTableCell(int newID, String newText, HDT_RecordType newType) { this(newID, newText, newType, hsmStandard); }
+  public HyperTableCell(HDT_Base record, String newText)                   { this(record.getID(), newText, record.getType(), hsmStandard); }
+  public HyperTableCell(HDT_Base record)                                   { this(record.getID(), "", record.getType(), hsmStandard); }
+  
+  public HyperTableCell(HDT_Base record, String newText, HyperCellSortMethod sm) { this(record.getID(), newText, record.getType(), sm); }
+  
   public HyperTableCell(int newID, String newText, HDT_RecordType newType, HyperCellSortMethod newSortMethod)
   {
     id = newID;
@@ -77,14 +74,14 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
-
+ 
   @Override public int hashCode()
   {
     final int prime = 31;
     int result = 1;
     result = prime * result + id;
-    result = prime * result + ((text == null) ? 0 : text.hashCode());
-    result = prime * result + ((type == null) ? 0 : type.hashCode());
+    result = prime * result + (text == null ? 0 : text.hashCode());
+    result = prime * result + (type == null ? 0 : type.hashCode());
     return result;
   }
 
@@ -99,22 +96,20 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
     
     HyperTableCell other = (HyperTableCell) obj;
     
-    if (type != other.type) return false;
-    if (id != other.id) return false;
-    if (text == null)
+    if (getCellType(this) != getCellType(other))
     {
-      if (other.text != null) return false;
+      if ((id < 0) && (other.id < 0))
+        if (safeStr(text).length() == 0)
+          if (safeStr(other.text).length() == 0)
+            return true;
+      
+      return false;
     }
-    else if (!text.equals(other.text)) return false;
     
-    return true;
+    if (((id >= 0) || (other.id >= 0)) && (id != other.id)) return false;
+    
+    return safeStr(text).equals(safeStr(other.text));    
   }
-
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-
-  @Override public HyperTableCell clone() 
-  { try { return (HyperTableCell) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }}
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
@@ -135,43 +130,7 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
     newCell.sortMethod = hsmTextSimple;
     return newCell;
   }
-
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-
-  public static int getCellID(HyperTableCell cell)
-  {
-    if (cell == null)
-      return -1;
-       
-    return cell.id;
-  }
-
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-
-  public static String getCellText(HyperTableCell cell)
-  {
-    if (cell == null)
-      return "";
-    
-    return safeStr(cell.text);
-  }
-
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-
-  public static HDT_RecordType getCellType(HyperTableCell cell)
-  {
-    if (cell == null)
-      return hdtNone;
-    
-    if (cell.type == null)
-      return hdtNone;
-    
-    return cell.type;
-  }
-  
+ 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
   
@@ -242,14 +201,6 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
     if (type == hdtNone) return null;
     
     return db.records(type).getByID(id);
-  }
-
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-
-  public static HyperTableCell fromBoolean(boolean boolVal)
-  {
-    return boolVal ? trueCell : falseCell;
   }
  
 //---------------------------------------------------------------------------  

@@ -67,6 +67,7 @@ public class NewQueryFavDialogController extends HyperDialog
     if (tfName.getText().length() == 0)
     {
       messageDialog("Name cannot be zero-length.", mtError);
+      safeFocus(tfName);
       return false;
     }
     

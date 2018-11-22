@@ -206,6 +206,17 @@ public class BibManager extends HyperDialog
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
+  private void hideBottomControls()
+  {
+    lblSelect.setVisible(false);
+    btnSelect.setVisible(false);
+    btnCreateNew.setVisible(false);
+    cbNewType.setVisible(false);
+  }
+
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+
   private void init()
   {
     entryTable = new BibEntryTable(tableView, PREF_KEY_HT_BIB_ENTRIES);
@@ -260,10 +271,7 @@ public class BibManager extends HyperDialog
           return;
         }
 
-      lblSelect.setVisible(false);
-      btnSelect.setVisible(false);
-      btnCreateNew.setVisible(false);
-      cbNewType.setVisible(false);
+      hideBottomControls();
     });
     
     btnSelect.setDisable(true);
@@ -355,19 +363,11 @@ public class BibManager extends HyperDialog
     });
     
     entryTable.addCondContextMenuItem("Launch work file",
-        row ->
-        {
-          if (isNull(row.getWork())) return false;
-          return row.getWork().canLaunch();          
-        },
+        row -> nullSwitch(row.getWork(), false, HDT_Work::canLaunch),
         row -> row.getWork().launch(-1));
     
     entryTable.addCondContextMenuItem("Show in Preview Window", 
-        row ->
-        {
-          if (isNull(row.getWork())) return false;
-          return row.getWork().canLaunch();          
-        },
+        row -> nullSwitch(row.getWork(), false, HDT_Work::canLaunch),
         row -> 
         {
           HDT_Work work = row.getWork();
@@ -388,6 +388,8 @@ public class BibManager extends HyperDialog
     {
       if (shownAlready() == false)
       {
+        hideBottomControls();
+        
         collTree.clear();
         entryTable.clear();
         

@@ -31,7 +31,6 @@ import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 import org.hypernomicon.view.wrappers.HyperCB.CellTextHandler;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ComboBox;
@@ -105,22 +104,18 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 //---------------------------------------------------------------------------  
 
   @Override public void commitEdit(HyperTableCell newValue)
-  {
-    int rowNdx, colNdx;
-    
+  {   
     super.cancelEdit();
     setGraphic(null);
     
-    ObservableList<HyperTableRow> rows = this.getTableView().getItems();
-    
-    rowNdx = getTableRow().getIndex();
-    colNdx = getTableView().getColumns().indexOf(getTableColumn());
+    HyperTableRow row = (HyperTableRow) getTableRow().getItem();
+    int colNdx = getTableView().getColumns().indexOf(getTableColumn());
     
     if (hCB.somethingWasTyped)
       if (hCB.typedMatch != null)
         newValue = hCB.typedMatch;
     
-    rows.get(rowNdx).updateCell(colNdx, newValue);
+    row.setCellValue(colNdx, newValue);
   }
 
 //---------------------------------------------------------------------------  

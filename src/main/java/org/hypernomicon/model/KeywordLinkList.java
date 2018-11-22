@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.lang3.mutable.MutableInt;
-
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 
 import static org.hypernomicon.model.HyperDB.*;
@@ -62,7 +60,6 @@ public final class KeywordLinkList
   public final void generate(String text, boolean overrideSet, SearchKeys searchKeysToUse)
   {
     int matchLen, ndx = 0, curMatchLen = 0;
-    MutableInt index;
     String prefix;
     SearchKeyword curKey;
     boolean addOK, checkPeriods = false;
@@ -148,30 +145,23 @@ public final class KeywordLinkList
         {
           addOK = true;
 
-          if (key.startOnly)
-            if (ndx > 0)
-            {
-              c = text.charAt(ndx - 1);
-              if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
-                addOK = false;
-            }
+          if (key.startOnly && (ndx > 0))
+          {
+            c = text.charAt(ndx - 1);
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
+              addOK = false;
+          }
 
-          if (key.endOnly)
-            if ((ndx + matchLen) < text.length())
-            {
-              c = text.charAt(ndx + matchLen);
-              if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
-                addOK = false;
-            }
+          if (key.endOnly && ((ndx + matchLen) < text.length()))
+          {
+            c = text.charAt(ndx + matchLen);
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
+              addOK = false;
+          }
           
           if (addOK)
           {
-            if (curKey == null)
-            {
-              curKey = key;
-              curMatchLen = matchLen;
-            }
-            else if (matchLen > curKey.text.length())
+            if ((curKey == null) || (matchLen > curKey.text.length())) 
             {
               curKey = key;
               curMatchLen = matchLen;
@@ -181,11 +171,7 @@ public final class KeywordLinkList
       }
 
       if (curKey != null)
-      {
-        index = new MutableInt(ndx);
-        add(text, index, curMatchLen, curKey, posMap);
-        ndx = index.intValue();
-      }        
+        ndx = add(text, ndx, curMatchLen, curKey, posMap);       
     }
   }
   
@@ -212,9 +198,9 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
   
-  private final void add(String text, MutableInt ndx, int matchLen, SearchKeyword key, ArrayList<Integer> posMap)
+  private final int add(String text, int ndx, int matchLen, SearchKeyword key, ArrayList<Integer> posMap)
   {
-    int right = ndx.getValue() + matchLen, replaceLen;
+    int right = ndx + matchLen, replaceLen;
 
     if (right < text.length())
     {
@@ -225,15 +211,15 @@ public final class KeywordLinkList
       }
     }
 
-    replaceLen = right - ndx.getValue();
+    replaceLen = right - ndx;
 
     // The next two lines are for cases where a special character exists in the original html that translates to multiple plain-text characters, e.g., ellipsis
-    int realNdx = posMap.get(ndx.intValue());
-    int realLen = (posMap.get(ndx.intValue() + replaceLen - 1) - realNdx) + 1;
+    int realNdx = posMap.get(ndx);
+    int realLen = (posMap.get(ndx + replaceLen - 1) - realNdx) + 1;
     
     keys.add(new KeywordLink(realNdx, realLen, key));
 
-    ndx.setValue(ndx.getValue() + replaceLen);
+    return ndx + replaceLen;
   }
   
 //---------------------------------------------------------------------------

@@ -17,11 +17,10 @@
 
 package org.hypernomicon.view.tabs;
 
+import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_MiscFile;
-import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.HDT_WorkLabel;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
@@ -81,8 +80,8 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   @FXML private SplitPane spRightVert;
 
   private MainTextWrapper mainText;
-  HyperTable htLabels, htAuthors, htKeyMentioners;
-  HyperCB hcbWork, hcbFileType;
+  private HyperTable htLabels, htAuthors, htKeyMentioners;
+  private HyperCB hcbWork, hcbFileType;
   public FileDialogController fdc = null;
   private HDT_MiscFile curMiscFile;
   
@@ -95,26 +94,13 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   @Override public void newClick(HDT_RecordType objType, HyperTableRow row) { return; }  
   @Override public void setRecord(HDT_MiscFile activeRecord)                { curMiscFile = activeRecord; }
   
-  @FXML public void btnManageClick()                                        { showFileDialog(); }
+  @FXML public boolean btnManageClick()                                     { return showFileDialog(); }
   
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
   
   @Override public boolean update()
   {
-    HDT_FileType fileType;
-    HDT_Work work;
-    
-    if (db.isLoaded() == false) return false;
-    
-    clear();
-    
-    if (curMiscFile == null)
-    {
-      enable(false);
-      return false;
-    }
-   
     btnTree.setDisable(ui.getTree().getRowsForRecord(curMiscFile).size() == 0);
     
     tfName.setText(curMiscFile.name());
@@ -125,11 +111,7 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     
     mainText.loadFromRecord(curMiscFile, true, getView().getTextInfo());
     
-    if (curMiscFile.fileType.isNotNull())
-    {
-      fileType = curMiscFile.fileType.get();
-      hcbFileType.addEntry(fileType.getID(), fileType.getCBText(), fileType.getID());
-    }
+    hcbFileType.addAndSelectEntry(curMiscFile.fileType, HDT_Base::getCBText);
     
   // Populate key mentioners
   // -----------------------
@@ -139,11 +121,7 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
  // populate authors
  // ----------------
 
-   if (curMiscFile.work.isNotNull())
-   {
-     work = curMiscFile.work.get();
-     hcbWork.addEntry(work.getID(), work.getCBText(), work.getID());
-   }
+   hcbWork.addAndSelectEntry(curMiscFile.work, HDT_Base::getCBText);
    
    cbWorkChange();
    
@@ -176,7 +154,7 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   
   public void cbWorkChange()
   {
-    int ndx, workID = hcbWork.selectedID();
+    int workID = hcbWork.selectedID();
     HDT_Work work;
 
     htLabels.setCanAddRows(workID < 1);
@@ -191,32 +169,13 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     {
       work = db.works.getByID(workID);
 
-      ndx = 0; for (HDT_Person author : work.authorRecords)
-      {
-        htAuthors.setDataItem(1, ndx, author.getID(), author.getCBText(), hdtPerson);
-        ndx++;
-      }
-
-      ndx = 0; for (HDT_WorkLabel label : work.labels)
-      {
-        htLabels.setDataItem(2, ndx, label.getID(), label.getExtendedText(), hdtWorkLabel);
-        ndx++;
-      }
+      htAuthors.buildRows(work.authorRecords, (row, author) -> row.setCellValue(1, author, author.getCBText()));
+      htLabels.buildRows(work.labels,         (row, label)  -> row.setCellValue(2, label, label.getExtendedText()));
     }
     else
     {
-      ndx = 0; for (HDT_Person author : curMiscFile.authors)
-      {
-        htAuthors.setDataItem(1, ndx, author.getID(), author.getCBText(), hdtPerson);
-        ndx++;
-      }
-
-      ndx = 0;
-      for (HDT_WorkLabel label : curMiscFile.labels)
-      {
-        htLabels.setDataItem(2, ndx, label.getID(), label.getExtendedText(), hdtWorkLabel);
-        ndx++;
-      }
+      htAuthors.buildRows(curMiscFile.authors, (row, author) -> row.setCellValue(1, author, author.getCBText()));
+      htLabels.buildRows(curMiscFile.labels,   (row, label)  -> row.setCellValue(2, label, label.getExtendedText()));
     }  
   }
 
@@ -315,7 +274,7 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     int fileTypeID, ndx;
     HDT_FileType fileType;
     
-    if (!HyperTab.saveSearchKey(curMiscFile, tfSearchKey, showMessage, this)) return false;
+    if (!saveSearchKey(curMiscFile, tfSearchKey, showMessage)) return false;
     
     fileTypeID = hcbFileType.selectedID();
     if ((fileTypeID < 1) && (hcbFileType.getText().length() == 0))
@@ -331,8 +290,8 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     if (curMiscFile.work.isNull())
     {
-      curMiscFile.setAuthors(htAuthors);
-      curMiscFile.setWorkLabels(htLabels);
+      curMiscFile.setAuthors(htAuthors.saveToList(1, hdtPerson));
+      curMiscFile.setWorkLabels(htLabels.saveToList(2, hdtWorkLabel));
     }
 
   // Start file type

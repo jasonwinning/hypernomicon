@@ -100,10 +100,9 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
             if (table.onShowMore != null)
               table.onShowMore.run(); 
           });
+          
           setGraphic(cellButton);
-          
-          table.showMoreRow = row;
-          
+          table.showMoreRow = row;          
           return;
         }
       }

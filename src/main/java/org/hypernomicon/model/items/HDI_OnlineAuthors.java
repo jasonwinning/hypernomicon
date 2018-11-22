@@ -50,7 +50,7 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 
   private void initAuthors() { authors = HDT_Work.class.cast(record).getAuthors(); }
 
-  @Override public void expire()          { authors.expire(); }
+  @Override public void expire()                                   { authors.expire(); }
   @Override public void resolvePointers() throws HDB_InternalError { authors.resolvePointers(); }
   
 //---------------------------------------------------------------------------
@@ -135,8 +135,7 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
   {
     if (!searchLinkedRecords) return;
     
-    for (Author author : authors)
-      list.add(author.getNameLastFirst());
+    authors.forEach(author -> list.add(author.getNameLastFirst()));
   }
 
 //---------------------------------------------------------------------------
@@ -150,7 +149,7 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
     {
       oneStr = author.getNameLastFirst();
       if (oneStr.length() > 0)
-        allStr = (allStr.length() == 0) ? oneStr : (allStr + "; " + oneStr);  
+        allStr = allStr.length() == 0 ? oneStr : (allStr + "; " + oneStr);  
     }
     
     return allStr;

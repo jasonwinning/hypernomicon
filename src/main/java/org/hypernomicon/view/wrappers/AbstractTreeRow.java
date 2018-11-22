@@ -18,6 +18,7 @@
 package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.model.records.HDT_RecordType.hdtNone;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
@@ -45,16 +46,7 @@ public abstract class AbstractTreeRow<RowType extends AbstractTreeRow<RowType>> 
 
   public final HDT_RecordType getParentType()
   {
-    TreeItem<RowType> parent = treeItem.getParent();
-    
-    if (parent != null)
-    {
-      RowType row = parent.getValue();
-      if (row != null)
-        return row.getRecordType();
-    }
-    
-    return hdtNone;
+    return nullSwitch(nullSwitch(treeItem.getParent(), null, parent -> parent.getValue()), hdtNone, RowType::getRecordType);
   }
 
 //---------------------------------------------------------------------------
@@ -62,16 +54,7 @@ public abstract class AbstractTreeRow<RowType extends AbstractTreeRow<RowType>> 
 
   public final int getParentID()
   {
-    TreeItem<RowType> parent = treeItem.getParent();
-    
-    if (parent != null)
-    {
-      RowType row = parent.getValue();
-      if (row != null)
-        return row.getRecordID();
-    }
-    
-    return -1;        
+    return nullSwitch(nullSwitch(treeItem.getParent(), null, parent -> parent.getValue()), -1, RowType::getRecordID);
   }
 
 //---------------------------------------------------------------------------

@@ -177,7 +177,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     
     if (collArray != null)
       if ((zWrapper.getTrash().contains(this) == false) || deletedOK)
-        collArray.strIterator().forEachRemaining(str -> list.add(str));
+        collArray.getStrs().forEach(list::add);
     
     return list;
   }
@@ -460,8 +460,6 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
   @Override public List<String> getMultiStr(BibFieldEnum bibFieldEnum)
   {
-    List<String> list;
-    
     if (linkedToWork())
     {
       switch (bibFieldEnum)
@@ -489,15 +487,9 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         
       case bfMisc : return convertMultiLineStrToStrList(jData.getStrSafe(getFieldKey(bibFieldEnum)), true);
 
-      case bfISBNs : 
-        
-        list = matchISBN(jData.getStrSafe(getFieldKey(bibFieldEnum)));
-        return list == null ? Collections.emptyList() : list;
-             
-      case bfISSNs : 
-        
-        list = matchISSN(jData.getStrSafe(getFieldKey(bibFieldEnum)));
-        return list == null ? Collections.emptyList() : list;
+      case bfISBNs : return nullSwitch(matchISBN(jData.getStrSafe(getFieldKey(bibFieldEnum))), Collections.emptyList());
+                     
+      case bfISSNs : return nullSwitch(matchISSN(jData.getStrSafe(getFieldKey(bibFieldEnum))), Collections.emptyList());
       
       default : return null;
     }
@@ -613,7 +605,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
       
       serverItem.getAuthors().clear();
       
-      getAuthors().forEach(bibAuthor -> serverItem.getAuthors().add(bibAuthor));
+      getAuthors().forEach(serverItem.getAuthors()::add);
     }
 
     if (isNewEntry())

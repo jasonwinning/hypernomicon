@@ -73,8 +73,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
-import org.apache.commons.lang3.mutable.MutableInt;
-
 import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -102,15 +100,6 @@ import javafx.scene.layout.Priority;
 
 public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 {
-  public HyperTable htPersonInst, htWorks, htArguments;
-  public ArrayList<InvestigationView> invViews;
-  public MainTextWrapper mainText;
-  public FilePath curPicture = null;
-  public Rectangle2D viewPort = null;
-  private HDT_Person lastPerson = null;
-  
-  public HyperCB hcbRank, hcbStatus, hcbField, hcbSubfield;
-
   @FXML private Label lblPicture;
   @FXML private Label lblSearchKey;
   @FXML public TextField tfFirst;
@@ -137,6 +126,15 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
   @FXML private AnchorPane apOverview;
   @FXML private SplitPane spTopHoriz;
   @FXML private SplitPane spVert;
+
+  private HyperTable htPersonInst, htWorks, htArguments;
+  private ArrayList<InvestigationView> invViews;
+  private MainTextWrapper mainText;
+  public FilePath curPicture = null;
+  private Rectangle2D viewPort = null;
+  private HDT_Person lastPerson = null;
+  
+  private HyperCB hcbRank, hcbStatus, hcbField, hcbSubfield;
   
   private HDT_Person curPerson;
   private boolean alreadyChangingName = false;
@@ -161,21 +159,6 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
   @Override public boolean update()
   {   
-    int ndx;
-    
-    if (db.isLoaded() == false) return false;
-    
-    clear();
-    
-    if ((curPerson != lastPerson) || (curPerson == null))
-      htWorks.tv.getSortOrder().clear();
-    
-    if (curPerson == null)
-    {
-      enable(false);
-      return false;
-    }
-
     alreadyChangingName = true;
     
     tfFirst.setText(curPerson.getFirstName());
@@ -191,31 +174,24 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     viewPort = curPerson.getViewPort();
     refreshPicture();
 
-    if (curPerson.rank.isNotNull())
-      hcbRank.addEntry(curPerson.rank.getID(), curPerson.rank.get().name(), curPerson.rank.getID());
-    
-    if (curPerson.status.isNotNull())
-      hcbStatus.addEntry(curPerson.status.getID(),  curPerson.status.get().name(), curPerson.status.getID());
+    hcbRank.addAndSelectEntry(curPerson.rank, HDT_Base::name);
+    hcbStatus.addAndSelectEntry(curPerson.status,  HDT_Base::name);
     
     mainText.loadFromRecord(curPerson, true, getView().getTextInfo());
        
     if (curPerson.field.isNotNull())
     {
-      hcbField.addEntry(curPerson.field.getID(), curPerson.field.get().name(), curPerson.field.getID());
+      hcbField.addAndSelectEntry(curPerson.field, HDT_Base::name);
       hcbSubfield.selectID(curPerson.subfield.getID());
     }    
   
-    ndx = 0; for (HDT_Institution inst : curPerson.institutions)
+    htPersonInst.buildRows(curPerson.institutions, (row, inst) ->
     {
       if (inst.parentInst.isNotNull())
-        htPersonInst.setDataItem(1, ndx, inst.parentInst.getID(), inst.parentInst.get().name(), hdtInstitution);
+        row.setCellValue(1, inst.parentInst.get(), inst.parentInst.get().name());
       
-      htPersonInst.setDataItem(2, ndx, inst.getID(), inst.name(), hdtInstitution);
-      ndx++;
-    }
-    
-    MutableInt argRowNdx = new MutableInt(0);
-    int workRowNdx = 0;
+      row.setCellValue(2, inst, inst.name());
+    });
     
     HashSet<HDT_Base> topicRecordsAdded = new HashSet<>();
     
@@ -225,22 +201,17 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 // --------------------
       
       for (HDT_Argument argument : work.arguments)
-      {
-        if (htArguments.containsRecord(argument.getID(), hdtArgument) == false)
-        {
-          if (addArgToTopicTable(argument, topicRecordsAdded, argRowNdx, emptySet(), emptySet()))
-          {            
+        if (htArguments.containsRecord(argument) == false)
+          if (addArgToTopicTable(argument, topicRecordsAdded, emptySet(), emptySet()))          
             topicRecordsAdded.add(work);          
-          }
-        }
-      }
 
 // Populate the works
 // ------------------
      
-      if (htWorks.containsRecord(work.getID(), hdtWork) == false)
+      if (htWorks.containsRecord(work) == false)
       {
-        htWorks.setDataItem(0, workRowNdx, work.getID(), work.getYear(), hdtWork, HyperCellSortMethod.hsmNumeric);
+        HyperTableRow row = htWorks.newDataRow();
+        row.setCellValue(0, work, work.getYear(), HyperCellSortMethod.hsmNumeric);
         
         String typeName = "";
         
@@ -251,17 +222,17 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
         
         typeName = HDT_Work.addFileIndicator(typeName, work);
                 
-        htWorks.setDataItem(1, workRowNdx, workType == null ? -1 : workType.getID(), typeName, hdtWorkType);
+        row.setCellValue(1, workType == null ? -1 : workType.getID(), typeName, hdtWorkType);
         
         String roleText = "";
         if (work.personIsEditor(curPerson)) roleText = "Ed";
         if (work.personIsTranslator(curPerson)) roleText = roleText.length() == 0 ? "Tr" : roleText + ", Tr";
         
-        htWorks.setDataItem(2, workRowNdx, work.getID(), roleText, hdtWork);
+        row.setCellValue(2, work, roleText);
         
-        htWorks.setDataItem(3, workRowNdx, work.investigations.isEmpty() ? -1 : work.investigations.get(0).getID(), work.getInvText(curPerson), hdtInvestigation);
+        row.setCellValue(3, work.investigations.isEmpty() ? -1 : work.investigations.get(0).getID(), work.getInvText(curPerson), hdtInvestigation);
 
-        htWorks.setDataItem(4, workRowNdx, work.getID(), work.name(), hdtWork);
+        row.setCellValue(4, work, work.name());
         
         if (work.getAuthors().size() > 1)
         {
@@ -277,28 +248,26 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
                 authorID = author.getPerson().getID();
             }
           
-          htWorks.setDataItem(5, workRowNdx, authorID, Authors.getShortAuthorsStr(authors, false, true), hdtPerson);
+          row.setCellValue(5, authorID, Authors.getShortAuthorsStr(authors, false, true), hdtPerson);
         }
-        
-        workRowNdx++;
       }
     }
       
     for (HDT_MiscFile file : curPerson.miscFiles)
     {      
-      if (htWorks.containsRecord(file.getID(), hdtMiscFile) == false)
+      if (htWorks.containsRecord(file) == false)
       {
-        htWorks.setDataItem(0, workRowNdx, file.getID(), "", hdtMiscFile);  // it's blank because files don't have a year
+        HyperTableRow row = htWorks.newDataRow();
+        row.setCellValue(0, file, "");  // it's blank because files don't have a year
 
         if (file.fileType.isNotNull())
-          htWorks.setDataItem(1, workRowNdx, file.getID(), "File (" + file.fileType.get().name() + ")", hdtMiscFile);
+          row.setCellValue(1, file, "File (" + file.fileType.get().name() + ")");
         else
-          htWorks.setDataItem(1, workRowNdx, file.getID(), "File", hdtMiscFile);
+          row.setCellValue(1, file, "File");
 
-        htWorks.setDataItem(2, workRowNdx, file.getID(), "", hdtMiscFile);
-        htWorks.setDataItem(3, workRowNdx, file.getID(), "", hdtMiscFile);
-        htWorks.setDataItem(4, workRowNdx, file.getID(), file.name(), hdtMiscFile);
-        workRowNdx++;
+        row.setCellValue(2, file, "");
+        row.setCellValue(3, file, "");
+        row.setCellValue(4, file, file.name());
       }
     }
     
@@ -347,26 +316,28 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     
     for (HDT_Argument arg : argsToAdd)
     {
-      addArgToTopicTable(arg, topicRecordsAdded, argRowNdx, posToAdd, otherToAdd);
+      addArgToTopicTable(arg, topicRecordsAdded, posToAdd, otherToAdd);
     }
     
     for (HDT_Position pos : posToAdd)
     {
-      if (addPosToTopicTable(pos, topicRecordsAdded, argRowNdx.intValue(), otherToAdd))
+      if (topicRecordsAdded.contains(pos) == false)
       {
-        htArguments.setDataItem(0, argRowNdx.intValue(), pos.getID(), pos.listName(), hdtPosition);
+        HyperTableRow row = htArguments.newDataRow();
+        addPosToTopicTable(pos, row, otherToAdd);
+        row.setCellValue(0, pos, pos.listName());
         topicRecordsAdded.add(pos);
-        argRowNdx.increment();
       }
     }
     
     for (HDT_Base topic : otherToAdd)
     {
-      if (addOtherToTopicTable(topic, topicRecordsAdded, argRowNdx.intValue()))
+      if (topicRecordsAdded.contains(topic) == false)
       {
-        htArguments.setDataItem(0, argRowNdx.intValue(), topic.getID(), topic.listName(), topic.getType());        
+        HyperTableRow row = htArguments.newDataRow();
+        addOtherToTopicTable(topic, row);
+        row.setCellValue(0, topic, topic.listName());        
         topicRecordsAdded.add(topic);
-        argRowNdx.increment();
       }
     }
     
@@ -374,16 +345,16 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
    
     if (curPerson != lastPerson)
     {
-      htWorks.tv.getSortOrder().clear();
-      htWorks.tv.getSortOrder().add(htWorks.tv.getColumns().get(0));
+      htWorks.getTV().getSortOrder().clear();
+      htWorks.getTV().getSortOrder().add(htWorks.getTV().getColumns().get(0));
     }
     else
     {
       ArrayList<TableColumn<HyperTableRow, ?>> list = new ArrayList<>();
-      list.addAll(htWorks.tv.getSortOrder());
+      list.addAll(htWorks.getTV().getSortOrder());
       
-      htWorks.tv.getSortOrder().clear();
-      htWorks.tv.getSortOrder().addAll(list);
+      htWorks.getTV().getSortOrder().clear();
+      htWorks.getTV().getSortOrder().addAll(list);
     }
 
     setDefaultWorkPreview();
@@ -488,12 +459,11 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  private boolean addArgToTopicTable(HDT_Argument argument, HashSet<HDT_Base> topicRecordsAdded, MutableInt argRowNdx,
-                                  Set<HDT_Position> posToAdd, Set<HDT_Base> otherToAdd)
+  private boolean addArgToTopicTable(HDT_Argument argument, HashSet<HDT_Base> topicRecordsAdded, Set<HDT_Position> posToAdd, Set<HDT_Base> otherToAdd)
   {
     if (topicRecordsAdded.contains(argument)) return false;    
     
-    ArrayList<HDT_Position> positions = new ArrayList<>();
+    ArrayList<HDT_Position> positions = new ArrayList<>();    
     
     if (argument.positions.size() > 0)
     {
@@ -508,32 +478,32 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       
       positions.forEach(position ->
       {
-        addPosToTopicTable(position, topicRecordsAdded, argRowNdx.intValue(), otherToAdd);
+        HyperTableRow row = htArguments.newDataRow();
+        addPosToTopicTable(position, row, otherToAdd);
         posToAdd.remove(position);
         
-        htArguments.setDataItem(0, argRowNdx.intValue(), argument.getID(), argument.listName(), hdtArgument);
+        row.setCellValue(0, argument, argument.listName());
         
         HDT_PositionVerdict verdict = argument.getPosVerdict(position);
           if (verdict != null)
-            htArguments.setDataItem(3, argRowNdx.intValue(), argument.getID(), verdict.listName(), hdtArgument);
+            row.setCellValue(3, argument, verdict.listName());
           
-        htArguments.setDataItem(4, argRowNdx.intValue(), argument.getID(), argument.listName(), hdtArgument);
-        argRowNdx.increment();
+        row.setCellValue(4, argument, argument.listName());
       });
     }
     else
     {
-      htArguments.setDataItem(0, argRowNdx.intValue(), argument.getID(), argument.listName(), hdtArgument);
+      HyperTableRow row = htArguments.newDataRow();
+      row.setCellValue(0, argument, argument.listName());
       
       HDT_Debate debate = argument.getDebate();
       if (debate != null)
       {
-        addOtherToTopicTable(debate, topicRecordsAdded, argRowNdx.intValue());
+        addOtherToTopicTable(debate, row);
         otherToAdd.remove(debate);        
       }
       
-      htArguments.setDataItem(4, argRowNdx.intValue(), argument.getID(), argument.listName(), hdtArgument);
-      argRowNdx.increment();
+      row.setCellValue(4, argument, argument.listName());
     }
     
     topicRecordsAdded.add(argument);
@@ -544,35 +514,27 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  private boolean addPosToTopicTable(HDT_Position position, HashSet<HDT_Base> topicRecordsAdded, int argRowNdx, Set<HDT_Base> otherToAdd)
+  private void addPosToTopicTable(HDT_Position position, HyperTableRow row, Set<HDT_Base> otherToAdd)
   {
-    if (topicRecordsAdded.contains(position)) return false;
-    
-    htArguments.setDataItem(2, argRowNdx, position.getID(), position.listName(), hdtPosition);
+    row.setCellValue(2, position, position.listName());
 
     HDT_Debate debate = position.getDebate();
     if (debate != null)
     {
-      addOtherToTopicTable(debate, topicRecordsAdded, argRowNdx);
+      addOtherToTopicTable(debate, row);
       otherToAdd.remove(debate); 
     }
-    
-    return true;
   }
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  private boolean addOtherToTopicTable(HDT_Base displayer, HashSet<HDT_Base> topicRecordsAdded, int argRowNdx)
-  {
-    if (topicRecordsAdded.contains(displayer)) return false;
-    
+  private void addOtherToTopicTable(HDT_Base displayer, HyperTableRow row)
+  {    
     if (displayer.getType() == hdtWorkLabel)
-      htArguments.setDataItem(1, argRowNdx, displayer.getID(), HDT_WorkLabel.class.cast(displayer).getExtendedText(), hdtWorkLabel);
+      row.setCellValue(1, displayer, HDT_WorkLabel.class.cast(displayer).getExtendedText());
     else
-      htArguments.setDataItem(1, argRowNdx, displayer.getID(), displayer.listName(), displayer.getType());
-    
-    return true;
+      row.setCellValue(1, displayer, displayer.listName());
   }
 
 //---------------------------------------------------------------------------  
@@ -646,6 +608,9 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       tpPerson.getTabs().remove(iV.tab);
       it.remove();
     }
+    
+    if ((curPerson != lastPerson) || (curPerson == null))
+      htWorks.getTV().getSortOrder().clear();
   }
    
 //---------------------------------------------------------------------------  
@@ -657,7 +622,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     boolean noDelete;
     HDT_Subfield subfield;    
      
-    if (!saveSearchKey(curPerson, tfSearchKey, showMessage, this)) return false;
+    if (!saveSearchKey(curPerson, tfSearchKey, showMessage)) return false;
        
     if (FilePath.isEmpty(curPicture))
       curPerson.getPath().assign(db.folders.getByID(HyperDB.PICTURES_FOLDER_ID), new FilePath(""));
@@ -729,7 +694,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     curPerson.field.setID(hcbField.selectedID());
     curPerson.status.setID(hcbStatus.selectedID());
     
-    curPerson.setInstitutions(htPersonInst);
+    curPerson.setInstitutions(htPersonInst.saveToList(2, hdtInstitution));
     
     mainText.save();
     
@@ -820,7 +785,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctDropDownList, new StandardPopulator(hdtInstitution, popFilter, true), (row, cellVal, nextColNdx, nextPopulator) ->
     {
       ((SubjectPopulator)nextPopulator).setObj(row, HyperTableCell.getRecord(cellVal));
-      row.updateCell(nextColNdx, new HyperTableCell(-1, "", nextPopulator.getRecordType(row)));
+      row.setCellValue(nextColNdx, new HyperTableCell(-1, "", nextPopulator.getRecordType(row)));
     });
     htPersonInst.addColAltPopulator(hdtInstitution, ctDropDownList, new SubjectPopulator(rtParentInstOfInst, true, true));
 
@@ -1092,7 +1057,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     }
     
     HyperTableCell newValue = new HyperTableCell(work.investigations.isEmpty() ? -1 : work.investigations.get(0).getID(), work.getInvText(curPerson), hdtInvestigation); 
-    row.updateCell(3, newValue);
+    row.setCellValue(3, newValue);
   }
   
 //---------------------------------------------------------------------------  
@@ -1272,8 +1237,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
         htWorks.setFilter(row -> 
         {
           HDT_Base record = row.getRecord();
-          if (record == null) return false;
-          if (record.getType() != hdtWork) return false;
+          if ((record == null) || (record.getType() != hdtWork)) return false;
           
           return HDT_Work.class.cast(record).investigations.contains(inv);
         });
@@ -1294,11 +1258,11 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
  
     if (ui.cantSaveRecord(true)) return;
         
-    int oldParentID = row.getID(1);
+    HDT_Institution oldParent = (HDT_Institution) row.getRecord(1);
     if ((newName.length() > 0) && (colNdx == 1))
-      oldParentID = -1;
+      oldParent = null;
     
-    NewInstDialogController newInstDialog = NewInstDialogController.create("New Institution or Institutional Division", oldParentID, newName, colNdx == 1);
+    NewInstDialogController newInstDialog = NewInstDialogController.create("New Institution or Institutional Division", oldParent, newName, colNdx == 1);
     
     if (newInstDialog.showModal())
     {

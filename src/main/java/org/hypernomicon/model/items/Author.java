@@ -20,6 +20,7 @@ package org.hypernomicon.model.items;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static java.util.Objects.*;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
@@ -103,6 +104,10 @@ public final class Author implements Cloneable
   public final String getNameLastFirst()                { return getNameLastFirst(false); }  
   public final HDT_Person getPerson()                   { return person; }
   public final HDT_Work getWork()                       { return work; }
+  public final PersonName getName(boolean engChar)      { return nullSwitch(person, engChar ? nameEngChar : name, () -> person.getName(engChar)); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
   
   public final boolean getIsEditor()     { return isNull(person) ? isEditor :   (work == null ? false         : db.getNestedBoolean(work, person, tagEditor)); }
   public final boolean getIsTrans()      { return isNull(person) ? isTrans :    (work == null ? false         : db.getNestedBoolean(work, person, tagTranslator)); }
@@ -111,15 +116,6 @@ public final class Author implements Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final PersonName getName(boolean engChar)
-  {
-    if (nonNull(person)) return person.getName(engChar);
-    
-    return engChar ? nameEngChar : name;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public final boolean equalsObjGroup(ObjectGroup objGroup)
   {
@@ -131,20 +127,17 @@ public final class Author implements Cloneable
     
     NestedValue val = objGroup.getValue(tagInFileName);
     
-    if (val != null)
-      if (val.ternary != getInFileName())
-        return false;          
+    if ((val != null) && (val.ternary != getInFileName()))
+      return false;          
     
     val = objGroup.getValue(tagEditor);
     
-    if (val != null)
-      if (val.bool != getIsEditor())
-        return false;
+    if ((val != null) && (val.bool != getIsEditor()))
+      return false;
     
     val = objGroup.getValue(tagTranslator);
     
-    if (val != null)
-      if (val.bool != getIsTrans())
+    if ((val != null) && (val.bool != getIsTrans()))
         return false;
     
     return true;

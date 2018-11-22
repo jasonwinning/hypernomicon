@@ -58,7 +58,7 @@ public abstract class BibEntry extends BibData
     
     getAuthors().clear();
     
-    bd.getAuthors().forEach(bibAuthor -> getAuthors().add(bibAuthor));
+    bd.getAuthors().forEach(getAuthors()::add);
   }
 
 //---------------------------------------------------------------------------  
@@ -88,7 +88,7 @@ public abstract class BibEntry extends BibData
   {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((getEntryKey() == null) ? 0 : getEntryKey().hashCode());
+    result = prime * result + (getEntryKey() == null ? 0 : getEntryKey().hashCode());
     result = prime * result + (thisIsBackup ? 1231 : 1237);
     return result;
   }

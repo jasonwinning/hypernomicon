@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.util.SplitString;
 
 import static org.hypernomicon.util.Util.*;
 
@@ -159,7 +160,7 @@ public final class SearchKeys
     
   // Loop through new substrings
   // ---------------------------
-    for (String subStr : newKey.split(";"))
+    for (String subStr : new SplitString(newKey, ';'))
     {
       keyword = new SearchKeyword(subStr.trim(), record);
   
@@ -228,19 +229,13 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  SearchKeyword getKeywordObjByKeywordStr(String keywordStr)
+  SearchKeyword getKeywordObjByKeywordStr(String str)
   {
-    keywordStr = convertToEnglishChars(keywordStr);
+    final String keywordStr = convertToEnglishChars(str).toLowerCase();
     
     if (keywordStr.length() < 3) return null;
     
-    Map<String, SearchKeyword> keywordStrToKeywordObj = prefixStrToKeywordStrToKeywordObj.get(keywordStr.substring(0, 3).toLowerCase());
-    
-    if (keywordStrToKeywordObj == null) return null;    
-
-    SearchKeyword keywordObj = keywordStrToKeywordObj.get(keywordStr.toLowerCase());
-    
-    return keywordObj;
+    return nullSwitch(prefixStrToKeywordStrToKeywordObj.get(keywordStr.substring(0, 3)), null, map -> map.get(keywordStr));
   }
 
 //---------------------------------------------------------------------------
@@ -275,7 +270,7 @@ public final class SearchKeys
     synchronized (keywordStrToKeywordObj) 
     {
       for (SearchKeyword keyword : keywordStrToKeywordObj.values())
-        text = (text.length() == 0) ? keyword.toString() : text + "; " + keyword.toString();
+        text = text.length() == 0 ? keyword.toString() : text + "; " + keyword.toString();
     }
     return text;
   }
@@ -390,10 +385,7 @@ public final class SearchKeys
 
   private HDT_Base getRecordForKeywordStr(String keywordStr)
   {
-    SearchKeyword keywordObj = getKeywordObjByKeywordStr(keywordStr);
-    
-    if (keywordObj == null) return null;
-    return keywordObj.record;
+    return nullSwitch(getKeywordObjByKeywordStr(keywordStr), null, keywordObj -> keywordObj.record);
   }
   
 //---------------------------------------------------------------------------

@@ -43,7 +43,6 @@ import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.wrappers.HyperTable;
 
 public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithPath
 { 
@@ -86,23 +85,30 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
       largerWork = getObjPointer(rtParentWorkOfWork);
     }
   }
-  
-  public WorkTypeEnum getWorkTypeValue()  { return HDT_WorkType.workTypeIDToEnumVal(workType.getID()); }
-    
-  public void setInvestigations(HyperTable ht)  { updateObjectsFromHT(rtInvestigationOfWork, ht, 2); }
-  public void setWorkLabels(HyperTable ht)      { updateObjectsFromHT(rtLabelOfWork, ht, 2); }
+     
+  public void setInvestigations(List<HDT_Investigation> list) { updateObjectsFromList(rtInvestigationOfWork, list); }
+  public void setWorkLabels(List<HDT_WorkLabel> list)         { updateObjectsFromList(rtLabelOfWork, list); }
 
-  public void setWorkType(WorkTypeEnum val)     { workType.set(HDT_WorkType.get(val)); }
+  public WorkTypeEnum getWorkTypeValue()    { return HDT_WorkType.workTypeIDToEnumVal(workType.getID()); }
+  public void setWorkType(WorkTypeEnum val) { workType.set(HDT_WorkType.get(val)); }
 
   @Override public String listName()        { return name(); }
   @Override public HDT_RecordType getType() { return hdtWork; }
+  @Override public HyperPath getPath()      { return workFiles.isEmpty() ? HyperPath.EmptyPath : workFiles.get(0).getPath(); }
   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public String getYear()        { return getTagString(tagYear); }
   public String getBibEntryKey() { return getBibEntryKeyString(); }
   public String getMiscBib()     { return getTagString(tagMiscBib); }
   public String getDOI()         { return getTagString(tagDOI); }
+  public List<String> getISBNs() { return nullSwitch(BibUtils.matchISBN(getTagString(tagISBN)), Collections.emptyList()); }
   public String getWebLink()     { return getTagString(tagWebLink); }
   public Authors getAuthors()    { return authors; }
+  public int getStartPageNum()   { return workFiles.isEmpty() ? -1 : getStartPageNum(workFiles.get(0)); }
+  public int getEndPageNum()     { return workFiles.isEmpty() ? -1 : getEndPageNum(workFiles.get(0)); }
+  public boolean canLaunch()     { return ! (getPath().isEmpty() && getWebLink().isEmpty()); }
   
   public void setYear(String str)        { updateTagString(tagYear, str); }
   public void setBibEntryKey(String str) { updateBibEntryKey(str); }
@@ -133,24 +139,22 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 //---------------------------------------------------------------------------
 //--------------------------------------------------------------------------- 
   
-  public void setAuthors(List<ObjectGroup> tableGroups)         
+  public void setAuthors(List<ObjectGroup> newGroups)         
   { 
     boolean theSame = true;
         
-    if (tableGroups.size() != authors.size())
+    if (newGroups.size() != authors.size())
       theSame = false;
     else
     {     
-      for (int ndx = 0; ndx < tableGroups.size(); ndx++)
-      {
-        if (authors.get(ndx).equalsObjGroup(tableGroups.get(ndx)) == false)
+      for (int ndx = 0; ndx < newGroups.size(); ndx++)
+        if (authors.get(ndx).equalsObjGroup(newGroups.get(ndx)) == false)
           theSame = false;
-      }
     }
     
     if (theSame) return;
 
-    authors.update(tableGroups);
+    authors.update(newGroups);
   }
  
 //---------------------------------------------------------------------------
@@ -285,7 +289,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
       
     if (ask)
     {
-      String msg = (workFiles.size() == 1) ? " file is " : " files are "; 
+      String msg = workFiles.size() == 1 ? " file is " : " files are "; 
       if (confirmDialog("Currently, " + workFiles.size() + msg + "attached to the child work. Replace with parent work file(s)?"))
       {
         getObjList(rtWorkFileOfWork).clear();
@@ -344,42 +348,13 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
   public static FilePath getBasePathForWorkTypeID(int workTypeID)
   {
-    WorkTypeEnum enumVal = HDT_WorkType.workTypeIDToEnumVal(workTypeID);
-    
-    switch (enumVal)
+    switch (HDT_WorkType.workTypeIDToEnumVal(workTypeID))
     {
       case wtBook:    return db.getPath(PREF_KEY_BOOKS_PATH, null);
       case wtChapter: return db.getPath(PREF_KEY_BOOKS_PATH, null);
       case wtPaper:   return db.getPath(PREF_KEY_PAPERS_PATH, null);
       default:        return db.getPath(PREF_KEY_MISC_FILES_PATH, null);     
     }    
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HyperPath getPath()
-  {
-    if (workFiles.isEmpty()) return HyperPath.EmptyPath;
-    return workFiles.get(0).getPath(); 
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public int getStartPageNum()
-  {
-    if (workFiles.isEmpty()) return -1;
-    return getStartPageNum(workFiles.get(0)); 
-  }
-  
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public int getEndPageNum()
-  {
-    if (workFiles.isEmpty()) return -1;
-    return getEndPageNum(workFiles.get(0)); 
   }
 
 //---------------------------------------------------------------------------
@@ -419,15 +394,6 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean canLaunch()
-  {
-    if (getPath().isEmpty() == false) return true;
-    return getWebLink().isEmpty() == false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static String addFileIndicator(String str, HDT_Work work)
   {
     if (work == null) return str;
@@ -440,19 +406,6 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
       indicator = "web";
     
     return indicator.length() == 0 ? str : new String(str + " (" + indicator + ")").trim();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public List<String> getISBNs()      
-  { 
-    String isbnStr = getTagString(tagISBN);
-    
-    List<String> isbns = BibUtils.matchISBN(isbnStr);
-    
-    if (isbns == null) return Collections.emptyList();
-    return isbns;
   }
 
 //---------------------------------------------------------------------------

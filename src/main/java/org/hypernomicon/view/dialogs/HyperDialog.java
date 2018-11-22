@@ -86,8 +86,7 @@ public abstract class HyperDialog
       scene = new Scene(mainPane);
       dialogStage.setScene(scene);
       
-      String id = mainPane.getId();
-      if (id == null) id = "";
+      String id = safeStr(mainPane.getId());
       
       if (id.equals("About") == false)
       {        
@@ -155,8 +154,7 @@ public abstract class HyperDialog
     {
       Parent root = dialogStage.getScene().getRoot();
       
-      String id = mainPane.getId();
-      if (id == null) id = "";
+      String id = safeStr(mainPane.getId());
       
       if (id.equals("About") == false)
       {        

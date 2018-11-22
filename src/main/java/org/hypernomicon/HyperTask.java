@@ -69,9 +69,8 @@ public abstract class HyperTask extends Task<Boolean>
     {
       Throwable ex = task.getException();
       
-      if (ex != null)
-        if (ex instanceof HyperDataException)
-          messageDialog(ex.getMessage(), mtError);
+      if ((ex != null) && (ex instanceof HyperDataException))
+        messageDialog(ex.getMessage(), mtError);
       
       return false;
     }

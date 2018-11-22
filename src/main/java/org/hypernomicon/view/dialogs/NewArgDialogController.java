@@ -23,6 +23,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
+import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.view.HyperView.TextViewInfo;
@@ -114,10 +115,10 @@ public class NewArgDialogController extends HyperDialog
       reviseSuggestions(false, -1);  
     });
     
-    hcbPerson.addEntry(-1, "", -1);
-    hcbPositionVerdict.addEntry(1, db.positionVerdicts.getByID(1).getCBText(), 1);
+    hcbPerson.addBlankEntry();
+    hcbPositionVerdict.addAndSelectEntry(db.positionVerdicts.getByID(1), HDT_Base::getCBText);
     hcbPositionVerdict.populate(false);
-    hcbWork.addEntry(-1, "", -1);
+    hcbWork.addBlankEntry();
     
     tfPosition.setText(curPosition.name());
 
@@ -188,7 +189,7 @@ public class NewArgDialogController extends HyperDialog
   private void reviseSuggestions(boolean useParm, int personID)
   {
     HDT_Person person;
-    String part1 = "", part2 = "";
+    String part1 = "";
     
     revising = true;
     
@@ -201,7 +202,7 @@ public class NewArgDialogController extends HyperDialog
       if (person != null) part1 = person.getLastName() + "'s ";
     }
     
-    part2 = (part1.length() == 0) ? "Argument " : "argument ";
+    String part2 = part1.length() == 0 ? "Argument " : "argument ";
     
     tfArgName1.setText(part1 + part2 + "for " + curPosition.name());
     tfArgName2.setText(part1 + part2 + "for the " + curPosition.name());

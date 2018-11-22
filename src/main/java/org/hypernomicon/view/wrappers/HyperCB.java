@@ -30,6 +30,7 @@ import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.queryEngines.AllQueryEngine;
 import org.hypernomicon.util.AutoCompleteCB;
 import org.hypernomicon.view.dialogs.NewPersonDialogController;
@@ -152,10 +153,7 @@ public class HyperCB implements CommitableWrapper
     if (addToRegistry)
       cbRegistry.put(cb, this);
       
-    if (row == null)
-      this.row = Populator.dummyRow;
-    else
-      this.row = row;
+    this.row = nullSwitch(row, Populator.dummyRow);
     
     populator = newPopulator;
     
@@ -168,8 +166,7 @@ public class HyperCB implements CommitableWrapper
     {
       @Override public String toString(HyperTableCell cell) 
       {
-        if (cell == null) return "";
-        return cell.getText();
+        return nullSwitch(cell, "", HyperTableCell::getText);
       }
 
       @Override public HyperTableCell fromString(String string) 
@@ -242,8 +239,7 @@ public class HyperCB implements CommitableWrapper
 
   private boolean isInTable()
   {
-    if (cb == null) return false;
-    if (cb.getParent() == null) return false;
+    if ((cb == null) || (cb.getParent() == null)) return false;
 
     return cb.getParent() instanceof ComboBoxCell;
   }
@@ -273,7 +269,7 @@ public class HyperCB implements CommitableWrapper
       if (cb.getParent() instanceof ComboBoxCell)
       {                
         ComboBoxCell cbc = (ComboBoxCell)cb.getParent();
-        colNdx = table.tv.getColumns().indexOf(cbc.getTableColumn());
+        colNdx = table.getTV().getColumns().indexOf(cbc.getTableColumn());
       }
     }
     
@@ -463,7 +459,7 @@ public class HyperCB implements CommitableWrapper
               else                     
               {
                 pop.populate(row, false);              
-                row.updateCell(colNdx, pop.addEntry(row, -1, npdc.getNameLastFirst()));
+                row.setCellValue(colNdx, pop.addEntry(row, -1, npdc.getNameLastFirst()));
               }
             }
           }
@@ -504,10 +500,57 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  public void addEntry(int id, String value, int selectedID)
+  public static interface RecordString { public String get(HDT_Base record); }
+  
+  public void addBlankEntry() { addEntry(-1, "", false); }
+
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------  
+
+  public void addAndSelectEntry(HyperObjPointer<? extends HDT_Base, ? extends HDT_Base> pntr, RecordString rs) 
+  { 
+    if (pntr.isNotNull())
+      addAndSelectEntry(pntr.get(), rs); 
+  }
+
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------  
+
+  public void addAndSelectEntryOrBlank(HyperObjPointer<? extends HDT_Base, ? extends HDT_Base> pntr, RecordString rs) 
+  { 
+    if (pntr.isNotNull())
+      addAndSelectEntry(pntr.get(), rs);
+    else
+      addBlankEntry();
+  }
+
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------  
+
+  public void addAndSelectEntry(HDT_Base record, RecordString rs) 
+  { 
+    if (record != null)
+      addEntry(record.getID(), rs.get(record), true); 
+  }
+
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------  
+
+  public void addAndSelectEntryOrBlank(HDT_Base record, RecordString rs)
+  {
+    if (record != null)
+      addEntry(record.getID(), rs.get(record), true);
+    else
+      addBlankEntry();
+  }
+
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------  
+
+  private void addEntry(int id, String value, boolean select)
   {
     HyperTableCell cell = populator.addEntry(row, id, value);
-    if ((id == selectedID) && (id > 0))
+    if (select && (id > 0))
     {
       cb.setValue(cell);
       cb.getSelectionModel().select(cell);
@@ -540,7 +583,7 @@ public class HyperCB implements CommitableWrapper
   public int selectedID()
   {
     int id = HyperTableCell.getCellID(cb.getValue());   
-    return (id > 0) ? id : -1;
+    return id > 0 ? id : -1;
   }
 
 //---------------------------------------------------------------------------  
@@ -550,10 +593,7 @@ public class HyperCB implements CommitableWrapper
   {
     populate(false);
     
-    if (cb.isEditable() == false)
-      return safeStr(HyperTableCell.getCellText(cb.getValue()));
-
-    return safeStr(cb.getEditor().getText());
+    return cb.isEditable() ? safeStr(cb.getEditor().getText()) : HyperTableCell.getCellText(cb.getValue());
   }
 
 //---------------------------------------------------------------------------  
@@ -565,13 +605,11 @@ public class HyperCB implements CommitableWrapper
     {
       HDT_RecordType type = populator.getRecordType(row);
       
-      if (type != null)
-        if (type != hdtNone) 
-          return type;
+      if ((type != null) && (type != hdtNone)) 
+        return type;
     }
 
-    HyperTableCell htc = cb.getValue();
-    return htc == null ? hdtNone : HyperTableCell.getCellType(cb.getValue());
+    return HyperTableCell.getCellType(cb.getValue());
   }
   
 //---------------------------------------------------------------------------  

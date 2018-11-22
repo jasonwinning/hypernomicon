@@ -184,7 +184,7 @@ public class MergeWorksDialogController extends HyperDialog
     {
       cnt = 0;
       BibData singleBD = null;
-      
+           
       switch (bibFieldEnum)
       {
         case bfAuthors : case bfEditors : case bfTranslators : case bfTitle : case bfYear : case bfWorkType : case bfEntryType :
@@ -242,7 +242,7 @@ public class MergeWorksDialogController extends HyperDialog
           cnt++;
         }
       
-      if ((cnt > 0) && ((fieldsEqual == false) || (cnt < works.size())))
+      if ((bibFieldEnum == bfMisc) || ((cnt > 0) && ((fieldsEqual == false) || (cnt < works.size()))))
       {
         if (BibData.bibFieldIsMultiLine(bibFieldEnum))
           addMultiLineField(bibFieldEnum, bd1, bd2, bd3, bd4);
@@ -431,17 +431,9 @@ public class MergeWorksDialogController extends HyperDialog
           noOp();   // This gets set when the new entry is created right before mergeInto is called
         }
         else if (BibData.bibFieldIsMultiLine(bibFieldEnum))
-        {
-          List<String> list = bibFieldRow.mlCtrlr.getStrList();
-          
-          mergedBD.setMultiStr(bibFieldEnum, list);
-        }
+          mergedBD.setMultiStr(bibFieldEnum, bibFieldRow.mlCtrlr.getStrList());
         else
-        {
-          String str = bibFieldRow.slCtrlr.toString();
-          
-          mergedBD.setStr(bibFieldEnum, str);
-        }
+          mergedBD.setStr(bibFieldEnum, bibFieldRow.slCtrlr.toString());
       }
       else
       {
@@ -467,9 +459,7 @@ public class MergeWorksDialogController extends HyperDialog
 
   public EntryType getEntryType()
   {
-    BibFieldRow row = extraRows.get(bfEntryType);
-    
-    return row == null ? null : row.cbCtrlr.getEntryType();
+    return nullSwitch(extraRows.get(bfEntryType), null, row -> row.cbCtrlr.getEntryType());
   }
 
 //---------------------------------------------------------------------------  

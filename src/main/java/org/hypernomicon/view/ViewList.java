@@ -49,6 +49,7 @@ public class ViewList
   public void clear()                            { viewList = new ArrayList<HyperView<? extends HDT_Base>>(); curNdx = -1; }
   public void goBack()                           { curNdx--; if (curNdx < 0) curNdx = 0; }
   public HyperView<? extends HDT_Base> getView() { return viewList.get(curNdx); }
+  public void refreshAll()                       { viewList.forEach(HyperView::refresh); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -82,6 +83,8 @@ public class ViewList
 
   void refreshNavMenu(ObservableList<MenuItem> menu, boolean isForward)
   {      
+    if (db.isLoaded() == false) return;
+    
     menu.clear();
     
     if (isForward)
@@ -102,10 +105,7 @@ public class ViewList
   private MenuItem getMenuItemForNavNdx(int ndx)
   {
     MenuItem item;
-    String typeName;
-
-    HyperView<? extends HDT_Base> view = viewList.get(ndx);
-    
+    HyperView<? extends HDT_Base> view = viewList.get(ndx);    
     HDT_Base record = view.getViewRecord();
     
     if (record == null)
@@ -123,7 +123,7 @@ public class ViewList
         default       : break;
       }
       
-      typeName = db.getTypeName(record.getType());
+      String typeName = db.getTypeName(record.getType());
       
       if (record.getType() == hdtWork)
       {
@@ -187,16 +187,7 @@ public class ViewList
       }
     }      
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void refreshAll()
-  {
-    for (HyperView<? extends HDT_Base> hyperView : viewList)
-      hyperView.refresh();
-  }
-  
+ 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -211,10 +202,9 @@ public class ViewList
 
   public void removeRecord(HDT_Base record)
   {
-    int count = viewList.size();
     Iterator<HyperView<? extends HDT_Base>> it = viewList.iterator();
     
-    while (it.hasNext() && (count > 1))
+    while (it.hasNext())
     {
       HyperView<? extends HDT_Base> view = it.next();
       
@@ -222,7 +212,6 @@ public class ViewList
       {
         if (curNdx >= viewList.indexOf(view)) curNdx--;
         it.remove();
-        count--;
       }
     }
   }

@@ -86,9 +86,7 @@ public class ResultsRow
       default: break;
     }
     
-    if (i == null) return new ResultCellValue<Instant>("", Instant.MIN);
-    
-    return new ResultCellValue<Instant>(dateTimeToUserReadableStr(i), i);
+    return nullSwitch(i, new ResultCellValue<Instant>("", Instant.MIN), j -> new ResultCellValue<Instant>(dateTimeToUserReadableStr(j), j));
   }
 
 //---------------------------------------------------------------------------

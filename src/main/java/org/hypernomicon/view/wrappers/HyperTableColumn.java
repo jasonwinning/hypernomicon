@@ -20,7 +20,7 @@ package org.hypernomicon.view.wrappers;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
-import static org.hypernomicon.model.records.HDT_RecordType.hdtWork;
+import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.getImageViewForRelativePath;
 
 import java.util.ArrayList;
@@ -122,9 +122,9 @@ public class HyperTableColumn
     colNdx = table.getColumns().size();
     
     if (ctrlType == ctCheckbox)
-      chkCol = (TableColumn<HyperTableRow, Boolean>) table.tv.getColumns().get(colNdx);
+      chkCol = (TableColumn<HyperTableRow, Boolean>) table.getTV().getColumns().get(colNdx);
     else  
-      tc = (TableColumn<HyperTableRow, HyperTableCell>) table.tv.getColumns().get(colNdx);
+      tc = (TableColumn<HyperTableRow, HyperTableCell>) table.getTV().getColumns().get(colNdx);
     
     switch (ctrlType)
     {
@@ -142,7 +142,7 @@ public class HyperTableColumn
         tc.setOnEditCommit(event ->
         {                
           HyperTableCell newCell = event.getNewValue().getCopyWithID(event.getOldValue().getID()); // preserve ID value
-          event.getRowValue().updateCell(colNdx, newCell);
+          event.getRowValue().setCellValue(colNdx, newCell);
         });
         
         break;
@@ -265,7 +265,6 @@ public class HyperTableColumn
   public List<HyperTableCell> getSelectedItems()
   {
     int recordID;
-
     List<HyperTableCell> choices = new ArrayList<>();
     
     for (HyperTableRow row : tc.getTableView().getItems())
@@ -274,7 +273,7 @@ public class HyperTableColumn
       if (recordID > 0)
         choices.add(new HyperTableCell(recordID, db.records(row.getType(colNdx)).getByID(recordID).getCBText(), row.getType(colNdx)));
     }
-    choices.add(new HyperTableCell(-2, "", objType)); // This is -2 instead of -1 to prevent an IndexOutOfBoundsException (I have no idea why the latter occurs)   
+    choices.add(new HyperTableCell(-1, "", hdtNone));   
     
     return choices;
   }

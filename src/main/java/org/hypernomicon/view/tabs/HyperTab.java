@@ -85,6 +85,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
   public MainTextWrapper getMainTextWrapper() { return null; }
   public void rescale()                       { return; }
   public int getRecordCount()                 { return db.records(getRecordTypeByTabEnum(tabEnum)).size(); }
+  public final int getActiveID()              { return nullSwitch(activeRecord(), -1, HDT_Base::getID); }
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -132,7 +133,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final <HDT_RT extends HDT_Base, HDT_CT extends HDT_Base> boolean saveSearchKey(HDT_Base record, TextField tfSearchKey, boolean showMessage, HyperTab<HDT_RT, HDT_CT> hyperTab)
+  public final boolean saveSearchKey(HDT_Base record, TextField tfSearchKey, boolean showMessage)
   {
     try 
     {
@@ -148,7 +149,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
           messageDialog("Unable to modify record: search key already exists.", mtError);
       }
       
-      hyperTab.focusOnSearchKey();
+      focusOnSearchKey();
       return false;
     }
     
@@ -160,8 +161,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
 
   public static final HDT_RecordType getRecordTypeByTabEnum(TabEnum tabEnum)
   {
-    HyperTab<? extends HDT_Base, ? extends HDT_Base> hyperTab = enumToHyperTab.get(tabEnum);
-    return hyperTab == null ? hdtNone : hyperTab.getType();
+    return nullSwitch(enumToHyperTab.get(tabEnum), hdtNone, HyperTab::getType);
   }
 
 //---------------------------------------------------------------------------  
@@ -244,26 +244,15 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final int getActiveID()
-  {
-    HDT_RT record = activeRecord();
-    return (record == null) ? -1 : record.getID();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public int getRecordNdx()
   {
-    int count = getRecordCount();
-    
-    if ((count > 0) && (activeRecord() != null))
+    if ((getRecordCount() > 0) && (activeRecord() != null))
     {
       HDT_RT record = activeRecord();
       return db.records(record.getType()).getKeyNdxByID(record.getID());
-    }        
-    else
-      return -1;
+    }
+    
+    return -1;
   }
 
 //---------------------------------------------------------------------------

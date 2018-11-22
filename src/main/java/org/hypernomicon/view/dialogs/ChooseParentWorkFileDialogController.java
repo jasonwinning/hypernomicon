@@ -57,13 +57,13 @@ public class ChooseParentWorkFileDialogController extends HyperDialog
   {
     String pathStr;
     HDT_Work parentWork = work.largerWork.get();
+    HyperTableRow row;
     
     htFiles = new HyperTable(tvFiles, 0, false, "");
     htFiles.addCol(hdtWorkFile, ctNone);
     htFiles.addCol(hdtWorkFile, ctNone);
     htFiles.setDblClickHandler((record) -> launchFile(HDT_WorkFile.class.cast(record).getPath().getFilePath()));
     
-    int rowNdx = 0;
     for (HDT_WorkFile workFile : parentWork.workFiles)
     {
       if (work.workFiles.contains(workFile) == false)
@@ -80,11 +80,10 @@ public class ChooseParentWorkFileDialogController extends HyperDialog
         }
         else
           pathStr = "";
-        
-        htFiles.setDataItem(0, rowNdx, workFile.getID(), pathStr, hdtWorkFile);
-        htFiles.setDataItem(1, rowNdx, workFile.getID(), workFile.name(), hdtWorkFile);                
-        
-        rowNdx++;
+
+        row = htFiles.newDataRow();
+        row.setCellValue(0, workFile, pathStr);
+        row.setCellValue(1, workFile, workFile.name());                
       }
     }
   }

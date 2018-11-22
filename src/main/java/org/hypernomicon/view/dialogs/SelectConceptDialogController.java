@@ -95,7 +95,7 @@ public class SelectConceptDialogController extends HyperDialog
     
     hcbGlossary = new HyperCB(cbGlossary, ctDropDownList, pop, null);
     
-    hcbTerm.addEntry(-2, "", -2);
+    hcbTerm.addBlankEntry();
     
     cbTerm.getSelectionModel().selectedItemProperty().addListener((observable, oldCell, newCell) ->
     {

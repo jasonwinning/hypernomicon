@@ -23,6 +23,7 @@ import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
+import org.hypernomicon.view.WindowStack;
 import org.hypernomicon.view.dialogs.InternetCheckDialogController;
 
 import static org.hypernomicon.App.*;
@@ -85,17 +86,18 @@ import javafx.event.EventHandler;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -106,10 +108,8 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.RowConstraints;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -464,9 +464,9 @@ public class Util
 
   public static void searchDOI(String str)
   {
-    String doi = BibUtils.matchDOI(str);
-    
+    String doi = BibUtils.matchDOI(str);    
     if (doi.length() == 0) return;
+    
     openWebLink("http://dx.doi.org/" + escapeURL(str, false));
   }
 
@@ -697,63 +697,29 @@ public class Util
   
   public static Optional<ButtonType> showAndWait(Alert dlg)
   {
-    boolean useStack = false;
+    WindowStack windowStack = ui == null ? null : ui.windows;
     
-    if (ui != null)
-      if (ui.windows != null)
-      {
-        ui.windows.push(dlg);
-        useStack = true;
-      }
+    if (windowStack != null)
+      windowStack.push(dlg);
     
     if (SystemUtils.IS_OS_LINUX)
     {
-      dlg.getDialogPane().setMinHeight(400);
-      dlg.getDialogPane().setMaxHeight(400);
-      dlg.getDialogPane().setPrefHeight(400);
-      dlg.getDialogPane().setMinWidth(800);
-      dlg.getDialogPane().setMaxWidth(800);
-      dlg.getDialogPane().setPrefWidth(800);
+      DialogPane dlgPane = dlg.getDialogPane();
+      
+      dlgPane.setMinSize(800, 400);
+      dlgPane.setMaxSize(800, 400);
+      dlgPane.setPrefSize(800, 400);
     }
     
-    if (useStack)
-      dlg.initOwner(ui.windows.getOutermostStage());
+    if (windowStack != null)
+      dlg.initOwner(windowStack.getOutermostStage());
     
     Optional<ButtonType> result = dlg.showAndWait();
 
-    if (useStack)
-      ui.windows.pop();
+    if (windowStack != null)
+      windowStack.pop();
     
     return result;
-  }
-  
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
-
-  public static String nextSubString(String wholeStr, String delim, MutableInt mutablePos)
-  {
-    int pos = mutablePos.intValue(), oldPos = pos;
-    
-    if (pos < 0) return "";
-    if (pos >= wholeStr.length()) 
-    { 
-      mutablePos.setValue(-1);
-      return "";
-    }
-    
-    String subStr = wholeStr.substring(pos, wholeStr.length());
-
-    pos = subStr.indexOf(delim);
-    if (pos == -1) pos = subStr.length();
-
-    subStr = subStr.substring(0, pos);
-    pos = oldPos + pos + 1;
-    if (pos >= wholeStr.length()) pos = -1;
-    
-    if (pos == oldPos) pos = -1;
-    
-    mutablePos.setValue(pos);
-    return subStr;
   }
   
 //---------------------------------------------------------------------------
@@ -820,11 +786,15 @@ public class Util
 
   public static String safeSubstring(String str, int start, int end)
   {
-    if (start >= str.length())
-      return "";
+    if (str == null) return "";
     
-    if (end > str.length())
-      return str.substring(start);
+    if (start < 0) start = 0;
+    
+    if (start >= str.length()) return "";
+    
+    if (end < start) end = start;
+    
+    if (end > str.length()) return str.substring(start);
     
     return str.substring(start, end);
   }
@@ -869,13 +839,9 @@ public class Util
     for (char c : chars.toCharArray())
     {
       curPos = text.indexOf(c);
-      if (curPos > -1)
-      {
-        if (lowestPos == -1)
-          lowestPos = curPos;
-        else if (curPos < lowestPos)
-          lowestPos = curPos;
-      }
+      
+      if ((curPos > -1) && ((lowestPos == -1) || (curPos < lowestPos))) 
+        lowestPos = curPos; 
     }
     
     return lowestPos;
@@ -888,10 +854,7 @@ public class Util
   {
     try (BufferedInputStream stream = new BufferedInputStream(App.class.getResourceAsStream(relativePath));)
     {
-      int size = 0;
-      size = stream.available();
-
-      byte[] array = new byte[size];
+      byte[] array = new byte[stream.available()];
 
       stream.read(array); 
 
@@ -924,12 +887,9 @@ public class Util
     node2.setLayoutX(node1.getLayoutX());
     node2.setLayoutY(node1.getLayoutY());
     
-    node2.setMinHeight(node1.getMinHeight());
-    node2.setMinWidth(node1.getMinWidth());
-    node2.setMaxHeight(node1.getMaxHeight());
-    node2.setMaxWidth(node1.getMaxWidth());
-    node2.setPrefHeight(node1.getPrefHeight());
-    node2.setPrefWidth(node1.getPrefWidth());
+    node2.setMinSize(node1.getMinWidth(), node1.getMinHeight());
+    node2.setMaxSize(node1.getMaxWidth(), node1.getMaxHeight());
+    node2.setPrefSize(node1.getPrefWidth(), node1.getPrefHeight());
   }
 
 //---------------------------------------------------------------------------
@@ -939,7 +899,7 @@ public class Util
   {
     if (node.isDisabled()) return;
     
-    runInFXThread(() -> node.requestFocus());
+    runInFXThread(node::requestFocus);
   }
 
 //---------------------------------------------------------------------------
@@ -947,8 +907,7 @@ public class Util
 
   @SuppressWarnings("rawtypes")
   public static void scaleNodeForDPI(Node node)
-  {
-    Double val;
+  {    
     boolean childrenOnly = false;
     
     if (node == null) return;
@@ -979,32 +938,26 @@ public class Util
         scalePropertiesForDPI(node.layoutXProperty(), node.layoutYProperty());
       }
       
-      val = AnchorPane.getBottomAnchor(node);
-      if (val != null)
-        if (val.doubleValue() > 0.0)
-          AnchorPane.setBottomAnchor(node, val.doubleValue() * displayScale);
+      Double val = AnchorPane.getBottomAnchor(node);
+      if ((val != null) && (val.doubleValue() > 0.0))
+        AnchorPane.setBottomAnchor(node, val.doubleValue() * displayScale);
       
       val = AnchorPane.getTopAnchor(node);
-      if (val != null)
-        if (val.doubleValue() > 0.0)
-          AnchorPane.setTopAnchor(node, val.doubleValue() * displayScale);
+      if ((val != null) && (val.doubleValue() > 0.0))
+        AnchorPane.setTopAnchor(node, val.doubleValue() * displayScale);
   
       val = AnchorPane.getLeftAnchor(node);
-      if (val != null)
-        if (val.doubleValue() > 0.0)
-          AnchorPane.setLeftAnchor(node, val.doubleValue() * displayScale);
+      if ((val != null) && (val.doubleValue() > 0.0))
+        AnchorPane.setLeftAnchor(node, val.doubleValue() * displayScale);
   
       val = AnchorPane.getRightAnchor(node);
-      if (val != null)
-        if (val.doubleValue() > 0.0)
-          AnchorPane.setRightAnchor(node, val.doubleValue() * displayScale);
+      if ((val != null) && (val.doubleValue() > 0.0))
+        AnchorPane.setRightAnchor(node, val.doubleValue() * displayScale);
     }
     
     if (node instanceof TableView)
-    {
-      TableView tableView = TableView.class.cast(node);
-      
-      for (Object colObj : tableView.getColumns())
+    {     
+      for (Object colObj : TableView.class.cast(node).getColumns())
       {
         TableColumn column = TableColumn.class.cast(colObj);
         scalePropertiesForDPI(column.maxWidthProperty(), column.minWidthProperty(), column.prefWidthProperty());
@@ -1015,17 +968,13 @@ public class Util
     {
       GridPane gridPane = GridPane.class.cast(node);            
       
-      for (ColumnConstraints cc : gridPane.getColumnConstraints())
-        scalePropertiesForDPI(cc.maxWidthProperty(), cc.minWidthProperty(), cc.prefWidthProperty());
-      
-      for (RowConstraints rc : gridPane.getRowConstraints())
-        scalePropertiesForDPI(rc.maxHeightProperty(), rc.minHeightProperty(), rc.prefHeightProperty());
+      gridPane.getColumnConstraints().forEach(cc -> scalePropertiesForDPI(cc.maxWidthProperty(), cc.minWidthProperty(), cc.prefWidthProperty()));      
+      gridPane.getRowConstraints().forEach(rc -> scalePropertiesForDPI(rc.maxHeightProperty(), rc.minHeightProperty(), rc.prefHeightProperty()));
     }
  
     if (node instanceof ToolBar)
     {
-      for (Node item : ToolBar.class.cast(node).getItems()) 
-        scaleNodeForDPI(item);
+      ToolBar.class.cast(node).getItems().forEach(Util::scaleNodeForDPI);
     }
     else if (node instanceof TitledPane)
     {
@@ -1033,13 +982,11 @@ public class Util
     }
     else if (node instanceof TabPane)
     {
-      for (Tab tab : TabPane.class.cast(node).getTabs())
-        scaleNodeForDPI(tab.getContent());
+      TabPane.class.cast(node).getTabs().forEach(tab -> scaleNodeForDPI(tab.getContent()));
     }
     else if (node instanceof Parent)
     {
-      for (Node child : Parent.class.cast(node).getChildrenUnmodifiable())
-        scaleNodeForDPI(child);
+      Parent.class.cast(node).getChildrenUnmodifiable().forEach(Util::scaleNodeForDPI);
     }
   }
 
@@ -1279,7 +1226,7 @@ public class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String safeStr(String s)  { return isNull(s) ? "" : s; }
+  public static String safeStr(String s)  { return s == null ? "" : s; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1433,39 +1380,32 @@ public class Util
   {
     @SuppressWarnings("deprecation")
     final Iterator<Window> windows = Window.impl_getWindows(); // In Java 9 should be able to call Window.getWindows()
-
-    while (windows.hasNext()) 
+    Window window;
+    
+    do 
     {
-      final Window window = windows.next();
+      if (windows.hasNext() == false) return;
+      
+      window = windows.next();
+      
+    } while ((window instanceof ContextMenu) == false);
 
-      if (window instanceof ContextMenu) 
-      {
-        if ((window.getScene() != null) && (window.getScene().getRoot() != null))
-        { 
-          Parent root = window.getScene().getRoot();
+    Scene scene = window.getScene();
+    if ((scene == null) || (scene.getRoot() == null)) return;
+    
+    ObservableList<Node> rootChildren = scene.getRoot().getChildrenUnmodifiable();
+    if (rootChildren.size() == 0) return;
+    
+    Node bridge = rootChildren.get(0).lookup(".context-menu");      
+    if (bridge == null) return;
+    
+    ContextMenuContent cmc = (ContextMenuContent)((Parent)bridge).getChildrenUnmodifiable().get(0);
 
-          if (root.getChildrenUnmodifiable().size() > 0)
-          {
-            Node popup = root.getChildrenUnmodifiable().get(0);
-            if (popup.lookup(".context-menu") != null)
-            {
-              Node bridge = popup.lookup(".context-menu");
-              ContextMenuContent cmc = (ContextMenuContent)((Parent)bridge).getChildrenUnmodifiable().get(0);
-
-              ObservableList<Node> children = cmc.getItemsContainer().getChildren();
-
-              children.clear();
-              
-              for (MenuItem item : items)
-                children.add(cmc.new MenuItemContainer(item));
-              
-              return;
-            }
-          }
-        }
-        return;
-      }
-    }
+    ObservableList<Node> menuChildren = cmc.getItemsContainer().getChildren();
+    menuChildren.clear();
+    
+    for (MenuItem item : items)
+      menuChildren.add(cmc.new MenuItemContainer(item));
   }
 
 //---------------------------------------------------------------------------
@@ -1494,10 +1434,7 @@ public class Util
   @SuppressWarnings("unchecked")
   public static <T> ListView<T> getCBListView(ComboBox<T> cb)
   {
-    ComboBoxListViewSkin<T> skin = (ComboBoxListViewSkin<T>) cb.getSkin();
-    if (skin == null) return null;
-    
-    return skin.getListView();
+    return nullSwitch((ComboBoxListViewSkin<T>)cb.getSkin(), null, ComboBoxListViewSkin::getListView);    
   }
 
 //---------------------------------------------------------------------------
@@ -1841,6 +1778,21 @@ public class Util
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+ 
+  @FunctionalInterface public static interface VoidFunction<T1>      { public void    evaluate(T1 obj); } 
+  @FunctionalInterface public static interface BoolExpression        { public boolean evaluate(); }
+  @FunctionalInterface public static interface ObjExpression<T1>     { public T1      evaluate(); }
+  @FunctionalInterface public static interface ObjFunction<T1, T2>   { public T1      evaluate(T2 obj); }
+  
+  public static <T>      void    nullSwitch(T  obj,              VoidFunction<T>       ex) { if (obj != null)           ex.evaluate(obj); }  
+  public static <T>      boolean nullSwitch(T  obj, boolean def, BoolExpression        ex) { return obj == null ? def : ex.evaluate()   ; }
+  public static <T1, T2> T1      nullSwitch(T2 obj, T1      def, ObjExpression<T1>     ex) { return obj == null ? def : ex.evaluate()   ; }
+  public static <T1, T2> T1      nullSwitch(T2 obj, T1      def, ObjFunction<T1, T2>   ex) { return obj == null ? def : ex.evaluate(obj); }
+  
+  public static <T> T nullSwitch(T obj, T def) { return obj == null ? def : obj; }
+  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static void deleteGridPaneRow(GridPane grid, final int rowNdx)
   {
@@ -1848,9 +1800,7 @@ public class Util
     
     for (Node child : grid.getChildren())
     {
-      Integer rowIndex = GridPane.getRowIndex(child);
-
-      int r = rowIndex == null ? 0 : rowIndex;
+      int r = nullSwitch(GridPane.getRowIndex(child), new Integer(0)).intValue();
 
       if (r > rowNdx)
         GridPane.setRowIndex(child, r - 1);
@@ -1873,9 +1823,7 @@ public class Util
     
     for (Node child : grid.getChildren())
     {
-      Integer columnIndex = GridPane.getColumnIndex(child);
-
-      int c = columnIndex == null ? 0 : columnIndex;
+      int c = nullSwitch(GridPane.getColumnIndex(child), new Integer(0)).intValue();
 
       if (c > columnNdx)
         GridPane.setColumnIndex(child, c - 1);
@@ -1936,7 +1884,7 @@ public class Util
 //---------------------------------------------------------------------------
 
   public static <T> List<T> singletonMutableList(T o) 
-  {
+  {    
     ArrayList<T> list = new ArrayList<>();
     list.add(o);
     return list;

@@ -21,7 +21,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 
 import java.util.EnumSet;
@@ -63,34 +62,24 @@ public class ChooseParentDialogController extends HyperDialog
   
   @Override protected boolean isValid()
   {
-    RelationType relType;
-    
     if (types.contains(popupTree.selectedItem().getValue().getRecordType()) == false)
-    {
-      messageDialog("You must " + title.toLowerCase() + ".", mtError);
-      return false;
-    }
+      return falseWithErrorMessage("You must " + title.toLowerCase() + ".");
     
     TreeRow row = popupTree.selectedItem().getValue();
     parent = row.getRecord();
     
     if (((parent.getID() == child.getID())) && (parent.getType() == child.getType()))
-    {
-      messageDialog("A record cannot be its own parent. Please select another record.", mtError);
-      return false;
-    }
+      return falseWithErrorMessage("A record cannot be its own parent. Please select another record.");
     
-    relType = getRelation(child.getType(), parent.getType());
+    RelationType relType = getRelation(child.getType(), parent.getType());
     
     switch (child.getType())
     {
       case hdtWorkLabel : case hdtNote : case hdtPosition : case hdtDebate : case hdtArgument : 
         
         if (db.getObjectList(relType, child, true).contains(parent))
-        {
-          messageDialog("The record already has that " + db.getTypeName(parent.getType()).toLowerCase() + " as a parent.", mtError);
-          return false;
-        }
+          return falseWithErrorMessage("The record already has that " + db.getTypeName(parent.getType()).toLowerCase() + " as a parent.");
+        
         break;       
         
       case hdtWork : case hdtMiscFile :
@@ -100,40 +89,26 @@ public class ChooseParentDialogController extends HyperDialog
           case hdtWorkLabel :
             
             if (db.getObjectList(relType, child, true).contains(parent))
-            {
-              messageDialog("The record already has that " + db.getTypeName(parent.getType()).toLowerCase() + " as a parent.", mtError);
-              return false;
-            }
+              return falseWithErrorMessage("The record already has that " + db.getTypeName(parent.getType()).toLowerCase() + " as a parent.");
             
             if (child.getType() == hdtMiscFile)
-            {
-              HDT_MiscFile childFile = (HDT_MiscFile) child;
-              if (childFile.work.isNotNull())
-              {
-                messageDialog("A file record's labels cannot be changed while it is attached to a work record.", mtError);
-                return false;
-              }
-            }
+              if (HDT_MiscFile.class.cast(child).work.isNotNull())
+                return falseWithErrorMessage("A file record's labels cannot be changed while it is attached to a work record.");
             
             break;
             
           case hdtWork :
             
             if (db.getObjectList(relType, child, true).size() > 0)
-            {
-              messageDialog("A " + db.getTypeName(child.getType()).toLowerCase() + " cannot have more than one parent work record.", mtError);
-              return false;
-            }
+              return falseWithErrorMessage("A " + db.getTypeName(child.getType()).toLowerCase() + " cannot have more than one parent work record.");
+
             break;
             
           case hdtArgument : // the parent can only be a work for this case
             
-            relType = getRelation(hdtArgument, hdtWork);
             if (db.getObjectList(relType, parent, true).contains(child))
-            {
-              messageDialog("That work is already listed as a source for that argument.", mtError);
-              return false;
-            }
+              return falseWithErrorMessage("That work is already listed as a source for that argument.");
+            
             break;
             
           default : break;            

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -342,12 +341,8 @@ public abstract class BibData
   {
     ArrayList<String> list = new ArrayList<>();
     
-    if (jArr == null) return list;
-    
-    Iterator<String> it = jArr.strIterator();
-    
-    while (it.hasNext())
-      list.add(it.next());
+    if (jArr != null)    
+      jArr.getStrs().forEach(list::add);
     
     return list;
   }
@@ -397,19 +392,15 @@ public abstract class BibData
     
     if (iiArr != null)
     {
-      Iterator<JsonObj> it = iiArr.objIterator();
-      
-      JsonObj iiObj;
-      while (it.hasNext())
+      iiArr.getObjs().forEach(iiObj ->
       {
-        iiObj = it.next();
         if (iiObj.getStrSafe("type").toLowerCase().contains("isbn"))
         {
           String isbn = iiObj.getStrSafe("identifier");
           if (isbn.length() > 0)
             bd.addStr(bfISBNs, isbn);
         }
-      }
+      });
     }
     
     if (bd.fieldNotEmpty(bfISBNs) == false)
@@ -429,8 +420,7 @@ public abstract class BibData
       
     BibTeXDatabase entries = parser.parse(new BufferedReader(new StringReader(String.join("\n", lines))));
     
-    if (entries == null) return null;    
-    if (entries.getEntries().size() == 0) return null;
+    if ((entries == null) || (entries.getEntries().size() == 0)) return null;
     
     BibTeXEntry entry = entries.getEntries().values().iterator().next();
     
@@ -501,9 +491,7 @@ public abstract class BibData
 
   protected void addBibTexAuthor(String val, AuthorType authorType)
   {
-    String[] auths = val.split("\n");
-    
-    for (String auth : auths)
+    for (String auth : val.split("\n"))
     {
       if (auth.startsWith("and "))
         auth = auth.substring(4);
@@ -605,13 +593,13 @@ public abstract class BibData
           case "SP":
             
             pages = bd.getStr(bfPages);
-            bd.setStr(bfPages, (pages.length() == 0) ? val : (val + "-" + pages));
+            bd.setStr(bfPages, pages.length() == 0 ? val : (val + "-" + pages));
             break;
             
           case "EP":
 
             pages = bd.getStr(bfPages);
-            bd.setStr(bfPages, (pages.length() == 0) ? val : (pages + "-" + val));
+            bd.setStr(bfPages, pages.length() == 0 ? val : (pages + "-" + val));
             break;
             
           case "TI": case "TT": case "T1": case "T2": case "T3":
@@ -815,7 +803,7 @@ public abstract class BibData
     
     if (includeAuthors == false) return;
     
-    bd.getAuthors().forEach(bibAuthor -> getAuthors().add(bibAuthor));
+    bd.getAuthors().forEach(getAuthors()::add);
   }
 
 //---------------------------------------------------------------------------

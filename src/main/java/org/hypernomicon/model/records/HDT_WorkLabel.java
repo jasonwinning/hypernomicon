@@ -64,12 +64,10 @@ public class HDT_WorkLabel extends HDT_RecordWithConnector
 
   public String getExtendedText()
   {
-    String parentText;
-  
     if (parentLabels.size() > 0)
     {
       if (parentLabels.get(0).getID() == 1) return name();
-      parentText = parentLabels.get(0).getExtendedText();
+      String parentText = parentLabels.get(0).getExtendedText();
       if (parentText.length() > 0)
         return parentText + "/" + name();
     }

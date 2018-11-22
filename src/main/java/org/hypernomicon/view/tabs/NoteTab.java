@@ -60,13 +60,13 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 {
-  public SplitMenuButton btnFolder = new SplitMenuButton();
-  public Button btnBrowse = new Button("...");
-  public TextField tfFolder = new TextField();
+  private SplitMenuButton btnFolder = new SplitMenuButton();
+  private Button btnBrowse = new Button("...");
+  private TextField tfFolder = new TextField();
   private TabPane tabPane;
   private Tab tabSubnotes, tabMentioners;
-  public HyperTable htParents, htSubnotes, htMentioners;  
-  public FilePath folderPath;
+  private HyperTable htParents, htSubnotes, htMentioners;  
+  private FilePath folderPath;
   private HDT_Note curNote;
 
   @Override public HDT_RecordType getType()              { return hdtNote; }
@@ -81,19 +81,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override public boolean update()
   {
-    int ndx;
-    
-    if (db.isLoaded() == false) return false;
-    
-    clear();
-    
-    if (curNote == null)
-    {
-      enable(false);
-      return false;
-    }
-      
-    if (!ctrlr.update(curNote)) return false;
+    ctrlr.update(curNote);
 
     tfFolder.setText(curNote.getFolderStr());
     
@@ -102,31 +90,17 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     else
       folderPath = curNote.folder.get().getPath().getFilePath();
 
-  // Populate parent notes
-  // ---------------------
+    htParents.buildRows(curNote.parentNotes, (row, otherNote) -> row.setCellValue(2, otherNote, otherNote.name()));
 
-    ndx = 0; for (HDT_Note otherNote : curNote.parentNotes)
+    htSubnotes.buildRows(curNote.subNotes, (row, subNote) ->
     {
-      htParents.setDataItem(2, ndx, otherNote.getID(), otherNote.name(), hdtNote);
-      ndx++;
-    }
-
-  // Populate child notes
-  // --------------------
-
-    ndx = 0; for (HDT_Note subNote : curNote.subNotes)
-    {
-      htSubnotes.setDataItem(1, ndx, subNote.getID(), subNote.name(), hdtNote);
-      htSubnotes.setDataItem(2, ndx, subNote.getID(), subNote.getMainText().getPlainForDisplay(), hdtNote);
-      htSubnotes.setDataItem(3, ndx, subNote.getID(), subNote.getFolderStr(), hdtNote);
-      
-      ndx++;
-    }
+      row.setCellValue(1, subNote, subNote.name());
+      row.setCellValue(2, subNote, subNote.getMainText().getPlainForDisplay());
+      row.setCellValue(3, subNote, subNote.getFolderStr());
+    });
     
     tabSubnotes.setText(subnotesTabTitle + " (" + curNote.subNotes.size() + ")");
-    
-  // Populate mentioners
-  // -------------------
+
     updateMentioners();   
         
     return true; 
@@ -140,30 +114,26 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     htMentioners.clear();
     tabMentioners.setText(mentionersTabTitle);
     
-    if (db.isLoaded() == false) return;
-    if (curNote == null) return;
+    if ((db.isLoaded() == false) || (curNote == null)) return;
     
     if (db.reindexingMentioners())
     {
-      htMentioners.setDataItem(1, 0, -1, "(Indexing in progress)", hdtNone);
+      htMentioners.newDataRow().setCellValue(1, -1, "(Indexing in progress)", hdtNone);
       return;
     }
       
-    Set<HDT_Base> mentioners = db.getMentionerSet(curNote, true);
-    mentioners = removeDupMentioners(mentioners);
+    Set<HDT_Base> mentioners = removeDupMentioners(db.getMentionerSet(curNote, true));
     
-    int rowNdx = 0; for (HDT_Base mentioner : mentioners)
+    htMentioners.buildRows(mentioners, (row, mentioner) ->
     {
-      htMentioners.setDataItem(0, rowNdx, mentioner.getID(), "", mentioner.getType());
-      htMentioners.setDataItem(1, rowNdx, mentioner.getID(), mentioner.getCBText(), mentioner.getType());
+      row.setCellValue(0, mentioner, "");
+      row.setCellValue(1, mentioner, mentioner.getCBText());
       
       if (mentioner.hasDesc())
-        htMentioners.setDataItem(2, rowNdx, mentioner.getID(), HDT_RecordWithDescription.class.cast(mentioner).getDesc().getPlainForDisplay(), mentioner.getType());
-      
-      rowNdx++;
-    }
+        row.setCellValue(2, mentioner, HDT_RecordWithDescription.class.cast(mentioner).getDesc().getPlainForDisplay());
+    });
     
-    tabMentioners.setText(mentionersTabTitle + " (" + rowNdx + ")");
+    tabMentioners.setText(mentionersTabTitle + " (" + mentioners.size() + ")");
     
     if ((curNote.subNotes.size() == 0) && (htMentioners.getDataRowCount() > 0))
       tabPane.getSelectionModel().select(tabMentioners);
@@ -184,10 +154,9 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     {
       if (mentioner.isUnitable())
       {
-        HDT_RecordWithConnector spoke = (HDT_RecordWithConnector) mentioner;
-        StrongLink link = spoke.getLink();
+        StrongLink link = HDT_RecordWithConnector.class.cast(mentioner).getLink();
         
-        if (spoke.getLink() != null)
+        if (link != null)
         {
           if (usedLinks.contains(link) == false)
           {
@@ -301,7 +270,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     htMentioners.addCol(hdtNone, ctNone);
     htMentioners.addCol(hdtNone, ctNone);
     
-    db.addMentionsNdxCompleteHandler(() -> updateMentioners());
+    db.addMentionsNdxCompleteHandler(this::updateMentioners);
     
     btnFolder.setOnAction(event -> launchFile(folderPath));
     btnBrowse.setOnAction(event -> browseClick());
@@ -380,7 +349,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
   {    
     if (!ctrlr.save(curNote, showMessage, this)) return false;
     
-    curNote.setParentNotes(htParents);
+    curNote.setParentNotes(htParents.saveToList(2, hdtNote));
     
     ui.attachOrphansToRoots();
     

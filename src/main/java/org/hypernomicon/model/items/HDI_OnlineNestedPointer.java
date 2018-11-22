@@ -28,6 +28,8 @@ import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 
+import static org.hypernomicon.util.Util.*;
+
 public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPointer>
 {
   private RelationType relType;
@@ -45,11 +47,9 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
 
   public HDT_Base get()            { return target; }
   public void set(HDT_Base target) { this.target = target; }
-  
-  @Override public void expire()
-  {
-    target = null;
-  }
+
+  @Override public String getResultTextForTag(Tag tag) { return nullSwitch(target, "", HDT_Base::listName); }  
+  @Override public void expire()                       { target = null; }
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -65,10 +65,7 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
 
   @Override public void setFromOfflineValue(HDI_OfflineNestedPointer val, Tag tag) throws RelationCycleException
   {
-    if (val.objID < 0)
-      target = null;
-    else
-      target = db.records(db.getNestedTargetType(relType, mainTag)).getByID(val.objID);
+    target = val.objID < 0 ? null : db.records(db.getNestedTargetType(relType, mainTag)).getByID(val.objID);
   }
 
 //---------------------------------------------------------------------------
@@ -91,15 +88,6 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
     
     if (target != null)
       list.add(target.listName());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public String getResultTextForTag(Tag tag)
-  {
-    if (target == null) return "";    
-    return target.listName();
   }
 
 //---------------------------------------------------------------------------

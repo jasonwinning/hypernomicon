@@ -24,7 +24,6 @@ import java.util.function.UnaryOperator;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
-import javafx.collections.ObservableList;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
@@ -117,17 +116,13 @@ public class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> impl
 
   @Override public void commitEdit(HyperTableCell newValue)
   {
-    int rowNdx, colNdx;
-    
     super.cancelEdit();
     setGraphic(null);
+          
+    HyperTableRow row = (HyperTableRow) getTableRow().getItem();
+    int colNdx = getTableView().getColumns().indexOf(getTableColumn());
     
-    ObservableList<HyperTableRow> rows = this.getTableView().getItems();
-    
-    rowNdx = getTableRow().getIndex();
-    colNdx = getTableView().getColumns().indexOf(getTableColumn());
-    
-    rows.get(rowNdx).updateCell(colNdx, newValue);
+    row.setCellValue(colNdx, newValue);
   }
 
 //---------------------------------------------------------------------------

@@ -18,7 +18,6 @@
 package org.hypernomicon.bib;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +28,7 @@ import com.google.common.collect.Iterators;
 
 import org.hypernomicon.bib.BibData.AuthorType;
 import org.hypernomicon.model.PersonName;
+import org.hypernomicon.util.SplitString;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -102,11 +102,9 @@ public class BibAuthorsStandalone extends BibAuthors
   @Override public String getStr(AuthorType authorType)
   {
     if (authorType == AuthorType.author)
-    {
       if (listsAreEmpty())
         if (safeStr(oneLiner).length() > 0)
           return oneLiner;
-    }
     
     return super.getStr(authorType);
   }
@@ -116,16 +114,12 @@ public class BibAuthorsStandalone extends BibAuthors
 
   private List<BibAuthor> getOneLinerAsList()
   {
-    if (oneLiner == null)
-      oneLiner = "";
-    
-    if (oneLiner.length() == 0)
-      return Collections.emptyList();
+    oneLiner = safeStr(oneLiner);
     
     List<BibAuthor> list = new ArrayList<>();
     
-    for (String authorStr : oneLiner.split(";"))
-      list.add(new BibAuthor(AuthorType.author, new PersonName(authorStr)));
+    if (oneLiner.length() > 1)
+      new SplitString(oneLiner, ';').forEach(authorStr -> list.add(new BibAuthor(AuthorType.author, new PersonName(authorStr))));
     
     return list;
   }

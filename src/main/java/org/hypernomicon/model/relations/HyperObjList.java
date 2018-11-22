@@ -66,7 +66,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
   @Override public boolean isEmpty()
   {
     lastException = null;
-    return (size() == 0);
+    return size() == 0;
   }
 
 //---------------------------------------------------------------------------
@@ -95,7 +95,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
     if (objList == null) return new Object[0];
     
     Object[] array = new Object[objList.size()];
-    
+       
     for (int ndx = 0; ndx < objList.size(); ndx++)
       array[ndx] = objList.get(ndx);
     
@@ -181,9 +181,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
     if (modTracking == false) return;
     
     before.clear();
-    List<HDT_ObjType> list = relSet.getUnmodifiableObjectList(subj);
-    if (list != null)
-      before.addAll(list);
+    before.addAll(relSet.getUnmodifiableObjectList(subj));
   }
 
 //---------------------------------------------------------------------------
@@ -531,19 +529,16 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
 
   @Override public boolean equals(Object o)
   {
-    if (o instanceof List)
-    {
-      List<?> list = List.class.cast(o);
-      
-      if (list.size() != size()) return false;
-      
-      for (int ndx = 0; ndx < list.size(); ndx++)
-        if (list.get(ndx) != get(ndx)) return false;
-     
-      return true;
-    }
-    else
-      return false;
+    if ((o instanceof List) == false) return false;
+
+    List<?> list = List.class.cast(o);
+    
+    if (list.size() != size()) return false;
+    
+    for (int ndx = 0; ndx < list.size(); ndx++)
+      if (list.get(ndx) != get(ndx)) return false;
+   
+    return true;
   }
   
 //---------------------------------------------------------------------------

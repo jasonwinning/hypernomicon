@@ -66,6 +66,7 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
     public HDT_DT getByIDNdx(int ndx)            { return core.getRecordByID(core.getIDbyIDNdx(ndx)); }
     public HDT_DT getByKeyNdx(int ndx)           { return core.getRecordByID(core.getIDbyKeyNdx(ndx)); }
     
+    public Iterable<HDT_DT> keyIterable()        { return this::keyIterator; } 
     public Iterator<HDT_DT> keyIterator()        { return new CoreIterator(this, true); }
     public Iterator<HDT_DT> idIterator()         { return new CoreIterator(this, false); }
   
@@ -182,12 +183,6 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
   {
     if (online) throw new HDB_InternalError(89842);
     
-    if (core.idCount() == 0)
-    {
-      online = true;
-      return;
-    }
-    
     for (HDT_DT record : getAccessor())
     {
       if (db.task.isCancelled()) throw new TerminateTaskException();
@@ -246,9 +241,6 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
    
   HDT_DT createNewRecord(HDT_RecordState recordState, boolean bringOnline) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException
   {
-    HDT_DT record;
-    Instant nowDate;
-    
     if (bringOnline)
     {
       if (online == false)
@@ -263,11 +255,11 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
       }
     }
     
-    record = createRecord(recordState);
+    HDT_DT record = createRecord(recordState);
     
     if (type.getDisregardDates() == false)
     {
-      nowDate = Instant.now();
+      Instant nowDate = Instant.now();
       
       if (recordState.creationDate == null) recordState.creationDate = nowDate;      
       if (recordState.modifiedDate == null) recordState.modifiedDate = nowDate;      

@@ -27,10 +27,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import javafx.application.Platform;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.HyperDB.DatabaseEvent;
-import org.hypernomicon.model.KeywordLinkList.KeywordLink;
-import org.hypernomicon.model.items.KeyWork;
 import org.hypernomicon.model.items.MainText;
-import org.hypernomicon.model.items.MainText.DisplayItem;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
@@ -41,7 +38,7 @@ import org.hypernomicon.util.BidiOneToManyRecordMap;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.util.Util.noOp;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
 
 public class MentionsIndex
@@ -80,12 +77,11 @@ public class MentionsIndex
  
   public void removeRecord(HDT_Base record)
   {
-    if (thread != null)
-      if (thread.isAlive())
-      {
-        startRebuild();
-        return;
-      }
+    if ((thread != null) && (thread.isAlive()))
+    {
+      startRebuild();
+      return;
+    }
 
     mentionedInDescToMentioners.removeRecord(record);
     mentionedAnywhereToMentioners.removeRecord(record);
@@ -96,12 +92,11 @@ public class MentionsIndex
 
   public void updateMentioner(HDT_Base record)
   {   
-    if (thread != null)
-      if (thread.isAlive())
-      {
-        startRebuild();
-        return;
-      }
+    if ((thread != null) && (thread.isAlive()))
+    {
+      startRebuild();
+      return;
+    }
     
     if (record.isUnitable())
     {
@@ -127,26 +122,21 @@ public class MentionsIndex
 
   private void reindexMentioner(HDT_Base record)
   {
-    int strNdx;
-       
     if (record == null) return;
     
     strList.clear();
 
     record.getAllStrings(strList, true);
-    if (strList.size() == 0)
-      return;
+    if (strList.size() == 0) return;
     
     mentionedAnywhereToMentioners.removeReverseKey(record);
     mentionedInDescToMentioners.removeReverseKey(record);
 
-    for (strNdx = 0; strNdx < strList.size(); strNdx++)
+    strList.forEach(str -> 
     {
-      linkList.generate(strList.get(strNdx).toLowerCase());
-
-      for (KeywordLink link : linkList.getLinks())
-        mentionedAnywhereToMentioners.addForward(link.key.record, record);
-    }
+      linkList.generate(str.toLowerCase());
+      linkList.getLinks().forEach(link -> mentionedAnywhereToMentioners.addForward(link.key.record, record));
+    });
     
     if (record.hasMainText())
     {
@@ -155,13 +145,12 @@ public class MentionsIndex
       
       if (plainText.length() > 0)
       {
-        linkList.generate(plainText);
-  
-        for (KeywordLink link : linkList.getLinks())
-          mentionedInDescToMentioners.addForward(link.key.record, record);
+        linkList.generate(plainText);  
+        linkList.getLinks().forEach(link -> mentionedInDescToMentioners.addForward(link.key.record, record));
       }
       
-      for (DisplayItem displayItem : mainText.getDisplayItemsUnmod())
+      mainText.getDisplayItemsUnmod().forEach(displayItem ->
+      {
         if (displayItem.type == diRecord)
         {
           mentionedAnywhereToMentioners.addForward(displayItem.record, record);
@@ -169,14 +158,15 @@ public class MentionsIndex
         }
         else if (displayItem.type == diKeyWorks)
         {
-          for (KeyWork keyWork : mainText.getKeyWorks())
+          mainText.getKeyWorks().forEach(keyWork ->
           {
             HDT_RecordWithPath keyWorkRecord = keyWork.getRecord();
             
             mentionedAnywhereToMentioners.addForward(keyWorkRecord, record);
             mentionedInDescToMentioners.addForward(keyWorkRecord, record);
-          }
+          });
         }
+      });
     }
   }
 
@@ -197,8 +187,7 @@ public class MentionsIndex
 
   public boolean isRebuilding()
   {
-    if (thread == null) return false;
-    return thread.isAlive();    
+    return nullSwitch(thread, false, Thread::isAlive);
   }
   
 //---------------------------------------------------------------------------
@@ -213,10 +202,6 @@ public class MentionsIndex
       task.setThread(this);
       start();
     }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
   }
   
 //---------------------------------------------------------------------------
@@ -245,44 +230,36 @@ public class MentionsIndex
       {
         updateMessage("The requested operation will be performed after indexing has completed...");
         
-        int recordNdx;
-        HDT_Base record;
-        
         mentionedInDescToMentioners.clear();
         mentionedAnywhereToMentioners.clear();
         
         ctr = -1.0; total = 0.0;
-        for (HDT_RecordType type : types)
-          total += db.records(type).size();
+        types.forEach(type -> total += db.records(type).size());
         
-        for (HDT_RecordType type : types)
+        for (HDT_RecordType type : types) for (HDT_Base record : db.records(type))
         {
-          for (recordNdx = 0; recordNdx < db.records(type).size(); recordNdx++)
+          ctr++;
+          
+          if ((((int)ctr) % 50) == 0)
           {
-            record = db.records(type).getByIDNdx(recordNdx);
-            ctr++;
-            
-            if ((((int)ctr) % 50) == 0)
+            if (stopRequested)
             {
-              if (stopRequested)
-              {
-                updateProgress(total, total);
-                stopRequested = false;
-                return true;
-              }
-              
-              updateProgress(ctr, total);
+              updateProgress(total, total);
+              stopRequested = false;
+              return true;
             }
             
-            try
-            {
-              reindexMentioner(record);
-            }
-            catch (Exception e)
-            {
-              e.printStackTrace();
-              throw(e);
-            }
+            updateProgress(ctr, total);
+          }
+          
+          try
+          {
+            reindexMentioner(record);
+          }
+          catch (Exception e)
+          {
+            e.printStackTrace();
+            throw(e);
           }
         }
         

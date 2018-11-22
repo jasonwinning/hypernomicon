@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod.*;
@@ -48,17 +49,18 @@ public class RecordByTypePopulator extends Populator
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  public RecordByTypePopulator()                                         { init(false); }
-  public RecordByTypePopulator(boolean nameOnly)                         { init(nameOnly); }
-  public RecordByTypePopulator(PopulatorFilter filter)                   { init(false); this.filter = filter; }
-  public RecordByTypePopulator(PopulatorFilter filter, boolean nameOnly) { init(nameOnly); this.filter = filter; }
-
-  private void init(boolean nameOnly)
-  {    
+  public RecordByTypePopulator()                       { this(null, false); }
+  public RecordByTypePopulator(boolean nameOnly)       { this(null, nameOnly); }
+  public RecordByTypePopulator(PopulatorFilter filter) { this(filter, false); }
+  
+  public RecordByTypePopulator(PopulatorFilter filter, boolean nameOnly) 
+  { 
+    this.filter = filter;
+    this.nameOnly = nameOnly;
+    
     rowToChoices = new HashMap<HyperTableRow, List<HyperTableCell>>();
     rowToChanged = new HashMap<HyperTableRow, Boolean>();
     rowToRecordType = new HashMap<HyperTableRow, HDT_RecordType>();
-    this.nameOnly = nameOnly;
   }
 
   @Override public CellValueType getValueType()        { return cvtRecord; }
@@ -70,17 +72,8 @@ public class RecordByTypePopulator extends Populator
   {
     if (row == null) row = dummyRow;
     
-    boolean changed; 
-    HDT_RecordType oldType = rowToRecordType.put(row, newType);
-    
-    changed = true;
-    if ((newType == null) && (oldType == null))
-      changed = false;
-    else if ((newType != null) && (oldType != null))
-      if (oldType.equals(newType)) changed = false;
-    
-    if (changed)
-      rowToChanged.put(row, changed);
+    if (rowToRecordType.put(row, newType) != newType)
+      rowToChanged.put(row, true);
   }
   
 //---------------------------------------------------------------------------  
@@ -88,19 +81,11 @@ public class RecordByTypePopulator extends Populator
 
   private HDT_Base getNextRecord(Iterator<? extends HDT_Base> it)
   {
-    boolean keepGoing;
-    
     while (it.hasNext())
     {      
       HDT_Base record = it.next();
-      
-      keepGoing = true;
-      
-      if (filter != null)
-        if (filter.filter(record) == false)
-          keepGoing = false;
-      
-      if (keepGoing)
+           
+      if ((filter == null) || (filter.filter(record)))
         if (HyperDB.isUnstoredRecord(record.getID(), record.getType()) == false)
           return record;
     }
@@ -187,9 +172,7 @@ public class RecordByTypePopulator extends Populator
   {
     if (row == null) row = dummyRow;
     
-    HDT_RecordType recordType;
     HyperTableCell choice;
-    HDT_Base record;
     HashMap<Integer, Boolean> map = new HashMap<Integer, Boolean>();
     boolean firstAdd = true;
     ArrayList<Integer> recent;
@@ -205,9 +188,9 @@ public class RecordByTypePopulator extends Populator
     if ((hasChanged(row) == false) && (force == false))
       return choices;
     
-    recordType = rowToRecordType.get(row);
+    HDT_RecordType recordType = rowToRecordType.get(row);
     choices.clear();
-    choices.add(new HyperTableCell(-2, "", recordType));
+    choices.add(new HyperTableCell(-1, "", hdtNone));
     
     if (recordType == hdtNone) return choices;
       
@@ -217,58 +200,44 @@ public class RecordByTypePopulator extends Populator
             
       for (Integer id : recent)
       {
-        record = db.records(recordType).getByID(id.intValue());
+        HDT_Base record = db.records(recordType).getByID(id.intValue());
         
         if (firstAdd)
         {
           choices.clear();
           firstAdd = false;
         }
-          
-        if (nameOnly)
-          recentChoices.add(new HyperTableCell(record.getID(), record.name(), recordType));
-        else
-          recentChoices.add(new HyperTableCell(record.getID(), record.getCBText(), recordType));
+        
+        recentChoices.add(new HyperTableCell(record.getID(), nameOnly ? record.name() : record.getCBText(), recordType));
         
         map.put(id, true);              
       }
     }
     
-    Iterator<? extends HDT_Base> it = db.records(recordType).keyIterator();
-    boolean keepGoing;
-    
-    while (it.hasNext())
-    {
-      record = it.next();
-      keepGoing = true;
-      
-      if (filter != null)
-        if (filter.filter(record) == false)
-          keepGoing = false;
-      
-      if (keepGoing)
-        if (map.containsKey(record.getID()) == false)
+    for (HDT_Base record : db.records(recordType).keyIterable())
+    {      
+      if (((filter == null) || filter.filter(record)) && (map.containsKey(record.getID()) == false))
+      {
+        if (firstAdd)
         {
-          if (firstAdd)
-          {
-            choices.clear();
-            firstAdd = false;
-          }
-
-          if (nameOnly)
-            choice = new HyperTableCell(record.getID(), record.name(), recordType);
-          else if (recordType == hdtWork)
-            choice = new HyperTableCell(record.getID(), record.getCBText(), recordType, hsmWork);
-          else
-            choice = new HyperTableCell(record.getID(), record.getCBText(), recordType);
-          
-          int ndx = Collections.binarySearch(choices, choice);
-          
-          if (ndx < 0)
-            ndx = (ndx + 1) * -1;
-          
-          choices.add(ndx, choice);
+          choices.clear();
+          firstAdd = false;
         }
+
+        if (nameOnly)
+          choice = new HyperTableCell(record.getID(), record.name(), recordType);
+        else if (recordType == hdtWork)
+          choice = new HyperTableCell(record.getID(), record.getCBText(), recordType, hsmWork);
+        else
+          choice = new HyperTableCell(record.getID(), record.getCBText(), recordType);
+        
+        int ndx = Collections.binarySearch(choices, choice);
+        
+        if (ndx < 0)
+          ndx = (ndx + 1) * -1;
+        
+        choices.add(ndx, choice);
+      }
     }
     
     if (db.records(recordType).size() == 0)
@@ -279,7 +248,7 @@ public class RecordByTypePopulator extends Populator
         choices.add(ndx, recentChoices.get(ndx));
     }
     
-    choices.add(new HyperTableCell(-2, "", recordType)); // This is -2 instead of -1 to prevent an IndexOutOfBoundsException (I have no idea why the latter occurs)
+    choices.add(new HyperTableCell(-1, "", hdtNone));
 
     rowToChanged.put(row, false);
     return choices;
@@ -290,13 +259,7 @@ public class RecordByTypePopulator extends Populator
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
-    if (row == null) row = dummyRow;
-    
-    List<HyperTableCell> choices = populate(row, false);
-        
-    if (choices.contains(cell)) return cell.clone();
-    
-    return null;
+    return populate(nullSwitch(row, dummyRow), false).contains(cell) ? cell.clone() : null;
   }
 
 //---------------------------------------------------------------------------  
@@ -315,18 +278,14 @@ public class RecordByTypePopulator extends Populator
   
   @Override public void setChanged(HyperTableRow row)
   {
-    if (row == null) row = dummyRow;
-    
-    rowToChanged.put(row, true);
+    rowToChanged.put(nullSwitch(row, dummyRow), true);
   }
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------    
   
   @Override public HDT_RecordType getRecordType(HyperTableRow row)
   {
-    if (row == null) row = dummyRow;
-    
-    return rowToRecordType.getOrDefault(row, hdtNone);
+    return rowToRecordType.getOrDefault(nullSwitch(row, dummyRow), hdtNone);
   }
 
 //---------------------------------------------------------------------------  
@@ -346,7 +305,9 @@ public class RecordByTypePopulator extends Populator
   {
     if (row == null) row = dummyRow;
     
-    HyperTableCell cell = new HyperTableCell(id, value, rowToRecordType.getOrDefault(row, hdtNone));
+    HDT_RecordType type = ((id > 0) || (safeStr(value).length() > 0)) ? rowToRecordType.getOrDefault(row, hdtNone) : hdtNone;
+        
+    HyperTableCell cell = new HyperTableCell(id, value, type);
     
     if (rowToChoices.containsKey(row) == false)
       rowToChoices.put(row, new ArrayList<>());

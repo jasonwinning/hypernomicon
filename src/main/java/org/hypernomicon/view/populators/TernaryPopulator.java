@@ -20,7 +20,7 @@ package org.hypernomicon.view.populators;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -28,9 +28,13 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class TernaryPopulator extends Populator
 {
-  public static final int TRUE_TERNARY_ID = 1;
-  public static final int FALSE_TERNARY_ID = 2;
-  public static final int UNSET_TERNARY_ID = 3;
+  public static final int TRUE_TERNARY_ID = 1,
+                          FALSE_TERNARY_ID = 2,
+                          UNSET_TERNARY_ID = 3;
+  
+  private static final HyperTableCell trueCell  = new HyperTableCell(TRUE_TERNARY_ID, "True", hdtNone),
+                                      falseCell = new HyperTableCell(FALSE_TERNARY_ID, "False", hdtNone),
+                                      unsetCell = new HyperTableCell(UNSET_TERNARY_ID, "Unset", hdtNone);
 
   @Override public CellValueType getValueType() { return cvtTernary; }
   
@@ -39,13 +43,7 @@ public class TernaryPopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    List<HyperTableCell> choices = new ArrayList<>();
-    
-    choices.add(new HyperTableCell(UNSET_TERNARY_ID, "Unset", hdtNone));
-    choices.add(new HyperTableCell(TRUE_TERNARY_ID, "True", hdtNone));
-    choices.add(new HyperTableCell(FALSE_TERNARY_ID, "False", hdtNone));
-    
-    return choices;
+    return Arrays.asList(unsetCell, trueCell, falseCell);
   }
 
 //---------------------------------------------------------------------------  
@@ -55,9 +53,9 @@ public class TernaryPopulator extends Populator
   {
     switch (HyperTableCell.getCellID(cell))
     {
-      case UNSET_TERNARY_ID : return new HyperTableCell(UNSET_TERNARY_ID, "Unset", hdtNone);
-      case TRUE_TERNARY_ID  : return new HyperTableCell(TRUE_TERNARY_ID, "True", hdtNone);
-      case FALSE_TERNARY_ID : return new HyperTableCell(FALSE_TERNARY_ID, "False", hdtNone);
+      case UNSET_TERNARY_ID : return unsetCell;
+      case TRUE_TERNARY_ID  : return trueCell;
+      case FALSE_TERNARY_ID : return falseCell;
       default :               return null;
     }
   }

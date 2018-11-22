@@ -17,9 +17,11 @@
 
 package org.hypernomicon.view.wrappers;
 
-import static org.hypernomicon.util.Util.noOp;
+import org.hypernomicon.util.Util;
 
 import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
+
+import org.hypernomicon.view.wrappers.CheckBoxOrCommandListCell.CheckBoxOrCommand;
 
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -34,7 +36,7 @@ import javafx.scene.control.Skin;
 import javafx.util.StringConverter;
 
 @SuppressWarnings("restriction")
-public class CheckBoxOrCommandListCell extends ListCell<org.hypernomicon.view.wrappers.CheckBoxOrCommandListCell.CheckBoxOrCommand>
+public class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
 {
   //---------------------------------------------------------------------------  
   //---------------------------------------------------------------------------   
@@ -70,7 +72,7 @@ public class CheckBoxOrCommandListCell extends ListCell<org.hypernomicon.view.wr
       cb.setConverter(new StringConverter<CheckBoxOrCommand>()
       {
         @Override public String toString(CheckBoxOrCommand object)   { return caption; }
-        @Override public CheckBoxOrCommand fromString(String string) { return new CheckBoxOrCommand("", () -> noOp()); }      
+        @Override public CheckBoxOrCommand fromString(String string) { return new CheckBoxOrCommand("", Util::noOp); }      
       });
       
       cb.setCellFactory(listView -> new CheckBoxOrCommandListCell());
@@ -79,7 +81,7 @@ public class CheckBoxOrCommandListCell extends ListCell<org.hypernomicon.view.wr
       {
         if (newValue.getText().length() == 0) return;
         
-        Platform.runLater(() -> cb.getSelectionModel().select(new CheckBoxOrCommand("", () -> noOp())));
+        Platform.runLater(() -> cb.getSelectionModel().select(new CheckBoxOrCommand("", Util::noOp)));
       });
       
       cb.getSelectionModel().select(items.get(0));
@@ -127,30 +129,29 @@ public class CheckBoxOrCommandListCell extends ListCell<org.hypernomicon.view.wr
   {
     super.updateItem(item, empty);
 
-    if (!empty)
-    {
-      setText(item.text);
-      setGraphic(checkBox);
-
-      if (booleanProperty != null)
-        checkBox.selectedProperty().unbindBidirectional((BooleanProperty) booleanProperty);
-
-      booleanProperty = item.booleanProperty;
-      
-      if (booleanProperty != null)
-      {
-        checkBox.setVisible(true);
-        checkBox.setSelected(booleanProperty.getValue());
-        checkBox.selectedProperty().bindBidirectional((BooleanProperty) booleanProperty);
-      }
-      else
-        checkBox.setVisible(false);
-    }
-    else
+    if (empty)
     {
       setGraphic(null);
       setText(null);
+      return;
     }
+    
+    setText(item.text);
+    setGraphic(checkBox);
+
+    if (booleanProperty != null)
+      checkBox.selectedProperty().unbindBidirectional((BooleanProperty) booleanProperty);
+
+    booleanProperty = item.booleanProperty;
+    
+    if (booleanProperty != null)
+    {
+      checkBox.setVisible(true);
+      checkBox.setSelected(booleanProperty.getValue());
+      checkBox.selectedProperty().bindBidirectional((BooleanProperty) booleanProperty);
+    }
+    else
+      checkBox.setVisible(false);
   }
  
 //---------------------------------------------------------------------------  

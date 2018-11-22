@@ -41,6 +41,13 @@ public class FilePathSet implements Set<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override public void clear()                  { nameToPaths.clear(); }
+  @Override public Iterator<FilePath> iterator() { return new FilePathIterator(nameToPaths); }
+  @Override public boolean isEmpty()             { return size() == 0; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+  
   @Override public int size()
   {
     int cnt = 0;
@@ -49,14 +56,6 @@ public class FilePathSet implements Set<FilePath>
       cnt += pathSet.getValue().size();
     
     return cnt;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean isEmpty()
-  {
-    return size() == 0;
   }
 
 //---------------------------------------------------------------------------
@@ -85,22 +84,6 @@ public class FilePathSet implements Set<FilePath>
         return true;
     
     return false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void clear()
-  {
-    nameToPaths.clear();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public Iterator<FilePath> iterator()
-  {
-    return new FilePathIterator(nameToPaths);
   }
 
 //---------------------------------------------------------------------------

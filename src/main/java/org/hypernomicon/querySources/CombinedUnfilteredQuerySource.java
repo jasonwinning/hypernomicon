@@ -26,6 +26,7 @@ import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.util.Util.*;
 
 public class CombinedUnfilteredQuerySource implements QuerySource
 {
@@ -75,37 +76,26 @@ public class CombinedUnfilteredQuerySource implements QuerySource
   @Override public int count()                             { return total; }
   @Override public QuerySourceType sourceType()            { return QuerySourceType.QST_combinedUnfilteredRecords; }
   @Override public boolean containsRecord(HDT_Base record) { return types.contains(record.getType()); }
-
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
-  @Override public HyperTableCell getCell(int ndx)
-  {
-    HDT_Base record = getRecord(ndx);
-    return (record == null) ? null : new HyperTableCell(record);
-  }
+  @Override public HyperTableCell getCell(int ndx)         { return nullSwitch(getRecord(ndx), null, HyperTableCell::new); }
 
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 
   
   @Override public HDT_Base getRecord(int ndx)
   {
-    if (lastType != hdtNone)
-      if (ndx >= firstNdxThisType)
-        if (ndx <= lastNdxThisType)
-          return db.records(lastType).getByIDNdx(ndx - firstNdxThisType);
+    if ((lastType != hdtNone) && (ndx >= firstNdxThisType) && (ndx <= lastNdxThisType))
+      return db.records(lastType).getByIDNdx(ndx - firstNdxThisType);
     
     for (HDT_RecordType type : types)
     {
       firstNdxThisType = firstNdxForType.get(type);
       lastNdxThisType = lastNdxForType.get(type);
       
-      if (ndx >= firstNdxThisType)
-        if (ndx <= lastNdxThisType)
-        {
-          lastType = type;
-          return db.records(lastType).getByIDNdx(ndx - firstNdxThisType);
-        }
+      if ((ndx >= firstNdxThisType) && (ndx <= lastNdxThisType))
+      {
+        lastType = type;
+        return db.records(lastType).getByIDNdx(ndx - firstNdxThisType);
+      }
     }
     
     return null;  // this should never happen

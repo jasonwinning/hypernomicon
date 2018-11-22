@@ -43,7 +43,6 @@ import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
-import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.wrappers.TreeWrapper.TreeTargetType;
 
@@ -52,8 +51,10 @@ import com.google.common.collect.HashBasedTable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
 
@@ -85,7 +86,7 @@ public class HyperTable implements RecordListView
   private int mainCol;
   HyperTableRow showMoreRow = null;
   private boolean canAddRows;
-  public TableView<HyperTableRow> tv;
+  private TableView<HyperTableRow> tv;
   private List<HyperTableColumn> cols;
   private ObservableList<HyperTableRow> rows;
   private SortedList<HyperTableRow> sortedRows;
@@ -106,14 +107,12 @@ public class HyperTable implements RecordListView
 
 //---------------------------------------------------------------------------  
 
+  public TableView<HyperTableRow> getTV()                          { return tv; }
   public List<HyperTableColumn> getColumns()                       { return Collections.unmodifiableList(cols); }
   public HyperTableColumn getColumn(int colNdx)                    { return cols.get(colNdx); }
   public Populator getPopulator(int colNdx)                        { return cols.get(colNdx).getPopulator(); }
   public void clearFilter()                                        { filteredRows.setPredicate(row -> true); }
   public void setFilter(Predicate<HyperTableRow> filter)           { filteredRows.setPredicate(filter); }
-  public int getID(int colNdx, int rowNdx)                         { return rows.size() <= rowNdx ? -1 : rows.get(rowNdx).getID(colNdx); }
-  public HDT_RecordType getType(int colNdx, int rowNdx)            { return rows.size() <= rowNdx ? hdtNone : rows.get(rowNdx).getType(colNdx); }
-  public String getText(int colNdx, int rowNdx)                    { return rows.size() <= rowNdx ? "" : rows.get(rowNdx).getText(colNdx); }
   public HDT_RecordType getTypeByCol(int colNdx)                   { return cols.get(colNdx).getObjType(); }
   public List<HyperTableCell> getSelByCol(int colNdx)              { return cols.get(colNdx).getSelectedItems(); }
   public boolean getCanAddRows()                                   { return canAddRows; }
@@ -123,9 +122,36 @@ public class HyperTable implements RecordListView
   public int getMainColNdx()                                       { return mainCol; }
   public void setTooltip(int colNdx, ButtonAction ba, String text) { cols.get(colNdx).setTooltip(ba, text); }
   public ComboBoxCell getCellBeingEdited()                         { return cellBeingEdited; }
-  public HyperTableRow getRowByRowNdx(int rowNdx)                  { return rows.get(rowNdx); }
   public void removeRow(HyperTableRow row)                         { rows.remove(row); }
+  public Iterable<HyperTableRow> getDataRows()                     { return new DataRowIterator(); }
+  public int getDataRowCount()                                     { return canAddRows ? Math.max(rows.size() - 1, 0) : rows.size(); }
   
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+
+  public class DataRowIterator implements Iterable<HyperTableRow>, Iterator<HyperTableRow>
+  {
+    private int nextNdx = 0, dataRowCnt = getDataRowCount();
+    private Iterator<HyperTableRow> rowIt = rows.iterator();
+
+    @Override public Iterator<HyperTableRow> iterator() { return this; }
+    @Override public boolean hasNext()                  { return nextNdx < dataRowCnt; }
+
+    @Override public HyperTableRow next()
+    {
+      if (!hasNext()) throw new NoSuchElementException();
+      nextNdx++;
+      return rowIt.next();
+    }   
+  }
+
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+
+  @FunctionalInterface public static interface RowBuilder<T> { public void buildRow(HyperTableRow row, T object); }
+  
+  public <T> void buildRows(Iterable<T> objs, RowBuilder<T> bldr) { objs.forEach(obj -> bldr.buildRow(newDataRow(), obj)); }
+
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
@@ -281,8 +307,7 @@ public class HyperTable implements RecordListView
 
   public HDT_Base selectedRecord()                                   
   { 
-    HyperTableRow row = tv.getSelectionModel().getSelectedItem();    
-    return row == null ? null : row.getRecord(); 
+    return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, row -> row.getRecord());
   }
 
 //---------------------------------------------------------------------------
@@ -290,10 +315,18 @@ public class HyperTable implements RecordListView
 
   public void selectRow(int ndx)                                     
   { 
-    tv.getSelectionModel().select(rows.get(ndx));
-    scrollToSelection(tv, false);
+    selectRow(rows.get(ndx));
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void selectRow(HyperTableRow row)                                     
+  { 
+    tv.getSelectionModel().select(row);
+    scrollToSelection(tv, false);
+  }
+  
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -385,7 +418,7 @@ public class HyperTable implements RecordListView
           tv.getColumns().addAll(colList);
         }
       }
-    });    
+    });
   }
    
 //---------------------------------------------------------------------------
@@ -643,7 +676,7 @@ public class HyperTable implements RecordListView
   {   
     showMoreRow = null;
     
-    cols.forEach(col -> col.clear());
+    cols.forEach(HyperTableColumn::clear);
     
     rows.clear();
     
@@ -661,56 +694,19 @@ public class HyperTable implements RecordListView
  
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+    
+  public HyperTableRow newDataRow() { return newRow(true); }
   
-  public void setCheckboxValue(int colNdx, HyperTableRow row, boolean boolVal)
+  public HyperTableRow newRow(boolean dataRow)
   {
-    HyperTableCell cell = HyperTableCell.fromBoolean(boolVal);
-    row.updateCell(colNdx, cell);
-  } 
-  
-  public void setCheckboxValue(int colNdx, int rowNdx, boolean boolVal)
-  {
-    HyperTableCell cell = HyperTableCell.fromBoolean(boolVal);
-    setDataItem(colNdx, rowNdx, cell.getID(), cell.getText(), cell.getType());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean getCheckboxValue(int colNdx, int rowNdx)
-  {
-    return getID(colNdx, rowNdx) == HyperTableCell.trueCell.getID();
-  }
-  
-  public boolean getCheckboxValue(int colNdx, HyperTableRow row)
-  {
-    return row.getID(colNdx) == HyperTableCell.trueCell.getID();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-  
-  public void setDataItem(int colNdx, HyperTableRow row, int newID, String text, HDT_RecordType newType)
-  {
-    setDataItem(colNdx, row, newID, text, newType, HyperCellSortMethod.hsmStandard);
-  }
-  
-  public void setDataItem(int colNdx, HyperTableRow row, int newID, String text, HDT_RecordType newType, HyperCellSortMethod newSortMethod)
-  {
-    row.updateCell(colNdx, new HyperTableCell(newID, text, newType, newSortMethod));
-  }
-  
-  public void setDataItem(int colNdx, int rowNdx, int newID, String text, HDT_RecordType newType)
-  {
-    setDataItem(colNdx, rowNdx, newID, text, newType, HyperCellSortMethod.hsmStandard);
-  }
-
-  public void setDataItem(int colNdx, int rowNdx, int newID, String text, HDT_RecordType newType, HyperCellSortMethod newSortMethod)
-  {
-    while (rows.size() <= rowNdx)
-      rows.add(new HyperTableRow(cols.size(), this));
-
-    rows.get(rowNdx).updateCell(colNdx, new HyperTableCell(newID, text, newType, newSortMethod));
+    HyperTableRow row = new HyperTableRow(cols.size(), this);
+    
+    if (dataRow && canAddRows)
+      rows.add(getDataRowCount(), row);
+    else
+      rows.add(row);
+    
+    return row;
   }
 
 //---------------------------------------------------------------------------
@@ -720,37 +716,32 @@ public class HyperTable implements RecordListView
   {
     showMoreRow = null;
     rows.setAll(newRows);
+    
+    if (canAddRows)
+      newRow(false);
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void addDataRows(List<HyperTableRow> newRows)
   {
-    rows.addAll(newRows);
+    if (canAddRows)
+      rows.addAll(getDataRowCount(), newRows);
+    else
+      rows.addAll(newRows);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void selectID(int colNdx, HyperTableRow row, int newID)
-  {
-    int ndx;
-    HyperTableCell cell;
-    
-    if (row == null)
+  {    
+    for (HyperTableCell cell : cols.get(colNdx).getPopulator().populate(row, false))
     {
-      if (rows.size() == 0)
-        rows.add(new HyperTableRow(cols.size(), this));
-        
-      row = rows.get(0);
-    }
-    
-    List<HyperTableCell> list = cols.get(colNdx).getPopulator().populate(row, false);
-    
-    for (ndx = 0; ndx < list.size(); ndx++)
-    {
-      cell = list.get(ndx);
-      if (HyperTableCell.getCellID(cell) == newID)
+      if (cell.getID() == newID)
       {
-        row.updateCell(colNdx, cell);
+        row.setCellValue(colNdx, cell);
         return;
       }
     }
@@ -761,50 +752,14 @@ public class HyperTable implements RecordListView
 
   public void selectType(int colNdx, HyperTableRow row, HDT_RecordType newType)
   {
-    int ndx;
-    HyperTableCell cell;
-    
-    if (row == null)
+    for (HyperTableCell cell : cols.get(colNdx).getPopulator().populate(row, false))
     {
-      if (rows.size() == 0)
-        rows.add(new HyperTableRow(cols.size(), this));
-        
-      row = rows.get(0);
-    }
-        
-    List<HyperTableCell> list = cols.get(colNdx).getPopulator().populate(row, false);
-    
-    for (ndx = 0; ndx < list.size(); ndx++)
-    {
-      cell = list.get(ndx);
-      if (HyperTableCell.getCellType(cell) == newType)
+      if (cell.getType() == newType)
       {
-        row.updateCell(colNdx, cell);
+        row.setCellValue(colNdx, cell);
         return;
       }
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public int getDataRowCount()
-  {
-    if (mainCol >= 0)
-    {
-      int cnt = 0;
-      
-      for (HyperTableRow row : rows)
-        if ((row.getID(mainCol) > 0) || (row.getText(mainCol).length() > 0))
-          cnt++;
-      
-      return cnt;
-    }
-    
-    if (canAddRows)
-      return rows.size() - 1;
-    
-    return rows.size();
   }
 
 //---------------------------------------------------------------------------
@@ -824,18 +779,9 @@ public class HyperTable implements RecordListView
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  public boolean containsRecord(int id, HDT_RecordType type)
+  public boolean containsRecord(HDT_Base record)
   {   
-    if (mainCol < 0) return false;
-    
-    for (HyperTableRow row : rows)
-    {
-      if (row.getID(mainCol) == id)
-        if (row.getType(mainCol) == type)
-          return true;
-    }
-    
-    return false;
+    return getRowByRecord(record) != null;
   }
 
 //---------------------------------------------------------------------------  
@@ -843,11 +789,11 @@ public class HyperTable implements RecordListView
 
   public HyperTableRow getRowByRecord(HDT_Base record)
   {
+    if (mainCol < 0) return null;
+    
     for (HyperTableRow row : rows)
-    {
       if (row.getRecord() == record)
         return row;
-    }
     
     return null;
   }
@@ -857,10 +803,8 @@ public class HyperTable implements RecordListView
  
   public void browseClick(HyperTableRow row, int colNdx)
   {
-    HDT_RecordType startType;
     Populator pop = null;
     RecordTypePopulator rtp = null;
-    int startID;
     
     ui.treeTargetTypes.clear();
     
@@ -886,8 +830,8 @@ public class HyperTable implements RecordListView
     
 // Determine start record and object record (to be replaced) for tree selection
 
-    startID = row.getID(colNdx);
-    startType = row.getType(colNdx);
+    int startID = row.getID(colNdx);
+    HDT_RecordType startType = row.getType(colNdx);
     if (startID > 0)
       ui.treeObjRecord = db.records(startType).getByID(startID);
     else
@@ -903,11 +847,7 @@ public class HyperTable implements RecordListView
           if (choices.size() > 0)
             record = HyperTableCell.getRecord(choices.get(0));
 
-        if (record == null)
-          startID = 1;
-        else
-          startID = record.getID();
-        
+        startID = record == null ? 1 : record.getID();        
         startType = hdtWorkLabel;
       }
       else
@@ -989,14 +929,6 @@ public class HyperTable implements RecordListView
         if (ui.windows.getOutermostModality() == Modality.NONE)
           ui.update();
       });
-  }
-
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-
-  public void addBlankRow()
-  {
-    rows.add(new HyperTableRow(tv.getColumns().size(), this));
   }
 
 //---------------------------------------------------------------------------  
@@ -1095,8 +1027,8 @@ public class HyperTable implements RecordListView
             else switch (schema.getCategory())
             {
               case hdcString        : val.str = row.getText(colNdx); break;
-              case hdcBoolean       : val.bool = getCheckboxValue(colNdx, row); break;
-              case hdcTernary       : val.ternary = getCheckboxValue(colNdx, row) ? Ternary.True : Ternary.False; break;
+              case hdcBoolean       : val.bool = row.getCheckboxValue(colNdx); break;
+              case hdcTernary       : val.ternary = row.getCheckboxValue(colNdx) ? Ternary.True : Ternary.False; break;
               case hdcNestedPointer : val.target = row.getRecord(colNdx); break;
               default               : break;
             }
@@ -1177,7 +1109,7 @@ public class HyperTable implements RecordListView
   // The way this works is better than TableView.scrollTo
   // scrollTo changes the scroll position even if the row in question was already in view
 
-  public static <RowType> void scrollToNdx(TableView<RowType> tv, int ndx)
+  private static <RowType> void scrollToNdx(TableView<RowType> tv, int ndx)
   {
     ScrollBar sb = getScrollBar(tv, Orientation.VERTICAL);
     if (sb == null) return;

@@ -43,16 +43,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
   
 //---------------------------------------------------------------------------
   
-  public static enum ButtonAction
-  {
-    baEdit,
-    baNew,
-    baGo,
-    baLink,
-    baBrowse,
-    baCustom,
-    baNone
-  }
+  public static enum ButtonAction { baEdit, baNew, baGo, baLink, baBrowse, baCustom, baNone }
 
 //---------------------------------------------------------------------------
   
@@ -76,12 +67,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
     {
       case ctGoBtn : case ctGoNewBtn : case ctEditNewBtn :
         
-        if (ctrlType == ctGoBtn)
-          setAction(ButtonAction.baGo);
-        else
-          setAction(ButtonAction.baNew);
-        
-        break;
+        setAction(ctrlType == ctGoBtn ? ButtonAction.baGo : ButtonAction.baNew); break;
         
       case ctCustomBtn : setAction(ButtonAction.baCustom); break;      
       case ctLinkBtn :   setAction(ButtonAction.baLink); break;

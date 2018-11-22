@@ -18,7 +18,6 @@
 package org.hypernomicon.view.tabs;
 
 import java.util.EnumSet;
-import java.util.List;
 
 import org.controlsfx.control.MasterDetailPane;
 
@@ -75,11 +74,12 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
   @FXML private CheckBox chkShowDesc;
   @FXML private WebView webView;
 
-  TreeModel<TreeRow> debateTree, termTree;
+  private TreeModel<TreeRow> debateTree, termTree;
   private TreeModel<TreeRow> labelTree, noteTree;
-  private boolean useViewInfo = false;
-  public String textToHilite = "";
+  private boolean useViewInfo = false;  
   private String lastTextHilited = "";
+  
+  public String textToHilite = "";
   public TreeWrapper tree;
   
   @Override public HDT_RecordType getType()                  { return hdtNone; }
@@ -143,10 +143,7 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
 
       row.itemProperty().addListener((observable, oldValue, newValue) ->
       {
-        if (newValue == null)
-          row.setContextMenu(null);
-        else
-          row.setContextMenu(tree.createContextMenu(newValue));
+        row.setContextMenu(nullSwitch(newValue, null, () -> tree.createContextMenu(newValue)));
       });
       
       return row;
@@ -174,10 +171,7 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
     
     tree.addCondContextMenuItem(hdtWork, "Launch file...", 
         record -> (HDT_Work.class.cast(record).canLaunch()) && (db.isLoaded()),
-        record -> 
-        { 
-          HDT_Work.class.cast(record).launch(-1);
-        });
+        record -> HDT_Work.class.cast(record).launch(-1));
 
     tree.addCondContextMenuItem(hdtMiscFile, "Launch file...", 
         record -> (HDT_MiscFile.class.cast(record).getPath().isEmpty() == false) && (db.isLoaded()),
@@ -261,7 +255,6 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
     ttv.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
       boolean clearWV = true, clearPreview = true;
-      HDT_Base record = null;
       
       if (newValue != null)
       {
@@ -270,7 +263,7 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
         
         TreeRow row = newValue.getValue();        
         
-        record = row.getRecord();
+        HDT_Base record = row.getRecord();
         if (record != null)
         {
           String desc = "";
@@ -414,7 +407,7 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
     if (dlg.showModal())
     {
       record.setName(dlg.getNewName());
-      update();
+      ui.update();
     }
   }
 
@@ -424,7 +417,6 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
   private void chooseParent(HDT_Base child)
   {
     EnumSet<HDT_RecordType> types = EnumSet.noneOf(HDT_RecordType.class);
-    HDT_Base parent;
         
     switch (child.getType())
     {
@@ -476,35 +468,31 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
     
     if (dlg.showModal() == false) return;
 
-    parent = dlg.parent;
+    HDT_Base parent = dlg.parent;
     
     switch (child.getType())
     {
       case hdtWorkLabel : 
         
-        HDT_WorkLabel childLabel = (HDT_WorkLabel)child;
-        childLabel.parentLabels.add((HDT_WorkLabel) parent);
+        HDT_WorkLabel.class.cast(child).parentLabels.add((HDT_WorkLabel) parent);
         break;
         
       case hdtNote : 
         
-        HDT_Note childNote = (HDT_Note)child;
-        childNote.parentNotes.add((HDT_Note) parent);
+        HDT_Note.class.cast(child).parentNotes.add((HDT_Note) parent);
         break;
         
       case hdtPosition : 
         
-        HDT_Position childPos = (HDT_Position) child;
         if (parent.getType() == hdtDebate)
-          childPos.debates.add((HDT_Debate) parent);
+          HDT_Position.class.cast(child).debates.add((HDT_Debate) parent);
         else
-          childPos.largerPositions.add((HDT_Position) parent);
+          HDT_Position.class.cast(child).largerPositions.add((HDT_Position) parent);
         break;
       
       case hdtDebate :
 
-        HDT_Debate childDebate = (HDT_Debate) child;
-        childDebate.largerDebates.add((HDT_Debate) parent);
+        HDT_Debate.class.cast(child).largerDebates.add((HDT_Debate) parent);
         break;
         
       case hdtArgument :
@@ -538,11 +526,10 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
         
       case hdtMiscFile :
         
-        HDT_MiscFile childFile = (HDT_MiscFile) child;
         if (parent.getType() == hdtWork)
-          childFile.work.set((HDT_Work) parent);
+          HDT_MiscFile.class.cast(child).work.set((HDT_Work) parent);
         else
-          childFile.labels.add((HDT_WorkLabel) parent);
+          HDT_MiscFile.class.cast(child).labels.add((HDT_WorkLabel) parent);
         
         break;
         
@@ -550,7 +537,7 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
         break;
     }
     
-    update();
+    ui.update();
   }
 
 //---------------------------------------------------------------------------  
@@ -558,14 +545,9 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
 
   public static String getTreePath(TreeTableView<TreeRow> ttv2, TreeItem<TreeRow> newValue)
   {
-    String caption;
-    if (newValue == null)
-      return "";
-    TreeRow row = newValue.getValue();
-    if (row == null)
-      caption = "";
-    else
-      caption = newValue.getValue().getName();
+    if (newValue == null) return "";
+
+    String caption = nullSwitch(newValue.getValue(), "", val -> val.getName());
     
     if (newValue.getParent() == ttv2.getRoot())
       return caption;
@@ -578,8 +560,8 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
   
   @Override public void findWithinDesc(String text)
   {
-    if (tree.selectedRecord() == null) return;
-    MainTextWrapper.hiliteText(text, webView.getEngine());
+    if (tree.selectedRecord() != null)
+      MainTextWrapper.hiliteText(text, webView.getEngine());
   }
 
 //---------------------------------------------------------------------------
@@ -587,10 +569,7 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
 
   @Override public int getRecordCount()
   {
-    if (activeRecord() == null) return 0;
-    List<TreeRow> list = tree.getRowsForRecord(activeRecord());
-    if (list == null) return 0;
-    return list.size();
+    return nullSwitch(activeRecord(), 0, ar -> tree.getRowsForRecord(ar).size());
   }
 
 //---------------------------------------------------------------------------  
@@ -598,21 +577,9 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
 
   @Override public int getRecordNdx()
   {
-    TreeRow row = null;
-    
-    TreeItem<TreeRow> item = tree.selectedItem();
-    if (item != null) 
-      row = item.getValue();
+    TreeRow row = nullSwitch(tree.selectedItem(), null, item -> item.getValue());
 
-    if (row != null)
-    {
-      List<TreeRow> list = tree.getRowsForRecord(row.getRecord());
-          
-      if (list != null)
-        return list.indexOf(row);
-    }
-    
-    return -1;
+    return row == null ? -1 : tree.getRowsForRecord(row.getRecord()).indexOf(row);
   }
 
 //---------------------------------------------------------------------------  

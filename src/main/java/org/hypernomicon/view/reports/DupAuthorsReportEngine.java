@@ -36,7 +36,6 @@ import java.util.Map.Entry;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.Author;
-import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.dialogs.NewPersonDialogController;
 import org.hypernomicon.view.dialogs.NewPersonDialogController.PersonForDupCheck;
 import org.hypernomicon.view.tabs.HyperTab;
@@ -139,11 +138,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
   private HyperTableCell getWorkCell(Author author)
   {
-    HDT_Work work = author.getWork();
-    
-    if (work == null) return new HyperTableCell(-1, "", hdtWork);
-    
-    return new HyperTableCell(work.getID(), work.getCBText(), hdtWork);
+    return nullSwitch(author.getWork(), new HyperTableCell(-1, "", hdtWork), work -> new HyperTableCell(work, work.getCBText()));
   }
 
 //---------------------------------------------------------------------------  

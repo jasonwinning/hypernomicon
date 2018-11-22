@@ -38,15 +38,14 @@ public abstract class FilteredQuerySource implements QuerySource
   protected QueryType queryType;
   protected HyperDB db;
   
-  public FilteredQuerySource(QueryType queryType, int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3) { init(queryType, query, op1, op2, op3); }
-  public FilteredQuerySource(QueryType queryType, int query, HyperTableCell op1, HyperTableCell op2)                     { init(queryType, query, op1, op2, null); }
-  public FilteredQuerySource(QueryType queryType, int query, HyperTableCell op1)                                         { init(queryType, query, op1, null, null); }
-  public FilteredQuerySource(QueryType queryType, int query)                                                             { init(queryType, query, null, null, null); }
+  public FilteredQuerySource(QueryType queryType, int query, HyperTableCell op1, HyperTableCell op2) { this(queryType, query, op1, op2, null); }
+  public FilteredQuerySource(QueryType queryType, int query, HyperTableCell op1)                     { this(queryType, query, op1, null, null); }
+  public FilteredQuerySource(QueryType queryType, int query)                                         { this(queryType, query, null, null, null); }
   
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 
   
-  private void init(QueryType queryType, int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
+  public FilteredQuerySource(QueryType queryType, int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
   {
     this.queryType = queryType;
     this.query = query;

@@ -88,11 +88,11 @@ public class ObjectOrderDialogController extends HyperDialog
       }
     }
     
-    tv.itemsProperty().bindBidirectional(ht.tv.itemsProperty());
+    tv.itemsProperty().bindBidirectional(ht.getTV().itemsProperty());
     
     HyperTable.preventMovingColumns(tv, tableCols);
     
-    getStage().setOnHidden(event -> tv.itemsProperty().unbindBidirectional(ht.tv.itemsProperty()));
+    getStage().setOnHidden(event -> tv.itemsProperty().unbindBidirectional(ht.getTV().itemsProperty()));
     
     btnMoveUp.setOnAction(event -> moveUp());
     

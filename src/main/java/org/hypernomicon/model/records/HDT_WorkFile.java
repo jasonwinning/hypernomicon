@@ -209,7 +209,7 @@ public class HDT_WorkFile extends HDT_Record implements HDT_RecordWithPath
         if (pos >= 0)
           authorStr = authorStr.substring(0, pos);
         
-        comp = (comp.length() == 0) ? ("" + authorStr) : (comp + " " + authorStr);
+        comp = comp.length() == 0 ? ("" + authorStr) : (comp + " " + authorStr);
       }
     }
     

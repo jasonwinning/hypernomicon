@@ -45,6 +45,13 @@ public class JsonObj implements Cloneable
   public boolean containsKey(String key)  { return jObj.containsKey(key); }
   public void remove(String key)          { jObj.remove(key); }
   public JsonNodeType getType(String key) { return JsonObj.determineType(jObj.get(key)); }
+
+  public JsonObj getObj(String key)                  { return nullSwitch(jObj.get(key), null, obj -> new JsonObj((JSONObject) obj)); }
+  public String getStr(String key)                   { return nullSwitch((String)jObj.get(key), (String)null); }
+  public JsonArray getArray(String key)              { return nullSwitch((JSONArray)jObj.get(key), null, obj -> new JsonArray(obj)); }
+  public long getLong(String key, long def)          { return nullSwitch((Long)jObj.get(key), def,  Long::longValue); }
+  public boolean getBoolean(String key, boolean def) { return nullSwitch(jObj.get(key), def,  obj -> parseBoolean(getStr(key))); }
+
   
   @SuppressWarnings("unchecked") public void put(String key, JsonObj childObj) { jObj.put(key, childObj.jObj); }
   @SuppressWarnings("unchecked") public void put(String key, String value)     { jObj.put(key, value); }
@@ -52,61 +59,6 @@ public class JsonObj implements Cloneable
   @SuppressWarnings("unchecked") public Set<String> keySet()                   { return jObj.keySet(); }  
   
   @Override public String toString() { return jObj.toJSONString(); }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------
- 
-  public JsonObj getObj(String key)
-  { 
-    Object obj = jObj.get(key);
-    if (obj == null) return null;
-
-    return new JsonObj((JSONObject) obj); 
-  }
-
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------
-
-  public String getStr(String key)  
-  { 
-    Object obj = jObj.get(key);
-    if (obj == null) return null;
-
-    return (String) obj; 
-  }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------
-
-  public JsonArray getArray(String key) 
-  { 
-    Object obj = jObj.get(key);
-    if (obj == null) return null;
-
-    return new JsonArray((JSONArray) obj); 
-  }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------
-
-  public long getLong(String key, long def) 
-  { 
-    Object obj = jObj.get(key);
-    if (obj == null) return def;
-    
-    return Long.class.cast(obj).longValue();
-  }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------
-
-  public boolean getBoolean(String key, boolean def) 
-  { 
-    Object obj = jObj.get(key);
-    if (obj == null) return def;
-    
-    return parseBoolean(getStr(key));
-  }
   
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
@@ -129,7 +81,7 @@ public class JsonObj implements Cloneable
 
     try { otherObj = parseJsonObj(jObj.toJSONString()); } catch (ParseException e) { noOp(); }
     
-    return otherObj == null ? new JsonObj(null) : otherObj;
+    return nullSwitch(otherObj, new JsonObj(null));
   }
   
 //---------------------------------------------------------------------------  

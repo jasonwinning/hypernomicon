@@ -289,7 +289,7 @@ public class FolderTreeWatcher
               registerTree(filePath);
             }
             
-            Platform.runLater(() -> fileManagerDlg.refresh());
+            Platform.runLater(fileManagerDlg::refresh);
             
             break;
             
@@ -327,7 +327,7 @@ public class FolderTreeWatcher
               }              
             }
             
-            Platform.runLater(() -> fileManagerDlg.refresh());
+            Platform.runLater(fileManagerDlg::refresh);
             
             break;
             
@@ -414,7 +414,7 @@ public class FolderTreeWatcher
               }                            
             }
             
-            Platform.runLater(() -> fileManagerDlg.refresh());
+            Platform.runLater(fileManagerDlg::refresh);
             
             break;
             

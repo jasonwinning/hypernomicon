@@ -45,7 +45,7 @@ public class HyperCore<HDT_DT extends HDT_Base>
     
     @Override public final int hashCode()
     {
-      return 31 * (31 + id) + ((key == null) ? 0 : key.hashCode());
+      return 31 * (31 + id) + (key == null ? 0 : key.hashCode());
     }
     
 //---------------------------------------------------------------------------    

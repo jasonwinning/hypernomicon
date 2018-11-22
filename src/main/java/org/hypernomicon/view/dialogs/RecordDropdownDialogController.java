@@ -74,6 +74,7 @@ public class RecordDropdownDialogController<HDT_T extends HDT_Base> extends Hype
     if (hcbRecord.selectedID() < 1)
     {
       messageDialog("Select a " + typeName + " record.", mtInformation);
+      safeFocus(cbRecord);
       return false;
     }
     

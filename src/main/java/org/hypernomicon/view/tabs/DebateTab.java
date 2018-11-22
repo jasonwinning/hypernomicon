@@ -38,7 +38,7 @@ import org.hypernomicon.model.records.HDT_Position.PositionSource;
 
 public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 {
-  public HyperTable htParents, htSubdebates, htPositions;
+  private HyperTable htParents, htSubdebates, htPositions;
   private HDT_Debate curDebate;
   
   @Override public HDT_RecordType getType()                { return hdtDebate; }
@@ -53,51 +53,25 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
   
   @Override public boolean update()
   {
-    int ndx;
-    
-    if (db.isLoaded() == false) return false;
-    
-    clear();
-    
-    if (curDebate == null)
-    {
-      enable(false);
-      return false;
-    }
-    
     curDebate.addParentDisplayRecord();
     
-    if (!ctrlr.update(curDebate)) return false;
+    ctrlr.update(curDebate);
     
- // Populate debates
+    htParents.buildRows(curDebate.largerDebates, (row, otherDebate) -> row.setCellValue(2, otherDebate, otherDebate.name()));
 
-    ndx = 0; for (HDT_Debate otherDebate : curDebate.largerDebates)
-    {
-      htParents.setDataItem(2, ndx, otherDebate.getID(), otherDebate.name(), hdtDebate);
-      ndx++;
-    }
+    htSubdebates.buildRows(curDebate.subDebates, (row, subDebate) -> row.setCellValue(1, subDebate, subDebate.name()));
 
-    ndx = 0; for (HDT_Debate subDebate : curDebate.subDebates)
-    {
-      htSubdebates.setDataItem(1, ndx, subDebate.getID(), subDebate.name(), hdtDebate);
-      ndx++;
-    }
-
-  // Populate positions
-
-    ndx = 0; for (HDT_Position position : curDebate.positions)
+    htPositions.buildRows(curDebate.positions, (row, position) ->
     {
       PositionSource ps = position.getWorkWithAuthor();
       
       if (ps != null)
-        htPositions.setDataItem(1, ndx, ps.author.getID(), Authors.getShortAuthorsStr(position.getPeople(), true, true), hdtPerson);
+        row.setCellValue(1, ps.author, Authors.getShortAuthorsStr(position.getPeople(), true, true));
       else
-        htPositions.setDataItem(1, ndx, -1, Authors.getShortAuthorsStr(position.getPeople(), true, true), hdtPerson);
+        row.setCellValue(1, -1, Authors.getShortAuthorsStr(position.getPeople(), true, true), hdtPerson);
 
-      htPositions.setDataItem(2, ndx, position.getID(), position.name(), hdtPosition);
-      
-      ndx++;
-    }
+      row.setCellValue(2, position, position.name());
+    });
 
     return true;
   }
@@ -154,7 +128,7 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
   {   
     if (!ctrlr.save(curDebate, showMessage, this)) return false;
     
-    curDebate.setLargerDebates(htParents);
+    curDebate.setLargerDebates(htParents.saveToList(2, hdtDebate));
     
     ui.attachOrphansToRoots();
     

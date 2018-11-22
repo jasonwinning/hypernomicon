@@ -23,6 +23,8 @@ import org.hypernomicon.model.records.HDT_Base;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TreeItem;
 
+import static org.hypernomicon.util.Util.*;
+
 public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<RowType>>
 {
   protected boolean selectingFromCB = false;
@@ -33,7 +35,7 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<RowTyp
   public abstract SelectionModel<TreeItem<RowType>> getSelectionModel();
   public abstract void scrollToNdx(int ndx);
   public abstract void clear();  
-  public abstract ArrayList<RowType> getRowsForRecord(HDT_Base record);  
+  public abstract ArrayList<RowType> getRowsForRecord(HDT_Base record); // should never return null 
   public abstract void focusOnTreeCtrl();  
   public abstract void expandMainBranches();  
   public abstract void removeRecord(HDT_Base record);
@@ -51,7 +53,6 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<RowTyp
   {
     item.setExpanded(expanded);
     if (item.getChildren() == null) return;
-    if (item.getChildren().size() == 0) return;
     
     for (TreeItem<RowType> child : item.getChildren())
       setAllExpanded(child, expanded);
@@ -62,11 +63,7 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<RowTyp
   
   public final HDT_Base selectedRecord()
   {
-    TreeItem<RowType> item = selectedItem();
-    if (item != null)
-      return item.getValue().getRecord();
-    
-    return null;
+    return nullSwitch(selectedItem(), null, item -> item.getValue().getRecord());
   }
   
 //---------------------------------------------------------------------------
@@ -77,12 +74,10 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<RowTyp
     if (record == null) return;
           
     TreeItem<RowType> selItem = getSelectionModel().getSelectedItem();
-    RowType row = null;
     
     if (selItem != null)
     {
-      row = selItem.getValue();
-      if ((row.getRecord() == record) && (ndx == -1))
+      if ((selItem.getValue().getRecord() == record) && (ndx == -1))
       {
         focusOnTreeCtrl();
         return;
@@ -92,15 +87,14 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<RowTyp
     if (ndx == -1) ndx = 0;
     
     ArrayList<RowType> list = getRowsForRecord(record);
-    if (list == null) return;
-    if (list.size() == 0) return;
+    if (list.isEmpty()) return;
+    
     if (list.size() <= ndx) ndx = 0;
     
     if (fromCB)
       selectingFromCB = true;
     
-    row = list.get(ndx);
-    TreeItem<RowType> item = getTreeItem(row);
+    TreeItem<RowType> item = getTreeItem(list.get(ndx));
  
     showItem(item);
     
@@ -124,9 +118,7 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<RowTyp
 
   private final void showItem(TreeItem<RowType> item)
   {
-    if (item.getParent() != null)
-      showItem(item.getParent());
-    
+    nullSwitch(item.getParent(), this::showItem);   
     item.setExpanded(true);
   }
   

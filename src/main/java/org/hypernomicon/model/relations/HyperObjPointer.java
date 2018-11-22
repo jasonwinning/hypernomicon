@@ -18,7 +18,7 @@
 package org.hypernomicon.model.relations;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.Util.messageDialog;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.mtError;
 
 import org.hypernomicon.model.Exceptions.RelationCycleException;
@@ -31,7 +31,6 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   protected boolean modTracking;
   private Exception lastException;
 
-  public Exception getLastException() { return lastException; }
   public HyperObjPointer(RelationSet<HDT_SubjType, HDT_ObjType> relSet, HDT_SubjType subj, boolean modTracking)
   {
     this.relSet = relSet;
@@ -44,49 +43,18 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_ObjType get() 
-  { 
-    if (relSet.getObjectCount(subj) == 0) return null;
-    return relSet.getObject(subj, 0); 
-  }
+  public HDT_ObjType get()            { return relSet.getObjectCount(subj) == 0 ? null : relSet.getObject(subj, 0); }
+  public int getID()                  { return nullSwitch(get(), -1, HDT_Base::getID); }
+  public boolean isNull()             { return get() == null; }
+  public boolean isNotNull()          { return get() != null; }
+  public Exception getLastException() { return lastException; }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public int getID() 
-  { 
-    HDT_ObjType obj = get();    
-    return (obj == null) ? -1 : obj.getID(); 
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean isNull()
-  {
-    return (get() == null);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean isNotNull()
-  {
-    return (get() != null);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @SuppressWarnings("unchecked")
-  public boolean setID(int newID)
-  {   
-    if (newID < 1)
-      return set(null);
-    else
-      return set((HDT_ObjType) db.records(relSet.getObjType()).getByID(newID));
-  }
-
+  @SuppressWarnings("unchecked") 
+  public boolean setID(int newID)     { return set(newID < 1 ? null : (HDT_ObjType) db.records(relSet.getObjType()).getByID(newID)); }
+  
+  @Override public int hashCode()           { return super.hashCode(); }
+  @Override public boolean equals(Object o) { return o instanceof HyperObjPointer<?, ?> ? ((HyperObjPointer<?, ?>) o).get() == get() : false; }
+  
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -120,19 +88,7 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
     
     return true;
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean equals(Object o)
-  {
-    if ((o instanceof HyperObjPointer<?, ?>) == false)
-      return false;
-
-    HyperObjPointer<?, ?> hop = (HyperObjPointer<?, ?>) o;
-    return hop.get() == get();
-  }
-  
+ 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -143,14 +99,6 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
         throw (RelationCycleException) getLastException();
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public int hashCode()
-  {
-    return super.hashCode();
-  }
-  
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

@@ -84,7 +84,7 @@ public class BibDataStandalone extends BibData
       }
     }
     
-    bd.getAuthors().forEach(bibAuthor -> getAuthors().add(bibAuthor));
+    bd.getAuthors().forEach(getAuthors()::add);
   }
 
 //---------------------------------------------------------------------------

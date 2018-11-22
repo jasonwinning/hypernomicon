@@ -19,6 +19,7 @@ package org.hypernomicon.view.tabs;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
@@ -27,8 +28,11 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.App;
+import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
+import org.hypernomicon.model.relations.ObjectGroup;
+import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.*;
@@ -36,6 +40,8 @@ import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
 
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Tab;
@@ -46,8 +52,8 @@ import javafx.scene.layout.AnchorPane;
 
 public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 {
-  public ArgumentLowerPaneController lowerCtrlr;
-  public HyperTable htParents, htWhereMade, htCounters;
+  private ArgumentLowerPaneController lowerCtrlr;
+  private HyperTable htParents, htWhereMade, htCounters;
   private RecordByTypePopulator verdictPopulator;
   private HDT_Argument curArgument;
    
@@ -60,107 +66,82 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
-  
+   
   @Override public boolean update()
   {
-    int ndx;
-    boolean noWorks = true, noCounters = true;
-    HDT_ArgumentVerdict argVerdict;
-    HDT_PositionVerdict posVerdict;
-    
-    if (db.isLoaded() == false) return false;
-    
-    clear();
-    
-    if (curArgument == null)
-    {
-      enable(false);
-      return false;
-    }
-    
     curArgument.addParentDisplayRecord();
     
-    if (!ctrlr.update(curArgument)) return false;
+    ctrlr.update(curArgument);
    
     // Select parent records in ComboBoxes
     // -----------------------------------
 
-     ndx = 0; for (HDT_Position position : curArgument.positions)
-     {
-       htParents.setDataItem(2, ndx, -1, db.getTypeName(hdtPosition), hdtPosition);
-       htParents.setDataItem(3, ndx, position.getID(), position.listName(), hdtPosition);
-       
-       posVerdict = curArgument.getPosVerdict(position);
-       
-       if (posVerdict != null)
-         htParents.setDataItem(4, ndx, posVerdict.getID(), posVerdict.getCBText(), hdtPositionVerdict);
-       
-       ndx++;
-     }
-
-     ndx = 0; for (HDT_Argument counteredArg : curArgument.counteredArgs)
-     {
-       int rowNdx = ndx + curArgument.positions.size(); 
-       
-       htParents.setDataItem(2, rowNdx, -1, db.getTypeName(hdtArgument), hdtArgument);
-       htParents.setDataItem(3, rowNdx, counteredArg.getID(), counteredArg.listName(), hdtArgument);
-
-       argVerdict = curArgument.getArgVerdict(counteredArg);
-       
-       if (argVerdict != null)
-         htParents.setDataItem(4, rowNdx, argVerdict.getID(), argVerdict.getCBText(), hdtArgumentVerdict);
-       
-       ndx++;
-     }    
+    htParents.buildRows(curArgument.positions, (row, position) ->
+    {
+      row.setCellValue(2, -1, db.getTypeName(hdtPosition), hdtPosition);
+      row.setCellValue(3, position.getID(), position.listName(), hdtPosition);
+      
+      HDT_PositionVerdict posVerdict = curArgument.getPosVerdict(position);
+      
+      if (posVerdict != null)
+        row.setCellValue(4, posVerdict.getID(), posVerdict.getCBText(), hdtPositionVerdict);
+    });
+   
+    htParents.buildRows(curArgument.counteredArgs, (row, counteredArg) ->
+    {
+      row.setCellValue(2, -1, db.getTypeName(hdtArgument), hdtArgument);
+      row.setCellValue(3, counteredArg, counteredArg.listName());
+   
+      HDT_ArgumentVerdict argVerdict = curArgument.getArgVerdict(counteredArg);
+      
+      if (argVerdict != null)
+        row.setCellValue(4, argVerdict, argVerdict.getCBText());
+    });
 
   // Populate the authors, works, and years
   // --------------------------------------
     
-    ndx = 0; for (HDT_Work work : curArgument.works)
+    htWhereMade.buildRows(curArgument.works, (row, work) ->
     {
       if (work.authorRecords.size() > 0)
-        htWhereMade.setDataItem(1, ndx, work.authorRecords.get(0).getID(), work.getLongAuthorsStr(true), hdtPerson);
+        row.setCellValue(1, work.authorRecords.get(0), work.getLongAuthorsStr(true));
       else
-        htWhereMade.setDataItem(1, ndx, work.getID(), work.getLongAuthorsStr(true), hdtWork);
+        row.setCellValue(1, work, work.getLongAuthorsStr(true));
 
-      htWhereMade.setDataItem(2, ndx, work.getID(), work.getCBText(), hdtWork);
-      htWhereMade.setDataItem(3, ndx, work.getID(), work.getYear(), hdtWork, HyperCellSortMethod.hsmNumeric);
-      
-      ndx++;
-    }
-
-    noWorks = curArgument.works.isEmpty();
+      row.setCellValue(2, work, work.getCBText());
+      row.setCellValue(3, work, work.getYear(), HyperCellSortMethod.hsmNumeric);
+    });
 
   // Populate the counterarguments
   // -----------------------------
 
-    ndx = 0; for (HDT_Argument counterArg : curArgument.counterArgs)
+    htCounters.buildRows(curArgument.counterArgs, (row, counterArg) ->
     {
-      noCounters = false;
-
       if (counterArg.works.size() > 0)
       {
         HDT_Work work = counterArg.works.get(0);
         
         if (work.authorRecords.size() > 0)
-          htCounters.setDataItem(1, ndx, work.authorRecords.get(0).getID(), work.getLongAuthorsStr(true), hdtPerson);
+          row.setCellValue(1, work.authorRecords.get(0), work.getLongAuthorsStr(true));
         else
-          htCounters.setDataItem(1, ndx, work.getID(), work.getLongAuthorsStr(true), hdtWork);
+          row.setCellValue(1, work, work.getLongAuthorsStr(true));
       }  
 
-      argVerdict = counterArg.getArgVerdict(curArgument);
+      HDT_ArgumentVerdict argVerdict = counterArg.getArgVerdict(curArgument);
       if (argVerdict != null)
-        htCounters.setDataItem(2, ndx, counterArg.getID(), argVerdict.listName(), hdtArgument);
+        row.setCellValue(2, counterArg, argVerdict.listName());
 
-      htCounters.setDataItem(3, ndx, counterArg.getID(), counterArg.listName(), hdtArgument);
-      ndx++;
-    }
-
+      row.setCellValue(3, counterArg, counterArg.listName());
+    });
+    
     lowerCtrlr.tabCounters.setText("Counterarguments (" + curArgument.counterArgs.size() + ")");
 
   // Set active tab
   // --------------
 
+    boolean noWorks    = curArgument.works.isEmpty(),
+            noCounters = curArgument.counterArgs.isEmpty();
+    
     Tab tab = lowerCtrlr.tabPane.getSelectionModel().getSelectedItem();
     
     if (((tab == lowerCtrlr.tabWhereMade) && noWorks) ||
@@ -231,7 +212,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       HDT_RecordType parentType = cellVal.getType();
       rbtp.setRecordType(row, parentType);
       rbtp.setChanged(row);
-      row.updateCell(nextColNdx, new HyperTableCell(-1, "", parentType));
+      row.setCellValue(nextColNdx, new HyperTableCell(-1, "", parentType));
 
       if (parentType == hdtPosition)
         verdictPopulator.setRecordType(row, hdtPositionVerdict);
@@ -241,13 +222,13 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
         verdictPopulator.setRecordType(row, hdtNone);
       
       verdictPopulator.populate(row, true);
-      row.updateCell(nextColNdx + 1, new HyperTableCell(-1, "", verdictPopulator.getRecordType(row)));
+      row.setCellValue(nextColNdx + 1, new HyperTableCell(-1, "", verdictPopulator.getRecordType(row)));
     });
     
     htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, new RecordByTypePopulator(), (row, cellVal, nextColNdx, nextPopulator) ->
     {
       if (HyperTableCell.getCellID(cellVal) < 1)
-        row.updateCell(nextColNdx, new HyperTableCell(-1, "", verdictPopulator.getRecordType(row)));
+        row.setCellValue(nextColNdx, new HyperTableCell(-1, "", verdictPopulator.getRecordType(row)));
     });
     
     htParents.addColAltPopulator(hdtNone, ctDropDownList, verdictPopulator);
@@ -266,28 +247,20 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       if (hsPop.getObj(row) == obj) return;
       
       hsPop.setObj(row, obj);
-      row.updateCell(nextColNdx, new HyperTableCell(-1, "", hsPop.getRecordType(row)));
+      row.setCellValue(nextColNdx, new HyperTableCell(-1, "", hsPop.getRecordType(row)));
     });
     
-    col.textHndlr = row -> 
-    {
-      HDT_Base work = row.getRecord(2);
-      
-      if (work == null)
-        return HyperTableCell.getCellText(row.getCell(1));        
-      
-      return HDT_Work.class.cast(work).getLongAuthorsStr(true);
-    };
+    col.textHndlr = row -> nullSwitch((HDT_Work)row.getRecord(2), HyperTableCell.getCellText(row.getCell(1)), work -> work.getLongAuthorsStr(true));
     
     htWhereMade.addColAltPopulatorWithUpdateHandler(hdtWork, ctDropDownList, new HybridSubjectPopulator(rtAuthorOfWork), (row, cellVal, nextColNdx, nextPopulator) ->
     {
       if (HyperTableCell.getCellID(cellVal) > 0)
       { 
         HDT_Work work = db.works.getByID(HyperTableCell.getCellID(cellVal));
-        row.updateCell(nextColNdx, new HyperTableCell(work.getID(), work.getYear(), hdtWork, HyperCellSortMethod.hsmNumeric));
+        row.setCellValue(nextColNdx, new HyperTableCell(work.getID(), work.getYear(), hdtWork, HyperCellSortMethod.hsmNumeric));
       }
       else
-        row.updateCell(nextColNdx, new HyperTableCell(-1, "", hdtWork, HyperCellSortMethod.hsmNumeric));      
+        row.setCellValue(nextColNdx, new HyperTableCell(-1, "", hdtWork, HyperCellSortMethod.hsmNumeric));      
     });
     
     htWhereMade.addCol(hdtWork, ctNone);
@@ -302,7 +275,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
     htCounters.addCol(hdtArgumentVerdict, ctNone);
     htCounters.addCol(hdtArgument, ctNone);
        
-    htWhereMade.tv.focusedProperty().addListener((observable, oldValue, newValue) -> updateArgCounts());
+    htWhereMade.getTV().focusedProperty().addListener((observable, oldValue, newValue) -> updateArgCounts());
     
     initContextMenus();
   }
@@ -405,12 +378,12 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
     
     if (!ctrlr.save(curArgument, showMessage, this)) return false;
        
-    for (int rowNdx = 0; rowNdx < htParents.getDataRowCount(); rowNdx++)
+    for (HyperTableRow row : htParents.getDataRows())
     {
-      if ((htParents.getID(3, rowNdx) > 0) && (htParents.getID(4,  rowNdx) < 1))
+      if ((row.getID(3) > 0) && (row.getID(4) < 1))
         okToSave = false;
       
-      if ((htParents.getID(4, rowNdx) > 0) && (htParents.getID(3,  rowNdx) < 1))
+      if ((row.getID(4) > 0) && (row.getID(3) < 1))
         okToSave = false;      
     }
     
@@ -419,13 +392,25 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       messageDialog("Unable to modify record: There must be a corresponding verdict for every position/argument targeted by this record.", mtError);
       return false;
     }
-    
-    curArgument.setPositions(htParents);
-    curArgument.setCounterArgs(htParents);
 
-    curArgument.setWorks(htWhereMade);
+    saveObjectGroups(tagPositionVerdict, rtPositionOfArgument);
+    saveObjectGroups(tagArgumentVerdict, rtCounterOfArgument);
+
+    curArgument.setWorks(htWhereMade.saveToList(2, hdtWork));
     
     return true;
+  }
+
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------  
+
+  private void saveObjectGroups(Tag tag, RelationType relType)
+  {
+    HashMap<Integer, Tag> colNdxToTag = new HashMap<>();
+    colNdxToTag.put(4, tag);
+    
+    List<ObjectGroup> tableGroups  = htParents.getObjectGroupList(curArgument, relType, 3, colNdxToTag);
+    curArgument.updateObjectGroups(relType, tableGroups, colNdxToTag.values());
   }
   
 //---------------------------------------------------------------------------  

@@ -496,8 +496,7 @@ public class NewPersonDialogController extends HyperDialog
     lblStatus.setVisible(true);
     progressIndicator.setVisible(true);
       
-    task = createDupCheckTask(Collections.singletonList(personName), 
-                              origAuthor, person, matchedAuthorsList, () -> finishDupSearch());
+    task = createDupCheckTask(Collections.singletonList(personName), origAuthor, person, matchedAuthorsList, this::finishDupSearch);
         
     task.updateProgress(0, 1);
     

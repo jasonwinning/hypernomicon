@@ -57,6 +57,7 @@ public class RenameDialogController extends HyperDialog
     if (tfName.getText().length() == 0)
     {
       messageDialog("Name cannot be zero-length.", mtError);
+      safeFocus(tfName);
       return false;
     }
     
@@ -65,6 +66,7 @@ public class RenameDialogController extends HyperDialog
       if (FilenameUtils.equalsNormalizedOnSystem(oldName, tfName.getText()))
       {
         messageDialog("Original name and new name are the same.", mtError);
+        safeFocus(tfName);
         return false;
       }
     }

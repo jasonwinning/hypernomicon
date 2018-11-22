@@ -88,7 +88,7 @@ public class NewCategoryDialogController extends HyperDialog
       ((RecordByTypePopulator) hcbCompare.getPopulator()).setRecordType(Populator.dummyRow, newType);
       hcbCompare.selectID(-1);
 
-      tfNewID.setText("" + ((newType == hdtNone) ? "" : db.getNextID(newType)));      
+      tfNewID.setText("" + (newType == hdtNone ? "" : db.getNextID(newType)));      
     });
     
     cbCompare.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
@@ -122,18 +122,21 @@ public class NewCategoryDialogController extends HyperDialog
     if (tfNewName.getText().length() == 0)
     {
       messageDialog("Record name cannot be blank.", mtError);
+      safeFocus(tfNewName);
       return false;
     }
 
     if (tfNewKey.getText().length() == 0)
     {
       messageDialog("Sort key cannot be blank.", mtError);
+      safeFocus(tfNewKey);
       return false;
     }
     
     if (hcbRecordType.selectedType() == hdtNone)
     {
       messageDialog("You must select a record type.", mtError);
+      safeFocus(cbRecordType);
       return false;
     }
     

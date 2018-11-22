@@ -578,7 +578,7 @@ public final class HyperDB
       
       for (HyperDataset<? extends HDT_Base> dataset : datasets.values())
         dataset.assignIDs();
-
+      
       bringAllRecordsOnline();
       
       return true;
@@ -615,7 +615,7 @@ public final class HyperDB
             (db.getPath(PREF_KEY_MISC_FILES_PATH, null) == null) ||
             (db.getPath(PREF_KEY_TOPICAL_PATH   , null) == null))
         {
-          throw new HyperDataException("Unable to load information about paths in database options HDB file");          
+          throw new HyperDataException("Unable to load information about paths from database options HDB file");          
         }
           
         String dbCreationDateStr = prefs.get(PREF_KEY_DB_CREATION_DATE, "");
@@ -656,13 +656,13 @@ public final class HyperDB
     }
     
     ArrayList<HDT_Work> worksToUnlink = new ArrayList<>();
-    for (Entry<String, HDT_Work> entry : bibEntryKeyToWork.entrySet())
+    bibEntryKeyToWork.entrySet().forEach(entry ->
     {
       if (bibLibrary == null)
         worksToUnlink.add(entry.getValue());
       else if (bibLibrary.getEntryByKey(entry.getKey()) == null)
         worksToUnlink.add(entry.getValue());
-    }
+    });
     
     worksToUnlink.forEach(work -> work.setBibEntryKey(""));
     
@@ -696,8 +696,7 @@ public final class HyperDB
     prefs.remove(PREF_KEY_BIB_LIBRARY_VERSION);
     prefs.remove(PREF_KEY_BIB_LIBRARY_TYPE);
     
-    for (HDT_Work work : works)
-      work.setBibEntryKey("");
+    works.forEach(work -> work.setBibEntryKey(""));
     
     bibChangedHandlers.forEach(DatabaseEvent::handle);
     
@@ -890,7 +889,7 @@ public final class HyperDB
   {
     try
     {
-      for (HyperDataset<? extends HDT_Base> dataset : datasets.values())
+      for (HyperDataset<? extends HDT_Base> dataset : datasets.values()) // Folders must be brought online first. See HyperPath.assignNameInternal
         dataset.bringAllRecordsOnline();
       
       addRootFolder();
@@ -1541,9 +1540,7 @@ public final class HyperDB
 
   public Collection<HDI_Schema> getSchemasByRecordType(HDT_RecordType type)
   {
-    HyperDataset<? extends HDT_Base> dataset = datasets.get(type);
-    
-    return isNull(dataset) ? null : dataset.getSchemas();
+    return nullSwitch(datasets.get(type), null, HyperDataset::getSchemas);
   }
   
 //---------------------------------------------------------------------------

@@ -120,10 +120,8 @@ public class HyperSubjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends
   @Override public int indexOf(Object o)
   {
     for (int ndx = startNdx; ndx < endNdx; ndx++)
-    {
       if (get(ndx) == o)
         return ndx;
-    }
        
     return -1;
   }
@@ -134,10 +132,8 @@ public class HyperSubjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends
   @Override public int lastIndexOf(Object o)
   {
     for (int ndx = endNdx - 1; ndx >= startNdx; ndx++)
-    {
       if (get(ndx) == o)
         return ndx;
-    }
        
     return -1;
   }

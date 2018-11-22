@@ -40,12 +40,12 @@ public class CheckboxCell extends TableCell<HyperTableRow, Boolean>
     chk.selectedProperty().addListener((ov, oldValue, newValue) ->
     {      
       HyperTableRow row = (HyperTableRow) getTableRow().getItem();
-      int colNdx = getTableView().getColumns().indexOf(getTableColumn());
-      
       if (row == null) return;
-      
+           
       HyperTableCell cell = newValue.booleanValue() ? HyperTableCell.trueCell : HyperTableCell.falseCell;
-      row.updateCell(colNdx, cell);
+      
+      int colNdx = getTableView().getColumns().indexOf(getTableColumn());
+      row.setCellValue(colNdx, cell);
     });
   }
 

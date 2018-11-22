@@ -77,7 +77,6 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
-import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.web.WebView;
@@ -100,10 +99,8 @@ public class FileManager extends HyperDialog
     {
       folder = (HDT_Folder) folderRow.getRecord();
       
-      if (fileRow == null)
-        fileName = null;
-      else
-        fileName = fileRow.getFilePath().getNameOnly();
+      fileName = nullSwitch(fileRow, null, () -> fileRow.getFilePath().getNameOnly());
+      
       this.record = record;
     }    
   }
@@ -784,7 +781,13 @@ public class FileManager extends HyperDialog
       ui.goToRecord(miscFile, true);
       
       FileTabController fileCtrlr = HyperTab.getHyperTab(TabEnum.miscFileTab);
-      fileCtrlr.btnManageClick();
+      if (fileCtrlr.btnManageClick() == false)
+      {
+        miscFile.getPath().clear(false);
+        ui.deleteCurrentRecord(false);
+      }
+      
+      refresh();
     });
     
     fileTable.addContextMenuItem("Cut", fileRow -> cutCopy(fileRow, false));   
@@ -833,10 +836,7 @@ public class FileManager extends HyperDialog
       if (needRefresh) refresh();
     });
     
-    dialogStage.setOnHidden(event ->
-    {
-      focusStage(app.getPrimaryStage());
-    });
+    dialogStage.setOnHidden(event -> focusStage(app.getPrimaryStage()));
     
     RecordListView.addDefaultMenuItems(recordTable);
     
@@ -873,38 +873,30 @@ public class FileManager extends HyperDialog
     List<MarkedRowInfo> rowInfoList = new ArrayList<>();
     List<FileRow> rowList = fileTV.getSelectionModel().getSelectedItems();
     
-    if (rowList != null)
-      if (rowList.size() > 1)
-      {
-        rowList.forEach(fileRow -> rowInfoList.add(new MarkedRowInfo(fileRow, false)));
-        
-        return rowInfoList;
-      }
+    if ((rowList != null) && (rowList.size() > 1))
+    {
+      rowList.forEach(fileRow -> rowInfoList.add(new MarkedRowInfo(fileRow, false)));
+      return rowInfoList;
+    }
     
-    if (rowInfoList.isEmpty())
-      if (srcRow != null)
-      {
-        rowInfoList.add(new MarkedRowInfo(srcRow, false));
-        return rowInfoList;
-      }
+    if (rowInfoList.isEmpty() && (srcRow != null))
+    {
+      rowInfoList.add(new MarkedRowInfo(srcRow, false));
+      return rowInfoList;
+    }
     
-    if (rowList != null)
-      if (rowList.size() > 0)
-      {
-        rowList.forEach(fileRow -> rowInfoList.add(new MarkedRowInfo(fileRow, false)));
-        
-        return rowInfoList;
-      }
+    if ((rowList != null) && (rowList.size() > 0))
+    {
+      rowList.forEach(fileRow -> rowInfoList.add(new MarkedRowInfo(fileRow, false)));     
+      return rowInfoList;
+    }
 
     FileRow fileRow = fileTV.getSelectionModel().getSelectedItem();
       
     if (fileRow != null)
       rowInfoList.add(new MarkedRowInfo(fileRow, false));
-    else
-    {
-      if (curFolder != null)
-        rowInfoList.add(new MarkedRowInfo(getFolderRow(), false));
-    }     
+    else if (curFolder != null)
+      rowInfoList.add(new MarkedRowInfo(getFolderRow(), false));    
 
     return rowInfoList;
   }
@@ -1032,8 +1024,7 @@ public class FileManager extends HyperDialog
         try { Files.delete(filePath.toPath()); }
         catch (IOException e)
         {
-          messageDialog("Unable to delete the file: " + e.getMessage(), mtError);
-          return false;
+          return falseWithErrorMessage("Unable to delete the file: " + e.getMessage());
         }
         
         db.unmapFilePath(filePath);
@@ -1054,8 +1045,7 @@ public class FileManager extends HyperDialog
       }
       catch (IOException e)
       {
-        messageDialog("An error occurred while trying to delete \"" + setPath.getFilePath() + "\": " + e.getMessage(), mtError);
-        return false;
+        return falseWithErrorMessage("An error occurred while trying to delete \"" + setPath.getFilePath() + "\": " + e.getMessage());
       }    
     }
     
@@ -1067,48 +1057,28 @@ public class FileManager extends HyperDialog
 
   private boolean canCutRow(MarkedRowInfo rowInfo, boolean deleting)  
   {
-    HDT_RecordWithPath fileRecord = null;
-    boolean isDir = true;
-    FilePath filePath;
-    HyperPath hyperPath;
     String opPast = deleting ? "deleted" : "moved";
-
-    hyperPath = rowInfo.row.getHyperPath();
-    fileRecord = hyperPath.getRecord();
+    HyperPath hyperPath = rowInfo.row.getHyperPath();
+    HDT_RecordWithPath fileRecord = hyperPath.getRecord();
     
     if (hyperPath.getRecordsString().length() > 0)
       rowInfo.related = true;
     
-    filePath = hyperPath.getFilePath();
-    isDir = filePath.isDirectory();
+    FilePath filePath = hyperPath.getFilePath();
+    boolean isDir = filePath.isDirectory();
     
     if ((fileRecord != null) && (deleting == false))
       if (fileRecord.getType() == hdtPerson)
-      {
-        messageDialog("The file \"" + filePath + "\" cannot be moved: It is in use as a picture for person record ID " + fileRecord.getID() + ".", mtError);
-        return false;
-      }
+        return falseWithErrorMessage("The file \"" + filePath + "\" cannot be moved: It is in use as a picture for person record ID " + fileRecord.getID() + ".");
     
     if (db.isProtectedFile(filePath))
-    {
-      if (isDir)
-        messageDialog("The folder \"" + filePath + "\" cannot be " + opPast + ".", mtError);
-      else
-        messageDialog("The file \"" + filePath + "\" cannot be " + opPast + ".", mtError);
-      
-      return false;
-    }
+      return falseWithErrorMessage((isDir ? "The folder \"" : "The file \"") + filePath + "\" cannot be " + opPast + ".");
 
     if (deleting == false) return true;
     
     if (isDir)
-    {
       if (HDT_Folder.class.cast(fileRecord).containsFilesThatAreInUse())
-      {
-        messageDialog("The folder \"" + filePath + "\" cannot be deleted, because it contains one or more files or folders that are in use by the database.", mtError);
-        return false;
-      }
-    }
+        return falseWithErrorMessage("The folder \"" + filePath + "\" cannot be deleted, because it contains one or more files or folders that are in use by the database.");
     
     return true;
   }
@@ -1165,7 +1135,7 @@ public class FileManager extends HyperDialog
     
     fileRecord = fileRow.getRecord();
     
-    isDir = (fileRow.isDirectory());
+    isDir = fileRow.isDirectory();
     
     if (isDir) { noun = "folder"; cantRename = HyperDB.isUnstoredRecord(fileRecord.getID(), hdtFolder); }
     else       { noun = "file";   cantRename = db.isProtectedFile(fileRow.getFilePath()); }
@@ -1194,14 +1164,11 @@ public class FileManager extends HyperDialog
     {
       suppressNeedRefresh = true;
       
-      if (fileRow.rename(dlg.getNewName()))
-      {  
-        Platform.runLater(() ->
-        {
-          refresh();
-          ui.update();
-        });
-      }
+      if (fileRow.rename(dlg.getNewName())) Platform.runLater(() ->
+      {
+        refresh();
+        ui.update();
+      });
       
       suppressNeedRefresh = false;
       return;
@@ -1232,14 +1199,11 @@ public class FileManager extends HyperDialog
       suppressNeedRefresh = false;
     }
     
-    if (success)
+    if (success) Platform.runLater(() ->
     {
-      Platform.runLater(() ->
-      {
-        ui.update();
-        refresh();        
-      });
-    }
+      ui.update();
+      refresh();        
+    });
   }
 
 //---------------------------------------------------------------------------  
@@ -1272,9 +1236,7 @@ public class FileManager extends HyperDialog
     if (curFolder != null)
     {
       FileRow fileRow = fileTV.getSelectionModel().getSelectedItem();
-      FilePath filePath = null;
-      if (fileRow != null)
-        filePath = fileRow.getFilePath();
+      FilePath filePath = fileRow == null ? null : fileRow.getFilePath();
       
       fileTable.update(curFolder, folderTree.selectedItem());
       
@@ -1321,12 +1283,11 @@ public class FileManager extends HyperDialog
     
       if (item.record != null)
       {
-        for (int rowNdx = 0; rowNdx < recordTable.getDataRowCount(); rowNdx++)
+        for (HyperTableRow row : recordTable.getDataRows())
         {
-          HDT_Base record = recordTable.getRowByRowNdx(rowNdx).getRecord();
-          if (record == item.record)
+          if (row.getRecord() == item.record)
           {
-            recordTable.selectRow(rowNdx);
+            recordTable.selectRow(row);
             recordTV.requestFocus();
             return;
           }
@@ -1366,8 +1327,7 @@ public class FileManager extends HyperDialog
     
     treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
-      if (newValue == null) return;
-      if (newValue == oldValue) return;
+      if ((newValue == null) || (newValue == oldValue)) return;
       
       HDT_Folder folder;
       try
@@ -1422,10 +1382,7 @@ public class FileManager extends HyperDialog
           if (fileRow != null)
           {
             if (fileRow.isDirectory())
-            {
-              TreeItem<FileRow> item = fileRow.getTreeItem();
-              folderTree.getSelectionModel().select(item);
-            }
+              folderTree.getSelectionModel().select(fileRow.getTreeItem());
             else
               launchFile(fileRow.getFilePath());
           }
@@ -1452,7 +1409,7 @@ public class FileManager extends HyperDialog
       if (newValue != null)
       {
         HDT_Base record = HyperTableCell.getRecord(newValue.getCell(1));
-        history.updateCurrent(new HistoryItem(folderTree.getSelectionModel().getSelectedItem().getValue(), fileTV.getSelectionModel().getSelectedItem(), record));
+        history.updateCurrent(new HistoryItem(folderTree.selectedItem().getValue(), fileTV.getSelectionModel().getSelectedItem(), record));
         
         if (record != null)
         {
@@ -1502,11 +1459,11 @@ public class FileManager extends HyperDialog
 
   private boolean selectNonBlankRecordRow()
   {
-    int ndxToPick = -1;
+    HyperTableRow rowToPick = null;
     
-    for (int ndx = 0; ndx < recordTable.getDataRowCount(); ndx++)
+    for (HyperTableRow row : recordTable.getDataRows())
     {
-      HDT_Base record = recordTable.getRowByRowNdx(ndx).getRecord();
+      HDT_Base record = row.getRecord();
       if (record != null)
       {
         if (record.hasDesc())
@@ -1514,25 +1471,23 @@ public class FileManager extends HyperDialog
           String text = HDT_RecordWithDescription.class.cast(record).getDesc().getPlain().trim();
           if (text.length() > 0)
           {
-            recordTable.selectRow(ndx);            
+            recordTable.selectRow(row);            
             return true;
           }
         }
         
-        if (ndxToPick == -1)
+        if (rowToPick == null)
           if (record instanceof HDT_RecordWithPath)
             if (HDT_RecordWithPath.class.cast(record).getPath().isEmpty() == false)
-              ndxToPick = ndx;
+              rowToPick = row;
       }
     }
     
-    if (ndxToPick > -1)
-    {
-      recordTable.selectRow(ndxToPick);
-      return true;
-    }
-    
-    return false;
+    if (rowToPick == null)
+      return false;
+
+    recordTable.selectRow(rowToPick);
+    return true;
   }
 
 //---------------------------------------------------------------------------  
@@ -1540,28 +1495,26 @@ public class FileManager extends HyperDialog
 
   public void setPreviewFromRecordTable()
   {
-    FilePath filePath = null, fileTablePath = null;
+    FilePath filePath = null;
     HDT_Base record = recordTable.selectedRecord();
-    HDT_WorkFile workFile = null;
     
     if (record != null)
       if (record instanceof HDT_RecordWithPath)
         filePath = HDT_RecordWithPath.class.cast(record).getPath().getFilePath();
     
-    FileRow fileRow = fileTV.getSelectionModel().getSelectedItem();
-    if (fileRow != null)
-      fileTablePath = fileRow.getFilePath();
+    FilePath fileTablePath = nullSwitch(fileTV.getSelectionModel().getSelectedItem(), null, FileRow::getFilePath);
     
     if (record != null)
     {
       if (record.getType() == hdtWork)
       {        
+        HDT_WorkFile workFile = null;        
+        
         if (FilePath.isEmpty(fileTablePath) == false)
         {
           HDT_RecordWithPath recordWP = HyperPath.getFileFromFilePath(fileTablePath);
-          if (recordWP != null)
-            if (recordWP.getType() == hdtWorkFile)
-              workFile = (HDT_WorkFile) recordWP;
+          if ((recordWP != null) && (recordWP.getType() == hdtWorkFile))
+            workFile = (HDT_WorkFile) recordWP;
         }
                 
         if (workFile == null)
@@ -1595,12 +1548,11 @@ public class FileManager extends HyperDialog
 //---------------------------------------------------------------------------   
       
   public void setCurrentFileRow(FileRow fileRow, boolean showingMore)
-  {
-    int ndx = 0;
-    HDT_RecordWithPath fileRecord;
+  {    
     HDT_Folder folderRecord = null;
     Set<HDT_Base> relatives = new LinkedHashSet<>();
     boolean hasMore = false;
+    HyperTableRow row;
     
     recordTable.clear();
     
@@ -1617,7 +1569,7 @@ public class FileManager extends HyperDialog
     }
     else
     {
-      fileRecord = fileRow.getRecord();
+      HDT_RecordWithPath fileRecord = fileRow.getRecord();
       if (fileRecord == null) 
       {
         webView.getEngine().loadContent("");
@@ -1626,10 +1578,9 @@ public class FileManager extends HyperDialog
 
       hasMore = db.getRelatives(fileRecord, relatives, showingMore ? -1 : ReadOnlyCell.INCREMENTAL_ROWS);
       
-      recordTable.setDataItem(0, ndx, fileRecord.getID(), db.getTypeName(fileRecord.getType()), fileRecord.getType());
-      recordTable.setDataItem(1, ndx, fileRecord.getID(), fileRecord.listName(), fileRecord.getType());
-      
-      ndx++;
+      row = recordTable.newDataRow();
+      row.setCellValue(0, fileRecord, db.getTypeName(fileRecord.getType()));
+      row.setCellValue(1, fileRecord, fileRecord.listName());
     }
     
     Iterator<HDT_Base> relIt = relatives.iterator();
@@ -1640,8 +1591,9 @@ public class FileManager extends HyperDialog
 
       if ((hasMore) && (relIt.hasNext() == false))
       {
-        recordTable.setDataItem(0, ndx, -1, "",  hdtAuxiliary, HyperCellSortMethod.hsmLast);
-        recordTable.setDataItem(1, ndx, -1, "",  hdtNone, HyperCellSortMethod.hsmLast);
+        row = recordTable.newDataRow();
+        row.setCellValue(0, -1, "",  hdtAuxiliary, HyperCellSortMethod.hsmLast);
+        row.setCellValue(1, -1, "",  hdtNone, HyperCellSortMethod.hsmLast);
         break;
       }
       
@@ -1650,10 +1602,9 @@ public class FileManager extends HyperDialog
         case hdtFolder : break;
         default:
           
-          recordTable.setDataItem(0, ndx, relative.getID(), db.getTypeName(relative.getType()), relative.getType());
-          recordTable.setDataItem(1, ndx, relative.getID(), relative.listName(), relative.getType());
-
-          ndx++;
+          row = recordTable.newDataRow();
+          row.setCellValue(0, relative, db.getTypeName(relative.getType()));
+          row.setCellValue(1, relative, relative.listName());
           break;
       }
     }

@@ -264,7 +264,7 @@ public class HyperViewSequence
 
   public static <HDT_RT extends HDT_Base> HyperView<HDT_RT> createViewForRecord(HDT_RT record)
   {
-    return new HyperView<HDT_RT>(getTabEnumByRecordType(record.getType()), record);
+    return createViewForRecord(getTabEnumByRecordType(record.getType()), record);
   }
 
   public static <HDT_RT extends HDT_Base> HyperView<HDT_RT> createViewForRecord(TabEnum tabEnum, HDT_RT record)

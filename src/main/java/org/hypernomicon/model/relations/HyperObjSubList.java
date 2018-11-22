@@ -46,19 +46,18 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int size()
-  {
-    return endNdx - startNdx;
+  @Override public int size()               { return endNdx - startNdx; }
+  @Override public boolean isEmpty()        { return (size() > 0); }
+  @Override public void clear()             { while (endNdx > startNdx) remove(0); }
+  @Override public HDT_ObjType get(int ndx) { return parentList.get(startNdx + ndx); }
+
+  @Override public HDT_ObjType set(int ndx, HDT_ObjType element) { return parentList.set(startNdx + ndx, element); }
+  
+  @Override public List<HDT_ObjType> subList(int from, int to) 
+  { 
+    return new HyperObjSubList<HDT_SubjType, HDT_ObjType>(parentList, startNdx + from, startNdx + to);
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean isEmpty()
-  {
-    return (size() > 0);
-  }
-
+ 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -243,31 +242,6 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear()
-  {
-    while (endNdx > startNdx)
-      remove(0);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HDT_ObjType get(int index)
-  {
-    return parentList.get(startNdx + index);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HDT_ObjType set(int index, HDT_ObjType element)
-  {
-    return parentList.set(startNdx + index, element);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public void add(int index, HDT_ObjType element)
   {
     int oldSize = parentList.size();
@@ -297,10 +271,8 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   @Override public int indexOf(Object o)
   {
     for (int ndx = startNdx; ndx < endNdx; ndx++)
-    {
       if (get(ndx) == o)
         return ndx;
-    }
        
     return -1;
   }
@@ -311,20 +283,10 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   @Override public int lastIndexOf(Object o)
   {
     for (int ndx = endNdx - 1; ndx >= startNdx; ndx++)
-    {
       if (get(ndx) == o)
         return ndx;
-    }
        
     return -1;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public List<HDT_ObjType> subList(int fromIndex, int toIndex)
-  {
-    return new HyperObjSubList<HDT_SubjType, HDT_ObjType>(parentList, startNdx + fromIndex, startNdx + toIndex);
   }
 
 //---------------------------------------------------------------------------

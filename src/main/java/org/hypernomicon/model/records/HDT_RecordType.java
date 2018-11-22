@@ -26,7 +26,7 @@ public enum HDT_RecordType
 {
   hdtNone           (HDT_Base.class),
   
-  hdtFolder         (HDT_Folder.class),  // Folders must be brought online first
+  hdtFolder         (HDT_Folder.class),  // Folders must be brought online first. See HyperPath.assignNameInternal
   hdtPerson         (HDT_Person.class),
   hdtPersonStatus   (HDT_PersonStatus.class),
   hdtPersonGroup    (HDT_PersonGroup.class),

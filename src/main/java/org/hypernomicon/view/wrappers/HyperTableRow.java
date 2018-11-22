@@ -30,6 +30,7 @@ import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
+import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
 
 //---------------------------------------------------------------------------
 
@@ -41,14 +42,15 @@ public class HyperTableRow
 
 //---------------------------------------------------------------------------
   
-  public int getCount()                  { return cells.size(); }
-  public HyperTableCell getCell(int ndx) { return cells.get(ndx); }  
-  public int getID(int ndx)              { return (cells.size() > ndx) ? HyperTableCell.getCellID(cells.get(ndx)) : -1; }
-  public String getText(int ndx)         { return (cells.size() > ndx) ? HyperTableCell.getCellText(cells.get(ndx)) : ""; }
-  public HDT_RecordType getType(int ndx) { return (cells.size() > ndx) ? HyperTableCell.getCellType(cells.get(ndx)) : hdtNone; }
-  public HDT_Base getRecord()            { return HyperTableCell.getRecord(cells.get(table.getMainColNdx())); }
-  public HDT_Base getRecord(int ndx)     { return HyperTableCell.getRecord(cells.get(ndx)); }
-
+  public int getCount()                       { return cells.size(); }
+  public HyperTableCell getCell(int ndx)      { return cells.get(ndx); }  
+  public int getID(int ndx)                   { return cells.size() > ndx ? HyperTableCell.getCellID(cells.get(ndx)) : -1; }
+  public String getText(int ndx)              { return cells.size() > ndx ? HyperTableCell.getCellText(cells.get(ndx)) : ""; }
+  public HDT_RecordType getType(int ndx)      { return cells.size() > ndx ? HyperTableCell.getCellType(cells.get(ndx)) : hdtNone; }
+  public HDT_Base getRecord()                 { return HyperTableCell.getRecord(cells.get(table.getMainColNdx())); }
+  public HDT_Base getRecord(int ndx)          { return HyperTableCell.getRecord(cells.get(ndx)); }
+  public boolean getCheckboxValue(int colNdx) { return getID(colNdx) == HyperTableCell.trueCell.getID(); }
+  
 //---------------------------------------------------------------------------
 
   public HyperTableRow(int colCount, HyperTable table)
@@ -95,7 +97,25 @@ public class HyperTableRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
   
-  public boolean updateCell(int colNdx, HyperTableCell newCell)  // return true if changed
+  public void setCheckboxValue(int colNdx, boolean boolVal) {
+    setCellValue(colNdx, HyperTableCell.fromBoolean(boolVal)); } 
+  
+  public boolean setCellValue(int colNdx, HDT_Base record, String text) {
+    return setCellValue(colNdx, new HyperTableCell(record, text)); }
+
+  public boolean setCellValue(int colNdx, int id, String text, HDT_RecordType type) {
+    return setCellValue(colNdx, new HyperTableCell(id, text, type)); }
+
+  public boolean setCellValue(int colNdx, HDT_Base record, String text, HyperCellSortMethod newSortMethod) {
+    return setCellValue(colNdx, new HyperTableCell(record, text, newSortMethod)); }
+
+  public boolean setCellValue(int colNdx, int id, String text, HDT_RecordType type, HyperCellSortMethod newSortMethod) {
+    return setCellValue(colNdx, new HyperTableCell(id, text, type, newSortMethod)); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean setCellValue(int colNdx, HyperTableCell newCell)  // return true if changed
   {
     HyperTableCell cell = cells.get(colNdx);
     VariablePopulator vp;
@@ -140,8 +160,8 @@ public class HyperTableRow
     cells.set(colNdx, newCell);
     if (table.getCanAddRows())
     {
-      if (table.tv.getItems().get(table.tv.getItems().size() - 1) == this)      
-        table.addBlankRow();
+      if (table.getTV().getItems().get(table.getTV().getItems().size() - 1) == this)      
+        table.newRow(false);
     }
 
     if (table.disableRefreshAfterCellUpdate == false)

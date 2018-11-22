@@ -163,13 +163,12 @@ public class ImportBibEntryDialogController extends HyperDialog
 
   @Override protected boolean isValid()
   { 
-    if (createNewWork == false)
-      if (hcbWork.selectedID() < 1)
-      {
-        messageDialog("You must select a work record.", mtError);
-        safeFocus(cbWork);
-        return false;
-      }
+    if ((createNewWork == false) && (hcbWork.selectedID() < 1))
+    {
+      messageDialog("You must select a work record.", mtError);
+      safeFocus(cbWork);
+      return false;
+    }
     
     return true; 
   }

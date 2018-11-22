@@ -17,9 +17,12 @@
 
 package org.hypernomicon.view.tabs;
 
+import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Institution;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_State;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -51,8 +54,8 @@ import javafx.scene.control.TextField;
 public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Institution>
 {
   private boolean alreadyChangingLocation;
-  public HyperTable htSubInstitutions, htPersons;
-  public HyperCB hcbState, hcbCountry, hcbType, hcbParentInst;
+  private HyperTable htSubInstitutions, htPersons;
+  private HyperCB hcbState, hcbCountry, hcbType, hcbParentInst;
   private HDT_Institution curInstitution;
   
   @FXML private TextField tfCity;
@@ -69,13 +72,13 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
   @FXML private Hyperlink hlGoogleMaps;
   @FXML private SplitPane spHoriz;
   
-  @Override public HDT_RecordType getType()                                 { return hdtInstitution; }
-  @Override public void enable(boolean enabled)                             { ui.tabInstitutions.getContent().setDisable(enabled == false); }
-  @Override public void focusOnSearchKey()                                  { return; }
-  @Override public void newClick(HDT_RecordType objType, HyperTableRow row) { return; }
-  @Override public void setRecord(HDT_Institution activeRecord)             { curInstitution = activeRecord; }
-  @Override public void setDividerPositions()                               { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
-  @Override public void getDividerPositions()                               { getDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
+  @Override public HDT_RecordType getType()                         { return hdtInstitution; }
+  @Override public void enable(boolean enabled)                     { ui.tabInstitutions.getContent().setDisable(enabled == false); }
+  @Override public void focusOnSearchKey()                          { return; }
+  @Override public void newClick(HDT_RecordType t, HyperTableRow r) { return; }
+  @Override public void setRecord(HDT_Institution activeRecord)     { curInstitution = activeRecord; }
+  @Override public void setDividerPositions()                       { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
+  @Override public void getDividerPositions()                       { getDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
@@ -83,75 +86,43 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
   @Override public boolean update()
   {
     HashMap<HDT_Person, HashSet<HDT_Institution>> peopleMap = new HashMap<>();
-    int subInstRowNdx, personRowNdx;
     
-    if (db.isLoaded() == false) return false;
-    
-    clear();
-    
-    if (curInstitution == null)
-    {
-      enable(false);
-      return false;
-    }
-
     tfName.setText(curInstitution.name());
     tfCity.setText(curInstitution.getCity());
     tfLink.setText(curInstitution.getWebLink());
     
-    if (curInstitution.state.isNotNull())
-      hcbState.addEntry(curInstitution.state.getID(), curInstitution.state.get().name(), curInstitution.state.getID());
-    else
-      hcbState.addEntry(-1, "", -1);
-    
-    if (curInstitution.country.isNotNull())
-      hcbCountry.addEntry(curInstitution.country.getID(), curInstitution.country.get().name(), curInstitution.country.getID());
-    else
-      hcbCountry.addEntry(-1, "", -1);
-    
-    if (curInstitution.instType.isNotNull())
-      hcbType.addEntry(curInstitution.instType.getID(), curInstitution.instType.get().name(), curInstitution.instType.getID());
-    else
-      hcbType.addEntry(-1, "", -1);
-    
-    if (curInstitution.parentInst.isNotNull())
-      hcbParentInst.addEntry(curInstitution.parentInst.getID(), curInstitution.parentInst.get().name(), curInstitution.parentInst.getID());
-    else
-      hcbParentInst.addEntry(-1, "", -1);
+    hcbState     .addAndSelectEntryOrBlank(curInstitution.state     , HDT_Base::name);   
+    hcbCountry   .addAndSelectEntryOrBlank(curInstitution.country   , HDT_Base::name);
+    hcbType      .addAndSelectEntryOrBlank(curInstitution.instType  , HDT_Base::name);    
+    hcbParentInst.addAndSelectEntryOrBlank(curInstitution.parentInst, HDT_Base::name);
     
  // Populate departments and people
  // -------------------------------
     
-    subInstRowNdx = 0;
-    
     addPersonsFromInst(curInstitution, curInstitution, peopleMap);
     
-    for (HDT_Institution subInst : curInstitution.subInstitutions)
+    htSubInstitutions.buildRows(curInstitution.subInstitutions, (row, subInst) ->
     {  
-      htSubInstitutions.setDataItem(1, subInstRowNdx, subInst.getID(), subInst.name(), hdtInstitution);      
+      row.setCellValue(1, subInst, subInst.name());      
       if (subInst.instType.isNotNull())
-        htSubInstitutions.setDataItem(2, subInstRowNdx, subInst.instType.getID(), subInst.instType.get().name(), hdtInstitutionType);
-      htSubInstitutions.setDataItem(3, subInstRowNdx, subInst.getID(), subInst.getWebLink(), hdtInstitution);
-            
-      subInstRowNdx++;
-    }    
+        row.setCellValue(2, subInst.instType.get(), subInst.instType.get().name());
+      row.setCellValue(3, subInst, subInst.getWebLink());
+    });    
     
     if (curInstitution.isDeptOrFaculty() && curInstitution.parentInst.isNotNull())
     {
-      for (HDT_Institution sibInst : curInstitution.parentInst.get().subInstitutions)
+      curInstitution.parentInst.get().subInstitutions.forEach(sibInst ->
       {
         if (sibInst != curInstitution)
           addSiblingInsts(sibInst, sibInst, peopleMap);
-      }
+      });
     }
     
-    personRowNdx = 0;
-    
-    for (HDT_Person person : peopleMap.keySet())
+    htPersons.buildRows(peopleMap.keySet(), (row, person) ->
     {
-      htPersons.setDataItem(0, personRowNdx, person.getID(), person.listName(), hdtPerson);
-      htPersons.setDataItem(1, personRowNdx, person.rank.getID(), (person.rank.isNotNull()) ? person.rank.get().name() : "", hdtRank);
-      htPersons.setDataItem(2, personRowNdx, person.field.getID(), (person.field.isNotNull()) ? person.field.get().name() : "", hdtField);
+      row.setCellValue(0, person, person.listName());
+      row.setCellValue(1, person.rank.getID(), person.rank.isNotNull() ? person.rank.get().name() : "", hdtRank);
+      row.setCellValue(2, person.field.getID(), person.field.isNotNull() ? person.field.get().name() : "", hdtField);
       
       ArrayList<HDT_Institution> instList = new ArrayList<>();
       instList.addAll(peopleMap.get(person));
@@ -171,13 +142,11 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
           instStr = instStr + ", " + inst.name();
       }
             
-      htPersons.setDataItem(3, personRowNdx, instID, instStr, hdtInstitution);
-            
-      personRowNdx++;
-    }
+      row.setCellValue(3, instID, instStr, hdtInstitution);
+    });
     
-    htPersons.tv.getSortOrder().clear();
-    htPersons.tv.getSortOrder().add(htPersons.tv.getColumns().get(0));
+    htPersons.getTV().getSortOrder().clear();
+    htPersons.getTV().getSortOrder().add(htPersons.getTV().getColumns().get(0));
     
     safeFocus(tfName);
     
@@ -189,17 +158,13 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
 
   private void addSiblingInsts(HDT_Institution sibInst, HDT_Institution cousinInst, HashMap<HDT_Person, HashSet<HDT_Institution>> peopleMap)
   {
-    if (cousinInst.subInstitutions.isEmpty() == false)
-    {
-      for (HDT_Institution subInst : cousinInst.subInstitutions)
-        addSiblingInsts(sibInst, subInst, peopleMap);
-    }
+    cousinInst.subInstitutions.forEach(subInst -> addSiblingInsts(sibInst, subInst, peopleMap));
     
-    for (HDT_Person person : cousinInst.persons)
+    cousinInst.persons.forEach(person ->
     {
       if (peopleMap.containsKey(person))
         peopleMap.get(person).add(sibInst);  
-    }    
+    });
   }
 
 //---------------------------------------------------------------------------  
@@ -207,24 +172,18 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
   
   private void addPersonsFromInst(HDT_Institution nearestChildInst, HDT_Institution inst, HashMap<HDT_Person, HashSet<HDT_Institution>> peopleMap)
   {
-    if (inst.subInstitutions.isEmpty() == false)
-    {
-      for (HDT_Institution subInst : inst.subInstitutions)
-      {
-        if (nearestChildInst == curInstitution)
-          addPersonsFromInst(subInst, subInst, peopleMap);
-        else
-          addPersonsFromInst(nearestChildInst, subInst, peopleMap);
-      }
-    }
+    if (nearestChildInst == curInstitution)
+      inst.subInstitutions.forEach(subInst -> addPersonsFromInst(subInst, subInst, peopleMap));
+    else
+      inst.subInstitutions.forEach(subInst -> addPersonsFromInst(nearestChildInst, subInst, peopleMap));
           
-    for (HDT_Person person : inst.persons)
+    inst.persons.forEach(person ->
     {
       if (peopleMap.containsKey(person) == false)
         peopleMap.put(person, new HashSet<HDT_Institution>());
         
       peopleMap.get(person).add(nearestChildInst);        
-    }
+    });
   }
 
 //---------------------------------------------------------------------------  
@@ -251,10 +210,7 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
     htSubInstitutions.addCol(hdtInstitutionType, ctDropDownList);
     htSubInstitutions.addTextEditCol(hdtInstitution, true, false);
     
-    htSubInstitutions.addContextMenuItem(hdtInstitution, "Go to this record", record ->
-    {
-      ui.goToRecord(record, true);
-    });
+    htSubInstitutions.addContextMenuItem(hdtInstitution, "Go to this record", record -> ui.goToRecord(record, true));
     
     htSubInstitutions.addContextMenuItem(hdtInstitution, "Delete this institution record", record ->
     {
@@ -306,10 +262,7 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
       }
     });
     
-    btnParent.setOnAction(event -> 
-    {
-      ui.goToRecord(HyperTableCell.getRecord(hcbParentInst.selectedHTC()), true);
-    });
+    btnParent.setOnAction(event -> ui.goToRecord(HyperTableCell.getRecord(hcbParentInst.selectedHTC()), true));
     
     btnLink.setOnAction(event -> openWebLink(tfLink.getText()));
   }
@@ -349,7 +302,7 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
   
   @Override public boolean saveToRecord(boolean showMessage)
   {
-    int ndx, subInstID, numRows;
+    int subInstID;
     HDT_Institution subInst;
     boolean locationChanged = false;
     
@@ -382,29 +335,27 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
     curInstitution.instType.setID(hcbType.selectedID());
     curInstitution.parentInst.setID(hcbParentInst.selectedID());
 
-    numRows = htSubInstitutions.getDataRowCount();
-       
-    for (ndx = 0; ndx < numRows; ndx++)
+    for (HyperTableRow row : htSubInstitutions.getDataRows())
     {
-      if ((htSubInstitutions.getID(1, ndx) > 0) || (htSubInstitutions.getText(1, ndx).length() > 0) || (htSubInstitutions.getText(3, ndx).length() > 0))
+      subInstID = row.getID(1);
+      
+      if ((subInstID > 0) || (row.getText(1).length() > 0) || (row.getText(3).length() > 0))
       {
-        subInstID = htSubInstitutions.getID(1, ndx);
-
         if (subInstID < 1)
           subInst = db.createNewBlankRecord(hdtInstitution);
         else
           subInst = db.institutions.getByID(subInstID);
 
         subInstID = subInst.getID();
-        subInst.setName(htSubInstitutions.getText(1, ndx));
+        subInst.setName(row.getText(1));
         subInst.parentInst.setID(curInstitution.getID());
-        subInst.instType.setID(htSubInstitutions.getID(2, ndx));
-        subInst.setWebLink(htSubInstitutions.getText(3, ndx));
+        subInst.instType.setID(row.getID(2));
+        subInst.setWebLink(row.getText(3));
 
         if ((subInst.name().length() == 0) &&
             (subInst.getWebLink().length() == 0) &&
             (subInst.persons.isEmpty()))
-              db.deleteRecord(hdtInstitution, subInstID);
+          db.deleteRecord(hdtInstitution, subInstID);
       }
     }
     
@@ -424,17 +375,20 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
 
   private boolean differentLocation(HDT_Institution instToCheck, HDT_Institution baseInst)
   {
-    if (instToCheck.getCity().trim().length() > 0)
-      if (instToCheck.getCity().trim().equalsIgnoreCase(baseInst.getCity().trim()) == false)
-        return true;
+    String city = instToCheck.getCity().trim();
     
-    if (instToCheck.state.get() != null)
-      if (instToCheck.state.get() != baseInst.state.get())
-        return true;
+    if ((city.length() > 0) && (city.equalsIgnoreCase(baseInst.getCity().trim()) == false))
+      return true;
     
-    if (instToCheck.country.get() != null)
-      if (instToCheck.country.get() != baseInst.country.get())
-        return true;
+    HDT_State state = instToCheck.state.get();
+    
+    if ((state != null) && (state != baseInst.state.get()))
+      return true;
+    
+    HDT_Country country = instToCheck.country.get();
+    
+    if ((country != null) && (country != baseInst.country.get()))
+      return true;
     
     return hasSubInstWithDifferentLocation(instToCheck, baseInst);
   }
@@ -445,10 +399,8 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
   private boolean hasSubInstWithDifferentLocation(HDT_Institution instToCheck, HDT_Institution baseInst)
   {
     for (HDT_Institution subInst : instToCheck.subInstitutions)
-    {
       if (differentLocation(subInst, baseInst)) 
         return true;
-    }
     
     return false;
   }
