@@ -133,6 +133,8 @@ public class ContentsWindow extends HyperDialog
     
     dialogStage.focusedProperty().addListener((observable, oldValue, newValue) ->
     {
+      if (ui.windows.getCyclingFocus()) return;
+      
       if (newValue == null) return;
       if (newValue == false) return;
       
@@ -142,7 +144,7 @@ public class ContentsWindow extends HyperDialog
       ui.windows.push(dialogStage);
     });
     
-    dialogStage.setOnHidden(event -> focusStage(app.getPrimaryStage()));
+    dialogStage.setOnHidden(event -> ui.windows.focusStage(app.getPrimaryStage()));
     
     htContents.setTooltip(5, ButtonAction.baCustom, "Jump to start page in preview window");
     htContents.setTooltip(8, ButtonAction.baCustom, "Jump to end page in preview window");

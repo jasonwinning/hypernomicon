@@ -20,7 +20,7 @@ package org.hypernomicon.querySources;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.Util.nullSwitch;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;

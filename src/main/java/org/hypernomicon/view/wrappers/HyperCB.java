@@ -69,7 +69,7 @@ public class HyperCB implements CommitableWrapper
   private EventHandler<ActionEvent> onAction, innerOnAction;
   public boolean somethingWasTyped, listenForActionEvents = true, dontCreateNewRecord = false;
   
-  public final static HashMap<ComboBox<HyperTableCell>, HyperCB> cbRegistry = new HashMap<>();
+  public static final HashMap<ComboBox<HyperTableCell>, HyperCB> cbRegistry = new HashMap<>();
   
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  

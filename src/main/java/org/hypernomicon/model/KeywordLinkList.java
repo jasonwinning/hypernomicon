@@ -178,7 +178,7 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
   
-  public final static boolean charIsPartOfLink(String text, int ndx, boolean webLink)
+  public static final boolean charIsPartOfLink(String text, int ndx, boolean webLink)
   {
     char c = text.charAt(ndx);
     

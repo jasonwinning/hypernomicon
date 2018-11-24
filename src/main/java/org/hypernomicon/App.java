@@ -123,13 +123,13 @@ public class App extends Application
   public static boolean browserCoreInitialized = false;
   public static String jxBrowserErrMsg = "";
   
-  public Stage getPrimaryStage() { return primaryStage; }
-  public boolean debugging()     { return isDebugging; }
+  public final Stage getPrimaryStage() { return primaryStage; }
+  public final boolean debugging()     { return isDebugging; }
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
    
-  public static void main(String[] args) 
+  public static final void main(String[] args) 
   {                    
     Logger.getLogger("org.apache").setLevel(Level.WARN);    
     
@@ -142,7 +142,7 @@ public class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
   
-  @Override public void init() 
+  @Override public final void init() 
   {
     app = this;
 
@@ -177,7 +177,7 @@ public class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
 
-  public static void initJXBrowser()
+  public static final void initJXBrowser()
   { 
     try
     {
@@ -199,7 +199,7 @@ public class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
 
-  @Override public void start(Stage primaryStage)
+  @Override public final void start(Stage primaryStage)
   {   
     this.primaryStage = primaryStage;
        
@@ -245,7 +245,7 @@ public class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
  
-  private void testUpdatingAllRecords()
+  private final void testUpdatingAllRecords()
   {   
     total = db.persons.size()   + db.institutions.size() + db.investigations.size() + db.debates.size() + 
             db.positions.size() + db.arguments.size()    + db.works.size()          + db.terms.size() + 
@@ -262,7 +262,7 @@ public class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void testUpdatingRecords(HDT_RecordType type)
+  private final void testUpdatingRecords(HDT_RecordType type)
   {
     db.records(type).forEach(record ->
     {      
@@ -295,7 +295,7 @@ public class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
   
-  public boolean initRootLayout() 
+  public final boolean initRootLayout() 
   {
     Application.setUserAgentStylesheet(STYLESHEET_MODENA);
     
@@ -491,7 +491,7 @@ public class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
 
-  private void initScaling(Parent rootLayout)
+  private final void initScaling(Parent rootLayout)
   {
     setFontSize(rootLayout);
     
@@ -506,7 +506,7 @@ public class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
 
-  public void rescale()
+  public final void rescale()
   {   
     scaleNodeForDPI(primaryStage.getScene().getRoot());
     

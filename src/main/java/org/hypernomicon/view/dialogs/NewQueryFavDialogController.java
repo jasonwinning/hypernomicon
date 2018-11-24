@@ -17,9 +17,8 @@
 
 package org.hypernomicon.view.dialogs;
 
-import static org.hypernomicon.util.Util.messageDialog;
-import static org.hypernomicon.util.Util.safeFocus;
-import static org.hypernomicon.util.Util.MessageDialogType.mtError;
+import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;

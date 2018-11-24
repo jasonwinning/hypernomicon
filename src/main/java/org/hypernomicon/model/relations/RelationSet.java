@@ -211,7 +211,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final static void addOrphan(HDT_Base orphan)
+  public static final void addOrphan(HDT_Base orphan)
   {
     Set<RelationSet<? extends HDT_Base, ? extends HDT_Base>> relSets = orphanTypeToRelSets.get(orphan.getType());
     
@@ -227,7 +227,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final static RelationType getRelation(HDT_RecordType subjType, HDT_RecordType objType)
+  public static final RelationType getRelation(HDT_RecordType subjType, HDT_RecordType objType)
   {
     return nullSwitch(typeMappings.get(subjType, objType), RelationType.rtNone);    
   }
@@ -235,7 +235,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final static EnumSet<RelationType> getRelationsForObjType(HDT_RecordType objType)
+  public static final EnumSet<RelationType> getRelationsForObjType(HDT_RecordType objType)
   {
     Collection<RelationType> relTypes = typeMappings.getColumn(objType);    
     return ((relTypes == null) || relTypes.isEmpty()) ? EnumSet.noneOf(RelationType.class) : EnumSet.copyOf(relTypes); 
@@ -244,7 +244,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final static EnumSet<RelationType> getRelationsForSubjType(HDT_RecordType subjType)
+  public static final EnumSet<RelationType> getRelationsForSubjType(HDT_RecordType subjType)
   {
     Collection<RelationType> relTypes = typeMappings.getRow(subjType);    
     return ((relTypes == null) || relTypes.isEmpty()) ? EnumSet.noneOf(RelationType.class) : EnumSet.copyOf(relTypes);  
@@ -800,7 +800,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
     
     private final int code;
     private final String title;
-    private final static HashMap<Integer, RelationType> codeToVal;
+    private static final HashMap<Integer, RelationType> codeToVal;
 
     static
     {
@@ -809,7 +809,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
     }
     
     private RelationType(int code, String title)        { this.code = code; this.title = title; }
-    public final static RelationType codeToVal(int num) { return codeToVal.get(num); }
+    public static final RelationType codeToVal(int num) { return codeToVal.get(num); }
     public final int getCode()                          { return code; }
     public final String getTitle()                      { return title; }
   }
@@ -867,7 +867,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final static RelationSet<? extends HDT_Base, ? extends HDT_Base> createSet(RelationType relType) throws HDB_InternalError
+  public static final RelationSet<? extends HDT_Base, ? extends HDT_Base> createSet(RelationType relType) throws HDB_InternalError
   {
     switch (relType)
     {

@@ -19,7 +19,7 @@ package org.hypernomicon;
 
 import org.hypernomicon.util.VersionNumber;
 
-public class Const
+public final class Const
 {
   public static final double 
   

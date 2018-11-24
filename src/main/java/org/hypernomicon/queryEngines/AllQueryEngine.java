@@ -19,7 +19,7 @@ package org.hypernomicon.queryEngines;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.mtError;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.tabs.QueriesTabController.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;

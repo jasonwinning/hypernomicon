@@ -225,7 +225,7 @@ public class BibManager extends HyperDialog
     toolBar.getItems().remove(btnDelete);         // These are not
     toolBar.getItems().remove(btnPreviewWindow);  // yet supported. (Not sure if the preview button is needed?)
     
-    btnMainWindow.setOnAction(event -> focusStage(app.getPrimaryStage()));
+    btnMainWindow.setOnAction(event -> ui.windows.focusStage(app.getPrimaryStage()));
     btnSync.setOnAction(event -> sync());
     
     btnStop.setOnAction(event -> 
@@ -427,6 +427,8 @@ public class BibManager extends HyperDialog
 
     dialogStage.focusedProperty().addListener((observable, oldValue, newValue) ->
     {
+      if (ui.windows.getCyclingFocus()) return;
+      
       if (newValue == null) return;
       if (newValue == false) return;
       
@@ -438,7 +440,7 @@ public class BibManager extends HyperDialog
   //---------------------------------------------------------------------------  
   //---------------------------------------------------------------------------
 
-    dialogStage.setOnHidden(event -> focusStage(app.getPrimaryStage()));
+    dialogStage.setOnHidden(event -> ui.windows.focusStage(app.getPrimaryStage()));
   }
 
 //---------------------------------------------------------------------------  

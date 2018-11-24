@@ -225,11 +225,11 @@ public class PreviewWindow extends HyperDialog
     
     paneType.setOnMouseClicked(event -> curWrapper().go());
 
-    btnGoToMain.setOnAction(event -> focusStage(app.getPrimaryStage()));
+    btnGoToMain.setOnAction(event -> ui.windows.focusStage(app.getPrimaryStage()));
     btnGoToManager.setOnAction(event -> 
     {
       if (fileManagerDlg.getStage().isShowing())
-        focusStage(fileManagerDlg.getStage());
+        ui.windows.focusStage(fileManagerDlg.getStage());
       else
         fileManagerDlg.showNonmodal();
     });
@@ -446,6 +446,8 @@ public class PreviewWindow extends HyperDialog
     
     dialogStage.focusedProperty().addListener((observable, oldValue, newValue) ->
     {
+      if (ui.windows.getCyclingFocus()) return;
+      
       if ((newValue == null) || (newValue == false)) return;
       
       ui.windows.push(dialogStage);
@@ -455,7 +457,7 @@ public class PreviewWindow extends HyperDialog
     {  
       srcToWrapper.values().forEach(PreviewWrapper::prepareToHide);
       
-      focusStage(app.getPrimaryStage()); 
+      ui.windows.focusStage(app.getPrimaryStage()); 
     });
     
     dialogStage.setOnHidden(event -> srcToWrapper.values().forEach(PreviewWrapper::prepareToShow));
@@ -694,7 +696,7 @@ public class PreviewWindow extends HyperDialog
   public void openContentsWindow()
   {
     if (contentsWindow.getStage().isShowing())
-      focusStage(contentsWindow.getStage());
+      ui.windows.focusStage(contentsWindow.getStage());
     else
       contentsWindow.showNonmodal();
   }

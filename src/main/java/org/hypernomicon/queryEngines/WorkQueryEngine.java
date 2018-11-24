@@ -26,7 +26,7 @@ import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.util.Util.getMediaType;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.QueriesTabController.*;
 
 import java.io.IOException;

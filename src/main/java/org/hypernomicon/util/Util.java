@@ -52,7 +52,6 @@ import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -110,12 +109,12 @@ import javafx.scene.input.DataFormat;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
-import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -1013,6 +1012,18 @@ public class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static final String abbreviate(String text)
+  {
+    text = safeStr(text);
+    
+    if (text.length() < 35) return text;
+    
+    return StringUtils.stripEnd(text.substring(0, 35), " .") + "...";
+  }
+  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static String camelToTitle(String in)
   {
     String out = "";
@@ -1065,7 +1076,7 @@ public class Util
         {
           lastChar = pre.charAt(pre.length() - 1);
           
-          if (Util.convertToEnglishChars(String.valueOf(lastChar)).equals("'"))
+          if (convertToEnglishChars(String.valueOf(lastChar)).equals("'"))
             if (pre.length() > 1)
               if (pre.charAt(pre.length() - 2) != ' ') // don't capitalize letter immediately after apostrophe
                 if (str.charAt(start - 1) != ' ')      // do capitalize letter after an apostrophe plus a space
@@ -1087,9 +1098,9 @@ public class Util
       if (noCaps == false)
       {
         if ((lastChar == ':') || (lastChar == '?') || (lastChar == '/'))
-          word = word.substring(0, 1).toUpperCase() + Util.safeSubstring(word, 1, word.length()).toLowerCase();   
+          word = word.substring(0, 1).toUpperCase() + safeSubstring(word, 1, word.length()).toLowerCase();   
         else if (start == 0)
-          word = word.substring(0, 1).toUpperCase() + Util.safeSubstring(word, 1, word.length()).toLowerCase();
+          word = word.substring(0, 1).toUpperCase() + safeSubstring(word, 1, word.length()).toLowerCase();
         else if ((word.length() == 1) && endsWithDot)
           word = word.substring(0, 1).toUpperCase();
         else 
@@ -1134,7 +1145,7 @@ public class Util
     
     while ((str.length() > start) && (gotStart == false))
     {
-      c = (Util.convertToEnglishChars(str.toUpperCase()).charAt(start));
+      c = (convertToEnglishChars(str.toUpperCase()).charAt(start));
       if ((c >= 'A') && (c <= 'Z'))
         gotStart = true;
       else
@@ -1146,7 +1157,7 @@ public class Util
     
     while (str.length() > end)
     {
-      c = (Util.convertToEnglishChars(str.toUpperCase()).charAt(end));
+      c = (convertToEnglishChars(str.toUpperCase()).charAt(end));
       if ((c < 'A') || (c > 'Z'))
       {
         posObj.setValue(end);
@@ -1522,7 +1533,7 @@ public class Util
 
   public static void readResourceTextFile(String relPath, StringBuilder strBuilder, boolean keepEOLchars) throws IOException
   {
-    Util.assignSB(strBuilder, "");
+    assignSB(strBuilder, "");
     
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(App.class.getResourceAsStream(relPath))))
     {
@@ -1537,21 +1548,6 @@ public class Util
         line = reader.readLine();
       }
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void focusStage(Stage stage)
-  {
-    runDelayedInFXThread(6, 50, event ->
-    {
-      if (ui.windows.getOutermostModality() != Modality.NONE)
-        return;
-      
-      stage.toFront();
-      stage.requestFocus(); // This has to be delayed or else sometimes the wrong window will get focus 
-    });
   }
 
 //---------------------------------------------------------------------------
@@ -1873,7 +1869,7 @@ public class Util
     
     while (it.hasNext())
     {
-      str = Util.ultraTrim(it.next());
+      str = ultraTrim(it.next());
       if (str.length() == 0) it.remove();
     }
     
@@ -1937,15 +1933,7 @@ public class Util
     
     return str;   
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String versionString(double version)
-  {
-    return new DecimalFormat("#0.0######################").format(version);
-  }
-
+  
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

@@ -19,7 +19,7 @@ package org.hypernomicon.model.relations;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.mtError;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.HDT_Base;

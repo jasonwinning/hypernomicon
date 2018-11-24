@@ -69,7 +69,7 @@ public class PDFJSWrapper
   private Browser browser = null, oldBrowser = null;
   private BrowserView browserView = null;
   private static String viewerHTMLStr = null;
-  private final static String basePlaceholder = "<!-- base placeholder -->";
+  private static final String basePlaceholder = "<!-- base placeholder -->";
   private AnchorPane apBrowser = null;
   private Runnable postBrowserLoadCode = null;
   

@@ -19,7 +19,7 @@ package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.Tag.tagListName;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.util.Util.safeStr;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
 

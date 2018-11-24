@@ -6,3 +6,4 @@ sh.exe.stackdump
 .project
 target
 pom2.xml
+*.bak

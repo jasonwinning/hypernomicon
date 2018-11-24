@@ -27,7 +27,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 
 import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
 import static org.hypernomicon.bib.BibData.BibFieldType.*;
-import static org.hypernomicon.util.Util.messageDialog;
+import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 public class BibDataStandalone extends BibData

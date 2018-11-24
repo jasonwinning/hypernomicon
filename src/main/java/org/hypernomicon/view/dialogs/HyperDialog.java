@@ -55,12 +55,12 @@ public abstract class HyperDialog
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
   
-  protected final static <T extends HyperDialog> T create(String loc, String title, boolean resizable)
+  protected static final <T extends HyperDialog> T create(String loc, String title, boolean resizable)
   {
     return createUsingFullPath("view/dialogs/" + loc, title, resizable, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
   }
   
-  protected final static <T extends HyperDialog> T createUsingFullPath(String loc, String title, boolean resizable, StageStyle stageStyle, Modality modality)
+  protected static final <T extends HyperDialog> T createUsingFullPath(String loc, String title, boolean resizable, StageStyle stageStyle, Modality modality)
   {
     FXMLLoader loader = null;
     AnchorPane mainPane = null;

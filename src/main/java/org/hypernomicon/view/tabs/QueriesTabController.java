@@ -1284,7 +1284,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
   @FXML private WebView webView;
 
   private ComboBox<CheckBoxOrCommand> fileBtn = null; 
-  private final static EnumMap<QueryType, QueryEngine<? extends HDT_Base>> typeToEngine = new EnumMap<>(QueryType.class);
+  private static final EnumMap<QueryType, QueryEngine<? extends HDT_Base>> typeToEngine = new EnumMap<>(QueryType.class);
 
   private static boolean noScroll = false;
   private boolean clearingViews = false;  

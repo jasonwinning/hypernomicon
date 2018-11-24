@@ -18,8 +18,8 @@
 package org.hypernomicon.view.dialogs;
 
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.util.Util.messageDialog;
-import static org.hypernomicon.util.Util.MessageDialogType.mtError;
+import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import org.hypernomicon.bib.lib.LibraryWrapper.SyncTask;
 import org.hypernomicon.model.Exceptions.HyperDataException;

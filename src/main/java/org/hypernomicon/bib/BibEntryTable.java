@@ -28,7 +28,6 @@ import java.util.Set;
 import org.hypernomicon.bib.BibData.EntryType;
 import org.hypernomicon.bib.lib.BibEntry;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.util.Util;
 import org.hypernomicon.view.wrappers.HyperTable;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -43,6 +42,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_Record.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
+import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 
@@ -128,11 +128,11 @@ public class BibEntryTable
     
     Comparator<String> cmp = (str1, str2) ->
     {
-      int int1 = Util.parseInt(str1, -1);
+      int int1 = parseInt(str1, -1);
       
       if (int1 >= 0)
       {
-        int int2 = Util.parseInt(str2, -1);
+        int int2 = parseInt(str2, -1);
         
         if (int2 >= 0)
           return int1 - int2;

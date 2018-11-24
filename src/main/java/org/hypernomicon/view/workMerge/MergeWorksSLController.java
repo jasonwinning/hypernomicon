@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view.workMerge;
 
-import static org.hypernomicon.util.Util.deleteGridPaneColumn;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.bib.BibData;
 import org.hypernomicon.bib.BibData.BibFieldEnum;

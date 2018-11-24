@@ -17,8 +17,8 @@
 
 package org.hypernomicon.model.items;
 
-import static org.hypernomicon.model.records.HDT_RecordState.writeBooleanTag;
-import static org.hypernomicon.util.Util.parseBoolean;
+import static org.hypernomicon.model.records.HDT_RecordState.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.LinkedHashMap;
 

@@ -298,7 +298,7 @@ public class FileDownloadUtility
     {
       request =  RequestBuilder.get()
           .setUri(fileURL)
-          .setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:61.0) Gecko/20100101 Firefox/61.0")          
+          .setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:63.0) Gecko/20100101 Firefox/63.0")           
           .build();
     }
     catch (Exception e)

@@ -19,7 +19,7 @@ package org.hypernomicon;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.mtError;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;

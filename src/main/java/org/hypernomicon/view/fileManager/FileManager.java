@@ -808,16 +808,13 @@ public class FileManager extends HyperDialog
     btnRefresh.setOnAction(event -> btnRefreshClick());
     btnRename.setOnAction(event -> rename(null));
     
-    btnMainWindow.setOnAction(event -> focusStage(app.getPrimaryStage()));    
+    btnMainWindow.setOnAction(event -> ui.windows.focusStage(app.getPrimaryStage()));    
     btnPreviewWindow.setOnAction(event -> ui.openPreviewWindow(pvsManager));
     btnPaste.setDisable(true);
     pasteMenuItem.disabled = true;
     
     onShown = () ->
     {
-      if (folderTree.selectedRecord() == null)
-        folderTree.selectRecord(db.folders.getByID(HyperDB.ROOT_FOLDER_ID), -1, false);
-            
       if (shownAlready() == false)
         setDividerPositions();
       
@@ -828,6 +825,8 @@ public class FileManager extends HyperDialog
     
     dialogStage.focusedProperty().addListener((observable, oldValue, newValue) ->
     {
+      if (ui.windows.getCyclingFocus()) return;
+      
       if (newValue == null) return;
       if (newValue == false) return;
       
@@ -836,7 +835,7 @@ public class FileManager extends HyperDialog
       if (needRefresh) refresh();
     });
     
-    dialogStage.setOnHidden(event -> focusStage(app.getPrimaryStage()));
+    dialogStage.setOnHidden(event -> ui.windows.focusStage(app.getPrimaryStage()));
     
     RecordListView.addDefaultMenuItems(recordTable);
     
@@ -1224,9 +1223,12 @@ public class FileManager extends HyperDialog
 //---------------------------------------------------------------------------
 
   public void refresh()
-  {   
+  {                
     if (dialogStage.isShowing() == false) return;
     needRefresh = false;
+    
+    if (folderTree.selectedRecord() == null)
+      folderTree.selectRecord(db.folders.getByID(HyperDB.ROOT_FOLDER_ID), -1, false);
     
     treeView.refresh();    
     

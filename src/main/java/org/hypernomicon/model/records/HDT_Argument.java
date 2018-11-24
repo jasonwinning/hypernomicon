@@ -21,8 +21,8 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-import static org.hypernomicon.util.Util.messageDialog;
-import static org.hypernomicon.util.Util.MessageDialogType.mtError;
+import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
