@@ -41,13 +41,14 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 public class ZoteroItem extends BibEntry implements ZoteroEntity
 {
-  private ZoteroWrapper zWrapper;
+  private final ZoteroWrapper zWrapper;
   private JsonObj jObj, jData;
   private ZoteroItem backupItem = null;
   
   public ZoteroItem(ZoteroWrapper zWrapper, JsonObj jObj, boolean thisIsBackup)
   {    
-    this.thisIsBackup = thisIsBackup;
+    super(thisIsBackup);
+    
     update(jObj, false, false);
     this.zWrapper = zWrapper;
   }
@@ -57,7 +58,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
   public ZoteroItem(ZoteroWrapper zWrapper, EntryType newType)
   {
-    this.thisIsBackup = false;
+    super(false);
     
     this.jObj = new JsonObj();
     this.jData = zWrapper.getTemplate(newType).clone();
@@ -85,13 +86,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
   {
     if (isNewEntry()) return "";
     
-    if (jObj.containsKey("links") == false) return "";    
-    JsonObj obj = jObj.getObj("links");
-    
-    if (obj.containsKey("alternate") == false) return "";    
-    obj = obj.getObj("alternate");
-    
-    return obj.getStrSafe("href");
+    return nullSwitch(jObj.getObj("links"), "", links -> nullSwitch(links.getObj("alternate"), "", alt -> alt.getStrSafe("href")));
   }
 
 //---------------------------------------------------------------------------  
@@ -219,8 +214,8 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     {
       switch (bibFieldEnum)
       {
-        case bfYear : getWork().setYear(newStr); return;
-        case bfDOI  : getWork().setDOI(newStr); return;
+        case bfYear : getWork().setYear   (newStr); return;
+        case bfDOI  : getWork().setDOI    (newStr); return;
         case bfURL  : getWork().setWebLink(newStr); return;
         default     : break;
       }
@@ -338,7 +333,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         case bfURL   : return getWork().getWebLink();
         case bfTitle : return getWork().name();
         
-        default     : break;
+        default      : break;
       }
     }
     
@@ -487,9 +482,9 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         
       case bfMisc : return convertMultiLineStrToStrList(jData.getStrSafe(getFieldKey(bibFieldEnum)), true);
 
-      case bfISBNs : return nullSwitch(matchISBN(jData.getStrSafe(getFieldKey(bibFieldEnum))), Collections.emptyList());
+      case bfISBNs : return matchISBN(jData.getStrSafe(getFieldKey(bibFieldEnum)));
                      
-      case bfISSNs : return nullSwitch(matchISSN(jData.getStrSafe(getFieldKey(bibFieldEnum))), Collections.emptyList());
+      case bfISSNs : return matchISSN(jData.getStrSafe(getFieldKey(bibFieldEnum)));
       
       default : return null;
     }
@@ -519,9 +514,9 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
   public boolean authorsChanged()
   {
-    ArrayList<BibAuthor> authorList1 = new ArrayList<>(), authorList2 = new ArrayList<>(),
-        editorList1 = new ArrayList<>(), editorList2 = new ArrayList<>(),
-        translatorList1 = new ArrayList<>(), translatorList2 = new ArrayList<>();
+    ArrayList<BibAuthor> authorList1     = new ArrayList<>(), authorList2     = new ArrayList<>(),
+                         editorList1     = new ArrayList<>(), editorList2     = new ArrayList<>(),
+                         translatorList1 = new ArrayList<>(), translatorList2 = new ArrayList<>();
 
     getAuthors().getLists(authorList1, editorList1, translatorList1);
     backupItem.getAuthors().getLists(authorList2, editorList2, translatorList2);

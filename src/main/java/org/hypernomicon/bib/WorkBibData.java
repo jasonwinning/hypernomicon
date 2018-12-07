@@ -19,8 +19,6 @@ package org.hypernomicon.bib;
 
 import java.util.List;
 
-import static java.util.Objects.*;
-
 import java.util.ArrayList;
 
 import org.hypernomicon.bib.lib.BibEntry;
@@ -32,7 +30,7 @@ import static org.hypernomicon.util.Util.*;
 
 public class WorkBibData extends BibData
 {
-  private HDT_Work work;
+  private final HDT_Work work;
   
   public WorkBibData(HDT_Work work)
   {
@@ -66,11 +64,7 @@ public class WorkBibData extends BibData
 
   @Override public EntryType getEntryType()
   {
-    BibEntry bibEntry = getBibEntry();
-    
-    if (nonNull(bibEntry)) return bibEntry.getEntryType();
-    
-    return convertWorkTypeToEntryType(work.getWorkTypeValue());
+    return nullSwitch(getBibEntry(), convertWorkTypeToEntryType(work.getWorkTypeValue()), bibEntry -> bibEntry.getEntryType());
   }
   
 //---------------------------------------------------------------------------  
@@ -94,12 +88,10 @@ public class WorkBibData extends BibData
         
       case bfISBNs : work.setISBNs(list); return;
         
-      default     : break;
+      default      : break;
     }
 
-    BibEntry bibEntry = getBibEntry();
-    
-    if (nonNull(bibEntry)) bibEntry.setMultiStr(bibFieldEnum, list);
+    nullSwitch(getBibEntry(), bibEntry -> bibEntry.setMultiStr(bibFieldEnum, list));
   }
 
 //---------------------------------------------------------------------------  
@@ -107,9 +99,7 @@ public class WorkBibData extends BibData
 
   @Override public void setEntryType(EntryType entryType)
   {
-    BibEntry bibEntry = getBibEntry();
-    
-    if (nonNull(bibEntry)) bibEntry.setEntryType(entryType);
+    nullSwitch(getBibEntry(), bibEntry -> bibEntry.setEntryType(entryType));
   }
 
 //---------------------------------------------------------------------------  
@@ -125,9 +115,7 @@ public class WorkBibData extends BibData
       default     : break;
     }
 
-    BibEntry bibEntry = getBibEntry();
-    
-    if (nonNull(bibEntry)) bibEntry.setStr(bibFieldEnum, newStr);
+    nullSwitch(getBibEntry(), bibEntry -> bibEntry.setStr(bibFieldEnum, newStr));
   }
 
 //---------------------------------------------------------------------------  
@@ -140,14 +128,9 @@ public class WorkBibData extends BibData
       case bfTitle : return singletonMutableList(work.name());
       case bfISBNs : return work.getISBNs();
       case bfMisc  : return convertMultiLineStrToStrList(work.getMiscBib(), true);
-      default      : break;
+      
+      default      : return nullSwitch(getBibEntry(), new ArrayList<>(), bibEntry -> bibEntry.getMultiStr(bibFieldEnum));
     }
-
-    BibEntry bibEntry = getBibEntry();
-    
-    if (nonNull(bibEntry)) return bibEntry.getMultiStr(bibFieldEnum);
-    
-    return new ArrayList<>();
   }
 
 //---------------------------------------------------------------------------  
@@ -163,14 +146,8 @@ public class WorkBibData extends BibData
       case bfTitle : return work.name();
       case bfMisc  : return work.getMiscBib();
       
-      default     : break;
+      default      : return nullSwitch(getBibEntry(), "", bibEntry -> bibEntry.getStr(bibFieldEnum));
     }
-    
-    BibEntry bibEntry = getBibEntry();
-    
-    if (nonNull(bibEntry)) return bibEntry.getStr(bibFieldEnum);
-    
-    return "";
   }
 
 //---------------------------------------------------------------------------  

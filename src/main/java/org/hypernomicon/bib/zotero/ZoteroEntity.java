@@ -46,9 +46,8 @@ public interface ZoteroEntity
   {    
     JsonObj subObj = jObj.getObj("data");
     
-    if (subObj.containsKey("itemType"))
-      if (subObj.getStr("itemType").equals("attachment") == false)
-        return new ZoteroItem(zWrapper, jObj, false);
+    if (subObj.getStrSafe("itemType").equals("attachment") == false)
+      return new ZoteroItem(zWrapper, jObj, false);
     
     if (subObj.containsKey("parentCollection"))
       return new ZoteroCollection(jObj);      

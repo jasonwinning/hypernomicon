@@ -265,7 +265,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
            
       RecordListView.addDefaultMenuItems(resultsTable);
       
-      resultsTable.addContextMenuItem(hdtNone, "Remove from query results", (record) ->
+      resultsTable.addContextMenuItem("Remove from query results", HDT_Base.class, record ->
       {
         ArrayList<ResultsRow> rows = new ArrayList<>();
         

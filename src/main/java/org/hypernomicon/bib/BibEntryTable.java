@@ -80,10 +80,10 @@ public class BibEntryTable
   
 //---------------------------------------------------------------------------
   
-  private ObservableList<BibEntryRow> rows;
-  private Map<String, BibEntryRow> keyToRow;
-  private TableView<BibEntryRow> tv;
-  List<BibEntryRowMenuItemSchema> contextMenuSchemata;
+  private final ObservableList<BibEntryRow> rows;
+  private final Map<String, BibEntryRow> keyToRow;
+  private final TableView<BibEntryRow> tv;
+  final List<BibEntryRowMenuItemSchema> contextMenuSchemata;
 
   public void updateKey(String oldKey, String newKey) { keyToRow.put(newKey, keyToRow.remove(oldKey)); }
   public boolean containsKey(String bibEntryKey)      { return keyToRow.containsKey(bibEntryKey); }
@@ -121,10 +121,7 @@ public class BibEntryTable
     tcYear       .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfYear)));
     tcPublishedIn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfContainerTitle)));
     
-    tcTitle.setComparator((str1, str2) ->
-    {
-      return makeSortKeyByType(str1, hdtWork).compareTo(makeSortKeyByType(str2, hdtWork));
-    });
+    tcTitle.setComparator((str1, str2) -> makeSortKeyByType(str1, hdtWork).compareTo(makeSortKeyByType(str2, hdtWork)));
     
     Comparator<String> cmp = (str1, str2) ->
     {
@@ -162,7 +159,7 @@ public class BibEntryTable
 
   public void refresh(Set<? extends BibEntry> entries)
   {
-    for (BibEntry entry : entries)
+    entries.forEach(entry ->
     {
       if (entry.getEntryType() != EntryType.etOther)
         if (keyToRow.containsKey(entry.getEntryKey()) == false)
@@ -171,7 +168,7 @@ public class BibEntryTable
           rows.add(row);
           keyToRow.put(entry.getEntryKey(), row);
         }
-    }
+    });
     
     Iterator<BibEntryRow> it = rows.iterator();
     
@@ -194,7 +191,7 @@ public class BibEntryTable
   {
     clear();
     
-    for (BibEntry entry : entries)
+    entries.forEach(entry ->
     {
       if (entry.getEntryType() != EntryType.etOther)
       {
@@ -202,7 +199,7 @@ public class BibEntryTable
         rows.add(row);
         keyToRow.put(entry.getEntryKey(), row);
       }
-    }
+    });
   }
  
 //---------------------------------------------------------------------------

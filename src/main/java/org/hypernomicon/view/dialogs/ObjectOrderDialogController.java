@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.view.wrappers.HyperTable;
-import org.hypernomicon.view.wrappers.HyperTableColumn;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -63,30 +62,25 @@ public class ObjectOrderDialogController extends HyperDialog
     this.rows = rows;
     tv.getColumns().clear();
     
-    for (HyperTableColumn htCol : ht.getColumns())
+    ht.getColumns().forEach(htCol -> { switch (htCol.getCtrlType())
     {
-      switch (htCol.getCtrlType())
-      {
-        case ctDropDown: case ctDropDownList: case ctEdit: case ctNone:
+      case ctDropDown: case ctDropDownList: case ctEdit: case ctNone:
 
-          TableColumn<HyperTableRow, String> col = new TableColumn<>();
-          
-          col.setText(htCol.getHeader());
-          col.setSortable(false);
-          col.setEditable(false);
-          
-          col.setCellValueFactory(cellData ->
-          {
-            return new SimpleStringProperty(cellData.getValue().getText(htCol.getColNdx()));
-          });
-          
-          tv.getColumns().add(col);
-          tableCols.add(col);
-          
-          break;               
-        default: break;
-      }
-    }
+        TableColumn<HyperTableRow, String> col = new TableColumn<>();
+        
+        col.setText(htCol.getHeader());
+        col.setSortable(false);
+        col.setEditable(false);
+        
+        col.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getText(htCol.getColNdx())));
+        
+        tv.getColumns().add(col);
+        tableCols.add(col);
+        
+        break;
+        
+      default: break;
+    }});
     
     tv.itemsProperty().bindBidirectional(ht.getTV().itemsProperty());
     
@@ -94,9 +88,10 @@ public class ObjectOrderDialogController extends HyperDialog
     
     getStage().setOnHidden(event -> tv.itemsProperty().unbindBidirectional(ht.getTV().itemsProperty()));
     
-    btnMoveUp.setOnAction(event -> moveUp());
-    
+    btnMoveUp  .setOnAction(event -> moveUp  ());    
     btnMoveDown.setOnAction(event -> moveDown());
+    
+    tv.getSelectionModel().clearAndSelect(0);
   }
 
 //---------------------------------------------------------------------------  

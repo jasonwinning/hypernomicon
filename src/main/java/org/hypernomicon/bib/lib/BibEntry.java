@@ -32,7 +32,7 @@ import org.hypernomicon.model.records.HDT_Work;
 
 public abstract class BibEntry extends BibData
 { 
-  protected boolean thisIsBackup;
+  protected final boolean thisIsBackup;
   
   public abstract String getEntryKey();
   public abstract List<String> getCollKeys(boolean deletedOK);
@@ -40,6 +40,8 @@ public abstract class BibEntry extends BibData
   public abstract boolean isNewEntry();
   public abstract String getEntryURL();
 
+  public BibEntry(boolean thisIsBackup) { this.thisIsBackup = thisIsBackup; }
+  
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
@@ -108,8 +110,8 @@ public abstract class BibEntry extends BibData
       if (other.getEntryKey() != null) return false;
     }
     else if (!getEntryKey().equals(other.getEntryKey())) return false;
-    if (thisIsBackup != other.thisIsBackup) return false;
-    return true;
+    
+    return thisIsBackup == other.thisIsBackup;
   }
   
 //---------------------------------------------------------------------------  

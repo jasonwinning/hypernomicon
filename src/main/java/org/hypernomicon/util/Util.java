@@ -59,6 +59,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -453,9 +454,8 @@ public class Util
   public static void searchWorldCatISBN(String isbn)
   {
     List<String> list = BibUtils.matchISBN(isbn);
-    if (list == null) return;
-    
-    openWebLink("http://www.worldcat.org/search?q=bn%3A" + list.get(0) + "&qt=advanced");
+    if (collEmpty(list) == false)
+      openWebLink("http://www.worldcat.org/search?q=bn%3A" + list.get(0) + "&qt=advanced");
   }
   
 //---------------------------------------------------------------------------
@@ -464,9 +464,8 @@ public class Util
   public static void searchDOI(String str)
   {
     String doi = BibUtils.matchDOI(str);    
-    if (doi.length() == 0) return;
-    
-    openWebLink("http://dx.doi.org/" + escapeURL(str, false));
+    if (doi.length() > 0)
+      openWebLink("http://dx.doi.org/" + escapeURL(doi, false));
   }
 
   //---------------------------------------------------------------------------
@@ -1238,6 +1237,8 @@ public class Util
 //---------------------------------------------------------------------------
 
   public static String safeStr(String s)  { return s == null ? "" : s; }
+  
+  public static boolean collEmpty(Collection<?> c) { return c == null ? true : c.isEmpty(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

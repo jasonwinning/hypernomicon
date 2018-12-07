@@ -143,21 +143,21 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
 
       row.itemProperty().addListener((observable, oldValue, newValue) ->
       {
-        row.setContextMenu(nullSwitch(newValue, null, () -> tree.createContextMenu(newValue)));
+        row.setContextMenu(nullSwitch(newValue, null, tree::createContextMenu));
       });
       
       return row;
     });
     
-    tree.addCondContextMenuItem(hdtNone, "Select", 
+    tree.addCondContextMenuItem("Select", HDT_Base.class, 
       record -> (ui.treeSubjRecord != null) && (record != null) && (db.isLoaded()), 
       record -> ui.treeSelect());
     
-    tree.addCondContextMenuItem(hdtNone, "Go to this record", 
+    tree.addCondContextMenuItem("Go to this record", HDT_Base.class, 
       record -> (record != null) && (db.isLoaded()),
       record -> ui.goToRecord(record, false));
     
-    tree.addCondContextMenuItem(hdtNone, "Choose parent to assign", 
+    tree.addCondContextMenuItem("Choose parent to assign", HDT_Base.class, 
       record -> 
       {
         if ((db.isLoaded() == false) || (record == null)) return false;
@@ -165,62 +165,61 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
       },
       this::chooseParent);
 
-    tree.addCondContextMenuItem(hdtNone, "Detach from this parent", 
+    tree.addCondContextMenuItem("Detach from this parent", HDT_Base.class, 
         record -> tree.canDetach(false),
         record -> tree.canDetach(true));
     
-    tree.addCondContextMenuItem(hdtWork, "Launch file...", 
-        record -> (HDT_Work.class.cast(record).canLaunch()) && (db.isLoaded()),
-        record -> HDT_Work.class.cast(record).launch(-1));
+    tree.addCondContextMenuItem("Launch file...", HDT_Work.class, 
+        work -> work.canLaunch() && db.isLoaded(),
+        work -> work.launch(-1));
 
-    tree.addCondContextMenuItem(hdtMiscFile, "Launch file...", 
-        record -> (HDT_MiscFile.class.cast(record).getPath().isEmpty() == false) && (db.isLoaded()),
-        record -> 
+    tree.addCondContextMenuItem("Launch file...", HDT_MiscFile.class, 
+        miscFile -> (miscFile.getPath().isEmpty() == false) && db.isLoaded(),
+        miscFile -> 
         {
-          HDT_MiscFile miscFile = HDT_MiscFile.class.cast(record);
           miscFile.viewNow();
           launchFile(miscFile.getPath().getFilePath()); 
         });
     
-    tree.addCondContextMenuItem(hdtWorkLabel, "Rename...",
-        record -> db.isLoaded(),
+    tree.addCondContextMenuItem("Rename...", HDT_WorkLabel.class,
+        label -> db.isLoaded(),
         this::renameRecord);
     
-    tree.addCondContextMenuItem(hdtGlossary, "Rename...",
-        record -> db.isLoaded(),
+    tree.addCondContextMenuItem("Rename...", HDT_Glossary.class,
+        glossary -> db.isLoaded(),
         this::renameRecord);    
     
-    tree.addCondContextMenuItem(hdtWorkLabel, "New label under this record...",
-        record -> db.isLoaded(),
-        record -> createLabel((HDT_WorkLabel) record));
+    tree.addCondContextMenuItem("New label under this record...", HDT_WorkLabel.class,
+        label -> db.isLoaded(),
+        this::createLabel);
     
-    tree.addCondContextMenuItem(hdtDebate, "New debate under this debate...",
-        record -> db.isLoaded(),
-        record -> createChild(record, rtParentDebateOfDebate));
+    tree.addCondContextMenuItem("New debate under this debate...", HDT_Debate.class,
+        debate -> db.isLoaded(),
+        debate -> createChild(debate, rtParentDebateOfDebate));
 
-    tree.addCondContextMenuItem(hdtDebate, "New position under this debate...",
-        record -> db.isLoaded(),
-        record -> createChild(record, rtDebateOfPosition));
+    tree.addCondContextMenuItem("New position under this debate...", HDT_Debate.class,
+        debate -> db.isLoaded(),
+        debate -> createChild(debate, rtDebateOfPosition));
 
-    tree.addCondContextMenuItem(hdtPosition, "New position under this position...",
-        record -> db.isLoaded(),
-        record -> createChild(record, rtParentPosOfPos));
+    tree.addCondContextMenuItem("New position under this position...", HDT_Position.class,
+        pos -> db.isLoaded(),
+        pos -> createChild(pos, rtParentPosOfPos));
 
-    tree.addCondContextMenuItem(hdtPosition, "New argument under this position...",
-        record -> db.isLoaded(),
-        record -> createChild(record, rtPositionOfArgument));
+    tree.addCondContextMenuItem("New argument under this position...", HDT_Position.class,
+        pos -> db.isLoaded(),
+        pos -> createChild(pos, rtPositionOfArgument));
 
-    tree.addCondContextMenuItem(hdtArgument, "New counterargument under this argument...",
-        record -> db.isLoaded(),
-        record -> createChild(record, rtCounterOfArgument));
+    tree.addCondContextMenuItem("New counterargument under this argument...", HDT_Argument.class,
+        arg -> db.isLoaded(),
+        arg -> createChild(arg, rtCounterOfArgument));
 
-    tree.addCondContextMenuItem(hdtNote, "New note under this note...",
-        record -> db.isLoaded(),
-        record -> createChild(record, rtParentNoteOfNote));
+    tree.addCondContextMenuItem("New note under this note...", HDT_Note.class,
+        note -> db.isLoaded(),
+        note -> createChild(note, rtParentNoteOfNote));
     
-    tree.addCondContextMenuItem(hdtGlossary, "New glossary under this glossary...",
-        record -> db.isLoaded(),
-        record -> createGlossary((HDT_Glossary) record));
+    tree.addCondContextMenuItem("New glossary under this glossary...", HDT_Glossary.class,
+        glossary -> db.isLoaded(),
+        this::createGlossary);
     
     webView.getEngine().titleProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
     {

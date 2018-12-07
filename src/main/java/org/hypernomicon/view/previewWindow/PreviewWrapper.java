@@ -651,9 +651,7 @@ public class PreviewWrapper
 
   public int lowestHilitePage()
   {
-    if ((hilitePages == null) || hilitePages.isEmpty()) return -1;
-    
-    return hilitePages.get(0);
+    return collEmpty(hilitePages) ? -1 : hilitePages.get(0);
   }
   
 //---------------------------------------------------------------------------  
@@ -661,9 +659,7 @@ public class PreviewWrapper
 
   public int highestHilitePage()
   {
-    if ((hilitePages == null) || hilitePages.isEmpty()) return -1;
-    
-    return hilitePages.get(hilitePages.size() - 1);
+    return collEmpty(hilitePages) ? -1 : hilitePages.get(hilitePages.size() - 1);
   }
   
 //---------------------------------------------------------------------------  
@@ -671,7 +667,7 @@ public class PreviewWrapper
 
   public int getPrevHilite(int curPage)
   {
-    if ((hilitePages == null) || hilitePages.isEmpty()) return -1;
+    if (collEmpty(hilitePages)) return -1;
     
     int newPage = -1;
     
@@ -688,7 +684,7 @@ public class PreviewWrapper
 
   public int getNextHilite(int curPage)
   {
-    if ((hilitePages == null) || hilitePages.isEmpty()) return -1;
+    if (collEmpty(hilitePages)) return -1;
     
     int newPage = numPages + 1;
     

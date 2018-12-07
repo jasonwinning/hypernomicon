@@ -279,7 +279,7 @@ public class HyperCB implements CommitableWrapper
       
       if (str.length() > 0)
       {
-        if ((cb.getItems() == null) || (cb.getItems().size() == 0))
+        if (collEmpty(cb.getItems()))
         {
           if (innerOnAction != null) innerOnAction.handle(event); // activates the "Execute" button in the queries hyperTab
           return;

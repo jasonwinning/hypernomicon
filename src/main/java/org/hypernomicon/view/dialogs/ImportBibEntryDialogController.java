@@ -136,7 +136,7 @@ public class ImportBibEntryDialogController extends HyperDialog
   {
     taContents.clear();
     
-    if ((lines == null) || (lines.isEmpty()))
+    if (collEmpty(lines))
     {
       failedToLoad = true;
       return;

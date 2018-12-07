@@ -275,12 +275,12 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     btnFolder.setOnAction(event -> launchFile(folderPath));
     btnBrowse.setOnAction(event -> browseClick());
     
-    htSubnotes.addCondContextMenuItem(hdtNote, "Launch subnote folder", 
-      record -> HDT_Note.class.cast(record).folder.getID() > 0,
-      record -> launchFile(HDT_Note.class.cast(record).folder.get().getPath().getFilePath()));
+    htSubnotes.addCondContextMenuItem("Launch subnote folder", HDT_Note.class, 
+      note -> note.folder.getID() > 0,
+      note -> launchFile(note.folder.get().getPath().getFilePath()));
     
-    htSubnotes.addContextMenuItem(hdtNote, "Go to subnote",
-      record -> ui.goToRecord(record, true));
+    htSubnotes.addContextMenuItem("Go to subnote", HDT_Note.class,
+      note -> ui.goToRecord(note, true));
   }
 
 //---------------------------------------------------------------------------  

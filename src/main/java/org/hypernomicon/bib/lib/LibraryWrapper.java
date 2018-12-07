@@ -20,6 +20,7 @@ package org.hypernomicon.bib.lib;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -72,8 +73,16 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
     public boolean getChanged() { return changed; }
   }
 
-  protected Map<String, BibEntry_T> keyToAllEntry, keyToTrashEntry;
-  protected Map<String, BibCollection_T> keyToColl;
+  public LibraryWrapper()
+  {
+    keyToAllEntry = new HashMap<>();
+    keyToTrashEntry = new HashMap<>();
+    keyToColl = new HashMap<>();
+  }
+  
+  protected final Map<String, BibEntry_T> keyToAllEntry, keyToTrashEntry;
+  protected final Map<String, BibCollection_T> keyToColl;
+  
   protected SyncTask syncTask = null;
   protected HttpUriRequest request = null;
   private KeyChangeHandler keyChangeHndlr;

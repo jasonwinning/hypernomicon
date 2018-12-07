@@ -26,7 +26,7 @@ import javafx.scene.control.ContextMenu;
 
 public class BibEntryRow
 {
-  private BibEntry entry;
+  private final BibEntry entry;
   
   public BibEntryRow(BibEntry entry) { this.entry = entry; }  
   public BibEntry getEntry()         { return entry; }   

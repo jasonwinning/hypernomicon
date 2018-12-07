@@ -206,14 +206,14 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
   {
     RecordListView.addDefaultMenuItems(htArguments);
        
-    htArguments.addContextMenuItem(hdtWork, "Go to work record", 
-      record -> ui.goToRecord(record, true));
+    htArguments.addContextMenuItem("Go to work record", HDT_Work.class, 
+      work -> ui.goToRecord(work, true));
     
-    htArguments.addContextMenuItem(hdtPerson, "Go to person record",
-      record -> ui.goToRecord(record, true));
+    htArguments.addContextMenuItem("Go to person record", HDT_Person.class,
+      person -> ui.goToRecord(person, true));
     
-    htArguments.addContextMenuItem(hdtArgument, "Go to argument record",
-      record -> ui.goToRecord(record, true));
+    htArguments.addContextMenuItem("Go to argument record", HDT_Argument.class,
+      arg -> ui.goToRecord(arg, true));
   }
  
 //---------------------------------------------------------------------------  

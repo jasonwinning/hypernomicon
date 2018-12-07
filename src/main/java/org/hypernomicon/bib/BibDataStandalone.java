@@ -90,14 +90,14 @@ public class BibDataStandalone extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean linkedToWork()                                         { return false; }
-  @Override public HDT_Work getWork()                                             { return null; }
-  @Override public BibAuthors getAuthors()                                        { return authors; }
-  @Override public EntryType getEntryType()                                       { return entryType; }
-  @Override public void setMultiStr(BibFieldEnum bibFieldEnum, List<String> list) { bibFieldEnumToBibField.get(bibFieldEnum).setAll(list); }
-  @Override public void setEntryType(EntryType entryType)                         { this.entryType = entryType; }
-  @Override public void setWorkType(HDT_WorkType workType)                        { this.workType = workType; }
-  @Override public HDT_WorkType getWorkType()                                     { return workType; }
+  @Override public boolean linkedToWork()                                { return false; }
+  @Override public HDT_Work getWork()                                    { return null; }
+  @Override public BibAuthors getAuthors()                               { return authors; }
+  @Override public EntryType getEntryType()                              { return entryType; }
+  @Override public void setMultiStr(BibFieldEnum bfe, List<String> list) { bibFieldEnumToBibField.get(bfe).setAll(list); }
+  @Override public void setEntryType(EntryType entryType)                { this.entryType = entryType; }
+  @Override public void setWorkType(HDT_WorkType workType)               { this.workType = workType; }
+  @Override public HDT_WorkType getWorkType()                            { return workType; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -776,7 +776,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     {
       HDT_Institution inst = (HDT_Institution)record;
       
-      return (inst.subInstitutions.size() > 0) || (inst.parentInst.isNull());
+      return (inst.subInstitutions.size() > 0) || inst.parentInst.isNull();
     };
     
     htPersonInst = new HyperTable(tvPersonDept, 2, true, PREF_KEY_HT_PERSON_INST);
@@ -1000,7 +1000,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
                                                       hdtTerm,     hdtNote,          hdtWork, 
                                                       hdtMiscFile, hdtInvestigation, hdtPerson })
     {
-      htArguments.addContextMenuItem(type, db.getTypeName(type) + " Record...", record -> ui.goToRecord(record, true));
+      htArguments.addContextMenuItem(db.getTypeName(type) + " Record...", type.getRecordClass(), record -> ui.goToRecord(record, true));
     }    
   }
 
@@ -1011,14 +1011,14 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
   {
     RecordListView.addDefaultMenuItems(htWorks);
     
-    htWorks.addContextMenuItem(hdtWork, "Go to work record", record ->
-      ui.goToRecord(record, true));
+    htWorks.addContextMenuItem("Go to work record", HDT_Work.class, 
+      work -> ui.goToRecord(work, true));
     
-    htWorks.addContextMenuItem(hdtMiscFile, "Go to file record", record ->
-      ui.goToRecord(record, true));
+    htWorks.addContextMenuItem("Go to file record", HDT_MiscFile.class, 
+      miscFile -> ui.goToRecord(miscFile, true));
     
-    htWorks.addContextMenuItem(hdtWork, "Assign investigations", record ->
-      showInvSelectDialog(htWorks.getRowByRecord(record)));
+    htWorks.addContextMenuItem("Assign investigations", HDT_Work.class, 
+      work -> showInvSelectDialog(htWorks.getRowByRecord(work)));
   }
 
 //---------------------------------------------------------------------------  

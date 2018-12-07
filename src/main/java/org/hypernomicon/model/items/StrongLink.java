@@ -45,11 +45,11 @@ public class StrongLink
 //---------------------------------------------------------------------------
   
   public HDT_Hub getHub()           { return hub; }
-  public HDT_Note getNote()         { return isNull(noteSpoke)     ? null : (HDT_Note)      noteSpoke    .getSpoke(); }
-  public HDT_Concept getConcept()   { return isNull(conceptSpoke)  ? null : (HDT_Concept)   conceptSpoke .getSpoke(); }
-  public HDT_Debate getDebate()     { return isNull(debateSpoke)   ? null : (HDT_Debate)    debateSpoke  .getSpoke(); }
-  public HDT_Position getPosition() { return isNull(positionSpoke) ? null : (HDT_Position)  positionSpoke.getSpoke(); }
-  public HDT_WorkLabel getLabel()   { return isNull(labelSpoke)    ? null : (HDT_WorkLabel) labelSpoke   .getSpoke(); }
+  public HDT_Note getNote()         { return (HDT_Note     ) nullSwitch(noteSpoke    , null, sp -> sp.getSpoke()); }
+  public HDT_Concept getConcept()   { return (HDT_Concept  ) nullSwitch(conceptSpoke , null, sp -> sp.getSpoke()); }
+  public HDT_Debate getDebate()     { return (HDT_Debate   ) nullSwitch(debateSpoke  , null, sp -> sp.getSpoke()); }
+  public HDT_Position getPosition() { return (HDT_Position ) nullSwitch(positionSpoke, null, sp -> sp.getSpoke()); }
+  public HDT_WorkLabel getLabel()   { return (HDT_WorkLabel) nullSwitch(labelSpoke   , null, sp -> sp.getSpoke()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

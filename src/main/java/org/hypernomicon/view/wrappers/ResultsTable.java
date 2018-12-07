@@ -58,7 +58,7 @@ public class ResultsTable implements RecordListView
   private boolean datesAdded = false;
   public static final ArrayList<ColumnGroup> colGroups = new ArrayList<ColumnGroup>();
   private static ColumnGroup generalGroup;
-  private List<HyperMenuItem> contextMenuItems;
+  private List<HyperMenuItem<? extends HDT_Base>> contextMenuItems;
   
   public TableView<ResultsRow> getTV() { return tv; }
 
@@ -185,37 +185,48 @@ public class ResultsTable implements RecordListView
 
   private ContextMenu createContextMenu(ResultsRow row)
   {
-    boolean visible, noneVisible = true;
+    boolean noneVisible = true;
+    
+    HDT_Base record = row.getRecord();
+    if (record == null) return null;
+
     ContextMenu rowMenu = new ContextMenu();
     
-    final HDT_Base record = row == null ? null : row.getRecord();
-    
-    for (HyperMenuItem hItem : contextMenuItems)
+    for (HyperMenuItem<? extends HDT_Base> hItem : contextMenuItems)
     {
-      MenuItem newItem = new MenuItem(hItem.caption);
-         
-      newItem.setOnAction(event ->
-      {
-        rowMenu.hide();
-        
-        if (record == null) return;
-        hItem.recordHandler.handle(record);
-      });
+      MenuItem newItem = createContextMenuItem(hItem, record, rowMenu);
       
-      rowMenu.getItems().add(newItem);
-      
-      visible = false;
-      
-      if (record != null)
-        if ((record.getType() == hItem.recordType) || (hItem.recordType == hdtNone))
-          visible = (hItem.condRecordHandler.handle(record));
-        
-      newItem.setVisible(visible);
-      if (visible) noneVisible = false;
+      if (newItem.isVisible()) noneVisible = false;      
     }
     
     if (noneVisible) return null;
     return rowMenu;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked")
+  private <HDT_T extends HDT_Base> MenuItem createContextMenuItem(HyperMenuItem<HDT_T> hItem, HDT_Base record, ContextMenu rowMenu)
+  {
+    MenuItem newItem = new MenuItem(hItem.caption);
+    
+    newItem.setOnAction(event ->
+    {
+      rowMenu.hide();
+      hItem.recordHandler.handle((HDT_T) record);
+    });
+    
+    rowMenu.getItems().add(newItem);
+    
+    boolean visible = false;
+    
+    if ((record.getType() == hItem.recordType) || (hItem.recordType == hdtNone))
+      visible = (hItem.condRecordHandler.handle((HDT_T) record));
+      
+    newItem.setVisible(visible);
+    
+    return newItem;
   }
 
 //---------------------------------------------------------------------------
@@ -388,20 +399,20 @@ public class ResultsTable implements RecordListView
 //---------------------------------------------------------------------------
 //--------------------------------------------------------------------------- 
   
-  @Override public HyperMenuItem addContextMenuItem(HDT_RecordType recordType, String caption, RecordListView.RecordHandler handler)
+  @Override public <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addContextMenuItem(String caption, Class<HDT_T> klass, RecordHandler<HDT_T> handler)
   {
-    return addCondContextMenuItem(recordType, caption, record -> true, handler);
+    return addCondContextMenuItem(caption, klass, record -> true, handler);
   }
 
 //---------------------------------------------------------------------------
 //--------------------------------------------------------------------------- 
 
-  @Override public HyperMenuItem addCondContextMenuItem(HDT_RecordType recordType, String caption, RecordListView.CondRecordHandler condHandler, RecordListView.RecordHandler handler)
+  @Override public <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addCondContextMenuItem(String caption, Class<HDT_T> klass, CondRecordHandler<HDT_T> condHandler, RecordHandler<HDT_T> handler)
   {
-    HyperMenuItem mnu;
+    HyperMenuItem<HDT_T> mnu;
        
-    mnu = new HyperMenuItem(caption);
-    mnu.recordType = recordType;
+    mnu = new HyperMenuItem<>(caption);
+    mnu.recordType = HDT_RecordType.typeByRecordClass(klass);
     mnu.condRecordHandler = condHandler;
     mnu.recordHandler = handler;
     

@@ -35,7 +35,7 @@ import org.hypernomicon.util.SplitString;
 
 public class BibAuthorsStandalone extends BibAuthors
 {
-  private EnumMap<AuthorType, List<BibAuthor>> authors = new EnumMap<>(AuthorType.class);
+  private final EnumMap<AuthorType, List<BibAuthor>> authors = new EnumMap<>(AuthorType.class);
   private String oneLiner; // Sometimes all the authors appear in one line, in various formats and with various delimiting characters
   
   public BibAuthorsStandalone()  

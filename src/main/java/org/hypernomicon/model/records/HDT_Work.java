@@ -103,7 +103,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   public String getBibEntryKey() { return getBibEntryKeyString(); }
   public String getMiscBib()     { return getTagString(tagMiscBib); }
   public String getDOI()         { return getTagString(tagDOI); }
-  public List<String> getISBNs() { return nullSwitch(BibUtils.matchISBN(getTagString(tagISBN)), Collections.emptyList()); }
+  public List<String> getISBNs() { return BibUtils.matchISBN(getTagString(tagISBN)); }
   public String getWebLink()     { return getTagString(tagWebLink); }
   public Authors getAuthors()    { return authors; }
   public int getStartPageNum()   { return workFiles.isEmpty() ? -1 : getStartPageNum(workFiles.get(0)); }
@@ -425,17 +425,8 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   {   
     String isbnStr = "";
     List<String> allIsbns = new ArrayList<>();
-    
-    list.forEach(isbn ->
-    {
-      List<String> isbns = BibUtils.matchISBN(isbn);
-      if (isbns != null)
-      {
-        for (String realIsbn : isbns)
-          if (allIsbns.contains(realIsbn) == false)
-            allIsbns.add(realIsbn);
-      }
-    });
+        
+    list.forEach(isbn -> BibUtils.matchISBN(isbn, allIsbns));
     
     boolean unequal = false;
     List<String> curISBNs = getISBNs();

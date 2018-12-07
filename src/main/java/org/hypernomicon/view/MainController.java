@@ -1784,47 +1784,36 @@ public final class MainController
 
   public final void initPositionContextMenu(HyperTable ht)
   {
-    ht.addCondContextMenuItem(hdtPosition, "Launch work file", 
-      record -> (((HDT_Position)record).getLaunchableWork() != null),
-      
-      record ->
+    ht.addCondContextMenuItem("Launch work file", HDT_Position.class, 
+      pos -> pos.getLaunchableWork() != null,      
+      pos ->
       {
-        PositionSource ps = ((HDT_Position)record).getLaunchableWork();
+        PositionSource ps = pos.getLaunchableWork();
         ps.work.launch(-1);
       });
     
-    ht.addCondContextMenuItem(hdtPosition, "Go to work record", 
-      record -> (((HDT_Position)record).getWork() != null),      
-      record ->
+    ht.addCondContextMenuItem("Go to work record", HDT_Position.class, 
+      pos -> pos.getWork() != null,      
+      pos ->
       {
-        HDT_Position position = (HDT_Position)record;
-                    
-        PositionSource ps = nullSwitch(position.getLaunchableWork(), position.getWork());        
+        PositionSource ps = nullSwitch(pos.getLaunchableWork(), pos.getWork());        
         goToRecord(ps.work, true);
       });
     
-    ht.addCondContextMenuItem(hdtPosition, "Go to person record",
-      record -> HDT_Position.class.cast(record).getWorkWithAuthor() != null,    
-      record ->
-      {
-        HDT_Position position = (HDT_Position)record;
-        PositionSource ps = position.getWorkWithAuthor();
-        if (ps != null)
-          goToRecord(ps.author, true);
-      });
+    ht.addCondContextMenuItem("Go to person record", HDT_Position.class,
+      pos -> pos.getWorkWithAuthor() != null,    
+      pos -> goToRecord(pos.getWorkWithAuthor().author, true));
         
-    ht.addCondContextMenuItem(hdtPosition, "Go to argument record", 
-      record -> HDT_Position.class.cast(record).arguments.size() > 0,
-      record ->
+    ht.addCondContextMenuItem("Go to argument record", HDT_Position.class, 
+      pos -> pos.arguments.size() > 0,
+      pos ->
       {
-        HDT_Position position = (HDT_Position)record;
-        
-        PositionSource ps = nullSwitch(position.getLaunchableWork(), nullSwitch(position.getWork(), position.getArgument()));        
+        PositionSource ps = nullSwitch(pos.getLaunchableWork(), nullSwitch(pos.getWork(), pos.getArgument()));        
         goToRecord(ps.argument, true);
       });
     
-    ht.addContextMenuItem(hdtPosition, "Go to position record",
-      record -> goToRecord(record, true));
+    ht.addContextMenuItem("Go to position record", HDT_Position.class,
+      pos -> goToRecord(pos, true));
   }
    
 //---------------------------------------------------------------------------  
@@ -2159,35 +2148,12 @@ public final class MainController
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  public final TabEnum activeTab()
-  {
-    if (viewSequence.isEmpty()) return personTab;
-    return viewSequence.curTabEnum();
-  }
-  
-  public final HyperTab<? extends HDT_Base, ? extends HDT_Base> currentTab()
-  {
-    if (viewSequence.isEmpty()) return null;
-    return viewSequence.curHyperTab();
-  }
-  
-  public final HDT_RecordType activeType()
-  {
-    if (viewSequence.isEmpty()) return hdtPerson;
-    return viewSequence.curHyperView().getTabRecordType();
-  }
-  
-  public final HDT_Base activeRecord()
-  {
-    if (viewSequence.isEmpty()) return null;
-    return currentTab().activeRecord();
-  }
-  
-  public final HDT_Base viewRecord()
-  {
-    if (viewSequence.isEmpty()) return null;
-    return currentTab().viewRecord();
-  }
+  public final TabEnum activeTab()                       { return viewSequence.isEmpty() ? personTab : viewSequence.curTabEnum(); }  
+  public final HyperTab<? extends HDT_Base, 
+                        ? extends HDT_Base> currentTab() { return viewSequence.isEmpty() ? null : viewSequence.curHyperTab(); }
+  public final HDT_RecordType activeType()               { return viewSequence.isEmpty() ? hdtPerson : viewSequence.curHyperView().getTabRecordType(); }  
+  public final HDT_Base activeRecord()                   { return viewSequence.isEmpty() ? null : currentTab().activeRecord(); }
+  public final HDT_Base viewRecord()                     { return viewSequence.isEmpty() ? null : currentTab().viewRecord(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -2291,7 +2257,8 @@ public final class MainController
     if (HyperTab.getTabEnumByRecordType(record.getType()) == personTab)
       if (record.getType() != hdtPerson) return;
     
-    windows.focusStage(primaryStage());
+    if (windows.getOutermostStage() != primaryStage())
+      windows.focusStage(primaryStage());
     
     if (save && cantSaveRecord(true)) return;
 

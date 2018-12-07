@@ -467,6 +467,7 @@ public class BibManager extends HyperDialog
     {
       messageDialog("You must select an entry type.", mtWarning);
       safeFocus(cbNewType);
+      return;
     }
     
     HDT_Work work = workRecordToAssign.get();
@@ -538,19 +539,15 @@ public class BibManager extends HyperDialog
     if (row == null)
       return Collections.emptySet();
     
-    Set<? extends BibEntry> view;
-    
     switch (row.getType())
     {
-      case bctAll:      view = libraryWrapper.getNonTrashEntries(); break;
-      case bctTrash:    view = libraryWrapper.getTrash(); break;
-      case bctUser:     view = libraryWrapper.getCollectionEntries(row.getKey()); break;          
-      case bctUnsorted: view = libraryWrapper.getUnsorted(); break;
+      case bctAll:      return libraryWrapper.getNonTrashEntries();
+      case bctTrash:    return libraryWrapper.getTrash();
+      case bctUser:     return libraryWrapper.getCollectionEntries(row.getKey());          
+      case bctUnsorted: return libraryWrapper.getUnsorted();
         
-      default:          view = Collections   .emptySet(); break;
+      default:          return Collections   .emptySet();
     }
-    
-    return view;
   }
   
 //---------------------------------------------------------------------------  
@@ -569,10 +566,8 @@ public class BibManager extends HyperDialog
       entryTable.selectKey(key);
       return;
     }
-       
-    BibEntry entry = libraryWrapper.getEntryByKey(key);
-    
-    if (libraryWrapper.getTrash().contains(entry))
+           
+    if (libraryWrapper.getTrash().contains(libraryWrapper.getEntryByKey(key)))
       collTree.selectTrash();
     else
       collTree.selectAllEntries();
@@ -591,15 +586,8 @@ public class BibManager extends HyperDialog
     updateRightPane();
     
     BibEntryRow row = tableView.getSelectionModel().getSelectedItem();
-    
-    if (row != null)
-      if (row.getWork() == null)
-      {
-        btnSelect.setDisable(false);
-        return;
-      }
-    
-    btnSelect.setDisable(true);
+
+    btnSelect.setDisable((row == null) || (row.getWork() != null));
   }
  
 //---------------------------------------------------------------------------  

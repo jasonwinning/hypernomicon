@@ -43,10 +43,10 @@ public class PathInfo
   
 //---------------------------------------------------------------------------
 
-  private HDT_Folder parentFolder;
-  private HyperPath hyperPath;
-  private FileKind fileKind;
-  private FilePath filePath;
+  private final HDT_Folder parentFolder;
+  private final HyperPath hyperPath;
+  private final FileKind fileKind;
+  private final FilePath filePath;
 
   public HDT_Folder getParentFolder() { return parentFolder; }
   public HyperPath getHyperPath()     { return hyperPath; }
@@ -76,25 +76,48 @@ public class PathInfo
          
       Set<HyperPath> set = db.filenameMap.get(filePath.getNameOnly().toString());
       
-      if (set != null)      
-        for (HyperPath setHyperPath : set)
-        {          
-          if (parentFolder == setHyperPath.getParentFolder())
+      if (set != null) for (HyperPath setHyperPath : set)
+      {          
+        if (parentFolder == setHyperPath.getParentFolder())
+        {
+          switch (setHyperPath.getRecordType())
           {
-            hyperPath = setHyperPath;
-            
-            switch (hyperPath.getRecordType())
-            {
-              case hdtPerson : fileKind = fkPicture; return;
-              case hdtFolder : fileKind = fkFolderRecord; return;
-              case hdtWorkFile : case hdtMiscFile : fileKind = fkFileRecord; return;
-              case hdtNone : break;
-                
-              default : messageDialog("Internal error #68754", mtError);  return;
-            }
+            case hdtPerson : 
+              
+              hyperPath = setHyperPath; 
+              fileKind = fkPicture; 
+              return;
+              
+            case hdtFolder : 
+              
+              hyperPath = setHyperPath; 
+              fileKind = fkFolderRecord; 
+              return;
+              
+            case hdtWorkFile : case hdtMiscFile : 
+              
+              hyperPath = setHyperPath; 
+              fileKind = fkFileRecord; 
+              return;
+              
+            case hdtNone : 
+              
+              break;
+              
+            default : 
+              
+              hyperPath = null; 
+              fileKind = fkUnknown; 
+              messageDialog("Internal error #68754", mtError); 
+              return;
           }
         }
+      }
     }
+    else
+      parentFolder = null;
+    
+    hyperPath = null;
     
     if (filePath.exists() == false)
       fileKind = fkUnknown;

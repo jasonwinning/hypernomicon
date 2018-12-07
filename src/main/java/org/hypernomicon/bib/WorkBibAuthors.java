@@ -24,7 +24,7 @@ import org.hypernomicon.model.records.HDT_Work;
 
 public class WorkBibAuthors extends BibAuthors
 {
-  private HDT_Work work;
+  private final HDT_Work work;
   
   public WorkBibAuthors(HDT_Work work) { this.work = work; }
   

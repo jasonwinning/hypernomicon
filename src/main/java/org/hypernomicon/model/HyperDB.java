@@ -1598,11 +1598,11 @@ public final class HyperDB
 
   private void addTag(String tagString, Tag tag, String tagHeader) throws HDB_InternalError
   {
-    addTag(tagString, tag, tagHeader, null, null);
+    addTag(tagString, tag, tagHeader, null);
   }
   
-  private <HDT_T extends HDT_Base> HyperDataset<HDT_T>.CoreAccessor addTag(String tagStr, Tag tag, String tagHeader, Class<HDT_T> klass, HDT_RecordType type) throws HDB_InternalError
-  {
+  private <HDT_T extends HDT_Base> HyperDataset<HDT_T>.CoreAccessor addTag(String tagStr, Tag tag, String tagHeader, Class<HDT_T> klass) throws HDB_InternalError
+  { 
     int hashCode = Math.abs(stringHash(tagStr));
     if (tagToNum.containsValue(hashCode))
       throw new HDB_InternalError(99215, "Duplicate tag hash codes.");
@@ -1611,7 +1611,9 @@ public final class HyperDB
     tagToNum.put(tag, hashCode);    
     tagToHeader.put(tag, tagHeader);
     
-    if ((klass == null) || (type == null)) return null;
+    if (klass == null) return null;
+    
+    HDT_RecordType type = HDT_RecordType.typeByRecordClass(klass);
     
     typeToTagStr.put(type, tagStr);
     typeToTag.put(type, tag);
@@ -1636,34 +1638,34 @@ public final class HyperDB
     
     try
     {      
-      persons          = addTag("person",             tagPerson,          "Person",                    HDT_Person         .class, hdtPerson); 
-      personStatuses   = addTag("person_status",      tagPersonStatus,    "Status",                    HDT_PersonStatus   .class, hdtPersonStatus); 
-      institutions     = addTag("institution",        tagInstitution,     "Institution",               HDT_Institution    .class, hdtInstitution);
-      institutionTypes = addTag("institution_type",   tagInstitutionType, "Institution Type",          HDT_InstitutionType.class, hdtInstitutionType);
-      states           = addTag("state",              tagState,           "State",                     HDT_State          .class, hdtState); 
-      countries        = addTag("country",            tagCountry,         "Country",                   HDT_Country        .class, hdtCountry); 
-      ranks            = addTag("rank",               tagRank,            "Rank",                      HDT_Rank           .class, hdtRank); 
-      investigations   = addTag("investigation",      tagInvestigation,   "Investigation",             HDT_Investigation  .class, hdtInvestigation); 
-      debates          = addTag("debate",             tagDebate,          "Problem/Debate",            HDT_Debate         .class, hdtDebate); 
-      arguments        = addTag("argument",           tagArgument,        "Argument",                  HDT_Argument       .class, hdtArgument); 
-      terms            = addTag("term",               tagTerm,            "Term",                      HDT_Term           .class, hdtTerm); 
-      concepts         = addTag("concept",            tagConcept,         "Concept",                   HDT_Concept        .class, hdtConcept);
-      works            = addTag("work",               tagWork,            "Work",                      HDT_Work           .class, hdtWork); 
-      workTypes        = addTag("work_type",          tagWorkType,        "Type of Work",              HDT_WorkType       .class, hdtWorkType); 
-      workLabels       = addTag("work_label",         tagWorkLabel,       "Work Label",                HDT_WorkLabel      .class, hdtWorkLabel); 
-      fields           = addTag("field",              tagField,           "Field",                     HDT_Field          .class, hdtField); 
-      subfields        = addTag("subfield",           tagSubfield,        "Subfield",                  HDT_Subfield       .class, hdtSubfield); 
-      positions        = addTag("position",           tagPosition,        "Position",                  HDT_Position       .class, hdtPosition); 
-      positionVerdicts = addTag("position_verdict",   tagPositionVerdict, "Conclusion about Position", HDT_PositionVerdict.class, hdtPositionVerdict);
-      argumentVerdicts = addTag("argument_verdict",   tagArgumentVerdict, "Conclusion about Argument", HDT_ArgumentVerdict.class, hdtArgumentVerdict);
-      miscFiles        = addTag("misc_file",          tagMiscFile,        "Misc. File",                HDT_MiscFile       .class, hdtMiscFile); 
-      workFiles        = addTag("work_file",          tagWorkFile,        "Work File",                 HDT_WorkFile       .class, hdtWorkFile);
-      folders          = addTag("folder",             tagFolder,          "Folder",                    HDT_Folder         .class, hdtFolder);
-      notes            = addTag("note",               tagNote,            "Note",                      HDT_Note           .class, hdtNote); 
-      glossaries       = addTag("glossary",           tagGlossary,        "Glossary",                  HDT_Glossary       .class, hdtGlossary); 
-      hubs             = addTag("hub",                tagHub,             "Record Hub",                HDT_Hub            .class, hdtHub); 
-      personGroups     = addTag("person_group",       tagPersonGroup,     "Person Group",              HDT_PersonGroup    .class, hdtPersonGroup); 
-      fileTypes        = addTag("file_type",          tagFileType,        "File Type",                 HDT_FileType       .class, hdtFileType);
+      persons          = addTag("person",             tagPerson,          "Person",                    HDT_Person         .class);
+      personStatuses   = addTag("person_status",      tagPersonStatus,    "Status",                    HDT_PersonStatus   .class);
+      institutions     = addTag("institution",        tagInstitution,     "Institution",               HDT_Institution    .class);
+      institutionTypes = addTag("institution_type",   tagInstitutionType, "Institution Type",          HDT_InstitutionType.class);
+      states           = addTag("state",              tagState,           "State",                     HDT_State          .class);
+      countries        = addTag("country",            tagCountry,         "Country",                   HDT_Country        .class);
+      ranks            = addTag("rank",               tagRank,            "Rank",                      HDT_Rank           .class);
+      investigations   = addTag("investigation",      tagInvestigation,   "Investigation",             HDT_Investigation  .class);
+      debates          = addTag("debate",             tagDebate,          "Problem/Debate",            HDT_Debate         .class);
+      arguments        = addTag("argument",           tagArgument,        "Argument",                  HDT_Argument       .class);
+      terms            = addTag("term",               tagTerm,            "Term",                      HDT_Term           .class);
+      concepts         = addTag("concept",            tagConcept,         "Concept",                   HDT_Concept        .class);
+      works            = addTag("work",               tagWork,            "Work",                      HDT_Work           .class);
+      workTypes        = addTag("work_type",          tagWorkType,        "Type of Work",              HDT_WorkType       .class);
+      workLabels       = addTag("work_label",         tagWorkLabel,       "Work Label",                HDT_WorkLabel      .class);
+      fields           = addTag("field",              tagField,           "Field",                     HDT_Field          .class);
+      subfields        = addTag("subfield",           tagSubfield,        "Subfield",                  HDT_Subfield       .class);
+      positions        = addTag("position",           tagPosition,        "Position",                  HDT_Position       .class);
+      positionVerdicts = addTag("position_verdict",   tagPositionVerdict, "Conclusion about Position", HDT_PositionVerdict.class);
+      argumentVerdicts = addTag("argument_verdict",   tagArgumentVerdict, "Conclusion about Argument", HDT_ArgumentVerdict.class);
+      miscFiles        = addTag("misc_file",          tagMiscFile,        "Misc. File",                HDT_MiscFile       .class);
+      workFiles        = addTag("work_file",          tagWorkFile,        "Work File",                 HDT_WorkFile       .class);
+      folders          = addTag("folder",             tagFolder,          "Folder",                    HDT_Folder         .class);
+      notes            = addTag("note",               tagNote,            "Note",                      HDT_Note           .class);
+      glossaries       = addTag("glossary",           tagGlossary,        "Glossary",                  HDT_Glossary       .class);
+      hubs             = addTag("hub",                tagHub,             "Record Hub",                HDT_Hub            .class);
+      personGroups     = addTag("person_group",       tagPersonGroup,     "Person Group",              HDT_PersonGroup    .class);
+      fileTypes        = addTag("file_type",          tagFileType,        "File Type",                 HDT_FileType       .class);
       
                          addTag("id",                 tagID,              "Record ID");
                          addTag("type",               tagType,            "Record Type");
@@ -1908,14 +1910,14 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unused")
-  private void addTernaryItem    (HDT_RecordType type,                       Tag... tags) throws HDB_InternalError { addItem(type, hdcTernary, rtNone, tags); }  
+  private void addTernaryItem    (HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcTernary      , rtNone, tags); }  
   
-  private void addBooleanItem    (HDT_RecordType type,                       Tag... tags) throws HDB_InternalError { addItem(type, hdcBoolean, rtNone, tags); }
-  private void addPointerMulti   (HDT_RecordType type, RelationType relType, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerMulti, relType, tags); }
-  private void addPointerSingle  (HDT_RecordType type, RelationType relType, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerSingle, relType, tags); }
-  private void addStringItem     (HDT_RecordType type,                       Tag... tags) throws HDB_InternalError { addItem(type, hdcString, rtNone, tags); }
-  private void addPathItem       (HDT_RecordType type, RelationType relType, Tag... tags) throws HDB_InternalError { addItem(type, hdcPath, relType, tags); }
-  private void addConnectorItem  (HDT_RecordType type,                       Tag... tags) throws HDB_InternalError { addItem(type, hdcConnector, rtNone, tags); }
+  private void addBooleanItem    (HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcBoolean      , rtNone, tags); }
+  private void addPointerMulti   (HDT_RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerMulti , rt    , tags); }
+  private void addPointerSingle  (HDT_RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerSingle, rt    , tags); }
+  private void addStringItem     (HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcString       , rtNone, tags); }
+  private void addPathItem       (HDT_RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPath         , rt    , tags); }
+  private void addConnectorItem  (HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcConnector    , rtNone, tags); }
   
   private void addBibEntryKeyItem() throws HDB_InternalError { addItem(hdtWork,   hdcBibEntryKey, rtNone,         tagBibEntryKey); }
   private void addAuthorsItem    () throws HDB_InternalError { addItem(hdtWork,   hdcAuthors,     rtAuthorOfWork, tagAuthor); }
@@ -1972,16 +1974,16 @@ public final class HyperDB
  
   public static enum Tag
   {
-    tagNone,          tagPerson,        tagPersonStatus,  tagInstitution,     tagInstitutionType,    tagState,        tagCountry,      tagRank,        
-    tagInvestigation, tagDebate,        tagArgument,      tagTerm,            tagConcept,            tagWork,         tagWorkType,     tagWorkLabel,  
-    tagField,         tagSubfield,      tagPosition,      tagPositionVerdict, tagArgumentVerdict,    tagMiscFile,     tagWorkFile,     tagNote,
-    tagGlossary,      tagPersonGroup,   tagFileType,      tagID,              tagType,               tagSortKey,      tagDOI,          tagISBN,
-    tagSearchKey,     tagRecord,        tagFirstName,     tagLastName,        tagWebLink,            tagORCID,        tagPicture,      tagPictureCrop,
-    tagWhyFamous,     tagName,          tagCity,          tagDescription,     tagTitle,              tagFileName,     tagYear,         tagMiscBib, 
-    tagAuthor,        tagInFileName,    tagEditor,        tagTranslator,      tagAnnotated,          tagStartPageNum, tagEndPageNum,   tagBibEntryKey,
-    tagComments,      tagLargerDebate,  tagListName,      tagCounterargument, tagDefinition,         tagText,         tagActive,       tagLargerPosition,
-    tagParentNote,    tagFolder,        tagLargerWork,    tagParentLabel,     tagParentGlossary,     tagParentGroup,  tagParentFolder, tagCreationDate,
-    tagModifiedDate,  tagViewDate,      tagDisplayRecord, tagKeyWork,         tagLinkedRecord,       tagParentInst,   tagHub;
+    tagNone,          tagPerson,       tagPersonStatus,  tagInstitution,     tagInstitutionType, tagState,        tagCountry,      tagRank,        
+    tagInvestigation, tagDebate,       tagArgument,      tagTerm,            tagConcept,         tagWork,         tagWorkType,     tagWorkLabel,  
+    tagField,         tagSubfield,     tagPosition,      tagPositionVerdict, tagArgumentVerdict, tagMiscFile,     tagWorkFile,     tagNote,
+    tagGlossary,      tagPersonGroup,  tagFileType,      tagID,              tagType,            tagSortKey,      tagDOI,          tagISBN,
+    tagSearchKey,     tagRecord,       tagFirstName,     tagLastName,        tagWebLink,         tagORCID,        tagPicture,      tagPictureCrop,
+    tagWhyFamous,     tagName,         tagCity,          tagDescription,     tagTitle,           tagFileName,     tagYear,         tagMiscBib, 
+    tagAuthor,        tagInFileName,   tagEditor,        tagTranslator,      tagAnnotated,       tagStartPageNum, tagEndPageNum,   tagBibEntryKey,
+    tagComments,      tagLargerDebate, tagListName,      tagCounterargument, tagDefinition,      tagText,         tagActive,       tagLargerPosition,
+    tagParentNote,    tagFolder,       tagLargerWork,    tagParentLabel,     tagParentGlossary,  tagParentGroup,  tagParentFolder, tagCreationDate,
+    tagModifiedDate,  tagViewDate,     tagDisplayRecord, tagKeyWork,         tagLinkedRecord,    tagParentInst,   tagHub;
     
     static EnumHashBiMap<Tag, Integer> tagToNum = EnumHashBiMap.create(Tag.class);    
     

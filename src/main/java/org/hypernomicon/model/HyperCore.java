@@ -27,7 +27,7 @@ import java.util.Map.Entry;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.records.HDT_Base;
 
-public class HyperCore<HDT_DT extends HDT_Base>
+public final class HyperCore<HDT_DT extends HDT_Base>
 {
   
 //---------------------------------------------------------------------------
@@ -43,33 +43,33 @@ public class HyperCore<HDT_DT extends HDT_Base>
 
 //---------------------------------------------------------------------------
     
-    @Override public final int hashCode()
+    @Override public int hashCode()
     {
       return 31 * (31 + id) + (key == null ? 0 : key.hashCode());
     }
     
 //---------------------------------------------------------------------------    
     
-    @Override @SuppressWarnings("unchecked") public final KeyIDpair clone() 
+    @Override @SuppressWarnings("unchecked") public KeyIDpair clone() 
     { 
       try { return (KeyIDpair) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }
     }
 
 //---------------------------------------------------------------------------
     
-    @Override @SuppressWarnings("unchecked") public final boolean equals(Object obj)
+    @Override @SuppressWarnings("unchecked") public boolean equals(Object obj)
     {
       if (this == obj) return true;
       if (obj == null) return false;
       if (getClass() != obj.getClass()) return false;
       
       KeyIDpair otherPair = (KeyIDpair)obj;
-      return (otherPair.id == id) && (otherPair.key.equals(key));
+      return (otherPair.id == id) && otherPair.key.equals(key);
     }
 
 //---------------------------------------------------------------------------      
     
-    @Override public final int compareTo(KeyIDpair otherPair)
+    @Override public int compareTo(KeyIDpair otherPair)
     {
       int result = key.compareTo(otherPair.key);        
       return result != 0 ? result : id - otherPair.id;
@@ -79,10 +79,10 @@ public class HyperCore<HDT_DT extends HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
      
-  private ArrayList<KeyIDpair> sortedKeys;
-  private ArrayList<Integer> sortedIDs;
-  private HashMap<Integer, String> idToKey;
-  private HashMap<Integer, HDT_DT> idToRecord;
+  private final ArrayList<KeyIDpair> sortedKeys = new ArrayList<KeyIDpair>();
+  private final ArrayList<Integer> sortedIDs = new ArrayList<Integer>();
+  private final HashMap<Integer, String> idToKey = new HashMap<Integer, String>();
+  private final HashMap<Integer, HDT_DT> idToRecord = new HashMap<Integer, HDT_DT>();
   
   int idCount()                { return sortedIDs.size(); }
   String getKeyByID(int id)    { return idToKey.get(id); }
@@ -104,17 +104,6 @@ public class HyperCore<HDT_DT extends HDT_Base>
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-     
-  HyperCore()
-  {
-    sortedKeys = new ArrayList<KeyIDpair>();
-    sortedIDs = new ArrayList<Integer>();
-    idToKey = new HashMap<Integer, String>();
-    idToRecord = new HashMap<Integer, HDT_DT>();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   void changeRecordID(int oldID, int newID)
   {
@@ -130,16 +119,13 @@ public class HyperCore<HDT_DT extends HDT_Base>
 
   void resolvePointers() throws HDB_InternalError
   {
-    HDT_DT record;
-    int id;
-
     Iterator<Entry<Integer, HDT_DT>> it = idToRecord.entrySet().iterator();
     
     while (it.hasNext())
     {
       Entry<Integer, HDT_DT> entry = it.next();
-      id = entry.getKey();
-      record = entry.getValue();        
+      int id = entry.getKey();
+      HDT_DT record = entry.getValue();        
       
       if (record.isExpired() == false)
       {

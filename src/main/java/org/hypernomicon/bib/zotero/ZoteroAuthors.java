@@ -39,8 +39,8 @@ public class ZoteroAuthors extends BibAuthors
 {
   private static final ImmutableTable<EntryType, String, AuthorType> creatorTypes = buildCreatorTypes();
   
-  private JsonArray creatorsArr;
-  private EntryType entryType;
+  private final JsonArray creatorsArr;
+  private final EntryType entryType;
   
   public ZoteroAuthors(JsonArray creatorsArr, EntryType entryType)
   {

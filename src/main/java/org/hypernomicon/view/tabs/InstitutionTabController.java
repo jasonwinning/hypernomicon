@@ -210,13 +210,13 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
     htSubInstitutions.addCol(hdtInstitutionType, ctDropDownList);
     htSubInstitutions.addTextEditCol(hdtInstitution, true, false);
     
-    htSubInstitutions.addContextMenuItem(hdtInstitution, "Go to this record", record -> ui.goToRecord(record, true));
+    htSubInstitutions.addContextMenuItem("Go to this record", HDT_Institution.class, inst -> ui.goToRecord(inst, true));
     
-    htSubInstitutions.addContextMenuItem(hdtInstitution, "Delete this institution record", record ->
+    htSubInstitutions.addContextMenuItem("Delete this institution record", HDT_Institution.class, inst ->
     {
       if (ui.cantSaveRecord(true)) return;
       if (confirmDialog("Are you sure you want to delete this record?") == false) return;
-      db.deleteRecord(hdtInstitution, record.getID());
+      db.deleteRecord(hdtInstitution, inst.getID());
       ui.update();
     });
     

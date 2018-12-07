@@ -96,23 +96,18 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
   public String getStr(AuthorType authorType)
   {
-    ArrayList<BibAuthor> authList = new ArrayList<>();
+    StringBuilder auths = new StringBuilder();
+    
     forEach(bibAuthor -> 
     {
       if (bibAuthor.getType() == authorType)
-        authList.add(bibAuthor);
+      {
+        if (auths.length() > 0) auths.append("; ");
+        auths.append(bibAuthor.getName().getLastFirst());
+      }
     });
     
-    String auth = "";
-           
-    for (int ndx = 0; ndx < authList.size(); ndx++)
-    {
-      if (auth.length() > 0) auth = auth + "; ";
-      
-      auth = auth + authList.get(ndx).getName().getLastFirst();
-    }
-    
-    return auth;
+    return auths.toString();
   }
   
 //---------------------------------------------------------------------------

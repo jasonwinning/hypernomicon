@@ -17,6 +17,9 @@
 
 package org.hypernomicon.model.records;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 
 //---------------------------------------------------------------------------
@@ -62,6 +65,7 @@ public enum HDT_RecordType
 
   private final Class<? extends HDT_Base> klass;
   private final boolean simple, gotConnector, disregardDates;
+  private final static Map<Class<? extends HDT_Base>, HDT_RecordType> classToType = new HashMap<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
@@ -81,6 +85,22 @@ public enum HDT_RecordType
   public boolean isSimple()                         { return simple; }
   public boolean hasConnector()                     { return gotConnector; }
   public boolean getDisregardDates()                { return disregardDates; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------  
+
+  public static final HDT_RecordType typeByRecordClass(Class<? extends HDT_Base> klass)
+  {
+    if (classToType.isEmpty())
+    {           
+      for (HDT_RecordType type : values())
+        classToType.put(type.klass, type);
+      
+      classToType.put(HDT_Base.class, hdtNone);
+    }
+    
+    return classToType.getOrDefault(klass, hdtNone);
+  }
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  

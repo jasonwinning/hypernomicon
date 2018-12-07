@@ -112,7 +112,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
                
     ObservableList<HyperTableCell> items = cb.getItems();
     
-    if ((items == null) || (items.size() == 0)) 
+    if (collEmpty(items)) 
     {
       hcb.typedMatch = null;
       return;

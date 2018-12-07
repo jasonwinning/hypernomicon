@@ -48,19 +48,9 @@ public final class BibAuthor implements Cloneable
 
   public BibAuthor(AuthorType type, Author author)
   {
-    this.type = type;
-    HDT_Person person = author.getPerson();
-    
-    if (person != null)
-    {
-      this.person = person;
-      this.name = null;
-    }
-    else
-    {
-      this.person = null;
-      this.name = author.getName();
-    }
+    this.type = type;    
+    person = author.getPerson();
+    name = person == null ? author.getName() : null;
   }
 
 //---------------------------------------------------------------------------

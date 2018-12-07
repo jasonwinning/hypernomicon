@@ -28,8 +28,8 @@ import org.hypernomicon.model.records.HDT_Base;
 
 public class HyperSubjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> implements List<HDT_SubjType>
 {
-  RelationSet<HDT_SubjType, HDT_ObjType> relSet;
-  HDT_ObjType obj;
+  final RelationSet<HDT_SubjType, HDT_ObjType> relSet;
+  final HDT_ObjType obj;
 
   static final String modErrMsg = "Internal error: An attempt was made to modify a subject list.";
   

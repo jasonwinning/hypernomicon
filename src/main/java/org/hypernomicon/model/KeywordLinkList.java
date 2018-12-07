@@ -57,19 +57,16 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final void generate(String text, boolean overrideSet, SearchKeys searchKeysToUse)
-  {
-    int matchLen, ndx = 0, curMatchLen = 0;
-    String prefix;
-    SearchKeyword curKey;
-    boolean addOK, checkPeriods = false;
-    char c;
-    ArrayList<Integer> posMap = new ArrayList<>();
-    
+  public void generate(String text, boolean overrideSet, SearchKeys searchKeysToUse)
+  {           
     keys.clear();
 
     if (text.length() == 0) return;
+    
+    ArrayList<Integer> posMap = new ArrayList<>();
     text = convertToEnglishCharsWithMap(text, posMap); // posMap maps output position (key) to input position (value)
+
+    boolean checkPeriods = false;
     
     if (text.matches(".*[a-zA-Z][.][a-zA-Z].*"))
     {
@@ -78,32 +75,23 @@ public final class KeywordLinkList
       else if (text.matches(".*^[a-zA-Z][.][a-zA-Z].*"))
         checkPeriods = true;
     }
-             
-    for (ndx = 0; ndx < text.length(); ndx++)
+
+    int ndx = 0;
+    
+    while (ndx < text.length())
     {
-      while (safeSubstring(text, ndx, ndx + 4).toLowerCase().equals("http")) // don't convert a URL (outside of anchor tag) to a link
+      if (safeSubstring(text, ndx, ndx + 4).toLowerCase().equals("http"))
       {
-        while (charIsPartOfLink(text, ndx, true))
-        {
-          ndx++;
-          if (ndx >= text.length()) break;
-        }
-
-        if (ndx >= text.length()) break;
+        for (; (ndx < text.length()) && charIsPartOfWebLink(text, ndx); ndx++);        
+        continue;
       }
-
-      while (safeSubstring(text, ndx, ndx + 4).toLowerCase().equals("href")) // don't convert anything in an anchor tag to a link
+      else if (safeSubstring(text, ndx, ndx + 4).toLowerCase().equals("href")) // don't convert anything in an anchor tag to a link
       {
-        while (text.charAt(ndx) != '>')
-        {
-          ndx++;
-          if (ndx >= text.length()) break;
-        }
-
-        if (ndx >= text.length()) break;
+        for (; (ndx < text.length()) && text.charAt(ndx) != '>'; ndx++);        
+        continue;
       }
-
-      prefix = safeSubstring(text, ndx, ndx + 3);
+      
+      String prefix = safeSubstring(text, ndx, ndx + 3);
       
       if (checkPeriods) // This happens less than 1 percent of the time
       {
@@ -115,8 +103,9 @@ public final class KeywordLinkList
         prefix = safeSubstring(prefix, 0, 3);
       }
       
-      curKey = null;
+      SearchKeyword curKey = null;
       List<SearchKeyword> keys;
+      int curMatchLen = 0;
       
       if (overrideSet)
         keys = searchKeysToUse.getKeywordsByPrefix(prefix);
@@ -125,6 +114,7 @@ public final class KeywordLinkList
 
       for (SearchKeyword key : keys)
       {
+        int matchLen;
         String focusStr = safeSubstring(text, ndx, ndx + key.text.length());
       
         if (checkPeriods) // This happens less than 1 percent of the time
@@ -143,47 +133,53 @@ public final class KeywordLinkList
         
         if (focusStr.equalsIgnoreCase(key.text))
         {
-          addOK = true;
+          boolean addOK = true;
 
           if (key.startOnly && (ndx > 0))
           {
-            c = text.charAt(ndx - 1);
+            char c = text.charAt(ndx - 1);
             if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
               addOK = false;
           }
 
           if (key.endOnly && ((ndx + matchLen) < text.length()))
           {
-            c = text.charAt(ndx + matchLen);
+            char c = text.charAt(ndx + matchLen);
             if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')))
               addOK = false;
           }
           
-          if (addOK)
+          if (addOK && ((curKey == null) || (matchLen > curKey.text.length()))) 
           {
-            if ((curKey == null) || (matchLen > curKey.text.length())) 
-            {
-              curKey = key;
-              curMatchLen = matchLen;
-            }
+            curKey = key;
+            curMatchLen = matchLen;
           }
         }
       }
 
       if (curKey != null)
         ndx = add(text, ndx, curMatchLen, curKey, posMap);       
+    
+      ndx++;      
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+  
+  public static final boolean charIsPartOfWebLink(String text, int ndx)
+  {
+    char c = text.charAt(ndx);
+        
+    return (c != '\n') && (c != ' ') && (c != ',') && (c != ';');
   }
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
   
-  public static final boolean charIsPartOfLink(String text, int ndx, boolean webLink)
+  private boolean charIsPartOfKeywordLink(String text, int ndx)
   {
     char c = text.charAt(ndx);
-    
-    if (webLink)
-      return (c != '\n') && (c != ' ') && (c != ',') && (c != ';');
     
     if (c == '-')
     {
@@ -198,24 +194,20 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
   
-  private final int add(String text, int ndx, int matchLen, SearchKeyword key, ArrayList<Integer> posMap)
+  private int add(String text, int ndx, int matchLen, SearchKeyword key, ArrayList<Integer> posMap)
   {
     int right = ndx + matchLen, replaceLen;
 
     if (right < text.length())
-    {
-      while (charIsPartOfLink(text, right, false))
-      {
-        right++;
-        if (right >= text.length()) break;
-      }
-    }
+      while (charIsPartOfKeywordLink(text, right))
+        if (++right >= text.length()) 
+          break;
 
     replaceLen = right - ndx;
 
     // The next two lines are for cases where a special character exists in the original html that translates to multiple plain-text characters, e.g., ellipsis
-    int realNdx = posMap.get(ndx);
-    int realLen = (posMap.get(ndx + replaceLen - 1) - realNdx) + 1;
+    int realNdx = posMap.get(ndx),
+        realLen = (posMap.get(ndx + replaceLen - 1) - realNdx) + 1;
     
     keys.add(new KeywordLink(realNdx, realLen, key));
 

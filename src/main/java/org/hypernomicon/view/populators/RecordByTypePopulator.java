@@ -100,13 +100,10 @@ public class RecordByTypePopulator extends Populator
   
   private ArrayList<Integer> getRecent(HDT_RecordType recordType, int num)
   {
-    int ndx, slotNdx = 0, insertPos;
-    
-    Instant dates[] = new Instant[num], curDate;
+    Instant dates[] = new Instant[num];
     int ids[] = new int[num], pos[] = new int[num], revPos[] = new int[num];
-    ArrayList<Integer> recent = new ArrayList<Integer>();
     
-    for (ndx = 0; ndx < num; ndx++)
+    for (int ndx = 0; ndx < num; ndx++)
     {
       dates[ndx] = Instant.MIN;
       ids[ndx] = -1;
@@ -119,24 +116,22 @@ public class RecordByTypePopulator extends Populator
     
     while (record != null)
     {
-      curDate = record.getViewDate();
+      Instant curDate = record.getViewDate();      
+      int slotNdx = -1;
       
-      boolean found = false;
-      
-      for (ndx = num - 1; ndx >= 0; ndx--)
+      for (int ndx = num - 1; ndx >= 0; ndx--)
       {
         if (dates[revPos[ndx]].compareTo(curDate) >= 0)  // Most of the time this happens on the first iteration so
           break;                                         // the containing loop moves quickly to its next iteration
         
         slotNdx = revPos[ndx];
-        found = true;
       }
       
-      if (found)
+      if (slotNdx > -1)
       {
-        insertPos = pos[slotNdx];
+        int insertPos = pos[slotNdx];
             
-        for (ndx = 0; ndx < num; ndx++)
+        for (int ndx = 0; ndx < num; ndx++)
         {
           if (pos[ndx] == (num - 1))
           {
@@ -155,9 +150,11 @@ public class RecordByTypePopulator extends Populator
       record = getNextRecord(it);
     }
        
-    for (ndx = 0; ndx < num; ndx++)
+    ArrayList<Integer> recent = new ArrayList<Integer>();
+    
+    for (int ndx = 0; ndx < num; ndx++)
     {
-      slotNdx = revPos[ndx];
+      int slotNdx = revPos[ndx];
       if (ids[slotNdx] > 0)
         recent.add(ids[slotNdx]);
     }

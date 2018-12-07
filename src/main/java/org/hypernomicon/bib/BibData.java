@@ -304,6 +304,43 @@ public abstract class BibData
     setMultiStr(bibFieldEnum, list);
   }
 
+//---------------------------------------------------------------------------  
+//--------------------------------------------------------------------------- 
+
+  public void extractDOIandISBNs(String value)
+  {    
+    setDOI(value);
+    addISBN(value);
+    addISSN(value);
+  }
+  
+//---------------------------------------------------------------------------  
+//--------------------------------------------------------------------------- 
+  
+  public void setDOI(String newStr)
+  {
+    if (safeStr(newStr).length() == 0) return;
+    String doi = matchDOI(newStr);
+    if (doi.length() > 0)
+      setStr(bfDOI, doi);
+  }
+
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+
+  public void addISBN(String newStr)
+  {    
+    matchISBN(newStr).forEach(isbn -> addStr(bfISBNs, isbn));
+  }
+
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+
+  public void addISSN(String newStr)
+  {
+    matchISSN(newStr).forEach(issn -> addStr(bfISSNs, issn));
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -395,16 +432,12 @@ public abstract class BibData
       iiArr.getObjs().forEach(iiObj ->
       {
         if (iiObj.getStrSafe("type").toLowerCase().contains("isbn"))
-        {
-          String isbn = iiObj.getStrSafe("identifier");
-          if (isbn.length() > 0)
-            bd.addStr(bfISBNs, isbn);
-        }
+          bd.addISBN(iiObj.getStrSafe("identifier"));
       });
     }
     
     if (bd.fieldNotEmpty(bfISBNs) == false)
-      bd.addStr(bfISBNs, queryIsbn);
+      bd.addISBN(queryIsbn);
     
     return bd;
   }
@@ -438,19 +471,7 @@ public abstract class BibData
         val = latexPrinter.print(latexObjects);
       }
       
-      String doi = matchDOI(val);
-      if (doi.length() > 0)
-        bd.setStr(bfDOI, doi);
-      
-      List<String> isbns = matchISBN(val);
-      if (isbns != null)
-        for (String isbn : isbns)
-          bd.addStr(bfISBNs, isbn);
-      
-      List<String> issns = matchISSN(val);
-      if (issns != null)
-        for (String issn : issns)
-          bd.addStr(bfISSNs, issn);
+      bd.extractDOIandISBNs(val);
       
       switch (mapping.getKey().getValue())
       {
@@ -508,50 +529,33 @@ public abstract class BibData
 
   public static BibData createFromRIS(List<String> lines)
   {
-    BibDataStandalone bd = null;
-    String tag, val, pages;
+    BibDataStandalone bd = new BibDataStandalone();
+    boolean gotType = false;
     
     for (String line : lines)
     {
       if (line.isEmpty() || line.equals("") || line.matches("^\\s*$"))
         continue;
       
-      String doi = matchDOI(line);
-      if (doi.length() > 0)
-        bd.setStr(bfDOI, doi);
-      
-      List<String> isbns = matchISBN(line);
-      if (isbns != null)
-        for (String isbn : isbns)
-          bd.addStr(bfISBNs, isbn);      
-      
-      List<String> issns = matchISSN(line);
-      if (issns != null)
-        for (String issn : issns)
-          bd.addStr(bfISSNs, issn);   
+      bd.extractDOIandISBNs(line);
       
       Pattern p = Pattern.compile("^([A-Z][A-Z0-9])  -(.*)$");
       Matcher m = p.matcher(line);
       
       if (m.matches())
       {
-        tag = m.group(1);
-        val = m.group(2).trim();
+        String tag = m.group(1),
+               val = m.group(2).trim();
         
-        if (bd == null)
-        {
-          if (tag.equals("TY"))
-            bd = new BibDataStandalone();
-          else
-            return null;
-        }
+        if ( ! (gotType || tag.equals("TY")))
+          return null;
 
         switch (tag)
         {
           case "DO": break; // DOI was captured already
           
-          case "ER": return bd;
-          case "TY": bd.setEntryType(parseRISType(val)); break;
+          case "ER": return gotType ? bd : null;
+          case "TY": bd.setEntryType(parseRISType(val)); gotType = true; break;
             
           case "A1": case "A2": case "A3": case "A4": case "AU": 
             
@@ -592,7 +596,7 @@ public abstract class BibData
             
           case "SP":
             
-            pages = bd.getStr(bfPages);
+            String pages = bd.getStr(bfPages);
             bd.setStr(bfPages, pages.length() == 0 ? val : (val + "-" + pages));
             break;
             
@@ -615,7 +619,9 @@ public abstract class BibData
             
             bd.addStr(bfMisc, val); break;
         }
-      }      
+      }
+      else if (ultraTrim(line).equals("ER"))
+        return gotType ? bd : null;
     }
     
     return null; // It has to end with "ER"; otherwise malformed
@@ -630,8 +636,7 @@ public abstract class BibData
     {
       jsonObj = jsonObj.getObj("message");
       
-      if (jsonObj.containsKey("items"))
-        jsonObj = jsonObj.getArray("items").getObj(0);
+      jsonObj = nullSwitch(jsonObj.getArray("items"), jsonObj, items -> items.getObj(0));
     }
     catch (NullPointerException | IndexOutOfBoundsException e)
     {
@@ -682,7 +687,7 @@ public abstract class BibData
     bd.getAuthors().setFromCrossRefJson(jsonObj.getArray("translator"), AuthorType.translator);
         
     if (bd.fieldNotEmpty(bfDOI) == false)
-      bd.setStr(bfDOI, queryDoi);
+      bd.setDOI(queryDoi);
     
     return bd;
   }

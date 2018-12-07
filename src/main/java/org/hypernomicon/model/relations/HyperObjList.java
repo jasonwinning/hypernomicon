@@ -31,11 +31,11 @@ import static org.hypernomicon.util.Util.*;
 
 public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> implements List<HDT_ObjType>
 {
-  RelationSet<HDT_SubjType, HDT_ObjType> relSet;
-  HDT_SubjType subj;
+  final RelationSet<HDT_SubjType, HDT_ObjType> relSet;
+  final HDT_SubjType subj;
   Exception lastException;
-  protected boolean modTracking;
-  private List<HDT_ObjType> before = new ArrayList<>();
+  protected final boolean modTracking;
+  private final List<HDT_ObjType> before = new ArrayList<>();
 
   public Exception getLastException() { return lastException; }
   

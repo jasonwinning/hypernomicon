@@ -19,32 +19,41 @@ package org.hypernomicon.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hypernomicon.util.Util.*;
 
 public class VersionNumber implements Comparable<VersionNumber>
 {
-  private List<Integer> parts = new ArrayList<>();
+  private final List<Integer> parts;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public VersionNumber(int minParts, int... parts)
   {
-    for (int part : parts)
-      this.parts.add(part);
+    List<Integer> tempParts = new ArrayList<>();
     
-    while (this.parts.size() < minParts)
-      this.parts.add(0);
+    for (int part : parts)
+      tempParts.add(part);
+    
+    while (tempParts.size() < minParts)
+      tempParts.add(0);
+    
+    this.parts = Collections.unmodifiableList(tempParts);
   }
   
   public VersionNumber(int minParts, String str)
   {
-    Arrays.asList(str.split("\\.")).forEach(partStr -> parts.add(parseInt(partStr, 0)));
+    List<Integer> tempParts = new ArrayList<>();
     
-    while (this.parts.size() < minParts)
-      this.parts.add(0);
+    Arrays.asList(str.split("\\.")).forEach(partStr -> tempParts.add(parseInt(partStr, 0)));
+    
+    while (tempParts.size() < minParts)
+      tempParts.add(0);
+    
+    this.parts = Collections.unmodifiableList(tempParts);
   }
 
   public int numParts() { return parts.size(); }

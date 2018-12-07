@@ -52,6 +52,7 @@ import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
+import org.hypernomicon.model.relations.ObjectGroup;
 
 import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
@@ -138,6 +139,8 @@ public class WorkDialogController extends HyperDialog
   
   public static final AsyncHttpClient httpClient = new AsyncHttpClient();
   
+  public List<ObjectGroup> getAuthorGroups() { return htAuthors.getAuthorGroups(curWork, 0, 2, 3, 4); }
+  
 //---------------------------------------------------------------------------  
 
   public static WorkDialogController create(String title, FilePath filePathToUse, WorkTabController workCtrlr)
@@ -179,9 +182,8 @@ public class WorkDialogController extends HyperDialog
       row -> 
       {
         List<String> list = BibUtils.matchISBN(row.getText(0));
-        if (list == null) return;
-        if (list.size() == 0) return;
-        mnuISBNClick(list.get(0));   
+        if (collEmpty(list) == false)
+          mnuISBNClick(list.get(0));   
       });
     
     htAuthors = new HyperTable(tvAuthors, 0, true, PREF_KEY_HT_WORK_DLG);
@@ -649,7 +651,7 @@ public class WorkDialogController extends HyperDialog
     if ((doi.length() == 0) && (isbn.length() == 0))
     {
       bd = new BibDataStandalone();
-      BibUtils.extractDOIandISBNs(origFilePath.getNameOnly().toString(), bd);
+      bd.extractDOIandISBNs(origFilePath.getNameOnly().toString());
       doi = bd.getStr(bfDOI);
       
       if (bd.getMultiStr(bfISBNs).size() > 0)
@@ -726,7 +728,7 @@ public class WorkDialogController extends HyperDialog
     btnStop.setVisible(true);
     progressBar.setVisible(true);
     
-    JsonHttpClient.getObjAsync(getCrossrefUrl(null, doi), httpClient, jsonObj ->
+    JsonHttpClient.getObjAsync(getCrossrefUrl(doi), httpClient, jsonObj ->
     {
       BibData bibData = BibData.createFromCrossrefJSON(jsonObj, doi);
       
@@ -792,7 +794,7 @@ public class WorkDialogController extends HyperDialog
     btnStop.setVisible(true);
     progressBar.setVisible(true);
     
-    JsonHttpClient.getObjAsync(getGoogleUrl(null, isbn), httpClient, jsonObj ->
+    JsonHttpClient.getObjAsync(getGoogleUrl(isbn), httpClient, jsonObj ->
     {
       BibData bibData = BibData.createFromGoogleJSON(jsonObj, isbn);
       
@@ -867,7 +869,7 @@ public class WorkDialogController extends HyperDialog
     btnStop.setVisible(true);
     progressBar.setVisible(true);
     
-    JsonHttpClient.getObjAsync(getCrossrefUrl(null, doi), httpClient, jsonObj ->
+    JsonHttpClient.getObjAsync(getCrossrefUrl(doi), httpClient, jsonObj ->
     {
       BibData bd = BibData.createFromCrossrefJSON(jsonObj, doi);
   
@@ -912,7 +914,7 @@ public class WorkDialogController extends HyperDialog
     btnStop.setVisible(true);
     progressBar.setVisible(true);
     
-    JsonHttpClient.getObjAsync(getGoogleUrl(null, isbn), httpClient, jsonObj ->
+    JsonHttpClient.getObjAsync(getGoogleUrl(isbn), httpClient, jsonObj ->
     {
       BibData bd = BibData.createFromGoogleJSON(jsonObj, isbn);
       
@@ -998,8 +1000,7 @@ public class WorkDialogController extends HyperDialog
 
   public static void loadFromBibAuthors(BibAuthors bibAuthors, HyperTable htAuthors, boolean hasShowInFileCol)
   {
-    if (bibAuthors == null) return;
-    if (bibAuthors.isEmpty()) return;
+    if ((bibAuthors == null) || bibAuthors.isEmpty()) return;
 
     ArrayList<PersonName> nameList = new ArrayList<>();
     ArrayList<HDT_Person> personList = new ArrayList<>();
@@ -1037,7 +1038,7 @@ public class WorkDialogController extends HyperDialog
     
     curBD.setMultiStr(bfISBNs, isbns);
         
-    curBD.getAuthors().setAllFromTable(htAuthors.getAuthorGroups(curWork, 0, 2, 3, 4));
+    curBD.getAuthors().setAllFromTable(getAuthorGroups());
     
     return curBD;
   }

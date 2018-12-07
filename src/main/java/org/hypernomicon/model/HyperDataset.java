@@ -78,9 +78,9 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
 
   private final class CoreIterator implements Iterator<HDT_DT>
   {
-    private CoreAccessor coreAccessor;
+    private final CoreAccessor coreAccessor;
     private int nextNdx = 0;
-    private boolean byKey;
+    private final boolean byKey;
   
     @Override public boolean hasNext() { return nextNdx < coreAccessor.size(); }
     @Override public void remove()     { throw new UnsupportedOperationException("Internal error: A 'remove' call was made to a core iterator."); }
@@ -173,7 +173,7 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
     if (isUnstoredRecord(id, type))
       return false;
     
-    return (core.containsID(id) == false); 
+    return core.containsID(id) == false; 
   }
   
 //---------------------------------------------------------------------------
@@ -212,7 +212,7 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
       while (idAvailable(nextID) == false)
         nextID++;
       
-      idToAssign = nextID;
+      idToAssign = nextID++;
       recordToAssign = record;
       record.assignID();
       
@@ -323,14 +323,13 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
 
   void writeToXML(StringBuilder xml) throws HDB_InternalError, TerminateTaskException
   {    
-    boolean write;
-    int ndx = 0;
-    
     if (core.idCount() == 0) return;
+    
+    int ndx = 0;
     
     for (HDT_DT record : getAccessor())
     {
-      write = !isUnstoredRecord(record.getID(), type);
+      boolean write = !isUnstoredRecord(record.getID(), type);
       ndx++;
 
       if (write && (type == hdtFolder))

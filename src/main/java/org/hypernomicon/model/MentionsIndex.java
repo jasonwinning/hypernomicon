@@ -43,16 +43,17 @@ import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
 
 public class MentionsIndex
 {
-  private BidiOneToManyRecordMap mentionedInDescToMentioners;
-  private BidiOneToManyRecordMap mentionedAnywhereToMentioners;
-  private List<DatabaseEvent> ndxCompleteHandlers;
+  private final BidiOneToManyRecordMap mentionedInDescToMentioners;
+  private final BidiOneToManyRecordMap mentionedAnywhereToMentioners;
+  private final List<DatabaseEvent> ndxCompleteHandlers;
+  private final KeywordLinkList linkList;
+  private final EnumSet<HDT_RecordType> types;
+  private final ArrayList<String> strList = new ArrayList<String>();
+  
   private RebuildThread thread = null;
   private HyperTask task = null;
-  private KeywordLinkList linkList;
-  private EnumSet<HDT_RecordType> types;
   private double ctr, total;
   private boolean stopRequested = false;
-  private ArrayList<String> strList = new ArrayList<String>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -34,55 +34,35 @@ public final class Author implements Cloneable
   private final HDT_Person person;
   private final HDT_Work work;
   private final PersonName name, nameEngChar;
-  private final boolean isEditor;
-  private final boolean isTrans;
+  private final boolean isEditor, isTrans;
   private final Ternary inFileName;
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
   public Author(HDT_Work work, HDT_Person person)
+  { this(work, person, null, false, false, Ternary.Unset); }
+
+  public Author(HDT_Work work, PersonName name, boolean isEditor, boolean isTrans, Ternary inFileName)
+  { this(work, null, name, isEditor, isTrans, inFileName); }
+
+  public Author(HDT_Person person)
+  { this(person.works.isEmpty() ? null : person.works.get(0), person, null, false, false, Ternary.Unset); }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  private Author(HDT_Work work, HDT_Person person, PersonName name, boolean isEditor, boolean isTrans, Ternary inFileName)
   {
     this.work = work;
     this.person = person;
-    
-    name = null;
-    nameEngChar = null;
-    isEditor = false;
-    isTrans = false;
-    inFileName = Ternary.Unset;
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  public Author(HDT_Work work, PersonName name, boolean isEditor, boolean isTrans, Ternary inFileName)
-  {
-    this.work = work;
     this.name = name;    
-    this.nameEngChar = name.toEngChar();
+    this.nameEngChar = name == null ? null : name.toEngChar();
     this.isEditor = isEditor;
     this.isTrans = isTrans;
     this.inFileName = inFileName;
-    
-    this.person = null;
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  public Author(HDT_Person person)
-  {
-    this.person = person;
-    this.work = person.works.isEmpty() == false ? person.works.get(0) : null; 
-    
-    name = null;
-    nameEngChar = null;
-    isEditor = false;
-    isTrans = false;
-    inFileName = Ternary.Unset;
-  }
-  
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
@@ -109,9 +89,9 @@ public final class Author implements Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
   
-  public final boolean getIsEditor()     { return isNull(person) ? isEditor :   (work == null ? false         : db.getNestedBoolean(work, person, tagEditor)); }
-  public final boolean getIsTrans()      { return isNull(person) ? isTrans :    (work == null ? false         : db.getNestedBoolean(work, person, tagTranslator)); }
-  public final Ternary getInFileName()   { return isNull(person) ? inFileName : (work == null ? Ternary.Unset : db.getNestedTernary(work, person, tagInFileName)); }
+  public final boolean getIsEditor()   { return isNull(person) ? isEditor :   (work == null ? false         : db.getNestedBoolean(work, person, tagEditor)); }
+  public final boolean getIsTrans()    { return isNull(person) ? isTrans :    (work == null ? false         : db.getNestedBoolean(work, person, tagTranslator)); }
+  public final Ternary getInFileName() { return isNull(person) ? inFileName : (work == null ? Ternary.Unset : db.getNestedTernary(work, person, tagInFileName)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

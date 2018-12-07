@@ -430,8 +430,7 @@ public class Authors implements Iterable<Author>
   {
     clear();
     
-    if (bibAuthors == null) return;
-    if (bibAuthors.isEmpty()) return;
+    if ((bibAuthors == null) || bibAuthors.isEmpty()) return;
 
     ArrayList<PersonName> nameList = new ArrayList<>();
     ArrayList<HDT_Person> personList = new ArrayList<>();

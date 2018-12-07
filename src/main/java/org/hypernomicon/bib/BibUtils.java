@@ -19,6 +19,7 @@ package org.hypernomicon.bib;
 
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.bib.BibData.EntryType.*;
+import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
 
 import java.io.IOException;
@@ -37,8 +38,9 @@ import com.adobe.internal.xmp.XMPException;
 import com.google.common.collect.EnumHashBiMap;
 
 import org.hypernomicon.bib.BibData.EntryType;
-import org.hypernomicon.model.items.Author;
-import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.PersonName;
+import org.hypernomicon.model.records.HDT_Person;
+import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.filePath.FilePath;
 
 public class BibUtils
@@ -61,17 +63,17 @@ public class BibUtils
       this.docInfo = docInfo;
       if (docInfo == null) return;
       
-      extractDOIandISBNs(docInfo.getAuthor(), bd);
-      extractDOIandISBNs(docInfo.getCreator(), bd);
-      extractDOIandISBNs(docInfo.getKeywords(), bd);
-      extractDOIandISBNs(docInfo.getProducer(), bd);
-      extractDOIandISBNs(docInfo.getSubject(), bd);
-      extractDOIandISBNs(docInfo.getTitle(), bd);
-      extractDOIandISBNs(docInfo.getTrapped(), bd);
+      bd.extractDOIandISBNs(docInfo.getAuthor());
+      bd.extractDOIandISBNs(docInfo.getCreator());
+      bd.extractDOIandISBNs(docInfo.getKeywords());
+      bd.extractDOIandISBNs(docInfo.getProducer());
+      bd.extractDOIandISBNs(docInfo.getSubject());
+      bd.extractDOIandISBNs(docInfo.getTitle());
+      bd.extractDOIandISBNs(docInfo.getTrapped());
       
       for (String key : docInfo.getMetadataKeys())
         if (key.toLowerCase().contains("journaldoi") == false)
-          extractDOIandISBNs(docInfo.getCustomMetadataValue(key), bd);
+          bd.extractDOIandISBNs(docInfo.getCustomMetadataValue(key));
     }
 
   //---------------------------------------------------------------------------  
@@ -143,12 +145,12 @@ public class BibUtils
       String parsedText = pdfStripper.getText(pdfDoc);
       
       BibData bd = new BibDataStandalone();
-      extractDOIandISBNs(parsedText, bd);
+      bd.extractDOIandISBNs(parsedText);
       
       if (bd.getStr(bfDOI).length() == 0)
       {
         parsedText = parsedText.replaceAll("\\h*", ""); // remove whitespace
-        extractDOIandISBNs(parsedText, bd);
+        bd.extractDOIandISBNs(parsedText);
       }
       
       md.bd.setStr(bfDOI, bd.getStr(bfDOI));
@@ -193,7 +195,13 @@ public class BibUtils
 
   public static List<String> matchISSN(String str)
   {
-    ArrayList<String> list = null;
+    return matchISSN(str, null);
+  }
+  
+  public static List<String> matchISSN(String str, List<String> list)
+  {
+    if (list == null) list = new ArrayList<>();
+    if (safeStr(str).length() == 0) return list;
     
     str = str.replaceAll("\\p{Pd}", "-").toUpperCase(); // treat all dashes the same
     
@@ -221,10 +229,7 @@ public class BibUtils
       }
 
       if ((sum > 0) && ((sum % 11) == 0))
-      {
-        if (list == null)
-          list = new ArrayList<>();
-        
+      {        
         found = m.group(2);
         
         if (list.contains(found) == false)
@@ -240,7 +245,13 @@ public class BibUtils
 
   public static List<String> matchISBN(String str)
   {
-    ArrayList<String> list = new ArrayList<>();
+    return matchISBN(str, null);
+  }
+  
+  public static List<String> matchISBN(String str, List<String> list)
+  {
+    if (list == null) list = new ArrayList<>();
+    if (safeStr(str).length() == 0) return list;
     
     matchISBNiteration(str, list);
     
@@ -249,13 +260,13 @@ public class BibUtils
 
     matchISBNiteration(str, list);
     
-    return list.size() == 0 ? null : list;
+    return list;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void matchISBNiteration(String str, ArrayList<String> list) 
+  private static void matchISBNiteration(String str, List<String> list) 
   {
     str = str.replaceAll("\\p{Pd}", "-"); // treat all dashes the same
     str = str.replaceAll("\\u00AD", "-"); // "soft hyphen" is not included in the \p{Pd} class
@@ -323,60 +334,56 @@ public class BibUtils
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 
 
-  public static void extractDOIandISBNs(String value, BibData bd)
-  {    
-    if (value == null) return;
-    if (value.length() == 0) return;
-    
-    String match = matchDOI(value);
-    
-    if (match.length() != 0)
-      bd.setStr(bfDOI, match);
-    
-    List<String> matches = matchISBN(value);
-    
-    if (matches != null)
-      for (String isbn : matches)
-        bd.addStr(bfISBNs, isbn);
-    
-    matches = matchISSN(value);
-    
-    if (matches != null)
-      for (String issn : matches)
-        bd.addStr(bfISSNs, issn);
-  }
-
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-
-  public static String getCrossrefUrl(HDT_Work work, String doi)
+  public static String getCrossrefUrl(String doi) { return getCrossrefUrl(null, null, null, doi); }
+  
+  public static String getCrossrefUrl(String title, String yearStr, List<ObjectGroup> authGroups, String doi)
   {
-    String url = "https://api.crossref.org/works";
+    String url = "https://api.crossref.org/works", auths = "", eds = "";
     
     if (doi.length() > 0)
       return url + "/" + doi;
     
-    url = url + "?";
+    if (safeStr(title).length() == 0) return url;
     
-    String auths = "";
-    for (Author auth : work.getAuthors())
+    url = url + "?";
+        
+    if (authGroups != null)
     {
-      if (auth.getIsEditor() == false)
-        if (auth.getIsTrans() == false)
-          auths = auths + "+" + auth.getLastName();
+      for (ObjectGroup authGroup : authGroups)
+      {
+        boolean ed = authGroup.getValue(tagEditor).bool,
+                tr = authGroup.getValue(tagTranslator).bool;
+  
+        HDT_Person person = authGroup.getPrimary();
+        String name;
+        
+        if (person == null)
+          name = convertToEnglishChars(new PersonName(authGroup.getPrimaryStr()).getLast());
+        else
+          name = person.getLastNameEngChar();
+              
+        if (ed)
+          eds = eds + "+" + name;
+        else if (tr == false)
+          auths = auths + "+" + name;      
+      }
     }
     
-    String title = work.name();
+    if (auths.length() == 0) auths = eds;
+    
+    title = convertToEnglishChars(title).trim();
     title = title.replace(":", "");
     title = title.replace("?", "");
      
     title = title.replace(' ', '+');    
     
-    if (work.getYear().length() > 0)
+    yearStr = safeStr(yearStr);
+    
+    if (yearStr.length() > 0)
     {
-      int year = parseInt(work.getYear(), -1);
+      int year = parseInt(yearStr, -1);
       if (year > 1929)
-        url = url + "query=" + work.getYear() + "&";
+        url = url + "query=" + yearStr + "&";
     }
     
     if (auths.length() > 0)
@@ -387,48 +394,62 @@ public class BibUtils
       if (auths.length() > 0)
         url = url + "&";
       
-      if ((auths.length() == 0) && (work.getYear().length() == 0))
-        url = url + "query=" + escapeURL(title, false); // For some ridiculous reason this works better when there is only a title
+      if ((auths.length() == 0) && (yearStr.length() == 0))
+        url = url + "query=" + escapeURL(title, false); // For some reason this works better when there is only a title
       else
         url = url + "query.title=" + escapeURL(title, false);
     }
     
     return url;
   }
-
+ 
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 
 
-  public static String getGoogleUrl(HDT_Work work, String isbn)
+  public static String getGoogleUrl(String isbn) { return getGoogleUrl(null, null, isbn); }
+  
+  public static String getGoogleUrl(String title, List<ObjectGroup> authGroups, String isbn)
   {
     String url = "https://www.googleapis.com/books/v1/volumes?q=";
     
     if (isbn.length() > 0)
       return url + escapeURL("isbn:" + isbn, false);
     
-    String auths = "";
-    for (Author auth : work.getAuthors())
+    if (safeStr(title).length() == 0) return url;
+    
+    String auths = "", eds = "";
+    if (authGroups != null)
     {
-      if (auth.getIsEditor() == false)
-        if (auth.getIsTrans() == false)
-        {
-          if (auths.length() > 0)
-            auths = auths + "+";
-          
-          auths = auths + "inauthor:" + auth.getLastName(true);
-        }
+      for (ObjectGroup authGroup : authGroups)
+      {
+        boolean ed = authGroup.getValue(tagEditor).bool,
+                tr = authGroup.getValue(tagTranslator).bool;
+  
+        HDT_Person person = authGroup.getPrimary();
+        String name;
+        
+        if (person == null)
+          name = convertToEnglishChars(new PersonName(authGroup.getPrimaryStr()).getLast());
+        else
+          name = person.getLastNameEngChar();
+              
+        if (ed)
+          eds = eds + (eds.length() > 0 ? "+" : "") + "inauthor:" + name;
+        else if (tr == false)
+          auths = auths + (auths.length() > 0 ? "+" : "") + "inauthor:" + name;      
+      }
     }
     
-    String title = work.getNameEngChar();
+    if (auths.length() == 0) auths = eds;
+    
+    title = convertToEnglishChars(title).trim();
     title = title.replace(":", "");
     title = title.replace("?", "");
      
     title = title.replace(' ', '+');
     
     if (title.length() > 0)
-    {      
       url = url + escapeURL("\"" + title + "\"", false);
-    }
 
     if (auths.length() > 0)
     {

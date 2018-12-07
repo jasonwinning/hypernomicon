@@ -53,8 +53,8 @@ public class MainText
     public DisplayItem(DisplayItemType type)           { this.type = type; this.record = null; }
     public DisplayItem(HDT_RecordWithConnector record) { this.type = diRecord; this.record = record; }
     
-    public DisplayItemType type;
-    public HDT_RecordWithConnector record;
+    public final DisplayItemType type;
+    public final HDT_RecordWithConnector record;
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -147,7 +147,7 @@ public class MainText
 
   public String getKeyWorksString()
   {
-    if ((keyWorks == null) || (keyWorks.size() == 0)) return "";
+    if (collEmpty(keyWorks)) return "";
 
     String newPlainText = "";
     

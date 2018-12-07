@@ -43,10 +43,10 @@ public class HyperView<HDT_CT extends HDT_Base>
   }
   
   private HDT_CT viewRecord;
-  private int tabRecordKeyNdx;
-  private HDT_RecordType tabRecordType;
-  private HyperTab.TabEnum tabEnum;
-  private TextViewInfo textInfo;
+  private final int tabRecordKeyNdx;
+  private final HDT_RecordType tabRecordType;
+  private final HyperTab.TabEnum tabEnum;
+  private final TextViewInfo textInfo;
 
   public int getTabRecordKeyNdx()          { return tabRecordKeyNdx; }
   public TextViewInfo getTextInfo()        { return textInfo; }

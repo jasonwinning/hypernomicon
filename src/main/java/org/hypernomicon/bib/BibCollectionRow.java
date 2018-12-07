@@ -25,16 +25,17 @@ import javafx.scene.control.TreeItem;
 
 public class BibCollectionRow
 {
-  private TreeItem<BibCollectionRow> treeItem;
+  private final TreeItem<BibCollectionRow> treeItem;
+  private final String key;
+  private final BibCollectionType type;
+  
   private BibCollection coll = null;
-  private String key = null;
-  private BibCollectionType type;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public BibCollectionRow(BibCollectionType type) { init(type, null); }
-  public BibCollectionRow(BibCollection coll)     { init(bctUser, coll); }
+  public BibCollectionRow(BibCollectionType type) { this(type, null); }
+  public BibCollectionRow(BibCollection coll)     { this(bctUser, coll); }
   
   public TreeItem<BibCollectionRow> getTreeItem() { return treeItem; }
   public BibCollectionType getType()              { return type; }
@@ -45,13 +46,13 @@ public class BibCollectionRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(BibCollectionType type, BibCollection coll)
+  private BibCollectionRow(BibCollectionType type, BibCollection coll)
   {
     treeItem = new TreeItem<>(this);
     this.type = type;
     this.coll = coll;
     
-    if (coll != null) key = coll.getCollectionKey();
+    key = coll == null ? null : coll.getCollectionKey();
   }
 
 //---------------------------------------------------------------------------

@@ -28,12 +28,90 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 {
   public static final PersonName EMPTY = new PersonName("", "");
   
-  private String first, last;
+  private final String first, last;
   
-  public PersonName(String first, String last) { init(first, last); } 
-  public PersonName(String name)               { parseStr(name); }
+  public PersonName(String first, String last) 
+  { 
+    this.first = ultraTrim(safeStr(first)); this.last = ultraTrim(safeStr(last));
+  } 
   
-  private void init(String first, String last) { this.first = ultraTrim(safeStr(first)); this.last = ultraTrim(safeStr(last)); }
+  public PersonName(String name)               
+  { 
+    name = ultraTrim(convertToSingleLine(safeStr(name)));
+    
+    if ((name.matches(".*[A-Z].*") == false) || (name.matches(".*[a-z].*") == false))
+      name = titleCase(name);
+    
+    while (name.matches(".*\\h\\..*"))
+      name = name.replaceFirst("\\h\\.", ".");   // remove space before periods   
+    
+    int ndx = name.indexOf(',');
+    
+    if (ndx > 0)
+    {
+      first = ultraTrim(name.substring(ndx + 1));
+      last = ultraTrim(name.substring(0, ndx));
+      return;
+    }
+    else if (ndx == 0)
+    {
+      first = ultraTrim(name.substring(ndx + 1));
+      last = "";
+      return;
+    }
+    
+    if (name.matches("[Vv][ao]n\\h.*"))
+    {
+      first = "";
+      last = ultraTrim(name);
+      return;
+    }
+    
+    ndx = name.length();
+    while (ndx > 0)
+    {
+      ndx--;
+      
+      if (name.substring(ndx).matches("[^A-Za-z][A-Z]\\..*"))  // Parses "John B. X. James"
+      {
+        ndx = ndx + 3;
+        first = ultraTrim(name.substring(0, ndx));
+        last = ultraTrim(name.substring(ndx));
+        return;
+      }
+      
+      if (name.substring(ndx).matches("[^A-Za-z][A-Za-z]+\\..*"))  // Parses "John B. St. James"
+      {
+        ndx = ndx + 1;
+        first = ultraTrim(name.substring(0, ndx));
+        last = ultraTrim(name.substring(ndx));
+        return;
+      }
+      
+      if (name.substring(ndx).matches("[^A-Za-z][Vv][ao]n\\h.*"))
+      {
+        ndx = ndx + 1;
+        first = ultraTrim(name.substring(0, ndx));
+        last = ultraTrim(name.substring(ndx));
+        return;
+      }
+    }
+    
+    ndx = name.lastIndexOf(' ');
+
+    if (ndx < 0) 
+    {
+      first = ""; last = ultraTrim(name);
+    }
+    else if (ndx > 0) 
+    {
+      first = ultraTrim(name.substring(0, ndx + 1)); last = ultraTrim(name.substring(ndx + 1)); 
+    }
+    else
+    {
+      first = ""; last = ultraTrim(name.substring(ndx + 1));
+    }
+  }  
   
   public String getFirst()                     { return safeStr(first); }
   public String getLast()                      { return safeStr(last); }
@@ -110,72 +188,6 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
       return last + ", " + first;
     
     return last + first;
-  }
-  
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  private void parseStr(String name)
-  {
-    name = ultraTrim(convertToSingleLine(name));
-    
-    if ((name.matches(".*[A-Z].*") == false) || (name.matches(".*[a-z].*") == false))
-      name = titleCase(name);
-    
-    while (name.matches(".*\\h\\..*"))
-      name = name.replaceFirst("\\h\\.", ".");   // remove space before periods   
-    
-    int ndx = name.indexOf(',');
-    
-    if (ndx > 0)
-    {
-      init(ultraTrim(name.substring(ndx + 1)), ultraTrim(name.substring(0, ndx)));
-      return;
-    }
-    else if (ndx == 0)
-    {
-      init(ultraTrim(name.substring(ndx + 1)), "");
-      return;
-    }
-    
-    if (name.matches("[Vv][ao]n\\h.*"))
-    {
-      init("", ultraTrim(name));
-      return;
-    }
-    
-    ndx = name.length();
-    while (ndx > 0)
-    {
-      ndx--;
-      
-      if (name.substring(ndx).matches("[^A-Za-z][A-Z]\\..*"))  // Parses "John B. X. James"
-      {
-        ndx = ndx + 3;
-        init(ultraTrim(name.substring(0, ndx)), ultraTrim(name.substring(ndx)));
-        return;
-      }
-      
-      if (name.substring(ndx).matches("[^A-Za-z][A-Za-z]+\\..*"))  // Parses "John B. St. James"
-      {
-        ndx = ndx + 1;
-        init(ultraTrim(name.substring(0, ndx)), ultraTrim(name.substring(ndx)));
-        return;
-      }
-      
-      if (name.substring(ndx).matches("[^A-Za-z][Vv][ao]n\\h.*"))
-      {
-        ndx = ndx + 1;
-        init(ultraTrim(name.substring(0, ndx)), ultraTrim(name.substring(ndx)));
-        return;
-      }
-    }
-    
-    ndx = name.lastIndexOf(' ');
-
-    if      (ndx < 0) init("", name);
-    else if (ndx > 0) init(ultraTrim(name.substring(0, ndx + 1)), ultraTrim(name.substring(ndx + 1))); 
-    else              init("", ultraTrim(name.substring(ndx + 1)));           
   }
   
   //---------------------------------------------------------------------------

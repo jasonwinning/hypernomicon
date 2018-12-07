@@ -37,80 +37,22 @@ public class KeyWork implements Comparable<KeyWork>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private class RecordPointer
+  private abstract class RecordPointer
   {
-    private boolean online = false;
-    private HDT_RecordType type = hdtNone;
-    private int id = -1;
-    private HDT_Base record = null;
-
-    //---------------------------------------------------------------------------
-
-    public RecordPointer(HDT_RecordType type, int id, boolean online)
-    {
-      this.online = online;
-      
-      this.type = type;
-      this.id = id;
-      
-      if (online)
-        record = db.records(type).getByID(id);
-    }
-
-    //---------------------------------------------------------------------------
-
-    public RecordPointer(HDT_Base record)
-    {
-      this.online = true;
-      
-      this.type = record.getType();
-      this.id = record.getID();
-      this.record = record;
-    }
-
-    //---------------------------------------------------------------------------
+    abstract public int getID();
+    abstract public HDT_RecordType getType();
+    abstract public HDT_Base getRecord();
     
-    public boolean isExpired() { return HDT_Record.isEmpty(record); }
-
-    //---------------------------------------------------------------------------
-
-    public int getID()
-    {
-      if (online)
-        id = record.getID();
-
-      return id;    
-    }
-
-    //---------------------------------------------------------------------------
-
-    public HDT_RecordType getType()
-    {
-      if (online)
-        type = record.getType();
-      
-      return type;
-    }
-
-    //---------------------------------------------------------------------------
-
-    public HDT_Base getRecord()
-    {
-      if (record == null)
-        record = db.records(getType()).getByID(getID()); 
-      
-      return record;
-    }
-
+    public boolean isExpired() { return false; }
+    
     //---------------------------------------------------------------------------
 
     @Override public int hashCode()
     {
       final int prime = 31;
       int result = 1;
-      result = prime * result + (record == null ? 0 : record.hashCode());
-      result = prime * result + id;
-      result = prime * result + (type == null ? 0 : type.hashCode());
+      result = prime * result + getID();
+      result = prime * result + nullSwitch(getType(), 0, type -> type.hashCode());
       return result;
     }
 
@@ -120,27 +62,63 @@ public class KeyWork implements Comparable<KeyWork>
     {
       if (this == obj) return true;
       if (obj == null) return false;
-      if (getClass() != obj.getClass()) return false;
+      if ((obj instanceof RecordPointer) == false) return false;
       
       RecordPointer other = (RecordPointer) obj;
 
-      if ((other.record != null) && (record != null))
-        return record.equals(other.record);
+      if (getID() == other.getID())
+        if (getType() == other.getType())
+          return true;
       
-      if (id != other.id) return false;
-      if (type != other.type) return false;
-      return true;
+      return false;
     }
+  }
+  
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+  
+  private class OfflineRecordPointer extends RecordPointer
+  {
+    private final HDT_RecordType type;
+    private final int id;
+
+    //---------------------------------------------------------------------------
+
+    public OfflineRecordPointer(HDT_RecordType type, int id)
+    {
+      this.type = type;
+      this.id = id;
+    }
+
+    @Override public int getID()              { return id; }
+    @Override public HDT_RecordType getType() { return type; }
+    @Override public HDT_Base getRecord()     { return db.records(getType()).getByID(getID()); }
     
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
   }
+  
+  private class OnlineRecordPointer extends RecordPointer
+  {
+    private final HDT_Base record;
+    
+    public OnlineRecordPointer(HDT_Base record)
+    {
+      this.record = record;
+    }
+    
+    @Override public int getID()              { return record.getID(); }
+    @Override public HDT_RecordType getType() { return record.getType(); }
+    @Override public HDT_Base getRecord()     { return record; }
+    
+    @Override public boolean isExpired()      { return HDT_Record.isEmpty(record); }
+  }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
   
-  private RecordPointer record = null;
+  private final RecordPointer record;
   private String searchKey = "";
   private boolean searchKeyInitialized = false;
 
@@ -149,7 +127,7 @@ public class KeyWork implements Comparable<KeyWork>
 
   public KeyWork(HDT_RecordWithPath recordWithPath)
   {
-    record = new RecordPointer(recordWithPath);    
+    record = new OnlineRecordPointer(recordWithPath);    
   }
 
   //---------------------------------------------------------------------------
@@ -157,7 +135,11 @@ public class KeyWork implements Comparable<KeyWork>
 
   public KeyWork(HDT_RecordType recordType, int recordID, String searchKey, boolean online)
   {
-    record = new RecordPointer(recordType, recordID, online);
+    if (online)
+      record = new OnlineRecordPointer(db.records(recordType).getByID(recordID));
+    else
+      record = new OfflineRecordPointer(recordType, recordID);
+    
     this.searchKey = searchKey;
     searchKeyInitialized = true;
   }

@@ -198,9 +198,7 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
     if (id < 1) return null;
     
     HDT_RecordType type = getCellType(cell);
-    if (type == hdtNone) return null;
-    
-    return db.records(type).getByID(id);
+    return type == hdtNone ? null : db.records(type).getByID(id);
   }
  
 //---------------------------------------------------------------------------  

@@ -60,7 +60,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
   private TreeTableView<TreeRow> ttv;
   private boolean hasTerms;
   private TreeCB tcb;
-  private List<HyperMenuItem> contextMenuItems;
+  private List<HyperMenuItem<? extends HDT_Base>> contextMenuItems;
   private boolean searchingDown = true;
   private boolean searchingNameOnly = false;
   private TreeRow draggingRow = null;
@@ -211,17 +211,17 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 //---------------------------------------------------------------------------
 //--------------------------------------------------------------------------- 
 
-  @Override public HyperMenuItem addContextMenuItem(HDT_RecordType recordType, String caption, RecordListView.RecordHandler handler)
+  @Override public <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addContextMenuItem(String caption, Class<HDT_T> klass, RecordHandler<HDT_T> handler)
   {
-    return addCondContextMenuItem(recordType, caption, record -> true, handler);
+    return addCondContextMenuItem(caption, klass, record -> true, handler);
   }
   
-  @Override public HyperMenuItem addCondContextMenuItem(HDT_RecordType recordType, String caption, RecordListView.CondRecordHandler condHandler, RecordListView.RecordHandler handler)
+  @Override public <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addCondContextMenuItem(String caption, Class<HDT_T> klass, CondRecordHandler<HDT_T> condHandler, RecordHandler<HDT_T> handler)
   {
-    HyperMenuItem mnu;
+    HyperMenuItem<HDT_T> mnu;
     
-    mnu = new HyperMenuItem(caption);
-    mnu.recordType = recordType;
+    mnu = new HyperMenuItem<>(caption);
+    mnu.recordType = HDT_RecordType.typeByRecordClass(klass);
     mnu.condRecordHandler = condHandler;
     mnu.recordHandler = handler;
     
@@ -641,43 +641,50 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
 
+  @SuppressWarnings("unchecked")
+  private <HDT_T extends HDT_Base> MenuItem createContextMenuItem(HyperMenuItem<HDT_T> hItem, HDT_Base record, ContextMenu rowMenu)
+  {
+    MenuItem newItem = new MenuItem(hItem.caption);
+    
+    rowMenu.getItems().add(newItem);
+    
+    newItem.setOnAction(event ->
+    {
+      rowMenu.hide();
+      hItem.recordHandler.handle((HDT_T) record);
+    });
+
+    boolean visible = false;
+    
+    if ((hItem.recordType == hdtNone) || ((record != null) && (record.getType() == hItem.recordType)))
+      visible = hItem.condRecordHandler.handle((HDT_T) record);     
+    
+    newItem.setVisible(visible);
+    
+    return newItem;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------  
+
   public ContextMenu createContextMenu(TreeRow treeRow)
   {
-    boolean visible, noneVisible = true;
+    boolean noneVisible = true;
     ContextMenu rowMenu = new ContextMenu();
-    HDT_Base record = treeRow.getRecord();
-    MenuItem newItem;
+    HDT_Base record = treeRow.getRecord();    
        
-    for (HyperMenuItem hItem : contextMenuItems)
+    for (HyperMenuItem<? extends HDT_Base> hItem : contextMenuItems)
     {
-      newItem = new MenuItem(hItem.caption);
-     
-      rowMenu.getItems().add(newItem);
+      MenuItem newItem = createContextMenuItem(hItem, record, rowMenu);
       
-      newItem.setOnAction(event ->
-      {
-        rowMenu.hide();
-        hItem.recordHandler.handle(treeRow.getRecord());
-      });
-
-      visible = false;
-      if (record == null)
-      {
-        if (hItem.recordType == hdtNone)
-          visible = (hItem.condRecordHandler.handle(null));
-      }             
-      else if ((record.getType() == hItem.recordType) || (hItem.recordType == hdtNone))
-        visible = (hItem.condRecordHandler.handle(record));
-      
-      newItem.setVisible(visible);
-      if (visible) noneVisible = false;
+      if (newItem.isVisible()) noneVisible = false;
     }
     
     if (treeRow.treeItem.isLeaf() == false)
     {
       noneVisible = false;
       
-      newItem = new MenuItem("Expand/Collapse");
+      MenuItem newItem = new MenuItem("Expand/Collapse");
       rowMenu.getItems().add(newItem);
       newItem.setOnAction(event -> treeRow.treeItem.setExpanded(!treeRow.treeItem.isExpanded()));
     

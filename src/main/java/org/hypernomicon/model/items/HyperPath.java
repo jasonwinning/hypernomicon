@@ -50,8 +50,8 @@ import org.hypernomicon.util.filePath.FilePath;
 public class HyperPath
 {
   public static final HyperPath EmptyPath = new HyperPath(null);
-  private HyperObjPointer<? extends HDT_RecordWithPath, HDT_Folder> folderPtr = null;
-  private HDT_RecordWithPath record = null;
+  private final HyperObjPointer<? extends HDT_RecordWithPath, HDT_Folder> folderPtr;
+  private final HDT_RecordWithPath record;
   private HDT_Folder folder = null;
   private FilePath fileName = null;
 
@@ -80,6 +80,9 @@ public class HyperPath
  
   public HyperPath(FilePath filePath)
   {
+    folderPtr = null;
+    record = null;
+    
     if (FilePath.isEmpty(filePath)) 
       return;
     
@@ -96,7 +99,7 @@ public class HyperPath
       return;
     }
     
-    folder = HyperPath.getFolderFromFilePath(filePath, false);
+    folder = HyperPath.getFolderFromFilePath(filePath, false);    
     assignNameInternal(filePath.getNameOnly());
   }
   

@@ -26,6 +26,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -40,7 +41,7 @@ import javafx.scene.control.MenuItem;
 
 public class HyperFavorites
 {
-  ObservableList<MenuItem> mainList, queryList;
+  final ObservableList<MenuItem> mainList, queryList;
   public static final int FIRST_FAV_MENU_ITEM_NDX = 4;
   
 //---------------------------------------------------------------------------
@@ -92,23 +93,19 @@ public class HyperFavorites
   public void saveToPrefNode() throws BackingStoreException
   {
     Preferences node = db.prefs.node("favorites");
-    int favNdx, rowNdx, colNdx, mainCount;
-    HDT_RecordType type;
-    String typeStr;
-    FavMenuItem favItem;
     
     node.node("recordIDs").clear();
     node.node("recordTypes").clear();
     node.node("favTypes").clear();
     node.node("queries").removeNode();
     
-    mainCount = mainList.size() - FIRST_FAV_MENU_ITEM_NDX;
+    int mainCount = mainList.size() - FIRST_FAV_MENU_ITEM_NDX;
     
     node.putInt("count", mainCount + queryList.size());
     
-    for (favNdx = 0; favNdx < mainCount; favNdx++)
+    for (int favNdx = 0; favNdx < mainCount; favNdx++)
     {
-      favItem = (FavMenuItem) mainList.get(favNdx + FIRST_FAV_MENU_ITEM_NDX);
+      FavMenuItem favItem = (FavMenuItem) mainList.get(favNdx + FIRST_FAV_MENU_ITEM_NDX);
       
       node.node("favTypes").put("" + favNdx, "record");
       HyperTableCell cell = favItem.favRecord;
@@ -119,9 +116,9 @@ public class HyperFavorites
     
     for (int queryNdx = 0; queryNdx < queryList.size(); queryNdx++)
     {
-      favItem = (FavMenuItem) queryList.get(queryNdx);
+      FavMenuItem favItem = (FavMenuItem) queryList.get(queryNdx);
       
-      favNdx = mainCount + queryNdx;
+      int favNdx = mainCount + queryNdx;
       
       node.node("favTypes").put("" + favNdx, "query");
       QueryFavorite query = favItem.query;
@@ -130,16 +127,16 @@ public class HyperFavorites
       node.node("queries").node("query" + favNdx).putInt("rowCount", query.rows.size());
       node.node("queries").node("query" + favNdx).putBoolean("autoexec", query.autoexec);
       
-      for (rowNdx = 0; rowNdx < query.rows.size(); rowNdx++)
+      for (int rowNdx = 0; rowNdx < query.rows.size(); rowNdx++)
       {
-        for (colNdx = 0; colNdx < 6; colNdx++)
+        for (int colNdx = 0; colNdx < 6; colNdx++)
         {
           HyperTableCell cell = query.rows.get(rowNdx).cells[colNdx];
           node.node("queries").node("query" + favNdx).node("row" + rowNdx).node("col" + colNdx).putInt("id", getCellID(cell));
           node.node("queries").node("query" + favNdx).node("row" + rowNdx).node("col" + colNdx).put("text", getCellText(cell));
           
-          type = getCellType(cell);
-          typeStr = type == hdtNone ? "all" : db.getTypeTagStr(type);
+          HDT_RecordType type = getCellType(cell);
+          String typeStr = type == hdtNone ? "all" : db.getTypeTagStr(type);
           node.node("queries").node("query" + favNdx).node("row" + rowNdx).node("col" + colNdx).put("type", typeStr);
         }
       }        
@@ -152,47 +149,40 @@ public class HyperFavorites
 //---------------------------------------------------------------------------
   
   public void loadFromPrefNode()
-  {
-    int count, id, ndx, rowNdx, colNdx, rowCount;
-    HDT_RecordType type;
-    HDT_Base record;
-    Preferences node = db.prefs.node("favorites");
-    QueryFavorite query;
-    QueryRow row;
-    String text, typeStr;
-    
+  {   
     clear();
+   
+    Preferences node = db.prefs.node("favorites");
+    int count = node.getInt("count", 0);
     
-    count = node.getInt("count", 0);
-    
-    for (ndx = 0; ndx < count; ndx++)
+    for (int ndx = 0; ndx < count; ndx++)
     {
       if (node.node("favTypes").get("" + ndx, "").equals("record"))
       {     
-        id = node.node("ids").getInt("" + ndx, -1);
-        type = db.parseTypeTagStr(node.node("types").get("" + ndx, ""));
+        int id = node.node("ids").getInt("" + ndx, -1);
+        HDT_RecordType type = db.parseTypeTagStr(node.node("types").get("" + ndx, ""));
         
-        record = db.records(type).getByID(id);
-        if (record != null) mainList.add(ui.new FavMenuItem(record));
+        nullSwitch((HDT_Base)db.records(type).getByID(id), record -> mainList.add(ui.new FavMenuItem(record)));
       }
       else if (node.node("favTypes").get("" + ndx, "").equals("query"))
       {
-        query = new QueryFavorite();
+        QueryFavorite query = new QueryFavorite();
         
         query.name = node.node("queries").node("query" + ndx).get("name", "query" + ndx);
-        rowCount = node.node("queries").node("query" + ndx).getInt("rowCount", 0);
+        int rowCount = node.node("queries").node("query" + ndx).getInt("rowCount", 0);
         query.autoexec = node.node("queries").node("query" + ndx).getBoolean("autoexec", false);
   
-        for (rowNdx = 0; rowNdx < rowCount; rowNdx++)
+        for (int rowNdx = 0; rowNdx < rowCount; rowNdx++)
         {
-          row = new QueryRow();
+          QueryRow row = new QueryRow();
           
-          for (colNdx = 0; colNdx < 6; colNdx++)
+          for (int colNdx = 0; colNdx < 6; colNdx++)
           {
-            id = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).getInt("id", -1);
-            text = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).get("text", "");
+            int id = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).getInt("id", -1);
+            HDT_RecordType type;
+            String text = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).get("text", "");
             
-            typeStr = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).get("type", "all");
+            String typeStr = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).get("type", "all");
             if (typeStr.equals("all"))
               type = hdtNone;
             else

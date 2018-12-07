@@ -173,50 +173,50 @@ public class MainTextWrapper
     we.titleProperty().addListener((title, oldTitle, newTitle) -> handleJSEvent(curWrapper.completeHtml, we, curWrapper.viewInfo));
     
     scriptContent = new StringBuilder()
-          .append("<script>\n\n")
-          .append("var jsToJava = {};\n")
-          .append("function openFile(recordType, recordID)\n{\n")
-          .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(" + String.valueOf(JS_EVENT_OPEN_FILE) + ");\n")
-          .append("}\n\n")
-          .append("function openRecord(recordType, recordID)\n{\n")
-          .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(" + String.valueOf(JS_EVENT_OPEN_RECORD) + ");\n")
-          .append("}\n\n")
-          .append("function openPreview(recordType, recordID)\n{\n")
-          .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(" + String.valueOf(JS_EVENT_OPEN_PREVIEW) + ");\n")
-          .append("}\n\n")
-          .append("function openURL(url)\n{\n")
-          .append("  jsToJava.url = url; callToJava(" + String.valueOf(JS_EVENT_OPEN_URL) + ");\n")
-          .append("}\n\n")
-          .append("function callToJava(eventType)\n{\n")
-          .append("  jsToJava.eventType = eventType;\n")
-          .append("  jsToJava.eventID = (new Date()).getTime();\n")
-          .append("  jsToJava.scrollTop = document.body.scrollTop;\n")
-          .append("  document.title = \"\" + jsToJava.eventID;\n")
-          .append("}\n\n")
-          .append("function switchToAZ()\n{\n")
-          .append("  var i,elements = document.getElementsByTagName('details');\n")
-          .append("  for (i=0; i<elements.length; i++)\n  {\n")
-          .append("    if (elements[i].id.slice(0,3) === \"num\")\n    {\n")
-          .append("      document.getElementById(\"alp\" + elements[i].id.slice(3)).open = elements[i].open;\n    }\n  }\n")
-          .append("  elements = document.getElementsByClassName('" + NUMERIC_SORTED_OUTER_CLASS + "');\n")
-          .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = 'none'; }\n")
-          .append("  elements = document.getElementsByClassName('" + ALPHA_SORTED_OUTER_CLASS + "');\n")
-          .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = (elements[i].tagName === 'SPAN' ? 'inline' : 'block'); }\n")
-          .append("  jsToJava.sortByName = true; callToJava(" + String.valueOf(JS_EVENT_SET_SORT_KEY_METHOD) + ");\n")
-          .append("}\n\n")
-          .append("function switchTo19()\n{\n")
-          .append("  var i,elements = document.getElementsByTagName('details');\n")
-          .append("  for (i=0; i<elements.length; i++)\n  {\n")
-          .append("    if (elements[i].id.slice(0,3) === \"alp\")\n    {\n")
-          .append("      document.getElementById(\"num\" + elements[i].id.slice(3)).open = elements[i].open;\n    }\n  }\n")
-          .append("  elements = document.getElementsByClassName('" + ALPHA_SORTED_OUTER_CLASS + "');\n")
-          .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = 'none'; }\n")
-          .append("  elements = document.getElementsByClassName('" + NUMERIC_SORTED_OUTER_CLASS + "');\n")
-          .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = (elements[i].tagName === 'SPAN' ? 'inline' : 'block'); }\n")
-          .append("  jsToJava.sortByName = false; callToJava(" + String.valueOf(JS_EVENT_SET_SORT_KEY_METHOD) + ");\n")
-          .append("}\n\n")
-          .append("</script>\n\n")
-          .toString();
+        .append("<script>\n\n")
+        .append("var jsToJava = {};\n")
+        .append("function openFile(recordType, recordID)\n{\n")
+        .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(" + String.valueOf(JS_EVENT_OPEN_FILE) + ");\n")
+        .append("}\n\n")
+        .append("function openRecord(recordType, recordID)\n{\n")
+        .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(" + String.valueOf(JS_EVENT_OPEN_RECORD) + ");\n")
+        .append("}\n\n")
+        .append("function openPreview(recordType, recordID)\n{\n")
+        .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(" + String.valueOf(JS_EVENT_OPEN_PREVIEW) + ");\n")
+        .append("}\n\n")
+        .append("function openURL(url)\n{\n")
+        .append("  jsToJava.url = url; callToJava(" + String.valueOf(JS_EVENT_OPEN_URL) + ");\n")
+        .append("}\n\n")
+        .append("function callToJava(eventType)\n{\n")
+        .append("  jsToJava.eventType = eventType;\n")
+        .append("  jsToJava.eventID = (new Date()).getTime();\n")
+        .append("  jsToJava.scrollTop = document.body.scrollTop;\n")
+        .append("  document.title = \"\" + jsToJava.eventID;\n")
+        .append("}\n\n")
+        .append("function switchToAZ()\n{\n")
+        .append("  var i,elements = document.getElementsByTagName('details');\n")
+        .append("  for (i=0; i<elements.length; i++)\n  {\n")
+        .append("    if (elements[i].id.slice(0,3) === \"num\")\n    {\n")
+        .append("      document.getElementById(\"alp\" + elements[i].id.slice(3)).open = elements[i].open;\n    }\n  }\n")
+        .append("  elements = document.getElementsByClassName('" + NUMERIC_SORTED_OUTER_CLASS + "');\n")
+        .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = 'none'; }\n")
+        .append("  elements = document.getElementsByClassName('" + ALPHA_SORTED_OUTER_CLASS + "');\n")
+        .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = (elements[i].tagName === 'SPAN' ? 'inline' : 'block'); }\n")
+        .append("  jsToJava.sortByName = true; callToJava(" + String.valueOf(JS_EVENT_SET_SORT_KEY_METHOD) + ");\n")
+        .append("}\n\n")
+        .append("function switchTo19()\n{\n")
+        .append("  var i,elements = document.getElementsByTagName('details');\n")
+        .append("  for (i=0; i<elements.length; i++)\n  {\n")
+        .append("    if (elements[i].id.slice(0,3) === \"alp\")\n    {\n")
+        .append("      document.getElementById(\"num\" + elements[i].id.slice(3)).open = elements[i].open;\n    }\n  }\n")
+        .append("  elements = document.getElementsByClassName('" + ALPHA_SORTED_OUTER_CLASS + "');\n")
+        .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = 'none'; }\n")
+        .append("  elements = document.getElementsByClassName('" + NUMERIC_SORTED_OUTER_CLASS + "');\n")
+        .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = (elements[i].tagName === 'SPAN' ? 'inline' : 'block'); }\n")
+        .append("  jsToJava.sortByName = false; callToJava(" + String.valueOf(JS_EVENT_SET_SORT_KEY_METHOD) + ");\n")
+        .append("}\n\n")
+        .append("</script>\n\n")
+        .toString();
     
     headContent = new StringBuilder(scriptContent)
         .append("<style type=\"text/css\">\n")
@@ -244,7 +244,6 @@ public class MainTextWrapper
   {
     int recordID = -1, recordTypeOrd;
     HDT_RecordType recordType = hdtNone;
-    String url;
     JSObject jsToJava = null;
   
     // It might seem strange to do this instead of passing an object to javascript with methods the script can call
@@ -300,14 +299,11 @@ public class MainTextWrapper
         }
 
         ui.openPreviewWindow(pvsOther);
-        
         break;
         
       case JS_EVENT_OPEN_URL :
         
-        url = (String)jsToJava.getMember("url");
-        
-        openWebLink(url);
+        openWebLink(String.class.cast(jsToJava.getMember("url")));
         break;
         
       case JS_EVENT_LAUNCH_FILE :
@@ -321,9 +317,8 @@ public class MainTextWrapper
           launchFile(file.getPath().getFilePath());          
         }
         else
-        {
           db.works.getByID(recordID).launch(-1);         
-        }        
+        
         break;
         
       case JS_EVENT_SET_SORT_KEY_METHOD :
@@ -349,11 +344,8 @@ public class MainTextWrapper
 
   private static void toggleDetailedKeyWorks(Document doc, String className, boolean sortByName, WebEngine weToUse, boolean detailed)
   {
-    Elements spans = doc.getElementsByClass(className);
-    
-    for (Element span : spans)
+    doc.getElementsByClass(className).forEach(span ->
     {          
-      String spanID = span.id();
       int recordID = parseInt(span.attr("hypnconID"), -1);
       int recordTypeOrd = parseInt(span.attr("hypnconType"), -1);
       HDT_RecordType recordType = getEnumVal(recordTypeOrd, HDT_RecordType.class);
@@ -367,9 +359,9 @@ public class MainTextWrapper
       else
         appendKeyWorkBody(record.getMainText().getKeyWorks(), innerHtml, sortByName);
       
-      String script = "document.getElementById(\"" + spanID + "\").innerHTML = \"" + escapeEcmaScript(innerHtml.toString()) + "\";";
+      String script = "document.getElementById(\"" + span.id() + "\").innerHTML = \"" + escapeEcmaScript(innerHtml.toString()) + "\";";
       weToUse.executeScript(script);
-    }   
+    });
   }
   
 //---------------------------------------------------------------------------
@@ -538,9 +530,7 @@ public class MainTextWrapper
     
     int keyWorksSize = nullSwitch(keyWorks, 0, () -> getNestedKeyWorkCount(curRecord, keyWorks));
     
-    if ((Jsoup.parse(html).text().trim().length() == 0) &&
-        (keyWorksSize == 0) &&
-        noDisplayRecords)        
+    if ((Jsoup.parse(html).text().trim().length() == 0) && (keyWorksSize == 0) && noDisplayRecords)        
       beginEditing(false);
     else
       setReadOnlyHTML(completeHtml, we, viewInfo, null);
@@ -678,8 +668,7 @@ public class MainTextWrapper
       }
     }
     
-    for (Element child : element.children())
-      addLinks(child, recordToHilite);
+    element.children().forEach(child -> addLinks(child, recordToHilite));
   }
   
 //---------------------------------------------------------------------------
@@ -689,11 +678,7 @@ public class MainTextWrapper
   {
     int ndx = 0;
     
-    while (charIsPartOfLink(text, ndx, true))
-    {
-      ndx++;
-      if (ndx >= text.length()) break;
-    }
+    while ((ndx < text.length()) && charIsPartOfWebLink(text, ndx)) ndx++;        
     
     return ndx;    
   }
@@ -703,16 +688,13 @@ public class MainTextWrapper
 
   private static String getKeywordLink(String text, KeywordLink link, String style)
   {
-    StrongLink strongLink;
     HDT_Base record = link.key.record;
     
     if (record == null) return text;
     
     if (record.getType() == hdtHub)
     {
-      strongLink = ((HDT_Hub)record).getLink();
-
-      record = ui.getSpokeToGoTo(strongLink);
+      record = ui.getSpokeToGoTo(HDT_Hub.class.cast(record).getLink());
       
       if (record == null)
       {
@@ -759,7 +741,7 @@ public class MainTextWrapper
 
   public static String recordTooltip(HDT_Base record)
   {
-    String tooltip, typeName = db.getTypeName(record.getType());
+    String typeName = db.getTypeName(record.getType());
     
     if (record.getType() == hdtWork)
     {
@@ -768,7 +750,7 @@ public class MainTextWrapper
       if (work.workType.isNotNull())
         typeName = work.workType.get().listName();
       
-      tooltip = "(" + typeName + ")";
+      String tooltip = "(" + typeName + ")";
       
       if (work.getAuthors().size() == 1)
         tooltip = tooltip + " " + work.getAuthors().get(0).singleName();
@@ -1045,8 +1027,7 @@ public class MainTextWrapper
 
   public static void appendSubLabelsKeyWorkBody(HDT_WorkLabel parentLabel, StringBuilder innerHtml, boolean sortByName, MutableInt tagNdx, TextViewInfo viewInfo, String parentDivitID)
   {
-    if (parentLabel == null) return;
-    if (parentLabel.subLabels.isEmpty()) return;
+    if ((parentLabel == null) || parentLabel.subLabels.isEmpty()) return;
     
     ArrayList<HDT_WorkLabel> sortedLabels = new ArrayList<HDT_WorkLabel>(parentLabel.subLabels);
     sortedLabels.sort((label1, label2) -> label1.name().compareToIgnoreCase(label2.name()));
@@ -1150,6 +1131,14 @@ public class MainTextWrapper
       }
     }
     
+    Iterator<HDT_Concept> it = concepts.iterator();
+    
+    while (it.hasNext())
+    {
+      if (displayerIsAlreadyShowing(it.next()))
+        it.remove();
+    }
+    
     concepts.sort((t1, t2) -> t1.getSortKey().compareTo(t2.getSortKey()));
     
     return concepts;
@@ -1160,16 +1149,16 @@ public class MainTextWrapper
 
   private void addLinkedTerms(List<? extends HDT_RecordWithConnector> uRecords, List<HDT_Concept> concepts)
   {
-    for (HDT_RecordWithConnector uRecord : uRecords)
+    uRecords.forEach(uRecord ->
     {
-      if (uRecord.isLinked() == false) continue;
+      if (uRecord.isLinked() == false) return;
 
       HDT_Concept concept = uRecord.getLink().getConcept();
-      if (concept == null) continue;
+      if (concept == null) return;
 
       if (concepts.contains(concept) == false)
         concepts.add(concept);
-    }
+    });
   }
   
 //---------------------------------------------------------------------------
@@ -1342,8 +1331,14 @@ public class MainTextWrapper
   private boolean displayerIsAlreadyShowing(HDT_RecordWithConnector displayer)
   {
     for (DisplayItem displayItem : displayItems)
+    {
       if (displayItem.record == displayer)
         return true;
+     
+      if (nullSwitch(displayItem.record, false, record -> nullSwitch(record.getHub(), false, hub -> hub == displayer.getHub())))
+        if (displayItem.record.name().equals(displayer.name()))
+          return true;
+    }
     
     switch (curRecord.getType())
     {
@@ -1449,7 +1444,7 @@ public class MainTextWrapper
     List<KeyWork> keyWorks = mainText.getKeyWorks();  
     Document doc = Jsoup.parse(mainText.getHtml());
     
-    if ((keyWorks == null) || (keyWorks.size() == 0))
+    if (collEmpty(keyWorks))
       return doc.body().html();
     
     boolean sortByName = db.prefs.getBoolean(PREF_KEY_KEY_WORK_SORT_BY_NAME, true);

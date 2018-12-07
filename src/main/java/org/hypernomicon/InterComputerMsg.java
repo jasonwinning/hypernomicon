@@ -36,10 +36,10 @@ public class InterComputerMsg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private String source;
-  private String dest;
-  private HDB_MessageType type;
-  private long sentTime;
+  private final String source;
+  private final String dest;
+  private final HDB_MessageType type;
+  private final long sentTime;
   
   public InterComputerMsg(String source, String dest, HDB_MessageType type)
   {

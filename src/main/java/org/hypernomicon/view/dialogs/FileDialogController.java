@@ -308,7 +308,7 @@ public class FileDialogController extends HyperDialog
     HDT_RecordWithPath record, firstRecord = null;
     Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
     
-    if ((set == null) || (set.size() == 0)) return null;
+    if (collEmpty(set)) return null;
     
     for (HyperPath setPath : set)
     {

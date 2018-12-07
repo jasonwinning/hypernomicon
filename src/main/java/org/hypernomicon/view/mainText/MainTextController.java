@@ -36,14 +36,12 @@ import java.util.List;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import org.hypernomicon.model.KeywordLinkList;
-import org.hypernomicon.model.KeywordLinkList.KeywordLink;
-import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.KeyWork;
 import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.MainText.DisplayItem;
+import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -370,10 +368,9 @@ public class MainTextController
 
   private void btnNewClick()
   {
-    HDT_RecordType keyType = hcbKeyType.selectedType();
-    
     if (ui.cantSaveRecord(true)) return;
-    
+
+    HDT_RecordType keyType = hcbKeyType.selectedType();
     ArrayList<KeyWork> keyWorks = new ArrayList<>();
     keyWorks.addAll(curRecord.getMainText().getKeyWorks());
 
@@ -495,9 +492,8 @@ public class MainTextController
   {
     DisplayItem item = lvRecords.getSelectionModel().getSelectedItem();
     
-    if (item != null)
-      if (item.type == diRecord)
-        lvRecords.getItems().remove(item);
+    if ((item != null) && (item.type == diRecord))
+      lvRecords.getItems().remove(item);
       
     hsPane.requestLayout();
     safeFocus(lvRecords);
@@ -601,15 +597,9 @@ public class MainTextController
   public static String getHtmlFromEditor(String editorHtml)
   {
     Document doc = Jsoup.parse(editorHtml);
-    Elements elements;
        
-    elements = doc.getElementsByTag("script");
-    for (Element element : elements)
-      element.remove();
-    
-    elements = doc.getElementsByAttributeValue("id", "key_works");
-    for (Element element : elements)
-      element.remove();
+    doc.getElementsByTag("script").forEach(Element::remove);   
+    doc.getElementsByAttributeValue("id", "key_works").forEach(Element::remove);
     
     editorHtml = doc.html();    
     
@@ -623,49 +613,46 @@ public class MainTextController
   {
     keyWorksArg.clear();
     
-    HashSet<HDT_RecordWithPath> keyWorkRecords = new HashSet<>();
-    String kwHtml = taKeyWorks.getText();
-    Document subDoc = Jsoup.parse(kwHtml);
-    Elements aElements = subDoc.getElementsByTag("a");
+    Document subDoc = Jsoup.parse(taKeyWorks.getText());
           
-    for (Element aElement : aElements)
+    subDoc.getElementsByTag("a").forEach(aElement ->
     {
       int id = parseInt(aElement.attributes().get("id") , -1);
       HDT_RecordType type = db.parseTypeTagStr(aElement.attributes().get("type"));
       
       if ((id > 0) && (type != hdtNone))
       {
-        HDT_RecordWithPath record = (HDT_RecordWithPath) db.records(type).getByID(id);
-        if (record != null)
+        nullSwitch((HDT_RecordWithPath) db.records(type).getByID(id), record ->
         {
           String text = aElement.ownText();
           keyWorksArg.add(new KeyWork(record.getType(), record.getID(), text, true));
-        }
+        });
       }
       
       aElement.remove();
-    }
+    });
     
+    HashSet<HDT_RecordWithPath> keyWorkRecords = new HashSet<>();
     KeywordLinkList list = new KeywordLinkList();
     String kwText = extractTextFromHTML(subDoc.html());
     list.generate(kwText);
     
-    for (KeywordLink link : list.getLinks())
+    list.getLinks().forEach(link ->
     {
-      SearchKeyword key = link.key;
-      String str = kwText.substring(link.offset, link.offset + link.length);
+      HDT_Base record = link.key.record;
       
-      if ((key.record.getType() == hdtWork) || (key.record.getType() == hdtMiscFile))
+      if ((record.getType() == hdtWork) || (record.getType() == hdtMiscFile))
       {
-        HDT_RecordWithPath keyWorkRecord = (HDT_RecordWithPath) key.record;
+        HDT_RecordWithPath keyWorkRecord = (HDT_RecordWithPath) record;
         
         if (keyWorkRecords.contains(keyWorkRecord) == false)
         {
+          String str = kwText.substring(link.offset, link.offset + link.length);
           keyWorksArg.add(new KeyWork(keyWorkRecord.getType(), keyWorkRecord.getID(), str, true));
           keyWorkRecords.add(keyWorkRecord);
         }
       }
-    }
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -716,21 +703,18 @@ public class MainTextController
       if (borderPane.getTop() == null)
         borderPane.setTop(tpKeyWorks);
       
-      if (keyWorks.size() > 0)
-        tpKeyWorks.setExpanded(true);
-      else
-        tpKeyWorks.setExpanded(record.getType() != hdtPerson);
+      tpKeyWorks.setExpanded((keyWorks.size() > 0) || (record.getType() != hdtPerson));
       
       HashMap<String, String> linkMap = new HashMap<>();
       List<String> searchKeys = new ArrayList<String>();
       
-      for (KeyWork keyWork : keyWorks)
+      keyWorks.forEach(keyWork ->
       {             
         String searchKey = keyWork.getSearchKey(true);
         
         linkMap.put(searchKey, keyWork.getEditorText());
         searchKeys.add(searchKey);
-      }
+      });
       
       searchKeys.sort((s1, s2) -> s1.compareToIgnoreCase(s2));
       

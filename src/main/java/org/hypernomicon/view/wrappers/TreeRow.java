@@ -35,8 +35,8 @@ import javafx.scene.image.ImageView;
 
 public class TreeRow extends AbstractTreeRow<TreeRow>
 {
-  private String text;
-  private HDT_Base record;
+  private final String text;
+  private final HDT_Base record;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

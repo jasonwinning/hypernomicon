@@ -29,9 +29,6 @@ public class InterProcDaemon extends Thread
 {
   public static final int PORT = 59346;
 
-  private ServerSocket serverSocket = null;
-  private Socket clientSocket = null;
-
   public InterProcDaemon()
   {
     super();
@@ -43,16 +40,12 @@ public class InterProcDaemon extends Thread
 
   @Override public void run()
   {
-    try
-    {
-      // Create the server socket
-      serverSocket = new ServerSocket(PORT, 1);
+    try (ServerSocket serverSocket = new ServerSocket(PORT, 1))
+    {      
       while (true)
       {
-        // Wait for a connection
-        clientSocket = serverSocket.accept();
-        
-        try (PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+        try (Socket clientSocket = serverSocket.accept();  // Wait for a connection
+             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())))
         {
           String line;
@@ -79,9 +72,6 @@ public class InterProcDaemon extends Thread
           
           out.println("Roger; out.");
         }
-        
-        while (clientSocket.isClosed() == false)
-          sleepForMillis(30);
       }
     } 
     catch (IOException e)

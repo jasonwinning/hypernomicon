@@ -42,7 +42,7 @@ public class NestedValue
 //---------------------------------------------------------------------------
 
   public NestedValue(HDI_OnlineBase<? extends HDI_OfflineBase> item)
-  {
+  { 
     switch (item.getCategory())
     {
       case hdcString : str = HDI_OnlineString.class.cast(item).get(); break;

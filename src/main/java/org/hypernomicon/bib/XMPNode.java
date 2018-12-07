@@ -43,13 +43,13 @@ import static org.hypernomicon.bib.BibData.YearType.*;
 
 public class XMPNode
 {
-  private XMPNode parent = null;
-  private XMPMeta xmpMeta = null;
-  private LinkedHashMap<String, LinkedHashMap<String, XMPNode>> prefixToNameToChild = new LinkedHashMap<>();
-  private ArrayList<XMPNode> elements = new ArrayList<>();
-  private String ns = null, prefix = null, name = null, path = null, value = null;
-  private int arrayNdx = -1;
-  private XMPPropertyInfo propInfo = null;
+  private final XMPNode parent;
+  private final XMPMeta xmpMeta;
+  private final XMPPropertyInfo propInfo;  
+  private final LinkedHashMap<String, LinkedHashMap<String, XMPNode>> prefixToNameToChild = new LinkedHashMap<>();  
+  private final ArrayList<XMPNode> elements = new ArrayList<>();  
+  private final String ns, path, value, prefix, name;
+  private final int arrayNdx;
 
   public String getNamespace()         { return ns; }
   public XMPPropertyInfo getPropInfo() { return propInfo; }
@@ -70,7 +70,7 @@ public class XMPNode
       XMPPropertyInfo propInfo = (XMPPropertyInfo) it.next();
       
       if (propInfo.getPath() != null)
-        root.addDescendant(propInfo);     
+        root.addDescendant(propInfo);
     }
     
     return root;
@@ -119,25 +119,33 @@ public class XMPNode
 
     if (propInfo != null)
     {
-      this.ns = propInfo.getNamespace();
+      ns = nullSwitch(propInfo.getNamespace(), parent.getNamespace());      
+      path = propInfo.getPath();
+      value = propInfo.getValue();
+    }
+    else
+    {
+      ns = null;
+      path = null;
+      value = null;
+    }
       
-      if (ns == null)
-        ns = parent.getNamespace();
-      
-      this.path = propInfo.getPath();
-      this.value = propInfo.getValue();
-      
-      if (path != null)
-      {
-        int ndx = path.lastIndexOf("/");
-        String subPath = path.substring(ndx + 1);
+    if (path != null)
+    {
+      int ndx = path.lastIndexOf("/");
+      String subPath = path.substring(ndx + 1);
 
-        PathParts parts = new PathParts(subPath);
-        
-        prefix = parts.prefix;
-        name = parts.name;
-        arrayNdx = parts.arrayNdx;
-      }
+      PathParts parts = new PathParts(subPath);
+      
+      prefix = parts.prefix;
+      name = parts.name;
+      arrayNdx = parts.arrayNdx;
+    }
+    else
+    {
+      prefix = null;
+      name = null;
+      arrayNdx = -1;
     }
   }
 
@@ -248,8 +256,7 @@ public class XMPNode
   public void extractDOIandISBNs(BibData bd)
   {
     if (safeStr(name).toLowerCase().contains("journaldoi") == false)
-      if (safeStr(value).length() > 0)
-        BibUtils.extractDOIandISBNs(value, bd);
+      bd.extractDOIandISBNs(value);
     
     prefixToNameToChild.values().forEach(nameToChild ->
       nameToChild.values().forEach(child ->
@@ -307,7 +314,7 @@ public class XMPNode
         switch (name)
         {
           case "aggregationType" : bd.setEntryType(BibUtils.parsePrismAggregationType(value)); break;
-          case "issn" : bd.addStr(bfISSNs, value); break;
+          case "issn" : bd.addISSN(value); break;
         }
       }
     }

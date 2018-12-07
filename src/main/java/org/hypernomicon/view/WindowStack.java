@@ -26,6 +26,7 @@ import java.util.LinkedList;
 
 import org.apache.commons.lang3.SystemUtils;
 
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
 import javafx.stage.Modality;
@@ -71,16 +72,7 @@ public class WindowStack
   private final LinkedList<WindowWrapper> windows = new LinkedList<>();
   private final HashMap<MenuItem, Boolean> itemsDisabled = new HashMap<>();
   private boolean cyclingFocus = false;
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
-
-  private final WindowWrapper peek() 
-  { 
-    if (windows.isEmpty()) return null;
-    return windows.getFirst();
-  }
-  
+ 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
 
@@ -88,7 +80,11 @@ public class WindowStack
   public final void push(Stage stage)          { push(new StageWrapper(stage)); }
   public final boolean getCyclingFocus()       { return cyclingFocus; }
   public final Modality getOutermostModality() { return peek().getModality(); }
-  
+  private final WindowWrapper peek()           { return windows.isEmpty() ? null : windows.getFirst(); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------  
+
   private final void push(WindowWrapper window)
   {
     if (windows.isEmpty() == false)
@@ -126,8 +122,18 @@ public class WindowStack
         curStage.toFront(); 
     });
     
-    cyclingFocus = false;
     stage.toFront();
+    
+    Platform.runLater(() ->
+    {
+      for (int ndx = 0; ndx < 6; ndx++)
+      {
+        sleepForMillis(50);
+        stage.toFront();
+      }
+  
+      cyclingFocus = false;
+    });
   }
 
 //---------------------------------------------------------------------------  

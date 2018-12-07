@@ -43,7 +43,7 @@ public class Connector
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private HDT_RecordWithConnector record;
+  private final HDT_RecordWithConnector record;
   StrongLink link;
   MainText mainText;
   boolean alreadyModifying = false;

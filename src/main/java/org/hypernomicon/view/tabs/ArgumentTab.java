@@ -287,33 +287,26 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
   {
     RecordListView.addDefaultMenuItems(htWhereMade);
           
-    htWhereMade.addContextMenuItem(hdtWork, "Go to work record", 
-      record -> ui.goToRecord(record, true));
+    htWhereMade.addContextMenuItem("Go to work record", HDT_Work.class, 
+      work -> ui.goToRecord(work, true));
     
-    htWhereMade.addContextMenuItem(hdtPerson, "Go to person record",
+    htWhereMade.addContextMenuItem("Go to person record", HDT_Person.class,
       person -> ui.goToRecord(person, true));
     
-    RecordListView.CondRecordHandler launchCondHandler = 
-      record ->
+    htCounters.addCondContextMenuItem("Launch work file", HDT_Argument.class,
+      arg ->
       {
-        if (record.getType() != hdtArgument) return false;
-        HDT_Argument argument = (HDT_Argument)record;
-        
-        for (HDT_Work work : argument.works)
+        for (HDT_Work work : arg.works)
         {
           if (work.getPath().isEmpty() == false)
             return true;
         }
         
         return false;          
-      };
-    
-    RecordListView.RecordHandler launchHandler = 
-      record ->
+      },
+      arg ->
       {
-        HDT_Argument argument = (HDT_Argument)record;
-        
-        for (HDT_Work work : argument.works)
+        for (HDT_Work work : arg.works)
         {
           if (work.getPath().isEmpty() == false)
           {
@@ -321,22 +314,13 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
             return;
           }
         }
-      };
+      });
     
-    RecordListView.CondRecordHandler workGoToCondHandler = 
-      record ->
+    htCounters.addCondContextMenuItem("Go to work record", HDT_Argument.class, 
+      arg -> arg.works.size() > 0,
+      arg ->
       {
-        if (record.getType() != hdtArgument) return false;
-        HDT_Argument argument = (HDT_Argument)record;
-        return argument.works.size() > 0;
-      };
-    
-    RecordListView.RecordHandler workGoToHandler = 
-      record ->
-      {
-        HDT_Argument argument = (HDT_Argument)record;
-        
-        for (HDT_Work work : argument.works)
+        for (HDT_Work work : arg.works)
         {
           if (work.getPath().isEmpty() == false)
           {
@@ -345,15 +329,13 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
           }
         }      
         
-        ui.goToRecord(argument.works.get(0), true);
-      };
-      
-    htCounters.addCondContextMenuItem(hdtArgument, "Launch work file", launchCondHandler, launchHandler);
-    htCounters.addCondContextMenuItem(hdtArgument, "Go to work record", workGoToCondHandler, workGoToHandler);
-    htCounters.addContextMenuItem(hdtPerson, "Go to person record",
+        ui.goToRecord(arg.works.get(0), true);
+      });
+    
+    htCounters.addContextMenuItem("Go to person record", HDT_Person.class,
         person -> ui.goToRecord(person, true));
     
-    htCounters.addContextMenuItem(hdtArgument, "Go to argument record", 
+    htCounters.addContextMenuItem("Go to argument record", HDT_Argument.class, 
         argument -> ui.goToRecord(argument, true));
   }
 

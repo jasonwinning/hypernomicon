@@ -34,9 +34,10 @@ public class CollectionTree
 {
   public static enum BibCollectionType { bctAll, bctUnsorted, bctTrash, bctUser }
   
-  private TreeView<BibCollectionRow> treeView;
+  private final TreeView<BibCollectionRow> treeView;
+  private final HashMap<String, BibCollectionRow> keyToRow;
+  
   private BibCollectionRow treeRowAllEntries, treeRowUnsorted, treeRowTrash;
-  private HashMap<String, BibCollectionRow> keyToRow;
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
@@ -51,6 +52,7 @@ public class CollectionTree
   public CollectionTree(TreeView<BibCollectionRow> treeView)
   {
     this.treeView = treeView;
+    keyToRow = new HashMap<>();
     
     treeView.setCellFactory(theTreeView -> 
     {
@@ -87,7 +89,7 @@ public class CollectionTree
       treeView.setRoot(null);
     }    
    
-    keyToRow = new HashMap<>();
+    keyToRow.clear();
     
     treeView.setRoot(new TreeItem<BibCollectionRow>(null));
     treeView.setShowRoot(false);
@@ -119,8 +121,7 @@ public class CollectionTree
 //---------------------------------------------------------------------------
 
   private TreeItem<BibCollectionRow> addToTree(String childKey, BibCollection childColl, Map<String, BibCollection> keyToColl)
-  {
-    BibCollectionRow childRow;
+  {     
     TreeItem<BibCollectionRow> parentItem;
     
     String parentKey = childColl.getParentKey();
@@ -132,7 +133,7 @@ public class CollectionTree
     else
       parentItem = addToTree(parentKey, keyToColl.get(parentKey), keyToColl);
     
-    childRow = new BibCollectionRow(childColl);
+    BibCollectionRow childRow = new BibCollectionRow(childColl);
     keyToRow.put(childKey, childRow);
     insertTreeItem(parentItem.getChildren(), childRow);
     

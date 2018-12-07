@@ -35,8 +35,9 @@ public class BibField
 {
   private final BibFieldEnum bibFieldEnum;
   private final BibFieldType type;
-  private String str;
   private final List<String> strList = new ArrayList<String>();
+  
+  private String str;
   
   public BibField(BibFieldEnum bibFieldEnum)
   {
@@ -181,24 +182,12 @@ public class BibField
     {
       case bfISBNs : 
         
-        List<String> isbns = matchISBN(newStr);        
-        if (isbns == null) return;
-        
-        for (String isbn : isbns)
-          if (strList.contains(isbn) == false)
-            strList.add(isbn);
-        
+        matchISBN(newStr, strList);
         break;
       
       case bfISSNs :
         
-        List<String> issns = matchISSN(newStr);        
-        if (issns == null) return;
-          
-        for (String issn : issns)
-          if (strList.contains(issn) == false)
-            strList.add(issn);
-
+        matchISSN(newStr, strList);                 
         break;
         
       default :

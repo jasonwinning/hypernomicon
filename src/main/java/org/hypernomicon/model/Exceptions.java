@@ -27,9 +27,9 @@ public class Exceptions
 {
   public static class InvalidItemException extends Exception
   {
-    private int recordID;
-    private HDT_RecordType recordType;
-    private String itemName;
+    private final int recordID;
+    private final HDT_RecordType recordType;
+    private final String itemName;
 
   //---------------------------------------------------------------------------
     
@@ -77,8 +77,8 @@ public class Exceptions
 
   public static class DuplicateRecordException extends Exception
   {
-    private int id;
-    private HDT_RecordType type;
+    private final int id;
+    private final HDT_RecordType type;
     
     public DuplicateRecordException(int id, HDT_RecordType type) 
     {
@@ -97,10 +97,10 @@ public class Exceptions
 
   public static class SearchKeyException extends Exception
   {
-    private boolean tooShort;
-    private int recordID;
-    private HDT_RecordType recordType;
-    private String key;
+    private final boolean tooShort;
+    private final int recordID;
+    private final HDT_RecordType recordType;
+    private final String key;
     
     public SearchKeyException(boolean tooShort, int recordID, HDT_RecordType recordType, String key) 
     { 
@@ -111,7 +111,8 @@ public class Exceptions
       this.recordID = recordID;
       this.recordType = recordType;
       this.key = key;
-    }    
+    }
+    
     public boolean getTooShort()          { return tooShort; }
     public int getRecordID()              { return recordID; }
     public HDT_RecordType getRecordType() { return recordType; }
@@ -123,8 +124,8 @@ public class Exceptions
 
   public static class HubChangedException extends Exception
   {
-    private int recordID;
-    private HDT_RecordType recordType;
+    private final int recordID;
+    private final HDT_RecordType recordType;
     
     public HubChangedException(int recordID, HDT_RecordType recordType, boolean formerlyUnlinked)
     {
@@ -144,8 +145,8 @@ public class Exceptions
 
   public static class RelationCycleException extends Exception
   {
-    private int childID, parentID;
-    private HDT_RecordType childType, parentType;
+    private final int childID, parentID;
+    private final HDT_RecordType childType, parentType;
 
     public RelationCycleException(int childID, HDT_RecordType childType, int parentID, HDT_RecordType parentType) 
     { 
@@ -180,7 +181,7 @@ public class Exceptions
 
   public static class HDB_InternalError extends Exception
   {
-    private int num;
+    private final int num;
   
     public HDB_InternalError(int newNum)
     {      

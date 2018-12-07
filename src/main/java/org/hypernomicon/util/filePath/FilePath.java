@@ -48,7 +48,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 
 public class FilePath implements Comparable<FilePath>
 {
-  private InnerFilePath innerVal;
+  private final InnerFilePath innerVal;
   
   public FilePath(File file)      { innerVal = new InnerFilePath(file); }
   public FilePath(Path path)      { innerVal = new InnerFilePath(path); }

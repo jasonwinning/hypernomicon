@@ -18,7 +18,7 @@
 package org.hypernomicon.bib.zotero;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.App.app;
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -35,7 +35,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -561,9 +560,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         
         while (it.hasNext())
         {
-          Entry<String, ZoteroItem> mapping = it.next();
-          String key = mapping.getKey();
-          if (jObj.containsKey(key) == false)
+          if (jObj.containsKey(it.next().getKey()) == false)
             it.remove();
         }
       }
@@ -884,9 +881,9 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   @Override public void loadFromDisk(FilePath filePath) throws FileNotFoundException, IOException, ParseException
   {
     JsonObj jMainObj = null;
-    keyToAllEntry = new HashMap<>();
-    keyToTrashEntry = new HashMap<>();
-    keyToColl = new HashMap<>();
+    keyToAllEntry.clear();
+    keyToTrashEntry.clear();
+    keyToColl.clear();
         
     try (InputStream in = new FileInputStream(filePath.toFile()))
     {
@@ -989,12 +986,12 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   {
     LinkedHashSet<ZoteroItem> view = new LinkedHashSet<>();
     
-    for (ZoteroItem item : getNonTrashEntries())
+    getNonTrashEntries().forEach(item ->
     {
       List<String> collKeys = item.getCollKeys(false);
       if (collKeys.contains(collKey))
         view.add(item);
-    }
+    });
     
     return Collections.unmodifiableSet(view);
   }
@@ -1006,11 +1003,11 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   { 
     LinkedHashSet<ZoteroItem> view = new LinkedHashSet<>();
     
-    for (ZoteroItem item : keyToAllEntry.values())
+    keyToAllEntry.values().forEach(item ->
     {
       if (keyToTrashEntry.containsKey(item.getEntryKey()) == false)
         view.add(item);
-    }
+    });
     
     return Collections.unmodifiableSet(view);
   }
@@ -1103,9 +1100,8 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     if (item == null) return "";
     
     JsonObj jData = item.exportJsonObjForUploadToServer(true);
-    if (jData.containsKey("data"))
-      jData = jData.getObj("data");
-    
+    jData = nullSwitch(jData.getObj("data"), jData);
+        
     StringBuilder html = new StringBuilder();
     
     html.append("<html><head><style>")
@@ -1177,37 +1173,26 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   {
     creatorsArr.getObjs().forEach(node ->
     {
-      String firstName = "", lastName = "", name = "", type = "";
+      String type = node.getStrSafe("creatorType");
       
-      if (node.containsKey("firstName"))
-        firstName = node.getStrSafe("firstName");
+      if (type.length() == 0) return;
+
+      type = camelToTitle(type);
+      PersonName personName;
+      String firstName = ultraTrim(node.getStrSafe("firstName")),      
+             lastName = ultraTrim(node.getStrSafe("lastName"));
       
-      if (node.containsKey("lastName"))
-        lastName = node.getStrSafe("lastName");
-      
-      if (node.containsKey("name"))
-        name = node.getStrSafe("name");
-      
-      if (node.containsKey("creatorType"))
-        type = node.getStrSafe("creatorType");
-      
-      if (type.length() > 0)
+      if ((firstName.length() > 0) || (lastName.length() > 0))
+        personName = new PersonName(firstName, lastName);
+      else
       {
-        type = camelToTitle(type);
-        PersonName personName;
-        
-        if ((firstName.length() > 0) || (lastName.length() > 0))
-          personName = new PersonName(firstName, lastName);
-        else
-          personName = new PersonName(name);
-          
-        if (personName.isEmpty() == false)
-        {
-          html.append("<tr><td class=\"fieldName\">" + type + "</td><td>")
+        personName = new PersonName(node.getStrSafe("name"));        
+        if (personName.isEmpty()) return;
+      }
+      
+      html.append("<tr><td class=\"fieldName\">" + type + "</td><td>")
           .append(personName.getLastFirst())
           .append("</td></tr>");
-        }
-      }
     });
   }
 
