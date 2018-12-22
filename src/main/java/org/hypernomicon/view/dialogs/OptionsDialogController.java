@@ -229,10 +229,7 @@ public class OptionsDialogController extends HyperDialog
     initAppCheckBox(chkAutoOpenPDF, PREF_KEY_AUTO_OPEN_PDF, true);
     initAppCheckBox(chkAutoRetrieveBib, PREF_KEY_AUTO_RETRIEVE_BIB, true);
        
-    boolean disable = true;
-    if (db != null)
-      if ((db.prefs != null) && (db.isLoaded()))
-        disable = false;
+    boolean disable = (db == null) || (db.prefs == null) || (db.isLoaded() == false);
     
     tabNaming.setDisable(disable);
    

@@ -66,10 +66,7 @@ public class JsonObj implements Cloneable
   public String getStrSafe(String key)
   {
     Object obj = jObj.get(key);
-    if (obj == null) return "";
-    if ((obj instanceof String) == false) return "";
-    
-    return (String) obj;
+    return obj instanceof String ? String.class.cast(obj) : "";
   }
   
 //---------------------------------------------------------------------------  

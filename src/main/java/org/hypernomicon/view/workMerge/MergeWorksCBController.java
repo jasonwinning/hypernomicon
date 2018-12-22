@@ -27,9 +27,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 
-public class MergeWorksCBController
+public class MergeWorksCBController extends BibFieldRow
 {
   @FXML private RadioButton rb1;
   @FXML private RadioButton rb2;
@@ -48,8 +49,28 @@ public class MergeWorksCBController
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  public void init(BibFieldEnum bibFieldEnum, BibData bd1, BibData bd2, BibData bd3, BibData bd4)
+  @Override public void mergeInto(BibData bd) { return; } // EntryType should have already been set by the time this gets called
+
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------  
+
+  public EntryType getEntryType()
   {
+    if      (rb1.isSelected()) return cb1.getValue();
+    else if (rb2.isSelected()) return cb2.getValue();
+    else if (rb3.isSelected()) return cb3.getValue();
+    else                       return cb4.getValue();
+  }
+ 
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------  
+
+  
+  @Override protected void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4)
+  {
+    this.ap = ap;
+    this.bibFieldEnum = bibFieldEnum;
+    
     lbl.setText(BibData.getFieldName(bibFieldEnum));
     
     if (bd4 == null)
@@ -107,17 +128,6 @@ public class MergeWorksCBController
     }
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-
-  public EntryType getEntryType()
-  {
-    if      (rb1.isSelected()) return cb1.getValue();
-    else if (rb2.isSelected()) return cb2.getValue();
-    else if (rb3.isSelected()) return cb3.getValue();
-    else                       return cb4.getValue();
-  }
-  
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 

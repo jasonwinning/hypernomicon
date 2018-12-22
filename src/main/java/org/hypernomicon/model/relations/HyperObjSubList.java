@@ -25,7 +25,7 @@ import org.hypernomicon.model.records.HDT_Base;
 
 public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> extends HyperObjList<HDT_SubjType, HDT_ObjType>
 {
-  private HyperObjList<HDT_SubjType, HDT_ObjType> parentList;
+  private final HyperObjList<HDT_SubjType, HDT_ObjType> parentList;
   private int startNdx;
   private int endNdx;
 
@@ -152,7 +152,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   @Override public boolean containsAll(Collection<?> c)
   {
     for (Object o : c)
-      if (this.contains(o) == false) return false;
+      if (contains(o) == false) return false;
     
     return true;
   }

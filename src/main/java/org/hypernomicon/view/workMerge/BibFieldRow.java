@@ -17,41 +17,47 @@
 
 package org.hypernomicon.view.workMerge;
 
+import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
+
+import java.io.IOException;
+
+import org.hypernomicon.App;
+import org.hypernomicon.bib.BibData;
 import org.hypernomicon.bib.BibData.BibFieldEnum;
 
-public class BibFieldRow
+import javafx.fxml.FXMLLoader;
+import javafx.scene.layout.AnchorPane;
+
+public abstract class BibFieldRow
 {
-  public BibFieldEnum bibFieldEnum = null;
-  public MergeWorksSLController slCtrlr = null;
-  public MergeWorksMLController mlCtrlr = null;
-  public MergeWorksCBController cbCtrlr = null;
+  protected AnchorPane ap;
+  protected BibFieldEnum bibFieldEnum;
+
+  public final AnchorPane getAnchorPane() { return ap; }
+  
+  protected abstract void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4);
+  public abstract void mergeInto(BibData bd);
   
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
+
+  public static final BibFieldRow create(BibFieldEnum bibFieldEnum, BibData bd1, BibData bd2, BibData bd3, BibData bd4) throws IOException
+  {
+    FXMLLoader loader;
+    
+    if ((bibFieldEnum == bfISBNs) || 
+        (bibFieldEnum == bfISSNs))                      loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksMultiLineChk.fxml"));
+    else if (bibFieldEnum == bfEntryType)               loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksCB.fxml"));
+    else if (BibData.bibFieldIsMultiLine(bibFieldEnum)) loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksMultiLine.fxml"));      
+    else                                                loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksSingleLine.fxml"));
+    
+    AnchorPane ap = loader.load();
+    BibFieldRow row = loader.getController();
+      
+    row.init(bibFieldEnum, ap, bd1, bd2, bd3, bd4);
+    return row;
+  }
   
-  public BibFieldRow(BibFieldEnum bibField, MergeWorksSLController slCtrlr)
-  {
-    this.bibFieldEnum = bibField;
-    this.slCtrlr = slCtrlr;
-  }
-
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-
-  public BibFieldRow(MergeWorksCBController ctrlr)
-  {
-    this.cbCtrlr = ctrlr;
-  }
-
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-
-  public BibFieldRow(BibFieldEnum bibField, MergeWorksMLController mlCtrlr)
-  {
-    this.bibFieldEnum = bibField;
-    this.mlCtrlr = mlCtrlr;
-  }
-
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -221,7 +220,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
           
           if ((HyperTableCell.getCellID(cellVal) >= 0) && (VariablePopulator.class.cast(nextPopulator).getPopulator(row) instanceof GenericOperandPopulator))
           {
-            GenericOperandPopulator gop = (GenericOperandPopulator) VariablePopulator.class.cast(nextPopulator).getPopulator(row);
+            GenericOperandPopulator gop = VariablePopulator.class.cast(nextPopulator).getPopulator(row);
             row.setCellValue(nextColNdx, gop.getChoice(EQUAL_TO_OPERAND_ID));
             if (tempPFC == false)
               htFields.edit(row, 4);        
@@ -683,29 +682,34 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
         
         sources.put(row, source);
         
-        if (source.sourceType() == QuerySourceType.QST_filteredRecords)
+        switch (source.sourceType())
         {
-          hasFiltered = true;
-          fqs = (FilteredQuerySource) source;
-          unfilteredTypes.add(fqs.recordType());
-        }
+          case QST_filteredRecords :
+            
+            hasFiltered = true;
+            fqs = (FilteredQuerySource) source;
+            unfilteredTypes.add(fqs.recordType());
+            break;
+
+          case QST_recordsByType :
+
+            dqs = (DatasetQuerySource) source;
+            unfilteredTypes.add(dqs.recordType());
+            hasUnfiltered = true;
+            break;
+
+          case QST_allRecords :
         
-        else if (source.sourceType() == QuerySourceType.QST_recordsByType)
-        {
-          dqs = (DatasetQuerySource) source;
-          unfilteredTypes.add(dqs.recordType());
-          hasUnfiltered = true;
-        }
-        
-        else if (source.sourceType() == QuerySourceType.QST_allRecords)
-        {
-          hasUnfiltered = true;  
-        
-          unfilteredTypes = EnumSet.allOf(HDT_RecordType.class);
+            hasUnfiltered = true;  
           
-          unfilteredTypes.remove(hdtNone);
-          unfilteredTypes.remove(hdtAuxiliary);
-          unfilteredTypes.remove(hdtHub);
+            unfilteredTypes = EnumSet.allOf(HDT_RecordType.class);
+            
+            unfilteredTypes.remove(hdtNone);
+            unfilteredTypes.remove(hdtAuxiliary);
+            unfilteredTypes.remove(hdtHub);
+            break;
+            
+          default : break;
         }
       }      
             
@@ -955,9 +959,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
     {
       if (db.isLoaded() == false) return false;
       
-      VariablePopulator vp1 = (VariablePopulator)htFields.getPopulator(2);
-      VariablePopulator vp2 = (VariablePopulator)htFields.getPopulator(3);
-      VariablePopulator vp3 = (VariablePopulator)htFields.getPopulator(4);
+      VariablePopulator vp1 = htFields.getPopulator(2), vp2 = htFields.getPopulator(3), vp3 = htFields.getPopulator(4);
       boolean samePop = false;
          
       switch (query)
@@ -983,7 +985,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
           {
             if (vp1.getPopulator(row).getValueType() == CellValueType.cvtRelation)
             {
-              RelationPopulator rp = (RelationPopulator) vp1.getPopulator(row);
+              RelationPopulator rp = vp1.getPopulator(row);
               if (rp.getRecordType(row) == row.getType(0))
                 samePop = true;
             }
@@ -1003,7 +1005,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
           {
             if (vp1.getPopulator(row).getValueType() == CellValueType.cvtTagItem)
             {
-              TagItemPopulator tip = (TagItemPopulator) vp1.getPopulator(row);
+              TagItemPopulator tip = vp1.getPopulator(row);
               if (tip.getRecordType(null) == row.getType(0))
                 samePop = true;
             }
@@ -1033,9 +1035,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
     {
       if (db.isLoaded() == false) return false;
       
-      VariablePopulator vp1 = (VariablePopulator)htFields.getPopulator(2);
-      VariablePopulator vp2 = (VariablePopulator)htFields.getPopulator(3);
-      VariablePopulator vp3 = (VariablePopulator)htFields.getPopulator(4);
+      VariablePopulator vp1 = htFields.getPopulator(2), vp2 = htFields.getPopulator(3), vp3 = htFields.getPopulator(4);
 
       int query = row.getID(1);
       
@@ -1063,9 +1063,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
     {
       if (db.isLoaded() == false) return false;    
       
-      VariablePopulator vp1 = (VariablePopulator)htFields.getPopulator(2);
-      VariablePopulator vp2 = (VariablePopulator)htFields.getPopulator(3);
-      VariablePopulator vp3 = (VariablePopulator)htFields.getPopulator(4);
+      VariablePopulator vp1 = htFields.getPopulator(2), vp2 = htFields.getPopulator(3), vp3 = htFields.getPopulator(4);
 
       HDT_RecordType recordType, subjType, objType = hdtNone;
       RelationType relType;
@@ -1183,7 +1181,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
     private void clearOperand(HyperTableRow row, int opNum)
     {
-      VariablePopulator vp = (VariablePopulator)htFields.getPopulator(opNum + 1);
+      VariablePopulator vp = htFields.getPopulator(opNum + 1);
       vp.setPopulator(row, null);
       vp.setRestricted(row, true);
       row.setCellValue(opNum + 1, -1, "", hdtNone);
@@ -1506,18 +1504,16 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
   @Override public void clear()
   {
     clearingViews = true;
-    
-    Iterator<QueryView> viewIt = queryViews.iterator();
+        
     removeFromAnchor(webView);
     apDescription.getChildren().add(webView);
     
-    while (viewIt.hasNext())
+    queryViews.removeIf(queryView ->
     {
-      QueryView queryView = viewIt.next();
       HyperTable.saveColWidthsForTable(queryView.tvFields, PREF_KEY_HT_QUERY_FIELDS, false);
       tabPane.getTabs().remove(queryView.tab);
-      viewIt.remove();
-    }
+      return true;      
+    });
     
     clearingViews = false;
     
@@ -1607,7 +1603,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
         
         if (schema == null) return false;
         
-        VariablePopulator vp3 = (VariablePopulator)curQV.htFields.getPopulator(4);
+        VariablePopulator vp3 = curQV.htFields.getPopulator(4);
         CellValueType pm = vp3.getPopulator(row) == null ? cvtVaries : vp3.getPopulator(row).getValueType();
         
         switch (getCellID(param2))
@@ -1746,9 +1742,8 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
       int ndx = 0; for (ResultsRow row : resultRowList)
       {
         HDT_Base record = row.getRecord();
-        if (record != null)
-          if (record instanceof HDT_RecordWithPath)
-            fileList.addRecord((HDT_RecordWithPath)record, includeEdited.getValue());
+        if (record instanceof HDT_RecordWithPath)
+          fileList.addRecord((HDT_RecordWithPath)record, includeEdited.getValue());
         
         if (isCancelled()) 
           throw new TerminateTaskException();

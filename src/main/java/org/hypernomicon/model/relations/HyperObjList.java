@@ -546,9 +546,8 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
 
   public void throwLastException() throws RelationCycleException
   {
-    if (getLastException() != null)
-      if (getLastException() instanceof RelationCycleException)
-        throw (RelationCycleException) getLastException();
+    if (getLastException() instanceof RelationCycleException)
+      throw (RelationCycleException) getLastException();
   }
 
 //---------------------------------------------------------------------------

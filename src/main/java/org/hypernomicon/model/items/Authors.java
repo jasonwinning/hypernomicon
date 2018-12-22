@@ -66,10 +66,10 @@ public class Authors implements Iterable<Author>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
   
-  private HyperObjList<HDT_Work, HDT_Person> objList, objListNoMod;
-  private HDT_Work work;
+  private final HyperObjList<HDT_Work, HDT_Person> objList, objListNoMod;
+  private final HDT_Work work;  
+  private final List<Author> authorList;
   private boolean allRecords = true; // if this is true, ignore authorList and treat as pointer multi
-  private List<Author> authorList = null;
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -78,6 +78,7 @@ public class Authors implements Iterable<Author>
   {
     this.objList = objList;
     this.work = work;
+    authorList = new ArrayList<>();
     
     objListNoMod = db.getObjectList(rtAuthorOfWork, work, false);
   }
@@ -162,7 +163,7 @@ public class Authors implements Iterable<Author>
 
   private void initAuthorList()
   {
-    authorList = new ArrayList<>();
+    authorList.clear();
     allRecords = false;            
 
     objListNoMod.forEach(person -> authorList.add(new Author(work, person)));
@@ -174,7 +175,7 @@ public class Authors implements Iterable<Author>
   void clearNoMod()
   {
     objListNoMod.clear();
-    authorList = null;
+    authorList.clear();
     allRecords = true;
   }
 
@@ -185,9 +186,9 @@ public class Authors implements Iterable<Author>
   {
     objList.clear();
     
-    if ((authorList != null) && (authorList.isEmpty() == false))
+    if (authorList.isEmpty() == false)
     {
-      authorList = null;
+      authorList.clear();
       work.modifyNow();
     }
       
@@ -229,15 +230,18 @@ public class Authors implements Iterable<Author>
       }
     }
     
-    authorList = allRecords ? null : getListFromObjectGroups(objGroups, work);
+    authorList.clear();
+    
+    if (allRecords == false)
+     setListFromObjectGroups(authorList, objGroups, work);
   }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public static List<Author> getListFromObjectGroups(List<ObjectGroup> objGroups, HDT_Work work)
+  public static void setListFromObjectGroups(List<Author> authorList, List<ObjectGroup> objGroups, HDT_Work work)
   {
-    List<Author> authorList = new ArrayList<>();
+    authorList.clear();
     
     objGroups.forEach(objGroup ->
     {
@@ -249,7 +253,17 @@ public class Authors implements Iterable<Author>
                                         objGroup.getValue(tagTranslator).bool, 
                                         objGroup.getValue(tagInFileName).ternary));
     });
+  }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  public static List<Author> getListFromObjectGroups(List<ObjectGroup> objGroups, HDT_Work work)
+  {
+    List<Author> authorList = new ArrayList<>();
     
+    setListFromObjectGroups(authorList, objGroups, work);
+        
     return authorList;
   }
 

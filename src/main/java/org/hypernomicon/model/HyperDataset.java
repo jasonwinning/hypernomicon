@@ -233,7 +233,7 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
       throw new DuplicateRecordException(id, record.getType());
       
     core.add(id, record.makeSortKey(), record);
-    RelationSet.addOrphan(record);
+    RelationSet.addOrphanToAll(record);
   }
   
 //---------------------------------------------------------------------------

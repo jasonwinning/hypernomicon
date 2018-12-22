@@ -118,7 +118,7 @@ public final class Author implements Cloneable
     val = objGroup.getValue(tagTranslator);
     
     if ((val != null) && (val.bool != getIsTrans()))
-        return false;
+      return false;
     
     return true;
   }

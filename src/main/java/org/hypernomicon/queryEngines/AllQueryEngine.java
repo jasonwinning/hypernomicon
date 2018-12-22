@@ -219,7 +219,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
       case QUERY_RECORD_EQUALS :
       case QUERY_MENTIONED_BY :  
         
-        RecordByTypePopulator rtp = (RecordByTypePopulator)vp2.getPopulator(row);
+        RecordByTypePopulator rtp = vp2.getPopulator(row);
         rtp.setRecordType(row, HyperTableCell.getCellType(op1));
         rtp.populate(row, false);
         break;

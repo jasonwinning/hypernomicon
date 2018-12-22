@@ -20,12 +20,11 @@ package org.hypernomicon.querySources;
 import java.util.Set;
 
 import org.hypernomicon.model.records.HDT_Base;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 
 public class CombinedFilteredQuerySource implements QuerySource
 {
-  private HDT_Base[] records;
-  private Set<HDT_Base> recordSet;
+  private final HDT_Base[] records;
+  private final Set<HDT_Base> recordSet;
 
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 
@@ -41,7 +40,6 @@ public class CombinedFilteredQuerySource implements QuerySource
   
   @Override public int count()                             { return records.length; }
   @Override public QuerySourceType sourceType()            { return QuerySourceType.QST_combinedFilteredRecords; }
-  @Override public HyperTableCell getCell(int ndx)         { return new HyperTableCell(records[ndx]); }
   @Override public boolean containsRecord(HDT_Base record) { return recordSet.contains(record); }
   @Override public HDT_Base getRecord(int ndx)             { return records[ndx]; }
 

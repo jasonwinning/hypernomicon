@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -154,25 +153,17 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
   {       
     if (parentToChildren.getForwardSet(parent).contains(child) == false) return;
     
-    for (RowType row : new ArrayList<>(recordToRows.getRowsForRecord(parent)))
+    new ArrayList<>(recordToRows.getRowsForRecord(parent)).forEach(row -> row.treeItem.getChildren().removeIf(childItem ->
     {
-      Iterator<TreeItem<RowType>> it = row.treeItem.getChildren().iterator();
+      RowType childRow = childItem.getValue();
       
-      while (it.hasNext())
-      {
-        TreeItem<RowType> childItem = it.next();
-        RowType childRow = childItem.getValue();
-        
-        if (childRow.getRecord() == child)
-        {
-          removeChildRows(childRow);
-          recordToRows.removeRow(childRow);
-          
-          if (pruningOperationInProgress == false)  // prevent ConcurrentModificationException
-            it.remove();
-        }
-      }
-    }
+      if (childRow.getRecord() != child) return false;
+
+      removeChildRows(childRow);
+      recordToRows.removeRow(childRow);
+      
+      return pruningOperationInProgress == false;  // prevent ConcurrentModificationException
+    }));
     
     parentToChildren.removeForward(parent, child);
   }
@@ -182,19 +173,15 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
 
   private void removeChildRows(RowType parentRow)
   {
-    Iterator<TreeItem<RowType>> it = parentRow.treeItem.getChildren().iterator();
-    
-    while (it.hasNext())
+    parentRow.treeItem.getChildren().removeIf(childItem ->
     {
-      TreeItem<RowType> childItem = it.next();
       RowType childRow = childItem.getValue();
 
       removeChildRows(childRow);
       recordToRows.removeRow(childRow);
       
-      if (pruningOperationInProgress == false)  // prevent ConcurrentModificationException
-        it.remove();
-    }      
+      return pruningOperationInProgress == false;  // prevent ConcurrentModificationException
+    });    
   }
 
 //---------------------------------------------------------------------------

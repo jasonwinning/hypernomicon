@@ -24,7 +24,6 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.App;
@@ -297,23 +296,19 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       arg ->
       {
         for (HDT_Work work : arg.works)
-        {
           if (work.getPath().isEmpty() == false)
             return true;
-        }
         
         return false;          
       },
       arg ->
       {
         for (HDT_Work work : arg.works)
-        {
           if (work.getPath().isEmpty() == false)
           {
             work.launch(-1);
             return;
           }
-        }
       });
     
     htCounters.addCondContextMenuItem("Go to work record", HDT_Argument.class, 
@@ -321,13 +316,11 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       arg ->
       {
         for (HDT_Work work : arg.works)
-        {
           if (work.getPath().isEmpty() == false)
           {
             ui.goToRecord(work, true);
             return;
-          }
-        }      
+          }    
         
         ui.goToRecord(arg.works.get(0), true);
       });
@@ -366,14 +359,11 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
         okToSave = false;
       
       if ((row.getID(4) > 0) && (row.getID(3) < 1))
-        okToSave = false;      
+        okToSave = false;
     }
     
     if (okToSave == false)
-    {
-      messageDialog("Unable to modify record: There must be a corresponding verdict for every position/argument targeted by this record.", mtError);
-      return false;
-    }
+      return falseWithErrorMessage("Unable to modify record: There must be a corresponding verdict for every position/argument targeted by this record.");
 
     saveObjectGroups(tagPositionVerdict, rtPositionOfArgument);
     saveObjectGroups(tagArgumentVerdict, rtCounterOfArgument);
@@ -410,13 +400,11 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
         counterArg.addCounterArg(curArgument, null);
 
-        for (HDT_Position position : curArgument.positions)
-          counterArg.addPosition(position, null);
+        curArgument.positions.forEach(position -> counterArg.addPosition(position, null));
 
         ui.goToRecord(counterArg, false);
         
-        lowerCtrlr.tabPane.getSelectionModel().select(lowerCtrlr.tabWhereMade);
-        
+        lowerCtrlr.tabPane.getSelectionModel().select(lowerCtrlr.tabWhereMade);        
         break;
         
       case hdtWork :

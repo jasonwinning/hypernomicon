@@ -72,7 +72,7 @@ public abstract class HDT_Record implements HDT_Base
   private Instant creationDate, modifiedDate, viewDate;
   private LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items;
   private HDT_RecordState xmlState;
-  protected Tag nameTag = tagNone;
+  protected final Tag nameTag;
   private boolean online = false, expired = false, dummyFlag = false;
   private NameItem name;
   private String sortKeyAttr = "";
@@ -129,13 +129,14 @@ public abstract class HDT_Record implements HDT_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Record(HDT_RecordState xmlState, HyperDataset<? extends HDT_Base> dataset)
+  public HDT_Record(HDT_RecordState xmlState, HyperDataset<? extends HDT_Base> dataset, Tag nameTag)
   {    
     name = new NameItem();
     
     this.xmlState = xmlState;
     this.id = xmlState.id;
     this.dataset = dataset;
+    this.nameTag = nameTag;
     this.sortKeyAttr = safeStr(xmlState.sortKeyAttr);
     
     initItems();    
@@ -149,7 +150,7 @@ public abstract class HDT_Record implements HDT_Base
     String curName = name.get();
     
     curName = update ? updateString(curName, str) : safeStr(str);
-    name.set(curName);        
+    name.set(curName);
     updateSortKey();
   }
 
@@ -158,38 +159,38 @@ public abstract class HDT_Record implements HDT_Base
 
   private final void initItems()
   {
-    items = new LinkedHashMap<>();
-    HDI_OnlineBase<? extends HDI_OfflineBase> item = null;
+    items = new LinkedHashMap<>();    
     
-    Collection<HDI_Schema> schemas = db.getSchemasByRecordType(getType());
-    
-    if (schemas != null)
-    {  
-      for (HDI_Schema schema : schemas)
+    Collection<HDI_Schema> schemas = db.getSchemasByRecordType(getType());    
+    if (schemas == null) return;
+  
+    for (HDI_Schema schema : schemas)
+    {
+      HDI_OnlineBase<? extends HDI_OfflineBase> item;
+      
+      switch (schema.getCategory())
       {
-        switch (schema.getCategory())
-        {
-          case hdcConnector:       item = new HDI_OnlineConnector    (schema, (HDT_RecordWithConnector) this); break;
-          case hdcPath:            item = new HDI_OnlinePath         (schema, (HDT_RecordWithPath     ) this); break;
-          case hdcBibEntryKey:     item = new HDI_OnlineBibEntryKey  (schema, (HDT_Work               ) this); break;
-          case hdcAuthors:         item = new HDI_OnlineAuthors      (schema, (HDT_Work               ) this); break;
-          case hdcHubSpokes:       item = new HDI_OnlineHubSpokes    (schema, (HDT_Hub                ) this); break;
-          
-          case hdcBoolean:         item = new HDI_OnlineBoolean      (schema, this); break;
-          case hdcTernary:         item = new HDI_OnlineTernary      (schema, this); break;          
-          case hdcPersonName:      item = new HDI_OnlinePersonName   (schema, this); break;          
-          case hdcPointerMulti:    item = new HDI_OnlinePointerMulti (schema, this); break;
-          case hdcPointerSingle:   item = new HDI_OnlinePointerSingle(schema, this); break;
-          case hdcString:          item = new HDI_OnlineString       (schema, this); break;
-          
-          case hdcNestedPointer: 
-            messageDialog("Internal error #78933", mtError); // Nested items are only created in RelationSet.getNestedItem
-            return;
-        }
+        case hdcConnector:       item = new HDI_OnlineConnector    (schema, (HDT_RecordWithConnector) this); break;
+        case hdcPath:            item = new HDI_OnlinePath         (schema, (HDT_RecordWithPath     ) this); break;
+        case hdcBibEntryKey:     item = new HDI_OnlineBibEntryKey  (schema, (HDT_Work               ) this); break;
+        case hdcAuthors:         item = new HDI_OnlineAuthors      (schema, (HDT_Work               ) this); break;
+        case hdcHubSpokes:       item = new HDI_OnlineHubSpokes    (schema, (HDT_Hub                ) this); break;
         
-        for (Tag tag : schema.getTags())
-          items.put(tag, item);
+        case hdcBoolean:         item = new HDI_OnlineBoolean      (schema, this); break;
+        case hdcTernary:         item = new HDI_OnlineTernary      (schema, this); break;          
+        case hdcPersonName:      item = new HDI_OnlinePersonName   (schema, this); break;          
+        case hdcPointerMulti:    item = new HDI_OnlinePointerMulti (schema, this); break;
+        case hdcPointerSingle:   item = new HDI_OnlinePointerSingle(schema, this); break;
+        case hdcString:          item = new HDI_OnlineString       (schema, this); break;
+        
+        case hdcNestedPointer: 
+          messageDialog("Internal error #78933", mtError); // Nested items are only created in RelationSet.getNestedItem
+          return;
+          
+        default : item = null;
       }
+      
+      schema.getTags().forEach(tag -> items.put(tag, item));
     }
   }
  
@@ -236,24 +237,15 @@ public abstract class HDT_Record implements HDT_Base
 //---------------------------------------------------------------------------
 
   @Override public final boolean changeID(int newID)
-  {
-    int oldID = id;
+  {    
     HDT_RecordType type = getType();
 
-    switch (type)
-    {
-      case hdtNone :
-        return false;
-
-      default:
-        break;
-    }
-
-    if (HyperDB.isProtectedRecord(id, type))
+    if ((type == hdtNone) || 
+        HyperDB.isProtectedRecord(id, type) ||
+        db.idAvailable(type, newID) == false) 
       return false;
 
-    if (db.idAvailable(type, newID) == false) return false;
-
+    int oldID = id;
     id = newID;
     dataset.changeRecordID(oldID, newID);
 
@@ -263,7 +255,7 @@ public abstract class HDT_Record implements HDT_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
   
-  @Override public void bringStoredCopyOnline() throws RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException
+  @Override public void bringStoredCopyOnline() throws RelationCycleException, SearchKeyException, HubChangedException
   { 
     restoreTo(xmlState);
   }
@@ -272,7 +264,7 @@ public abstract class HDT_Record implements HDT_Base
 //---------------------------------------------------------------------------
 
   @Override @SuppressWarnings({ "unchecked", "rawtypes" })
-  public final void restoreTo(HDT_RecordState backupState) throws RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException
+  public final void restoreTo(HDT_RecordState backupState) throws RelationCycleException, SearchKeyException, HubChangedException
   {    
     dummyFlag = backupState.dummyFlag;
     
@@ -347,15 +339,11 @@ public abstract class HDT_Record implements HDT_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override @SuppressWarnings({ "rawtypes", "unchecked" })
+  @Override @SuppressWarnings({ "unchecked" })
   public final HDT_RecordState getRecordStateBackup()
   {
-    String searchKey = "";
     HDT_RecordType type = getType();
-    
-    if (type != hdtWorkLabel)
-      searchKey = getSearchKey();
-
+    String searchKey = type == hdtWorkLabel ? "" : getSearchKey();
     HDT_RecordState newState = new HDT_RecordState(type, id, getSortKeyAttr(), name(), searchKey, "");
     newState.stored = false;
     
@@ -366,13 +354,7 @@ public abstract class HDT_Record implements HDT_Base
       newState.viewDate = getViewDate();
     }
     
-    newState.items.entrySet().forEach(entry ->
-    {
-      Tag tag = entry.getKey();      
-      HDI_OnlineBase liveValue = items.get(tag);
-      
-      liveValue.getToOfflineValue(entry.getValue(), tag);
-    });
+    newState.items.forEach((tag, offlineItem) -> HDI_OnlineBase.class.cast(items.get(tag)).getToOfflineValue(offlineItem, tag));
     
     return newState;
   }
@@ -455,24 +437,22 @@ public abstract class HDT_Record implements HDT_Base
 //---------------------------------------------------------------------------
 
   public final void updateObjectGroups(RelationType relType, List<ObjectGroup> newGroups, Collection<Tag> tags)
-  {
-    boolean theSame = true;
-    
+  {   
     List<ObjectGroup> oldGroups = db.getObjectGroupList(relType, this, tags);
        
-    if (newGroups.size() != oldGroups.size())
-      theSame = false;
-    else
-    {     
+    if (newGroups.size() == oldGroups.size())
+    {
+      boolean theSame = true;
+      
       for (int ndx = 0; ndx < newGroups.size(); ndx++)
       {
         if (newGroups.get(ndx).equals(oldGroups.get(ndx)) == false)
           theSame = false;
       }
+      
+      if (theSame) return;
     }
-    
-    if (theSame) return;
-    
+        
     db.updateObjectGroups(relType, this, newGroups);
   }
    
@@ -486,14 +466,11 @@ public abstract class HDT_Record implements HDT_Base
     
     objList.clear();
     
-    list.forEach(obj ->
+    list.forEach(obj -> { if (objList.add(obj) == false)
     {
-      if (objList.add(obj) == false)
-      {
-        try                              { objList.throwLastException(); }
-        catch (RelationCycleException e) { messageDialog(e.getMessage(), mtError); }
-      }
-    });
+      try                              { objList.throwLastException(); }
+      catch (RelationCycleException e) { messageDialog(e.getMessage(), mtError); }
+    }});
   }
 
 //---------------------------------------------------------------------------
@@ -591,14 +568,12 @@ public abstract class HDT_Record implements HDT_Base
   {
     getSearchKeys().forEach(key -> list.add(key.text));
     
-    items.entrySet().forEach(entry ->
+    items.forEach((tag, item) ->
     {
-      Tag tag = entry.getKey();
-
       if (tag == nameTag)
         list.add(name());
       else
-        entry.getValue().getStrings(list, tag, searchLinkedRecords);
+        item.getStrings(list, tag, searchLinkedRecords);
     });
   }
 

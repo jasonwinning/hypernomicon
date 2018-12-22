@@ -45,6 +45,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.hypernomicon.view.fileManager.FileManager;
 
 public class FilePath implements Comparable<FilePath>
 {
@@ -103,8 +104,7 @@ public class FilePath implements Comparable<FilePath>
 
   public void delete(boolean noExistOK) throws IOException
   {
-    if (noExistOK)
-      if (exists() == false) return;
+    if (noExistOK && (exists() == false)) return;
     
     boolean startWatcher = folderTreeWatcher.stop();
     
@@ -197,18 +197,13 @@ public class FilePath implements Comparable<FilePath>
       else
         Files.copy(toPath(), destFilePath.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
-    catch (Exception e)
-    {
-      throw e;
-    }
     finally
     {
       if (startWatcher)
         folderTreeWatcher.createNewWatcherAndStart();
       
-      if (fileManagerDlg != null)
-        fileManagerDlg.setNeedRefresh();
-    }
+      nullSwitch(fileManagerDlg, FileManager::setNeedRefresh);
+    }    
     
     return true;
   }
@@ -223,11 +218,12 @@ public class FilePath implements Comparable<FilePath>
     
     try
     {
-      Paths.get(fileName).normalize();
-      if (fileName.equals(Paths.get(fileName).normalize().toString()) == false)
-        throw new IOException();
+      Path path = Paths.get(fileName);
       
-      Files.getLastModifiedTime(Paths.get(fileName));
+      if (fileName.equals(path.normalize().toString()) == false)
+        return false;
+      
+      Files.getLastModifiedTime(path);
     } 
     catch (NoSuchFileException e)
     {
@@ -246,17 +242,8 @@ public class FilePath implements Comparable<FilePath>
 
   public static String removeInvalidFileNameChars(String fileTitle)
   {   
-    return convertToEnglishChars(fileTitle)
-     .replace("?", "")
-     .replace(":", "")
-     .replace("*", "")
-     .replace("<", "")
-     .replace(">", "")
-     .replace("|", "")
-     .replace("/", "")
-     .replace("\\", "")
-     .replace("\"", "")
-     .replace("'", "");
+    return convertToEnglishChars(fileTitle).replace("?", "").replace(":", "").replace("*" , "").replace("<" , "").replace(">", "")
+                                           .replace("|", "").replace("/", "").replace("\\", "").replace("\"", "").replace("'", "");
   }
   
 //---------------------------------------------------------------------------

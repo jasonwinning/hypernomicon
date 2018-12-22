@@ -18,6 +18,7 @@
 package org.hypernomicon;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.Exceptions.*;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.HDB_MessageType.*;
 import static org.hypernomicon.util.Util.*;
@@ -557,6 +558,10 @@ public class FolderTreeWatcher
         if (new FilePath(path).exists() == false) return FileVisitResult.SKIP_SUBTREE;
         
         HDT_Folder folder = HyperPath.getFolderFromFilePath(new FilePath(path), true);
+        
+        if (folder == null)
+          throw new IOException(new HDB_InternalError(92733));
+        
         watchKeyToDir.put(path.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY), folder);
         
         return FileVisitResult.CONTINUE;

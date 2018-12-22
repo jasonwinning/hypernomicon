@@ -19,10 +19,10 @@ package org.hypernomicon.util.json;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.Predicate;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-
 import org.hypernomicon.util.json.JsonObj.JsonNodeType;
 
 import static org.hypernomicon.util.Util.*;
@@ -146,13 +146,52 @@ public class JsonArray
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
+  public boolean removeStrIf(Predicate<String> filter)
+  {
+    Iterator<String> it = getStrs();
+    boolean removed = false;
+    
+    while (it.hasNext())
+    {
+      String str = it.next();
+      if (filter.test(str))
+      {
+        removed = true;
+        it.remove();
+      }
+    }
+    
+    return removed;
+  }
+
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+  
+  public boolean removeObjIf(Predicate<JsonObj> filter)
+  {
+    Iterator<JsonObj> it = getObjs();
+    boolean removed = false;
+    
+    while (it.hasNext())
+    {
+      JsonObj obj = it.next();
+      if (filter.test(obj))
+      {
+        removed = true;
+        it.remove();
+      }
+    }
+    
+    return removed;
+  }
+
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+
   public String getStrSafe(int ndx)
   {
     Object obj = jArr.get(ndx);
-    if (obj == null) return "";
-    if ((obj instanceof String) == false) return "";
-    
-    return (String) obj;
+    return obj instanceof String ? String.class.cast(obj) : "";
   }
  
 //---------------------------------------------------------------------------  

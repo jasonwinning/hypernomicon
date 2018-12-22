@@ -18,7 +18,6 @@
 package org.hypernomicon.bib.zotero;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Map.Entry;
 
 import com.google.common.collect.ImmutableTable;
@@ -52,19 +51,14 @@ public class ZoteroAuthors extends BibAuthors
 //---------------------------------------------------------------------------
   
   @Override public void clear()                   
-  { 
-    Iterator<JsonObj> it = creatorsArr.getObjs();
-    
-    while (it.hasNext())
+  {     
+    creatorsArr.removeObjIf(creatorObj ->
     {
-      JsonObj creatorObj = it.next();
-      
       String aTypeStr = creatorObj.getStrSafe("creatorType");
       AuthorType aType = getAuthorTypeForStr(aTypeStr);
       
-      if (aType != null)  // If the creatorType is one that does not map onto a 
-        it.remove();      // Hypernomicon-aware type (author, editor, or translator) then ignore
-    }
+      return aType != null;  // If the creatorType is one that does not map onto a 
+    });                      // Hypernomicon-aware type (author, editor, or translator) then ignore             
   }
   
 //---------------------------------------------------------------------------  

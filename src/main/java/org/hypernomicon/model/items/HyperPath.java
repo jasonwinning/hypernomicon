@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -413,19 +412,15 @@ public class HyperPath
     {
       Set<HyperPath> set = db.filenameMap.get(fileName.getNameOnly().toString());
       
-      Iterator<HyperPath> it = set.iterator();
-      
-      while (it.hasNext())
+      set.removeIf(path ->
       {
-        HyperPath path = it.next();
-        
         if (path.isEmpty() == false)
-        {
           if (path.getFilePath().equals(getFilePath())) // for this to work, folder records have to be brought online first
             if (path != this)
-              it.remove();
-        }
-      }
+              return true;
+        
+        return false;
+      });
     }
   }
 

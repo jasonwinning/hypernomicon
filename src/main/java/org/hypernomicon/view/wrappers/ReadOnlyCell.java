@@ -21,6 +21,8 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.view.wrappers.RecordListView.RecordHandler;
+
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.Tooltip;
@@ -55,11 +57,20 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
         if (record == null) return;
         
         if (table.dblClickHandler != null)
-          table.dblClickHandler.handle(record);
+          handleRecord(table.dblClickHandler, record);
         else
           ui.goToRecord(record, true);          
       }
-    });    
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked")
+  private static <HDT_T extends HDT_Base> void handleRecord(RecordHandler<HDT_T> handler, HDT_Base record)
+  {
+    handler.handle((HDT_T) record);
   }
 
 //---------------------------------------------------------------------------

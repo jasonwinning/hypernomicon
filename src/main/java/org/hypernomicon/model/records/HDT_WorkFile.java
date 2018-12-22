@@ -37,14 +37,13 @@ import java.util.List;
 
 public class HDT_WorkFile extends HDT_Record implements HDT_RecordWithPath
 {
-  private HyperPath path;
-  public List<HDT_Work> works;
+  private final HyperPath path;
+  public final List<HDT_Work> works;
   
   public HDT_WorkFile(HDT_RecordState xmlState, HyperDataset<HDT_WorkFile> dataset)
   {
-    super(xmlState, dataset);
-    
-    nameTag = tagName;    
+    super(xmlState, dataset, tagName);
+       
     works = getSubjList(rtWorkFileOfWork);    
     path = new HyperPath(getObjPointer(rtFolderOfWorkFile), this);
   }

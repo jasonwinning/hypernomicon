@@ -25,7 +25,7 @@ import org.hypernomicon.util.FilenameMap;
 
 public class FilePathIterator implements Iterator<FilePath>
 {
-  private Iterator<Set<FilePath>> nameIterator;
+  private final Iterator<Set<FilePath>> nameIterator;
   private Iterator<FilePath> pathIterator;
 
 //---------------------------------------------------------------------------

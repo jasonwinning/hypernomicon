@@ -181,8 +181,7 @@ public class HyperViewSequence
 
   void update()
   {
-    HyperView<? extends HDT_Base> curView = curHyperView();
-    
+    HyperView<? extends HDT_Base> curView = curHyperView();    
     HyperTab<? extends HDT_Base, ? extends HDT_Base> curHyperTab = setTabView(curView);
     
     alreadyChangingTab = true;
@@ -198,9 +197,11 @@ public class HyperViewSequence
     viewList.refreshNavMenu(chbForward.getMenu(), true);
     
     ui.update();
-    HDT_Base activeRecord = ui.activeRecord();
     
     if (curHyperTab.getTabEnum() != queryTab)
+    {
+      HDT_Base activeRecord = ui.activeRecord();
+      
       if (activeRecord != null)
       {
         if (activeRecord.getType() == hdtPerson)
@@ -212,6 +213,7 @@ public class HyperViewSequence
         else if (activeRecord.name().length() > 0)
           ui.omniFocus();
       }
+    }
     
     if (curHyperTab.getTabEnum() != workTab)
       bibManagerDlg.workRecordToAssign.set(null);

@@ -68,36 +68,20 @@ public class NewLinkDialogController extends HyperDialog
 
   private void init(String selText)
   {
-    String clipText = getClipboardText(true).trim(); 
-    
+    String clipText = getClipboardText(true).trim();
     selText = selText.trim();
     
     if (isStringUrl(selText))
     {
       tfURL.setText(selText);
-      if (clipText.length() > 0)
-        tfDisplayText.setText(clipText);
-      else
-        tfDisplayText.setText(selText);
-      
+      tfDisplayText.setText(clipText.length() > 0 ? clipText : selText);      
       return;
     }
     
     if (isStringUrl(clipText))
-    {
       tfURL.setText(clipText);
-      if (selText.length() > 0)
-        tfDisplayText.setText(selText);
-      else
-        tfDisplayText.setText(clipText);
-      
-      return;
-    }
-    
-    if (selText.length() > 0)
-      tfDisplayText.setText(selText);
-    else
-      tfDisplayText.setText(clipText);
+
+    tfDisplayText.setText(selText.length() > 0 ? selText : clipText);
   }
   
 //---------------------------------------------------------------------------  

@@ -1500,9 +1500,8 @@ public class FileManager extends HyperDialog
     FilePath filePath = null;
     HDT_Base record = recordTable.selectedRecord();
     
-    if (record != null)
-      if (record instanceof HDT_RecordWithPath)
-        filePath = HDT_RecordWithPath.class.cast(record).getPath().getFilePath();
+    if (record instanceof HDT_RecordWithPath)
+      filePath = HDT_RecordWithPath.class.cast(record).getPath().getFilePath();
     
     FilePath fileTablePath = nullSwitch(fileTV.getSelectionModel().getSelectedItem(), null, FileRow::getFilePath);
     

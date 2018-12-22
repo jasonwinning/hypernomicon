@@ -26,8 +26,10 @@ import java.util.Iterator;
 
 public class SplitString implements Iterable<String>, Iterator<String>
 {    
-  private String wholeStr, nextPart;
-  private char delim;
+  private final String wholeStr;
+  private final char delim;
+  
+  private String nextPart;
   private int fromNdx = 0;
   private boolean hasNext = true;
   

@@ -30,7 +30,6 @@ import static java.util.Objects.*;
 
 import java.io.IOException;
 
-import org.hypernomicon.App;
 import org.hypernomicon.bib.BibData;
 import org.hypernomicon.bib.BibData.BibFieldEnum;
 import org.hypernomicon.bib.BibData.EntryType;
@@ -42,7 +41,6 @@ import org.hypernomicon.view.dialogs.HyperDialog;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableView;
@@ -106,11 +104,13 @@ public class MergeWorksDialogController extends HyperDialog
   @FXML private GridPane gpYear;
   @FXML private GridPane gpAuthors;
 
-  private EnumMap<BibFieldEnum, BibField> singleFields = new EnumMap<>(BibFieldEnum.class);
-  private ArrayList<WorkToMerge> works = new ArrayList<>(4);
-  private HashMap<BibFieldEnum, BibFieldRow> extraRows = new HashMap<>();
+  private final EnumMap<BibFieldEnum, BibField> singleFields = new EnumMap<>(BibFieldEnum.class);
+  private final ArrayList<WorkToMerge> works = new ArrayList<>(4);
+  private final HashMap<BibFieldEnum, BibFieldRow> extraRows = new HashMap<>();
   private int nextRowNdx = 4;
   private boolean creatingNewWork, creatingNewEntry;
+
+  public EntryType getEntryType() { return nullSwitch(extraRows.get(bfEntryType), null, row -> MergeWorksCBController.class.cast(row).getEntryType()); }
   
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
@@ -178,7 +178,7 @@ public class MergeWorksDialogController extends HyperDialog
     int cnt = 0;
        
     if (creatingNewEntry)
-      addSingleLineField(bfEntryType, bd1, bd2, bd3, bd4);
+      addField(bfEntryType, bd1, bd2, bd3, bd4);
     
     for (BibFieldEnum bibFieldEnum : BibFieldEnum.values())
     {
@@ -214,105 +214,62 @@ public class MergeWorksDialogController extends HyperDialog
         cnt++;
       }
       
-      if (bd3 != null)
-        if (bd3.fieldNotEmpty(bibFieldEnum)) 
+      if ((bd3 != null) && (bd3.fieldNotEmpty(bibFieldEnum))) 
+      {
+        if (singleBD != null)
         {
-          if (singleBD != null)
-          {
-            if (singleBD.fieldsAreEqual(bibFieldEnum, bd3) == false)
-              fieldsEqual = false;
-          }
-          else
-            singleBD = bd3;
-
-          cnt++;
+          if (singleBD.fieldsAreEqual(bibFieldEnum, bd3) == false)
+            fieldsEqual = false;
         }
+        else
+          singleBD = bd3;
+
+        cnt++;
+      }
       
-      if (bd4 != null)
-        if (bd4.fieldNotEmpty(bibFieldEnum)) 
+      if ((bd4 != null) && (bd4.fieldNotEmpty(bibFieldEnum))) 
+      {
+        if (singleBD != null)
         {
-          if (singleBD != null)
-          {
-            if (singleBD.fieldsAreEqual(bibFieldEnum, bd4) == false)
-              fieldsEqual = false;
-          }
-          else
-            singleBD = bd4;
-
-          cnt++;
+          if (singleBD.fieldsAreEqual(bibFieldEnum, bd4) == false)
+            fieldsEqual = false;
         }
+        else
+          singleBD = bd4;
+
+        cnt++;
+      }
       
       if ((bibFieldEnum == bfMisc) || ((cnt > 0) && ((fieldsEqual == false) || (cnt < works.size()))))
-      {
-        if (BibData.bibFieldIsMultiLine(bibFieldEnum))
-          addMultiLineField(bibFieldEnum, bd1, bd2, bd3, bd4);
-        else
-          addSingleLineField(bibFieldEnum, bd1, bd2, bd3, bd4);
-      }
+        addField(bibFieldEnum, bd1, bd2, bd3, bd4);
     }
   }
   
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  private void addMultiLineField(BibFieldEnum bibFieldEnum, BibData bd1, BibData bd2, BibData bd3, BibData bd4) throws IOException
+  private void addField(BibFieldEnum bibFieldEnum, BibData bd1, BibData bd2, BibData bd3, BibData bd4) throws IOException
   {
-    AnchorPane ap;
-    
-    FXMLLoader loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksMultiLine.fxml"));
-    ap = loader.load();
-    MergeWorksMLController ctrlr = loader.getController();
-    
-    ctrlr.init(bibFieldEnum, bd1, bd2, bd3, bd4);
-    
-    extraRows.put(bibFieldEnum, new BibFieldRow(bibFieldEnum, ctrlr));
-    
+    BibFieldRow row = BibFieldRow.create(bibFieldEnum, bd1, bd2, bd3, bd4);
+    extraRows.put(bibFieldEnum, row);
+    AnchorPane ap = row.getAnchorPane();
+            
     GridPane.setRowIndex(ap, nextRowNdx);
     
     nextRowNdx++;
     
     gpMain.getChildren().add(ap);
     
-    RowConstraints rc = new RowConstraints(10.0, 150.0, Region.USE_COMPUTED_SIZE);
-    gpMain.getRowConstraints().add(rc);
-  }
- 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-
-  private void addSingleLineField(BibFieldEnum bibFieldEnum, BibData bd1, BibData bd2, BibData bd3, BibData bd4) throws IOException
-  {
-    AnchorPane ap;
+    RowConstraints rc;
     
-    if (bibFieldEnum == bfEntryType)
-    {
-      FXMLLoader loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksCB.fxml"));
-      ap = loader.load();
-      MergeWorksCBController ctrlr = loader.getController();
-      
-      ctrlr.init(bfEntryType, bd1, bd2, bd3, bd4);
-      
-      extraRows.put(bibFieldEnum, new BibFieldRow(ctrlr));
-    }
+    if (BibData.bibFieldIsMultiLine(bibFieldEnum))
+      rc = new RowConstraints(10.0, 150.0, Region.USE_COMPUTED_SIZE);          
     else
     {
-      FXMLLoader loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksSingleLine.fxml"));
-      ap = loader.load();
-      MergeWorksSLController ctrlr = loader.getController();
-    
-      ctrlr.init(bibFieldEnum, bd1, bd2, bd3, bd4);
-    
-      extraRows.put(bibFieldEnum, new BibFieldRow(bibFieldEnum, ctrlr));
+      rc = new RowConstraints(45.0, 45.0, 45.0);
+      rc.setVgrow(Priority.NEVER);          
     }
-    
-    GridPane.setRowIndex(ap, nextRowNdx);
-    
-    nextRowNdx++;
-    
-    gpMain.getChildren().add(ap);
-    
-    RowConstraints rc = new RowConstraints(45.0, 45.0, 45.0);
-    rc.setVgrow(Priority.NEVER);
+
     gpMain.getRowConstraints().add(rc);
   }
   
@@ -334,7 +291,7 @@ public class MergeWorksDialogController extends HyperDialog
 
     if (creatingNewEntry)
     {
-      EntryType entryType = extraRows.get(bfEntryType).cbCtrlr.getEntryType();
+      EntryType entryType = getEntryType();
       
       if (entryType != null)
       {
@@ -422,19 +379,7 @@ public class MergeWorksDialogController extends HyperDialog
       BibFieldRow bibFieldRow = extraRows.get(bibFieldEnum);
       
       if (bibFieldRow != null)
-      {
-        // assign data from bibFieldRow to work and bd
-                
-        if (bibFieldEnum == bfEntryType)
-        {
-          //mergedBD.setEntryType(bibFieldRow.cbCtrlr.getEntryType());
-          noOp();   // This gets set when the new entry is created right before mergeInto is called
-        }
-        else if (BibData.bibFieldIsMultiLine(bibFieldEnum))
-          mergedBD.setMultiStr(bibFieldEnum, bibFieldRow.mlCtrlr.getStrList());
-        else
-          mergedBD.setStr(bibFieldEnum, bibFieldRow.slCtrlr.toString());
-      }
+        bibFieldRow.mergeInto(mergedBD); // assign data from bibFieldRow to work and bd
       else
       {
         // assign data from original work/bd that had this field, if any (must have been zero or one of them)
@@ -452,14 +397,6 @@ public class MergeWorksDialogController extends HyperDialog
         }
       }
     }
-  }
-
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-
-  public EntryType getEntryType()
-  {
-    return nullSwitch(extraRows.get(bfEntryType), null, row -> row.cbCtrlr.getEntryType());
   }
 
 //---------------------------------------------------------------------------  

@@ -44,7 +44,7 @@ public abstract class QueryEngine<HDT_T extends HDT_Base>
     qtReport(12), 
     qtNone(13);
     
-    private int code;  
+    private final int code;  
   
     private QueryType(int code) { this.code = code; }  
   
@@ -52,7 +52,9 @@ public abstract class QueryEngine<HDT_T extends HDT_Base>
     
     public static QueryType codeToVal(int num)
     {
-      for (QueryType val : QueryType.values()) if (val.getCode() == num) return val;
+      for (QueryType val : QueryType.values()) 
+        if (val.getCode() == num) return val;
+      
       return null;
     }
     

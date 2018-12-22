@@ -28,14 +28,12 @@ import org.hypernomicon.model.relations.HyperSubjList;
 
 public class HDT_Glossary extends HDT_Record
 {
-  public List<HDT_Glossary> parentGlossaries;
-  public HyperSubjList<HDT_Glossary, HDT_Concept> concepts;
+  public final List<HDT_Glossary> parentGlossaries;
+  public final HyperSubjList<HDT_Glossary, HDT_Concept> concepts;
   
   public HDT_Glossary(HDT_RecordState xmlState, HyperDataset<HDT_Glossary> dataset)
   {
-    super(xmlState, dataset);
-       
-    nameTag = tagName;
+    super(xmlState, dataset, tagName);
     
     parentGlossaries = getObjList(rtParentGlossaryOfGlossary);
     concepts = getSubjList(rtGlossaryOfConcept);

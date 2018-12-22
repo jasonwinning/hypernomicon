@@ -405,7 +405,6 @@ public class App extends Application
       double y = appPrefs.getDouble(PREF_KEY_WINDOW_Y, primaryStage.getY());
       double width = appPrefs.getDouble(PREF_KEY_WINDOW_WIDTH, primaryStage.getWidth());
       double height = appPrefs.getDouble(PREF_KEY_WINDOW_HEIGHT, primaryStage.getHeight());
-      boolean iconified = appPrefs.getBoolean(PREF_KEY_WINDOW_ICONIFIED, primaryStage.isIconified());
       boolean fullScreen = appPrefs.getBoolean(PREF_KEY_WINDOW_FULLSCREEN, primaryStage.isFullScreen());
       boolean maximized = appPrefs.getBoolean(PREF_KEY_WINDOW_MAXIMIZED, primaryStage.isMaximized());
 
@@ -414,7 +413,6 @@ public class App extends Application
       
       if (fullScreen)     primaryStage.setFullScreen(true);
       else if (maximized) primaryStage.setMaximized(true);
-      else if (iconified) primaryStage.setIconified(true);
       else
       {
         primaryStage.setWidth(width);

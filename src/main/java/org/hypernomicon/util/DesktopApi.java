@@ -49,8 +49,7 @@ public class DesktopApi
     } 
     catch (URISyntaxException e)
     {
-      messageDialog("An error occurred while trying to browse to: " + url + ". " + e.getMessage(), mtError);
-      return false;
+      return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ". " + e.getMessage());
     }
     
     return openSystemSpecific(url);
@@ -121,25 +120,17 @@ public class DesktopApi
     try 
     {
       if (!Desktop.isDesktopSupported()) 
-      {
-        messageDialog("An error occurred while trying to browse to: " + url + ".", mtError);
-        return false;
-      }
-
+        return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ".");
+      
       if (!Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) 
-      {
-        messageDialog("An error occurred while trying to browse to: " + url + ".", mtError);
-        return false;
-      }
+        return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ".");
       
       Desktop.getDesktop().browse(new URI(url));
-
       return true;
     } 
     catch (Exception e) 
     {
-      messageDialog("An error occurred while trying to browse to: " + url + ". " + e.getMessage(), mtError);
-      return false;
+      return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ". " + e.getMessage());
     }
   }
 
@@ -151,24 +142,17 @@ public class DesktopApi
     try 
     {
       if (!Desktop.isDesktopSupported()) 
-      {
-        messageDialog("An error occurred while trying to open the file: " + filePath, mtError);
-        return false;
-      }
+        return falseWithErrorMessage("An error occurred while trying to open the file: " + filePath);
 
       if (!Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) 
-      {
-        messageDialog("An error occurred while trying to open the file: " + filePath, mtError);
-        return false;
-      }
+        return falseWithErrorMessage("An error occurred while trying to open the file: " + filePath);
 
       Desktop.getDesktop().open(filePath.toFile());
       return true;
     } 
     catch (Exception e)
     {
-      messageDialog("An error occurred while trying to open the file: " + filePath + ". " + e.getMessage(), mtError);
-      return false;
+      return falseWithErrorMessage("An error occurred while trying to open the file: " + filePath + ". " + e.getMessage());
     }
   }
 
@@ -180,25 +164,17 @@ public class DesktopApi
     try 
     {
       if (!Desktop.isDesktopSupported()) 
-      {
-        messageDialog("An error occurred while trying to edit the file: " + filePath + ".", mtError);
-        return false;
-      }
+        return falseWithErrorMessage("An error occurred while trying to edit the file: " + filePath + ".");
 
       if (!Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) 
-      {
-        messageDialog("An error occurred while trying to edit the file: " + filePath + ".", mtError);
-        return false;
-      }
+        return falseWithErrorMessage("An error occurred while trying to edit the file: " + filePath + ".");
 
       Desktop.getDesktop().edit(filePath.toFile());
-
       return true;
     } 
     catch (Exception e) 
     {
-      messageDialog("An error occurred while trying to edit the file: " + filePath + ". " + e.getMessage(), mtError);
-      return false;
+      return falseWithErrorMessage("An error occurred while trying to edit the file: " + filePath + ". " + e.getMessage());
     }
   }
 

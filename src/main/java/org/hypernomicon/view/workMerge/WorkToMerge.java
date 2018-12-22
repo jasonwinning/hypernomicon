@@ -21,7 +21,6 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.dialogs.WorkDialogController.createAuthorRecordHandler;
 import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
-import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
@@ -54,7 +53,7 @@ public class WorkToMerge
   public List<ObjectGroup> getAuthorGroups(HDT_Work work) { return htAuthors.getAuthorGroups(work, 0, -1, 2, 3); }
   public HDT_WorkType getWorkType()                       { return hcbType.selectedRecord(); }
   public BibData getBibData()                             { return bibData; }
-  public boolean hasField(BibFieldEnum bibFieldEnum)      { return nullSwitch(bibData, false, () -> bibData.fieldNotEmpty(bibFieldEnum)); }
+  public boolean hasField(BibFieldEnum bibFieldEnum)      { return bibData == null ? false : bibData.fieldNotEmpty(bibFieldEnum); }
    
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  

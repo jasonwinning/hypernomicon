@@ -46,7 +46,7 @@ public class SimpleRecordTypes
   {    
     HDT_SimpleRecord(HDT_RecordState xmlState, HyperDataset<? extends HDT_SimpleRecord> dataset)
     {
-      super(xmlState, dataset);
+      super(xmlState, dataset, tagNone);
     }
     
     @Override public String listName() { return name(); }       
@@ -107,7 +107,7 @@ public class SimpleRecordTypes
 
   public static final class HDT_FileType extends HDT_SimpleRecord                    
   { 
-    public List<HDT_MiscFile> miscFiles;
+    public final List<HDT_MiscFile> miscFiles;
     
     public HDT_FileType(HDT_RecordState xmlState, HyperDataset<HDT_FileType> dataset)               
     { 

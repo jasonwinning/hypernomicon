@@ -58,8 +58,8 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
     noteTab,     termTab,          queryTab,  treeTab,       omniTab,     listTab
   }
 
-  private static EnumMap<TabEnum, HyperTab<? extends HDT_Base, ? extends HDT_Base>> enumToHyperTab = new EnumMap<>(TabEnum.class);
-  private static Map<Tab, HyperTab<? extends HDT_Base, ? extends HDT_Base>> tabToHyperTab = new HashMap<>();
+  private static final EnumMap<TabEnum, HyperTab<? extends HDT_Base, ? extends HDT_Base>> enumToHyperTab = new EnumMap<>(TabEnum.class);
+  private static final Map<Tab, HyperTab<? extends HDT_Base, ? extends HDT_Base>> tabToHyperTab = new HashMap<>();
   private Tab tab;
   private HyperView<HDT_CT> view = null;
   
@@ -246,13 +246,11 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
 
   public int getRecordNdx()
   {
-    if ((getRecordCount() > 0) && (activeRecord() != null))
-    {
-      HDT_RT record = activeRecord();
-      return db.records(record.getType()).getKeyNdxByID(record.getID());
-    }
+    if ((getRecordCount() < 1) || (activeRecord() == null))
+      return -1;
     
-    return -1;
+    HDT_RT record = activeRecord();
+    return db.records(record.getType()).getKeyNdxByID(record.getID());
   }
 
 //---------------------------------------------------------------------------

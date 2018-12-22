@@ -103,7 +103,7 @@ public class SelectConceptDialogController extends HyperDialog
       
       alreadyChanging = true;
       
-      HDT_Term term = (HDT_Term) HyperTableCell.getRecord(newCell);
+      HDT_Term term = HyperTableCell.getRecord(newCell);
       List<HyperTableCell> glossaryCells = hcbGlossary.populate(true);
             
       if ((term != null) && (oldConcept == null))

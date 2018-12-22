@@ -17,17 +17,14 @@
 
 package org.hypernomicon.querySources;
 
-import org.hypernomicon.view.wrappers.HyperTableCell;
-
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
 
 public class DatasetQuerySource implements QuerySource
 {
-  private HDT_RecordType type;
+  private final HDT_RecordType type;
   
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 
@@ -40,7 +37,6 @@ public class DatasetQuerySource implements QuerySource
   @Override public QuerySourceType sourceType()            { return QuerySourceType.QST_recordsByType; }
   @Override public boolean containsRecord(HDT_Base record) { return record.getType() == type; }
   @Override public HDT_Base getRecord(int ndx)             { return db.records(type).getByIDNdx(ndx); }
-  @Override public HyperTableCell getCell(int ndx)         { return nullSwitch(getRecord(ndx), null, HyperTableCell::new); }
   
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 

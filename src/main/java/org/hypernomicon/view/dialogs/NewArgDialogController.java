@@ -23,9 +23,12 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
+import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Position;
+import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.HybridSubjectPopulator;
@@ -33,6 +36,8 @@ import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
+
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -90,6 +95,8 @@ public class NewArgDialogController extends HyperDialog
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
+  private boolean changingWorkProgrammatically = false;
+  
   private void init(HDT_Position curPosition)
   {      
     this.curPosition = curPosition;
@@ -102,18 +109,40 @@ public class NewArgDialogController extends HyperDialog
     
     cbWork.getSelectionModel().selectedItemProperty().addListener((observable, oldCell, newCell) -> 
     {
+      if (changingWorkProgrammatically) return;
+      
       rbExisting.setSelected(true);
+      
+      HDT_Work work = HyperTableCell.getRecord(newCell);
+      
+      if ((work != null) && (hcbPerson.selectedID() == -1))
+      {        
+        HDT_Person person = null;
+        
+        for (Author author : work.getAuthors()) if ((author.getPerson() != null) && (author.getInFileName() == Ternary.True))
+        { person = author.getPerson(); break; }
+        
+        if (person == null) 
+          for (Author author : work.getAuthors()) if ((author.getPerson() != null) && (author.getInFileName() != Ternary.False))
+          { person = author.getPerson(); break; }
+        
+        if (person == null) 
+          for (Author author : work.getAuthors()) if (author.getPerson() != null)
+          { person = author.getPerson(); break; }
+        
+        if (person != null)
+        {
+          hcbPerson.selectID(person.getID());
+          Platform.runLater(() -> hcbWork.selectID(work.getID()));
+        }
+      }
+      
+      changingWorkProgrammatically = false;
     });
     
-    tfTitle.textProperty().addListener((observable, oldText, newText) -> 
-    {
-      rbNew.setSelected(true);
-    });
+    tfTitle.textProperty().addListener((observable, oldText, newText) -> rbNew.setSelected(true));
     
-    cbIncludeAuth.selectedProperty().addListener((observable, oldSelected, newSelected) ->
-    {
-      reviseSuggestions(false, -1);  
-    });
+    cbIncludeAuth.selectedProperty().addListener((observable, oldSelected, newSelected) -> reviseSuggestions());
     
     hcbPerson.addBlankEntry();
     hcbPositionVerdict.addAndSelectEntry(db.positionVerdicts.getByID(1), HDT_Base::getCBText);
@@ -124,7 +153,7 @@ public class NewArgDialogController extends HyperDialog
 
     MainTextWrapper.setReadOnlyHTML(getHtmlEditorText(curPosition.getMainText().getHtml()), view.getEngine(), new TextViewInfo(), null);
     
-    reviseSuggestions(false, -1);
+    reviseSuggestions();
 
     rbExisting.setSelected(false);
     rbNew.setSelected(true);
@@ -140,12 +169,12 @@ public class NewArgDialogController extends HyperDialog
     {
       if (HyperTableCell.getCellID(oldCell) == HyperTableCell.getCellID(newCell)) return;
       
-      HybridSubjectPopulator subjPop = (HybridSubjectPopulator) hcbWork.getPopulator();
+      HybridSubjectPopulator subjPop = hcbWork.getPopulator();
       subjPop.setObj(Populator.dummyRow, HyperTableCell.getRecord(newCell));
       hcbWork.selectID(-1);
       rbNew.setSelected(true);
       
-      reviseSuggestions(true, HyperTableCell.getCellID(newCell));
+      reviseSuggestions();
     });
     
     cbIncludeAuth.setSelected(true);
@@ -186,19 +215,16 @@ public class NewArgDialogController extends HyperDialog
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  private void reviseSuggestions(boolean useParm, int personID)
+  private void reviseSuggestions()
   {
-    HDT_Person person;
     String part1 = "";
     
     revising = true;
     
     if (cbIncludeAuth.isSelected())
     {
-      if (useParm)
-        person = db.persons.getByID(personID);
-      else
-        person = (HDT_Person) HyperTableCell.getRecord(hcbPerson.selectedHTC());
+      HDT_Person person = hcbPerson.selectedRecord();
+      
       if (person != null) part1 = person.getLastName() + "'s ";
     }
     

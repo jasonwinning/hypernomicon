@@ -80,7 +80,6 @@ public class HyperTableColumn
     
   public boolean wasMoreButtonClicked()                         { return moreButtonClicked; }
   public HyperCtrlType getCtrlType()                            { return ctrlType; }
-  public Populator getPopulator()                               { return populator; }
   public int getColNdx()                                        { return colNdx; }
   public String getHeader()                                     { return tc.getText(); }
   public HDT_RecordType getObjType()                            { return objType; }
@@ -88,6 +87,9 @@ public class HyperTableColumn
   void setNumeric(boolean newVal)                               { this.isNumeric.setValue(newVal); }
   public void setDontCreateNewRecord(boolean newVal)            { this.dontCreateNewRecord.setValue(newVal); }   
   public void setTooltip(ButtonAction buttonState, String text) { tooltips.put(buttonState, text); }
+  
+  @SuppressWarnings("unchecked")
+  public <PopType extends Populator> PopType getPopulator()     { return (PopType) populator; }
   
 //---------------------------------------------------------------------------
   
@@ -188,7 +190,7 @@ public class HyperTableColumn
             
             if (type == hdtWork)
             {
-              HDT_Work work = (HDT_Work) HyperTableCell.getRecord(cell);     
+              HDT_Work work = HyperTableCell.getRecord(cell);     
               
               if (work.workType.isNotNull())
               {

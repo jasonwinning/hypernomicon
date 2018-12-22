@@ -27,7 +27,7 @@ import org.hypernomicon.model.records.HDT_Base;
 
 public class HyperSubjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> extends HyperSubjList<HDT_SubjType, HDT_ObjType>
 {
-  private HyperSubjList<HDT_SubjType, HDT_ObjType> parentList;
+  private final HyperSubjList<HDT_SubjType, HDT_ObjType> parentList;
   private int startNdx;
   private int endNdx;
 

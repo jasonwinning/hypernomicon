@@ -62,7 +62,7 @@ public class ChooseParentWorkFileDialogController extends HyperDialog
     htFiles = new HyperTable(tvFiles, 0, false, "");
     htFiles.addCol(hdtWorkFile, ctNone);
     htFiles.addCol(hdtWorkFile, ctNone);
-    htFiles.setDblClickHandler((record) -> launchFile(HDT_WorkFile.class.cast(record).getPath().getFilePath()));
+    htFiles.setDblClickHandler(HDT_WorkFile.class, workFile -> launchFile(workFile.getPath().getFilePath()));
     
     for (HDT_WorkFile workFile : parentWork.workFiles)
     {
@@ -93,7 +93,7 @@ public class ChooseParentWorkFileDialogController extends HyperDialog
 
   public HDT_WorkFile getWorkFile()
   {
-    return (HDT_WorkFile) htFiles.selectedRecord();
+    return htFiles.selectedRecord();
   }
   
 //---------------------------------------------------------------------------  
@@ -103,7 +103,7 @@ public class ChooseParentWorkFileDialogController extends HyperDialog
   {
     if (htFiles.selectedRecord() == null)
     {
-      messageDialog("Select a file.", mtError);
+      messageDialog("Select a file.", mtWarning);
       return false;
     }
     

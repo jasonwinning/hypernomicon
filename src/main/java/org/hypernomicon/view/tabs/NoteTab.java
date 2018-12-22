@@ -85,10 +85,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     tfFolder.setText(curNote.getFolderStr());
     
-    if (curNote.folder.get() == null)
-      folderPath = null;
-    else
-      folderPath = curNote.folder.get().getPath().getFilePath();
+    folderPath = nullSwitch(curNote.folder.get(), null, folder -> folder.getPath().getFilePath());
 
     htParents.buildRows(curNote.parentNotes, (row, otherNote) -> row.setCellValue(2, otherNote, otherNote.name()));
 
@@ -158,21 +155,20 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
         
         if (link != null)
         {
-          if (usedLinks.contains(link) == false)
-          {
-            usedLinks.add(link);
-            
-            if (link.getDebate() != null)        output.add(link.getDebate());
-            else if (link.getPosition() != null) output.add(link.getPosition());
-            else if (link.getConcept() != null)  output.add(link.getConcept());
-            else                                 output.add(link.getNote());
-          }
+          if (usedLinks.contains(link)) return;
+          
+          usedLinks.add(link);
+          
+          if      (link.getDebate  () != null) output.add(link.getDebate  ());
+          else if (link.getPosition() != null) output.add(link.getPosition());
+          else if (link.getConcept () != null) output.add(link.getConcept ());
+          else                                 output.add(link.getNote    ());
+          
+          return;
         }
-        else
-          output.add(mentioner);        
       }
-      else
-        output.add(mentioner);
+
+      output.add(mentioner);
     });
     
     return output;

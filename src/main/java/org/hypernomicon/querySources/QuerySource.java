@@ -18,7 +18,6 @@
 package org.hypernomicon.querySources;
 
 import org.hypernomicon.model.records.HDT_Base;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 
 public interface QuerySource
 {
@@ -37,8 +36,6 @@ public interface QuerySource
   public QuerySourceType sourceType();
   
   public boolean containsRecord(HDT_Base record);
-  
-  public HyperTableCell getCell(int ndx);
   
   public HDT_Base getRecord(int ndx);
 }

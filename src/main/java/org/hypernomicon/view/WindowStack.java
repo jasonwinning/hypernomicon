@@ -19,7 +19,6 @@ package org.hypernomicon.view;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
-import static java.util.Objects.*;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -124,7 +123,7 @@ public class WindowStack
     
     stage.toFront();
     
-    Platform.runLater(() ->
+    if (SystemUtils.IS_OS_WINDOWS) Platform.runLater(() ->
     {
       for (int ndx = 0; ndx < 6; ndx++)
       {
@@ -134,6 +133,8 @@ public class WindowStack
   
       cyclingFocus = false;
     });
+    else
+      cyclingFocus = false;
   }
 
 //---------------------------------------------------------------------------  
@@ -143,14 +144,11 @@ public class WindowStack
   {
     itemsDisabled.clear();
     
-    ui.getMenuBar().getMenus().forEach(menu ->
-    {
-      for (MenuItem item : menu.getItems())
-      {  
-        itemsDisabled.put(item, Boolean.valueOf(item.isDisable()));
-        item.setDisable(true);
-      }        
-    });
+    ui.getMenuBar().getMenus().forEach(menu -> menu.getItems().forEach(item ->
+    {  
+      itemsDisabled.put(item, Boolean.valueOf(item.isDisable()));
+      item.setDisable(true);
+    }));
   }
  
 //---------------------------------------------------------------------------
@@ -173,39 +171,35 @@ public class WindowStack
     if (windows.isEmpty()) return;
     WindowWrapper closingWindow = windows.removeFirst(), focusingWindow = windows.getFirst();
         
-    if (nonNull(focusingWindow))
-    {
-      if ((closingWindow.getModality() != Modality.NONE) && (focusingWindow.getModality() == Modality.NONE))
-        itemsDisabled.forEach((menuItem, disabled) -> menuItem.setDisable(disabled));
-      
-      if (focusingWindow.isStage())
-      {
-        Stage stage = StageWrapper.class.cast(focusingWindow).getStage();
-        
-        if (SystemUtils.IS_OS_LINUX && (stage == app.getPrimaryStage()))                
-        {
-          // This is a workaround for:
-          // https://bugs.openjdk.java.net/browse/JDK-8140491
-        	
-          runDelayedInFXThread(1, 300, event -> // 300 ms delay to prevent main window from hiding/showing for multiple dialog boxes
-          {
-            if (app.getPrimaryStage().isShowing() == false)
-              return;
-            
-            for (WindowWrapper window : windows)
-              if (window.getModality() != Modality.NONE)
-                return;
+    if (focusingWindow == null) return;
 
-            app.getPrimaryStage().hide();
-            app.getPrimaryStage().show();
-          });
-        }
+    if ((closingWindow.getModality() != Modality.NONE) && (focusingWindow.getModality() == Modality.NONE))
+      itemsDisabled.forEach((menuItem, disabled) -> menuItem.setDisable(disabled));
+      
+    if (focusingWindow.isStage() == false) return;
+    
+    Stage stage = StageWrapper.class.cast(focusingWindow).getStage();
+    
+    if (SystemUtils.IS_OS_LINUX && (stage == app.getPrimaryStage()))                
+    {
+      // This is a workaround for:
+      // https://bugs.openjdk.java.net/browse/JDK-8140491
+    	
+      runDelayedInFXThread(1, 300, event -> // 300 ms delay to prevent main window from hiding/showing for multiple dialog boxes
+      {
+        if (app.getPrimaryStage().isShowing() == false)
+          return;
         
-    	  focusStage(stage);
-      }
+        for (WindowWrapper window : windows)
+          if (window.getModality() != Modality.NONE)
+            return;
+
+        app.getPrimaryStage().hide();
+        app.getPrimaryStage().show();
+      });
     }
-       
-    return;
+    
+	  focusStage(stage);       
   }
   
 //---------------------------------------------------------------------------

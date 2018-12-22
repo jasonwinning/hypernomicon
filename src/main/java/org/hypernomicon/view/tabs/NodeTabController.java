@@ -331,17 +331,15 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
 
   private void linkToTermClick()
   {
-    HDT_RecordWithConnector source = (HDT_RecordWithConnector) ui.activeRecord();    
-    HDT_Term term;
-    HDT_Concept concept;
-    
     if (ui.cantSaveRecord(true)) return;
     
     SelectConceptDialogController frmSelectConcept = SelectConceptDialogController.create("Term select", null); 
     
     if (frmSelectConcept.showModal() == false) return;
 
-    term = frmSelectConcept.getTerm();
+    HDT_RecordWithConnector source = (HDT_RecordWithConnector) ui.activeRecord();
+    HDT_Term term = frmSelectConcept.getTerm();
+    HDT_Concept concept;
     
     if (frmSelectConcept.createNew)
     {

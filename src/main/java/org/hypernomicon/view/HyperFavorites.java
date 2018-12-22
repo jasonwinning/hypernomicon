@@ -68,12 +68,11 @@ public class HyperFavorites
         MenuItem item = it.next();
         
         FavMenuItem fav = (FavMenuItem) item;
-        if (fav.isQuery)
-          if (fav.query == this)
-          {
-            it.remove();
-            return;
-          }
+        if (fav.isQuery && (fav.query == this))
+        {
+          it.remove();
+          return;
+        }
       }
     }
   }

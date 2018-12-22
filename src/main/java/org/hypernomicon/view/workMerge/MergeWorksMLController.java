@@ -19,17 +19,16 @@ package org.hypernomicon.view.workMerge;
 
 import static org.hypernomicon.util.Util.*;
 
-import java.util.List;
-
 import org.hypernomicon.bib.BibData;
 import org.hypernomicon.bib.BibData.BibFieldEnum;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 
-public class MergeWorksMLController
+public class MergeWorksMLController extends BibFieldRow
 {
   @FXML private RadioButton rb1;
   @FXML private RadioButton rb2;
@@ -48,34 +47,42 @@ public class MergeWorksMLController
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  public void init(BibFieldEnum bibFieldEnum, BibData bd1, BibData bd2, BibData bd3, BibData bd4)
+  @Override public void mergeInto(BibData bd)
   {
+    String str;
+    
+    if      (rb1.isSelected()) str = ta1.getText();
+    else if (rb2.isSelected()) str = ta2.getText();
+    else if (rb3.isSelected()) str = ta3.getText();
+    else                       str = ta4.getText();
+    
+    bd.setMultiStr(bibFieldEnum, convertMultiLineStrToStrList(str, false));
+  }
+  
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------  
+
+  @Override protected void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4)
+  {
+    this.ap = ap;
+    this.bibFieldEnum = bibFieldEnum;
+    
     lbl.setText(BibData.getFieldName(bibFieldEnum));
     
     if (bd4 == null)
-    {
       deleteGridPaneColumn(gp, 3);
-    }
-    else
+    else if (bd4.fieldNotEmpty(bibFieldEnum))
     {
-      if (bd4.fieldNotEmpty(bibFieldEnum))
-      {
-        ta4.setText(strListToStr(bd4.getMultiStr(bibFieldEnum), true));
-        rb4.setSelected(true);
-      }
+      ta4.setText(strListToStr(bd4.getMultiStr(bibFieldEnum), true));
+      rb4.setSelected(true);
     }
     
     if (bd3 == null)
-    {
       deleteGridPaneColumn(gp, 2);
-    }
-    else
+    else if (bd3.fieldNotEmpty(bibFieldEnum))
     {
-      if (bd3.fieldNotEmpty(bibFieldEnum))
-      {
-        ta3.setText(strListToStr(bd3.getMultiStr(bibFieldEnum), true));
-        rb3.setSelected(true);      
-      }
+      ta3.setText(strListToStr(bd3.getMultiStr(bibFieldEnum), true));
+      rb3.setSelected(true);      
     }
     
     if (bd2.fieldNotEmpty(bibFieldEnum))
@@ -89,21 +96,6 @@ public class MergeWorksMLController
       ta1.setText(strListToStr(bd1.getMultiStr(bibFieldEnum), true));
       rb1.setSelected(true);      
     }    
-  }
-
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-
-  public List<String> getStrList()
-  {
-    String str;
-    
-    if (rb1.isSelected()) str = ta1.getText();
-    else if (rb2.isSelected()) str = ta2.getText();
-    else if (rb3.isSelected()) str = ta3.getText();
-    else                       str = ta4.getText();
-
-    return convertMultiLineStrToStrList(str, false);    
   }
 
 //---------------------------------------------------------------------------  

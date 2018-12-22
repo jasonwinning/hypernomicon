@@ -86,12 +86,9 @@ class InnerFilePath
 
   @Override public boolean equals(Object other)
   {
-    InnerFilePath otherFilePath;
-        
-    if (other == null) return false;
     if ((other instanceof InnerFilePath) == false) return false;
     
-    otherFilePath = (InnerFilePath)other;
+    InnerFilePath otherFilePath = (InnerFilePath)other;
     
     try { return Files.isSameFile(getPath(), otherFilePath.getPath()); } 
     catch (Exception e) { noOp(); }

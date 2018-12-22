@@ -301,8 +301,7 @@ public class PictureDialogController extends HyperDialog
 
   private String makeFileName(String name, String ext)
   {
-    name = name.replaceAll("\\h+", "");
-    name = FilePath.removeInvalidFileNameChars(name);
+    name = FilePath.removeInvalidFileNameChars(name.replaceAll("\\h+", ""));
     
     String newName = "";
     for (int pos = 0; pos < name.length(); pos++)

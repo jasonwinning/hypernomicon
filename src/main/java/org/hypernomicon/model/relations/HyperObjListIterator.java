@@ -24,7 +24,7 @@ import org.hypernomicon.model.records.HDT_Base;
 
 public class HyperObjListIterator<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> implements ListIterator<HDT_ObjType>
 {
-  private HyperObjList<HDT_SubjType, HDT_ObjType> list;
+  private final HyperObjList<HDT_SubjType, HDT_ObjType> list;
   private int nextNdx;
   private int lastNdx = -1;
 

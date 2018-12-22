@@ -30,8 +30,8 @@ import org.hypernomicon.model.records.HDT_RecordType;
 
 public class ExternalColumnPopulator extends Populator
 {
-  private HyperTable hT = null;
-  private int colNdx = 0;
+  private final HyperTable hT;
+  private final int colNdx;
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force) { return hT.getSelByCol(colNdx); }
   @Override public CellValueType getValueType()                                    { return cvtRecord; }

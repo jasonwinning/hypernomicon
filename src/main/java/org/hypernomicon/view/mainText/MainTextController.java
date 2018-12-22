@@ -41,6 +41,7 @@ import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.items.KeyWork;
 import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.MainText.DisplayItem;
+import org.hypernomicon.model.items.MainText.DisplayItemType;
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
@@ -252,22 +253,10 @@ public class MainTextController
         
         switch (item.type)
         {
-          case diDescription:
-            
-            setText("This record's description");
-            break;
-          case diKeyWorks:
-            
-            setText("Key works");
-            break;
-          case diRecord:
-            
-            setText(db.getTypeName(item.record.getType()) + ": " + item.record.getCBText());
-            break;
-            
-          default:
-            setText("");
-            break;          
+          case diDescription: setText("This record's description"); break;
+          case diKeyWorks:    setText("Key works"); break;
+          case diRecord:      setText(db.getTypeName(item.record.getType()) + ": " + item.record.getCBText()); break;            
+          default:            setText(""); break;          
         }        
       }      
     });
@@ -412,11 +401,8 @@ public class MainTextController
     getKeyWorks(list);
     
     for (KeyWork keyWork : list)
-    {
-      if (keyWork.getRecordID() == keyID)
-        if (keyWork.getRecordType() == keyType)
-          return;
-    }
+      if ((keyWork.getRecordID() == keyID) && (keyWork.getRecordType() == keyType))
+        return;
     
     KeyWork keyWork = new KeyWork((HDT_RecordWithPath) db.records(keyType).getByID(keyID));
     
@@ -504,8 +490,7 @@ public class MainTextController
 
   private void btnInsertClick()
   {
-    HDT_RecordWithConnector record = (HDT_RecordWithConnector) HyperTableCell.getRecord(hcbName.selectedHTC());
-    
+    HDT_RecordWithConnector record = HyperTableCell.getRecord(hcbName.selectedHTC());    
     if (record == null) return;
     
     DisplayItem item = new DisplayItem(record);
@@ -556,8 +541,8 @@ public class MainTextController
     
       if (noCarriageReturns == false)
       {
-        text = text.replaceAll("\\R", "<br>");
-        text = text.replaceAll("\\v", "<br>");
+        text = text.replaceAll("\\R", "<br>")
+                   .replaceAll("\\v", "<br>");
       }
       
       getWebView().getEngine().executeScript("insertHtmlAtCursor('" + text + "')");
@@ -624,8 +609,7 @@ public class MainTextController
       {
         nullSwitch((HDT_RecordWithPath) db.records(type).getByID(id), record ->
         {
-          String text = aElement.ownText();
-          keyWorksArg.add(new KeyWork(record.getType(), record.getID(), text, true));
+          keyWorksArg.add(new KeyWork(record.getType(), record.getID(), aElement.ownText(), true));
         });
       }
       
@@ -751,8 +735,28 @@ public class MainTextController
     else
       hcbKeyType.selectType(hdtWork);
     
-    if (displayItems != null)
-      lvRecords.setItems(FXCollections.observableArrayList(displayItems));   
+    if (displayItems == null) return;
+    
+    lvRecords.setItems(FXCollections.observableArrayList(displayItems));
+   
+    int descNdx = -1;
+    for (int ndx = displayItems.size() - 1; ndx >= 0; ndx--)
+    {
+      DisplayItemType type = displayItems.get(ndx).type;
+      
+      if (type == diRecord)
+      {
+        if ((ndx + 1) < displayItems.size())
+          lvRecords.getSelectionModel().select(ndx + 1);
+        
+        return;
+      }
+      else if (type == diDescription)
+        descNdx = ndx;
+    }
+    
+    if (descNdx >= 0)
+      lvRecords.getSelectionModel().select(descNdx);
   }
 
 //---------------------------------------------------------------------------

@@ -23,11 +23,10 @@ import java.util.EnumSet;
 
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 
 public class AllQuerySource implements QuerySource
 {
-  private CombinedUnfilteredQuerySource source;
+  private final CombinedUnfilteredQuerySource source;
   
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------   
@@ -47,7 +46,6 @@ public class AllQuerySource implements QuerySource
 //--------------------------------------------------------------------------- 
   
   @Override public int count()                             { return source.count(); }
-  @Override public HyperTableCell getCell(int ndx)         { return source.getCell(ndx); }
   @Override public QuerySourceType sourceType()            { return QuerySourceType.QST_allRecords; }
   @Override public boolean containsRecord(HDT_Base record) { return true; }
   @Override public HDT_Base getRecord(int ndx)             { return source.getRecord(ndx); }

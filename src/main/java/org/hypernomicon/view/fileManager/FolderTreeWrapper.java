@@ -23,7 +23,6 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.items.HyperPath;
@@ -46,10 +45,10 @@ import javafx.scene.input.DragEvent;
 
 public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements DragNDropContainer<FileRow>
 {
-  private TreeView<FileRow> tv;
-  private TreeModel<FileRow> treeModel;
-  private DragNDropHoverHelper<FileRow> ddHoverHelper = new DragNDropHoverHelper<>();
-  private FileTable fileTable;
+  private final TreeView<FileRow> tv;
+  private final TreeModel<FileRow> treeModel;
+  private final DragNDropHoverHelper<FileRow> ddHoverHelper;
+  private final FileTable fileTable;
   
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
@@ -73,6 +72,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
     this.fileTable = fileTable;
     
     treeModel = new TreeModel<FileRow>(this, null);
+    ddHoverHelper = new DragNDropHoverHelper<>(tv);
     
     clear();
     
@@ -184,14 +184,8 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
 
   private void pruneNode(TreeItem<FileRow> nodeItem)
   {
-    Iterator<TreeItem<FileRow>> it = nodeItem.getChildren().iterator();
-    
-    while (it.hasNext())
+    nodeItem.getChildren().removeIf(childItem ->
     {
-      boolean removed = false;
-      
-      TreeItem<FileRow> childItem = it.next();
-      
       FileRow fileRow = childItem.getValue();
       if (fileRow != null)
       {
@@ -202,16 +196,14 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
           if (folder.getPath().getFilePath().exists() == false)
           {
             HDT_Folder.deleteFolderRecordTree((HDT_Folder) folder);                        
-            it.remove();
-
-            removed = true;
+            return true;
           }
         }
       }
       
-      if (removed == false)
-        pruneNode(childItem);
-    }
+      pruneNode(childItem);
+      return false;      
+    });
   }
 
 //---------------------------------------------------------------------------  
@@ -238,7 +230,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
 
   @Override public boolean acceptDrag(FileRow targetRow, DragEvent dragEvent, TreeItem<FileRow> treeItem)
   {
-    ddHoverHelper.scroll(dragEvent, tv);
+    ddHoverHelper.scroll(dragEvent);
     
     if (fileTable.draggingRows == null) return false;
     if (targetRow.isDirectory() == false) return false;
@@ -253,8 +245,6 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
        
     return true;
   }
-  
-  @Override public DragNDropHoverHelper<FileRow> getHelper() { return ddHoverHelper; }
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------

@@ -94,9 +94,8 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
 
   public void throwLastException() throws RelationCycleException
   {
-    if (getLastException() != null)
-      if (getLastException() instanceof RelationCycleException)
-        throw (RelationCycleException) getLastException();
+    if (getLastException() instanceof RelationCycleException)
+      throw (RelationCycleException) getLastException();
   }
 
 //---------------------------------------------------------------------------

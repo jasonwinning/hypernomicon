@@ -27,18 +27,16 @@ import org.hypernomicon.model.HyperDataset;
 
 public class HDT_Debate extends HDT_RecordWithConnector
 {
-  public List<HDT_Debate> largerDebates;
-  public List<HDT_Debate> subDebates;
-  public List<HDT_Position> positions;
+  public final List<HDT_Debate> largerDebates;
+  public final List<HDT_Debate> subDebates;
+  public final List<HDT_Position> positions;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_Debate(HDT_RecordState xmlState, HyperDataset<HDT_Debate> dataset)
   {
-    super(xmlState, dataset);
-      
-    nameTag = tagName;
+    super(xmlState, dataset, tagName);
     
     largerDebates = getObjList(rtParentDebateOfDebate);
     

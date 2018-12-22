@@ -59,14 +59,14 @@ public class HyperCB implements CommitableWrapper
 {
   @FunctionalInterface public interface CellTextHandler { public String getText(HyperTableRow row); }
   
-  private ComboBox<HyperTableCell> cb;
-  private Populator populator;
-  HyperTableRow row;
-  private boolean adjusting = false;
-  
+  private final ComboBox<HyperTableCell> cb;
+  private final Populator populator;  
+  final HyperTableRow row;
+    
   public HyperTableCell typedMatch;
   private HyperTableCell preShowingValue;
   private EventHandler<ActionEvent> onAction, innerOnAction;
+  private boolean adjusting = false;
   public boolean somethingWasTyped, listenForActionEvents = true, dontCreateNewRecord = false;
   
   public static final HashMap<ComboBox<HyperTableCell>, HyperCB> cbRegistry = new HashMap<>();
@@ -75,10 +75,12 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------  
 
   public EventHandler<ActionEvent> getOnAction() { return onAction; }
-  public Populator getPopulator()                { return populator; }
   public void setChoicesChanged()                { populator.setChanged(null); }
   public ComboBox<HyperTableCell> getComboBox()  { return cb; }
 
+  @SuppressWarnings("unchecked")
+  public <PopType extends Populator> PopType getPopulator() { return (PopType) populator; }
+  
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
@@ -141,6 +143,10 @@ public class HyperCB implements CommitableWrapper
 
   public HyperCB(ComboBox<HyperTableCell> cb, HyperCtrlType ctrlType, Populator newPopulator, HyperTableRow row, boolean addToRegistry, HyperTable table)
   {    
+    this.cb = cb;
+    populator = newPopulator;
+    this.row = nullSwitch(row, Populator.dummyRow);
+    
     if ((ctrlType != ctDropDown) && (ctrlType != ctDropDownList))
     {
       messageDialog("Internal error #42852", mtError);
@@ -148,15 +154,10 @@ public class HyperCB implements CommitableWrapper
     }
     
     somethingWasTyped = false;
-    this.cb = cb;
     
     if (addToRegistry)
       cbRegistry.put(cb, this);
       
-    this.row = nullSwitch(row, Populator.dummyRow);
-    
-    populator = newPopulator;
-    
     // When user hits enter, if no record is selected, try to find record with name containing what was typed
     onAction = event -> cbOnAction(event, table);
 
@@ -239,9 +240,7 @@ public class HyperCB implements CommitableWrapper
 
   private boolean isInTable()
   {
-    if ((cb == null) || (cb.getParent() == null)) return false;
-
-    return cb.getParent() instanceof ComboBoxCell;
+    return cb == null ? false : cb.getParent() instanceof ComboBoxCell;
   }
 
 //---------------------------------------------------------------------------  
@@ -249,9 +248,8 @@ public class HyperCB implements CommitableWrapper
 
   public void endEditModeIfInTable()
   {
-    if (isInTable() == false) return;
-    
-    ComboBoxCell.class.cast(cb.getParent()).commit();
+    if (isInTable())
+      ComboBoxCell.class.cast(cb.getParent()).commit();
   }
   
 //---------------------------------------------------------------------------  
@@ -571,10 +569,9 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  @SuppressWarnings("unchecked")
   public <HDT_T extends HDT_Base> HDT_T selectedRecord()
   {
-    return (HDT_T) HyperTableCell.getRecord(cb.getValue());
+    return HyperTableCell.getRecord(cb.getValue());
   }
 
 //---------------------------------------------------------------------------  

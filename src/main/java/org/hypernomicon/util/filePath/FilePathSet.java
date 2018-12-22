@@ -31,19 +31,15 @@ import org.hypernomicon.util.FilenameMap;
 
 public class FilePathSet implements Set<FilePath>
 {
-  private FilenameMap<Set<FilePath>> nameToPaths;
-
-  public FilePathSet()
-  {
-    nameToPaths = new FilenameMap<Set<FilePath>>();
-  }
+  private final FilenameMap<Set<FilePath>> nameToPaths = new FilenameMap<Set<FilePath>>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear()                  { nameToPaths.clear(); }
-  @Override public Iterator<FilePath> iterator() { return new FilePathIterator(nameToPaths); }
-  @Override public boolean isEmpty()             { return size() == 0; }
+  @Override public void clear()                       { nameToPaths.clear(); }
+  @Override public Iterator<FilePath> iterator()      { return new FilePathIterator(nameToPaths); }
+  @Override public boolean isEmpty()                  { return size() == 0; }
+  @Override public boolean retainAll(Collection<?> c) { return removeIf(filePath -> c.contains(filePath) == false); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -65,16 +61,11 @@ public class FilePathSet implements Set<FilePath>
   {
     FilePath filePath;
     
-    if (o instanceof String)
-      filePath = new FilePath((String)o);
-    else if (o instanceof Path)
-      filePath = new FilePath((Path)o);
-    else if (o instanceof File)
-      filePath = new FilePath((File)o);
-    else if (o instanceof FilePath)
-      filePath = (FilePath)o;
-    else
-      return false;
+    if (o instanceof String)        filePath = new FilePath((String)o);
+    else if (o instanceof Path)     filePath = new FilePath((Path)o);
+    else if (o instanceof File)     filePath = new FilePath((File)o);
+    else if (o instanceof FilePath) filePath = (FilePath)o;
+    else return false;
     
     Set<FilePath> set = nameToPaths.get(filePath.getNameOnly().toString());
     if (set == null) return false;
@@ -96,10 +87,7 @@ public class FilePathSet implements Set<FilePath>
     int ndx = 0;
     for (Set<FilePath> pathSet : nameToPaths.values())
       for (FilePath filePath : pathSet)
-      {
-        array[ndx] = filePath;
-        ndx++;
-      }
+        array[ndx++] = filePath;
     
     return array;
   }
@@ -116,10 +104,7 @@ public class FilePathSet implements Set<FilePath>
     int ndx = 0;
     for (Set<FilePath> pathSet : nameToPaths.values())
       for (FilePath filePath : pathSet)
-      {
-        a[ndx] = (T) filePath;
-        ndx++;
-      }
+        a[ndx++] = (T) filePath;
     
     return a;
   }
@@ -193,27 +178,6 @@ public class FilePathSet implements Set<FilePath>
     
     for (FilePath filePath : c)
       if (add(filePath)) changed = true;
-    
-    return changed;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean retainAll(Collection<?> c)
-  {
-    boolean changed = false;
-    Iterator<FilePath> iterator = iterator();
-    
-    while (iterator.hasNext())
-    {
-      FilePath filePath = iterator.next();
-      if (c.contains(filePath) == false)
-      {
-        iterator.remove();
-        changed = true;
-      }
-    }
     
     return changed;
   }

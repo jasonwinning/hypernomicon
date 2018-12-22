@@ -39,23 +39,25 @@ import org.hypernomicon.model.relations.HyperObjList;
 
 public class HDT_Argument extends HDT_RecordWithConnector
 {
-  public List<HDT_Position> positions;
-  public List<HDT_Argument> counteredArgs;
-  public List<HDT_Work> works;  
-  public List<HDT_Argument> counterArgs;
+  public final List<HDT_Position> positions;
+  public final List<HDT_Argument> counteredArgs;
+  public final List<HDT_Work> works;  
+  public final List<HDT_Argument> counterArgs;
   
   public HDT_Argument(HDT_RecordState xmlState, HyperDataset<HDT_Argument> dataset)
   {
-    super(xmlState, dataset);
+    super(xmlState, dataset, tagName);
        
-    nameTag = tagName;
-    
     if (dataset != null)
     {
       positions = Collections.unmodifiableList(getObjList(rtPositionOfArgument));
       counteredArgs = Collections.unmodifiableList(getObjList(rtCounterOfArgument));
       works = getObjList(rtWorkOfArgument);      
       counterArgs = getSubjList(rtCounterOfArgument);
+    }
+    else
+    {
+      positions = null; counteredArgs = null; works = null; counterArgs = null;
     }
   }
  

@@ -23,22 +23,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.hypernomicon.util.Util.*;
+
 import org.apache.commons.io.FilenameUtils;
 
 public class FilenameMap<T> implements Map<String, T>
 {
-  private Map<String, T> nameToObject;
-  private Map<String, ArrayList<String>> lowerToList; 
+  private final Map<String, T> nameToObject = new ConcurrentHashMap<>();
+  private final Map<String, ArrayList<String>> lowerToList = new ConcurrentHashMap<>();
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public FilenameMap()
-  { 
-    nameToObject = new ConcurrentHashMap<>(); 
-    lowerToList = new ConcurrentHashMap<>(); 
-  }
-
 //---------------------------------------------------------------------------
 
   @Override public int size()                                        { return nameToObject.size(); }
@@ -48,7 +42,7 @@ public class FilenameMap<T> implements Map<String, T>
   @Override public Collection<T> values()                            { return nameToObject.values(); }
   @Override public Set<Entry<String, T>> entrySet()                  { return nameToObject.entrySet(); }
   @Override public void clear()                                      { lowerToList.clear(); nameToObject.clear(); }
-  @Override public void putAll(Map<? extends String, ? extends T> m) { m.entrySet().forEach(entry -> put(entry.getKey(), entry.getValue())); }
+  @Override public void putAll(Map<? extends String, ? extends T> m) { m.forEach(this::put); }
   @Override public boolean containsKey(Object key)                   { return key instanceof String ? findKey((String) key).length() > 0 : false; }
   
 //---------------------------------------------------------------------------
@@ -73,12 +67,9 @@ public class FilenameMap<T> implements Map<String, T>
   {
     if ((key instanceof String) == false) return null;
     
-    String strKey = (String) key;
-    String realKey = findKey(strKey);
+    String realKey = findKey((String) key);
     
-    if (realKey.length() == 0) return null;
-    
-    return nameToObject.get(realKey);
+    return realKey.length() == 0 ? null : nameToObject.get(realKey);
   }
 
 //---------------------------------------------------------------------------
@@ -86,9 +77,7 @@ public class FilenameMap<T> implements Map<String, T>
 
   @Override public T put(String key, T value)
   {
-    if (key == null) return null;
-    if (key.length() == 0) return null;
-    if (value == null) return null;
+    if ((value == null) || (safeStr(key).length() == 0)) return null;
     
     T oldVal = remove(key);
 

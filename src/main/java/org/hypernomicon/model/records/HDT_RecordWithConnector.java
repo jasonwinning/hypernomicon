@@ -38,12 +38,12 @@ public abstract class HDT_RecordWithConnector extends HDT_Record implements HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_RecordWithConnector(HDT_RecordState xmlState, HyperDataset<? extends HDT_RecordWithConnector> dataset)
+  public HDT_RecordWithConnector(HDT_RecordState xmlState, HyperDataset<? extends HDT_RecordWithConnector> dataset, Tag nameTag)
   {
-    super(xmlState, dataset);
+    super(xmlState, dataset, nameTag);
     
     if (connector == null)
-      connector = new Connector(this);   
+      connector = new Connector(this);
     
     alreadyModifying = false;
   }

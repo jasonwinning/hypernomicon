@@ -180,9 +180,8 @@ public class BibManager extends HyperDialog
       {
         Throwable ex = syncTask.getException();
         
-        if (ex != null)
-          if (ex instanceof HyperDataException)
-            messageDialog(ex.getMessage(), mtError);
+        if (ex instanceof HyperDataException)
+          messageDialog(ex.getMessage(), mtError);
       }
       
       boolean changed = syncTask.getChanged();

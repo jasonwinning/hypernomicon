@@ -66,7 +66,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     jObj.put("data", jData);
     this.zWrapper = zWrapper;
     
-    jObj.put("key", "_!_" + generateRandomAlphanumericString(12));
+    jObj.put("key", "_!_" + randomAlphanumericStr(12));
   }
 
 //---------------------------------------------------------------------------  

@@ -39,7 +39,6 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.Author;
-import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
@@ -52,7 +51,7 @@ public class SearchResultFileList
 {
   public static class SearchResultFile
   {
-    private FilePath filePath;
+    private final FilePath filePath;
     private int startPage, endPage;
     
   //---------------------------------------------------------------------------
@@ -146,9 +145,9 @@ public class SearchResultFileList
     private static FilePath getDestPath(FilePath filePath)
     {
       FilePath destFilePath = db.getPath(PREF_KEY_RESULTS_PATH, filePath.getNameOnly());
-      String destStr = destFilePath.toString();
-      String baseStr = FilenameUtils.removeExtension(destStr);
-      String ext = FilenameUtils.EXTENSION_SEPARATOR_STR + filePath.getExtensionOnly();
+      String destStr = destFilePath.toString(),
+             baseStr = FilenameUtils.removeExtension(destStr),
+             ext = FilenameUtils.EXTENSION_SEPARATOR_STR + filePath.getExtensionOnly();
      
       int num = 1001;
       
@@ -262,8 +261,8 @@ public class SearchResultFileList
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private ArrayList<SearchResultFile> list;
-  private ArrayList<String> errList;
+  private final ArrayList<SearchResultFile> list;
+  private final ArrayList<String> errList;
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -299,8 +298,8 @@ public class SearchResultFileList
         
         for (HDT_WorkFile workFile : work.workFiles)
         {  
-          int startPage = work.getStartPageNum(workFile);
-          int endPage = work.getEndPageNum(workFile);
+          int startPage = work.getStartPageNum(workFile),
+              endPage   = work.getEndPageNum  (workFile);
           
           if (((startPage < 1) && (endPage > 0)) ||
               ((endPage < 1) && (startPage > 0)))
@@ -309,11 +308,8 @@ public class SearchResultFileList
           addFile(workFile.getPath().getFilePath(), startPage, endPage);
         }
       
-        for (HDT_Work subWork : work.subWorks)
-          addRecord(subWork, includeEdited);
-     
-        for (HDT_MiscFile miscFile : work.miscFiles)
-          addRecord(miscFile, includeEdited);
+        work.subWorks .forEach(subWork  -> addRecord(subWork , includeEdited));     
+        work.miscFiles.forEach(miscFile -> addRecord(miscFile, includeEdited));
         
         break;
         

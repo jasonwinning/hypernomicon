@@ -255,11 +255,8 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
       case hdtPosition :
         
         HDT_Position newPos = db.createNewBlankRecord(hdtPosition);
-
         newPos.largerPositions.add(curPosition);
-
-        ui.goToRecord(newPos, false);
-        
+        ui.goToRecord(newPos, false);        
         break;
         
       case hdtArgument :
@@ -276,47 +273,41 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 //--------------------------------------------------------------------------- 
   
   public void newArgumentClick()
-  {
-    HDT_Argument argument;
-    HDT_Work work;
-    HDT_Person person;
-    
+  {        
     NewArgDialogController newArgDialog = NewArgDialogController.create("New Argument", curPosition);
       
-    if (newArgDialog.showModal())
+    if (newArgDialog.showModal() == false) return;
+    
+    HDT_Argument argument = db.createNewBlankRecord(hdtArgument);
+    argument.addPosition(curPosition, newArgDialog.hcbPositionVerdict.selectedRecord());
+    
+    if      (newArgDialog.rbArgName1.isSelected()) argument.setName(newArgDialog.tfArgName1.getText());
+    else if (newArgDialog.rbArgName2.isSelected()) argument.setName(newArgDialog.tfArgName2.getText());
+    else if (newArgDialog.rbArgName3.isSelected()) argument.setName(newArgDialog.tfArgName3.getText());
+    else if (newArgDialog.rbArgName4.isSelected()) argument.setName(newArgDialog.tfArgName4.getText());
+    else if (newArgDialog.rbArgName5.isSelected()) argument.setName(newArgDialog.tfArgName5.getText());
+    else if (newArgDialog.rbArgName6.isSelected()) argument.setName(newArgDialog.tfArgName6.getText());
+    else if (newArgDialog.rbArgName7.isSelected()) argument.setName(newArgDialog.tfArgName7.getText());
+    else                                           argument.setName(newArgDialog.tfArgName8.getText());
+
+    HDT_Work work;
+    
+    if (newArgDialog.rbNew.isSelected())
     {
-      argument = db.createNewBlankRecord(hdtArgument);
+      work = db.createNewBlankRecord(hdtWork);
 
-      HDT_PositionVerdict verdict = newArgDialog.hcbPositionVerdict.selectedRecord();
-
-      argument.addPosition(curPosition, verdict);
-      
-      if      (newArgDialog.rbArgName1.isSelected()) argument.setName(newArgDialog.tfArgName1.getText());
-      else if (newArgDialog.rbArgName2.isSelected()) argument.setName(newArgDialog.tfArgName2.getText());
-      else if (newArgDialog.rbArgName3.isSelected()) argument.setName(newArgDialog.tfArgName3.getText());
-      else if (newArgDialog.rbArgName4.isSelected()) argument.setName(newArgDialog.tfArgName4.getText());
-      else if (newArgDialog.rbArgName5.isSelected()) argument.setName(newArgDialog.tfArgName5.getText());
-      else if (newArgDialog.rbArgName6.isSelected()) argument.setName(newArgDialog.tfArgName6.getText());
-      else if (newArgDialog.rbArgName7.isSelected()) argument.setName(newArgDialog.tfArgName7.getText());
-      else                                           argument.setName(newArgDialog.tfArgName8.getText());
-
-      if (newArgDialog.rbNew.isSelected())
-      {
-        work = db.createNewBlankRecord(hdtWork);
-
-        work.setName(newArgDialog.tfTitle.getText());
-        person = newArgDialog.hcbPerson.selectedRecord();
-        if (person != null)
-          work.getAuthors().add(person);
-      }
-      else
-        work = newArgDialog.hcbWork.selectedRecord();
-
-      if (work != null)
-        argument.works.add(work);
-
-      ui.goToRecord(argument, false);       
+      work.setName(newArgDialog.tfTitle.getText());
+      HDT_Person person = newArgDialog.hcbPerson.selectedRecord();
+      if (person != null)
+        work.getAuthors().add(person);
     }
+    else
+      work = newArgDialog.hcbWork.selectedRecord();
+
+    if (work != null)
+      argument.works.add(work);
+
+    ui.goToRecord(argument, false);           
   }
   
 //---------------------------------------------------------------------------  

@@ -23,18 +23,16 @@ import java.util.Set;
 
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.util.Util.*;
 
 public class CombinedUnfilteredQuerySource implements QuerySource
 {
-  private Set<HDT_RecordType> types;
+  private final Set<HDT_RecordType> types;
   private int firstNdxThisType = 0, lastNdxThisType = 0, total = 0;
   HDT_RecordType lastType = hdtNone;
-  private EnumMap<HDT_RecordType, Integer> firstNdxForType = new EnumMap<>(HDT_RecordType.class);
-  private EnumMap<HDT_RecordType, Integer> lastNdxForType = new EnumMap<>(HDT_RecordType.class);
+  private final EnumMap<HDT_RecordType, Integer> firstNdxForType = new EnumMap<>(HDT_RecordType.class),
+                                                 lastNdxForType = new EnumMap<>(HDT_RecordType.class);
   
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 
@@ -76,7 +74,6 @@ public class CombinedUnfilteredQuerySource implements QuerySource
   @Override public int count()                             { return total; }
   @Override public QuerySourceType sourceType()            { return QuerySourceType.QST_combinedUnfilteredRecords; }
   @Override public boolean containsRecord(HDT_Base record) { return types.contains(record.getType()); }
-  @Override public HyperTableCell getCell(int ndx)         { return nullSwitch(getRecord(ndx), null, HyperTableCell::new); }
 
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 

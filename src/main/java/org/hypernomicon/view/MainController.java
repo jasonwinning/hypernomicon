@@ -22,7 +22,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.queryEngines.AllQueryEngine.*;
@@ -43,7 +42,6 @@ import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.HDT_Position.PositionSource;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -71,7 +69,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -92,7 +89,6 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.geometry.Side;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -243,8 +239,7 @@ public final class MainController
     {
       if (windows.getCyclingFocus()) return;
       
-      if (newValue == null) return;
-      if (newValue.booleanValue() == false) return;
+      if ((newValue == null) || (newValue.booleanValue() == false)) return;
       
       windows.push(stage);
     });
@@ -288,18 +283,17 @@ public final class MainController
     ttDates = new Tooltip("No dates to show.");
     ttDates.setStyle("-fx-font-size: 14px;");
     
-    PersonTabController.addHyperTab(personTab, tabPersons, "PersonTab.fxml");
+    PersonTabController     .addHyperTab(personTab     , tabPersons     , "PersonTab.fxml");
     InstitutionTabController.addHyperTab(institutionTab, tabInstitutions, "InstitutionTab.fxml");
-    WorkTabController.addHyperTab(workTab, tabWorks, "WorkTab.fxml");
-    FileTabController.addHyperTab(miscFileTab, tabFiles, "FileTab.fxml");
-    DebateTab.addHyperTab(debateTab, tabDebates, new DebateTab());
-    PositionTab.addHyperTab(positionTab, tabPositions, new PositionTab());
-    ArgumentTab.addHyperTab(argumentTab, tabArguments, new ArgumentTab());
-    NoteTab.addHyperTab(noteTab, tabNotes, new NoteTab());
-    TermTab.addHyperTab(termTab, tabTerms, new TermTab());    
-    
-    QueriesTabController.addHyperTab(queryTab, tabQueries, "QueriesTab.fxml");
-    TreeTabController.addHyperTab(treeTab, tabTree, "TreeTab.fxml");
+    WorkTabController       .addHyperTab(workTab       , tabWorks       , "WorkTab.fxml");
+    FileTabController       .addHyperTab(miscFileTab   , tabFiles       , "FileTab.fxml");
+    DebateTab               .addHyperTab(debateTab     , tabDebates     , new DebateTab());
+    PositionTab             .addHyperTab(positionTab   , tabPositions   , new PositionTab());
+    ArgumentTab             .addHyperTab(argumentTab   , tabArguments   , new ArgumentTab());
+    NoteTab                 .addHyperTab(noteTab       , tabNotes       , new NoteTab());
+    TermTab                 .addHyperTab(termTab       , tabTerms       , new TermTab());        
+    QueriesTabController    .addHyperTab(queryTab      , tabQueries     , "QueriesTab.fxml");
+    TreeTabController       .addHyperTab(treeTab       , tabTree        , "TreeTab.fxml");
     
     addSelectorTab(omniTab);
     addSelectorTab(listTab);
@@ -335,7 +329,7 @@ public final class MainController
     omniFinder = new OmniFinder(htFind);
     
     btnFileMgr.setOnAction(event -> runFileMgr());
-    btnBibMgr.setOnAction(event -> runBibMgr());
+    btnBibMgr .setOnAction(event -> runBibMgr());
     
     btnGoTo.setOnAction         (event -> btnGoToClick(false));
     mnuRecordSelect.setOnAction (event -> btnGoToClick(true));
@@ -363,24 +357,14 @@ public final class MainController
     
     btnPointerLaunch.selectedProperty().addListener((observable, oldValue, newValue) ->
     {
-      if ((oldValue != null) && (newValue != null))
-        if (oldValue.booleanValue() == newValue.booleanValue())
-          return;
-      
-      if (newValue != null)      
-        if (newValue)
-          appPrefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true);
+      if ((newValue == null) || (newValue.booleanValue() == false) || (newValue.equals(oldValue))) return;    
+      appPrefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true);
     });
 
     btnPointerPreview.selectedProperty().addListener((observable, oldValue, newValue) ->
     {
-      if ((oldValue != null) && (newValue != null))
-        if (oldValue.booleanValue() == newValue.booleanValue())
-          return;
-      
-      if (newValue != null)
-        if (newValue)
-          appPrefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, false);
+      if ((newValue == null) || (newValue.booleanValue() == false) || (newValue.equals(oldValue))) return;
+      appPrefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, false);
     });
 
     btnPointerLaunch.setOnAction(event ->
@@ -406,8 +390,8 @@ public final class MainController
     
     ttDates.setAutoHide(true);
     
-    tabTree.setGraphic(getImageViewForRelativePath("resources/images/treeview-small.png"));
-    tabQueries.setGraphic(getImageViewForRelativePath("resources/images/glasses-db.png"));
+    tabTree        .setGraphic(getImageViewForRelativePath("resources/images/treeview-small.png"));
+    tabQueries     .setGraphic(getImageViewForRelativePath("resources/images/glasses-db.png"));
     tabOmniSelector.setGraphic(getImageViewForRelativePath("resources/images/globe.png"));
     tabViewSelector.setGraphic(getImageViewForRelativePath("resources/images/details.png"));
     
@@ -437,10 +421,9 @@ public final class MainController
       AnchorPane.setRightAnchor(topToolBar, 0.0);
       
       midAnchorPane.widthProperty().addListener((observable, oldValue, newValue) ->
-      {
-        if (newValue != null)
-          if (newValue.doubleValue() > 1)
-            adjustToolBar(newValue.doubleValue());
+      {        
+        if ((newValue != null) && (newValue.doubleValue() > 1))
+          adjustToolBar(newValue.doubleValue());
       });      
     }
     
@@ -482,16 +465,7 @@ public final class MainController
       }
       
       for (QueryView qv : QueriesTabController.class.cast(HyperTab.getHyperTab(queryTab)).queryViews)
-      {
-        Iterator<ResultsRow> i = qv.resultsTable.getTV().getItems().iterator();
-        
-        while (i.hasNext())
-        {
-          ResultsRow row = i.next();
-          if (row.getRecord() == record)
-            i.remove();
-        }
-      }
+        qv.resultsTable.getTV().getItems().removeIf(row -> row.getRecord() == record);
 
       int ndx = favorites.indexOfRecord(record);
       
@@ -508,12 +482,10 @@ public final class MainController
     
     selectorTabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) ->
     {
-      if (newTab == null) return;
-      if (oldTab == newTab) return;
+      if ((newTab == null) || (oldTab == newTab)) return;
         
-      if (oldTab != null)
-        if ((oldTab != tabOmniSelector) && (oldTab != tabViewSelector))        
-          oldTab.setContent(null);
+      if ((oldTab != null) && (oldTab != tabOmniSelector) && (oldTab != tabViewSelector))        
+        oldTab.setContent(null);
       
       if ((newTab != tabOmniSelector) && (newTab != tabViewSelector))
         newTab.setContent(apGoTo);
@@ -535,10 +507,7 @@ public final class MainController
 
     tfOmniGoTo.textProperty().addListener((observable, oldValue, newValue) ->
     {
-      if (newValue == null) return;
-      if (oldValue == null)
-        tfOmniGoToChange(newValue, false);
-      else if (oldValue.equals(newValue) == false)
+      if ((newValue != null) && (newValue.equals(oldValue) == false))
         tfOmniGoToChange(newValue, false);
     });
     
@@ -647,12 +616,11 @@ public final class MainController
       if (record.getID() == newRecordID) 
         return;
      
-      if (newRecordID > 0)      
-        if (db.records(activeType()).getIDNdxByID(newRecordID) > -1)
-        {
-          goToRecord(db.records(activeType()).getByID(newRecordID), true);
-          return;
-        }
+      if ((newRecordID > 0) && db.records(activeType()).getIDNdxByID(newRecordID) > -1)
+      {
+        goToRecord(db.records(activeType()).getByID(newRecordID), true);
+        return;
+      }
 
       tfID.setText("" + activeRecord().getID());
     });
@@ -693,8 +661,7 @@ public final class MainController
   {
     int ndx = selectorTabPane.getTabs().size() - (selectorTabs.size() + 1);
     
-    Tab tab = selectorTabPane.getTabs().get(ndx);
-    selectorTabs.put(tabEnum, tab);
+    selectorTabs.put(tabEnum, selectorTabPane.getTabs().get(ndx));
   }
 
 //---------------------------------------------------------------------------  
@@ -706,16 +673,16 @@ public final class MainController
     {
       switch (activeTab())
       {
-        case personTab :   return pvsPersonTab;          
-        case workTab :     return pvsWorkTab;          
-        case queryTab :    return pvsQueryTab;        
-        case treeTab :     return pvsTreeTab;
-        default :          return pvsOther;                 
+        case personTab : return pvsPersonTab;          
+        case workTab :   return pvsWorkTab;          
+        case queryTab :  return pvsQueryTab;        
+        case treeTab :   return pvsTreeTab;
+        default :        return pvsOther;                 
       }
-    }  
-    else if (fileManagerDlg != null)
-      if (fileManagerDlg.getStage().isShowing() && fileManagerDlg.getStage().isFocused())
-        return pvsManager;
+    }
+    
+    if ((fileManagerDlg != null) && fileManagerDlg.getStage().isShowing() && fileManagerDlg.getStage().isFocused())
+      return pvsManager;
     
     return pvsOther;
   }
@@ -799,18 +766,17 @@ public final class MainController
     Point2D p2 = midAnchorPane.localToScreen(anchorWidth, 0);
     Point2D p1 = tabTree.getGraphic().localToScreen(16, 0);
     
-    if (p1.getX() > 1)
-      if (p2.getX() > 1)
+    if ((p1.getX() > 1) && (p2.getX() > 1))
+    {
+      if (toolBarWidth == 0)
+        toolBarWidth = topToolBar.getWidth();
+      
+      if (toolBarWidth > 1)
       {
-        if (toolBarWidth == 0)
-          toolBarWidth = topToolBar.getWidth();
-        
-        if (toolBarWidth > 1)
-        {
-          double diff = ((p2.getX() - toolBarWidth) - p1.getX()) - 36;
-          topToolBar.setMaxWidth(toolBarWidth + diff);
-        }
+        double diff = ((p2.getX() - toolBarWidth) - p1.getX()) - 36;
+        topToolBar.setMaxWidth(toolBarWidth + diff);
       }
+    }
   }
   
 //---------------------------------------------------------------------------  
@@ -830,36 +796,34 @@ public final class MainController
 
   public final void btnGoToClick(boolean fromMenu)
   {
-    if (selectorTabEnum() == listTab)
+    if (selectorTabEnum() != listTab)
     {
-      if (activeTab() == queryTab)
-      {
-        curQV.resultsTable.dblClick(curQV.resultsTable.getTV().getSelectionModel().getSelectedItem());
-        return;
-      }
-  
-      if (activeTab() == treeTab)
-      {
-        if (fromMenu)
-        {
-          goToRecord(getTree().selectedRecord(), false);
-          return;
-        }
-        
-        String text = cbTreeGoTo.getEditor().getText();
-        if (text.length() > 0)
-          getTree().findAgain(text);
-  
-        return;
-      }
+      hcbGoTo.triggerOnAction();
       
+      if (hcbGoTo.selectedID() > 0)
+        recordLookup();
+
       return;
     }
     
-    hcbGoTo.triggerOnAction();
+    TabEnum curTab = activeTab();
     
-    if (hcbGoTo.selectedID() > 0)
-      recordLookup();
+    if (curTab == queryTab)
+    {
+      curQV.resultsTable.dblClick(curQV.resultsTable.getTV().getSelectionModel().getSelectedItem());
+      return;
+    }
+    else if (curTab != treeTab) return;
+
+    if (fromMenu)
+    {
+      goToRecord(getTree().selectedRecord(), false);
+      return;
+    }
+    
+    String text = cbTreeGoTo.getEditor().getText();
+    if (text.length() > 0)
+      getTree().findAgain(text);
   }
 
 //---------------------------------------------------------------------------  
@@ -870,12 +834,8 @@ public final class MainController
     switch (record.getType())
     {
       case hdtWork :
-        
-        HDT_Work work = (HDT_Work) record;
-        WorkTypeEnum workType = wtNone;
-        
-        if (work.workType.isNotNull())
-          workType = work.getWorkTypeValue();
+                
+        WorkTypeEnum workType = HDT_Work.class.cast(record).getWorkTypeValue();
         
         switch (workType)
         {
@@ -913,24 +873,22 @@ public final class MainController
   {
     switch (type)
     {
-      case hdtWorkLabel :     return "resources/images/tag.png";
-      case hdtMiscFile :      return "resources/images/file.png";
-      case hdtConcept :       return "resources/images/term.png";
-      case hdtGlossary :      return "resources/images/bookshelf.png";
-      case hdtTerm :          return "resources/images/term.png";
-      case hdtNote :          return "resources/images/notebook-pencil.png";
-      case hdtWork :          return "resources/images/paper.png";
-      case hdtPerson :        return "resources/images/people.png";
-      case hdtInstitution :   return "resources/images/building-hedge.png";
-      case hdtDebate :        return "resources/images/debate.png";
-      case hdtPosition :      return "resources/images/position.png";
-      case hdtArgument :      return "resources/images/argument.png";
+      case hdtWorkLabel     : return "resources/images/tag.png";
+      case hdtMiscFile      : return "resources/images/file.png";
+      case hdtConcept       : return "resources/images/term.png";
+      case hdtGlossary      : return "resources/images/bookshelf.png";
+      case hdtTerm          : return "resources/images/term.png";
+      case hdtNote          : return "resources/images/notebook-pencil.png";
+      case hdtWork          : return "resources/images/paper.png";
+      case hdtPerson        : return "resources/images/people.png";
+      case hdtInstitution   : return "resources/images/building-hedge.png";
+      case hdtDebate        : return "resources/images/debate.png";
+      case hdtPosition      : return "resources/images/position.png";
+      case hdtArgument      : return "resources/images/argument.png";
       case hdtInvestigation : return "resources/images/documents-stack.png";
-      case hdtFolder :        return "resources/images/folder.png";
-      default : break;
+      case hdtFolder        : return "resources/images/folder.png";
+      default               : return "";
     }
-    
-    return "";
   }
 
 //---------------------------------------------------------------------------
@@ -1014,7 +972,7 @@ public final class MainController
       catch (HDB_InternalError e)
       {
         messageDialog(e.getMessage(), mtError);
-      }     
+      }
     }
     
     closeWindows(true);
@@ -1241,15 +1199,16 @@ public final class MainController
     if (saveRecord)
       if (cantSaveRecord(false)) return false;
     
-    db.prefs.putInt(PREF_KEY_PERSON_ID, getHyperTab(personTab).getActiveID());
+    db.prefs.putInt(PREF_KEY_PERSON_ID     , getHyperTab(personTab     ).getActiveID());
     db.prefs.putInt(PREF_KEY_INSTITUTION_ID, getHyperTab(institutionTab).getActiveID());
-    db.prefs.putInt(PREF_KEY_DEBATE_ID, getHyperTab(debateTab).getActiveID());
-    db.prefs.putInt(PREF_KEY_POSITION_ID, getHyperTab(positionTab).getActiveID());
-    db.prefs.putInt(PREF_KEY_ARGUMENT_ID, getHyperTab(argumentTab).getActiveID());
-    db.prefs.putInt(PREF_KEY_WORK_ID, getHyperTab(workTab).getActiveID());
-    db.prefs.putInt(PREF_KEY_TERM_ID, getHyperTab(termTab).getActiveID());
-    db.prefs.putInt(PREF_KEY_FILE_ID, getHyperTab(miscFileTab).getActiveID());
-    db.prefs.putInt(PREF_KEY_NOTE_ID, getHyperTab(noteTab).getActiveID());
+    db.prefs.putInt(PREF_KEY_DEBATE_ID     , getHyperTab(debateTab     ).getActiveID());
+    db.prefs.putInt(PREF_KEY_POSITION_ID   , getHyperTab(positionTab   ).getActiveID());
+    db.prefs.putInt(PREF_KEY_ARGUMENT_ID   , getHyperTab(argumentTab   ).getActiveID());
+    db.prefs.putInt(PREF_KEY_WORK_ID       , getHyperTab(workTab       ).getActiveID());
+    db.prefs.putInt(PREF_KEY_TERM_ID       , getHyperTab(termTab       ).getActiveID());
+    db.prefs.putInt(PREF_KEY_FILE_ID       , getHyperTab(miscFileTab   ).getActiveID());
+    db.prefs.putInt(PREF_KEY_NOTE_ID       , getHyperTab(noteTab       ).getActiveID());
+    
     db.prefs.put(PREF_KEY_RECORD_TYPE, db.getTypeTagStr(activeType() == hdtNone ? hdtPerson : activeType()));
 
     boolean watcherWasRunning = folderTreeWatcher.stop();
@@ -1295,13 +1254,10 @@ public final class MainController
   public final <HDT_RT extends HDT_Base, HDT_CT extends HDT_Base> void refreshTab(HyperTab<HDT_RT, HDT_CT> hyperTab)
   {
     HyperView<HDT_CT> view = hyperTab.getView(); 
-    if (view != null)
-    {
-      view.refresh();
-      HDT_CT record = view.getViewRecord();
-      if (record != null)
-        hyperTab.setRecord(record);
-    }
+    if (view == null) return;
+
+    view.refresh();
+    nullSwitch(view.getViewRecord(), record -> hyperTab.setRecord(record));
   }
 
 //---------------------------------------------------------------------------  
@@ -1389,7 +1345,14 @@ public final class MainController
       return;
 
     closeWindows(false);
-    db.newDB(file.getPath(), dlg.getChoices(), dlg.getFolders());
+    
+    try { db.newDB(file.getPath(), dlg.getChoices(), dlg.getFolders()); }
+    catch (HDB_InternalError e)
+    {
+      messageDialog("Unable to create new database: " + e.getMessage(), mtError);
+      shutDown(false, true, false); // An error in db.close is unrecoverable.
+      return;
+    }
 
     clearAllTabsAndViews();
     
@@ -1437,16 +1400,15 @@ public final class MainController
 
   @FXML final void btnCreateClick()
   {
-    HDT_Base record;
+    if (cantSaveRecord(true)) return;
+    
     HDT_RecordType type = selectorType();
     String name = "";
 
     if (hcbGoTo.selectedID() == -1)
       name = cbGoTo.getEditor().getText();
-    
-    if (cantSaveRecord(true)) return;
 
-    record = db.createNewBlankRecord(type);
+    HDT_Base record = db.createNewBlankRecord(type);
     if (name.length() > 0)
     {
       if (type == hdtPerson)
@@ -1542,6 +1504,8 @@ public final class MainController
     catch (HDB_InternalError e)
     {
       messageDialog(e.getMessage(), mtError);
+      shutDown(false, true, false); // An error in db.close is unrecoverable.
+      return;
     }
         
     enableAll(false);
@@ -1633,8 +1597,6 @@ public final class MainController
   
   public final void mnuNewCategoryClick(HDT_RecordType type)
   {
-    int id;
-
     if (db.isLoaded() == false)
     {
       messageDialog("No database is currently loaded.", mtError);
@@ -1645,19 +1607,18 @@ public final class MainController
 
     NewCategoryDialogController ctrlr = NewCategoryDialogController.create("New Category", type);
     
-    if (ctrlr.showModal())
-    {
-      id = parseInt(ctrlr.tfNewID.getText(), -1);
-      type = ctrlr.hcbRecordType.selectedType();
-      
-      HDT_RecordState recordState = new HDT_RecordState(type, id, ctrlr.tfNewKey.getText(), "", "", "");
-      
-      try { db.createNewRecordFromState(recordState, true); } catch (Exception e) { noOp(); }
+    if (ctrlr.showModal() == false) return;
+    
+    int id = parseInt(ctrlr.tfNewID.getText(), -1);
+    type = ctrlr.hcbRecordType.selectedType();
+    
+    HDT_RecordState recordState = new HDT_RecordState(type, id, ctrlr.tfNewKey.getText(), "", "", "");
+    
+    try { db.createNewRecordFromState(recordState, true); } catch (Exception e) { noOp(); }
 
-      db.records(type).getByID(id).setName(ctrlr.tfNewName.getText());
-            
-      update();
-    }
+    db.records(type).getByID(id).setName(ctrlr.tfNewName.getText());
+          
+    update();
   }
 
 //---------------------------------------------------------------------------  
@@ -1722,9 +1683,7 @@ public final class MainController
 //--------------------------------------------------------------------------- 
 
   public final void updateFavorites()
-  {
-    int ndx = -1;
-  
+  { 
     mnuToggleFavorite.setText("Add to favorites...");
    
     if (db.isLoaded() == false) 
@@ -1740,13 +1699,11 @@ public final class MainController
     {
       mnuToggleFavorite.setDisable(false);
       
-      ndx = favorites.indexOfRecord(activeRecord());
+      if (favorites.indexOfRecord(activeRecord()) > -1)
+        mnuToggleFavorite.setText("Remove from favorites...");
     }
     else
       mnuToggleFavorite.setDisable(true);
-
-   if (ndx > -1)
-     mnuToggleFavorite.setText("Remove from favorites...");
   }  
   
 //---------------------------------------------------------------------------
@@ -1754,28 +1711,19 @@ public final class MainController
 
   @FXML final void mnuToggleFavoriteClick()
   {
-    int ndx = -1;
-    HDT_Base record = null;
-  
+    if ((activeTab() == treeTab) || (activeTab() == queryTab)) return;
     if (cantSaveRecord(true)) return;
-
-    if ((activeTab() != treeTab) && (activeTab() != queryTab))
-    {
-      record = viewRecord();
-      if (record != null)
-        ndx = favorites.indexOfRecord(record);
-    }
     
-    if (ndx > -1)
-    {
-      mnuFavorites.getItems().remove(ndx);
-      updateFavorites();
-      return;
-    }
-
+    HDT_Base record = viewRecord();
     if (record == null) return;
     
-    mnuFavorites.getItems().add(new FavMenuItem(record));
+    int ndx = favorites.indexOfRecord(record);
+    
+    if (ndx > -1)
+      mnuFavorites.getItems().remove(ndx);
+    else
+      mnuFavorites.getItems().add(new FavMenuItem(record));
+    
     updateFavorites();
   }  
   
@@ -1786,19 +1734,11 @@ public final class MainController
   {
     ht.addCondContextMenuItem("Launch work file", HDT_Position.class, 
       pos -> pos.getLaunchableWork() != null,      
-      pos ->
-      {
-        PositionSource ps = pos.getLaunchableWork();
-        ps.work.launch(-1);
-      });
+      pos -> pos.getLaunchableWork().work.launch(-1));
     
     ht.addCondContextMenuItem("Go to work record", HDT_Position.class, 
       pos -> pos.getWork() != null,      
-      pos ->
-      {
-        PositionSource ps = nullSwitch(pos.getLaunchableWork(), pos.getWork());        
-        goToRecord(ps.work, true);
-      });
+      pos -> goToRecord(nullSwitch(pos.getLaunchableWork(), pos.getWork()).work, true));
     
     ht.addCondContextMenuItem("Go to person record", HDT_Position.class,
       pos -> pos.getWorkWithAuthor() != null,    
@@ -1806,11 +1746,7 @@ public final class MainController
         
     ht.addCondContextMenuItem("Go to argument record", HDT_Position.class, 
       pos -> pos.arguments.size() > 0,
-      pos ->
-      {
-        PositionSource ps = nullSwitch(pos.getLaunchableWork(), nullSwitch(pos.getWork(), pos.getArgument()));        
-        goToRecord(ps.argument, true);
-      });
+      pos -> goToRecord(nullSwitch(pos.getLaunchableWork(), nullSwitch(pos.getWork(), pos.getArgument())).argument, true));
     
     ht.addContextMenuItem("Go to position record", HDT_Position.class,
       pos -> goToRecord(pos, true));
@@ -1897,15 +1833,13 @@ public final class MainController
 
   @FXML public final void mnuAddToQueryResultsClick()
   {
-    HDT_Base record = null;
-    
     if (db.isLoaded() == false)
     {
       messageDialog("No database is currently loaded.", mtError);
       return;
     }
 
-    record = activeRecord();
+    HDT_Base record = activeRecord();
        
     if (record == null)
     {
@@ -1930,15 +1864,13 @@ public final class MainController
 
   @FXML public final void mnuRevertToDiskCopyClick()
   {    
-    HDT_Base record = null;
-    
     if (db.isLoaded() == false)
     {
       messageDialog("No database is currently loaded.", mtError);
       return;
     }
 
-    record = activeRecord();
+    HDT_Base record = activeRecord();
        
     if (record == null)
     {
@@ -1983,26 +1915,25 @@ public final class MainController
       messageDialog("Unable to revert " + recordStr + ": Records would be organized in a cycle as a result.", mtError);
       success = false;
     } 
-    catch (HDB_InternalError | HubChangedException | SearchKeyException e)
+    catch (HubChangedException | SearchKeyException e)
     {
       messageDialog("Unable to revert " + recordStr + ": " + e.getMessage(), mtError);
       success = false;
     }
     
-    if (success == false)
-    {  
-      try
-      {
-        record.restoreTo(backupState);
-      } 
-      catch (RelationCycleException | SearchKeyException | HubChangedException e) { noOp(); } 
-      catch (HDB_InternalError e)
-      {
-        messageDialog("Unable to restore " + recordStr + " to pre-reverting state: " + e.getMessage(), mtError);
-      }
+    if (success) return true;
+    
+    try
+    {
+      record.restoreTo(backupState);
+    } 
+    catch (RelationCycleException | SearchKeyException | HubChangedException e) { noOp(); } 
+    catch (HDB_InternalError e)
+    {
+      messageDialog("Unable to restore " + recordStr + " to pre-reverting state: " + e.getMessage(), mtError);
     }
     
-    return success;
+    return false;
   }
 
 //---------------------------------------------------------------------------
@@ -2048,10 +1979,6 @@ public final class MainController
   
   public final boolean loadDataFromDisk()
   {
-    DialogResult result = mrRetry;
-    boolean success;
-    String otherCompName;
-    
     if (SystemUtils.IS_OS_MAC)
       Platform.runLater(() -> adjustToolBar(0));
 
@@ -2061,7 +1988,8 @@ public final class MainController
     if (internetNotCheckedYet && appPrefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))
     {
       internetNotCheckedYet = false;
-      
+
+      DialogResult result = mrRetry;
       while ((result != mrIgnore) && (checkInternetConnection() == false))
       {
         result = abortRetryIgnoreDialog("Warning: Internet connection check failed.");
@@ -2071,7 +1999,7 @@ public final class MainController
       }
     }
     
-    otherCompName = db.getLockOwner();
+    String otherCompName = db.getLockOwner();
     if (nonNull(otherCompName))
     {
       if (LockedDialogController.create("Database is Currently Locked", otherCompName).showModal() == false)
@@ -2081,7 +2009,15 @@ public final class MainController
         return false;
     }
     
-    success = db.loadAllFromDisk(favorites);
+    boolean success = false;
+    
+    try { success = db.loadAllFromDisk(favorites); }
+    catch (HDB_InternalError e)
+    {
+      messageDialog("Unable to load database. Reason: " + e.getMessage(), mtError);
+      shutDown(false, true, false); // An error in db.close is unrecoverable.
+      return false;
+    }
     
     if (success)
       success = folderTreeWatcher.createNewWatcherAndStart();
@@ -2195,12 +2131,11 @@ public final class MainController
 //---------------------------------------------------------------------------
 
   public final void goToRecord(HDT_Base record, boolean save)
-  {
-    HDT_Investigation inv = null;
-  
-    if (db.isLoaded() == false) return;
-    if (record == null) return;
+  { 
+    if ((record == null) || (db.isLoaded() == false)) return;
+    
     treeSubjRecord = null;
+    HDT_Investigation inv = null;
      
     switch (record.getType())
     {
@@ -2338,18 +2273,7 @@ public final class MainController
         activeRecord().viewNow();
     }
   }
-
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
-  final int firstID(HDT_RecordType recordType)
-  {
-    if (db.records(recordType).size() > 0)
-      return db.records(recordType).getIDbyIDNdx(0);
-    
-    return -1;
-  }
-  
+ 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
@@ -2381,14 +2305,12 @@ public final class MainController
   @SuppressWarnings("cast")
   public final void updateSelectorTab(boolean setFocus)
   {    
-    ObservableList<Node> children;  
     TabEnum tabEnum = selectorTabEnum();
     HyperTab<? extends HDT_Base, ? extends HDT_Base> hyperTab = HyperTab.getHyperTab(tabEnum);
     if (hyperTab == null) hyperTab = currentTab();
     selectorTF = null;
     
-    int count = 0;
-    if (hyperTab != null) count = hyperTab.getRecordCount();
+    int count = hyperTab == null ? 0 : hyperTab.getRecordCount();
     
     mnuRecordSelect.setVisible(true);
     mnuFindNextInName.setVisible(false);
@@ -2406,10 +2328,7 @@ public final class MainController
         {
           if (cbResultGoTo == null) initResultCB();
           
-          children = apListGoTo.getChildren();
-          children.clear();
-          children.add(cbResultGoTo);
-
+          apListGoTo.getChildren().setAll(cbResultGoTo);
           selectorTF = cbResultGoTo.getEditor();
         }
         
@@ -2421,10 +2340,7 @@ public final class MainController
           mnuFindNextInName.setVisible(true);
           
           copyRegionLayout(cbGoTo, cbTreeGoTo);
-          children = apListGoTo.getChildren();
-          children.clear();
-          children.add(cbTreeGoTo);        
-
+          apListGoTo.getChildren().setAll(cbTreeGoTo);        
           selectorTF = cbTreeGoTo.getEditor();
         }
         
@@ -2451,7 +2367,7 @@ public final class MainController
         
         selectorTF = cbGoTo.getEditor();
         hcbGoTo.clear();
-        ((RecordByTypePopulator)hcbGoTo.getPopulator()).setRecordType(Populator.dummyRow, selectorType());
+        RecordByTypePopulator.class.cast(hcbGoTo.getPopulator()).setRecordType(Populator.dummyRow, selectorType());
         if (cbGoTo.isEditable() == false) cbGoTo.setEditable(true);
         btnCreateNew.setDisable(false);
         
@@ -2463,14 +2379,12 @@ public final class MainController
     
     hideFindTable();
     
-    final TextField finalTF = selectorTF;
-    
     if (setFocus && (selectorTF != null))
     {
       Platform.runLater(() -> 
       {        
-        finalTF.requestFocus();
-        finalTF.selectAll();                
+        selectorTF.requestFocus();
+        selectorTF.selectAll();                
       });
     }
   }
@@ -2480,42 +2394,18 @@ public final class MainController
 
   public final void attachOrphansToRoots()
   {
-    for (HDT_Base orphan : db.getOrphans(rtParentDebateOfDebate))
-    {
-      HDT_Debate debate = (HDT_Debate)orphan;      
-      if (debate.getID() != 1)
-        debate.largerDebates.add(db.debates.getByID(1));
-    }
+    Set<HDT_Position> orphans2 = db.getOrphans(rtParentPosOfPos, HDT_Position.class);
     
-    Set<HDT_Base> orphans2 = db.getOrphans(rtParentPosOfPos);
-    
-    for (HDT_Base orphan : db.getOrphans(rtDebateOfPosition))
+    db.getOrphans(rtDebateOfPosition, HDT_Position.class).forEach(position ->
     {
-      HDT_Position position = (HDT_Position)orphan;      
       if (orphans2.contains(position))
         position.debates.add(db.debates.getByID(1));
-    }
-    
-    for (HDT_Base orphan : db.getOrphans(rtParentNoteOfNote))
-    {
-      HDT_Note note = (HDT_Note)orphan;      
-      if (note.getID() != 1)
-        note.parentNotes.add(db.notes.getByID(1));
-    }
-    
-    for (HDT_Base orphan : db.getOrphans(rtParentLabelOfLabel))
-    {
-      HDT_WorkLabel label = (HDT_WorkLabel)orphan;      
-      if (label.getID() != 1)
-        label.parentLabels.add(db.workLabels.getByID(1));
-    }
-    
-    for (HDT_Base orphan : db.getOrphans(rtParentGroupOfGroup))
-    {
-      HDT_PersonGroup group = (HDT_PersonGroup)orphan;      
-      if (group.getID() != 1)
-        group.parentGroups.add(db.personGroups.getByID(1));
-    }    
+    });
+
+    db.getOrphans(rtParentDebateOfDebate, HDT_Debate     .class).forEach(debate -> debate.largerDebates.add(db.debates     .getByID(1)));
+    db.getOrphans(rtParentNoteOfNote    , HDT_Note       .class).forEach(note   -> note  .parentNotes  .add(db.notes       .getByID(1)));    
+    db.getOrphans(rtParentLabelOfLabel  , HDT_WorkLabel  .class).forEach(label  -> label .parentLabels .add(db.workLabels  .getByID(1)));    
+    db.getOrphans(rtParentGroupOfGroup  , HDT_PersonGroup.class).forEach(group  -> group .parentGroups .add(db.personGroups.getByID(1)));
   }
 
 //---------------------------------------------------------------------------  
@@ -2592,9 +2482,12 @@ public final class MainController
       {
         case hdtArgument: case hdtDebate:   case hdtMiscFile: case hdtNote:
         case hdtPerson:   case hdtPosition: case hdtTerm:     case hdtWork:
-          btnTextSearch.setDisable(false); break;         
+          
+          btnTextSearch.setDisable(false); break;
+          
         default:
-          btnTextSearch.setDisable(true);        
+          
+          btnTextSearch.setDisable(true);
       }
            
       btnSave.setText("Accept Edits");
@@ -2738,12 +2631,13 @@ public final class MainController
       return;
     }
 
-    TreeItem<TreeRow> treeItem = getTree().selectedItem(); if (treeItem == null) return;
-    TreeRow row = treeItem.getValue();                     if (row      == null) return;  
-    HDT_Base record = row.getRecord();                     if (record   == null) return;
+    HDT_Base record = nullSwitch(getTree().selectedItem(), null, treeItem -> 
+                      nullSwitch(treeItem.getValue(), null, row -> 
+                      row.getRecord()));
+    
+    if (record == null) return;
 
     RelationType relType = rtNone;
-    HyperObjList<HDT_Base, HDT_Base> objList;
     
     for (TreeTargetType ttType : treeTargetTypes)
       if (ttType.objType == record.getType())
@@ -2774,12 +2668,9 @@ public final class MainController
     }
 
     if (treeObjRecord != null)
-    {
-      objList = db.getObjectList(getRelation(treeSubjRecord.getType(), treeObjRecord.getType()), treeSubjRecord, true);
-      objList.remove(treeObjRecord);
-    }
+      db.getObjectList(getRelation(treeSubjRecord.getType(), treeObjRecord.getType()), treeSubjRecord, true).remove(treeObjRecord);
 
-    objList = db.getObjectList(relType, treeSubjRecord, true);
+    HyperObjList<HDT_Base, HDT_Base> objList = db.getObjectList(relType, treeSubjRecord, true);
     
     objList.add(record);
     try { objList.throwLastException(); } 
@@ -2788,11 +2679,7 @@ public final class MainController
       messageDialog("Cannot use selected record: Records would be organized in a cycle as a result.", mtError);
       
       if (treeObjRecord != null)
-      {
-        HyperObjList<HDT_Base, HDT_Base> oList = db.getObjectList(getRelation(treeSubjRecord.getType(), treeObjRecord.getType()), treeSubjRecord, true);
-      
-        oList.add(treeObjRecord);
-      }
+        db.getObjectList(getRelation(treeSubjRecord.getType(), treeObjRecord.getType()), treeSubjRecord, true).add(treeObjRecord);
     }
     
     goToRecord(treeSubjRecord, false);
@@ -2850,14 +2737,10 @@ public final class MainController
   {
     String desc;
     
-    if ((record2.getType() == hdtWorkLabel) && (record2.isLinked() == false))
-      desc = record1.getMainText().getHtml();
-    else if (ultraTrim(convertToSingleLine(record1.getMainText().getPlain())).length() == 0)
-      desc = record2.getMainText().getHtml();
-    else if (ultraTrim(convertToSingleLine(record2.getMainText().getPlain())).length() == 0)
-      desc = record1.getMainText().getHtml();
-    else if (record1.getMainText().getHtml().equals(record2.getMainText().getHtml()))
-      desc = record1.getMainText().getHtml();    
+    if      ((record2.getType() == hdtWorkLabel) && (record2.isLinked() == false))           desc = record1.getMainText().getHtml();
+    else if (ultraTrim(convertToSingleLine(record1.getMainText().getPlain())).length() == 0) desc = record2.getMainText().getHtml();
+    else if (ultraTrim(convertToSingleLine(record2.getMainText().getPlain())).length() == 0) desc = record1.getMainText().getHtml();
+    else if (record1.getMainText().getHtml().equals(record2.getMainText().getHtml()))        desc = record1.getMainText().getHtml();    
     else
     {
       MergeSpokeDialogController frmMerge = MergeSpokeDialogController.create("Select how to merge fields", record1, record2);
@@ -2911,8 +2794,7 @@ public final class MainController
 
   public final void omniFocus()
   {
-    setSelectorTab(tabOmniSelector);
-    
+    setSelectorTab(tabOmniSelector);    
     safeFocus(tfOmniGoTo);
   }
 
@@ -2991,7 +2873,8 @@ public final class MainController
     
     String pathStr = (filePath == null ? "" : " " + filePath.toString());
     
-    BibData bd = null; 
+    BibData bd = null;
+    Exception ex = null;
         
     try
     {
@@ -2999,7 +2882,7 @@ public final class MainController
     } 
     catch (TokenMgrException | ParseException e)
     {
-      messageDialog("An error occurred while trying to read the file" + pathStr + ": " + e.getMessage(), mtError);
+      ex = e;      
     }
     
     if (bd == null)
@@ -3007,7 +2890,11 @@ public final class MainController
     
     if (bd == null)
     {
-      messageDialog("Unable to parse bibliographic information.", mtError);
+      if (ex == null)
+        messageDialog("Unable to parse bibliographic information.", mtError);
+      else
+        messageDialog("An error occurred while trying to parse BibTex file" + pathStr + ": " + ex.getMessage(), mtError);
+        
       return;
     }
     
@@ -3033,7 +2920,11 @@ public final class MainController
       return;
     }
     
-    if (mwd.showModal() == false) return;
+    if (mwd.showModal() == false)
+    {
+      if (creatingNewWork) db.deleteRecord(hdtWork, work.getID());
+      return;
+    }
     
     if (creatingNewEntry)
     {

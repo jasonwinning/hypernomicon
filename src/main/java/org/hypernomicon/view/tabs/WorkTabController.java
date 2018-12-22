@@ -23,7 +23,6 @@ import org.hypernomicon.bib.BibUtils.PdfMetadata;
 import org.hypernomicon.bib.lib.BibEntry;
 import org.hypernomicon.model.SearchKeys;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.Author;
@@ -33,10 +32,7 @@ import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
-import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
+import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.AsyncHttpClient;
@@ -52,10 +48,7 @@ import org.hypernomicon.view.dialogs.NewPersonDialogController;
 import org.hypernomicon.view.dialogs.SelectWorkDialogController;
 import org.hypernomicon.view.dialogs.WorkDialogController;
 import org.hypernomicon.view.mainText.MainTextWrapper;
-import org.hypernomicon.view.populators.ExternalColumnPopulator;
-import org.hypernomicon.view.populators.Populator;
-import org.hypernomicon.view.populators.StandardPopulator;
-import org.hypernomicon.view.populators.SubjectPopulator;
+import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.workMerge.MergeWorksDialogController;
 import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.RecordListView.*;
@@ -66,7 +59,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
@@ -192,14 +184,14 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   private HyperTable htLabels, htSubworks, htInvestigations, htArguments, htMiscFiles, htWorkFiles, htKeyMentioners, htISBN;
   private HyperCB hcbLargerWork;    
   private MainTextWrapper mainText;
-  private HashMap<Tab, String> tabCaptions = new HashMap<>();
+  private final HashMap<Tab, String> tabCaptions = new HashMap<>();
   private boolean btnFolderAdded, inNormalMode = true, alreadyChangingTitle = false;
   private double btnOpenLinkLeftAnchor, tfLinkLeftAnchor, tfLinkRightAnchor;
   private SplitMenuButton btnFolder = null;
   private HDT_Work curWork, lastWork = null;
-  private ObjectProperty<BibData> crossrefBD = new SimpleObjectProperty<BibData>(), 
-                                  pdfBD = new SimpleObjectProperty<BibData>(), 
-                                  googleBD  = new SimpleObjectProperty<BibData>();
+  private final ObjectProperty<BibData> crossrefBD = new SimpleObjectProperty<BibData>(), 
+                                        pdfBD      = new SimpleObjectProperty<BibData>(), 
+                                        googleBD   = new SimpleObjectProperty<BibData>();
   
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
   
@@ -215,7 +207,11 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   @Override public void setRecord(HDT_Work activeRecord) { curWork = activeRecord; }
   @Override public void focusOnSearchKey()               { safeFocus(tfSearchKey); }
   @Override public MainTextWrapper getMainTextWrapper()  { return mainText; }
-
+  
+  public List<Author> getAuthorsFromUI()       { return Authors.getListFromObjectGroups(getAuthorGroups(), curWork); }  
+  public String getShortAuthorsStr()           { return Authors.getShortAuthorsStr(getAuthorsFromUI(), false, true); }
+  private List<ObjectGroup> getAuthorGroups()  { return htAuthors.getAuthorGroups(curWork, 1, -1, 2, 3); }
+  private void lblSearchKeyClick()             { tfSearchKey.setText(makeWorkSearchKey(getAuthorsFromUI(), tfYear.getText(), curWork)); }
   public String getTitle()                     { return tfTitle.getText(); }
   private void setTabCaption(Tab tab, int cnt) { tab.setText(tabCaptions.get(tab) + " (" + cnt + ")"); }
 
@@ -351,7 +347,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
       int startPageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
       if (startPageNum < 0) return;
       
-      HDT_WorkFile workFile = (HDT_WorkFile) row.getRecord();
+      HDT_WorkFile workFile = row.getRecord();
       if (workFile == null) return;
       
       int endPageNum = parseInt(row.getText(nextColNdx), -1);
@@ -364,7 +360,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
       int endPageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
       if (endPageNum < 0) return;
       
-      HDT_WorkFile workFile = (HDT_WorkFile) row.getRecord();
+      HDT_WorkFile workFile = row.getRecord();
       if (workFile == null) return;
       
       int startPageNum = parseInt(row.getText(nextColNdx - 2), -1);
@@ -402,13 +398,11 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
         {
           if ((curWork == null) || (curWork.largerWork.isNotNull() == false)) return false;
           
-          boolean noneToSelect = true;
-          
           for (HDT_WorkFile workFile : curWork.largerWork.get().workFiles)
             if (curWork.workFiles.contains(workFile) == false)
-              noneToSelect = false;
+              return true;
           
-          return noneToSelect == false;
+          return false;
         },
         record ->
         {
@@ -419,7 +413,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
           HDT_WorkFile workFile = ctrlr.getWorkFile();
           if (workFile == null) return;
           
-          HDT_WorkFile oldWorkFile = (HDT_WorkFile) htWorkFiles.selectedRecord();
+          HDT_WorkFile oldWorkFile = htWorkFiles.selectedRecord();
           
           if (oldWorkFile == null)          
             curWork.addWorkFile(workFile.getID(), true, true);
@@ -431,8 +425,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     
     CondRecordHandler<HDT_WorkFile> condHandler = workFile ->
     {
-      if (workFile.getPath().isEmpty()) return false;
-      if (inNormalMode) return false;
+      if (inNormalMode || workFile.getPath().isEmpty()) return false;
       
       for (HDT_Work work : workFile.works)
         if (work.getWorkTypeValue() != wtUnenteredSet) return false;
@@ -467,13 +460,13 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
       workFiles.reorder(newList);
     });
     
-    htWorkFiles.setDblClickHandler((record) -> launchWorkFile(HDT_WorkFile.class.cast(record).getPath().getFilePath(), getCurPageNum(curWork, HDT_WorkFile.class.cast(record), true)));
+    htWorkFiles.setDblClickHandler(HDT_WorkFile.class, workFile -> launchWorkFile(workFile.getPath().getFilePath(), getCurPageNum(curWork, workFile, true)));
     
     tvWorkFiles.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
       if ((newValue == null) || (oldValue == newValue)) return;
       
-      HDT_WorkFile workFile = (HDT_WorkFile) newValue.getRecord();
+      HDT_WorkFile workFile = newValue.getRecord();
       if (workFile == null)
         previewWindow.setPreview(pvsWorkTab, curWork.getPath().getFilePath(), getCurPageNum(curWork, null, true), getCurPageNum(curWork, null, false), curWork);
       else
@@ -484,7 +477,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     {
       if ((newValue == null) || (oldValue == newValue)) return;
       
-      HDT_Work subWork = (HDT_Work) newValue.getRecord();
+      HDT_Work subWork = newValue.getRecord();
       previewWindow.setPreview(pvsWorkTab, subWork.getPath().getFilePath(), subWork.getStartPageNum(), subWork.getEndPageNum(), subWork);
     });
     
@@ -520,9 +513,9 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), null);
     hcbLargerWork = new HyperCB(cbLargerWork, ctDropDownList, new StandardPopulator(hdtWork), null);    
     
-    btnWorldCat.setOnAction(event -> searchWorldCat(nullSwitch(getFirstAuthor(), "", auth -> auth.getLastName()), tfTitle.getText(), tfYear.getText()));
+    btnWorldCat.setOnAction(event -> searchWorldCat(getFirstAuthorSingleName(), tfTitle.getText(), tfYear.getText()));
     
-    btnScholar.setOnAction(event -> btnScholarClick());
+    btnScholar.setOnAction(event -> searchScholar(getFirstAuthorSingleName(), tfTitle.getText(), ""));
     
     btnDOI.setOnAction(event -> searchDOI(tfDOI.getText()));
     
@@ -707,23 +700,20 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 
 
-  public void btnScholarClick()
+  public String getFirstAuthorSingleName()
   {
-    HDT_Person firstAuthor = getFirstAuthor();
+    List<Author> authList = getAuthorsFromUI();
+    Author firstAuth = null;
     
-    if (firstAuthor != null)
-      searchScholar(firstAuthor.getLastName(), tfTitle.getText(), "");
-    else
-      searchScholar("", tfTitle.getText(), "");
-  }
-
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-
-  public HDT_Person getFirstAuthor()
-  {
-    ArrayList<HDT_Person> authors = htAuthors.saveToList(1, hdtPerson);    
-    return authors.size() == 0 ? null : authors.get(0);
+    for (Author auth : authList)
+    {
+      if (auth.getPerson() != null)
+        return auth.singleName();
+      
+      if (firstAuth == null) firstAuth = auth;
+    }
+    
+    return firstAuth == null ? "" : firstAuth.singleName();
   }
   
 //---------------------------------------------------------------------------  
@@ -731,8 +721,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 
   public int getCurPageNum(HDT_Work work, HDT_WorkFile workFile, boolean isStart)
   {
-    if ((curWork == null) || (curWork != work)) return -1;
-    if (curWork.workFiles.isEmpty()) return -1;
+    if ((curWork == null) || (curWork != work) || curWork.workFiles.isEmpty()) return -1;
     
     if (workFile == null)
       workFile = curWork.workFiles.get(0);
@@ -741,10 +730,8 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     {      
       if (workFile == row.getRecord())
       {
-        int pageNum = parseInt(row.getText(isStart ? 3 : 4), -1);
-        
-        if (pageNum < 0) return -1;
-        return pageNum;
+        int pageNum = parseInt(row.getText(isStart ? 3 : 4), -1);        
+        return pageNum < 0 ? -1 : pageNum;
       }
     }
     
@@ -895,12 +882,12 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
         miscFileCnt = curWork.miscFiles.size(),
         workFileCnt = curWork.workFiles.size();
     
-    setTabCaption(tabWorkFiles, workFileCnt);
-    setTabCaption(tabSubworks, subworkCnt);
-    setTabCaption(tabMiscFiles, miscFileCnt);
+    setTabCaption(tabWorkFiles     , workFileCnt);
+    setTabCaption(tabSubworks      , subworkCnt);
+    setTabCaption(tabMiscFiles     , miscFileCnt);
     setTabCaption(tabInvestigations, invCnt);
-    setTabCaption(tabArguments, argCnt);
-    setTabCaption(tabKeyMentions, mentionerCnt);
+    setTabCaption(tabArguments     , argCnt);
+    setTabCaption(tabKeyMentions   , mentionerCnt);
         
     tfSearchKey.setText(curWork.getSearchKey());
     if (tfSearchKey.getText().length() == 0)
@@ -980,7 +967,6 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   {
     HDT_Folder folder = null;
     boolean notInSame = false;
-    HyperTableRow row;
     
     for (HDT_WorkFile file : curWork.workFiles)
     {           
@@ -992,7 +978,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
           notInSame = true;
       }
       
-      row = htWorkFiles.newDataRow();
+      HyperTableRow row = htWorkFiles.newDataRow();
       row.setCheckboxValue(1, file.getAnnotated());
       row.setCellValue(2, file, file.getPath().getNameStr());
       
@@ -1047,15 +1033,15 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
       if (mentioner.getType() == hdtHub)
       {          
         StrongLink link = HDT_Hub.class.cast(mentioner).getLink();
-        if (link.getDebate() != null)   typeStr = typeStr + (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtDebate);
+        if (link.getDebate  () != null) typeStr = typeStr + (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtDebate);
         if (link.getPosition() != null) typeStr = typeStr + (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtPosition);
-        if (link.getNote() != null)     typeStr = typeStr + (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtNote);
-        if (link.getConcept() != null)  typeStr = typeStr + (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtTerm);
+        if (link.getNote    () != null) typeStr = typeStr + (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtNote);
+        if (link.getConcept () != null) typeStr = typeStr + (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtTerm);
         
-        if (link.getConcept() != null)       name = link.getConcept().getCBText();
-        else if (link.getDebate() != null)   name = link.getDebate().getCBText();
+        if      (link.getConcept () != null) name = link.getConcept ().getCBText();
+        else if (link.getDebate  () != null) name = link.getDebate  ().getCBText();
         else if (link.getPosition() != null) name = link.getPosition().getCBText();
-        else                                 name = link.getNote().getCBText();
+        else                                 name = link.getNote    ().getCBText();
       }
       else
       {
@@ -1169,14 +1155,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
       arg -> ui.goToRecord(arg.positions.get(0), true));
      
     htArguments.addCondContextMenuItem("Debate Record...", HDT_Argument.class,
-        
-      arg ->
-      {
-        if (arg.positions.size() > 0)
-          return arg.positions.get(0).getDebate() != null; 
-        return false;
-      },
-      
+      arg -> arg.positions.size() == 0 ? false : arg.positions.get(0).getDebate() != null,      
       arg -> ui.goToRecord(arg.positions.get(0).getDebate(), true));
   }
 
@@ -1204,12 +1183,10 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     
     ui.goToRecord(newWork, false);
     
-    if (showWorkDialog(workFile) == false)
-    {
-      db.getObjectList(rtWorkFileOfWork, oldWork, true).add(oldNdx, workFile);
-      
-      ui.deleteCurrentRecord(false);
-    }
+    if (showWorkDialog(workFile)) return;
+
+    db.getObjectList(rtWorkFileOfWork, oldWork, true).add(oldNdx, workFile);
+    ui.deleteCurrentRecord(false);
   }
 
 //---------------------------------------------------------------------------  
@@ -1228,9 +1205,8 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     HDT_Work newWork = dlg.getWork(),
              oldWork = curWork;
     
-    int oldNdx = curWork.workFiles.indexOf(workFile);
-    
-    int startPage = getCurPageNum(curWork, workFile, true),
+    int oldNdx = curWork.workFiles.indexOf(workFile),    
+        startPage = getCurPageNum(curWork, workFile, true),
         endPage = getCurPageNum(curWork, workFile, false);
     
     newWork.addWorkFile(workFile.getID(), false, false);      
@@ -1240,13 +1216,12 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     
     ui.goToRecord(newWork, false);
     
-    if (showWorkDialog(workFile) == false)
-    {
-      db.getObjectList(rtWorkFileOfWork, oldWork, true).add(oldNdx, workFile);
-      db.getObjectList(rtWorkFileOfWork, newWork, true).remove(workFile);
-      
-      ui.btnBackClick();
-    }
+    if (showWorkDialog(workFile)) return;
+
+    db.getObjectList(rtWorkFileOfWork, oldWork, true).add(oldNdx, workFile);
+    db.getObjectList(rtWorkFileOfWork, newWork, true).remove(workFile);
+    
+    ui.btnBackClick();
   }
 
 //---------------------------------------------------------------------------  
@@ -1258,7 +1233,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     
     if (curWork.workFiles.size() == 0)
     {
-      messageDialog("There are no files to move.", mtError);
+      messageDialog("There are no files to move.", mtWarning);
       return;
     }
     
@@ -1273,17 +1248,15 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     
     if (allSame.isTrue())
     {
-      messageDialog("All of the files are already located in the destination folder.", mtError);
+      messageDialog("All of the files are already located in the destination folder.", mtWarning);
       return;
     }
-    
-    HDT_Folder folderRecord;
-    
+        
     boolean startWatcher = folderTreeWatcher.stop();
     
     try
     {
-      folderRecord = HyperPath.getFolderFromFilePath(folder, true);
+      HDT_Folder folderRecord = HyperPath.getFolderFromFilePath(folder, true);
       
       for (HDT_WorkFile workFile : curWork.workFiles)
         if (workFile.getPath().moveToFolder(folderRecord.getID(), true, false, "") == false) break;
@@ -1387,13 +1360,10 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     {
       for (FilePath srcFilePath : filePaths)
       {
-        if (moveOrCopy == mrMove)
+        if ((moveOrCopy == mrMove) && (srcFilePath.canObtainLock() == false))
         {
-          if (srcFilePath.canObtainLock() == false)
-          {
-            messageDialog("Unable to obtain lock on path: \"" + srcFilePath + "\"", mtError);
-            return;
-          }
+          messageDialog("Unable to obtain lock on path: \"" + srcFilePath + "\"", mtError);
+          return;
         }
         
         FilePath destFilePath = folder.getDirOnly().resolve(srcFilePath.getNameOnly());
@@ -1442,9 +1412,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
         }
       }
       
-      HDT_WorkFile workFile;
-      
-      workFile = (HDT_WorkFile) HyperPath.createRecordAssignedToPath(hdtWorkFile, destFilePath);
+      HDT_WorkFile workFile = (HDT_WorkFile) HyperPath.createRecordAssignedToPath(hdtWorkFile, destFilePath);
       if (workFile == null)
       {
         messageDialog("Internal error #67830", mtError);
@@ -1474,27 +1442,17 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   {
     DirectoryChooser dirChooser = new DirectoryChooser();
     
-    FilePath destPath;
-    
-    if (curWork.workFiles.size() > 0)
-      destPath = curWork.getPath().getFilePath().getDirOnly();
-    else
-      destPath = db.getPath(PREF_KEY_UNENTERED_PATH, null);
+    FilePath destPath = curWork.workFiles.size() > 0 ? curWork.getPath().getFilePath().getDirOnly() : db.getPath(PREF_KEY_UNENTERED_PATH, null);
     
     FilePath folder = null;
     HDT_Folder folderRecord = null;
     
     while (folderRecord == null)
     {
-      folder = destPath;
+      dirChooser.setTitle(moveOnly ? "Select location to move files" : "Select location to move or copy files");
       
-      if (moveOnly)
-        dirChooser.setTitle("Select location to move files");
-      else
-        dirChooser.setTitle("Select location to move or copy files");
-      
-      if (folder.exists() && folder.isDirectory())
-        dirChooser.setInitialDirectory(folder.toFile());
+      if (destPath.exists() && destPath.isDirectory())
+        dirChooser.setInitialDirectory(destPath.toFile());
       else
       {
         folder = db.getPath(PREF_KEY_UNENTERED_PATH, null);
@@ -1622,53 +1580,47 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   
   public static String makeWorkSearchKey(Iterable<Author> authors, String year, HDT_Work work)
   {
-    String key = "";
-        
     for (Author author : authors)
     {
-      if ((author.getIsEditor() == false) && (author.getIsTrans() == false))
-        if (author.getPerson() != null)
-        {
-          key = makeWorkSearchKey(author, year, work);
-          if (key.length() > 0) return key;
-        }
+      if ((author.getIsEditor() == false) && (author.getIsTrans() == false) && (author.getPerson() != null))
+      {
+        String key = makeWorkSearchKey(author, year, work);
+        if (key.length() > 0) return key;
+      }
     }
 
     for (Author author : authors)
     {
-      if (author.getIsTrans() == false)
-        if (author.getPerson() != null)
-        {
-          key = makeWorkSearchKey(author, year, work);
-          if (key.length() > 0) return key;
-        }
+      if ((author.getIsTrans() == false) && (author.getPerson() != null))
+      {
+        String key = makeWorkSearchKey(author, year, work);
+        if (key.length() > 0) return key;
+      }
     }
 
     for (Author author : authors)
     {
-      if ((author.getIsEditor() == false) && (author.getIsTrans() == false))
-        if (author.getPerson() == null)
-        {
-          key = makeWorkSearchKey(author, year, work);
-          if (key.length() > 0) return key;
-        }
+      if ((author.getIsEditor() == false) && (author.getIsTrans() == false) && (author.getPerson() == null))
+      {
+        String key = makeWorkSearchKey(author, year, work);
+        if (key.length() > 0) return key;
+      }
     }
     
     for (Author author : authors)
     {
-      if (author.getIsTrans() == false)
-        if (author.getPerson() == null)
-        {
-          key = makeWorkSearchKey(author, year, work);
-          if (key.length() > 0) return key;
-        }
+      if ((author.getIsTrans() == false) && (author.getPerson() == null))
+      {
+        String key = makeWorkSearchKey(author, year, work);
+        if (key.length() > 0) return key;
+      }
     }
     
     for (Author author : authors)
     {
       if (author.getPerson() != null)
       {
-        key = makeWorkSearchKey(author, year, work);
+        String key = makeWorkSearchKey(author, year, work);
         if (key.length() > 0) return key;
       }
     }
@@ -1677,7 +1629,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     {
       if (author.getPerson() == null)
       {
-        key = makeWorkSearchKey(author, year, work);
+        String key = makeWorkSearchKey(author, year, work);
         if (key.length() > 0) return key;
       }
     }
@@ -1690,10 +1642,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 
   public static String makeWorkSearchKey(Author author, String year, HDT_Work work)
   {    
-    if (author.getLastName().length() > 0)
-      return makeWorkSearchKey(author.getLastName(), year, work);
-    else
-      return makeWorkSearchKey(author.getFirstName(), year, work);
+    return makeWorkSearchKey(author.getName().getSingle(), year, work);
   }
 
 //---------------------------------------------------------------------------  
@@ -1728,7 +1677,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
           
           if (keyLetter == 'z') return "";
           
-          keyLetter = (keyLetter == ' ' ? 'a' : (char)(keyLetter + 1));
+          keyLetter = keyLetter == ' ' ? 'a' : (char)(keyLetter + 1);
         }  
       }
     } while (keyTaken);
@@ -1736,24 +1685,6 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     searchKey = (searchKey + keyLetter).trim();
     
     return SearchKeys.prepSearchKey(searchKey);
-  }
-
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-
-  private void lblSearchKeyClick()
-  {
-    HashMap<Integer, Tag> map = new HashMap<>();
-
-    map.put(-1, tagInFileName);
-    map.put(2, tagEditor);
-    map.put(3, tagTranslator);
-        
-    List<ObjectGroup> tableGroups = htAuthors.getObjectGroupList(curWork, rtAuthorOfWork, 1, map);
-    
-    List<Author> authList = Authors.getListFromObjectGroups(tableGroups, curWork);
-    
-    tfSearchKey.setText(makeWorkSearchKey(authList, tfYear.getText(), curWork));
   }
 
 //---------------------------------------------------------------------------  
@@ -1792,7 +1723,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     
     htWorkFiles.getDataRows().forEach(row ->
     {      
-      HDT_WorkFile file = (HDT_WorkFile) row.getRecord();
+      HDT_WorkFile file = row.getRecord();
       
       if (file != null)
       {
@@ -1845,39 +1776,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   }
 
 //---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-
-  public String getShortAuthorsStr()
-  {
-    List<ObjectGroup> authGroups = getAuthorGroups();
-    ArrayList<Author> authList = new ArrayList<>();
-    
-    for (ObjectGroup authGroup : authGroups)
-    {
-      if (authGroup.getPrimary() != null)
-        authList.add(new Author(curWork, 
-                                HDT_Person.class.cast(authGroup.getPrimary()).getName(), 
-                                authGroup.getValue(Tag.tagEditor).bool, 
-                                authGroup.getValue(Tag.tagTranslator).bool, 
-                                Ternary.True));
-      else
-        authList.add(new Author(curWork, 
-                                new PersonName(authGroup.getPrimaryStr()), 
-                                authGroup.getValue(Tag.tagEditor).bool, 
-                                authGroup.getValue(Tag.tagTranslator).bool, 
-                                Ternary.True)); 
-    }
-    
-    return Authors.getShortAuthorsStr(authList, false, true);
-  }
-
 //---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-
-  private List<ObjectGroup> getAuthorGroups() { return htAuthors.getAuthorGroups(curWork, 1, -1, 2, 3); }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
 
   @Override public void newClick(HDT_RecordType objType, HyperTableRow row)
   {
@@ -1938,11 +1837,8 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   
       WorkDialogController.httpClient.stop();
       
-      if (wdc.getCreateEntry())
-      {
-        BibEntry entry = db.getBibLibrary().addEntry(wdc.getEntryType());      
-        curWork.setBibEntryKey(entry.getEntryKey());
-      }
+      if (wdc.getCreateEntry())    
+        curWork.setBibEntryKey(db.getBibLibrary().addEntry(wdc.getEntryType()).getEntryKey());
 
       curWork.getBibData().copyAllFieldsFrom(wdc.getBibDataFromGUI(), false, false);
 
@@ -2081,22 +1977,16 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
         {
           doi = safeStr(lastMD.bd.getStr(bfDOI));
           
-          if (doi.length() > 0)
-          {
-            if (goodMD == null)
-              goodMD = lastMD;
-          }
+          if ((doi.length() > 0) && (goodMD == null))
+            goodMD = lastMD;          
         }
         
         List<String> curIsbns = lastMD.bd.getMultiStr(bfISBNs);
         
         if (curIsbns.isEmpty() == false)
         {
-          if (isbns.isEmpty())
-          {
-            if (goodMD == null)
-              goodMD = lastMD;
-          }
+          if (isbns.isEmpty() && (goodMD == null))
+            goodMD = lastMD;
           
           for (String isbn : curIsbns)
             if (isbns.contains(isbn) == false) isbns.add(isbn);
@@ -2131,12 +2021,11 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   {          
     httpClient.stop();
     
-    if (db.isLoaded() == false) return;
-    if (curWork == null) return;
+    if ((db.isLoaded() == false) || (curWork == null)) return;
     
     Tab tab;
     TextArea ta;
-    String url = "";
+    String url;
 
     if (crossref)
     {

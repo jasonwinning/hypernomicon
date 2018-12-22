@@ -33,16 +33,14 @@ import org.hypernomicon.model.relations.HyperObjList;
 
 public class HDT_Term extends HDT_Record implements HDT_RecordWithDescription
 {
-  public HyperObjList<HDT_Term, HDT_Concept> concepts;
+  public final HyperObjList<HDT_Term, HDT_Concept> concepts;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_Term(HDT_RecordState xmlState, HyperDataset<HDT_Term> dataset)
   {
-    super(xmlState, dataset);
-       
-    nameTag = tagTerm;
+    super(xmlState, dataset, tagTerm);
     
     concepts = getObjList(rtConceptOfTerm);
   } 

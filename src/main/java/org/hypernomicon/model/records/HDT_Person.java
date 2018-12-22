@@ -45,25 +45,25 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWithPath
 {
-  public List<HDT_Institution> institutions;
+  public final List<HDT_Institution> institutions;
   
-  public List<HDT_Work> works;
-  public List<HDT_MiscFile> miscFiles;
-  public List<HDT_Investigation> investigations;
+  public final List<HDT_Work> works;
+  public final List<HDT_MiscFile> miscFiles;
+  public final List<HDT_Investigation> investigations;
   
-  public HyperObjPointer<HDT_Person, HDT_Rank> rank;
-  public HyperObjPointer<HDT_Person, HDT_PersonStatus> status;
-  public HyperObjPointer<HDT_Person, HDT_Field> field;
-  public HyperObjPointer<HDT_Person, HDT_Subfield> subfield;
+  public final HyperObjPointer<HDT_Person, HDT_Rank> rank;
+  public final HyperObjPointer<HDT_Person, HDT_PersonStatus> status;
+  public final HyperObjPointer<HDT_Person, HDT_Field> field;
+  public final HyperObjPointer<HDT_Person, HDT_Subfield> subfield;
   
-  private HyperPath picture;
+  private final HyperPath picture;
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_Person(HDT_RecordState xmlState, HyperDataset<HDT_Person> dataset)
   {
-    super(xmlState, dataset);
+    super(xmlState, dataset, tagNone);
     
     setNameInternal("|", false);
           
@@ -185,16 +185,13 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
     
     SearchKeyword hyperKey = db.getKeyByKeyword(key);
     
-    if (hyperKey != null)
+    if ((hyperKey != null) && (hyperKey.record != person))
     {
-      if (hyperKey.record != person)
-      {
-        if (hyperKey.record.getType() == hdtPerson)
-          return HDT_Person.class.cast(hyperKey.record);
-        else
-          return null;            
-      }               
-    }
+      if (hyperKey.record.getType() == hdtPerson)
+        return HDT_Person.class.cast(hyperKey.record);
+      else
+        return null;            
+    }               
     
     for (String val : new SplitString(keys.toString(), ';'))
       if (val.trim().equalsIgnoreCase(key))
@@ -215,10 +212,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
     
     HDT_Person person = makeSearchKey(name, null, searchKeySB);
     
-    if (searchKeySB.toString().length() == 0)
-      return person;
-    
-    return null;    
+    return searchKeySB.toString().length() == 0 ? person : null;    
   }
 
 //---------------------------------------------------------------------------  
@@ -257,15 +251,14 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
       }
       else
       {
-        if (newUseForDupCheck)
-          if (useForDupCheck.get(ndx) == false)
-          {
-            keys.remove(ndx);
-            useForDupCheck.remove(ndx);
-            
-            keys.add(newKey);
-            useForDupCheck.add(true);
-          }
+        if (newUseForDupCheck && (useForDupCheck.get(ndx) == false))
+        {
+          keys.remove(ndx);
+          useForDupCheck.remove(ndx);
+          
+          keys.add(newKey);
+          useForDupCheck.add(true);
+        }
       }
     }
 

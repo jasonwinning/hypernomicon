@@ -31,12 +31,13 @@ import org.hypernomicon.queryEngines.QueryEngine.QueryType;
 
 public abstract class FilteredQuerySource implements QuerySource
 {
-  protected List<HDT_Base> list = new ArrayList<>();
+  protected final List<HDT_Base> list = new ArrayList<>();
+  protected final HyperTableCell op1, op2, op3;
+  protected final int query;
+  protected final QueryType queryType;
+  protected final HyperDB db;
+
   private boolean generated = false;
-  protected HyperTableCell op1, op2, op3;
-  protected int query;
-  protected QueryType queryType;
-  protected HyperDB db;
   
   public FilteredQuerySource(QueryType queryType, int query, HyperTableCell op1, HyperTableCell op2) { this(queryType, query, op1, op2, null); }
   public FilteredQuerySource(QueryType queryType, int query, HyperTableCell op1)                     { this(queryType, query, op1, null, null); }
@@ -58,73 +59,17 @@ public abstract class FilteredQuerySource implements QuerySource
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 
   
+  @Override public int count()                             { ensureGenerated(); return list.size(); }
+  @Override public HDT_Base getRecord(int ndx)             { ensureGenerated(); return list.get(ndx); }
+  @Override public QuerySourceType sourceType()            { return QuerySourceType.QST_filteredRecords; }
+  @Override public boolean containsRecord(HDT_Base record) { ensureGenerated(); return list.contains(record); }
+  
   protected abstract void runFilter();
   
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+  public boolean containsCell(HyperTableCell cell)    { ensureGenerated(); return list.contains(HyperTableCell.getRecord(cell)); }
   
-  protected void ensureGenerated()
-  {
-    if (!generated)
-    {
-      runFilter();
-      generated = true;
-    }   
-  }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
-  @Override public int count()
-  {
-    ensureGenerated();
-    return list.size();
-  }
-
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
-  public void addAllTo(Set<HDT_Base> filteredRecords)
-  {
-    ensureGenerated();
-    filteredRecords.addAll(list);
-  }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
-  @Override public HyperTableCell getCell(int ndx)
-  {
-    ensureGenerated();
-    return new HyperTableCell(list.get(ndx));
-  }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
-  @Override public HDT_Base getRecord(int ndx)
-  {
-    ensureGenerated();
-    return list.get(ndx);
-  }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
-  public boolean containsCell(HyperTableCell cell)
-  {
-    ensureGenerated();
-    return list.contains(HyperTableCell.getRecord(cell));
-  }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
-  public boolean containsRecord(HDT_Base record)
-  {
-    ensureGenerated();
-    return list.contains(record);
-  }
+  public void addAllTo(Set<HDT_Base> filteredRecords) { ensureGenerated(); filteredRecords.addAll(list); }
+  protected void ensureGenerated()                    { if (!generated) { runFilter(); generated = true; }}
   
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 
@@ -144,21 +89,11 @@ public abstract class FilteredQuerySource implements QuerySource
       case qtPositions:      return hdtPosition;
       case qtConcepts:       return hdtConcept;
       case qtWorks:          return hdtWork;
-      default: break;
+      default:               return null;
     }
-    
-    return null;
   }
   
 //---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
   
-  @Override public QuerySourceType sourceType()
-  {
-    return QuerySourceType.QST_filteredRecords;
-  }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-
 }

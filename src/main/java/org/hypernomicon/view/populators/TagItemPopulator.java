@@ -31,9 +31,9 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class TagItemPopulator extends Populator
 {
-  private Set<Tag> tags;
-  private HDT_RecordType recordType;
-  List<HyperTableCell> choices = null;
+  private final Set<Tag> tags;
+  private final HDT_RecordType recordType;
+  final List<HyperTableCell> choices;
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
@@ -42,8 +42,10 @@ public class TagItemPopulator extends Populator
   {
     this.recordType = recordType;
     tags = db.getTagsByRecordType(recordType);
-    
+        
     tags.remove(Tag.tagHub);
+    
+    choices = new ArrayList<>();
   }
 
 //---------------------------------------------------------------------------
@@ -56,9 +58,9 @@ public class TagItemPopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    if ((force == false) && (choices != null)) return choices;
+    if ((force == false) && (choices.isEmpty() == false)) return choices;
 
-    choices = new ArrayList<>();
+    choices.clear();
     
     tags.forEach(tag -> choices.add(new HyperTableCell(tag.getNum(), db.getTagHeader(tag), recordType)));
 
@@ -72,7 +74,7 @@ public class TagItemPopulator extends Populator
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
-    if (choices == null) populate(row, false);
+    if (choices.isEmpty()) populate(row, false);
     
     for (HyperTableCell choice : choices)
       if (HyperTableCell.getCellID(choice) == HyperTableCell.getCellID(cell))

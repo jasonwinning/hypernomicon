@@ -41,12 +41,12 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
   private HyperTable htParents, htSubdebates, htPositions;
   private HDT_Debate curDebate;
   
-  @Override public HDT_RecordType getType()                { return hdtDebate; }
-  @Override public void enable(boolean enabled)            { ui.tabDebates.getContent().setDisable(enabled == false); }
-  @Override public void focusOnSearchKey()                 { ctrlr.focusOnSearchKey(); }
-  @Override public void findWithinDesc(String text)        { ctrlr.hilite(text); }
-  @Override public TextViewInfo getMainTextInfo()          { return ctrlr.getMainTextInfo(); }
-  @Override public void setRecord(HDT_Debate activeRecord) { curDebate = activeRecord; }
+  @Override public HDT_RecordType getType()         { return hdtDebate; }
+  @Override public void enable(boolean enabled)     { ui.tabDebates.getContent().setDisable(enabled == false); }
+  @Override public void focusOnSearchKey()          { ctrlr.focusOnSearchKey(); }
+  @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
+  @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
+  @Override public void setRecord(HDT_Debate rec)   { curDebate = rec; }
  
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------    

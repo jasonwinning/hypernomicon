@@ -40,11 +40,11 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class RecordByTypePopulator extends Populator
 {
-  private HashMap<HyperTableRow, HDT_RecordType> rowToRecordType;
-  private HashMap<HyperTableRow, Boolean> rowToChanged;
-  private HashMap<HyperTableRow, List<HyperTableCell>> rowToChoices;
-  private PopulatorFilter filter = null;
-  private boolean nameOnly;
+  private final HashMap<HyperTableRow, HDT_RecordType> rowToRecordType;
+  private final HashMap<HyperTableRow, Boolean> rowToChanged;
+  private final HashMap<HyperTableRow, List<HyperTableCell>> rowToChoices;
+  private final PopulatorFilter filter;
+  private final boolean nameOnly;
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
@@ -168,12 +168,7 @@ public class RecordByTypePopulator extends Populator
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
     if (row == null) row = dummyRow;
-    
-    HyperTableCell choice;
-    HashMap<Integer, Boolean> map = new HashMap<Integer, Boolean>();
-    boolean firstAdd = true;
-    ArrayList<Integer> recent;
-       
+          
     if (rowToRecordType.containsKey(row) == false)
       rowToRecordType.put(row, hdtNone);
     
@@ -190,6 +185,10 @@ public class RecordByTypePopulator extends Populator
     choices.add(new HyperTableCell(-1, "", hdtNone));
     
     if (recordType == hdtNone) return choices;
+    
+    HashMap<Integer, Boolean> map = new HashMap<Integer, Boolean>();
+    boolean firstAdd = true;
+    ArrayList<Integer> recent;
       
     if (recordType.getDisregardDates() == false)
     {
@@ -221,6 +220,8 @@ public class RecordByTypePopulator extends Populator
           firstAdd = false;
         }
 
+        HyperTableCell choice;
+        
         if (nameOnly)
           choice = new HyperTableCell(record.getID(), record.name(), recordType);
         else if (recordType == hdtWork)

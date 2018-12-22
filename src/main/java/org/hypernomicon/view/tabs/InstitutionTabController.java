@@ -301,11 +301,7 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
 //---------------------------------------------------------------------------  
   
   @Override public boolean saveToRecord(boolean showMessage)
-  {
-    int subInstID;
-    HDT_Institution subInst;
-    boolean locationChanged = false;
-    
+  {   
     if (hcbType.selectedID() < 1)
     {
       if (showMessage)
@@ -314,6 +310,8 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
       safeFocus(this.cbType);
       return false;
     }
+   
+    boolean locationChanged = false;
     
     if (tfCity.getText().trim().length() > 0)
       if (curInstitution.getCity().trim().equalsIgnoreCase(tfCity.getText().trim()) == false)
@@ -335,16 +333,13 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
     curInstitution.instType.setID(hcbType.selectedID());
     curInstitution.parentInst.setID(hcbParentInst.selectedID());
 
-    for (HyperTableRow row : htSubInstitutions.getDataRows())
+    htSubInstitutions.getDataRows().forEach(row ->
     {
-      subInstID = row.getID(1);
+      int subInstID = row.getID(1);
       
       if ((subInstID > 0) || (row.getText(1).length() > 0) || (row.getText(3).length() > 0))
       {
-        if (subInstID < 1)
-          subInst = db.createNewBlankRecord(hdtInstitution);
-        else
-          subInst = db.institutions.getByID(subInstID);
+        HDT_Institution subInst = subInstID < 1 ? db.createNewBlankRecord(hdtInstitution) : db.institutions.getByID(subInstID); 
 
         subInstID = subInst.getID();
         subInst.setName(row.getText(1));
@@ -357,7 +352,7 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
             (subInst.persons.isEmpty()))
           db.deleteRecord(hdtInstitution, subInstID);
       }
-    }
+    });
     
     if (locationChanged == false) return true;
     

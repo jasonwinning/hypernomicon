@@ -155,7 +155,7 @@ public class WorkDialogController extends HyperDialog
     WorkDialogController wdc = HyperDialog.create("WorkDialog.fxml", title, true);
     wdc.init(workFileToUse, workCtrlr, null);
     return wdc;
-  } 
+  }
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
@@ -423,7 +423,7 @@ public class WorkDialogController extends HyperDialog
       Ternary isInFileName = Ternary.Unset;
       
       if (authID > 0)
-        isInFileName = curWork.personIsInFileName(HDT_Person.class.cast(origRow.getRecord()));
+        isInFileName = curWork.personIsInFileName(origRow.getRecord());
       else
       {
         htAuthors.getPopulator(0).addEntry(null, -1, authName);

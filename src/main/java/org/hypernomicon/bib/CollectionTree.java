@@ -69,9 +69,7 @@ public class CollectionTree
           row.setContextMenu(null);
         }
         else
-        {                 
           row.setText(newValue.getText());
-        }
       });
       
       return row;
@@ -110,10 +108,10 @@ public class CollectionTree
   {
     pruneNode(treeView.getRoot(), keyToColl);
     
-    keyToColl.entrySet().forEach(entry ->
+    keyToColl.forEach((key, coll) ->
     {
-      if (keyToRow.containsKey(entry.getKey()) == false)
-        addToTree(entry.getKey(), entry.getValue(), keyToColl);
+      if (keyToRow.containsKey(key) == false)
+        addToTree(key, coll, keyToColl);
     });
   }
 
@@ -122,8 +120,7 @@ public class CollectionTree
 
   private TreeItem<BibCollectionRow> addToTree(String childKey, BibCollection childColl, Map<String, BibCollection> keyToColl)
   {     
-    TreeItem<BibCollectionRow> parentItem;
-    
+    TreeItem<BibCollectionRow> parentItem;    
     String parentKey = childColl.getParentKey();
     
     if (parentKey == null)
@@ -178,11 +175,8 @@ public class CollectionTree
   {
     clear();
     
-    keyToColl.entrySet().forEach(entry ->
+    keyToColl.forEach((childKey, childColl)  ->
     {
-      BibCollection childColl = entry.getValue();
-      String childKey = entry.getKey();
-      
       BibCollectionRow childRow = keyToRow.get(childKey);
       if (childRow == null)
       {

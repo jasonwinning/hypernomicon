@@ -26,13 +26,11 @@ import org.hypernomicon.model.relations.HyperObjPointer;
 
 public class HDT_Investigation extends HDT_RecordWithConnector
 {
-  public HyperObjPointer<HDT_Investigation, HDT_Person> person; 
+  public final HyperObjPointer<HDT_Investigation, HDT_Person> person; 
   
   public HDT_Investigation(HDT_RecordState xmlState, HyperDataset<HDT_Investigation> dataset)
   {
-    super(xmlState, dataset);
-   
-    nameTag = tagName;
+    super(xmlState, dataset, tagName);
     
     person = getObjPointer(rtPersonOfInv);
   }

@@ -33,16 +33,18 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class VariablePopulator extends Populator
 {
-  private HashMap<HyperTableRow, Populator> rowToPop = new HashMap<>();
-  private HashMap<HyperTableRow, Boolean> rowToRestricted = new HashMap<>();
+  private final HashMap<HyperTableRow, Populator> rowToPop = new HashMap<>();
+  private final HashMap<HyperTableRow, Boolean> rowToRestricted = new HashMap<>();
   
 //---------------------------------------------------------------------------  
 
   public void setPopulator(HyperTableRow row, Populator populator) { rowToPop.put(row, populator); rowToRestricted.put(row, true); }
   public void setRestricted(HyperTableRow row, boolean restrict)   { rowToRestricted.put(row, restrict); }
   public boolean getRestricted(HyperTableRow row)                  { return rowToRestricted.getOrDefault(row, true); }
-  public Populator getPopulator(HyperTableRow row)                 { return rowToPop.get(row); }
 
+  @SuppressWarnings("unchecked")
+  public <PopType extends Populator> PopType getPopulator(HyperTableRow row) { return (PopType) rowToPop.get(row); }
+  
   @Override public CellValueType getValueType()                                     { return cvtVaries; }
   @Override public void clear()                                                     { rowToPop.clear(); rowToRestricted.clear(); }
   @Override public HyperTableCell addEntry(HyperTableRow row, int id, String value) { return rowToPop.get(row).addEntry(row, id, value); }

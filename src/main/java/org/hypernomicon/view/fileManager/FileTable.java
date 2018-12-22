@@ -109,11 +109,11 @@ public class FileTable implements DragNDropContainer<FileRow>
   
 //---------------------------------------------------------------------------
   
-  private TableView<FileRow> fileTV;
-  private ObservableList<FileRow> rows;
-  List<FileRowMenuItemSchema> contextMenuSchemata;
+  private final TableView<FileRow> fileTV;
+  private final ObservableList<FileRow> rows;
+  final List<FileRowMenuItemSchema> contextMenuSchemata;
   List<MarkedRowInfo> draggingRows;
-  private DragNDropHoverHelper<FileRow> ddHoverHelper = new DragNDropHoverHelper<>();
+  private final DragNDropHoverHelper<FileRow> ddHoverHelper;
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
@@ -124,6 +124,7 @@ public class FileTable implements DragNDropContainer<FileRow>
     this.fileTV = fileTV;
     rows = FXCollections.observableArrayList();
     contextMenuSchemata = new ArrayList<>();
+    ddHoverHelper = new DragNDropHoverHelper<>(fileTV);
     
     if (prefID.length() > 0)
       HyperTable.registerTable(fileTV, prefID, fileManagerDlg);
@@ -335,7 +336,7 @@ public class FileTable implements DragNDropContainer<FileRow>
 
   @Override public boolean acceptDrag(FileRow targetRow, DragEvent dragEvent, TreeItem<FileRow> treeItem)
   {
-    ddHoverHelper.scroll(dragEvent, fileTV);
+    ddHoverHelper.scroll(dragEvent);
     
     if (draggingRows == null) return false;
     if (targetRow == null)
@@ -376,8 +377,6 @@ public class FileTable implements DragNDropContainer<FileRow>
     
     App.fileManagerDlg.paste(targetRow, copying, true);
   }
-
-  @Override public DragNDropHoverHelper<FileRow> getHelper() { return ddHoverHelper; }
   
 //---------------------------------------------------------------------------
 //--------------------------------------------------------------------------- 

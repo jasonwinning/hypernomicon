@@ -38,12 +38,13 @@ import static org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod.
 
 public class SubjectPopulator extends Populator
 {
-  private HashMap<HyperTableRow, Boolean> rowToChanged;
-  private HashMap<HyperTableRow, List<HyperTableCell>> rowToChoices;
-  private HashMap<HyperTableRow, HDT_Base> rowToObj = null;
+  private final HashMap<HyperTableRow, Boolean> rowToChanged;
+  private final HashMap<HyperTableRow, List<HyperTableCell>> rowToChoices;
+  private final HashMap<HyperTableRow, HDT_Base> rowToObj;
+  private final RelationType relType;
+  private final boolean trackObjByRow, nameOnly;
+  
   private HDT_Base obj = null;
-  private RelationType relType;
-  private boolean trackObjByRow, nameOnly;
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
@@ -59,8 +60,7 @@ public class SubjectPopulator extends Populator
     this.trackObjByRow = trackObjByRow;
     this.nameOnly = nameOnly;
     
-    if (trackObjByRow)
-      rowToObj = new HashMap<HyperTableRow, HDT_Base>();
+    rowToObj = trackObjByRow ? new HashMap<HyperTableRow, HDT_Base>() : null;
   }
 
 //---------------------------------------------------------------------------

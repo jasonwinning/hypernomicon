@@ -36,7 +36,7 @@ public interface HDT_Base
   public HDT_RecordType getType();
   public void assignID() throws HDB_InternalError;
   
-  public void bringStoredCopyOnline() throws RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException;
+  public void bringStoredCopyOnline() throws RelationCycleException, SearchKeyException, HubChangedException;
   public boolean hasStoredState();
   public HDT_RecordState getRecordStateBackup();
   public void restoreTo(HDT_RecordState backupState) throws RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException;

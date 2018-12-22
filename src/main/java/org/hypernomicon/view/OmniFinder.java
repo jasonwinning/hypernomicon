@@ -49,17 +49,18 @@ import javafx.collections.ObservableList;
 import javafx.scene.text.Text;
 
 public class OmniFinder
-{
-  private String query = "";  
-  private HyperTable htFind;
+{ 
+  private final HyperTable htFind;
+  private final ArrayList<ObservableList<HyperTableCell>> cellLists;
+  private final ArrayList<HyperTableRow> rows;
+  private final EnumSet<TierEnum> tierSet;
+  private final EnumMap<TierEnum, LinkedHashSet<HDT_RecordType>> tierToTypeSet;
+  private final HashSet<HDT_Base> records;
+ 
+  private String query = "";
   private FinderThread finderThread = null;
   public boolean stopRequested = false;
   private boolean stopped = true, showingMore = false;
-  private ArrayList<ObservableList<HyperTableCell>> cellLists;
-  private ArrayList<HyperTableRow> rows;
-  private EnumSet<TierEnum> tierSet;
-  private EnumMap<TierEnum, LinkedHashSet<HDT_RecordType>> tierToTypeSet;
-  private HashSet<HDT_Base> records;
   
   protected enum TierEnum
   {
@@ -133,15 +134,16 @@ public class OmniFinder
 
   public class FinderThread extends Thread
   {
-    private HyperTable htFind;
+    private final HyperTable htFind;
+    private final ArrayList<HDT_Base> buffer = new ArrayList<>();
+    
     private TierEnum curTier;
     private boolean done = false, lastShowingMore, firstBuffer = true;
     private String lastQuery = "", queryLC;
+    private Iterator<TierEnum> tierIt;
     private Iterator<? extends HDT_Base> recordIt; 
     private Iterator<HDT_RecordType> typeIt;
-    private Iterator<TierEnum> tierIt;
     int rowNdx = 0, runLaters = 0;
-    private ArrayList<HDT_Base> buffer = new ArrayList<>();
     long startTime, nextInterval;
       
     FinderThread(HyperTable htFind)
@@ -150,7 +152,7 @@ public class OmniFinder
       
       setDaemon(true);
       this.htFind = htFind;
-      
+
       start();
     }
 
@@ -245,12 +247,11 @@ public class OmniFinder
       if (input.getType() != hdtHub)
         return input;
       
-      HDT_Hub hub = (HDT_Hub) input;
-      StrongLink link = hub.getLink();
+      StrongLink link = HDT_Hub.class.cast(input).getLink();
       
-      if (link.getDebate() != null) return link.getDebate();
+      if (link.getDebate  () != null) return link.getDebate  ();
       if (link.getPosition() != null) return link.getPosition();
-      if (link.getNote() != null) return link.getNote();
+      if (link.getNote    () != null) return link.getNote    ();
       return link.getConcept();
     }
     
@@ -600,7 +601,7 @@ public class OmniFinder
         }
       }
       
-      buffer = new ArrayList<>();
+      buffer.clear();
 
       runLaters++;
       

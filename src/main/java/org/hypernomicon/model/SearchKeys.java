@@ -21,11 +21,9 @@ import static org.hypernomicon.model.HyperDB.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.records.HDT_Base;
@@ -122,7 +120,7 @@ public final class SearchKeys
     if (keyStringToKeyObject != null)    
       list.addAll(keyStringToKeyObject.values());
     
-    return list;          
+    return list;
   }
 
 //---------------------------------------------------------------------------
@@ -130,16 +128,12 @@ public final class SearchKeys
 
   public static String prepSearchKey(String newKey)
   {
-    newKey = ultraTrim(newKey);
-    newKey = newKey.replaceAll("\\h", " ");
+    newKey = ultraTrim(newKey).replaceAll("\\h", " ");
     
     while (newKey.contains("  "))
       newKey = newKey.replace("  ", " ");
     
-    newKey = convertToEnglishChars(newKey);
-    newKey = newKey.replaceAll("\\p{Pd}", "-"); // treat all dashes the same within search keyword
-
-    return newKey;
+    return convertToEnglishChars(newKey).replaceAll("\\p{Pd}", "-"); // treat all dashes the same within search keyword
   }
 
 //---------------------------------------------------------------------------
@@ -147,8 +141,6 @@ public final class SearchKeys
 
   public void setSearchKey(HDT_Base record, String newKey, boolean noMod) throws SearchKeyException
   {
-    SearchKeyword keyword;
-    
     newKey = prepSearchKey(newKey);
        
     if (newKey.equals(getStringForRecord(record))) return;
@@ -156,13 +148,13 @@ public final class SearchKeys
     if ((newKey.length() == 1) || (newKey.length() == 2))
       throw new SearchKeyException(true, record.getID(), record.getType(), newKey);
     
-    expireAll(record);
+    setAllExpired(record, true);
     
   // Loop through new substrings
   // ---------------------------
     for (String subStr : new SplitString(newKey, ';'))
     {
-      keyword = new SearchKeyword(subStr.trim(), record);
+      SearchKeyword keyword = new SearchKeyword(subStr.trim(), record);
   
       if (keyword.text.length() > 0)
       {
@@ -170,31 +162,27 @@ public final class SearchKeys
   // ----------------------------------------
         if (keyword.text.length() < 3)
         {
-          unexpireAll(record);
+          setAllExpired(record, false);
           throw new SearchKeyException(true, record.getID(), record.getType(), keyword.text);
         }
   
         HDT_Base existingRecord = getRecordForKeywordStr(keyword.text);
         
         if (existingRecord == record)
-        {
           updateKeyword(keyword);
-        }
   
   // If the substring was already a key for a different record, error out
   // --------------------------------------------------------------------
         else if (existingRecord != null)
         {
-          unexpireAll(record);
+          setAllExpired(record, false);
           throw new SearchKeyException(false, record.getID(), record.getType(), keyword.text);
         }
         
   // Add new substring
   // -----------------       
         else
-        {
           addKeyword(keyword);
-        }
       }
     }
   
@@ -202,13 +190,10 @@ public final class SearchKeys
   // -----------------------------------------
     purgeExpired(record);
   
-    if (noMod == false)
-    {
-      record.modifyNow();
-      db.rebuildMentions();
-    }
-    
-    return;
+    if (noMod) return;
+
+    record.modifyNow();
+    db.rebuildMentions();
   }
   
 //---------------------------------------------------------------------------
@@ -231,7 +216,7 @@ public final class SearchKeys
 
   SearchKeyword getKeywordObjByKeywordStr(String str)
   {
-    final String keywordStr = convertToEnglishChars(str).toLowerCase();
+    String keywordStr = convertToEnglishChars(str).toLowerCase();
     
     if (keywordStr.length() < 3) return null;
     
@@ -312,34 +297,29 @@ public final class SearchKeys
     
     synchronized (keywordStrToKeywordObj)
     {
-      Iterator<Entry<String, SearchKeyword>> it = keywordStrToKeywordObj.entrySet().iterator();
-      
-      while (it.hasNext())
+      keywordStrToKeywordObj.entrySet().removeIf(entry ->
       {
-        Entry<String, SearchKeyword> entry = it.next();
-        
         SearchKeyword keyword = entry.getValue();
         
-        if (keyword.expired)
-        {
-          String prefix = keyword.getPrefix();
-          
-          Map<String, SearchKeyword> keywordStrToKeywordObj2 = prefixStrToKeywordStrToKeywordObj.get(keyword.getPrefix());
-          keywordStrToKeywordObj2.remove(keyword.text.toLowerCase());
-          
-          if (keywordStrToKeywordObj2.isEmpty())
-            prefixStrToKeywordStrToKeywordObj.remove(prefix);
+        if (keyword.expired == false) return false;
 
-          it.remove();
-        }
-      }
+        String prefix = keyword.getPrefix();
+        
+        Map<String, SearchKeyword> keywordStrToKeywordObj2 = prefixStrToKeywordStrToKeywordObj.get(keyword.getPrefix());
+        keywordStrToKeywordObj2.remove(keyword.text.toLowerCase());
+        
+        if (keywordStrToKeywordObj2.isEmpty())
+          prefixStrToKeywordStrToKeywordObj.remove(prefix);
+
+        return true;
+      });
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void expireAll(HDT_Base record)
+  private void setAllExpired(HDT_Base record, boolean expired)
   {
     Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.get(record);
     
@@ -347,27 +327,10 @@ public final class SearchKeys
     
     synchronized (keywordStrToKeywordObj)
     {
-      for (SearchKeyword keyword : keywordStrToKeywordObj.values())
-        keyword.expired = true;
+      keywordStrToKeywordObj.values().forEach(keyword -> keyword.expired = expired);
     }
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void unexpireAll(HDT_Base record)
-  {
-    Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.get(record);
-    
-    if (keywordStrToKeywordObj == null) return;
-    
-    synchronized (keywordStrToKeywordObj)
-    {
-      for (SearchKeyword keyword : keywordStrToKeywordObj.values())
-        keyword.expired = false;
-    }
-  }
-  
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

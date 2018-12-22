@@ -32,17 +32,15 @@ import org.hypernomicon.model.relations.HyperSubjPointer;
 
 public class HDT_Concept extends HDT_RecordWithConnector
 {
-  public HyperSubjPointer<HDT_Term, HDT_Concept> term;
-  public HyperObjPointer<HDT_Concept, HDT_Glossary> glossary;
+  public final HyperSubjPointer<HDT_Term, HDT_Concept> term;
+  public final HyperObjPointer<HDT_Concept, HDT_Glossary> glossary;
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
 
   public HDT_Concept(HDT_RecordState xmlState, HyperDataset<HDT_Concept> dataset)
   {
-    super(xmlState, dataset);
-    
-    nameTag = tagName;
+    super(xmlState, dataset, tagName);
     
     term = getSubjPointer(rtConceptOfTerm);
     glossary = getObjPointer(rtGlossaryOfConcept);

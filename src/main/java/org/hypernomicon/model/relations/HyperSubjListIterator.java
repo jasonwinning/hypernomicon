@@ -25,7 +25,7 @@ import static org.hypernomicon.model.relations.HyperSubjList.*;
 
 public class HyperSubjListIterator<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> implements ListIterator<HDT_SubjType>
 {
-  private HyperSubjList<HDT_SubjType, HDT_ObjType> list;
+  private final HyperSubjList<HDT_SubjType, HDT_ObjType> list;
   private int nextNdx;
 
 //---------------------------------------------------------------------------

@@ -18,6 +18,7 @@
 package org.hypernomicon.model.relations;
 
 import org.hypernomicon.model.HDI_Schema;
+import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HyperDB.RelationChangeHandler;
@@ -64,7 +65,7 @@ import static org.hypernomicon.model.HyperDB.Tag.*;
 
 public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Base>
 {   
-  private final HashSet<HDT_Base> orphans = new HashSet<>();
+  private final HashSet<HDT_Subj> orphans = new HashSet<>();
   private ArrayListMultimap<HDT_Obj, HDT_Subj> objToSubjList = ArrayListMultimap.create();
   private ArrayListMultimap<HDT_Subj, HDT_Obj> subjToObjList = ArrayListMultimap.create();
   private final HashBasedTable<HDT_Subj, HDT_Obj, LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> objectGroups = HashBasedTable.create();
@@ -201,7 +202,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
   
-  public final Set<HDT_Base> getOrphans()                       
+  public final Set<HDT_Subj> getOrphans()                       
   { 
     if (orphans.isEmpty()) return Collections.unmodifiableSet(orphans);
     
@@ -211,17 +212,20 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final void addOrphan(HDT_Base orphan)
+  public static final void addOrphanToAll(HDT_Base orphan)
   {
     Set<RelationSet<? extends HDT_Base, ? extends HDT_Base>> relSets = orphanTypeToRelSets.get(orphan.getType());
     
     if (relSets == null) return;
     
-    relSets.forEach(relSet-> 
-    {
-      if (relSet.subjToObjList.containsKey(orphan) == false)
-        relSet.orphans.add(orphan); 
-    });
+    relSets.forEach(relSet-> relSet.addOrphan(orphan));
+  }
+  
+  @SuppressWarnings("unchecked")
+  private void addOrphan(HDT_Base orphan)
+  {
+    if ((subjToObjList.containsKey(orphan) == false) && (HyperDB.isUnstoredRecord(orphan.getID(), subjType) == false))
+      orphans.add((HDT_Subj) orphan);    
   }
 
 //---------------------------------------------------------------------------
@@ -266,18 +270,16 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @SuppressWarnings({ "unchecked" })
   public final void saveNestedValuesToOfflineMap(HDT_Subj subj, HDT_Obj obj, Map<Tag, HDI_OfflineBase> tagToNestedItem, HDT_RecordState recordState)
   {       
     LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items = objectGroups.get(subj, obj);
     if (items == null) return;    
     
-    items.entrySet().forEach(entry ->
+    items.forEach((tag, onlineItem) ->
     {
-      HDI_OnlineBase onlineItem = entry.getValue();
-      HDI_OfflineBase offlineItem = null;
-      
-      HDI_Schema schema = getSchema(entry.getKey());
+      HDI_OfflineBase offlineItem = null;      
+      HDI_Schema schema = getSchema(tag);
       
       switch (schema.getCategory())
       {
@@ -302,8 +304,8 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
       
       if (offlineItem != null)
       {
-        onlineItem.getToOfflineValue(offlineItem, entry.getKey());
-        tagToNestedItem.put(entry.getKey(), offlineItem);
+        HDI_OnlineBase.class.cast(onlineItem).getToOfflineValue(offlineItem, tag);
+        tagToNestedItem.put(tag, offlineItem);
       }
     });
   }
@@ -426,15 +428,15 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
         
     Map<HDT_Obj, LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> objToObjItems = objectGroups.row(subj);
 
-    objToObjItems.entrySet().forEach(objEntry ->
+    objToObjItems.forEach((primary, items) ->
     {
-      ObjectGroup group = new ObjectGroup(objEntry.getKey());
-      objSet.remove(objEntry.getKey());
+      ObjectGroup group = new ObjectGroup(primary);
+      objSet.remove(primary);
       
-      objEntry.getValue().entrySet().forEach(nestedEntry ->
+      items.forEach((tag, value) ->
       {
-        if (tags.contains(nestedEntry.getKey()))
-          group.addNestedEntry(nestedEntry.getKey(), new NestedValue(nestedEntry.getValue()));
+        if (tags.contains(tag))
+          group.addNestedEntry(tag, new NestedValue(value));
       });
       
       list.add(group);
@@ -534,34 +536,34 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
     
     list.clear();
     
-    for (ObjectGroup group : groups)
+    groups.forEach(group ->
     {
       HDT_Obj obj = group.getPrimary();
 
-      if (obj == null) continue;
+      if (obj == null) return;
       
       if (list.add(obj) == false)
       {
         try                              { list.throwLastException(); }
         catch (RelationCycleException e) { messageDialog(e.getMessage(), mtError); }
-        continue;
+        return;
       }
       
-      tagToSchema.entrySet().forEach(entry ->
+      tagToSchema.keySet().forEach(tag ->
       {
-        NestedValue value = group.getValue(entry.getKey());
+        NestedValue value = group.getValue(tag);
         if (value == null) return;
 
         switch (value.hdc)
         {
-          case hdcString        : setNestedString (subj, obj, entry.getKey(), value.str);     break;
-          case hdcBoolean       : setNestedBoolean(subj, obj, entry.getKey(), value.bool);    break;
-          case hdcTernary       : setNestedTernary(subj, obj, entry.getKey(), value.ternary); break;
-          case hdcNestedPointer : setNestedPointer(subj, obj, entry.getKey(), value.target);  break;
+          case hdcString        : setNestedString (subj, obj, tag, value.str);     break;
+          case hdcBoolean       : setNestedBoolean(subj, obj, tag, value.bool);    break;
+          case hdcTernary       : setNestedTernary(subj, obj, tag, value.ternary); break;
+          case hdcNestedPointer : setNestedPointer(subj, obj, tag, value.target);  break;
           default : break;
         }
       });
-    }
+    });
   }
   
 //---------------------------------------------------------------------------
@@ -614,7 +616,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
         
         if (HDT_Record.isEmpty(subj) == false) // skip if record is in the process of being deleted
         {
-          if (trackOrphans && objList.isEmpty())
+          if (trackOrphans && objList.isEmpty() && (HyperDB.isUnstoredRecord(subj.getID(), subjType) == false))
             orphans.add(subj);
           
           if ((HDT_Record.isEmpty(subj) == false) && (HDT_Record.isEmpty(obj) == false))  // Only run change handlers if the record is not in the process of being deleted
@@ -689,7 +691,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
     subjToObjList = rebuildMultimap(subjToObjList);
     objToSubjList = rebuildMultimap(objToSubjList);
     
-    Iterator<HDT_Base> orphanIt = orphans.iterator();
+    Iterator<HDT_Subj> orphanIt = orphans.iterator();
     while (orphanIt.hasNext())
     {
       if (HDT_Record.isEmptyThrowsException(orphanIt.next())) orphanIt.remove();

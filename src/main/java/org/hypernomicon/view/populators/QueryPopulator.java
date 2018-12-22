@@ -35,8 +35,8 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class QueryPopulator extends Populator
 {
-  private HashMap<HyperTableRow, QueryType> rowToQueryType;
-  private HashMap<HyperTableRow, List<HyperTableCell>> rowToChoices;
+  private final HashMap<HyperTableRow, QueryType> rowToQueryType;
+  private final HashMap<HyperTableRow, List<HyperTableCell>> rowToChoices;
 
   @Override public CellValueType getValueType()          { return cvtQuery; }
  
@@ -54,8 +54,6 @@ public class QueryPopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    if (row == null) row = dummyRow;
-    
     if (rowToChoices.containsKey(row) == false)
       rowToChoices.put(row, new ArrayList<>());
     
@@ -79,7 +77,7 @@ public class QueryPopulator extends Populator
 
   @Override public HDT_RecordType getRecordType(HyperTableRow row)
   {
-    switch (rowToQueryType.getOrDefault(nullSwitch(row, dummyRow), QueryType.qtNone))
+    switch (rowToQueryType.getOrDefault(row, QueryType.qtNone))
     {
       case qtAllRecords :    return hdtNone;
       case qtArguments:      return hdtArgument;
@@ -104,18 +102,9 @@ public class QueryPopulator extends Populator
 
   public void setQueryType(HyperTableRow row, QueryType newType, QueryView qV)
   { 
-    if (row == null) row = dummyRow;
-    
     QueryType oldType = rowToQueryType.put(row, newType);
     
-    if (newType == null)
-      return;
-    
-    if (oldType != null)
-    {
-      if (oldType.equals(newType))
-        return;
-    }
+    if ((newType == null) || newType.equals(oldType)) return;
     
     curQuery = row.getID(1);
     
@@ -150,8 +139,6 @@ public class QueryPopulator extends Populator
 
   @Override public HyperTableCell addEntry(HyperTableRow row, int id, String value)
   {
-    if (row == null) row = dummyRow;
-    
     HyperTableCell cell = new HyperTableCell(id, value, getRecordType(row));
     
     if (rowToChoices.containsKey(row) == false)

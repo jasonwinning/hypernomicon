@@ -47,9 +47,10 @@ public class HyperTableRow
   public int getID(int ndx)                   { return cells.size() > ndx ? HyperTableCell.getCellID(cells.get(ndx)) : -1; }
   public String getText(int ndx)              { return cells.size() > ndx ? HyperTableCell.getCellText(cells.get(ndx)) : ""; }
   public HDT_RecordType getType(int ndx)      { return cells.size() > ndx ? HyperTableCell.getCellType(cells.get(ndx)) : hdtNone; }
-  public HDT_Base getRecord()                 { return HyperTableCell.getRecord(cells.get(table.getMainColNdx())); }
-  public HDT_Base getRecord(int ndx)          { return HyperTableCell.getRecord(cells.get(ndx)); }
   public boolean getCheckboxValue(int colNdx) { return getID(colNdx) == HyperTableCell.trueCell.getID(); }
+
+  public <HDT_T extends HDT_Base> HDT_T getRecord()        { return HyperTableCell.getRecord(cells.get(table.getMainColNdx())); }
+  public <HDT_T extends HDT_Base> HDT_T getRecord(int ndx) { return HyperTableCell.getRecord(cells.get(ndx)); }
   
 //---------------------------------------------------------------------------
 
@@ -82,7 +83,7 @@ public class HyperTableRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Base getRecordByType(HDT_RecordType type)
+  public <HDT_T extends HDT_Base> HDT_T getRecordByType(HDT_RecordType type)
   {
     if (type == hdtNone)
       return getRecord();

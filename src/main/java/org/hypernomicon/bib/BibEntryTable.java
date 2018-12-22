@@ -20,7 +20,6 @@ package org.hypernomicon.bib;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -170,18 +169,16 @@ public class BibEntryTable
         }
     });
     
-    Iterator<BibEntryRow> it = rows.iterator();
-    
-    while (it.hasNext())
+    rows.removeIf(row ->
     {
-      BibEntryRow row = it.next();
-
       if (entries.contains(row.getEntry()) == false)
       {
         keyToRow.remove(row.getEntry().getEntryKey());
-        it.remove();
+        return true;
       }
-    }
+      
+      return false;      
+    });
   }
 
 //---------------------------------------------------------------------------  

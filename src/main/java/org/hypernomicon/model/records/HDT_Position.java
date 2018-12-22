@@ -29,21 +29,19 @@ import org.hypernomicon.model.items.Author;
 
 public class HDT_Position extends HDT_RecordWithConnector
 {
-  public List<HDT_Debate> debates;
-  public List<HDT_Position> largerPositions;
+  public final List<HDT_Debate> debates;
+  public final List<HDT_Position> largerPositions;
   
-  public List<HDT_Argument> arguments;
-  public List<HDT_Position> subPositions;
+  public final List<HDT_Argument> arguments;
+  public final List<HDT_Position> subPositions;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_Position(HDT_RecordState xmlState, HyperDataset<HDT_Position> dataset)
   {
-    super(xmlState, dataset);
+    super(xmlState, dataset, tagName);
        
-    nameTag = tagName;
-    
     debates = getObjList(rtDebateOfPosition);
     largerPositions = getObjList(rtParentPosOfPos);
     

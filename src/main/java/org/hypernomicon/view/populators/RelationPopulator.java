@@ -34,7 +34,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class RelationPopulator extends Populator
 {
-  private HDT_RecordType objType = hdtNone;
+  private final HDT_RecordType objType;
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------    
@@ -50,18 +50,12 @@ public class RelationPopulator extends Populator
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
     List<HyperTableCell> cells = new ArrayList<>();
-    EnumSet<RelationType> relTypes;
-    
-    if (objType == hdtNone)
-      relTypes = EnumSet.allOf(RelationType.class);
-    else
-      relTypes = getRelationsForObjType(objType);
+    EnumSet<RelationType> relTypes = objType == hdtNone ? EnumSet.allOf(RelationType.class) : getRelationsForObjType(objType);
     
     relTypes.remove(rtNone);
     relTypes.remove(rtUnited);
     
-    for (RelationType relType : relTypes)
-      cells.add(new HyperTableCell(relType.getCode(), relType.getTitle(), objType));
+    relTypes.forEach(relType -> cells.add(new HyperTableCell(relType.getCode(), relType.getTitle(), objType)));
 
     return cells;
   }

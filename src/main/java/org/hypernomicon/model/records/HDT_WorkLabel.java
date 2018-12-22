@@ -30,18 +30,17 @@ import org.hypernomicon.model.relations.HyperSubjList;
 
 public class HDT_WorkLabel extends HDT_RecordWithConnector
 {
-  public List<HDT_WorkLabel> parentLabels;
-  public List<HDT_WorkLabel> subLabels;
-  public HyperSubjList<HDT_Work, HDT_WorkLabel> works;
-  public HyperSubjList<HDT_MiscFile, HDT_WorkLabel> miscFiles;
+  public final List<HDT_WorkLabel> parentLabels;
+  public final List<HDT_WorkLabel> subLabels;
+  public final HyperSubjList<HDT_Work, HDT_WorkLabel> works;
+  public final HyperSubjList<HDT_MiscFile, HDT_WorkLabel> miscFiles;
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_WorkLabel(HDT_RecordState xmlState, HyperDataset<HDT_WorkLabel> dataset)
   {
-    super(xmlState, dataset);
-    nameTag = tagText;
+    super(xmlState, dataset, tagText);
     
     parentLabels = getObjList(rtParentLabelOfLabel);
     subLabels = getSubjList(rtParentLabelOfLabel);

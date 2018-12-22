@@ -35,21 +35,19 @@ import org.hypernomicon.model.relations.HyperObjPointer;
 
 public class HDT_MiscFile extends HDT_RecordWithConnector implements HDT_RecordWithPath
 { 
-  protected HyperPath path;
-  public List<HDT_Person> authors;
-  public HyperObjList<HDT_MiscFile, HDT_WorkLabel> labels;
+  protected final HyperPath path;
+  public final List<HDT_Person> authors;
+  public final HyperObjList<HDT_MiscFile, HDT_WorkLabel> labels;
   
-  public HyperObjPointer<HDT_MiscFile, HDT_Work> work;
-  public HyperObjPointer<HDT_MiscFile, HDT_FileType> fileType;
+  public final HyperObjPointer<HDT_MiscFile, HDT_Work> work;
+  public final HyperObjPointer<HDT_MiscFile, HDT_FileType> fileType;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_MiscFile(HDT_RecordState xmlState, HyperDataset<HDT_MiscFile> dataset)
   {
-    super(xmlState, dataset);
-    
-    nameTag = tagName;
+    super(xmlState, dataset, tagName);
     
     authors = getObjList(rtAuthorOfFile);
     labels = getObjList(rtLabelOfFile);

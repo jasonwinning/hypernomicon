@@ -166,7 +166,6 @@ public final class HyperDB
   public Instant getCreationDate()                            { return dbCreationDate; }
   public HDT_RecordType getSubjType(RelationType relType)     { return relationSets.get(relType).getSubjType(); }
   public HDT_RecordType getObjType(RelationType relType)      { return relationSets.get(relType).getObjType(); }
-  public Set<HDT_Base> getOrphans(RelationType relType)       { return relationSets.get(relType).getOrphans(); }
   public boolean relationIsMulti(RelationType relType)        { return relTypeToIsMulti.get(relType).booleanValue(); }
   public String getTagStr(Tag tag)                            { return tagToStr.get(tag); }
   public String getTagHeader(Tag tag)                         { return tagToHeader.getOrDefault(tag, ""); }
@@ -274,6 +273,15 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @SuppressWarnings({ "unused", "unchecked" })
+  public <HDT_T extends HDT_Base> Set<HDT_T> getOrphans(RelationType relType, Class<HDT_T> klazz)
+  { 
+    return (Set<HDT_T>) relationSets.get(relType).getOrphans(); 
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void setResolvePointersAgain()                       
   { 
     if ((deletionInProgress == false) && (pointerResolutionInProgress == false))
@@ -288,7 +296,7 @@ public final class HyperDB
   private void cleanupRelations() throws HDB_InternalError                             
   { 
     for (RelationSet<? extends HDT_Base, ? extends HDT_Base> relationSet : relationSets.values())
-      relationSet.cleanup(); 
+      relationSet.cleanup();
   }
   
 //---------------------------------------------------------------------------
@@ -426,19 +434,19 @@ public final class HyperDB
       updateMessage("Saving to XML files...");
       
       curTaskCount = 0; totalTaskCount = 0;
-      accessors.entrySet().forEach(entry ->
+      accessors.forEach((type, accessor) ->
       {
-        switch (entry.getKey())
+        switch (type)
         {
           case hdtNone :
             break;
             
           case hdtDebate : case hdtNote : case hdtPersonGroup : case hdtWorkLabel : case hdtGlossary :
-            totalTaskCount += entry.getValue().size() - 1;  
+            totalTaskCount += accessor.size() - 1;  
             break;
             
           default :
-            totalTaskCount += entry.getValue().size();
+            totalTaskCount += accessor.size();
             break;
         }
       });
@@ -505,7 +513,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
   
-  public boolean loadAllFromDisk(HyperFavorites favorites)
+  public boolean loadAllFromDisk(HyperFavorites favorites) throws HDB_InternalError
   {    
     if ((initialized == false) || unableToLoad)
       return false;
@@ -521,8 +529,7 @@ public final class HyperDB
     else if (rootFilePath.equals(newRootFilePath) == false)
       dbChanged = true;
     
-    try { close(null); } 
-    catch (HDB_InternalError e) { return falseWithErrorMessage("Unable to load database. Reason: " + e.getMessage()); }
+    close(null); 
            
     rootFilePath = newRootFilePath;
     prefsFilePath = rootFilePath.resolve(new FilePath(appPrefs.get(PREF_KEY_SOURCE_FILENAME, PREFS_DEFAULT_FILENAME)));
@@ -560,8 +567,7 @@ public final class HyperDB
       
     if (!HyperTask.performTaskWithProgressDialog(task))
     {     
-      try { close(null); } 
-      catch (HDB_InternalError e) { messageDialog(e.getMessage(), mtError); }     
+      close(null);    
       return false;
     }
     
@@ -586,8 +592,7 @@ public final class HyperDB
       
     if (!HyperTask.performTaskWithProgressDialog(task))
     {    
-      try { close(null); } 
-      catch (HDB_InternalError e) { messageDialog(e.getMessage(), mtError); }     
+      close(null);     
       return false;
     }
     
@@ -649,19 +654,15 @@ public final class HyperDB
     {
       messageDialog(e.getMessage(), mtError);
       
-      try { close(null); } 
-      catch (HDB_InternalError e1) { messageDialog(e1.getMessage(), mtError); }
-      
+      close(null);      
       return false;
     }
     
     ArrayList<HDT_Work> worksToUnlink = new ArrayList<>();
-    bibEntryKeyToWork.entrySet().forEach(entry ->
+    bibEntryKeyToWork.forEach((bibEntryKey, work) ->
     {
-      if (bibLibrary == null)
-        worksToUnlink.add(entry.getValue());
-      else if (bibLibrary.getEntryByKey(entry.getKey()) == null)
-        worksToUnlink.add(entry.getValue());
+      if ((bibLibrary == null) || (bibLibrary.getEntryByKey(bibEntryKey) == null))
+        worksToUnlink.add(work);
     });
     
     worksToUnlink.forEach(work -> work.setBibEntryKey(""));
@@ -1431,19 +1432,14 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean newDB(String newPath, EnumSet<HDT_RecordType> datasetsToKeep, HashMap<String, String> folders)
+  public boolean newDB(String newPath, EnumSet<HDT_RecordType> datasetsToKeep, HashMap<String, String> folders) throws HDB_InternalError
   {
     if (loaded == false) return false;
     
     if (datasetsToKeep == null)
       datasetsToKeep = EnumSet.noneOf(HDT_RecordType.class);
     
-    try { close(datasetsToKeep); } 
-    catch (HDB_InternalError e)
-    {
-      messageDialog(e.getMessage(), mtError);
-      return false;
-    }
+    close(datasetsToKeep); 
   
     dbCreationDate = Instant.now();
     prefs.put(PREF_KEY_DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
@@ -1452,7 +1448,7 @@ public final class HyperDB
     rootFilePath = new FilePath(newPath);
     prefsFilePath = rootFilePath.resolve(new FilePath(appPrefs.get(PREF_KEY_SOURCE_FILENAME, PREFS_DEFAULT_FILENAME)));
         
-    folders.entrySet().forEach(entry -> prefs.put(entry.getKey(), entry.getValue()));
+    folders.forEach(prefs::put);
   
     addRootFolder();
     
@@ -2155,19 +2151,12 @@ public final class HyperDB
   {   
     Set<MainText> set = displayedAtIndex.getForwardSet(displayed);
     
-    Iterator<MainText> it = set.iterator();
-    
-    while (it.hasNext())
+    set.removeIf(mainText ->
     {
-      MainText mainText = it.next();
-      HDT_RecordWithConnector record = mainText.getRecord();
-      
-      if (HDT_Record.isEmpty(record))
-        it.remove();
-      else if (record.getMainText() != mainText)
-        it.remove();
-    }
-    
+      HDT_RecordWithConnector record = mainText.getRecord();      
+      return HDT_Record.isEmpty(record) || (record.getMainText() != mainText);
+    });
+        
     return unmodifiableSet(set);
   }
 
@@ -2215,15 +2204,8 @@ public final class HyperDB
     
     if (paths == null) return;
     
-    Iterator<HyperPath> it = paths.iterator();
+    paths.removeIf(path -> path.getFilePath().equals(filePath));
     
-    while (it.hasNext())
-    {
-      HyperPath path = it.next();
-      if (path.getFilePath().equals(filePath))
-        it.remove();
-    }
-
     if (paths.isEmpty())
       filenameMap.remove(name);
   }

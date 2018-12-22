@@ -22,19 +22,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import static org.apache.commons.text.StringEscapeUtils.*;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
-import org.jsoup.select.Elements;
 
 import org.hypernomicon.App;
 import org.hypernomicon.model.KeywordLinkList;
@@ -370,7 +369,7 @@ public class MainTextWrapper
   private static void appendDetailedKeyWorkBody(List<KeyWork> keyWorks, StringBuilder innerHtml, boolean sortByName, boolean topmost)
   {
     ArrayList<KeyWork> sortedKeys = new ArrayList<>();
-    boolean firstOne = true;
+    MutableBoolean firstOne = new MutableBoolean(true);
     
     sortedKeys.addAll(keyWorks);
 
@@ -394,11 +393,11 @@ public class MainTextWrapper
     else
       sortedKeys.sort((s1, s2) -> s1.compareTo(s2));
     
-    for (KeyWork key : sortedKeys)
+    sortedKeys.forEach(key ->
     {
-      if (!firstOne || !topmost) 
+      if (firstOne.isFalse() || !topmost) 
         innerHtml.append("<br>");
-      firstOne = false;
+      firstOne.setFalse();
             
       innerHtml.append("<a hypncon=\"true\" href=\"\" title=\"Show in Preview Window\" onclick=\"javascript:openPreview(" + getOpenRecordParms(key.getRecord()) + "); return false;\">");
       innerHtml.append("<img border=0 width=16 height=16 src=\"" + getImageDataURI(ui.getGraphicRelativePath(key.getRecord())) + "\"></img></a>");
@@ -438,7 +437,7 @@ public class MainTextWrapper
           
           break;
       }
-    }
+    });
   }
   
 //---------------------------------------------------------------------------
@@ -544,24 +543,13 @@ public class MainTextWrapper
  
   public static Document makeDocLinksExternal(Document doc)
   {
-    String url;
-    Attribute attr;
-    
-    Elements links = doc.getElementsByTag("a");
-    
-    for (Element link : links)
+    doc.getElementsByTag("a").forEach(link ->
     {
-      if (link.hasAttr("hypncon") == false)
-      {
-        if (link.hasAttr("href"))
-          url = link.attr("href");
-        else
-          url = "javascript:void(0);";
-          
-        attr = new Attribute("onclick", "openURL('" + url + "'); return false;");
-        link.attributes().put(attr);
-      }
-    }
+      if (link.hasAttr("hypncon")) return;
+
+      String url = link.hasAttr("href") ? link.attr("href") : "javascript:void(0);";          
+      link.attributes().put(new Attribute("onclick", "openURL('" + url + "'); return false;"));
+    });
     
     return doc;
   }
@@ -577,59 +565,43 @@ public class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static enum LinkKind
-  {
-    none,
-    web,
-    keyword
-  }
+  public static enum LinkKind { none, web, keyword }
   
   private static void addLinks(Element element, HDT_Base recordToHilite)
   {
-    int oldNdx, curNodeTextNdx, nodeNdx, linkNdx, linkTextLen;
-    KeywordLink link;
-    String oldStr, newStr, displayText, style;
-    LinkKind kind;
-    
-    if (element.tagName().equalsIgnoreCase("summary")) // Don't create any keyword links within collapsible headings
+    if (element.tagName().equalsIgnoreCase("summary") || // Don't create any keyword links within collapsible headings
+        element.tagName().equalsIgnoreCase("a")       || // Don't create any keyword links within anchor tags (they already link to somewhere)
+        element.hasAttr("hypncon-no-links"))
       return;
     
-    if (element.tagName().equalsIgnoreCase("a"))  // Don't create any keyword links within anchor tags (they already link to somewhere)
-      return;
-    
-    if (element.hasAttr("hypncon-no-links"))
-      return;
-    
-    for (nodeNdx = 0; nodeNdx < element.textNodes().size(); nodeNdx++)
+    for (int nodeNdx = 0; nodeNdx < element.textNodes().size(); nodeNdx++)
     {
       TextNode textNode = element.textNodes().get(nodeNdx);
       
-      oldStr = textNode.getWholeText();
+      String oldStr = textNode.getWholeText();
       list.generate(oldStr);
 
-      linkNdx = 0;        // index of the current keyword link
-      curNodeTextNdx = 0; // character position, in the original text of the current element, where the current TextNode starts 
+      int linkNdx = 0,        // index of the current keyword link
+          curNodeTextNdx = 0; // character position, in the original text of the current element, where the current TextNode starts 
       
-      link = linkNdx >= list.getLinks().size() ? null : list.getLinks().get(linkNdx);
+      KeywordLink link = linkNdx >= list.getLinks().size() ? null : list.getLinks().get(linkNdx);
       
-      for (oldNdx = 0; oldNdx < oldStr.length();)
+      for (int oldNdx = 0; oldNdx < oldStr.length();)
       { 
-        kind = LinkKind.none;
+        LinkKind kind = LinkKind.none;
         
         if (safeSubstring(oldStr, oldNdx, oldNdx + 4).toLowerCase().equals("http"))
           kind = LinkKind.web;
-        else if (link != null)
-        {
-          if (oldNdx == link.offset)
-            kind = LinkKind.keyword;
-        }
+        else if ((link != null) && (oldNdx == link.offset))
+          kind = LinkKind.keyword;
         
         if (kind != LinkKind.none)
         {        
           textNode = textNode.splitText(oldNdx - curNodeTextNdx);  // 1. Set textNode reference equal to the text node that will be after the link
           curNodeTextNdx = oldNdx;
           nodeNdx++;                                               
-          newStr = textNode.getWholeText();                        // 2. Get the text of the link plus the next text node
+          String displayText, newStr = textNode.getWholeText();    // 2. Get the text of the link plus the next text node
+          int linkTextLen;
           
           if (kind == LinkKind.web)
           {
@@ -641,6 +613,7 @@ public class MainTextWrapper
           {
             linkTextLen = link.length;              // 3. Get end offset into newStr for the part that will be converted to a link
             displayText = safeSubstring(newStr, 0, linkTextLen);
+            String style;
             
             if (link.key.record.equals(recordToHilite))
               style = "background-color: pink;";
@@ -944,7 +917,7 @@ public class MainTextWrapper
     
     Set<Connector> spokes = link.getSpokes();
     
-    for (Connector spoke : spokes)
+    spokes.forEach(spoke ->
     {
       if (spoke.getType() != hdtWorkLabel)
       { 
@@ -955,7 +928,7 @@ public class MainTextWrapper
         
         if (addSpace) innerHtml.append("&nbsp;"); // Seems to be an inconsistency in how img tags (and spans with images)
       }                                           // are handled by the rendering engine; in a <summary> tag, there is no space after images       
-    }
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -1032,7 +1005,7 @@ public class MainTextWrapper
     ArrayList<HDT_WorkLabel> sortedLabels = new ArrayList<HDT_WorkLabel>(parentLabel.subLabels);
     sortedLabels.sort((label1, label2) -> label1.name().compareToIgnoreCase(label2.name()));
         
-    for (HDT_WorkLabel label : sortedLabels)
+    sortedLabels.forEach(label ->
     {
       if (label.subLabels.isEmpty() == false)
       {
@@ -1064,7 +1037,7 @@ public class MainTextWrapper
         
         innerHtml.append("<br>");
       }
-    }
+    });
   }
   
 //---------------------------------------------------------------------------
@@ -1078,7 +1051,7 @@ public class MainTextWrapper
     if (parentLabel == null) return keyWorkCount;
     
     for (HDT_WorkLabel label : parentLabel.subLabels)
-      keyWorkCount = keyWorkCount + getNestedKeyWorkCount(label, label.getMainText().getKeyWorks());
+      keyWorkCount += getNestedKeyWorkCount(label, label.getMainText().getKeyWorks());
     
     return keyWorkCount;
   }
@@ -1091,53 +1064,44 @@ public class MainTextWrapper
     List<HDT_Concept> concepts = new ArrayList<>();
     if (link == null) return concepts;
     
-    for (Connector spoke : link.getSpokes())
+    link.getSpokes().forEach(spoke -> { switch (spoke.getType())
     {
-      switch (spoke.getType())
-      {
-        case hdtDebate :
-          
-          HDT_Debate debate = link.getDebate();
-          
-          addLinkedTerms(debate.largerDebates, concepts);
-          addLinkedTerms(debate.subDebates, concepts);
-          addLinkedTerms(debate.positions, concepts);
-          break;
-          
-        case hdtPosition :
-          
-          HDT_Position position = link.getPosition();
-          addLinkedTerms(position.debates, concepts);
-          addLinkedTerms(position.largerPositions, concepts);
-          addLinkedTerms(position.subPositions, concepts);
-          break;
-          
-        case hdtNote :
-          
-          HDT_Note note = link.getNote();
-          addLinkedTerms(note.parentNotes, concepts);
-          addLinkedTerms(note.subNotes, concepts);
-          break;
-          
-        case hdtWorkLabel :
-          
-          HDT_WorkLabel label = link.getLabel();
-          addLinkedTerms(label.parentLabels, concepts);
-          addLinkedTerms(label.subLabels, concepts);
-          break;
-          
-        default :
-          break;
-      }
-    }
+      case hdtDebate :
+        
+        HDT_Debate debate = link.getDebate();
+        
+        addLinkedTerms(debate.largerDebates, concepts);
+        addLinkedTerms(debate.subDebates, concepts);
+        addLinkedTerms(debate.positions, concepts);
+        break;
+        
+      case hdtPosition :
+        
+        HDT_Position position = link.getPosition();
+        addLinkedTerms(position.debates, concepts);
+        addLinkedTerms(position.largerPositions, concepts);
+        addLinkedTerms(position.subPositions, concepts);
+        break;
+        
+      case hdtNote :
+        
+        HDT_Note note = link.getNote();
+        addLinkedTerms(note.parentNotes, concepts);
+        addLinkedTerms(note.subNotes, concepts);
+        break;
+        
+      case hdtWorkLabel :
+        
+        HDT_WorkLabel label = link.getLabel();
+        addLinkedTerms(label.parentLabels, concepts);
+        addLinkedTerms(label.subLabels, concepts);
+        break;
+        
+      default :
+        break;
+    }});
     
-    Iterator<HDT_Concept> it = concepts.iterator();
-    
-    while (it.hasNext())
-    {
-      if (displayerIsAlreadyShowing(it.next()))
-        it.remove();
-    }
+    concepts.removeIf(this::displayerIsAlreadyShowing);
     
     concepts.sort((t1, t2) -> t1.getSortKey().compareTo(t2.getSortKey()));
     
@@ -1153,11 +1117,11 @@ public class MainTextWrapper
     {
       if (uRecord.isLinked() == false) return;
 
-      HDT_Concept concept = uRecord.getLink().getConcept();
-      if (concept == null) return;
-
-      if (concepts.contains(concept) == false)
-        concepts.add(concept);
+      nullSwitch(uRecord.getLink().getConcept(), concept ->
+      {
+        if (concepts.contains(concept) == false)
+          concepts.add(concept);        
+      });
     });
   }
   
@@ -1171,59 +1135,53 @@ public class MainTextWrapper
     HDT_WorkLabel curLabel = getLabelOfRecord(curRecord);
     Document doc = Jsoup.parse(getHtmlEditorText(html));
     StringBuilder innerHtml = new StringBuilder("");
-    boolean firstOpen = false;
+    MutableBoolean firstOpen = new MutableBoolean(false);
     int keyWorksSize = getNestedKeyWorkCount(curRecord, keyWorks);
     
     if (doc.head().getElementsByTag("style").isEmpty())
       doc.head().prepend(mainTextHeadStyleTag());
     
     if (doc.body().text().trim().length() == 0)
-      firstOpen = true;
+      firstOpen.setTrue();
       
     MutableInt tagNdx = new MutableInt(0);
     
-    for (DisplayItem item : displayItems)
+    displayItems.forEach(item ->
     {     
       switch (item.type)
       {
         case diDescription:
 
-          String relRecordsHtml = "";
+          StringBuilder relRecordsHtml = new StringBuilder();
           if (curRecord.getType() == hdtConcept)
           {
             List<HDT_Concept> concepts = getRelatedConcepts(curRecord.getLink());
             
-            for (HDT_Concept concept : concepts)
+            concepts.forEach(concept ->
             {
               if (relRecordsHtml.length() == 0)
-                relRecordsHtml = "<b hypncon-no-links=true>Related concepts: </b>";
+                relRecordsHtml.append("<b hypncon-no-links=true>Related concepts: </b>");
               else
-                relRecordsHtml = relRecordsHtml + "; ";
+                relRecordsHtml.append("; ");
 
-              relRecordsHtml = relRecordsHtml + getGoToRecordAnchor(concept, "", concept.getExtendedName());
-            }
+              relRecordsHtml.append(getGoToRecordAnchor(concept, "", concept.getExtendedName()));
+            });
           }
           else
           {
             Set<Connector> displayers = curRecord.getMainText().getDisplayers();                        
             
-            Iterator<Connector> it = displayers.iterator();
-            
-            while (it.hasNext())
-            {
-              if (displayerIsAlreadyShowing(it.next().getSpoke()))
-                it.remove();
-            }
+            displayers.removeIf(displayer -> displayerIsAlreadyShowing(displayer.getSpoke()));
                           
-            for (Connector displayer : displayers)
+            displayers.forEach(displayer ->
             {
               if (relRecordsHtml.length() == 0)
-                relRecordsHtml = "<b hypncon-no-links=true>Displayers: </b>";
+                relRecordsHtml.append("<b hypncon-no-links=true>Displayers: </b>");
               else
-                relRecordsHtml = relRecordsHtml + "; ";
+                relRecordsHtml.append("; ");
 
-              relRecordsHtml = relRecordsHtml + getGoToRecordAnchor(displayer.getSpoke(), "", displayer.getSpoke().getCBText());             
-            }
+              relRecordsHtml.append(getGoToRecordAnchor(displayer.getSpoke(), "", displayer.getSpoke().getCBText()));             
+            });
           }          
           
           String plainText = doc.body().text().trim();
@@ -1298,10 +1256,10 @@ public class MainTextWrapper
           
           String cbText = item.record.getCBText();
           
-          if (firstOpen)
+          if (firstOpen.isTrue())
           {
             innerHtml.append(detailsTag(makeElementID(item.record), viewInfo, true) + "<summary><b>");
-            firstOpen = false;
+            firstOpen.setFalse();
           }
           else
             innerHtml.append(detailsTag(makeElementID(item.record), viewInfo, false) + "<summary><b>");
@@ -1319,7 +1277,7 @@ public class MainTextWrapper
         default:
           break;        
       }
-    }
+    });
     
     doc.body().html(innerHtml.toString());
     completeHtml = doc.html();
@@ -1377,14 +1335,14 @@ public class MainTextWrapper
     HashMap<String, String> linkMap = new HashMap<>();
     HashMap<String, KeyWork> keyToKeyWork = new HashMap<>();
         
-    for (KeyWork keyWork : keyWorks)
+    keyWorks.forEach(keyWork ->
     {             
       String searchKey = keyWork.getSearchKey(true).replace(" ", "&nbsp;");
       
       linkMap.put(searchKey, getKeywordLink(searchKey, new KeywordLink(0, searchKey.length(), new SearchKeyword(searchKey, keyWork.getRecord())), ""));
       keyToKeyWork.put(searchKey, keyWork);
       sortedKeys.add(searchKey);
-    }
+    });
     
     if (sortByName)
       sortedKeys.sort((s1, s2) -> s1.compareToIgnoreCase(s2));

@@ -46,27 +46,25 @@ import org.hypernomicon.util.filePath.FilePath;
 
 public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithPath
 { 
-  private Authors authors;
+  private final Authors authors;
   
-  public List<HDT_Person> authorRecords;
-  public HyperObjList<HDT_Work, HDT_Investigation> investigations;
-  public HyperObjList<HDT_Work, HDT_WorkLabel> labels;
-  public List<HDT_WorkFile> workFiles;
-  public HyperSubjList<HDT_Work, HDT_Work> subWorks;
-  public HyperSubjList<HDT_MiscFile, HDT_Work> miscFiles;
-  public HyperSubjList<HDT_Argument, HDT_Work> arguments;
+  public final List<HDT_Person> authorRecords;
+  public final HyperObjList<HDT_Work, HDT_Investigation> investigations;
+  public final HyperObjList<HDT_Work, HDT_WorkLabel> labels;
+  public final List<HDT_WorkFile> workFiles;
+  public final HyperSubjList<HDT_Work, HDT_Work> subWorks;
+  public final HyperSubjList<HDT_MiscFile, HDT_Work> miscFiles;
+  public final HyperSubjList<HDT_Argument, HDT_Work> arguments;
   
-  public HyperObjPointer<HDT_Work, HDT_WorkType> workType;
-  public HyperObjPointer<HDT_Work, HDT_Work> largerWork;
+  public final HyperObjPointer<HDT_Work, HDT_WorkType> workType;
+  public final HyperObjPointer<HDT_Work, HDT_Work> largerWork;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_Work(HDT_RecordState xmlState, HyperDataset<HDT_Work> dataset)
   {
-    super(xmlState, dataset);
-     
-    nameTag = tagTitle;
+    super(xmlState, dataset, tagTitle);
     
     if (dataset != null)
     {
@@ -84,6 +82,11 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
       workType = getObjPointer(rtTypeOfWork);
       largerWork = getObjPointer(rtParentWorkOfWork);
     }
+    else
+    {
+      authors  = null; authorRecords = null; investigations = null; labels   = null; workFiles  = null; 
+      subWorks = null; miscFiles     = null; arguments      = null; workType = null; largerWork = null;      
+    }    
   }
      
   public void setInvestigations(List<HDT_Investigation> list) { updateObjectsFromList(rtInvestigationOfWork, list); }

@@ -29,16 +29,14 @@ import org.hypernomicon.model.relations.HyperObjPointer;
 
 public class HDT_Subfield extends HDT_Record
 {
-  public List<HDT_Person> persons;
+  public final List<HDT_Person> persons;
   
-  public HyperObjPointer<HDT_Subfield, HDT_Field> field;
+  public final HyperObjPointer<HDT_Subfield, HDT_Field> field;
   
   public HDT_Subfield(HDT_RecordState xmlState, HyperDataset<HDT_Subfield> dataset)
   {
-    super(xmlState, dataset);
+    super(xmlState, dataset, tagName);
    
-    nameTag = tagName;
-    
     persons = getSubjList(rtSubfieldOfPerson);
     field = getObjPointer(rtFieldOfSubfield);
   }

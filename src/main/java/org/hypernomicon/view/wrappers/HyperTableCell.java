@@ -151,7 +151,7 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
     }     
     else if (sortMethod == hsmWork)
     {
-      HDT_Work thisWork = (HDT_Work) getRecord(this), otherWork = (HDT_Work) getRecord(otherCell);
+      HDT_Work thisWork = getRecord(this), otherWork = getRecord(otherCell);
             
       int numAuthors = Math.max(thisWork.getAuthors().size(), otherWork.getAuthors().size());
       int ndx, cResult;
@@ -192,13 +192,14 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  public static HDT_Base getRecord(HyperTableCell cell)
+  @SuppressWarnings("unchecked")
+  public static <HDT_T extends HDT_Base> HDT_T getRecord(HyperTableCell cell)
   {
     int id = getCellID(cell);
     if (id < 1) return null;
     
     HDT_RecordType type = getCellType(cell);
-    return type == hdtNone ? null : db.records(type).getByID(id);
+    return type == hdtNone ? null : (HDT_T)db.records(type).getByID(id);
   }
  
 //---------------------------------------------------------------------------  

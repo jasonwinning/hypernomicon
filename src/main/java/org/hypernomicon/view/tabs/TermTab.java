@@ -237,20 +237,18 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   {
     if (updatingGlossaries) return;
     
-    List<HDT_Glossary> oldList = curTerm.getGlossaries();
-    List<HDT_Glossary> newList = htGlossaries.saveToList(1, hdtGlossary);
+    List<HDT_Glossary> oldList = curTerm.getGlossaries(),
+                       newList = htGlossaries.saveToList(1, hdtGlossary);
     
     Set<HDT_Glossary> set = new HashSet<HDT_Glossary>();
     
-    Iterator<HDT_Glossary> it = newList.iterator();
-    while (it.hasNext())
+    newList.removeIf(glossary ->
     {
-      HDT_Glossary glossary = it.next();
-      if (set.contains(glossary))
-        it.remove();
-      else
-        set.add(glossary);
-    }
+      if (set.contains(glossary)) return true;
+
+      set.add(glossary);
+      return false;
+    });
     
     if (newList.size() > oldList.size())
     {
@@ -264,13 +262,10 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     else if (newList.size() < oldList.size())
     {
       for (HDT_Glossary glossary : oldList)
-        if (newList.contains(glossary) == false)
+        if ((newList.contains(glossary) == false) && (newList.size() > 0))
         {
-          if (newList.size() > 0)
-          {
-            removeGlossary(glossary);
-            break;
-          }
+          removeGlossary(glossary);
+          break;
         }
     }
     else
@@ -306,8 +301,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     
     HDT_Term otherTerm = rdd.getRecord();
     
-    if (otherTerm == null) return;
-    if (otherTerm == curTerm) return;
+    if ((otherTerm == null) || (otherTerm == curTerm)) return;
     
     List<HDT_Glossary> otherGlossaries = otherTerm.getGlossaries();
     
@@ -397,9 +391,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   private void switchToDifferentTab()
   {
-    int ndx = tpConcepts.getTabs().indexOf(curTab());
-    
-    tpConcepts.getSelectionModel().select(ndx == 0 ? 1 : 0);   
+    tpConcepts.getSelectionModel().select(tpConcepts.getTabs().indexOf(curTab()) == 0 ? 1 : 0);   
   }
 
 //---------------------------------------------------------------------------  
@@ -409,8 +401,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   {
     ArrayList<HDT_Concept> newConceptList = new ArrayList<>();
     
-    for (HDT_Glossary glossary : newGlossaryList)
-      newConceptList.add(curTerm.getConcept(glossary));
+    newGlossaryList.forEach(glossary -> newConceptList.add(curTerm.getConcept(glossary)));
     
     HyperObjList<HDT_Term, HDT_Concept> objList = db.getObjectList(RelationType.rtConceptOfTerm, curTerm, true);
     

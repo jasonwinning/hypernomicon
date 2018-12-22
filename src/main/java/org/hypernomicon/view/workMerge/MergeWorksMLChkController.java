@@ -19,44 +19,47 @@ package org.hypernomicon.view.workMerge;
 
 import static org.hypernomicon.util.Util.*;
 
+import java.util.ArrayList;
+
 import org.hypernomicon.bib.BibData;
 import org.hypernomicon.bib.BibData.BibFieldEnum;
+
 import javafx.fxml.FXML;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 
-public class MergeWorksSLController extends BibFieldRow
+public class MergeWorksMLChkController extends BibFieldRow
 {
-  @FXML private RadioButton rb1;
-  @FXML private RadioButton rb2;
-  @FXML private RadioButton rb3;
-  @FXML private RadioButton rb4;
+  @FXML private CheckBox chk1;
+  @FXML private CheckBox chk2;
+  @FXML private CheckBox chk3;
+  @FXML private CheckBox chk4;
 
-  @FXML private TextField tf1;
-  @FXML private TextField tf2;
-  @FXML private TextField tf3;
-  @FXML private TextField tf4;
+  @FXML private TextArea ta1;
+  @FXML private TextArea ta2;
+  @FXML private TextArea ta3;
+  @FXML private TextArea ta4;
   
   @FXML private GridPane gp;
   
   @FXML private Label lbl;
-  
-//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
   @Override public void mergeInto(BibData bd)
   {
-    String str;
+    ArrayList<String> list = new ArrayList<>();
     
-    if      (rb1.isSelected()) str = tf1.getText();
-    else if (rb2.isSelected()) str = tf2.getText();
-    else if (rb3.isSelected()) str = tf3.getText();
-    else                       str = tf4.getText();
+    if (chk1.isSelected()) list.addAll(convertMultiLineStrToStrList(ta1.getText(), false));
+    if (chk2.isSelected()) list.addAll(convertMultiLineStrToStrList(ta2.getText(), false));
+    if (chk3.isSelected()) list.addAll(convertMultiLineStrToStrList(ta3.getText(), false));
+    if (chk4.isSelected()) list.addAll(convertMultiLineStrToStrList(ta4.getText(), false));
     
-    bd.setStr(bibFieldEnum, str);
+    bd.setMultiStr(bibFieldEnum, list); 
   }
   
 //---------------------------------------------------------------------------  
@@ -71,43 +74,27 @@ public class MergeWorksSLController extends BibFieldRow
     
     if (bd4 == null)
     {
+      chk4.setSelected(false);
       deleteGridPaneColumn(gp, 3);
     }
-    else
-    {
-      if (bd4.fieldNotEmpty(bibFieldEnum))
-      {
-        tf4.setText(bd4.getStr(bibFieldEnum));
-        rb4.setSelected(true);
-      }
-    }
+    else if (bd4.fieldNotEmpty(bibFieldEnum))
+      ta4.setText(strListToStr(bd4.getMultiStr(bibFieldEnum), true));
     
     if (bd3 == null)
     {
+      chk3.setSelected(false);
       deleteGridPaneColumn(gp, 2);
     }
-    else
-    {
-      if (bd3.fieldNotEmpty(bibFieldEnum))
-      {
-        tf3.setText(bd3.getStr(bibFieldEnum));
-        rb3.setSelected(true);      
-      }
-    }
+    else if (bd3.fieldNotEmpty(bibFieldEnum))
+      ta3.setText(strListToStr(bd3.getMultiStr(bibFieldEnum), true));     
     
     if (bd2.fieldNotEmpty(bibFieldEnum))
-    {
-      tf2.setText(bd2.getStr(bibFieldEnum));
-      rb2.setSelected(true);      
-    }
+      ta2.setText(strListToStr(bd2.getMultiStr(bibFieldEnum), true));
     
     if (bd1.fieldNotEmpty(bibFieldEnum))
-    {
-      tf1.setText(bd1.getStr(bibFieldEnum));
-      rb1.setSelected(true);      
-    }
+      ta1.setText(strListToStr(bd1.getMultiStr(bibFieldEnum), true));   
   }
-   
+
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 

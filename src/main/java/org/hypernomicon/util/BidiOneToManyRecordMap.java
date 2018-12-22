@@ -21,7 +21,6 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import static java.util.Objects.*;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import org.hypernomicon.model.records.HDT_Hub;
@@ -113,18 +112,15 @@ public class BidiOneToManyRecordMap
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void removeForwardKey(HDT_Base key)
+  private void removeForwardKey(HDT_Base key)
   {
     if (forwardMap.containsKey(key) == false) return;
     
-    Iterator<HDT_Base> it = forwardMap.get(key).iterator();
-    
-    while (it.hasNext())
+    forwardMap.get(key).removeIf(target ->
     {
-      HDT_Base target = it.next();
       getSet(reverseMap, target).remove(key);
-      it.remove();
-    }    
+      return true;      
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -133,15 +129,12 @@ public class BidiOneToManyRecordMap
   public void removeReverseKey(HDT_Base key)
   {
     if (reverseMap.containsKey(key) == false) return;
-          
-    Iterator<HDT_Base> it = reverseMap.get(key).iterator();
-    
-    while (it.hasNext())
+
+    reverseMap.get(key).removeIf(target ->
     {
-      HDT_Base target = it.next();
       getSet(forwardMap, target).remove(key);
-      it.remove();
-    }
+      return true;      
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -149,18 +142,15 @@ public class BidiOneToManyRecordMap
 
   public Set<HDT_Base> getAllHeads()
   {
-    Set<HDT_Base> recordSet = Sets.newConcurrentHashSet();
+    Set<HDT_Base> heads = Sets.newConcurrentHashSet();
     
-    forwardMap.entrySet().forEach(entry ->
+    forwardMap.forEach((head, set) ->
     {
-      HDT_Base head = entry.getKey();
-      
-      if (head.getID() != -1)
-        if (entry.getValue().isEmpty() == false)
-          recordSet.add(head);
+      if ((head.getID() != -1) && (set.isEmpty() == false))
+        heads.add(head);
     });
     
-    return recordSet;
+    return heads;
   }
 
 //---------------------------------------------------------------------------

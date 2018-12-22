@@ -55,7 +55,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Map.Entry;
 import java.util.function.Predicate;
 
 import javafx.application.Platform;
@@ -93,7 +92,7 @@ public class HyperTable implements RecordListView
   private FilteredList<HyperTableRow> filteredRows;
   final ArrayList<TableColumn<HyperTableRow, HyperTableCell>> tableCols = new ArrayList<TableColumn<HyperTableRow, HyperTableCell>>();
   private List<HyperMenuItem<? extends HDT_Base>> contextMenuItems;
-  RecordHandler<HDT_Base> dblClickHandler = null;
+  RecordHandler<? extends HDT_Base> dblClickHandler = null;
   Runnable onShowMore = null;
   public boolean disableRefreshAfterCellUpdate = false,
                  autoCommitListSelections = false;
@@ -110,14 +109,13 @@ public class HyperTable implements RecordListView
   public TableView<HyperTableRow> getTV()                          { return tv; }
   public List<HyperTableColumn> getColumns()                       { return Collections.unmodifiableList(cols); }
   public HyperTableColumn getColumn(int colNdx)                    { return cols.get(colNdx); }
-  public Populator getPopulator(int colNdx)                        { return cols.get(colNdx).getPopulator(); }
+  public <Pop extends Populator> Pop getPopulator(int colNdx)      { return cols.get(colNdx).getPopulator(); }
   public void clearFilter()                                        { filteredRows.setPredicate(row -> true); }
   public void setFilter(Predicate<HyperTableRow> filter)           { filteredRows.setPredicate(filter); }
   public HDT_RecordType getTypeByCol(int colNdx)                   { return cols.get(colNdx).getObjType(); }
   public List<HyperTableCell> getSelByCol(int colNdx)              { return cols.get(colNdx).getSelectedItems(); }
   public boolean getCanAddRows()                                   { return canAddRows; }  
   public void setCanAddRows(boolean value)                         { canAddRows = value; tv.setEditable(value); }
-  public void setDblClickHandler(RecordHandler<HDT_Base> hndlr)    { this.dblClickHandler = hndlr; }
   public void setOnShowMore(Runnable onShowMore)                   { this.onShowMore = onShowMore; }
   public int getMainColNdx()                                       { return mainCol; }
   public void setTooltip(int colNdx, ButtonAction ba, String text) { cols.get(colNdx).setTooltip(ba, text); }
@@ -125,6 +123,9 @@ public class HyperTable implements RecordListView
   public void removeRow(HyperTableRow row)                         { rows.remove(row); }
   public Iterable<HyperTableRow> getDataRows()                     { return new DataRowIterator(); }
   public int getDataRowCount()                                     { return canAddRows ? Math.max(rows.size() - 1, 0) : rows.size(); }
+
+  @SuppressWarnings("unused")
+  public <HDT_T extends HDT_Base> void setDblClickHandler(Class<HDT_T> klass, RecordHandler<HDT_T> hndlr)    { this.dblClickHandler = hndlr; }
   
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
@@ -157,16 +158,14 @@ public class HyperTable implements RecordListView
 
   public static void saveColWidthsToPrefs()
   {
-    registry.entrySet().forEach(entry -> 
-    {
-      String prefID = entry.getKey();      
+    registry.forEach((prefID, tv) -> 
+    {     
       HyperDialog dialog = dialogs.get(prefID);
       
-      if (dialog != null)
-        if (dialog.shownAlready() == false)
-          return;
+      if ((dialog != null) && (dialog.shownAlready() == false))
+        return;
       
-      saveColWidthsForTable(entry.getValue(), entry.getKey(), true); 
+      saveColWidthsForTable(tv, prefID, true); 
     });
   }
 
@@ -305,7 +304,7 @@ public class HyperTable implements RecordListView
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Base selectedRecord()                                   
+  public <HDT_T extends HDT_Base> HDT_T selectedRecord()                                   
   { 
     return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, row -> row.getRecord());
   }
@@ -361,7 +360,6 @@ public class HyperTable implements RecordListView
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked")
   private <HDT_T extends HDT_Base> MenuItem createContextMenuItem(HyperMenuItem<HDT_T> hItem, HyperTableRow row, ContextMenu rowMenu)
   {
     MenuItem newItem = new MenuItem(hItem.caption);
@@ -371,9 +369,9 @@ public class HyperTable implements RecordListView
       HDT_T record;
       
       if (hItem.recordType == hdtNone)
-        record = (HDT_T) row.getRecord();
+        record = row.getRecord();
       else
-        record = (HDT_T) row.getRecordByType(hItem.recordType);
+        record = row.getRecordByType(hItem.recordType);
       
       rowMenu.hide();
       
@@ -393,9 +391,9 @@ public class HyperTable implements RecordListView
     HDT_T record;
     
     if (hItem.recordType == hdtNone)
-      record = (HDT_T) row.getRecord();
+      record = row.getRecord();
     else
-      record = (HDT_T) row.getRecordByType(hItem.recordType);
+      record = row.getRecordByType(hItem.recordType);
 
     if (hItem.okayIfBlank)
     {
@@ -690,7 +688,6 @@ public class HyperTable implements RecordListView
     cols.forEach(HyperTableColumn::clear);
     
     rows.clear();
-    
     clearFilter();
     
     if (canAddRows)
@@ -973,7 +970,6 @@ public class HyperTable implements RecordListView
   {
     ArrayList<ObjectGroup> list = new ArrayList<>();
     HDT_RecordType objType = db.getObjType(relType);
-    HDT_Base obj;
     
     db.getNestedTags(relType).forEach(tag ->
     {
@@ -981,13 +977,14 @@ public class HyperTable implements RecordListView
         colNdxToTag.put(-1, tag);
     });
     
-    for (HyperTableRow row : rows)
+    rows.forEach(row ->
     {
       if (row.getType(primaryColNdx) == objType)
       {
         int id = row.getID(primaryColNdx);
         if ((id > 0) || row.getText(primaryColNdx).length() > 0)
         {
+          HDT_Base obj;
           ObjectGroup group;
           
           if (id < 1)
@@ -1001,12 +998,10 @@ public class HyperTable implements RecordListView
             group = new ObjectGroup(obj);
           }
           
-          for (Entry<Integer, Tag> entry : colNdxToTag.entrySet())
+          colNdxToTag.forEach((colNdx, tag) ->
           {
-            Tag tag = entry.getValue();
             HDI_Schema schema = db.getNestedSchema(relType, tag);
             NestedValue val = new NestedValue(schema.getCategory());
-            int colNdx = entry.getKey();
             
             if (colNdx < 0)
             {
@@ -1027,8 +1022,7 @@ public class HyperTable implements RecordListView
                 {
                   if (tag == Tag.tagInFileName)
                   {
-                    HDT_Work work = (HDT_Work)subj;
-                    Author author = work.getAuthors().getAuthor(new PersonName(group.getPrimaryStr()));
+                    Author author = HDT_Work.class.cast(subj).getAuthors().getAuthor(new PersonName(group.getPrimaryStr()));
                     if (author != null)
                       val.ternary = author.getInFileName();
                   }
@@ -1045,12 +1039,12 @@ public class HyperTable implements RecordListView
             }
             
             group.addNestedEntry(tag, val);
-          }
+          });
           
           list.add(group);
         }
       }
-    }
+    });
     
     return list;
   }

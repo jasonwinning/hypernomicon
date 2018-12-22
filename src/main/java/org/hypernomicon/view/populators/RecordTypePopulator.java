@@ -34,11 +34,11 @@ public class RecordTypePopulator extends Populator
 {
   private Set<HDT_RecordType> types;
   private boolean changed = true;  
-  List<HyperTableCell> choices;
+  final List<HyperTableCell> choices = new ArrayList<>();
 
   public Set<HDT_RecordType> getTypes()                  { return types; }
   public void setTypes(Set<HDT_RecordType> set)          { types = set; changed = true; }
-
+  
   @Override public boolean hasChanged(HyperTableRow row) { return changed; }
   @Override public void setChanged(HyperTableRow row)    { changed = true; }
   @Override public CellValueType getValueType()          { return cvtRecordType; }
@@ -52,7 +52,7 @@ public class RecordTypePopulator extends Populator
     
     if ((force == false) && (changed == false)) return choices;
     
-    choices = new ArrayList<>();
+    choices.clear();
     
     if (types == null)
       types = EnumSet.noneOf(HDT_RecordType.class);
@@ -99,8 +99,7 @@ public class RecordTypePopulator extends Populator
   
   @Override public void clear()
   {
-    if (choices != null)
-      choices.clear();
+    choices.clear();
     changed = true;
     return;
   }

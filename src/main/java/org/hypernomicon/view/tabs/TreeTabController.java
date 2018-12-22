@@ -141,10 +141,7 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
       
       DragNDropHoverHelper.setupHandlers(row, tree);
 
-      row.itemProperty().addListener((observable, oldValue, newValue) ->
-      {
-        row.setContextMenu(nullSwitch(newValue, null, tree::createContextMenu));
-      });
+      row.itemProperty().addListener((o, ov, nv) -> row.setContextMenu(nullSwitch(nv, null, tree::createContextMenu)));
       
       return row;
     });
@@ -161,7 +158,7 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
       record -> 
       {
         if ((db.isLoaded() == false) || (record == null)) return false;
-        return (record.getType() != hdtConcept);
+        return record.getType() != hdtConcept;
       },
       this::chooseParent);
 
@@ -265,32 +262,35 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
         HDT_Base record = row.getRecord();
         if (record != null)
         {
-          String desc = "";
-          
-          if ((record.getType() == hdtWorkLabel) || (record.getType() == hdtGlossary))
-            if (record.getID() > 1)
-              record.viewNow();
-          
-          if (record.getType() == hdtWork)
+          switch (record.getType())
           {
-            HDT_Work work = (HDT_Work)record;
-            previewWindow.setPreview(pvsTreeTab, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
-            clearPreview = false;
+            case hdtWorkLabel : case hdtGlossary :
+              
+              if (record.getID() > 1)
+                record.viewNow();
+
+              break;
+              
+            case hdtWork :
+              
+              HDT_Work work = (HDT_Work)record;
+              previewWindow.setPreview(pvsTreeTab, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+              clearPreview = false;
+              break;
+              
+            case hdtMiscFile :
+              
+              HDT_MiscFile miscFile = (HDT_MiscFile)record;
+              previewWindow.setPreview(pvsTreeTab, miscFile.getPath().getFilePath(), -1, -1, miscFile);
+              clearPreview = false;
+              break;
+              
+            default : break;
           }
-          else if (record.getType() == hdtMiscFile)
-          {
-            HDT_MiscFile miscFile = (HDT_MiscFile)record;
-            previewWindow.setPreview(pvsTreeTab, miscFile.getPath().getFilePath(), -1, -1, miscFile);
-            clearPreview = false;
-          }
+
+          String desc = record.hasDesc() ? ((HDT_RecordWithDescription)record).getDesc().getHtml() : "";
           
-          if (record.hasDesc())
-            desc = ((HDT_RecordWithDescription)record).getDesc().getHtml();
-          
-          if (useViewInfo)
-            MainTextWrapper.setReadOnlyHTML(getHtmlEditorText(desc), webView.getEngine(), getView().getTextInfo(), null);
-          else
-            MainTextWrapper.setReadOnlyHTML(getHtmlEditorText(desc), webView.getEngine(), new TextViewInfo(), null);
+          MainTextWrapper.setReadOnlyHTML(getHtmlEditorText(desc), webView.getEngine(), useViewInfo ? getView().getTextInfo() : new TextViewInfo(), null);          
           clearWV = false;
         }
       }
@@ -576,9 +576,7 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
 
   @Override public int getRecordNdx()
   {
-    TreeRow row = nullSwitch(tree.selectedItem(), null, item -> item.getValue());
-
-    return row == null ? -1 : tree.getRowsForRecord(row.getRecord()).indexOf(row);
+    return nullSwitch(nullSwitch(tree.selectedItem(), null, item -> item.getValue()), -1, row -> tree.getRowsForRecord(row.getRecord()).indexOf(row));
   }
 
 //---------------------------------------------------------------------------  

@@ -91,7 +91,7 @@ public class ContentsWindow extends HyperDialog
     
     htContents.addCustomActionCol(4, "Set", (row, colNdx) ->
     {
-      HDT_Work work = (HDT_Work) row.getRecord();
+      HDT_Work work = row.getRecord();
       int num = previewWindow.curPage();
       
       if (num < 0) num = 1;
@@ -117,7 +117,7 @@ public class ContentsWindow extends HyperDialog
     
     htContents.addCustomActionCol(7, "Set", (row, colNdx) ->
     {
-      HDT_Work work = (HDT_Work) row.getRecord();
+      HDT_Work work = row.getRecord();
       int num = previewWindow.curPage();
       
       if (num < 0) num = previewWindow.getMax();

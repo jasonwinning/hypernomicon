@@ -30,18 +30,16 @@ import org.hypernomicon.model.relations.HyperObjPointer;
 
 public class HDT_Note extends HDT_RecordWithConnector
 {
-  public List<HDT_Note> parentNotes;
-  public List<HDT_Note> subNotes;
-  public HyperObjPointer<HDT_Note, HDT_Folder> folder;
+  public final List<HDT_Note> parentNotes;
+  public final List<HDT_Note> subNotes;
+  public final HyperObjPointer<HDT_Note, HDT_Folder> folder;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_Note(HDT_RecordState xmlState, HyperDataset<HDT_Note> dataset)
   {
-    super(xmlState, dataset);
-    
-    nameTag = tagName;
+    super(xmlState, dataset, tagName);
     
     parentNotes = getObjList(rtParentNoteOfNote);
     subNotes = getSubjList(rtParentNoteOfNote);

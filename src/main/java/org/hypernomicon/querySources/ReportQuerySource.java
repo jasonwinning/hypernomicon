@@ -27,11 +27,12 @@ import org.hypernomicon.view.wrappers.HyperTableCell;
 
 public abstract class ReportQuerySource implements QuerySource
 {
-  protected List<HyperTableCell> list = new ArrayList<>();
+  protected final List<HyperTableCell> list = new ArrayList<>();
+  protected final int query;
+  protected final HyperTableCell op1, op2, op3;
+  protected final HyperDB db;
+
   private boolean generated = false;
-  protected int query;
-  protected HyperTableCell op1, op2, op3;
-  protected HyperDB db;
   
   public ReportQuerySource(int query, HyperTableCell op1, HyperTableCell op2) { this(query, op1, op2, null); }
   public ReportQuerySource(int query, HyperTableCell op1)                     { this(query, op1, null, null); }
@@ -48,67 +49,20 @@ public abstract class ReportQuerySource implements QuerySource
     this.op3 = op3;
     this.db = HyperDB.db;
   }
-  
+
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 
+
+  @Override public int count()                             { ensureGenerated(); return list.size(); }
+  @Override public HDT_Record getRecord(int ndx)           { return null; }
+  @Override public boolean containsRecord(HDT_Base record) { return false; }
+  @Override public QuerySourceType sourceType()            { return QuerySourceType.QST_report; }
   
-  protected void ensureGenerated()
-  {
-    if (!generated)
-    {
-      generate();
-      generated = true;
-    }   
-  }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
+  protected void ensureGenerated()                         { if (!generated) { generate(); generated = true; }}
+   
   protected abstract void generate();
   
 //---------------------------------------------------------------------------  
 //--------------------------------------------------------------------------- 
   
-  @Override public int count()
-  {
-    ensureGenerated();
-    return list.size();
-  }
-
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
-  @Override public HyperTableCell getCell(int ndx)
-  {
-    ensureGenerated();
-    return list.get(ndx);
-  }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
-  @Override public HDT_Record getRecord(int ndx)
-  {
-    return null;
-  }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
-  @Override public boolean containsRecord(HDT_Base record)
-  {
-    return false;
-  }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
-  @Override public QuerySourceType sourceType()
-  {
-    return QuerySourceType.QST_report;
-  }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-
 }

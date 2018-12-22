@@ -128,20 +128,17 @@ public class JsonHttpClient
       rc = httpclient.execute(request, responseHndlr);
     }
     
-    if (lastException != null)
+    if (lastException instanceof ParseException)
     {
-      if (lastException instanceof ParseException)
-      {
-        ParseException e = (ParseException) lastException;
-        lastException = null;
-        throw e;
-      }
-      else if (lastException instanceof UnsupportedOperationException)
-      {
-        UnsupportedOperationException e = (UnsupportedOperationException) lastException;
-        lastException = null;
-        throw e;
-      }
+      ParseException e = (ParseException) lastException;
+      lastException = null;
+      throw e;
+    }
+    else if (lastException instanceof UnsupportedOperationException)
+    {
+      UnsupportedOperationException e = (UnsupportedOperationException) lastException;
+      lastException = null;
+      throw e;
     }
     
     return rc;

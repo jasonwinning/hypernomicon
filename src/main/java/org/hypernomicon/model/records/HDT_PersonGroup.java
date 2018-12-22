@@ -27,13 +27,12 @@ import org.hypernomicon.model.HyperDataset;
 
 public class HDT_PersonGroup extends HDT_Record
 {
-  public List<HDT_PersonGroup> parentGroups;
-  public List<HDT_PersonGroup> subGroups;
+  public final List<HDT_PersonGroup> parentGroups;
+  public final List<HDT_PersonGroup> subGroups;
   
   public HDT_PersonGroup(HDT_RecordState xmlState, HyperDataset<HDT_PersonGroup> dataset)
   {
-    super(xmlState, dataset);       
-    nameTag = tagName;
+    super(xmlState, dataset, tagName);       
     
     parentGroups = getObjList(rtParentGroupOfGroup);
     subGroups = getSubjList(rtParentGroupOfGroup);

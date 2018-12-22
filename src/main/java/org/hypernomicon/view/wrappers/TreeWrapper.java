@@ -57,15 +57,15 @@ import javafx.scene.control.TreeTableColumn.SortType;
 
 public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordListView, DragNDropContainer<TreeRow>
 {
-  private TreeTableView<TreeRow> ttv;
-  private boolean hasTerms;
-  private TreeCB tcb;
-  private List<HyperMenuItem<? extends HDT_Base>> contextMenuItems;
+  private final TreeTableView<TreeRow> ttv;
+  private final boolean hasTerms;
+  private final TreeCB tcb;
+  private final List<HyperMenuItem<? extends HDT_Base>> contextMenuItems;
   private boolean searchingDown = true;
   private boolean searchingNameOnly = false;
   private TreeRow draggingRow = null;
-  private DragNDropHoverHelper<TreeRow> ddHoverHelper = new DragNDropHoverHelper<>();  
-  public TreeModel<TreeRow> debateTree, termTree, labelTree, noteTree;
+  private final DragNDropHoverHelper<TreeRow> ddHoverHelper;  
+  public final TreeModel<TreeRow> debateTree, termTree, labelTree, noteTree;
   
 //---------------------------------------------------------------------------
 
@@ -88,7 +88,9 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
   {
     this.ttv = ttv;
     this.hasTerms = hasTerms;
-    tcb = new TreeCB(comboBox, this);
+    
+    tcb = new TreeCB(comboBox, this);    
+    ddHoverHelper = new DragNDropHoverHelper<>(ttv);
 
     debateTree = new TreeModel<TreeRow>(this, tcb);
     noteTree = new TreeModel<TreeRow>(this, tcb);
@@ -385,7 +387,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 
   @Override public boolean acceptDrag(TreeRow targetRow, DragEvent dragEvent, TreeItem<TreeRow> treeItem)
   {    
-    ddHoverHelper.scroll(dragEvent, ttv);
+    ddHoverHelper.scroll(dragEvent);
        
     if (draggingRow == null) return false;
     if (targetRow == null) return false;
@@ -700,8 +702,6 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
     if (noneVisible) return null;
     return rowMenu;
   }
-  
-  @Override public DragNDropHoverHelper<TreeRow> getHelper() { return ddHoverHelper; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  

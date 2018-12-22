@@ -145,6 +145,9 @@ public class BibUtils
       String parsedText = pdfStripper.getText(pdfDoc);
       
       BibData bd = new BibDataStandalone();
+      
+      parsedText = parsedText.replace('\u0002', '/'); // sometimes slash in DOI is encoded as STX control character
+      
       bd.extractDOIandISBNs(parsedText);
       
       if (bd.getStr(bfDOI).length() == 0)
@@ -158,10 +161,6 @@ public class BibUtils
         md.bd.setMultiStr(bfISBNs, bd.getMultiStr(bfISBNs));
       
       return md;
-    }
-    catch (IOException | XMPException e)
-    {
-      throw e; 
     }
     finally
     {
@@ -268,10 +267,10 @@ public class BibUtils
 
   private static void matchISBNiteration(String str, List<String> list) 
   {
-    str = str.replaceAll("\\p{Pd}", "-"); // treat all dashes the same
-    str = str.replaceAll("\\u00AD", "-"); // "soft hyphen" is not included in the \p{Pd} class
+    str = str.replaceAll("\\p{Pd}", "-")  // treat all dashes the same
+             .replaceAll("\\u00AD", "-")  // "soft hyphen" is not included in the \p{Pd} class
     
-    str = str.replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0');
+             .replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0');
        
     while (str.contains("--"))
       str = str.replace("--", "-");

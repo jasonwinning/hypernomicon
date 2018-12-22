@@ -35,11 +35,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.http.Header;
@@ -357,7 +355,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   public static String generateWriteToken()
   {
-    return generateRandomHexString(32);
+    return randomHexStr(32);
   }
    
 //---------------------------------------------------------------------------
@@ -555,15 +553,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       }
       
       if (versionsCmd == zoteroReadTrashVersions) // This if block is necessary to determine if an item in the trash was remotely restored
-      {
-        Iterator<Entry<String, ZoteroItem>> it = keyToTrashEntry.entrySet().iterator();
-        
-        while (it.hasNext())
-        {
-          if (jObj.containsKey(it.next().getKey()) == false)
-            it.remove();
-        }
-      }
+        keyToTrashEntry.entrySet().removeIf(entry -> jObj.containsKey(entry.getKey()) == false);
     }
 
     String keys = "";
@@ -1020,27 +1010,17 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     LinkedHashSet<ZoteroItem> view = new LinkedHashSet<>();
     view.addAll(keyToAllEntry.values());
     
-    Iterator<ZoteroItem> it = view.iterator();
-    
-    while (it.hasNext())
+    view.removeIf(item ->
     {
-      ZoteroItem item = it.next();
-      
       if (keyToTrashEntry.containsKey(item.getEntryKey()))
-      {
-        it.remove();
-        continue;
-      }
+        return true;
       
       for (String collKey : item.getCollKeys(true))
-      {
         if (keyToColl.containsKey(collKey))
-        {
-          it.remove();
-          break;
-        }
-      }
-    }
+          return true;
+      
+      return false;
+    });
     
     return Collections.unmodifiableSet(view);
   }
@@ -1217,15 +1197,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   private static void addStringListHtml(String fieldName, List<String> list, StringBuilder html)
   {
-    Iterator<String> it = list.iterator();
-    while (it.hasNext())
-    {
-      String str = it.next();
-      if (str == null)
-        it.remove();
-      else if (ultraTrim(str).length() == 0)
-        it.remove();
-    }
+    list.removeIf(str -> (str == null) || (ultraTrim(str).length() == 0));
     
     if (list.size() == 0) return;
     

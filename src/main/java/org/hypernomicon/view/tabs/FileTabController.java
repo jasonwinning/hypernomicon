@@ -155,7 +155,6 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   public void cbWorkChange()
   {
     int workID = hcbWork.selectedID();
-    HDT_Work work;
 
     htLabels.setCanAddRows(workID < 1);
     htAuthors.setCanAddRows(workID < 1);
@@ -167,7 +166,7 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     
     if (workID > 0)
     {
-      work = db.works.getByID(workID);
+      HDT_Work work = db.works.getByID(workID);
 
       htAuthors.buildRows(work.authorRecords, (row, author) -> row.setCellValue(1, author, author.getCBText()));
       htLabels.buildRows(work.labels,         (row, label)  -> row.setCellValue(2, label, label.getExtendedText()));
@@ -240,10 +239,11 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
       cbWorkChange();
     });
     
-    btnWork.setOnAction(event ->     ui.goToRecord(HyperTableCell.getRecord(hcbWork.selectedHTC()), true));
-    btnLaunch.setOnAction(event ->   { if (tfFileName.getText().length() > 0) launchFile(curMiscFile.getPath().getFilePath()); });
-    btnShow.setOnAction(event ->     { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.getPath().getFilePath()); });   
-    btnTree.setOnAction(event -> ui.goToTreeRecord(curMiscFile));
+    btnWork  .setOnAction(event -> ui.goToRecord(HyperTableCell.getRecord(hcbWork.selectedHTC()), true));
+    btnTree  .setOnAction(event -> ui.goToTreeRecord(curMiscFile));
+    btnLaunch.setOnAction(event -> { if (tfFileName.getText().length() > 0) launchFile(curMiscFile.getPath().getFilePath()); });
+    btnShow  .setOnAction(event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.getPath().getFilePath()); });
+    
     btnManage.setTooltip(new Tooltip("Update or rename file"));
   }
 
@@ -271,12 +271,9 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   
   @Override public boolean saveToRecord(boolean showMessage)
   {
-    int fileTypeID, ndx;
-    HDT_FileType fileType;
-    
     if (!saveSearchKey(curMiscFile, tfSearchKey, showMessage)) return false;
     
-    fileTypeID = hcbFileType.selectedID();
+    int fileTypeID = hcbFileType.selectedID();
     if ((fileTypeID < 1) && (hcbFileType.getText().length() == 0))
     {
       messageDialog("You must enter a file type.", mtError);
@@ -298,16 +295,16 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     if ((fileTypeID < 1) && (hcbFileType.getText().length() > 0))
     {
-      fileType = db.createNewBlankRecord(hdtFileType);
+      HDT_FileType fileType = db.createNewBlankRecord(hdtFileType);
       fileTypeID = fileType.getID();
       fileType.setName(hcbFileType.getText());
     }
 
     curMiscFile.fileType.setID(fileTypeID);
 
-    for (ndx = 0; ndx < db.fileTypes.size(); ndx++)
+    for (int ndx = 0; ndx < db.fileTypes.size(); ndx++)
     {
-      fileType = db.fileTypes.getByIDNdx(ndx);
+      HDT_FileType fileType = db.fileTypes.getByIDNdx(ndx);
       if (fileType.miscFiles.isEmpty())
       {
         db.deleteRecord(hdtFileType, fileType.getID());

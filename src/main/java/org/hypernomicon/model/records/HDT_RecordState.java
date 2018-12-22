@@ -264,10 +264,10 @@ public class HDT_RecordState
     xml.append("  <" + db.getTagStr(tag) + idStr + ">" + xmlContentEscaper.escape(value));
     xml.append(System.lineSeparator());
     
-    map.entrySet().forEach(entry ->
+    map.forEach((nestedTag, nestedItem) ->
     {
       xml.append("  ");
-      entry.getValue().writeToXml(entry.getKey(), xml);
+      nestedItem.writeToXml(nestedTag, xml);
     });
     
     xml.append("  </" + db.getTagStr(tag) + ">" + System.lineSeparator());

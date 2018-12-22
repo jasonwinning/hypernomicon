@@ -17,7 +17,6 @@
 
 package org.hypernomicon.view.populators;
 
-import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.List;
@@ -30,8 +29,8 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class StandardPopulator extends Populator
 {  
-  private RecordByTypePopulator rtp;
-  private HDT_RecordType objType = hdtNone;
+  private final RecordByTypePopulator rtp;
+  private final HDT_RecordType objType;
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------    

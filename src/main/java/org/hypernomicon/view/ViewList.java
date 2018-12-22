@@ -202,18 +202,12 @@ public class ViewList
 
   public void removeRecord(HDT_Base record)
   {
-    Iterator<HyperView<? extends HDT_Base>> it = viewList.iterator();
-    
-    while (it.hasNext())
+    viewList.removeIf(view ->
     {
-      HyperView<? extends HDT_Base> view = it.next();
-      
-      if (view.getViewRecord() == record)
-      {
-        if (curNdx >= viewList.indexOf(view)) curNdx--;
-        it.remove();
-      }
-    }
+      if (view.getViewRecord() != record) return false;
+      if (curNdx >= viewList.indexOf(view)) curNdx--;
+      return true;     
+    });
   }
 
 //---------------------------------------------------------------------------

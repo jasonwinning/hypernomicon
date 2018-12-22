@@ -39,21 +39,19 @@ import org.hypernomicon.util.filePath.FilePath;
 
 public class HDT_Folder extends HDT_Record implements HDT_RecordWithPath
 {
-  public List<HDT_Folder> childFolders;
-  public List<HDT_MiscFile> miscFiles;
-  public List<HDT_WorkFile> workFiles;
-  public List<HDT_Note> notes;
+  public final List<HDT_Folder> childFolders;
+  public final List<HDT_MiscFile> miscFiles;
+  public final List<HDT_WorkFile> workFiles;
+  public final List<HDT_Note> notes;
 
-  private HyperPath path;
+  private final HyperPath path;
   private boolean checkedForExistence;
   
   public HDT_Folder(HDT_RecordState xmlState, HyperDataset<HDT_Folder> dataset)
   {
-    super(xmlState, dataset);
+    super(xmlState, dataset, tagName); // tagName is not actually used; name should always be blank
     
     checkedForExistence = false;
-    
-    nameTag = tagName; // this is not actually used; name should always be blank
     
     childFolders = getSubjList(rtParentFolderOfFolder);    
     miscFiles = getSubjList(rtFolderOfMiscFile);

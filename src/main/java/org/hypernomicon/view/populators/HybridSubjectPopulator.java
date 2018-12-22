@@ -32,11 +32,11 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class HybridSubjectPopulator extends Populator
 {
-  private StandardPopulator standardPop;
-  private SubjectPopulator subjPop;
-  private HashMap<HyperTableRow, Populator> rowToPop;
-  private HashMap<HyperTableRow, Boolean> rowToChanged;
-  private RelationType relType;
+  private final StandardPopulator standardPop;
+  private final SubjectPopulator subjPop;
+  private final HashMap<HyperTableRow, Populator> rowToPop;
+  private final HashMap<HyperTableRow, Boolean> rowToChanged;
+  private final RelationType relType;
 
 //---------------------------------------------------------------------------  
 

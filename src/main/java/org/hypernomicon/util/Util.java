@@ -202,24 +202,22 @@ public class Util
 
   public static String convertToSingleLine(String text)
   {
-    text = text.replace("\ufffd", ""); // I don't know what this is but it is usually appended at the end when copying text from Acrobat
+    return text.replace("\ufffd", "")  // I don't know what this is but it is usually appended at the end when copying text from Acrobat
     
-    text = text.replaceAll("\\R+(\\R)", "$1");
-    text = text.replaceAll("(\\R)\\R+", "$1");
-
-    text = text.replaceAll("(\\v)\\v+", "$1");
-    text = text.replaceAll("\\v+(\\v)", "$1");
-
-    text = text.replaceAll("\\R+(\\h)", "$1");
-    text = text.replaceAll("(\\h)\\R+", "$1");
-    
-    text = text.replaceAll("\\v+(\\h)", "$1");
-    text = text.replaceAll("(\\h)\\v+", "$1");
-        
-    text = text.replaceAll("\\R+", " ");
-    text = text.replaceAll("\\v+", " ");
-
-    return text;
+      .replaceAll("\\R+(\\R)", "$1")
+      .replaceAll("(\\R)\\R+", "$1")
+      
+      .replaceAll("(\\v)\\v+", "$1")
+      .replaceAll("\\v+(\\v)", "$1")
+      
+      .replaceAll("\\R+(\\h)", "$1")
+      .replaceAll("(\\h)\\R+", "$1")
+      
+      .replaceAll("\\v+(\\h)", "$1")
+      .replaceAll("(\\h)\\v+", "$1")
+      
+      .replaceAll("\\R+", " ")
+      .replaceAll("\\v+", " ");
   }
   
 //---------------------------------------------------------------------------
@@ -873,20 +871,20 @@ public class Util
   public static void copyRegionLayout(Region node1, Region node2)
   {
     AnchorPane.setBottomAnchor(node2, AnchorPane.getBottomAnchor(node1));
-    AnchorPane.setTopAnchor(node2, AnchorPane.getTopAnchor(node1));
-    AnchorPane.setLeftAnchor(node2, AnchorPane.getLeftAnchor(node1));
-    AnchorPane.setRightAnchor(node2, AnchorPane.getRightAnchor(node1));
+    AnchorPane.setTopAnchor   (node2, AnchorPane.getTopAnchor   (node1));
+    AnchorPane.setLeftAnchor  (node2, AnchorPane.getLeftAnchor  (node1));
+    AnchorPane.setRightAnchor (node2, AnchorPane.getRightAnchor (node1));
     
     GridPane.setColumnIndex(node2, GridPane.getColumnIndex(node1));
-    GridPane.setColumnSpan(node2, GridPane.getColumnSpan(node1));
-    GridPane.setRowIndex(node2, GridPane.getRowIndex(node1));
-    GridPane.setRowSpan(node2, GridPane.getRowSpan(node1));
+    GridPane.setColumnSpan (node2, GridPane.getColumnSpan (node1));
+    GridPane.setRowIndex   (node2, GridPane.getRowIndex   (node1));
+    GridPane.setRowSpan    (node2, GridPane.getRowSpan    (node1));
     
     node2.setLayoutX(node1.getLayoutX());
     node2.setLayoutY(node1.getLayoutY());
     
-    node2.setMinSize(node1.getMinWidth(), node1.getMinHeight());
-    node2.setMaxSize(node1.getMaxWidth(), node1.getMaxHeight());
+    node2.setMinSize (node1.getMinWidth (), node1.getMinHeight ());
+    node2.setMaxSize (node1.getMaxWidth (), node1.getMaxHeight ());
     node2.setPrefSize(node1.getPrefWidth(), node1.getPrefHeight());
   }
 
@@ -1030,10 +1028,7 @@ public class Util
     for (int ndx = 0; ndx < in.length(); ndx++)
     {
       char c = in.charAt(ndx);
-      if (Character.isUpperCase(c))
-        out = out + " " + c;
-      else
-        out = out + c;
+      out = out + (Character.isUpperCase(c) ? " " + c : c); 
     }
     
     return titleCase(out);
@@ -1045,10 +1040,6 @@ public class Util
   public static String titleCase(String str)
   {
     MutableInt pos = new MutableInt(0);
-    int start, end;
-    String word, pre, post;
-    char lastChar;
-    boolean noCaps = false, endsWithDot = false;
     
     while (str.matches(".*\\h[.,:;)].*"))
       str = str.replaceFirst("\\h([.,:;)])", "$1");   // remove space before character
@@ -1056,17 +1047,13 @@ public class Util
     while (str.matches(".*[(]\\h.*"))
       str = str.replaceFirst("([(])\\h", "$1");   // remove space after character
     
-    word = getNextWord(str, pos);
-    while (word.length() > 0)
+    for (String word = getNextWord(str, pos); word.length() > 0; word = getNextWord(str, pos)) 
     {
-      end = pos.intValue();
-      start = end - word.length();
+      int end = pos.intValue(), start = end - word.length();
 
-      pre = "";
-      post = "";
-      lastChar = ' ';
-      noCaps = false;
-      endsWithDot = false;
+      String pre = "", post = "";
+      char lastChar = ' ';
+      boolean noCaps = false, endsWithDot = false;
       
       if (start > 0)
       {
@@ -1125,8 +1112,6 @@ public class Util
       }
       
       str = pre + word + post;
-      
-      word = getNextWord(str, pos);
     }
     
     return str;
@@ -1137,33 +1122,28 @@ public class Util
 
   private static String getNextWord(String str, MutableInt posObj)
   {
-    int start = posObj.intValue();
-    int end;
+    int start = posObj.intValue(), end;
     boolean gotStart = false;
-    char c;
     
-    while ((str.length() > start) && (gotStart == false))
+    while ((start < str.length()) && (gotStart == false))
     {
-      c = (convertToEnglishChars(str.toUpperCase()).charAt(start));
-      if ((c >= 'A') && (c <= 'Z'))
+      char c = str.charAt(start);
+      if (Character.isAlphabetic(c))
         gotStart = true;
       else
         start++;      
     }
     
     if (gotStart == false) return "";
-    end = start + 1;
     
-    while (str.length() > end)
+    for (end = start + 1; end < str.length(); end++)
     {
-      c = (convertToEnglishChars(str.toUpperCase()).charAt(end));
-      if ((c < 'A') || (c > 'Z'))
+      char c = str.charAt(end);
+      if (Character.isAlphabetic(c) == false)
       {
         posObj.setValue(end);
         return str.substring(start, end);
       }
-      
-      end++;
     }
     
     posObj.setValue(end);
@@ -1425,19 +1405,13 @@ public class Util
 
   public static boolean isStringUrl(String selText)
   {
-    if (selText.indexOf("www.") > -1) return true;
-    if (selText.indexOf("http") > -1) return true;
-    if (selText.indexOf(".com") > -1) return true;
-    if (selText.indexOf(".htm") > -1) return true;
-    if (selText.indexOf(".org") > -1) return true;
-    if (selText.indexOf(".net") > -1) return true;
-    if (selText.indexOf(".us") > -1) return true;
-    if (selText.indexOf(".uk") > -1) return true;
-    if (selText.indexOf(".gov") > -1) return true;
-    if (selText.indexOf("://") > -1) return true;
-    if (selText.matches(".*\\w/\\w.*") && selText.matches(".*\\.[a-zA-Z].*")) return true;
-
-    return false;    
+    return ((selText.indexOf("www.") > -1) || (selText.indexOf("http") > -1) ||
+            (selText.indexOf(".com") > -1) || (selText.indexOf(".htm") > -1) || 
+            (selText.indexOf(".org") > -1) || (selText.indexOf(".net") > -1) ||
+            (selText.indexOf(".us")  > -1) || (selText.indexOf(".uk")  > -1) || 
+            (selText.indexOf(".gov") > -1) || (selText.indexOf("://")  > -1) || 
+            
+            (selText.matches(".*\\w/\\w.*") && selText.matches(".*\\.[a-zA-Z].*")));
   }
 
 //---------------------------------------------------------------------------
@@ -1713,8 +1687,7 @@ public class Util
     
     ScrollPane sp = (ScrollPane)ta.getChildrenUnmodifiable().get(0);
     sp.setCache(false);
-    for (Node n : sp.getChildrenUnmodifiable())
-      n.setCache(false);
+    sp.getChildrenUnmodifiable().forEach(n -> n.setCache(false));
   }
 
 //---------------------------------------------------------------------------
@@ -1795,7 +1768,7 @@ public class Util
   {
     Set<Node> deleteNodes = new HashSet<>();
     
-    for (Node child : grid.getChildren())
+    grid.getChildren().forEach(child ->
     {
       int r = nullSwitch(GridPane.getRowIndex(child), new Integer(0)).intValue();
 
@@ -1803,7 +1776,7 @@ public class Util
         GridPane.setRowIndex(child, r - 1);
       else if (r == rowNdx)
         deleteNodes.add(child);
-    }
+    });
 
     // remove nodes from row
     grid.getChildren().removeAll(deleteNodes);
@@ -1818,7 +1791,7 @@ public class Util
   {
     Set<Node> deleteNodes = new HashSet<>();
     
-    for (Node child : grid.getChildren())
+    grid.getChildren().forEach(child ->
     {
       int c = nullSwitch(GridPane.getColumnIndex(child), new Integer(0)).intValue();
 
@@ -1826,7 +1799,7 @@ public class Util
         GridPane.setColumnIndex(child, c - 1);
       else if (c == columnNdx)
         deleteNodes.add(child);
-    }
+    });
 
     // remove nodes from column
     grid.getChildren().removeAll(deleteNodes);
@@ -1866,13 +1839,7 @@ public class Util
     
     if (emptiesOK) return list;
     
-    Iterator<String> it = list.iterator();
-    
-    while (it.hasNext())
-    {
-      str = ultraTrim(it.next());
-      if (str.length() == 0) it.remove();
-    }
+    list.removeIf(s -> ultraTrim(s).length() == 0);
     
     return list;
   }
@@ -1902,37 +1869,23 @@ public class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String generateRandomHexString(int size)
+  public static String randomHexStr(int size)          { return randomStr(size, "0123456789abcdef"); }
+  public static String randomAlphanumericStr(int size) { return randomStr(size, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHILJLMNOPQRSTUVWXYZ"); }
+  
+  public static String randomStr(int size, String charsStr)
   {
-    String str = "";
-    char[] array = "0123456789abcdef".toCharArray();
-    double chars = array.length;
+    if (size < 0) return "";
+    
+    char[] chars = charsStr.toCharArray(), out = new char[size];
+    double numChars = chars.length;
     
     for (int j = 0; j < size; j++)
     {
-      double x = Math.random() * chars;
-      str = str + array[(int)x];
+      double x = Math.random() * numChars;
+      out[j] = chars[(int)x];
     }
     
-    return str;   
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String generateRandomAlphanumericString(int size)
-  {
-    String str = "";
-    char[] array = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHILJLMNOPQRSTUVWXYZ".toCharArray();
-    double chars = array.length;
-    
-    for (int j = 0; j < size; j++)
-    {
-      double x = Math.random() * chars;
-      str = str + array[(int)x];
-    }
-    
-    return str;   
+    return new String(out);       
   }
   
 //---------------------------------------------------------------------------

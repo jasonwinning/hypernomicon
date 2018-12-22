@@ -420,18 +420,8 @@ public class MainText
 
   void resolvePointers()
   {
-    Iterator<DisplayItem> it = displayItems.iterator();
-    
-    while (it.hasNext())
-    {
-      DisplayItem item = it.next();
-      if (item.type == diRecord)
-      {
-        if (HDT_Record.isEmpty(item.record))
-          it.remove();
-      }
-    }
-    
+    displayItems.removeIf(item -> (item.type == diRecord) && (HDT_Record.isEmpty(item.record)));
+        
     Iterator<KeyWork> keyWorkIT = keyWorks.iterator();
     
     while (keyWorkIT.hasNext())

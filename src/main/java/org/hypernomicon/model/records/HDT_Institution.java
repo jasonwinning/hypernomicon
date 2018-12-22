@@ -33,22 +33,21 @@ import org.hypernomicon.model.relations.HyperSubjList;
 
 public class HDT_Institution extends HDT_Record
 {
-  public HyperSubjList<HDT_Person, HDT_Institution> persons;
-  public HyperSubjList<HDT_Institution, HDT_Institution> subInstitutions;
+  public final HyperSubjList<HDT_Person, HDT_Institution> persons;
+  public final HyperSubjList<HDT_Institution, HDT_Institution> subInstitutions;
   
-  public HyperObjPointer<HDT_Institution, HDT_State> state;
-  public HyperObjPointer<HDT_Institution, HDT_Country> country;
-  public HyperObjPointer<HDT_Institution, HDT_InstitutionType> instType;
-  public HyperObjPointer<HDT_Institution, HDT_Institution> parentInst;
+  public final HyperObjPointer<HDT_Institution, HDT_State> state;
+  public final HyperObjPointer<HDT_Institution, HDT_Country> country;
+  public final HyperObjPointer<HDT_Institution, HDT_InstitutionType> instType;
+  public final HyperObjPointer<HDT_Institution, HDT_Institution> parentInst;
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
   
   public HDT_Institution(HDT_RecordState xmlState, HyperDataset<HDT_Institution> dataset)
   {
-    super(xmlState, dataset);
+    super(xmlState, dataset, tagName);
     
-    nameTag = tagName;
     subInstitutions = getSubjList(rtParentInstOfInst);
     persons = getSubjList(rtInstOfPerson);
     
