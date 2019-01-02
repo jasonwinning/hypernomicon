@@ -572,9 +572,7 @@ public class FileManager extends HyperDialog
     folderTreeWatcher.stop();
 
     task = new HyperTask() { @Override protected Boolean call() throws Exception
-    {
-      FilePath srcFilePath, destFilePath;
-      
+    {      
       if (copying)
       {
         updateMessage("Copying...");
@@ -605,8 +603,8 @@ public class FileManager extends HyperDialog
           if (isCancelled())
             throw new TerminateTaskException();
           
-          srcFilePath = entry.getKey();
-          destFilePath = entry.getValue();
+          FilePath srcFilePath  = entry.getKey(),
+                   destFilePath = entry.getValue();
           
           if (srcFilePath.isDirectory())
             if (destFilePath.exists() == false)
@@ -626,12 +624,12 @@ public class FileManager extends HyperDialog
             if (isCancelled())
               throw new TerminateTaskException();
             
-            srcFilePath = entry.getKey();
+            FilePath srcFilePath = entry.getKey();
             
             if (srcFilePath.isDirectory() == false)
             {
               srcFilePath = entry.getKey();
-              destFilePath = entry.getValue();
+              FilePath destFilePath = entry.getValue();
     
               if (!srcFilePath.copyTo(destFilePath, false))
                 throw new TerminateTaskException();
@@ -649,8 +647,8 @@ public class FileManager extends HyperDialog
             updateProgress(curTaskCount, totalTaskCount);
             curTaskCount++;
             
-            srcFilePath = entry.getKey();
-            destFilePath = entry.getValue();
+            FilePath srcFilePath = entry.getKey(),
+                     destFilePath = entry.getValue();
             HDT_Folder folder = HyperPath.getFolderFromFilePath(destFilePath.getDirOnly(), true);
             
             Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(srcFilePath);
@@ -679,37 +677,26 @@ public class FileManager extends HyperDialog
       // if moving, update note records
       // ------------------------------
   
-          for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
+          srcToDest.forEach((srcFilePath, destFilePath) ->
           {
             updateProgress(curTaskCount, totalTaskCount);
             curTaskCount++;
-            
-            srcFilePath = entry.getKey();
-            destFilePath = entry.getValue();
-  
-            if (srcFilePath.exists())
-              if (srcFilePath.isDirectory())
-              {
-                HDT_Folder folder = HyperPath.getFolderFromFilePath(srcFilePath, false);
-                
-                ArrayList<HDT_Note> noteList = new ArrayList<>(folder.notes);
-                
-                for (HDT_Note note : noteList)
-                  note.folder.set(HyperPath.getFolderFromFilePath(destFilePath, false));
-              }
-          }
+             
+            if ((srcFilePath.exists() == false) || (srcFilePath.isDirectory() == false)) return;
+
+            HDT_Folder folder = HyperPath.getFolderFromFilePath(srcFilePath, false);
+              
+            new ArrayList<>(folder.notes).forEach(note -> note.folder.set(HyperPath.getFolderFromFilePath(destFilePath, false)));            
+          });
       
       // If moving, remove source directories that are now empty
       // -------------------------------------------------------
           
-          for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
+          for (FilePath srcFilePath : srcToDest.keySet())
           {
             updateProgress(curTaskCount, totalTaskCount);
             curTaskCount++;
             
-            srcFilePath = entry.getKey();
-            destFilePath = entry.getValue();
-  
             if (srcFilePath.exists())
               if (srcFilePath.isDirectory())
                 if (srcFilePath.dirContainsAnyFiles(true) == false)

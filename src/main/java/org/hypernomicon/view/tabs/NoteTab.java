@@ -69,12 +69,12 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
   private FilePath folderPath;
   private HDT_Note curNote;
 
-  @Override public HDT_RecordType getType()              { return hdtNote; }
-  @Override public void enable(boolean enabled)          { ui.tabNotes.getContent().setDisable(enabled == false); }
-  @Override public void focusOnSearchKey()               { ctrlr.focusOnSearchKey(); }
-  @Override public void findWithinDesc(String text)      { ctrlr.hilite(text); }
-  @Override public TextViewInfo getMainTextInfo()        { return ctrlr.getMainTextInfo(); }
-  @Override public void setRecord(HDT_Note activeRecord) { curNote = activeRecord; }
+  @Override public HDT_RecordType getType()         { return hdtNote; }
+  @Override public void enable(boolean enabled)     { ui.tabNotes.getContent().setDisable(enabled == false); }
+  @Override public void focusOnSearchKey()          { ctrlr.focusOnSearchKey(); }
+  @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
+  @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
+  @Override public void setRecord(HDT_Note note)    { curNote = note; }
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
@@ -149,23 +149,20 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     
     mentioners.forEach(mentioner ->
     {
-      if (mentioner.isUnitable())
+      StrongLink link = HDT_RecordWithConnector.class.cast(mentioner).getLink();
+      
+      if (link != null)
       {
-        StrongLink link = HDT_RecordWithConnector.class.cast(mentioner).getLink();
+        if (usedLinks.contains(link)) return;
         
-        if (link != null)
-        {
-          if (usedLinks.contains(link)) return;
-          
-          usedLinks.add(link);
-          
-          if      (link.getDebate  () != null) output.add(link.getDebate  ());
-          else if (link.getPosition() != null) output.add(link.getPosition());
-          else if (link.getConcept () != null) output.add(link.getConcept ());
-          else                                 output.add(link.getNote    ());
-          
-          return;
-        }
+        usedLinks.add(link);
+        
+        if      (link.getDebate  () != null) output.add(link.getDebate  ());
+        else if (link.getPosition() != null) output.add(link.getPosition());
+        else if (link.getConcept () != null) output.add(link.getConcept ());
+        else                                 output.add(link.getNote    ());
+        
+        return;
       }
 
       output.add(mentioner);

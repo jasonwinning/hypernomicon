@@ -783,7 +783,7 @@ public final class HyperDB
     switch (type)
     {
       case hdtNote : case hdtDebate : case hdtWorkLabel : case hdtPersonGroup : case hdtFolder : case hdtGlossary :
-        return (id == 1);
+        return id == 1;
       default:
         return false;
     }

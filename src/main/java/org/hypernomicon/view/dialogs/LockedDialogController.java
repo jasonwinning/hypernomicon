@@ -52,15 +52,15 @@ public class LockedDialogController extends HyperDialog
 
 //---------------------------------------------------------------------------
 
-  public class MessageSenderThread extends Thread
+  private class MessageSenderThread extends Thread
   {
-    public LockedDialogController dlg;
+    private LockedDialogController dlg;
     
-    InterComputerMsg sentMsg;
-    public boolean done;
+    private InterComputerMsg sentMsg;
+    private boolean done;
     private boolean gotResponse = false;
     
-    MessageSenderThread(LockedDialogController dlg, InterComputerMsg sentMsg)
+    private MessageSenderThread(LockedDialogController dlg, InterComputerMsg sentMsg)
     {
       super();
       this.dlg = dlg;
@@ -131,13 +131,12 @@ public class LockedDialogController extends HyperDialog
   
 //---------------------------------------------------------------------------  
   
-  @FXML @Override public void btnCancelClick()
+  @FXML @Override protected void btnCancelClick()
   {
     if (btnStop.isDisabled() == false)
       btnStopClick();
     
-    okClicked = false;
-    dialogStage.close();
+    super.btnCancelClick();
   }
 
 //---------------------------------------------------------------------------  

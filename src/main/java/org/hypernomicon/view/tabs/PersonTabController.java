@@ -40,7 +40,6 @@ import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.PopupDialog;
@@ -71,6 +70,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import javafx.application.Platform;
@@ -139,11 +139,11 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
   private HDT_Person curPerson;
   private boolean alreadyChangingName = false;
  
-  @Override public HDT_RecordType getType()                { return hdtPerson; }
-  @Override public void enable(boolean enabled)            { ui.tabPersons.getContent().setDisable(enabled == false); }
-  @Override public void focusOnSearchKey()                 { safeFocus(tfSearchKey); }
-  @Override public void setRecord(HDT_Person activeRecord) { curPerson = activeRecord; }
-  @Override public MainTextWrapper getMainTextWrapper()    { return mainText; }
+  @Override public HDT_RecordType getType()             { return hdtPerson; }
+  @Override public void enable(boolean enabled)         { ui.tabPersons.getContent().setDisable(enabled == false); }
+  @Override public void focusOnSearchKey()              { safeFocus(tfSearchKey); }
+  @Override public void setRecord(HDT_Person person)    { curPerson = person; }
+  @Override public MainTextWrapper getMainTextWrapper() { return mainText; }
   
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
@@ -282,7 +282,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     displayers.forEach(displayerText ->
     {
       HDT_RecordWithConnector displayer = displayerText.getRecord();
-      
+           
       if (displayer.getType() == hdtHub)
       {
         StrongLink link = HDT_Hub.class.cast(displayer).getLink();
@@ -323,6 +323,8 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     
     otherToAdd.forEach(topic -> { if (topicRecordsAdded.contains(topic) == false)
     {
+      if (topic == curPerson) return;
+      
       HyperTableRow row = htArguments.newDataRow();
       addOtherToTopicTable(topic, row);
       row.setCellValue(0, topic, topic.listName());        
@@ -388,60 +390,40 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
   private void addMentioners(HDT_RecordWithPath mentioned, Set<HDT_Argument> argsToAdd, Set<HDT_Position> posToAdd, Set<HDT_Base> otherToAdd, HashSet<HDT_Base> topicRecordsAdded)
   {    
-    StrongLink link = null;
+    Consumer<HDT_WorkLabel> consumer = label ->
+    {
+      if ((label.isLinked() == false) && (topicRecordsAdded.contains(label) == false))
+        otherToAdd.add(label);      
+    };
     
-    if (mentioned.getType() == hdtWork)
-    {
-      HDT_Work work = HDT_Work.class.cast(mentioned);
-      for (HDT_WorkLabel label : work.labels)
-        if (label.isLinked() == false)
-          if (topicRecordsAdded.contains(label) == false)
-            otherToAdd.add(label);
-    }
-    else if (mentioned.getType() == hdtMiscFile)
-    {
-      HDT_MiscFile miscFile = HDT_MiscFile.class.cast(mentioned);
-      for (HDT_WorkLabel label : miscFile.labels)
-        if (label.isLinked() == false)
-          if (topicRecordsAdded.contains(label) == false)
-            otherToAdd.add(label);
-    }
+    if      (mentioned.getType() == hdtWork    ) HDT_Work    .class.cast(mentioned).labels.forEach(consumer);
+    else if (mentioned.getType() == hdtMiscFile) HDT_MiscFile.class.cast(mentioned).labels.forEach(consumer);
 
     Set<HDT_RecordWithConnector> mentioners = db.getKeyWorkMentioners(mentioned);
     if (mentioners == null) return;
     
-    for (HDT_RecordWithConnector mentioner : mentioners)
+    mentioners.forEach(mentioner ->
     {
-      link = null;
-      
-      if (mentioner.getType() == hdtHub)
-        link = HDT_Hub.class.cast(mentioner).getLink();
-      
-      else if (mentioner.isLinked())
-        link = mentioner.getLink();
+      StrongLink link = mentioner.getLink();
       
       if (link != null)
       {
-        if (link.getDebate() != null)
-          mentioner = link.getDebate();
-        else if (link.getPosition() != null)
-          mentioner = link.getPosition();
-        else if (link.getConcept() != null)
-          mentioner = link.getConcept();
-        else
-          mentioner = link.getNote();
+        if      (link.getDebate  () != null) mentioner = link.getDebate();
+        else if (link.getPosition() != null) mentioner = link.getPosition();
+        else if (link.getConcept () != null) mentioner = link.getConcept();
+        else                                 mentioner = link.getNote();
       }
       
       if (topicRecordsAdded.contains(mentioner) == false)
       {
         switch (mentioner.getType())
         {
-          case hdtArgument : argsToAdd.add((HDT_Argument) mentioner); break;
-          case hdtPosition : posToAdd.add((HDT_Position) mentioner); break;
+          case hdtArgument : argsToAdd .add((HDT_Argument) mentioner); break;
+          case hdtPosition : posToAdd  .add((HDT_Position) mentioner); break;
           default :          otherToAdd.add(mentioner); break;
         }
       }
-    } 
+    }); 
   }
 
 //---------------------------------------------------------------------------  
@@ -472,9 +454,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
         
         row.setCellValue(0, argument, argument.listName());
         
-        HDT_PositionVerdict verdict = argument.getPosVerdict(position);
-          if (verdict != null)
-            row.setCellValue(3, argument, verdict.listName());
+        nullSwitch(argument.getPosVerdict(position), verdict -> row.setCellValue(3, argument, verdict.listName()));
           
         row.setCellValue(4, argument, argument.listName());
       });
@@ -484,13 +464,12 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       HyperTableRow row = htArguments.newDataRow();
       row.setCellValue(0, argument, argument.listName());
       
-      HDT_Debate debate = argument.getDebate();
-      if (debate != null)
+      nullSwitch(argument.getDebate(), debate ->
       {
         addOtherToTopicTable(debate, row);
-        otherToAdd.remove(debate);        
-      }
-      
+        otherToAdd.remove(debate);               
+      });
+            
       row.setCellValue(4, argument, argument.listName());
     }
     
@@ -506,12 +485,11 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
   {
     row.setCellValue(2, position, position.listName());
 
-    HDT_Debate debate = position.getDebate();
-    if (debate != null)
+    nullSwitch(position.getDebate(), debate ->
     {
       addOtherToTopicTable(debate, row);
       otherToAdd.remove(debate); 
-    }
+    });
   }
 
 //---------------------------------------------------------------------------  
@@ -729,7 +707,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     
     List<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
     
-    HyperTask task = NewPersonDialogController.createDupCheckTask(singletonList(personName), null, curPerson, matchedAuthorsList, null);
+    HyperTask task = NewPersonDialogController.createDupCheckTask(singletonList(personName), singletonList(new Author(curPerson)), matchedAuthorsList, null);
     
     if (!HyperTask.performTaskWithProgressDialog(task)) return false;
     

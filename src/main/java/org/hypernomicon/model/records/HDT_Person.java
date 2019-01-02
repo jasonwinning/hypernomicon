@@ -84,22 +84,21 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getWebLink()                      { return getTagString(tagWebLink); }
-  public String getOrcID()                        { return getTagString(tagORCID); }
-  public PersonName getName()                     { return getName(false); }
-  public String getNameLastFirst(boolean engChar) { return getName(engChar).getLastFirst(); }
-  public String getFullName(boolean engChar)      { return getName(engChar).getFull(); }
-
-  @Override public void setName(String str)     { messageDialog("Internal error #19982", mtError); }
-  @Override public HDT_RecordType getType()     { return hdtPerson; }
-  @Override public String listName()            { return getNameLastFirst(false); }
-  
+  public String getWebLink()                               { return getTagString(tagWebLink); }
+  public String getOrcID()                                 { return getTagString(tagORCID); }
+  public PersonName getName()                              { return getName(false); }
+  public String getNameLastFirst(boolean engChar)          { return getName(engChar).getLastFirst(); }
+  public String getFullName(boolean engChar)               { return getName(engChar).getFull(); }
+  public void setWebLink(String newStr)                    { updateTagString(tagWebLink, newStr); }
+  public void setORCID(String newOrcid)                    { updateTagString(tagORCID, newOrcid); }
+  public void setInstitutions(List<HDT_Institution> list)  { updateObjectsFromList(rtInstOfPerson, list); }
   void setFirstNameInternal(String newStr, boolean update) { setNameInternal(getLastName() + "|" + newStr.replace("|", ""), update); }
   void setLastNameInternal(String newStr, boolean update)  { setNameInternal(newStr.replace("|", "") + "|" + getFirstName(), update); }
   
-  public void setWebLink(String newStr)                   { updateTagString(tagWebLink, newStr); }
-  public void setORCID(String newOrcid)                   { updateTagString(tagORCID, newOrcid); }
-  public void setInstitutions(List<HDT_Institution> list) { updateObjectsFromList(rtInstOfPerson, list); }
+  @Override public void setName(String str) { messageDialog("Internal error #19982", mtError); }
+  @Override public HDT_RecordType getType() { return hdtPerson; }
+  @Override public String listName()        { return getNameLastFirst(false); }
+  @Override public HyperPath getPath()      { return picture; }
   
 //---------------------------------------------------------------------------
   
@@ -367,20 +366,19 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public static PotentialKeySet makeSearchKeySet(PersonName personName, boolean useAllInitials, boolean initialsOnly, boolean lowerCase)
+  public static PotentialKeySet makeSearchKeySet(PersonName personName, boolean useAllInitials, boolean lowerCase, boolean noNicknames)
   {
     PotentialKeySet keySet = new PotentialKeySet(lowerCase);
-    String name, first = personName.getFirst(), last = personName.getLast();
+    String first = personName.getFirst(), last = personName.getLast();
     StringBuilder nickNames = new StringBuilder();
-    int ndx;
     
-    ArrayList<String> nameList = new ArrayList<>();
-    ArrayList<String> initialList = new ArrayList<>();
+    ArrayList<String> nameList    = new ArrayList<>(),
+                      initialList = new ArrayList<>();
       
     last = getSearchKeyComponents(first, last, nameList, initialList, nickNames);
          
     keySet.add(last, false);
-    
+
     if (nameList.size() > 0)
     {
       if (nameList.get(0).length() > 0)
@@ -388,36 +386,38 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
         if (useAllInitials)
           keySet.add(initialList.get(0) + ". " + last, false);
         
-        if (initialsOnly == false)
-          keySet.add(nameList.get(0) + " " + last, true);
+        keySet.add(nameList.get(0) + " " + last, true);
       }
       else
       {
         keySet.add(initialList.get(0) + ". " + last, false);
         
-        if (initialsOnly == false)
-        {
-          for (ndx = 1; ndx < nameList.size(); ndx++)
-            if (nameList.get(ndx).length() > 0)
-            {
-              keySet.add(nameList.get(ndx) + " " + last, false);
-              break;
-            }
-        }
+        for (int ndx = 1; ndx < nameList.size(); ndx++)
+          if (nameList.get(ndx).length() > 0)
+          {
+            keySet.add(nameList.get(ndx) + " " + last, false);
+            break;
+          }
       }
         
       if (initialList.size() > 1)
       {
-        name = "";
+        String name = "";
         for (String initial : initialList)
           name = name + initial + ". ";
         
         keySet.add(name + last, false);
         
-        if ((initialsOnly == false) && (nameList.get(0).length() > 0))
+        if (useAllInitials)
+        {
+          for (int ndx = 1; ndx < initialList.size(); ndx++)
+            keySet.add(initialList.get(ndx) + ". " + last, false);
+        }
+        
+        if (nameList.get(0).length() > 0)
         {
           name = nameList.get(0) + " ";
-          for (ndx = 1; ndx < initialList.size(); ndx++)
+          for (int ndx = 1; ndx < initialList.size(); ndx++)
             name = name + initialList.get(ndx) + ". ";
           
           keySet.add(name + last, true);
@@ -426,29 +426,43 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
       
       if (nameList.size() > 1)
       {
-        name = "";
-        for (ndx = 0; ndx < nameList.size(); ndx++)
+        String name = "";
+        for (int ndx = 0; ndx < nameList.size(); ndx++)
         {
-          if ((initialsOnly == false) && (nameList.get(ndx).length() > 0))
+          if (nameList.get(ndx).length() > 0)
             name = name + nameList.get(ndx) + " ";
           else
             name = name + initialList.get(ndx) + ". ";
         }
                 
         keySet.add(name + last, true);
+        
+        if (useAllInitials)
+        {
+          String middleNames = "";
+          for (int ndx = 1; ndx < nameList.size(); ndx++)
+          {
+            if (nameList.get(ndx).length() > 0)
+              middleNames = middleNames + nameList.get(ndx) + " ";
+            else
+              middleNames = middleNames + initialList.get(ndx) + ". ";
+          }
+
+          keySet.add(initialList.get(0) + ". " + middleNames + last, true);
+          keySet.add(middleNames + last, true);          
+        }
       }
     }
     
-    if ((initialsOnly == false) && (nickNames.length() > 0))
+    if ((noNicknames == false) && (nickNames.length() > 0))
     {
-      char c;
       String nickName = "";
       List<String> nickNameList = new ArrayList<>();
       
-      for (ndx = 0; ndx < nickNames.length(); ndx++)
+      for (int ndx = 0; ndx < nickNames.length(); ndx++)
       {
-        c = nickNames.charAt(ndx);
-        
+        char c = nickNames.charAt(ndx);
+               
         if ((c == ')') || (c == '(') || (c == ' ') || (c == ',') || (c == ';'))
         {
           if (nickName.length() > 0)
@@ -483,10 +497,10 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
     String[] vals = str.split(";");
     if (vals.length != 4) return null;
     
-    int x = parseInt(vals[0], -1);
-    int y = parseInt(vals[1], -1);
-    int width = parseInt(vals[2], -1);
-    int height = parseInt(vals[3], -1);
+    int x      = parseInt(vals[0], -1),
+        y      = parseInt(vals[1], -1),
+        width  = parseInt(vals[2], -1),
+        height = parseInt(vals[3], -1);
 
     return new Rectangle2D(x, y, width, height);
   }
@@ -502,22 +516,14 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
       return;
     }
     
-    int x = (int) viewPort.getMinX();
-    int y = (int) viewPort.getMinY();
-    int width = (int) viewPort.getWidth();
+    int x      = (int) viewPort.getMinX();
+    int y      = (int) viewPort.getMinY();
+    int width  = (int) viewPort.getWidth();
     int height = (int) viewPort.getHeight();
     
     updateTagString(tagPictureCrop, x + ";" + y + ";" + width + ";" + height);
   }
   
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HyperPath getPath()
-  {
-    return picture;
-  }
-
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 

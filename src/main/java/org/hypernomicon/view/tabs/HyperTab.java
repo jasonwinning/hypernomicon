@@ -86,10 +86,6 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
   public void rescale()                       { return; }
   public int getRecordCount()                 { return db.records(getRecordTypeByTabEnum(tabEnum)).size(); }
   public final int getActiveID()              { return nullSwitch(activeRecord(), -1, HDT_Base::getID); }
-  
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public final HyperView<HDT_CT> getView()    { return view; }
   public final HDT_CT viewRecord()            { return getView().getViewRecord(); }
   public final Tab getTab()                   { return tab; }

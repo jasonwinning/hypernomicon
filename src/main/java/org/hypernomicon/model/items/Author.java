@@ -96,6 +96,59 @@ public final class Author implements Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override public int hashCode()
+  {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((inFileName == null) ? 0 : inFileName.hashCode());
+    result = prime * result + (isEditor ? 1231 : 1237);
+    result = prime * result + (isTrans ? 1231 : 1237);
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((person == null) ? 0 : person.hashCode());
+    result = prime * result + ((work == null) ? 0 : work.hashCode());
+    return result;
+  }
+
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------  
+
+  @Override public boolean equals(Object obj)
+  {
+    if ((obj == null) || ((obj instanceof Author) == false)) return false;
+    
+    Author other = (Author)obj;
+    
+    if (person != other.person) return false;
+    
+    if (work != other.work) return false;
+
+    if ((person == null) && (other.person == null))
+      if (name.equals(other.name) == false)
+        return false;
+
+    if (getInFileName() != other.getInFileName()) return false;
+    
+    if (getIsEditor() != other.getIsEditor()) return false;
+    
+    if (getIsTrans() != other.getIsTrans()) return false;
+    
+    return true;
+  }
+
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------  
+
+  public boolean outOfDate()
+  {   
+    for (Author workAuthor : work.getAuthors())
+      if (equals(workAuthor))
+        return false;
+    
+    return true;
+  }
+
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------  
 
   public final boolean equalsObjGroup(ObjectGroup objGroup)
   {

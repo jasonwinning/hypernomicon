@@ -183,21 +183,21 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
 
   void updateLinkLabels(HDT_CT record)
   {
-    HDT_Debate debate = null;
-    HDT_Position position = null;
-    HDT_Concept concept = null;
-    HDT_WorkLabel label = null;
-    HDT_Note note = null;
+    HDT_Debate    debate   = null;
+    HDT_Position  position = null;
+    HDT_Concept   concept  = null;
+    HDT_WorkLabel label    = null;
+    HDT_Note      note     = null;
 
     if (record != null)
     {
       if (record.isLinked())
       {
-        debate = record.getLink().getDebate();
+        debate   = record.getLink().getDebate();
         position = record.getLink().getPosition();
-        concept = record.getLink().getConcept();
-        label = record.getLink().getLabel();
-        note = record.getLink().getNote();
+        concept  = record.getLink().getConcept();
+        label    = record.getLink().getLabel();
+        note     = record.getLink().getNote();
       }
       
       if (record.getType().equals(recordType) == false)

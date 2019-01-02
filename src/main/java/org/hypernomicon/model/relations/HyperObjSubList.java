@@ -47,7 +47,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
 //---------------------------------------------------------------------------
 
   @Override public int size()               { return endNdx - startNdx; }
-  @Override public boolean isEmpty()        { return (size() > 0); }
+  @Override public boolean isEmpty()        { return size() > 0; }
   @Override public void clear()             { while (endNdx > startNdx) remove(0); }
   @Override public HDT_ObjType get(int ndx) { return parentList.get(startNdx + ndx); }
 
@@ -183,7 +183,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
       }
     }
     
-    return (added.size() > 0);
+    return added.size() > 0;
   }
 
 //---------------------------------------------------------------------------
@@ -216,7 +216,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
       }
     }
     
-    return (added.size() > 0);
+    return added.size() > 0;
   }
 
 //---------------------------------------------------------------------------

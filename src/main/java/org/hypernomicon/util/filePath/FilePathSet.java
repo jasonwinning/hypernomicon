@@ -21,7 +21,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map.Entry;
 
 import com.google.common.collect.Sets;
 
@@ -48,8 +47,8 @@ public class FilePathSet implements Set<FilePath>
   {
     int cnt = 0;
     
-    for (Entry<String, Set<FilePath>> pathSet : nameToPaths.entrySet())
-      cnt += pathSet.getValue().size();
+    for (Set<FilePath> pathSet : nameToPaths.values())
+      cnt += pathSet.size();
     
     return cnt;
   }

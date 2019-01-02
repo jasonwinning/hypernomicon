@@ -72,7 +72,7 @@ import netscape.javascript.JSObject;
 
 //---------------------------------------------------------------------------
 
-public class MainTextWrapper
+public final class MainTextWrapper
 {
   private AnchorPane parentPane;
   private static BorderPane bpEditorRoot;
@@ -105,7 +105,7 @@ public class MainTextWrapper
   
 //---------------------------------------------------------------------------
   
-  public static final void rescale()
+  public static void rescale()
   {
     scaleNodeForDPI(bpEditorRoot);
     setFontSize(bpEditorRoot);
@@ -114,7 +114,7 @@ public class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final void init()
+  public static void init()
   {
     view = new WebView();
     webViewAddZoom(view, PREF_KEY_MAINTEXT_ZOOM);

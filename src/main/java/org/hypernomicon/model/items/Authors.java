@@ -148,7 +148,7 @@ public class Authors implements Iterable<Author>
         switch (entry.getKey())
         {
           case tagInFileName: inFileName = HDI_OfflineTernary.class.cast(entry.getValue()).get(); break;                 
-          case tagEditor:     editor = HDI_OfflineBoolean.class.cast(entry.getValue()).get(); break;
+          case tagEditor:     editor     = HDI_OfflineBoolean.class.cast(entry.getValue()).get(); break;
           case tagTranslator: translator = HDI_OfflineBoolean.class.cast(entry.getValue()).get(); break;
           default : break;
         }
@@ -164,7 +164,7 @@ public class Authors implements Iterable<Author>
   private void initAuthorList()
   {
     authorList.clear();
-    allRecords = false;            
+    allRecords = false;
 
     objListNoMod.forEach(person -> authorList.add(new Author(work, person)));
   }
@@ -233,9 +233,29 @@ public class Authors implements Iterable<Author>
     authorList.clear();
     
     if (allRecords == false)
-     setListFromObjectGroups(authorList, objGroups, work);
+      setListFromObjectGroups(authorList, objGroups, work);
   }
 
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  public void update(Author oldAuthor, Author newAuthor)
+  {
+    if (oldAuthor.equals(newAuthor)) return;
+    
+    int ndx = authorList.indexOf(oldAuthor);
+    
+    if ((ndx == -1) || (oldAuthor.getPerson() != null) || (newAuthor.getPerson() != null) || (oldAuthor.getWork() != work) || (newAuthor.getWork() != work))
+    {
+      messageDialog("Internal error #38891", mtError);
+      return;
+    }
+      
+    authorList.set(ndx, newAuthor);
+      
+    work.modifyNow();
+  }
+  
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
@@ -272,24 +292,22 @@ public class Authors implements Iterable<Author>
 
   private void ensurePresent(ObjectGroup objGroup, Tag tag)
   {
-    if (objGroup.getValue(tag) == null)
-    {
-      Author author = getAuthor(new PersonName(objGroup.getPrimaryStr()));
-      if (author != null)
-      {
-        NestedValue val = new NestedValue(db.getNestedSchema(rtAuthorOfWork, tag).getCategory());
-        
-        switch (tag)
-        {
-          case tagInFileName : val.ternary = author.getInFileName(); break;
-          case tagEditor : val.bool = author.getIsEditor(); break;
-          case tagTranslator : val.bool = author.getIsTrans(); break;
-          default : break;
-        }
+    if (objGroup.getValue(tag) != null) return;
 
-        objGroup.addNestedEntry(tagInFileName, val);
-      }            
-    }    
+    Author author = getAuthor(new PersonName(objGroup.getPrimaryStr()));
+    if (author == null) return;
+
+    NestedValue val = new NestedValue(db.getNestedSchema(rtAuthorOfWork, tag).getCategory());
+    
+    switch (tag)
+    {
+      case tagInFileName : val.ternary = author.getInFileName(); break;
+      case tagEditor     : val.bool    = author.getIsEditor  (); break;
+      case tagTranslator : val.bool    = author.getIsTrans   (); break;
+      default : break;
+    }
+
+    objGroup.addNestedEntry(tagInFileName, val);   
   }
 
   //---------------------------------------------------------------------------
@@ -343,12 +361,12 @@ public class Authors implements Iterable<Author>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public void setAuthorRecord(Author oldAuthor, HDT_Person person)
+  public Author setAuthorRecord(Author oldAuthor, HDT_Person person)
   {
     if (oldAuthor.getPerson() != null)      
     {
       messageDialog("Internal error #73222", mtError);
-      return;
+      return oldAuthor;
     }
     
     HDT_Person insertAfter = null;
@@ -373,11 +391,12 @@ public class Authors implements Iterable<Author>
         
         authorList.set(authorList.indexOf(oldAuthor), newAuthor);
         
-        return;
+        return newAuthor;
       }
     }
     
     messageDialog("Internal error #73223", mtError);
+    return oldAuthor;
   }
 
 //---------------------------------------------------------------------------
@@ -451,7 +470,7 @@ public class Authors implements Iterable<Author>
     HashMap<PersonName, Boolean> nameToEd = new HashMap<>();
     HashMap<PersonName, Boolean> nameToTr = new HashMap<>();
 
-    bibAuthors.getListsForWorkMerge(nameList, personList, nameToEd, nameToTr);
+    bibAuthors.getListsForWorkMerge(nameList, personList, nameToEd, nameToTr, work);
     
     for (int ndx = 0; ndx < nameList.size(); ndx++)
     {

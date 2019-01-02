@@ -29,7 +29,6 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import org.hypernomicon.App;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.HyperView.TextViewInfo;
@@ -56,12 +55,12 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
   private RecordByTypePopulator verdictPopulator;
   private HDT_Argument curArgument;
    
-  @Override public HDT_RecordType getType()                  { return hdtArgument; }
-  @Override public void enable(boolean enabled)              { ui.tabArguments.getContent().setDisable(enabled == false); }
-  @Override public void findWithinDesc(String text)          { ctrlr.hilite(text); }  
-  @Override public TextViewInfo getMainTextInfo()            { return ctrlr.getMainTextInfo(); }
-  @Override public void setRecord(HDT_Argument activeRecord) { this.curArgument = activeRecord; }
-  @Override public void focusOnSearchKey()                   { ctrlr.focusOnSearchKey(); }
+  @Override public HDT_RecordType getType()         { return hdtArgument; }
+  @Override public void enable(boolean enabled)     { ui.tabArguments.getContent().setDisable(enabled == false); }
+  @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }  
+  @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
+  @Override public void setRecord(HDT_Argument arg) { this.curArgument = arg; }
+  @Override public void focusOnSearchKey()          { ctrlr.focusOnSearchKey(); }
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
@@ -80,10 +79,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       row.setCellValue(2, -1, db.getTypeName(hdtPosition), hdtPosition);
       row.setCellValue(3, position.getID(), position.listName(), hdtPosition);
       
-      HDT_PositionVerdict posVerdict = curArgument.getPosVerdict(position);
-      
-      if (posVerdict != null)
-        row.setCellValue(4, posVerdict.getID(), posVerdict.getCBText(), hdtPositionVerdict);
+      nullSwitch(curArgument.getPosVerdict(position), verdict -> row.setCellValue(4, verdict, verdict.getCBText()));
     });
    
     htParents.buildRows(curArgument.counteredArgs, (row, counteredArg) ->
@@ -91,10 +87,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       row.setCellValue(2, -1, db.getTypeName(hdtArgument), hdtArgument);
       row.setCellValue(3, counteredArg, counteredArg.listName());
    
-      HDT_ArgumentVerdict argVerdict = curArgument.getArgVerdict(counteredArg);
-      
-      if (argVerdict != null)
-        row.setCellValue(4, argVerdict, argVerdict.getCBText());
+      nullSwitch(curArgument.getArgVerdict(counteredArg), verdict -> row.setCellValue(4, verdict, verdict.getCBText()));
     });
 
   // Populate the authors, works, and years
@@ -126,9 +119,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
           row.setCellValue(1, work, work.getLongAuthorsStr(true));
       }  
 
-      HDT_ArgumentVerdict argVerdict = counterArg.getArgVerdict(curArgument);
-      if (argVerdict != null)
-        row.setCellValue(2, counterArg, argVerdict.listName());
+      nullSwitch(counterArg.getArgVerdict(curArgument), verdict -> row.setCellValue(2, counterArg, verdict.listName()));
 
       row.setCellValue(3, counterArg, counterArg.listName());
     });
@@ -411,8 +402,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
         
         HDT_Work work = db.createNewBlankRecord(hdtWork);
         
-        HDT_Person author = db.persons.getByID(row.getID(1));
-        if (author != null) work.getAuthors().add(author);
+        nullSwitch(db.persons.getByID(row.getID(1)), author -> work.getAuthors().add(author));
         
         curArgument.works.add(work);
         

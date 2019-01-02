@@ -215,7 +215,7 @@ public abstract class BibData
   public boolean entryTypeNotEmpty()                                    
   { 
     EntryType entryType = getEntryType();
-    return ((entryType != null) && (entryType != etNone) && (entryType != etUnentered)); 
+    return (entryType != null) && (entryType != etNone) && (entryType != etUnentered); 
   }
 
 //---------------------------------------------------------------------------

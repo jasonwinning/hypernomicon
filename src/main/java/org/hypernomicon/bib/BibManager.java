@@ -94,11 +94,12 @@ public class BibManager extends HyperDialog
   
   public static final String dialogTitle = "Bibliographic Entry Manager";
     
-  public BibEntryTable entryTable;
-  public CollectionTree collTree;
-  private LibraryWrapper<? extends BibEntry, ? extends BibCollection> libraryWrapper = null;
-  public ObjectProperty<HDT_Work> workRecordToAssign;
+  private BibEntryTable entryTable;
+  private CollectionTree collTree;
+  private LibraryWrapper<? extends BibEntry, ? extends BibCollection> libraryWrapper = null;  
   private SyncTask syncTask = null;
+  
+  public ObjectProperty<HDT_Work> workRecordToAssign;
   
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
@@ -278,47 +279,26 @@ public class BibManager extends HyperDialog
     btnSelect.setOnAction(event -> btnSelectClick());
     btnCreateNew.setOnAction(event -> btnCreateNewClick());
     
-    tableView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
-    {
-      refresh();      
-    });
+    tableView.getSelectionModel().selectedItemProperty().addListener((o, ov, nv) -> refresh());
     
     tableView.setRowFactory(thisTV ->
     {
       TableRow<BibEntryRow> row = new TableRow<>();
       
-      row.itemProperty().addListener((observable, oldValue, newValue) ->
-      {
-        if (newValue == null)
-          row.setContextMenu(null);
-        else
-          row.setContextMenu(BibEntryRow.createContextMenu(newValue, entryTable.contextMenuSchemata));
-      });
+      row.itemProperty().addListener((o, ov, nv) -> row.setContextMenu(nv == null ? null : BibEntryRow.createContextMenu(nv, entryTable.contextMenuSchemata)));
       
       row.setOnMouseClicked(mouseEvent ->
       {
         if ((mouseEvent.getButton().equals(MouseButton.PRIMARY)) && (mouseEvent.getClickCount() == 2))
-        {       
-          if (row.getItem() != null)
-          {
-            HDT_Work work = row.getItem().getWork();
-            if (work != null) ui.goToRecord(work, true);
-          }
-        }
+          nullSwitch(row.getItem(), item -> nullSwitch(item.getWork(), work -> ui.goToRecord(work, true)));
       });
       
       return row;
     });
 
-    entryTable.addCondContextMenuItem("View this entry on the web", row -> row.getURL().length() > 0, row ->
-    {
-      openWebLink(row.getURL());
-    });
+    entryTable.addCondContextMenuItem("View this entry on the web", row -> row.getURL().length() > 0, row -> openWebLink(row.getURL()));
     
-    entryTable.addCondContextMenuItem("Go to work record", row -> nonNull(row.getWork()), row ->
-    {
-      ui.goToRecord(row.getWork(), true);
-    });
+    entryTable.addCondContextMenuItem("Go to work record", row -> nonNull(row.getWork()), row -> ui.goToRecord(row.getWork(), true));
 
     entryTable.addCondContextMenuItem("Unassign work record", row -> nonNull(row.getWork()), row ->
     {
@@ -428,8 +408,7 @@ public class BibManager extends HyperDialog
     {
       if (ui.windows.getCyclingFocus()) return;
       
-      if (newValue == null) return;
-      if (newValue == false) return;
+      if ((newValue == null) || (newValue == false)) return;
       
       ui.windows.push(dialogStage);
       
@@ -505,7 +484,7 @@ public class BibManager extends HyperDialog
     
     try
     {
-      mwd = MergeWorksDialogController.create("Import Into Existing Work Record", work.getBibData(), entry, null, null, false, false);
+      mwd = MergeWorksDialogController.create("Import Into Existing Work Record", work.getBibData(), entry, null, null, work, false, false);
     }
     catch (IOException e)
     {

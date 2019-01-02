@@ -628,7 +628,7 @@ public class Util
     dlg.addButton("Yes", mrYes);
     dlg.addButton("No", mrNo);
     
-    return (dlg.showModal() == mrYes);
+    return dlg.showModal() == mrYes;
   }
 
 //---------------------------------------------------------------------------
@@ -730,7 +730,7 @@ public class Util
     if (s.equals(Boolean.TRUE.toString().trim().toLowerCase())) return true;
     if (s.equals(Boolean.FALSE.toString().trim().toLowerCase())) return false;
     
-    return ((s.indexOf("yes") == 0) || (s.indexOf("tru") == 0));      
+    return (s.indexOf("yes") == 0) || (s.indexOf("tru") == 0);      
   }
 
 //---------------------------------------------------------------------------
@@ -1405,13 +1405,13 @@ public class Util
 
   public static boolean isStringUrl(String selText)
   {
-    return ((selText.indexOf("www.") > -1) || (selText.indexOf("http") > -1) ||
-            (selText.indexOf(".com") > -1) || (selText.indexOf(".htm") > -1) || 
-            (selText.indexOf(".org") > -1) || (selText.indexOf(".net") > -1) ||
-            (selText.indexOf(".us")  > -1) || (selText.indexOf(".uk")  > -1) || 
-            (selText.indexOf(".gov") > -1) || (selText.indexOf("://")  > -1) || 
+    return (selText.indexOf("www.") > -1) || (selText.indexOf("http") > -1) ||
+           (selText.indexOf(".com") > -1) || (selText.indexOf(".htm") > -1) || 
+           (selText.indexOf(".org") > -1) || (selText.indexOf(".net") > -1) ||
+           (selText.indexOf(".us")  > -1) || (selText.indexOf(".uk")  > -1) || 
+           (selText.indexOf(".gov") > -1) || (selText.indexOf("://")  > -1) || 
             
-            (selText.matches(".*\\w/\\w.*") && selText.matches(".*\\.[a-zA-Z].*")));
+           (selText.matches(".*\\w/\\w.*") && selText.matches(".*\\.[a-zA-Z].*"));
   }
 
 //---------------------------------------------------------------------------

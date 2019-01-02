@@ -46,7 +46,7 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
   @Override public void focusOnSearchKey()          { ctrlr.focusOnSearchKey(); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
-  @Override public void setRecord(HDT_Debate rec)   { curDebate = rec; }
+  @Override public void setRecord(HDT_Debate deb)   { curDebate = deb; }
  
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------    

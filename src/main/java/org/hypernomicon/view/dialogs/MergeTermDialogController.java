@@ -49,12 +49,9 @@ public class MergeTermDialogController extends HyperDialog
     {
       messageDialog("Search key of a term record cannot be zero-length.", mtError);
       
-      if (rbKey1.isSelected())
-        safeFocus(tfKey1);
-      else if (rbKey2.isSelected())
-        safeFocus(tfKey2);
-      else
-        safeFocus(tfKey3);
+      if      (rbKey1.isSelected()) safeFocus(tfKey1);
+      else if (rbKey2.isSelected()) safeFocus(tfKey2);
+      else                          safeFocus(tfKey3);
       
       return false;
     }
@@ -79,25 +76,23 @@ public class MergeTermDialogController extends HyperDialog
   {   
     String name1 = term1.listName(),
            name2 = term2.listName(),
-           key1 = term1.getSearchKey(),
-           key2 = term2.getSearchKey();
+           key1  = term1.getSearchKey(),
+           key2  = term2.getSearchKey();
     
     tfName1.setText(name1);
     tfName2.setText(name2);
     
-    if (name1.length() == 0)
-      if (name2.length() > 0)
-        rbName2.setSelected(true);
+    if ((name1.length() == 0) && (name2.length() > 0))
+      rbName2.setSelected(true);
 
     tfKey1.setText(key1);
     tfKey2.setText(key2);
     
-    if (key1.length() == 0)
-      if (key2.length() > 0)
-        rbKey2.setSelected(true);
+    if ((key1.length() == 0) && (key2.length() > 0))
+      rbKey2.setSelected(true);
     
     tfName3.textProperty().addListener((observable, oldValue, newValue) -> rbName3.setSelected(true));
-    tfKey3.textProperty().addListener((observable, oldValue, newValue) -> rbKey3.setSelected(true));
+    tfKey3 .textProperty().addListener((observable, oldValue, newValue) -> rbKey3 .setSelected(true));
   }
 
 //---------------------------------------------------------------------------  
@@ -105,12 +100,9 @@ public class MergeTermDialogController extends HyperDialog
 
   public String getName()
   {
-    if (rbName1.isSelected())
-      return tfName1.getText();
-    else if (rbName2.isSelected())
-      return tfName2.getText();
-    else
-      return tfName3.getText();
+    if      (rbName1.isSelected()) return tfName1.getText();
+    else if (rbName2.isSelected()) return tfName2.getText();
+    else                           return tfName3.getText();
   }
 
 //---------------------------------------------------------------------------  
@@ -118,12 +110,9 @@ public class MergeTermDialogController extends HyperDialog
 
   public String getKey()
   {
-    if (rbKey1.isSelected())
-      return tfKey1.getText();
-    else if (rbKey2.isSelected())
-      return tfKey2.getText();
-    else
-      return tfKey3.getText();
+    if      (rbKey1.isSelected()) return tfKey1.getText();
+    else if (rbKey2.isSelected()) return tfKey2.getText();
+    else                          return tfKey3.getText();
   }
 
 //---------------------------------------------------------------------------  

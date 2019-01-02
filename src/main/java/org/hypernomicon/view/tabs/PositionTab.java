@@ -49,12 +49,12 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
   private HyperTable htParents, htArguments, htSubpositions;
   private HDT_Position curPosition;
   
-  @Override public HDT_RecordType getType()                  { return hdtPosition; }
-  @Override public void enable(boolean enabled)              { ui.tabPositions.getContent().setDisable(enabled == false); }
-  @Override public void focusOnSearchKey()                   { ctrlr.focusOnSearchKey(); }
-  @Override public void findWithinDesc(String text)          { ctrlr.hilite(text); }  
-  @Override public TextViewInfo getMainTextInfo()            { return ctrlr.getMainTextInfo(); }
-  @Override public void setRecord(HDT_Position activeRecord) { curPosition = activeRecord; }    
+  @Override public HDT_RecordType getType()         { return hdtPosition; }
+  @Override public void enable(boolean enabled)     { ui.tabPositions.getContent().setDisable(enabled == false); }
+  @Override public void focusOnSearchKey()          { ctrlr.focusOnSearchKey(); }
+  @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }  
+  @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
+  @Override public void setRecord(HDT_Position pos) { curPosition = pos; }    
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  

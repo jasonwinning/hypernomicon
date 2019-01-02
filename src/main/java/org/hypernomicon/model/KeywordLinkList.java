@@ -51,8 +51,8 @@ public final class KeywordLinkList
 
   private final ArrayList<KeywordLink> keys = new ArrayList<KeywordLink>();
      
-  public final List<KeywordLink> getLinks() { return Collections.unmodifiableList(keys); }
-  public final void generate(String text)   { generate(text, false, null); }
+  public List<KeywordLink> getLinks() { return Collections.unmodifiableList(keys); }
+  public void generate(String text)   { generate(text, false, null); }
  
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -167,7 +167,7 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
   
-  public static final boolean charIsPartOfWebLink(String text, int ndx)
+  public static boolean charIsPartOfWebLink(String text, int ndx)
   {
     char c = text.charAt(ndx);
         

@@ -44,7 +44,7 @@ public class HyperSubjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends
 //---------------------------------------------------------------------------
 
   @Override public int size()                  { return endNdx - startNdx; }
-  @Override public boolean isEmpty()           { return (size() > 0); }
+  @Override public boolean isEmpty()           { return size() > 0; }
   @Override public HDT_SubjType get(int index) { return parentList.get(startNdx + index); }
   
   @Override public boolean add(HDT_SubjType e)                                     { throw new UnsupportedOperationException(modErrMsg); }

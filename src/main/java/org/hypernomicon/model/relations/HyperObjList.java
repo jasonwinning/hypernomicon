@@ -290,7 +290,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
     }
     
     modEnd();
-    return (added.size() > 0);
+    return added.size() > 0;
   }
 
 //---------------------------------------------------------------------------
@@ -328,7 +328,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
     }
     
     modEnd();
-    return (added.size() > 0);
+    return added.size() > 0;
   }
 
 //---------------------------------------------------------------------------

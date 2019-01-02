@@ -32,8 +32,8 @@ import javafx.scene.control.TableView;
 
 public abstract class ReportEngine
 {
-  public static final int QUERY_DUPLICATE_NONRECORD_AUTHORS = QUERY_FIRST_NDX + 1,
-                          QUERY_LICENSE_AND_NOTICE          = QUERY_FIRST_NDX + 2;
+  public static final int QUERY_DUPLICATE_AUTHORS  = QUERY_FIRST_NDX + 1,
+                          QUERY_LICENSE_AND_NOTICE = QUERY_FIRST_NDX + 2;
   
   protected TableView<HyperTableRow> tv;
   
@@ -48,7 +48,7 @@ public abstract class ReportEngine
 
   public static void addQueries(QueryPopulator pop, HyperTableRow row)
   {
-    pop.addEntry(row, QUERY_DUPLICATE_NONRECORD_AUTHORS, "Duplicate non-record authors");
+    pop.addEntry(row, QUERY_DUPLICATE_AUTHORS, "Duplicate authors");
     pop.addEntry(row, QUERY_LICENSE_AND_NOTICE, "Application license and notices");
   }
 
@@ -59,8 +59,8 @@ public abstract class ReportEngine
   {
     switch (report)
     {
-      case QUERY_DUPLICATE_NONRECORD_AUTHORS : return new DupAuthorsReportEngine();        
-      case QUERY_LICENSE_AND_NOTICE :          return new LicenseReportEngine();
+      case QUERY_DUPLICATE_AUTHORS  : return new DupAuthorsReportEngine();        
+      case QUERY_LICENSE_AND_NOTICE : return new LicenseReportEngine();
     }
     
     return null;

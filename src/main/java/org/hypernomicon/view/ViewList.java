@@ -201,13 +201,22 @@ public class ViewList
 //---------------------------------------------------------------------------
 
   public void removeRecord(HDT_Base record)
-  {
-    viewList.removeIf(view ->
+  {   
+    // Do not change the following code to use removeIf. The line that checks whether curNdx should be decremented will not work
+    // because the ArrayList does not actually get modified until all of the removeIf checks are completed.
+    
+    Iterator<HyperView<? extends HDT_Base>> it = viewList.iterator();
+    
+    while (it.hasNext())
     {
-      if (view.getViewRecord() != record) return false;
-      if (curNdx >= viewList.indexOf(view)) curNdx--;
-      return true;     
-    });
+      HyperView<? extends HDT_Base> view = it.next();
+      
+      if (view.getViewRecord() == record)
+      {
+        if (curNdx >= viewList.indexOf(view)) curNdx--;
+        it.remove();
+      }
+    }
   }
 
 //---------------------------------------------------------------------------

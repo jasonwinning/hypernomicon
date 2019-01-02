@@ -187,10 +187,10 @@ public class PictureDialogController extends HyperDialog
       else if (rbWeb.isSelected())     rbWebSelected();
     });
     
-    btnShow.disableProperty().bind(rbCurrent.selectedProperty().not().and(rbFile.selectedProperty().not())); 
+    btnShow   .disableProperty().bind(rbCurrent.selectedProperty().not().and(rbFile.selectedProperty().not())); 
     btnRefresh.disableProperty().bind(rbNone.selectedProperty());
-    btnEdit.disableProperty().bind(rbNone.selectedProperty());
-    tfName.disableProperty().bind(rbNone.selectedProperty());
+    btnEdit   .disableProperty().bind(rbNone.selectedProperty());
+    tfName    .disableProperty().bind(rbNone.selectedProperty());
     
     btnStop.setOnAction(event -> stopClicked());
     
@@ -265,7 +265,7 @@ public class PictureDialogController extends HyperDialog
     if ((viewPort != null) && (picture != null))
     {
       cropStart = new Point2D(viewPort.getMinX() / picture.getWidth(), viewPort.getMinY() / picture.getHeight());
-      cropEnd = new Point2D(viewPort.getMaxX() / picture.getWidth(), viewPort.getMaxY() / picture.getHeight());
+      cropEnd   = new Point2D(viewPort.getMaxX() / picture.getWidth(), viewPort.getMaxY() / picture.getHeight());
   
       setPicRect(ivPicture.getFitWidth(), ivPicture.getFitHeight());
       updateCropRect();
@@ -370,10 +370,10 @@ public class PictureDialogController extends HyperDialog
     if (changed == false)
       return origViewPort;
     
-    int x1 = Double.valueOf((cropStart.getX() * picture.getWidth()) + 0.5).intValue();
-    int x2 = Double.valueOf((cropEnd.getX() * picture.getWidth()) + 0.5).intValue();
+    int x1 = Double.valueOf((cropStart.getX() * picture.getWidth ()) + 0.5).intValue();
+    int x2 = Double.valueOf((cropEnd  .getX() * picture.getWidth ()) + 0.5).intValue();
     int y1 = Double.valueOf((cropStart.getY() * picture.getHeight()) + 0.5).intValue();
-    int y2 = Double.valueOf((cropEnd.getY() * picture.getHeight()) + 0.5).intValue();
+    int y2 = Double.valueOf((cropEnd  .getY() * picture.getHeight()) + 0.5).intValue();
     
     if (x1 < 0) x1 = 0;
     if (x1 > (picture.getWidth() - 1)) x1 = (int) (picture.getWidth() - 1);

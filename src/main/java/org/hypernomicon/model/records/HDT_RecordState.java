@@ -25,7 +25,6 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import com.google.common.escape.Escaper;
 
@@ -95,36 +94,34 @@ public class HDT_RecordState
   private void initItems()
   {
     items = new LinkedHashMap<>();
-    HDI_OfflineBase item = null;
     
-    Collection<HDI_Schema> schemas = db.getSchemasByRecordType(type);
-    
-    if (schemas != null)
-    {  
-      for (HDI_Schema schema : schemas)
+    Collection<HDI_Schema> schemas = db.getSchemasByRecordType(type);    
+    if (schemas == null) return;
+
+    schemas.forEach(schema ->
+    {
+      HDI_OfflineBase item;
+      
+      switch (schema.getCategory())
       {
-        switch (schema.getCategory())
-        {
-          case hdcBoolean:         item = new HDI_OfflineBoolean(schema, this); break;
-          case hdcTernary:         item = new HDI_OfflineTernary(schema, this); break;
-          case hdcConnector:       item = new HDI_OfflineConnector(schema, this); break;
-          case hdcPersonName:      item = new HDI_OfflinePersonName(schema, this); break;
-          case hdcPath:            item = new HDI_OfflinePath(schema, this); break;
-          case hdcPointerMulti:    item = new HDI_OfflinePointerMulti(schema, this); break;
-          case hdcPointerSingle:   item = new HDI_OfflinePointerSingle(schema, this); break;
-          case hdcString:          item = new HDI_OfflineString(schema, this); break;
-          case hdcBibEntryKey:     item = new HDI_OfflineString(schema, this); break;
-          case hdcAuthors:         item = new HDI_OfflineAuthors(schema, this); break;
-          case hdcHubSpokes:       item = new HDI_OfflineHubSpokes(schema, this); break;
-          case hdcNestedPointer: 
-            messageDialog("Internal error #78934", mtError);
-            return;
-        }
-        
-        for (Tag tag : schema.getTags())
-          items.put(tag, item);
+        case hdcBoolean:       item = new HDI_OfflineBoolean      (schema, this); break;
+        case hdcTernary:       item = new HDI_OfflineTernary      (schema, this); break;
+        case hdcConnector:     item = new HDI_OfflineConnector    (schema, this); break;
+        case hdcPersonName:    item = new HDI_OfflinePersonName   (schema, this); break;
+        case hdcPath:          item = new HDI_OfflinePath         (schema, this); break;
+        case hdcPointerMulti:  item = new HDI_OfflinePointerMulti (schema, this); break;
+        case hdcPointerSingle: item = new HDI_OfflinePointerSingle(schema, this); break;
+        case hdcString:        item = new HDI_OfflineString       (schema, this); break;
+        case hdcBibEntryKey:   item = new HDI_OfflineString       (schema, this); break;
+        case hdcAuthors:       item = new HDI_OfflineAuthors      (schema, this); break;
+        case hdcHubSpokes:     item = new HDI_OfflineHubSpokes    (schema, this); break;
+        default: 
+          messageDialog("Internal error #78934", mtError);
+          return;
       }
-    }
+      
+      schema.getTags().forEach(tag -> items.put(tag, item));
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -161,17 +158,11 @@ public class HDT_RecordState
 
     writeRecordOpenTag(xml);
       
-    for (Entry<Tag, HDI_OfflineBase> entry : items.entrySet())
+    items.forEach((tag, item) ->
     {
-      HDI_OfflineBase item = entry.getValue();
-      Tag tag = entry.getKey();
-
-      if (type == hdtFolder)
-        if (tag == tagName)
-          continue;
-      
-      item.writeToXml(tag, xml);
-    }
+      if ((type != hdtFolder) || (tag != tagName))      
+        item.writeToXml(tag, xml);
+    });
             
     writeRecordCloseTag(xml);
     
@@ -223,12 +214,11 @@ public class HDT_RecordState
                " id=" + QUOTE + id + QUOTE + sortKeyAttrXML + searchKeyAttr + ">");
     xml.append(System.lineSeparator());
   
-    if (creationDate != null)
-    {
-      xml.append("  <creation_date>" + dateTimeToIso8601offset(creationDate) + "</creation_date>"); xml.append(System.lineSeparator());
-      xml.append("  <modified_date>" + dateTimeToIso8601offset(modifiedDate) + "</modified_date>"); xml.append(System.lineSeparator());
-      xml.append("  <view_date>" + dateTimeToIso8601offset(viewDate) + "</view_date>"); xml.append(System.lineSeparator());
-    }
+    if (creationDate == null) return;
+
+    xml.append("  <creation_date>" + dateTimeToIso8601offset(creationDate) + "</creation_date>"); xml.append(System.lineSeparator());
+    xml.append("  <modified_date>" + dateTimeToIso8601offset(modifiedDate) + "</modified_date>"); xml.append(System.lineSeparator());
+    xml.append("  <view_date>" + dateTimeToIso8601offset(viewDate) + "</view_date>"); xml.append(System.lineSeparator());
   }  
 
 //---------------------------------------------------------------------------

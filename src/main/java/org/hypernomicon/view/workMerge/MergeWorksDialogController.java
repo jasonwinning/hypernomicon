@@ -115,17 +115,18 @@ public class MergeWorksDialogController extends HyperDialog
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  public static MergeWorksDialogController create(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, boolean creatingNewWork, boolean creatingNewEntry) throws IOException
+  public static MergeWorksDialogController create(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, 
+                                                  HDT_Work destWork, boolean creatingNewWork, boolean creatingNewEntry) throws IOException
   {
     MergeWorksDialogController mwd = HyperDialog.createUsingFullPath("view/workMerge/MergeWorksDialog.fxml", title, true, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
-    mwd.init(bd1, bd2, bd3, bd4, creatingNewWork, creatingNewEntry);
+    mwd.init(bd1, bd2, bd3, bd4, destWork, creatingNewWork, creatingNewEntry);
     return mwd;
   }
 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  private void init(BibData bd1, BibData bd2, BibData bd3, BibData bd4, boolean creatingNewWork, boolean creatingNewEntry) throws IOException
+  private void init(BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork, boolean creatingNewWork, boolean creatingNewEntry) throws IOException
   {
     this.creatingNewWork = creatingNewWork;
     this.creatingNewEntry = creatingNewEntry;
@@ -151,13 +152,13 @@ public class MergeWorksDialogController extends HyperDialog
     bd4 = bdList.get(3);
     
     if (nonNull(bd4))
-      works.add(0, new WorkToMerge(bd4, rbTitle4, tfTitle4, rbType4, cbType4, rbYear4, tfYear4, rbAuthors4, tvAuthors4, creatingNewWork));
+      works.add(0, new WorkToMerge(bd4, rbTitle4, tfTitle4, rbType4, cbType4, rbYear4, tfYear4, rbAuthors4, tvAuthors4, destWork, creatingNewWork));
 
     if (nonNull(bd3))
-      works.add(0, new WorkToMerge(bd3, rbTitle3, tfTitle3, rbType3, cbType3, rbYear3, tfYear3, rbAuthors3, tvAuthors3, creatingNewWork));
+      works.add(0, new WorkToMerge(bd3, rbTitle3, tfTitle3, rbType3, cbType3, rbYear3, tfYear3, rbAuthors3, tvAuthors3, destWork, creatingNewWork));
 
-    works.add(0, new WorkToMerge(bd2, rbTitle2, tfTitle2, rbType2, cbType2, rbYear2, tfYear2, rbAuthors2, tvAuthors2, creatingNewWork));
-    works.add(0, new WorkToMerge(bd1, rbTitle1, tfTitle1, rbType1, cbType1, rbYear1, tfYear1, rbAuthors1, tvAuthors1, creatingNewWork));
+    works.add(0, new WorkToMerge(bd2, rbTitle2, tfTitle2, rbType2, cbType2, rbYear2, tfYear2, rbAuthors2, tvAuthors2, destWork, creatingNewWork));
+    works.add(0, new WorkToMerge(bd1, rbTitle1, tfTitle1, rbType1, cbType1, rbYear1, tfYear1, rbAuthors1, tvAuthors1, destWork, creatingNewWork));
 
     if (isNull(bd4))
     {

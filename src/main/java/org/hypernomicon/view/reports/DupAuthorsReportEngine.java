@@ -19,10 +19,11 @@ package org.hypernomicon.view.reports;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.dialogs.NewPersonDialogController.*;
-import static org.hypernomicon.view.tabs.HyperTab.TabEnum.queryTab;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +32,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
@@ -49,8 +49,8 @@ import javafx.scene.control.TableView;
 
 public class DupAuthorsReportEngine extends ReportEngine
 {
-  private ArrayList<HyperTableRow> rows = new ArrayList<>();
-  private HashMap<HyperTableRow, LinkedHashSet<Author>> rowToMatch = new HashMap<>();
+  private final ArrayList<HyperTableRow> rows = new ArrayList<>();
+  private final HashMap<HyperTableRow, LinkedHashSet<Author>> rowToMatch = new HashMap<>();
   private HyperTable ht;
   
 //---------------------------------------------------------------------------  
@@ -95,42 +95,37 @@ public class DupAuthorsReportEngine extends ReportEngine
     rows.clear();
     rowToMatch.clear();
     
-    for (Entry<Author, List<Author>> entry : matchMap.entrySet())
+    matchMap.forEach((author, authorList) -> authorList.forEach(match ->
     {
-      Author author = entry.getKey();
+      ObservableList<HyperTableCell> cells = FXCollections.observableArrayList();
       
-      for (Author match : entry.getValue())
-      {
-        ObservableList<HyperTableCell> cells = FXCollections.observableArrayList();
-        
-        cells.add(new HyperTableCell(-1, "", hdtNone));
-        
-        if (author.getPerson() == null)
-          cells.add(new HyperTableCell(-1, author.getFullName(false), hdtNone));
-        else
-          cells.add(new HyperTableCell(author.getPerson().getID(), author.getFullName(false), hdtPerson));
-        
-        cells.add(getWorkCell(author));
-        
-        if (match.getPerson() == null)
-          cells.add(new HyperTableCell(-1, match.getFullName(false), hdtNone));
-        else
-          cells.add(new HyperTableCell(match.getPerson().getID(), match.getFullName(false), hdtPerson));
-        
-        cells.add(getWorkCell(match));
-        
-        HyperTableRow row = new HyperTableRow(cells, ht);
-        
-        rows.add(row);
-        
-        LinkedHashSet<Author> pair = new LinkedHashSet<>();
-        
-        pair.add(author);
-        pair.add(match);
-        
-        rowToMatch.put(row, pair);
-      }
-    }
+      cells.add(new HyperTableCell(-1, "", hdtNone));
+      
+      if (author.getPerson() == null)
+        cells.add(new HyperTableCell(-1, author.getFullName(false), hdtNone));
+      else
+        cells.add(new HyperTableCell(author.getPerson().getID(), author.getFullName(false), hdtPerson));
+      
+      cells.add(getWorkCell(author));
+      
+      if (match.getPerson() == null)
+        cells.add(new HyperTableCell(-1, match.getFullName(false), hdtNone));
+      else
+        cells.add(new HyperTableCell(match.getPerson().getID(), match.getFullName(false), hdtPerson));
+      
+      cells.add(getWorkCell(match));
+      
+      HyperTableRow row = new HyperTableRow(cells, ht);
+      
+      rows.add(row);
+      
+      LinkedHashSet<Author> pair = new LinkedHashSet<>();
+      
+      pair.add(author);
+      pair.add(match);
+      
+      rowToMatch.put(row, pair);
+    }));
   }
   
 //---------------------------------------------------------------------------  
@@ -171,6 +166,12 @@ public class DupAuthorsReportEngine extends ReportEngine
       {
         author1 = pair.get(0);
         author2 = pair.get(1);
+      }
+      
+      if (author1.outOfDate() || author2.outOfDate())
+      {
+        messageDialog("The data in this row is out of date.", mtWarning);
+        return;
       }
            
       NewPersonDialogController npdc = NewPersonDialogController.create(author1.getName(), null, false, author1.getPerson(), 

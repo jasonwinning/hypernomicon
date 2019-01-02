@@ -25,13 +25,16 @@ import java.util.LinkedList;
 
 import org.apache.commons.lang3.SystemUtils;
 
+import com.sun.glass.ui.Window;
+
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class WindowStack
+@SuppressWarnings("restriction")
+public final class WindowStack
 {  
 
 //---------------------------------------------------------------------------
@@ -49,8 +52,8 @@ public class WindowStack
     
     public AlertWrapper(Alert dlg) { this.dlg = dlg; }
     
-    @Override public final Modality getModality() { return dlg.getModality(); }
-    @Override public final boolean isStage()      { return false; }
+    @Override public Modality getModality() { return dlg.getModality(); }
+    @Override public boolean isStage()      { return false; }
   }
   
   private static final class StageWrapper implements WindowWrapper
@@ -59,10 +62,10 @@ public class WindowStack
     
     public StageWrapper(Stage stage) { this.stage = stage; }
     
-    public final Stage getStage() { return stage; }
+    public Stage getStage() { return stage; }
     
-    @Override public final Modality getModality() { return stage.getModality(); }
-    @Override public final boolean isStage()      { return true; }
+    @Override public Modality getModality() { return stage.getModality(); }
+    @Override public boolean isStage()      { return true; }
   }
   
 //---------------------------------------------------------------------------
@@ -75,16 +78,16 @@ public class WindowStack
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
 
-  public final void push(Alert dlg)            { push(new AlertWrapper(dlg)); }
-  public final void push(Stage stage)          { push(new StageWrapper(stage)); }
-  public final boolean getCyclingFocus()       { return cyclingFocus; }
-  public final Modality getOutermostModality() { return peek().getModality(); }
-  private final WindowWrapper peek()           { return windows.isEmpty() ? null : windows.getFirst(); }
+  public void push(Alert dlg)            { push(new AlertWrapper(dlg)); }
+  public void push(Stage stage)          { push(new StageWrapper(stage)); }
+  public boolean getCyclingFocus()       { return cyclingFocus; }
+  public Modality getOutermostModality() { return peek().getModality(); }
+  private WindowWrapper peek()           { return windows.isEmpty() ? null : windows.getFirst(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
 
-  private final void push(WindowWrapper window)
+  private void push(WindowWrapper window)
   {
     if (windows.isEmpty() == false)
     {
@@ -107,8 +110,8 @@ public class WindowStack
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
-  public final void focusStage(Stage stage)
-  {
+  public void focusStage(Stage stage)
+  {    
     if (getOutermostModality() != Modality.NONE)
       return;
   
@@ -118,7 +121,7 @@ public class WindowStack
     {
       Stage curStage = StageWrapper.class.cast(window).getStage();
       if (stage != curStage)
-        curStage.toFront(); 
+        curStage.toFront();
     });
     
     stage.toFront();
@@ -127,6 +130,15 @@ public class WindowStack
     {
       for (int ndx = 0; ndx < 6; ndx++)
       {
+        for (Window window : Window.getWindows()) 
+        {
+          if (window.getOwner() != null)
+          {
+            cyclingFocus = false;
+            return;
+          }
+        }
+       
         sleepForMillis(50);
         stage.toFront();
       }
@@ -140,7 +152,7 @@ public class WindowStack
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
-  private final void disableMainMenu()
+  private void disableMainMenu()
   {
     itemsDisabled.clear();
     
@@ -154,7 +166,7 @@ public class WindowStack
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
 
-  public final Stage getOutermostStage()
+  public Stage getOutermostStage()
   {
     for (WindowWrapper window : windows)
       if (window.isStage())
@@ -166,7 +178,7 @@ public class WindowStack
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
 
-  public final void pop()
+  public void pop()
   {
     if (windows.isEmpty()) return;
     WindowWrapper closingWindow = windows.removeFirst(), focusingWindow = windows.getFirst();

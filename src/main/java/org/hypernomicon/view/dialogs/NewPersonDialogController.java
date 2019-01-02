@@ -26,10 +26,11 @@ import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Person.PotentialKeySet;
 import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.hdtPerson;
+import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
@@ -42,13 +43,15 @@ import java.util.function.UnaryOperator;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 
 public class NewPersonDialogController extends HyperDialog
@@ -56,14 +59,22 @@ public class NewPersonDialogController extends HyperDialog
   @FXML private TextField tfLastName;
   @FXML private TextField tfFirstName;
   @FXML private TextField tfSearchKey;
+  
+  @FXML private RadioButton rbUseName;
+  @FXML private RadioButton rbUseDupName;
+  @FXML private RadioButton rbCreateNoMerge;
+  @FXML private RadioButton rbAddNoCreate;
+  @FXML private RadioButton rbMerge;
+  @FXML private ToggleGroup grpAction;
+  
+  @FXML private TextField tfDupLastName;
+  @FXML private TextField tfDupFirstName;
+  @FXML private TextField tfDupSearchKey;
+  @FXML private Label lblSearchKey;
+  @FXML private Label lblDupSearchKey;
+  
   @FXML private Button btnOK;
-  @FXML private Button btnUse;
   @FXML private Button btnCancel;
-  @FXML private Button btnMerge;
-  @FXML private Button btnDontMerge;
-  @FXML private Button btnMergeCancel;
-  @FXML public CheckBox chkCreate;
-  @FXML private Label lblDupName;
   @FXML private Label lblDupType;
   @FXML private Label lblDupTitle;
   @FXML private Label lblDupYear;
@@ -78,11 +89,14 @@ public class NewPersonDialogController extends HyperDialog
   private HyperTask task;
   private Thread thread;
   private List<Author> matchedAuthors = null;
-  private ArrayList<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
+  private final ArrayList<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
 
-  public HDT_Person getPerson()    { return person; }
-  public PersonName getName()      { return new PersonName(tfFirstName.getText(), tfLastName.getText()); }
-  public String getNameLastFirst() { return getName().getLastFirst(); }
+  public HDT_Person getPerson()     { return person; }
+  public PersonName getName()       { return new PersonName(tfFirstName.getText(), tfLastName.getText()); }
+  public String getNameLastFirst()  { return getName().getLastFirst(); }
+  private int numMatches()          { return nullSwitch(matchedAuthors, 0, matchedAuths -> matchedAuths.size()); }
+  private Author curDupAuthor()     { return numMatches() == 0 ? null : matchedAuthors.get(tabPane.getSelectionModel().getSelectedIndex()); }
+  private HDT_Person curDupPerson() { return nullSwitch(curDupAuthor(), null, author -> author.getPerson()); }
   
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
@@ -113,6 +127,8 @@ public class NewPersonDialogController extends HyperDialog
     this.person = person;
     this.origAuthor = origAuthor;
     
+    rbCreateNoMerge.setText(person == null ? "Create Person Record" : "Don't Merge");
+    
     if ((person == null) && (origAuthor != null))
       person = origAuthor.getPerson();
     
@@ -123,11 +139,7 @@ public class NewPersonDialogController extends HyperDialog
     lblStatus.setVisible(false);
     progressIndicator.setVisible(false);
     tabPane.setVisible(false);
-    
-    btnDontMerge.setOnAction(event -> btnOkClick());
-    btnMerge.setOnAction(event -> btnMergeClick());
-    btnUse.setOnAction(event -> btnUseClick());
-    
+       
     tabPane.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
     {
       if (noTabUpdate) return;
@@ -138,26 +150,30 @@ public class NewPersonDialogController extends HyperDialog
       updateCurrentTab();
     });
     
+    lblSearchKey.setTooltip(new Tooltip("Regenerate search key"));
+    lblDupSearchKey.setTooltip(new Tooltip("Regenerate search key"));
+    
+    lblSearchKey.setOnMouseClicked(event -> setSearchKey(new PersonName(tfFirstName.getText(), tfLastName.getText())));
+    
+    lblDupSearchKey.setOnMouseClicked(event -> setSearchKey(new PersonName(tfDupFirstName.getText(), tfDupLastName.getText()), tfDupSearchKey));
+    
     tfFirstName.textProperty().addListener((observable, oldValue, newValue) ->
     {
       if (alreadyChangingName) return;
       setSearchKey(new PersonName(newValue, tfLastName.getText()));
       startDupThread(new PersonName(newValue, tfLastName.getText()));
     });
-    
+        
     if (mustCreate)
-      chkCreate.setDisable(true);
-    
-    tfSearchKey.disableProperty().bind(chkCreate.selectedProperty().not());
-    
-    chkCreate.selectedProperty().addListener((observable, oldValue, newValue) ->
     {
-      if (newValue == false)
-        btnMerge.setDisable(true);
-      else
-        btnMerge.setDisable(matchedAuthors.size() == 0);
-    });
+      rbAddNoCreate.setDisable(true);
+      rbCreateNoMerge.setSelected(true);
+    }
+      
+    grpAction.selectedToggleProperty().addListener((o, ov, nv) -> updateRadioButtons());
     
+    tfSearchKey.disableProperty().bind(rbAddNoCreate.selectedProperty());
+        
     UnaryOperator<TextFormatter.Change> filter = (change) ->
     {
       if (alreadyChangingName) return change;
@@ -227,91 +243,36 @@ public class NewPersonDialogController extends HyperDialog
     else
       startDupThread(personName);
   }
-
+ 
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
   private void setSearchKey(PersonName name)
   {
+    setSearchKey(name, tfSearchKey);
+  }
+  
+  private void setSearchKey(PersonName name, TextField tf)
+  {
+    HDT_Person personToUse = person, dupPerson = curDupPerson();
+    
+    if ((personToUse == null) || ((tf == tfDupSearchKey) && (dupPerson != null)))
+      personToUse = dupPerson;
+    
     StringBuilder sb = new StringBuilder();
-    HDT_Person.makeSearchKey(name, person, sb);
-    tfSearchKey.setText(sb.toString());
+    HDT_Person.makeSearchKey(name, personToUse, sb);
+    tf.setText(sb.toString());
   }
  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
-  @Override protected boolean isValid()
-  {
-    if (chkCreate.isSelected() == false)
-    {
-      stopDupThread();
-      return true;
-    }
-
-    boolean deletePerson = (person == null);
-    
-    if (person == null)
-      person = db.createNewBlankRecord(hdtPerson);
-    
-    try 
-    {
-      person.setSearchKey(tfSearchKey.getText());
-    } 
-    catch (SearchKeyException e)
-    {
-      if (deletePerson)
-      {
-        db.deleteRecord(hdtPerson, person.getID());
-        person = null;
-      }
-      
-      if (e.getTooShort())
-        messageDialog("Unable to modify record: search key must be at least 3 characters.", mtError);
-      else
-        messageDialog("Unable to modify record: search key already exists.", mtError);
-      
-      safeFocus(tfSearchKey);
-      return false;
-    }
-    
-    person.setName(new PersonName(tfFirstName.getText(), tfLastName.getText()));
-    
-    stopDupThread();
-    return true;
-  }
-
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------
-
-  public void expand()
-  {
-    double height = 323.0 * displayScale;
-    double diff = dialogStage.getHeight() - mainPane.getHeight();
-    
-    mainPane.setMinHeight(height);    
-    mainPane.setMaxHeight(height);
-    mainPane.setPrefHeight(height);
-    
-    dialogStage.setMinHeight(height + diff);
-    dialogStage.setMaxHeight(height + diff);
-    dialogStage.setHeight(height + diff);
-           
-    tabPane.setVisible(true);
-  }
-
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
   private void stopDupThread()
   {
-    if (task == null) return;
+    if ((task == null) || (task.isRunning() == false)) return;
     
-    if (task.isRunning())
-    {
-      task.cancel();
-      try { thread.join(); } catch (Exception e) { noOp(); }
-    }    
+    task.cancel();
+    try { thread.join(); } catch (Exception e) { noOp(); }
   }
 
 //---------------------------------------------------------------------------  
@@ -322,7 +283,8 @@ public class NewPersonDialogController extends HyperDialog
     public PersonForDupCheck(Author author)
     {
       this.author = author;
-      keySet = HDT_Person.makeSearchKeySet(author.getName(), true, false, true);
+      keySet = HDT_Person.makeSearchKeySet(author.getName(), true, true, false);
+      keySetNoNicknames = HDT_Person.makeSearchKeySet(author.getName(), true, true, true);
       
       fullLCNameEngChar = author.getFullName(true).toLowerCase();
       while (fullLCNameEngChar.contains("("))
@@ -341,7 +303,8 @@ public class NewPersonDialogController extends HyperDialog
       this.author = author;
       this.name = name;
       
-      keySet = HDT_Person.makeSearchKeySet(name, true, false, true);
+      keySet = HDT_Person.makeSearchKeySet(name, true, true, false);
+      keySetNoNicknames = HDT_Person.makeSearchKeySet(name, true, true, true);
       
       fullLCNameEngChar = convertToEnglishChars(String.valueOf(name.getFull())).toLowerCase();
       while (fullLCNameEngChar.contains("("))
@@ -350,12 +313,12 @@ public class NewPersonDialogController extends HyperDialog
       fullLCNameEngChar = ultraTrim(fullLCNameEngChar);
     }
 
-    public HDT_Person getPerson()    { return author == null ? null : author.getPerson(); }    
-    public Author getAuthor()        { return author; }    
-    public PersonName getName()      { return name; }      
+    public HDT_Person getPerson() { return nullSwitch(author, null, author -> author.getPerson()); }    
+    public Author getAuthor()     { return author; }    
+    public PersonName getName()   { return name; }      
     
     private Author author;
-    private PotentialKeySet keySet;
+    private PotentialKeySet keySet, keySetNoNicknames;
     private String fullLCNameEngChar;
     private PersonName name;    
   }
@@ -366,45 +329,35 @@ public class NewPersonDialogController extends HyperDialog
   public static LinkedList<PersonForDupCheck> createListForDupCheck()
   {
     LinkedList<PersonForDupCheck> list = new LinkedList<>();
-    HashSet<HDT_Person> persons = new HashSet<>();
-    PersonForDupCheck personForDupCheck;
+    HashSet<HDT_Person> persons = new HashSet<>();    
     
-    for (HDT_Work work : db.works)
-    {
-      Authors authors = work.getAuthors();
-                
-      if (work.getAuthors().size() == 0)
-        continue;
+    for (HDT_Work work : db.works) work.getAuthors().forEach(author ->
+    {     
+      HDT_Person person = author.getPerson();
       
-      for (Author author : authors)
+      if (person != null)
       {
-        HDT_Person person = author.getPerson();
+        if (persons.contains(person))
+          return;
         
-        if (person != null)
-        {
-          if (persons.contains(person))
-            continue;
-          
-          persons.add(person);
-        }
-        
-        personForDupCheck = new PersonForDupCheck(author);
-        
-        if (personForDupCheck.fullLCNameEngChar.length() > 0)
-          list.add(personForDupCheck);        
+        persons.add(person);
       }
-    }
+      
+      PersonForDupCheck personForDupCheck = new PersonForDupCheck(author);
+      
+      if (personForDupCheck.fullLCNameEngChar.length() > 0)
+        list.add(personForDupCheck);        
+    });
     
-    for (HDT_Person person : db.persons)
+    db.persons.forEach(person ->
     {
-      if (person.works.isEmpty())
-      {
-        personForDupCheck = new PersonForDupCheck(new Author(person));
-        
-        if (personForDupCheck.fullLCNameEngChar.length() > 0)
-          list.add(personForDupCheck);        
-      }
-    }
+      if (person.works.isEmpty() == false) return;
+
+      PersonForDupCheck personForDupCheck = new PersonForDupCheck(new Author(person));
+      
+      if (personForDupCheck.fullLCNameEngChar.length() > 0)
+        list.add(personForDupCheck);        
+    });
     
     return list;
   }
@@ -414,25 +367,31 @@ public class NewPersonDialogController extends HyperDialog
 
   public static void doDupCheck(PersonForDupCheck person1, LinkedList<PersonForDupCheck> list, ArrayList<Author> matchedAuthors, HyperTask task, int ctr, int total) throws TerminateTaskException
   {
+    if (person1.fullLCNameEngChar.length() == 0) return;
+    
     HashSet<HDT_Person> matchedPersons = new HashSet<>();
     
+    HDT_Work work1 = nullSwitch(person1.author, null, author -> author.getWork());
+    
     for (PersonForDupCheck person2 : list)
-    {        
-      if (person1.author == person2.author)                continue;
-      else if (person1.getPerson() == person2.getPerson()) continue;
+    {              
+      if      (nullSwitch(person1.author     , false, author -> author == person2.author     )) continue;
+      else if (nullSwitch(person1.getPerson(), false, person -> person == person2.getPerson())) continue;
+      
+      if ((work1 != null) && (person1.fullLCNameEngChar.equals(person2.fullLCNameEngChar)))
+        if (nullSwitch(person2.author, false, author -> work1 == author.getWork()))
+          continue;
       
       boolean isMatch = false;
-      
-      if      (person1.keySet.isSubsetOf(person2.keySet))                   isMatch = true;
-      else if (person2.keySet.isSubsetOf(person1.keySet))                   isMatch = true;
+            
+      if      (person1.keySetNoNicknames.isSubsetOf(person2.keySet))        isMatch = true;
+      else if (person2.keySetNoNicknames.isSubsetOf(person1.keySet))        isMatch = true;
       else if (person1.fullLCNameEngChar.equals(person2.fullLCNameEngChar)) isMatch = true;
       
       if (isMatch)
       {
         matchedAuthors.add(person2.author);
-        HDT_Person personRecord = person2.author.getPerson();
-        if (personRecord != null)
-          matchedPersons.add(personRecord);       
+        nullSwitch(person2.author.getPerson(), personRecord -> matchedPersons.add(personRecord));       
       }
       
       if (task.isCancelled()) throw new TerminateTaskException();
@@ -446,18 +405,17 @@ public class NewPersonDialogController extends HyperDialog
     
     HDT_Person otherPerson = HDT_Person.lookUpByName(person1.getName());
     
-    if ((otherPerson != person1.getPerson()) && (otherPerson != null))
-      if (matchedPersons.contains(otherPerson) == false)
-      {
-        matchedAuthors.add(new Author(otherPerson));
-        matchedPersons.add(otherPerson);
-      }
+    if ((otherPerson != person1.getPerson()) && (otherPerson != null) && (matchedPersons.contains(otherPerson) == false))
+    {
+      matchedAuthors.add(new Author(otherPerson));
+      matchedPersons.add(otherPerson);
+    }
   }
  
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
-  public static HyperTask createDupCheckTask(List<PersonName> nameList, Author queryAuthor, HDT_Person queryPerson, List<ArrayList<Author>> matchedAuthorsList, Runnable finishHndlr)
+  public static HyperTask createDupCheckTask(List<PersonName> nameList, List<Author> queryAuthors, List<ArrayList<Author>> matchedAuthorsList, Runnable finishHndlr)
   {
     return new HyperTask() { @Override protected Boolean call() throws Exception
     {
@@ -471,8 +429,8 @@ public class NewPersonDialogController extends HyperDialog
       {
         ArrayList<Author> matchedAuthors = new ArrayList<>();
         matchedAuthorsList.add(matchedAuthors);
-        
-        PersonForDupCheck person = new PersonForDupCheck(nameList.get(ndx), queryAuthor, queryPerson);
+        Author author = queryAuthors.get(ndx);
+        PersonForDupCheck person = new PersonForDupCheck(nameList.get(ndx), author, author == null ? null : author.getPerson());
         
         doDupCheck(person, list, matchedAuthors, this, ndx * list.size(), nameList.size() * list.size());
       }
@@ -495,8 +453,8 @@ public class NewPersonDialogController extends HyperDialog
     lblStatus.setText("Searching for duplicates...");
     lblStatus.setVisible(true);
     progressIndicator.setVisible(true);
-      
-    task = createDupCheckTask(Collections.singletonList(personName), origAuthor, person, matchedAuthorsList, this::finishDupSearch);
+    
+    task = createDupCheckTask(Collections.singletonList(personName), Collections.singletonList(origAuthor), matchedAuthorsList, this::finishDupSearch);
         
     task.updateProgress(0, 1);
     
@@ -515,7 +473,7 @@ public class NewPersonDialogController extends HyperDialog
     progressIndicator.progressProperty().unbind();
     progressIndicator.setProgress(1.0);
     
-    matchedAuthors = matchedAuthorsList.get(0);
+    matchedAuthors = matchedAuthorsList.size() > 0 ? matchedAuthorsList.get(0) : Collections.emptyList();
     
     if (origAuthor != null)
       while (matchedAuthors.contains(origAuthor))
@@ -535,91 +493,102 @@ public class NewPersonDialogController extends HyperDialog
     
     tabPane.getTabs().get(0).setContent(apDup);
     
-    if (matchedAuthors.size() > 0)
+    if (numMatches() > 0)
     {     
       tabPane.getTabs().get(0).setText("Potential dup. #1");
       
-      for (int ndx = 1; ndx < matchedAuthors.size(); ndx++)
+      int numTabs = Math.min(20, matchedAuthors.size()); // prevent large number of tabs from being created
+      
+      for (int ndx = 1; ndx < numTabs; ndx++)
+        tabPane.getTabs().add(new Tab("Potential dup. #" + String.valueOf(ndx + 1)));
+      
+      if (tabPane.isVisible() == false) // Expand dialog vertically to reveal duplicate author tabs
       {
-        Tab tab;
-        
-        if (ndx > 0)
-        {
-          tab = new Tab("Potential dup. #" + String.valueOf(ndx + 1));
-          tabPane.getTabs().add(tab);
-        }
+        double height = 419.0 * displayScale,
+               diff = dialogStage.getHeight() - mainPane.getHeight();
+     
+         mainPane.setMinHeight(height);    
+         mainPane.setMaxHeight(height);
+         mainPane.setPrefHeight(height);
+         
+         dialogStage.setMinHeight(height + diff);
+         dialogStage.setMaxHeight(height + diff);
+         dialogStage.setHeight(height + diff);
+                
+         tabPane.setVisible(true);
+         
+         if (person == null)
+           rbCreateNoMerge.setText("Create Record Without Merging");
+         
+         rbCreateNoMerge.setSelected(false);
+         rbAddNoCreate.setSelected(false);
       }
-      
-      btnMerge.setDisable(false);
-      btnDontMerge.setDisable(false);
-      btnMergeCancel.setDisable(false);
-      
-      btnUse.setDisable(false);
-      
-      btnOK.setDisable(true);
-      btnCancel.setDisable(true);
-      
-      btnOK.setDefaultButton(false);
-      btnCancel.setCancelButton(false);
-      
-      btnMerge.setDefaultButton(true);
-      btnMergeCancel.setCancelButton(true);
-      
-      updateCurrentTab();
-      
-      if (tabPane.isVisible() == false)
-        expand();
     }
     else
-    {
       tabPane.getTabs().get(0).setText("No potential duplicates found.");
-      
-      lblDupName.setText("");
-      lblDupTitle.setText("");
-      lblDupType.setText("");
-      lblDupYear.setText("");
-      
-      btnUse.setDisable(true);
-      
-      btnMerge.setDisable(true);
-      btnDontMerge.setDisable(true);
-      btnMergeCancel.setDisable(true);
-      
-      btnOK.setDisable(false);
-      btnCancel.setDisable(false);
 
-      btnMerge.setDefaultButton(false);
-      btnMergeCancel.setCancelButton(false);
-
-      btnOK.setDefaultButton(true);
-      btnCancel.setCancelButton(true);
-    }
+    updateCurrentTab();
   }
+ 
+//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------  
 
+  private void updateRadioButtons()
+  {
+    boolean noMatches = numMatches() == 0,
+            notMerging = rbCreateNoMerge.isSelected() || rbAddNoCreate.isSelected() || noMatches;
+    
+    if (notMerging)
+    {
+      rbUseDupName.setSelected(false);
+      rbUseName   .setSelected(false);
+    }
+
+    if (noMatches) rbMerge.setSelected(false);
+
+    rbUseName   .setDisable(notMerging);
+    rbUseDupName.setDisable(notMerging);
+    
+    rbMerge       .setDisable(noMatches);
+    tfDupFirstName.setDisable(noMatches);
+    tfDupLastName .setDisable(noMatches);
+    tfDupSearchKey.setDisable(noMatches);
+  }
+  
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
   private void updateCurrentTab()
   {
-    int ndx = tabPane.getSelectionModel().getSelectedIndex();
-    
-    Author author = matchedAuthors.get(ndx);
-    
-    lblDupName.setText(author.getNameLastFirst());
-    
-    HDT_Work work = author.getWork();
-    if (work != null)
+    tfDupSearchKey.setText("");
+      
+    lblDupTitle.setText("");
+    lblDupType .setText("");
+    lblDupYear .setText("");
+
+    if (numMatches() == 0)
     {
-      lblDupTitle.setText(work.name());
-      lblDupType.setText(work.workType.get().name());
-      lblDupYear.setText(work.getYear());
+      tfDupFirstName.setText("");
+      tfDupLastName .setText("");
     }
     else
-    {
-      lblDupTitle.setText("");
-      lblDupType.setText("");
-      lblDupYear.setText("");
+    {    
+      Author author = curDupAuthor();
+      
+      tfDupFirstName.setText(author.getFirstName());
+      tfDupLastName .setText(author.getLastName());
+      
+      nullSwitch(author.getPerson(), authPerson -> tfDupSearchKey.setText(authPerson.getSearchKey()));      
+  
+      nullSwitch(author.getWork(), work ->
+      {
+        lblDupTitle.setText(work.name());
+        lblDupType .setText(nullSwitch(work.workType.get(), "", HDT_WorkType::name));
+        lblDupYear .setText(work.getYear());
+      });
     }
+    
+    updateRadioButtons();
   }
 
 //---------------------------------------------------------------------------  
@@ -627,64 +596,103 @@ public class NewPersonDialogController extends HyperDialog
 
   @FXML @Override protected void btnCancelClick()
   {
-    okClicked = false;
-    stopDupThread();
-    dialogStage.close();
+    stopDupThread();    
+    super.btnCancelClick();
   }
-
+  
 //---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------
-
-  private void btnUseClick()
-  {    
-    Author author = matchedAuthors.get(tabPane.getSelectionModel().getSelectedIndex());
-   
-    if (getNameLastFirst().equals(author.getNameLastFirst()))
-      return;
-    
-    alreadyChangingName = true;
-    tfFirstName.setText(author.getFirstName());
-    alreadyChangingName = false;
-    
-    tfLastName.setText(author.getLastName());
-  }
-
 //---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------
-
-  private void btnMergeClick()
+  
+  @Override protected boolean isValid()
   {
-    Author author = matchedAuthors.get(tabPane.getSelectionModel().getSelectedIndex());
-    
-    if ((author.getPerson() != null) && chkCreate.isSelected() && (chkCreate.isDisabled() == false))
-      chkCreate.setSelected(false);
-      
-    if (isValid() == false) return; // if chkCreate is selected, isValid sets 'person' equal to a new person record. Otherwise, it does nothing.
-    
-    if (author.getPerson() != null)
+    if (grpAction.getSelectedToggle() == null) 
+      return falseWithErrorMessage("Select which action to take.");
+
+    if (rbAddNoCreate.isSelected())
     {
-      if (person == null)
-        person = author.getPerson();
-      else
+      stopDupThread();
+      
+      if (origAuthor != null)
       {
-        messageDialog("Unable to merge automatically; a person record already exists for both authors. You will need to merge them manually.", mtWarning);
-        okClicked = true;
-        dialogStage.close();
-        return;
+        HDT_Work work = origAuthor.getWork();
+        PersonName newName = new PersonName(tfFirstName.getText(), tfLastName.getText());
+        
+        work.getAuthors().update(origAuthor, new Author(work, newName, origAuthor.getIsEditor(), origAuthor.getIsTrans(), origAuthor.getInFileName()));      
+      }
+        
+      return true;
+    }
+    
+    Author dupAuthor = curDupAuthor();
+    HDT_Person dupPerson = curDupPerson();
+    
+    if (rbMerge.isSelected())
+    {
+      if ((rbUseDupName.isSelected() == false) && (rbUseName.isSelected() == false))
+        return falseWithErrorMessage("Select which name/search key should be used.");
+      
+      if (dupPerson != null)
+      {
+        if (person == null)
+          person = dupPerson;
+        else
+        {
+          messageDialog("Unable to merge automatically; a person record already exists for both authors. You will need to merge them manually.", mtWarning);
+          rbCreateNoMerge.setSelected(true);
+          return false;
+        }
+      }
+    }
+
+    boolean deletePerson = person == null;
+    
+    if (deletePerson)
+      person = db.createNewBlankRecord(hdtPerson);
+    
+    String searchKey = rbUseDupName.isSelected() ? tfDupSearchKey.getText() : tfSearchKey.getText();
+    
+    try
+    {
+      person.setSearchKey(searchKey);
+    } 
+    catch (SearchKeyException e)
+    {
+      if (deletePerson)
+      {
+        db.deleteRecord(hdtPerson, person.getID());
+        person = null;
+      }
+      
+      if (e.getTooShort())
+        messageDialog("Unable to modify record: search key must be at least 3 characters.", mtError);
+      else
+        messageDialog("Unable to modify record: search key already exists.", mtError);
+      
+      safeFocus(tfSearchKey);
+      return false;
+    }
+    
+    if (rbMerge.isSelected())
+    {
+      if (dupPerson == null)
+        dupAuthor.getWork().getAuthors().setAuthorRecord(dupAuthor, person);
+      
+      if ((origAuthor != null) && (origAuthor.getPerson() == null))
+      {
+        Authors authors = origAuthor.getWork().getAuthors();
+        
+        if (authors.asCollection().contains(origAuthor))
+          authors.setAuthorRecord(origAuthor, person);
       }
     }
     
-    if (author.getPerson() == null)
-      author.getWork().getAuthors().setAuthorRecord(author, person);
+    if (rbUseDupName.isSelected())
+      person.setName(new PersonName(tfDupFirstName.getText(), tfDupLastName.getText()));
+    else
+      person.setName(new PersonName(tfFirstName.getText(), tfLastName.getText()));
     
-    if (origAuthor != null)
-      if (origAuthor.getPerson() == null)
-        origAuthor.getWork().getAuthors().setAuthorRecord(origAuthor, person);
-    
-    person.setName(new PersonName(tfFirstName.getText(), tfLastName.getText()));
-    
-    okClicked = true;
-    dialogStage.close();
+    stopDupThread();
+    return true;
   }
 
 //---------------------------------------------------------------------------  

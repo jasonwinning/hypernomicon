@@ -93,7 +93,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   @Override public void focusOnSearchKey()                   { ctrlr.focusOnSearchKey(); }
   @Override public void findWithinDesc(String text)          { ctrlr.hilite(text); }
   @Override public TextViewInfo getMainTextInfo()            { return ctrlr.getMainTextInfo(); }
-  @Override public void setRecord(HDT_Concept activeRecord)  { curConcept = activeRecord; curTerm = curConcept == null ? null : curConcept.term.get(); }
+  @Override public void setRecord(HDT_Concept concept)       { curConcept = concept; curTerm = curConcept == null ? null : curConcept.term.get(); }
   @Override public boolean saveToRecord(boolean showMessage) { return ctrlr.save(curConcept, showMessage, this); }
 
   @Override public void newClick(HDT_RecordType objType, HyperTableRow row) { return; }

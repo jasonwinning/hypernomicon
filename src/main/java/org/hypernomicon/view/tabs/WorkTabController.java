@@ -200,13 +200,13 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   public HyperTable htAuthors;
   public HyperCB hcbType;
 
-  @Override public HDT_RecordType getType()              { return hdtWork; }
-  @Override public void enable(boolean enabled)          { ui.tabWorks.getContent().setDisable(enabled == false); }
-  @Override public void findWithinDesc(String text)      { mainText.hilite(text); }  
-  @Override public TextViewInfo getMainTextInfo()        { return mainText.getViewInfo(); }
-  @Override public void setRecord(HDT_Work activeRecord) { curWork = activeRecord; }
-  @Override public void focusOnSearchKey()               { safeFocus(tfSearchKey); }
-  @Override public MainTextWrapper getMainTextWrapper()  { return mainText; }
+  @Override public HDT_RecordType getType()             { return hdtWork; }
+  @Override public void enable(boolean enabled)         { ui.tabWorks.getContent().setDisable(enabled == false); }
+  @Override public void findWithinDesc(String text)     { mainText.hilite(text); }  
+  @Override public TextViewInfo getMainTextInfo()       { return mainText.getViewInfo(); }
+  @Override public void setRecord(HDT_Work work)        { curWork = work; }
+  @Override public void focusOnSearchKey()              { safeFocus(tfSearchKey); }
+  @Override public MainTextWrapper getMainTextWrapper() { return mainText; }
   
   public List<Author> getAuthorsFromUI()       { return Authors.getListFromObjectGroups(getAuthorGroups(), curWork); }  
   public String getShortAuthorsStr()           { return Authors.getShortAuthorsStr(getAuthorsFromUI(), false, true); }
@@ -239,7 +239,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     
     htAuthors.addCondRowBasedContextMenuItem("Remove this row",
         row -> (row.getText(1).length() > 0) && (row.getID(1) < 1),
-        row -> htAuthors.removeRow(row));
+        htAuthors::removeRow);
 
     htAuthors.addCondRowBasedContextMenuItem("Create person record",
         row -> (row.getText(1).length() > 0) && (row.getID(1) < 1),
@@ -330,15 +330,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     
     htWorkFiles = new HyperTable(tvWorkFiles, 2, true, PREF_KEY_HT_WORK_FILES);
     
-    htWorkFiles.addActionColWithButtonHandler(ctEditNewBtn, 2, (row, colNdx) ->
-    {
-      HDT_WorkFile workFile = null;
-      int id = row.getID(colNdx);
-      if (id > 0)
-        workFile = db.workFiles.getByID(id);
-           
-      showWorkDialog(workFile);
-    });
+    htWorkFiles.addActionColWithButtonHandler(ctEditNewBtn, 2, (row, colNdx) -> showWorkDialog(row.getRecord(colNdx)));
     
     htWorkFiles.addCheckboxCol();
     htWorkFiles.addCol(hdtWorkFile, ctNone);
@@ -391,7 +383,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     
     htWorkFiles.addCondContextMenuItem("Update or rename this work file", HDT_WorkFile.class,
         workFile -> workFile.getPath().isEmpty() == false,
-        workFile -> showWorkDialog(workFile));
+        this::showWorkDialog);
     
     htWorkFiles.addCondContextMenuItemOkayIfBlank("Select parent work file", 
         record -> 
@@ -850,9 +842,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
         HDT_Position position = arg.positions.get(0);
         row.setCellValue(0, position, position.listName());
       
-        HDT_PositionVerdict verdict = arg.getPosVerdict(position);
-        if (verdict != null)
-          row.setCellValue(1, verdict, verdict.listName());
+        nullSwitch(arg.getPosVerdict(position), verdict -> row.setCellValue(1, verdict, verdict.listName()));
       }
       
       row.setCellValue(2, arg, arg.listName());
@@ -876,11 +866,11 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   // Other stuff
   // -----------
     
-    int invCnt = curWork.investigations.size(),
-        subworkCnt = curWork.subWorks.size(),
-        argCnt = curWork.arguments.size(),
-        miscFileCnt = curWork.miscFiles.size(),
-        workFileCnt = curWork.workFiles.size();
+    int invCnt      = curWork.investigations.size(),
+        subworkCnt  = curWork.subWorks      .size(),
+        argCnt      = curWork.arguments     .size(),
+        miscFileCnt = curWork.miscFiles     .size(),
+        workFileCnt = curWork.workFiles     .size();
     
     setTabCaption(tabWorkFiles     , workFileCnt);
     setTabCaption(tabSubworks      , subworkCnt);
@@ -1721,18 +1711,13 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     curWork.setName(tfTitle.getText());
     curWork.workType.setID(hcbType.selectedID());
     
-    htWorkFiles.getDataRows().forEach(row ->
+    htWorkFiles.getDataRows().forEach(row -> nullSwitch((HDT_WorkFile)row.getRecord(), file ->
     {      
-      HDT_WorkFile file = row.getRecord();
-      
-      if (file != null)
-      {
-        file.setAnnotated(row.getCheckboxValue(1));       
-        curWork.setStartPageNum(file, parseInt(row.getText(3), -1));
-        curWork.setEndPageNum(file, parseInt(row.getText(4), -1));
-        file.setName(row.getText(5));        
-      }
-    });
+      file.setAnnotated(row.getCheckboxValue(1));       
+      curWork.setStartPageNum(file, parseInt(row.getText(3), -1));
+      curWork.setEndPageNum(file, parseInt(row.getText(4), -1));
+      file.setName(row.getText(5));        
+    }));
     
     boolean needToSaveISBNs = true, noIsbnUpdate = false;
        
@@ -2114,7 +2099,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     try
     {
       mwd = MergeWorksDialogController.create("Merge Bibliographic Data", workBibData, 
-                                              pdfBD.get(), crossrefBD.get(), googleBD.get(), false, creatingNewEntry);
+                                              pdfBD.get(), crossrefBD.get(), googleBD.get(), curWork, false, creatingNewEntry);
     }
     catch (IOException e)
     {

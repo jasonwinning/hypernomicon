@@ -57,9 +57,9 @@ public class BibAuthorsStandalone extends BibAuthors
 
   private boolean listsAreEmpty()
   {
-    return ((authors.get(AuthorType.author).size() == 0) &&
-            (authors.get(AuthorType.editor).size() == 0) &&
-            (authors.get(AuthorType.translator).size() == 0));    
+    return (authors.get(AuthorType.author).size() == 0) &&
+           (authors.get(AuthorType.editor).size() == 0) &&
+           (authors.get(AuthorType.translator).size() == 0);    
   }
 
 //---------------------------------------------------------------------------

@@ -43,7 +43,7 @@ public class HyperSubjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HD
 //---------------------------------------------------------------------------
 
   @Override public int size()                                             { return relSet.getSubjectCount(obj); }
-  @Override public boolean isEmpty()                                      { return (size() == 0); }
+  @Override public boolean isEmpty()                                      { return size() == 0; }
   @Override public HDT_SubjType get(int ndx)                              { return relSet.getSubject(obj, ndx); }
   @Override public int lastIndexOf(Object o)                              { return indexOf(o); }
   @Override public List<HDT_SubjType> subList(int fromIndex, int toIndex) { return new HyperSubjSubList<HDT_SubjType, HDT_ObjType>(this, fromIndex, toIndex); }

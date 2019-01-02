@@ -29,7 +29,9 @@ import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.BibData.AuthorType;
 import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
+import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.view.dialogs.NewPersonDialogController;
@@ -160,7 +162,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 //---------------------------------------------------------------------------
 
   public void getListsForWorkMerge(List<PersonName> nameList, List<HDT_Person> personList, 
-                                   Map<PersonName, Boolean> nameToEd, Map<PersonName, Boolean> nameToTr)
+                                   Map<PersonName, Boolean> nameToEd, Map<PersonName, Boolean> nameToTr, HDT_Work destWork)
   {
     if (isEmpty()) return;
 
@@ -233,13 +235,17 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
     removeDupPersonRecordsFromLists(nameList, personList);
     
     ArrayList<PersonName> nonRecordNames = new ArrayList<>();
+    ArrayList<Author> nonRecordAuthors = new ArrayList<>();
     ArrayList<Integer> nameListIndices = new ArrayList<>();
     
     for (int ndx = 0; ndx < nameList.size(); ndx++)
     {
       if (personList.get(ndx) == null)
       {
-        nonRecordNames.add(nameList.get(ndx)); 
+        PersonName name = nameList.get(ndx);
+        
+        nonRecordNames.add(name);
+        nonRecordAuthors.add(new Author(destWork, name, nameToEd.get(name), nameToTr.get(name), Ternary.Unset));
         nameListIndices.add(ndx);
       }
     }
@@ -248,7 +254,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
     {
       List<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
       
-      HyperTask task = NewPersonDialogController.createDupCheckTask(nonRecordNames, null, null, matchedAuthorsList , null);
+      HyperTask task = NewPersonDialogController.createDupCheckTask(nonRecordNames, nonRecordAuthors, matchedAuthorsList, null);
       
       if (!HyperTask.performTaskWithProgressDialog(task)) return;
       
@@ -260,7 +266,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
         {
           int nameListNdx = nameListIndices.get(ndx);
           
-          NewPersonDialogController npdc = NewPersonDialogController.create(nonRecordNames.get(ndx), null, false, null, null, matchedAuthors);
+          NewPersonDialogController npdc = NewPersonDialogController.create(nonRecordAuthors.get(ndx).getName(), null, false, null, null, matchedAuthors);
           
           if (npdc.showModal() == false) return;
           

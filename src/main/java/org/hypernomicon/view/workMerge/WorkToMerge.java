@@ -21,6 +21,7 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.dialogs.WorkDialogController.createAuthorRecordHandler;
 import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
@@ -60,7 +61,7 @@ public class WorkToMerge
 
   public WorkToMerge(BibData bibData, RadioButton rbTitle, TextField tfTitle, RadioButton rbType, ComboBox<HyperTableCell> cbType, 
                                       RadioButton rbYear, TextField tfYear, RadioButton rbAuthors, TableView<HyperTableRow> tvAuthors,
-                                      boolean creatingNewWork)
+                                      HDT_Work destWork, boolean creatingNewWork)
   {
     this.bibData = bibData;
     this.creatingNewWork = creatingNewWork;
@@ -71,7 +72,7 @@ public class WorkToMerge
     
     htAuthors.addCol(hdtPerson, ctDropDownList);
     
-    HDT_Work workRecord = bibData.getWork();
+    HDT_Work workRecord = nullSwitch(bibData.getWork(), destWork, work -> work);
     
     htAuthors.addCheckboxColWithUpdateHandler(createAuthorRecordHandler(htAuthors, () -> workRecord));
     
@@ -84,10 +85,10 @@ public class WorkToMerge
     tfYear.setText(bibData.getStr(bfYear));
     if (tfYear.getText().isEmpty() == false) rbYear.setSelected(true);
     
-    if (workRecord != null)
-      loadFromWork(workRecord, rbType);
+    if (bibData.getWork() != null)
+      loadFromWork(bibData.getWork(), rbType);
     else
-      loadFromBibData(rbType);
+      loadFromBibData(rbType, destWork);
     
     if (htAuthors.getDataRowCount() > 0)
       rbAuthors.setSelected(true);
@@ -129,7 +130,7 @@ public class WorkToMerge
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------  
 
-  private void loadFromBibData(RadioButton rbType)
+  private void loadFromBibData(RadioButton rbType, HDT_Work destWork)
   {   
     HDT_WorkType workType = bibData.getWorkType();
     
@@ -141,7 +142,7 @@ public class WorkToMerge
     
     htAuthors.getPopulator(0).populate(null, false);
     
-    WorkDialogController.loadFromBibAuthors(bibData.getAuthors(), htAuthors, false);
+    WorkDialogController.loadFromBibAuthors(bibData.getAuthors(), htAuthors, false, destWork);
   }
 
 //---------------------------------------------------------------------------  

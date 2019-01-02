@@ -316,7 +316,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     String fieldKey = getFieldKey(bibFieldEnum);
     if (safeStr(fieldKey).equals("")) return false;
     
-    return (template.containsKey(fieldKey));
+    return template.containsKey(fieldKey);
   }
 
 //---------------------------------------------------------------------------  

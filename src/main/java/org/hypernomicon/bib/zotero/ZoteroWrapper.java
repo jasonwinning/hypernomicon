@@ -625,7 +625,8 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       
       try
       {
-        mwd = MergeWorksDialogController.create("Merge Remote Changes with Local Changes", item, new ZoteroItem(this, jObj, true), null, null, false, false);
+        mwd = MergeWorksDialogController.create("Merge Remote Changes with Local Changes", item, new ZoteroItem(this, jObj, true), 
+                                                null, null, item.getWork(), false, false);
       }
       catch (IOException e)
       {

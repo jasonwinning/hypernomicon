@@ -24,6 +24,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -80,7 +81,6 @@ import org.hypernomicon.view.reports.ReportTable;
 import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.CheckBoxOrCommandListCell.CheckBoxOrCommand;
 import org.hypernomicon.view.wrappers.ResultsTable.ColumnGroup;
-import org.hypernomicon.view.wrappers.ResultsTable.ResultCellValue;
 import org.hypernomicon.queryEngines.QueryEngine.QueryType;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -128,9 +128,10 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
                     programmaticFieldChange = false,
                     recordMode = true;
     
-    public boolean inRecordMode()           { return recordMode; }
-    public HDT_Base activeRecord()          { return curResult; }
-    private void setRecord(HDT_Base record) { curResult = record; }
+    public boolean inRecordMode()                     { return recordMode; }
+    public HDT_Base activeRecord()                    { return curResult; }
+    private void setRecord(HDT_Base record)           { curResult = record; }
+    private QueryType getQueryType(HyperTableRow row) { return QueryType.codeToVal(row.getID(0)); }
     
   //---------------------------------------------------------------------------  
   //---------------------------------------------------------------------------   
@@ -636,8 +637,6 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
       
       QuerySource combinedSource;
       Set<HDT_Base> filteredRecords = new LinkedHashSet<HDT_Base>();
-      FilteredQuerySource fqs;
-      DatasetQuerySource dqs;
       boolean hasFiltered = false, hasUnfiltered = false, needMentionsIndex = false; 
       EnumSet<HDT_RecordType> unfilteredTypes = EnumSet.noneOf(HDT_RecordType.class);
       LinkedHashMap<HyperTableRow, QuerySource> sources = new LinkedHashMap<>();
@@ -687,14 +686,12 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
           case QST_filteredRecords :
             
             hasFiltered = true;
-            fqs = (FilteredQuerySource) source;
-            unfilteredTypes.add(fqs.recordType());
+            unfilteredTypes.add(FilteredQuerySource.class.cast(source).recordType());
             break;
 
           case QST_recordsByType :
 
-            dqs = (DatasetQuerySource) source;
-            unfilteredTypes.add(dqs.recordType());
+            unfilteredTypes.add(DatasetQuerySource.class.cast(source).recordType());
             hasUnfiltered = true;
             break;
 
@@ -725,7 +722,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
         for (QuerySource src : sources.values())
           if (src.sourceType() == QuerySourceType.QST_filteredRecords)
           {
-            fqs = (FilteredQuerySource) src;
+            FilteredQuerySource fqs = (FilteredQuerySource) src;
             
             if (singleType == null)
               singleType = fqs.recordType();
@@ -767,15 +764,17 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
           
           record = combinedSource.getRecord(recordNdx);
           
-          boolean result, lastConnectiveWasOr = false, firstRow = true, add = false;
+          boolean lastConnectiveWasOr = false, firstRow = true, add = false;
           
-          for (HyperTableRow row : sources.keySet())
+          for (Entry<HyperTableRow, QuerySource> entry : sources.entrySet())
           {
-            QuerySource source = sources.get(row);
+            HyperTableRow row = entry.getKey();
+            QuerySource source = entry.getValue();
                           
             if (source.containsRecord(record))
             {
-              curQuery = row.getID(1); 
+              curQuery = row.getID(1);
+              boolean result = false;
               
               if (curQuery > -1)
               {                
@@ -786,8 +785,6 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
                 result = evaluate(record, row, finalSingleType != hdtNone, firstCall, recordNdx == (total - 1));
                 firstCall = false;
               }
-              else
-                result = false;
     
               if (firstRow)
                 add = result;
@@ -812,13 +809,12 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
       
       Platform.runLater(() -> resultsTable.getTV().setItems(FXCollections.observableList(resultsBackingList)));
       
-      for (Tag tag : resultTags)
-        if (tag != tagName)
-        {
-          TableColumn<ResultsRow, ResultCellValue<String>> col = resultsTable.addTagColumn(tag);
-          
-          colGroups.forEach(colGroup -> colGroup.setColumns(col, tag));
-        }
+      resultTags.forEach(tag ->
+      {
+        TableColumn<ResultsRow, ResultCellValue<String>> col = resultsTable.addTagColumn(tag);
+
+        colGroups.forEach(colGroup -> colGroup.setColumns(col, tag));
+      });
       
       return true;
     }
@@ -847,16 +843,12 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
         
         if (addToObsList)
         {
-          for (Tag tag : tags)
+          tags.forEach(tag ->
           {
-            if (tag != tagName)
-            {
-              TableColumn<ResultsRow, ResultCellValue<String>> col = resultsTable.addTagColumn(tag);
-              
-              for (ColumnGroup colGroup : colGroups)
-                colGroup.setColumns(col, tag);
-            }
-          }
+            if (tag == tagName) return;
+             
+            colGroups.forEach(colGroup -> colGroup.setColumns(resultsTable.addTagColumn(tag), tag));
+          });
         }
       }
 
@@ -884,15 +876,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
           return engine.needsMentionsIndex(query);
       }
     }
-
-    //---------------------------------------------------------------------------
-    //---------------------------------------------------------------------------
-
-    private QueryType getQueryType(HyperTableRow row)
-    {
-      return QueryType.codeToVal(row.getID(0));
-    }
-    
+   
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
@@ -981,14 +965,11 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
           
         case QUERY_WHERE_RELATIVE :
           
-          if (vp1.getPopulator(row) != null)
+          if ((vp1.getPopulator(row) != null) && (vp1.getPopulator(row).getValueType() == CellValueType.cvtRelation))
           {
-            if (vp1.getPopulator(row).getValueType() == CellValueType.cvtRelation)
-            {
-              RelationPopulator rp = vp1.getPopulator(row);
-              if (rp.getRecordType(row) == row.getType(0))
-                samePop = true;
-            }
+            RelationPopulator rp = vp1.getPopulator(row);
+            if (rp.getRecordType(row) == row.getType(0))
+              samePop = true;
           }
           
           if (samePop == false) 
@@ -1001,14 +982,11 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
           
         case QUERY_WHERE_FIELD :
           
-          if (vp1.getPopulator(row) != null)
+          if ((vp1.getPopulator(row) != null) && (vp1.getPopulator(row).getValueType() == CellValueType.cvtTagItem))
           {
-            if (vp1.getPopulator(row).getValueType() == CellValueType.cvtTagItem)
-            {
-              TagItemPopulator tip = vp1.getPopulator(row);
-              if (tip.getRecordType(null) == row.getType(0))
-                samePop = true;
-            }
+            TagItemPopulator tip = vp1.getPopulator(row);
+            if (tip.getRecordType(null) == row.getType(0))
+              samePop = true;
           }
           
           if (samePop == false) 
@@ -1231,12 +1209,11 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
       
       cbListenerToRemove = (observable, oldValue, newValue) ->
       {
-        if (newValue != null)
-          if (newValue.getRecord() != null)
-          { 
-            tvResults.getSelectionModel().select(newValue);
-            if (noScroll == false) HyperTable.scrollToSelection(tvResults, false);
-          }
+        if ((newValue != null) && (newValue.getRecord() != null))
+        { 
+          tvResults.getSelectionModel().select(newValue);
+          if (noScroll == false) HyperTable.scrollToSelection(tvResults, false);
+        }
       };
       
       cb.getSelectionModel().selectedItemProperty().addListener(cbListenerToRemove);
@@ -1297,21 +1274,28 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
   public static int curQuery;
   public static HyperTableCell param1, param2, param3;
   public ArrayList<QueryView> queryViews;
-  
-  @Override public HDT_RecordType getType()                  { return hdtNone; }
-  @Override public boolean update()                          { return true; }
-  @Override public void focusOnSearchKey()                   { return; }
-  @Override public void setRecord(HDT_Base activeRecord)     { if (curQV != null) curQV.setRecord(activeRecord); }
-  @Override public int getRecordCount()                      { return results().size(); }
-  @Override public TextViewInfo getMainTextInfo()            { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
-  @Override public void setDividerPositions()                { return; }
-  @Override public void getDividerPositions()                { return; }  
-  @Override public boolean saveToRecord(boolean showMessage) { return false; }
-  @FXML private void mnuCopyToFolderClick()                  { copyFilesToFolder(true); }
-  
+
+  public void setCB(ComboBox<ResultsRow> cb)        { this.cb = cb; updateCB(); }
+  private void updateCB()                           { if (curQV != null) curQV.updateCB(); }
+  public void btnExecuteClick()                     { curQV.btnExecuteClick(true); }   // if any of the queries are unfiltered, they
+                                                                                       // will all be treated as unfiltered  
+  @Override public HDT_RecordType getType()         { return hdtNone; }
+  @Override public boolean update()                 { return true; }
+  @Override public void focusOnSearchKey()          { return; }
+  @Override public void setRecord(HDT_Base rec)     { if (curQV != null) curQV.setRecord(rec); }
+  @Override public int getRecordCount()             { return results().size(); }
+  @Override public TextViewInfo getMainTextInfo()   { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
+  @Override public void setDividerPositions()       { return; }
+  @Override public void getDividerPositions()       { return; }  
+  @Override public boolean saveToRecord(boolean sm) { return false; }
+  @Override public HDT_Base activeRecord()          { return curQV == null ? null : curQV.activeRecord(); }
+  @Override public int getRecordNdx()               { return getRecordCount() > 0 ? curQV.tvResults.getSelectionModel().getSelectedIndex() : -1; }
+  @Override public void findWithinDesc(String text) { if (activeRecord() != null) MainTextWrapper.hiliteText(text, webView.getEngine()); }
+
   @Override public void newClick(HDT_RecordType objType, HyperTableRow row) { return; }
-   
-  public void btnExecuteClick() { curQV.btnExecuteClick(true); }   // if any of the queries are unfiltered, they will all be treated as unfiltered
+  
+  @FXML private void mnuCopyToFolderClick()         { copyFilesToFolder(true); }
+  @FXML private void mnuShowSearchFolderClick()     { if (db.isLoaded()) launchFile(db.getPath(PREF_KEY_RESULTS_PATH, null)); }
   
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------   
@@ -1532,7 +1516,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
     {
       case QUERY_WITH_NAME_CONTAINING :
         
-        return (record.listName().toUpperCase().indexOf(getCellText(param1).toUpperCase()) >= 0);
+        return record.listName().toUpperCase().indexOf(getCellText(param1).toUpperCase()) >= 0;
   
       case QUERY_ANY_FIELD_CONTAINS :
         
@@ -1562,7 +1546,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
         int subjCount = subjList.size();
 
         if ((opID == IS_EMPTY_OPERAND_ID) || (opID == IS_NOT_EMPTY_OPERAND_ID))
-          return ((subjCount == 0) == (opID == IS_EMPTY_OPERAND_ID));
+          return (subjCount == 0) == (opID == IS_EMPTY_OPERAND_ID);
           
         for (HDT_Base subjRecord : subjList)
         {
@@ -1571,12 +1555,12 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
             case EQUAL_TO_OPERAND_ID : case NOT_EQUAL_TO_OPERAND_ID :
               
               if (subjRecord.getID() == getCellID(param3))
-                return (opID == EQUAL_TO_OPERAND_ID);
+                return opID == EQUAL_TO_OPERAND_ID;
               
             case CONTAINS_OPERAND_ID : case DOES_NOT_CONTAIN_OPERAND_ID :
               
               if (subjRecord.listName().toLowerCase().contains(getCellText(param3).toLowerCase()))
-                return (opID == CONTAINS_OPERAND_ID);
+                return opID == CONTAINS_OPERAND_ID;
               
             default :
               break;
@@ -1586,10 +1570,10 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
         switch (opID)
         {  
           case EQUAL_TO_OPERAND_ID : case NOT_EQUAL_TO_OPERAND_ID :            
-            return (opID == NOT_EQUAL_TO_OPERAND_ID);
+            return opID == NOT_EQUAL_TO_OPERAND_ID;
             
           case CONTAINS_OPERAND_ID : case DOES_NOT_CONTAIN_OPERAND_ID :            
-            return (opID == DOES_NOT_CONTAIN_OPERAND_ID);
+            return opID == DOES_NOT_CONTAIN_OPERAND_ID;
 
           default :            
             return false;
@@ -1617,23 +1601,23 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
                 for (HDT_Base objRecord : db.getObjectList(schema.getRelType(), record, true))
                 {
                   if ((objRecord.getID() == getCellID(param3)) && (objRecord.getType() == getCellType(param3)))
-                    return (getCellID(param2) == EQUAL_TO_OPERAND_ID);
+                    return getCellID(param2) == EQUAL_TO_OPERAND_ID;
                 }
                 
-                return (getCellID(param2) == NOT_EQUAL_TO_OPERAND_ID);
+                return getCellID(param2) == NOT_EQUAL_TO_OPERAND_ID;
                 
               case cvtBoolean :
 
                 if ((getCellID(param3) != TRUE_BOOLEAN_ID) && (getCellID(param3) != FALSE_BOOLEAN_ID)) return false;
                 
-                return ((record.getTagBoolean(tag) == (getCellID(param3) == TRUE_BOOLEAN_ID)) == (getCellID(param2) == EQUAL_TO_OPERAND_ID));
+                return (record.getTagBoolean(tag) == (getCellID(param3) == TRUE_BOOLEAN_ID)) == (getCellID(param2) == EQUAL_TO_OPERAND_ID);
                 
               default :
                 
                 tagStrVal = record.getResultTextForTag(tag);
                 if (tagStrVal.length() == 0) return false;
                 
-                return (tagStrVal.trim().equalsIgnoreCase(getCellText(param3).trim()) == (getCellID(param2) == EQUAL_TO_OPERAND_ID)); 
+                return tagStrVal.trim().equalsIgnoreCase(getCellText(param3).trim()) == (getCellID(param2) == EQUAL_TO_OPERAND_ID); 
             }
             
           case CONTAINS_OPERAND_ID : case DOES_NOT_CONTAIN_OPERAND_ID :
@@ -1723,8 +1707,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
   {
     SearchResultFileList fileList = new SearchResultFileList();
     
-    if (db.isLoaded() == false) return false;    
-    if (results().size() < 1) return false;
+    if ((db.isLoaded() == false) || (results().size() < 1)) return false;
 
     task = new HyperTask() { @Override protected Boolean call() throws Exception
     {    
@@ -1781,15 +1764,6 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  @FXML private void mnuShowSearchFolderClick()
-  {
-    if (db.isLoaded() == false) return;
-    launchFile(db.getPath(PREF_KEY_RESULTS_PATH, null));
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
   @FXML private void mnuClearSearchFolderClick()
   {
     if (db.isLoaded() == false) return;
@@ -1801,49 +1775,6 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
     
     if (startWatcher)
       folderTreeWatcher.createNewWatcherAndStart();    
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void findWithinDesc(String text)
-  {
-    if (activeRecord() != null)
-      MainTextWrapper.hiliteText(text, webView.getEngine());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HDT_Base activeRecord()
-  {
-    return curQV == null ? null : curQV.activeRecord();
-  }
-  
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-  
-  @Override public int getRecordNdx()
-  {    
-    return getRecordCount() > 0 ? curQV.tvResults.getSelectionModel().getSelectedIndex() : -1;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void setCB(ComboBox<ResultsRow> cb)
-  {
-    this.cb = cb;
-    updateCB();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void updateCB()
-  {
-    if (curQV != null)
-      curQV.updateCB();
   }
 
 //---------------------------------------------------------------------------

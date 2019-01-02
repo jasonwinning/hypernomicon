@@ -82,25 +82,25 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   
   private boolean trackOrphans = false;
 
-  public final HDT_RecordType getObjType()                      { return objType; }
-  public final HDT_RecordType getSubjType()                     { return subjType; }
-  public final HDI_Schema getSchema(Tag tag)                    { return tagToSchema == null ? null : tagToSchema.get(tag); }
-  public final Collection<HDI_Schema> getSchemas()              { return tagToSchema.values(); }
-  public final HDT_RecordType getTargetType(Tag tag)            { return tagToTargetType.get(tag); }
-  public final boolean getHasNestedItems()                      { return hasNestedItems; }
-  public final void addChangeHandler(RelationChangeHandler rch) { changeHandlers.add(rch); }
-  private final void addObjAndMod(HDT_Subj subj, HDT_Obj obj)   { new HyperObjList<>(this, subj, true).add(obj); }
-  final List<HDT_Obj> getUnmodifiableObjectList(HDT_Subj subj)  { return Collections.unmodifiableList(subjToObjList.get(subj)); }
-  final List<HDT_Subj> getUnmodifiableSubjectList(HDT_Obj obj)  { return Collections.unmodifiableList(objToSubjList.get(obj)); }
-  final int getSubjectCount(HDT_Obj obj)                        { return objToSubjList.get(obj).size(); }
-  final int getObjectCount(HDT_Subj subj)                       { return subjToObjList.get(subj).size(); }
-  final HDT_Subj getSubject(HDT_Obj obj, int ndx)               { return objToSubjList.get(obj).get(ndx); }
-  final int getSubjectNdx(HDT_Obj obj, HDT_Subj subj)           { return objToSubjList.get(obj).indexOf(subj); }
-  final int getLastObjectNdx(HDT_Subj subj, HDT_Obj obj)        { return subjToObjList.get(subj).lastIndexOf(obj); }
-  final int getObjectNdx(HDT_Subj subj, HDT_Obj obj)            { return subjToObjList.get(subj).indexOf(obj); }
-  final HDT_Obj getObject(HDT_Subj subj, int ndx)               { return subjToObjList.get(subj).get(ndx); }
-  final boolean alreadyHasAsObject(HDT_Subj subj, HDT_Obj obj)  { return subjToObjList.containsEntry(subj, obj); }
-  final boolean alreadyHasAsSubject(HDT_Obj obj, HDT_Subj subj) { return objToSubjList.containsEntry(obj, subj); }     
+  public HDT_RecordType getObjType()                      { return objType; }
+  public HDT_RecordType getSubjType()                     { return subjType; }
+  public HDI_Schema getSchema(Tag tag)                    { return tagToSchema == null ? null : tagToSchema.get(tag); }
+  public Collection<HDI_Schema> getSchemas()              { return tagToSchema.values(); }
+  public HDT_RecordType getTargetType(Tag tag)            { return tagToTargetType.get(tag); }
+  public boolean getHasNestedItems()                      { return hasNestedItems; }
+  public void addChangeHandler(RelationChangeHandler rch) { changeHandlers.add(rch); }
+  private void addObjAndMod(HDT_Subj subj, HDT_Obj obj)   { new HyperObjList<>(this, subj, true).add(obj); }
+  List<HDT_Obj> getUnmodifiableObjectList(HDT_Subj subj)  { return Collections.unmodifiableList(subjToObjList.get(subj)); }
+  List<HDT_Subj> getUnmodifiableSubjectList(HDT_Obj obj)  { return Collections.unmodifiableList(objToSubjList.get(obj)); }
+  int getSubjectCount(HDT_Obj obj)                        { return objToSubjList.get(obj).size(); }
+  int getObjectCount(HDT_Subj subj)                       { return subjToObjList.get(subj).size(); }
+  HDT_Subj getSubject(HDT_Obj obj, int ndx)               { return objToSubjList.get(obj).get(ndx); }
+  int getSubjectNdx(HDT_Obj obj, HDT_Subj subj)           { return objToSubjList.get(obj).indexOf(subj); }
+  int getLastObjectNdx(HDT_Subj subj, HDT_Obj obj)        { return subjToObjList.get(subj).lastIndexOf(obj); }
+  int getObjectNdx(HDT_Subj subj, HDT_Obj obj)            { return subjToObjList.get(subj).indexOf(obj); }
+  HDT_Obj getObject(HDT_Subj subj, int ndx)               { return subjToObjList.get(subj).get(ndx); }
+  boolean alreadyHasAsObject(HDT_Subj subj, HDT_Obj obj)  { return subjToObjList.containsEntry(subj, obj); }
+  boolean alreadyHasAsSubject(HDT_Obj obj, HDT_Subj subj) { return objToSubjList.containsEntry(obj, subj); }     
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -202,7 +202,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
   
-  public final Set<HDT_Subj> getOrphans()                       
+  public Set<HDT_Subj> getOrphans()                       
   { 
     if (orphans.isEmpty()) return Collections.unmodifiableSet(orphans);
     
@@ -212,7 +212,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final void addOrphanToAll(HDT_Base orphan)
+  public static void addOrphanToAll(HDT_Base orphan)
   {
     Set<RelationSet<? extends HDT_Base, ? extends HDT_Base>> relSets = orphanTypeToRelSets.get(orphan.getType());
     
@@ -231,7 +231,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final RelationType getRelation(HDT_RecordType subjType, HDT_RecordType objType)
+  public static RelationType getRelation(HDT_RecordType subjType, HDT_RecordType objType)
   {
     return nullSwitch(typeMappings.get(subjType, objType), RelationType.rtNone);    
   }
@@ -239,25 +239,25 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final EnumSet<RelationType> getRelationsForObjType(HDT_RecordType objType)
+  public static EnumSet<RelationType> getRelationsForObjType(HDT_RecordType objType)
   {
     Collection<RelationType> relTypes = typeMappings.getColumn(objType);    
-    return (collEmpty(relTypes)) ? EnumSet.noneOf(RelationType.class) : EnumSet.copyOf(relTypes); 
+    return collEmpty(relTypes) ? EnumSet.noneOf(RelationType.class) : EnumSet.copyOf(relTypes); 
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final EnumSet<RelationType> getRelationsForSubjType(HDT_RecordType subjType)
+  public static EnumSet<RelationType> getRelationsForSubjType(HDT_RecordType subjType)
   {
     Collection<RelationType> relTypes = typeMappings.getRow(subjType);    
-    return (collEmpty(relTypes)) ? EnumSet.noneOf(RelationType.class) : EnumSet.copyOf(relTypes);  
+    return collEmpty(relTypes) ? EnumSet.noneOf(RelationType.class) : EnumSet.copyOf(relTypes);  
   }
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final Set<Tag> getNestedTags()
+  public Set<Tag> getNestedTags()
   {
     HashSet<Tag> set = new HashSet<>();
     
@@ -271,7 +271,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 
   @SuppressWarnings({ "unchecked" })
-  public final void saveNestedValuesToOfflineMap(HDT_Subj subj, HDT_Obj obj, Map<Tag, HDI_OfflineBase> tagToNestedItem, HDT_RecordState recordState)
+  public void saveNestedValuesToOfflineMap(HDT_Subj subj, HDT_Obj obj, Map<Tag, HDI_OfflineBase> tagToNestedItem, HDT_RecordState recordState)
   {       
     LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items = objectGroups.get(subj, obj);
     if (items == null) return;    
@@ -302,18 +302,17 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
         default : break;
       }
       
-      if (offlineItem != null)
-      {
-        HDI_OnlineBase.class.cast(onlineItem).getToOfflineValue(offlineItem, tag);
-        tagToNestedItem.put(tag, offlineItem);
-      }
+      if (offlineItem == null) return;
+
+      HDI_OnlineBase.class.cast(onlineItem).getToOfflineValue(offlineItem, tag);
+      tagToNestedItem.put(tag, offlineItem);
     });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
   
-  public final <HDI_Offline extends HDI_OfflineBase> void setNestedItemFromOfflineValue(HDT_Subj subj, HDT_Obj obj, Tag tag, HDI_Offline value) throws RelationCycleException
+  public <HDI_Offline extends HDI_OfflineBase> void setNestedItemFromOfflineValue(HDT_Subj subj, HDT_Obj obj, Tag tag, HDI_Offline value) throws RelationCycleException
   {
     if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49221"); return; }
     
@@ -339,7 +338,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   
   // Returns true if changed
   
-  public final boolean setNestedString(HDT_Subj subj, HDT_Obj obj, Tag tag, String str)
+  public boolean setNestedString(HDT_Subj subj, HDT_Obj obj, Tag tag, String str)
   {
     if (hasNestedItems == false) return falseWithErrorMessage("Internal error #49225");
     
@@ -360,7 +359,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 
   // Returns true if changed
   
-  public final boolean setNestedBoolean(HDT_Subj subj, HDT_Obj obj, Tag tag, boolean bool)
+  public boolean setNestedBoolean(HDT_Subj subj, HDT_Obj obj, Tag tag, boolean bool)
   {
     if (hasNestedItems == false) return falseWithErrorMessage("Internal error #49224");
     
@@ -380,7 +379,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 
   // Returns true if changed
   
-  public final boolean setNestedTernary(HDT_Subj subj, HDT_Obj obj, Tag tag, Ternary ternary)
+  public boolean setNestedTernary(HDT_Subj subj, HDT_Obj obj, Tag tag, Ternary ternary)
   {
     if (hasNestedItems == false) return falseWithErrorMessage("Internal error #49224");
     
@@ -400,7 +399,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 
   // Returns true if changed
   
-  public final boolean setNestedPointer(HDT_Subj subj, HDT_Obj obj, Tag tag, HDT_Base target)
+  public boolean setNestedPointer(HDT_Subj subj, HDT_Obj obj, Tag tag, HDT_Base target)
   {
     if (hasNestedItems == false) return falseWithErrorMessage("Internal error #49223");
     
@@ -418,7 +417,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final List<ObjectGroup> getObjectGroupList(HDT_Subj subj, Collection<Tag> tags)
+  public List<ObjectGroup> getObjectGroupList(HDT_Subj subj, Collection<Tag> tags)
   {
     ArrayList<ObjectGroup> list = new ArrayList<>();
     HashSet<HDT_Obj> objSet = new LinkedHashSet<>();
@@ -457,7 +456,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private final <HDI_Offline extends HDI_OfflineBase, HDI_Online extends HDI_OnlineBase<HDI_Offline>> 
+  private <HDI_Offline extends HDI_OfflineBase, HDI_Online extends HDI_OnlineBase<HDI_Offline>> 
                 HDI_Online getNestedItem(HDT_Subj subj, HDT_Obj obj, Tag tag, boolean noCreate)
   {
     LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items = objectGroups.get(subj, obj);
@@ -490,7 +489,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final String getNestedString(HDT_Subj subj, HDT_Obj obj, Tag tag)
+  public String getNestedString(HDT_Subj subj, HDT_Obj obj, Tag tag)
   {
     if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49226"); return ""; }
     
@@ -500,7 +499,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final boolean getNestedBoolean(HDT_Subj subj, HDT_Obj obj, Tag tag)
+  public boolean getNestedBoolean(HDT_Subj subj, HDT_Obj obj, Tag tag)
   {
     if (hasNestedItems == false) return falseWithErrorMessage("Internal error #49227");
 
@@ -510,7 +509,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final Ternary getNestedTernary(HDT_Subj subj, HDT_Obj obj, Tag tag)
+  public Ternary getNestedTernary(HDT_Subj subj, HDT_Obj obj, Tag tag)
   {
     if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49227"); return Ternary.Unset; }
 
@@ -520,7 +519,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final HDT_Base getNestedPointer(HDT_Subj subj, HDT_Obj obj, Tag tag)
+  public HDT_Base getNestedPointer(HDT_Subj subj, HDT_Obj obj, Tag tag)
   {
     if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49228"); return null; }
 
@@ -530,7 +529,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final public void updateObjectGroups(HDT_Subj subj, List<ObjectGroup> groups)
+  public void updateObjectGroups(HDT_Subj subj, List<ObjectGroup> groups)
   {
     HyperObjList<HDT_Subj, HDT_Obj> list = new HyperObjList<>(this, subj, true);
     
@@ -570,7 +569,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  final void setObject(HDT_Subj subj, HDT_Obj obj, int ndx, boolean affirm) throws RelationCycleException
+  void setObject(HDT_Subj subj, HDT_Obj obj, int ndx, boolean affirm) throws RelationCycleException
   {
     if ((subj == null) || (obj == null))
     {
@@ -638,7 +637,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private final void cycleCheck(HDT_Subj subj, HDT_Subj obj, HDT_Obj origObj) throws RelationCycleException
+  private void cycleCheck(HDT_Subj subj, HDT_Subj obj, HDT_Obj origObj) throws RelationCycleException
   {
     for (HDT_Obj nextObj : subjToObjList.get(obj))
     { 
@@ -652,7 +651,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final void clearObjects(HDT_Subj subj)
+  void clearObjects(HDT_Subj subj)
   {
     while (getObjectCount(subj) > 0)
     {
@@ -664,9 +663,9 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
   
-  private final <HDT_Key extends HDT_Base, HDT_Value extends HDT_Base> ArrayListMultimap<HDT_Key, HDT_Value> rebuildMultimap(ArrayListMultimap<HDT_Key, HDT_Value> oldMap) throws HDB_InternalError
+  private <HDT_Key extends HDT_Base, HDT_Value extends HDT_Base> ArrayListMultimap<HDT_Key, HDT_Value> rebuildMultimap(ArrayListMultimap<HDT_Key, HDT_Value> oldMap) throws HDB_InternalError
   {
-    final ArrayListMultimap<HDT_Key, HDT_Value> newMap = ArrayListMultimap.create();
+    ArrayListMultimap<HDT_Key, HDT_Value> newMap = ArrayListMultimap.create();
     
     for (Entry<HDT_Key, HDT_Value> entry : oldMap.entries())
     {
@@ -686,7 +685,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
   
-  public final void cleanup() throws HDB_InternalError
+  public void cleanup() throws HDB_InternalError
   {
     subjToObjList = rebuildMultimap(subjToObjList);
     objToSubjList = rebuildMultimap(objToSubjList);
@@ -725,7 +724,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final void resolvePointers(HDT_Subj subj) throws HDB_InternalError
+  public void resolvePointers(HDT_Subj subj) throws HDB_InternalError
   {
     List<HDT_Obj> list = subjToObjList.get(subj);
     
@@ -810,16 +809,16 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
       EnumSet.allOf(RelationType.class).forEach(val -> codeToVal.put(val.getCode(), val));
     }
     
-    private RelationType(int code, String title)        { this.code = code; this.title = title; }
-    public static final RelationType codeToVal(int num) { return codeToVal.get(num); }
-    public final int getCode()                          { return code; }
-    public final String getTitle()                      { return title; }
+    private RelationType(int code, String title)  { this.code = code; this.title = title; }
+    public static RelationType codeToVal(int num) { return codeToVal.get(num); }
+    public final int getCode()                    { return code; }
+    public final String getTitle()                { return title; }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final void addNestedItem(HyperDataCategory dataCat, Tag tag) throws HDB_InternalError
+  private void addNestedItem(HyperDataCategory dataCat, Tag tag) throws HDB_InternalError
   {
     addNestedItem(dataCat, tag, hdtNone);
   }
@@ -827,7 +826,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final void addNestedItem(HyperDataCategory dataCat, Tag tag, HDT_RecordType targetType) throws HDB_InternalError
+  private void addNestedItem(HyperDataCategory dataCat, Tag tag, HDT_RecordType targetType) throws HDB_InternalError
   {
     HDI_Schema schema = new HDI_Schema(dataCat, type, tag);
     
@@ -843,10 +842,10 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final void reorderObjects (HDT_Subj subj, ArrayList<HDT_Obj>  newObjList)  { reorderList(subj, newObjList,  subjToObjList); }
-  final void reorderSubjects(HDT_Obj   obj, ArrayList<HDT_Subj> newSubjList) { reorderList(obj,  newSubjList, objToSubjList); }
+  void reorderObjects (HDT_Subj subj, ArrayList<HDT_Obj>  newObjList)  { reorderList(subj, newObjList,  subjToObjList); }
+  void reorderSubjects(HDT_Obj   obj, ArrayList<HDT_Subj> newSubjList) { reorderList(obj,  newSubjList, objToSubjList); }
   
-  private final <HDT_Key extends HDT_Base, HDT_Value extends HDT_Base> void reorderList(HDT_Key key, ArrayList<HDT_Value> newValueList, ArrayListMultimap<HDT_Key, HDT_Value> map)
+  private <HDT_Key extends HDT_Base, HDT_Value extends HDT_Base> void reorderList(HDT_Key key, ArrayList<HDT_Value> newValueList, ArrayListMultimap<HDT_Key, HDT_Value> map)
   {
     if (key == null) throw new NullPointerException();
     
@@ -869,7 +868,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final RelationSet<? extends HDT_Base, ? extends HDT_Base> createSet(RelationType relType) throws HDB_InternalError
+  public static RelationSet<? extends HDT_Base, ? extends HDT_Base> createSet(RelationType relType) throws HDB_InternalError
   {
     switch (relType)
     {

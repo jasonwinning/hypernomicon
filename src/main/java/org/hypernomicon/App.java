@@ -89,7 +89,7 @@ import javafx.scene.input.TransferMode;
  * @author  Jason Winning
  * @since   1.0
  */
-public class App extends Application
+public final class App extends Application
 {
   private Stage primaryStage;
   private static final double baseDisplayScale = 81.89306640625;
@@ -123,13 +123,13 @@ public class App extends Application
   public static boolean browserCoreInitialized = false;
   public static String jxBrowserErrMsg = "";
   
-  public final Stage getPrimaryStage() { return primaryStage; }
-  public final boolean debugging()     { return isDebugging; }
+  public Stage getPrimaryStage() { return primaryStage; }
+  public boolean debugging()     { return isDebugging; }
   
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
    
-  public static final void main(String[] args) 
+  public static void main(String[] args) 
   {                    
     Logger.getLogger("org.apache").setLevel(Level.WARN);    
     
@@ -142,7 +142,7 @@ public class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
   
-  @Override public final void init() 
+  @Override public void init() 
   {
     app = this;
 
@@ -177,7 +177,7 @@ public class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
 
-  public static final void initJXBrowser()
+  public static void initJXBrowser()
   { 
     try
     {
@@ -199,7 +199,7 @@ public class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
 
-  @Override public final void start(Stage primaryStage)
+  @Override public void start(Stage primaryStage)
   {   
     this.primaryStage = primaryStage;
        
@@ -245,7 +245,7 @@ public class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
  
-  private final void testUpdatingAllRecords()
+  private void testUpdatingAllRecords()
   {   
     total = db.persons.size()   + db.institutions.size() + db.investigations.size() + db.debates.size() + 
             db.positions.size() + db.arguments.size()    + db.works.size()          + db.terms.size() + 
@@ -262,7 +262,7 @@ public class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final void testUpdatingRecords(HDT_RecordType type)
+  private void testUpdatingRecords(HDT_RecordType type)
   {
     db.records(type).forEach(record ->
     {      
@@ -295,7 +295,7 @@ public class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
   
-  public final boolean initRootLayout() 
+  public boolean initRootLayout() 
   {
     Application.setUserAgentStylesheet(STYLESHEET_MODENA);
     
@@ -323,7 +323,7 @@ public class App extends Application
         }
       });
       
-      final KeyCombination keyComb = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
+      KeyCombination keyComb = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
       scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> 
       {
         if (keyComb.match(event)) 
@@ -489,7 +489,7 @@ public class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
 
-  private final void initScaling(Parent rootLayout)
+  private void initScaling(Parent rootLayout)
   {
     setFontSize(rootLayout);
     
@@ -504,7 +504,7 @@ public class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------  
 
-  public final void rescale()
+  public void rescale()
   {   
     scaleNodeForDPI(primaryStage.getScene().getRoot());
     

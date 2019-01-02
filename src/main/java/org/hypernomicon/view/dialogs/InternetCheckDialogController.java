@@ -116,9 +116,8 @@ public class InternetCheckDialogController extends HyperDialog
 
   @FXML @Override protected void btnCancelClick()
   {
-    okClicked = false;
     task.cancel();
-    dialogStage.close();
+    super.btnCancelClick();
   }
   
 //---------------------------------------------------------------------------  

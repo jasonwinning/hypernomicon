@@ -351,7 +351,12 @@ public class WorkDialogController extends HyperDialog
       HDT_Work work = workSource.getWork();
       
       if (work != null)
+      {
         author = work.getAuthors().getAuthor(new PersonName(text));
+      
+        if (author == null)
+          author = new Author(work, new PersonName(text), false, false, Ternary.Unset);
+      }
       
       NewPersonDialogController npdc = NewPersonDialogController.create(true, text, author);
       
@@ -709,7 +714,7 @@ public class WorkDialogController extends HyperDialog
     MergeWorksDialogController mwd = null;
     getBibDataFromGUI();
     
-    mwd = MergeWorksDialogController.create("Merge Information From PDF File", curBD, bd, null, null, false, false);
+    mwd = MergeWorksDialogController.create("Merge Information From PDF File", curBD, bd, null, null, curWork, false, false);
     
     if (mwd.showModal())
     {
@@ -998,7 +1003,7 @@ public class WorkDialogController extends HyperDialog
 //---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
 
-  public static void loadFromBibAuthors(BibAuthors bibAuthors, HyperTable htAuthors, boolean hasShowInFileCol)
+  public static void loadFromBibAuthors(BibAuthors bibAuthors, HyperTable htAuthors, boolean hasShowInFileCol, HDT_Work destWork)
   {
     if ((bibAuthors == null) || bibAuthors.isEmpty()) return;
 
@@ -1007,7 +1012,7 @@ public class WorkDialogController extends HyperDialog
     HashMap<PersonName, Boolean> nameToEd = new HashMap<>();
     HashMap<PersonName, Boolean> nameToTr = new HashMap<>();
 
-    bibAuthors.getListsForWorkMerge(nameList, personList, nameToEd, nameToTr);
+    bibAuthors.getListsForWorkMerge(nameList, personList, nameToEd, nameToTr, destWork);
            
     htAuthors.clear();
     htAuthors.getPopulator(0).populate(null, false);
@@ -1073,7 +1078,7 @@ public class WorkDialogController extends HyperDialog
     htISBN.buildRows(curBD.getMultiStr(bfISBNs), (row, isbnStr) -> row.setCellValue(0, -1, isbnStr, hdtNone));
     
     if (populateAuthors)
-      loadFromBibAuthors(curBD.getAuthors(), htAuthors, true);
+      loadFromBibAuthors(curBD.getAuthors(), htAuthors, true, curWork);
   }
   
 //---------------------------------------------------------------------------  

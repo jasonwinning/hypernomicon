@@ -73,11 +73,11 @@ public abstract class HDT_RecordWithConnector extends HDT_Record implements HDT_
       hub = link.getHub();
       
       int cnt = 0;
-      if (link.getDebate() != null) cnt++;
-      if (link.getLabel() != null) cnt++;
-      if (link.getNote() != null) cnt++;
+      if (link.getDebate  () != null) cnt++;
+      if (link.getLabel   () != null) cnt++;
+      if (link.getNote    () != null) cnt++;
       if (link.getPosition() != null) cnt++;
-      if (link.getConcept() != null) cnt++;
+      if (link.getConcept () != null) cnt++;
       
       if (cnt == 2) expiringHub = true;
     }
