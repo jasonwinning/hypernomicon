@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 Jason Winning
+ * Copyright 2015-2019 Jason Winning
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,12 +74,12 @@ public class AboutDialogController extends HyperDialog
     String family = Font.getDefault().getFamily();
     
     String htmlStart = "<html><head>" + MainTextWrapper.getScriptContent() +
-        "<style>a:link {color:#906f6f; } a:visited {color:#906f6f; }</style>" +
+        "<style>a:link { color:#906f6f; } a:visited { color:#906f6f; }</style>" +
         "</head><body style='margin: 0; padding: 0; font-family: " + family + "; font-size: 10pt; color: #906f6f;' bgcolor=\"#241f24\">";
     
     tabGeneralHtml = htmlStart + "Version: " + version + "<br>" +
         "Build date: " + buildDate + "<br>" +
-        "Copyright \u00a9 2015-2018 Jason Winning.<br><br>" + 
+        "Copyright \u00a9 2015-2019 Jason Winning.<br><br>" + 
         "Operating system: " + SystemUtils.OS_NAME + "<br>" +
         "Operating system version: " + SystemUtils.OS_VERSION + "<br>" +
         "Java runtime: " + SystemUtils.JAVA_RUNTIME_NAME + "<br>" +
@@ -145,12 +145,9 @@ public class AboutDialogController extends HyperDialog
 
   private void updateHtml(Tab tab)
   {
-    if (tab == tabGeneral)
-      webView.getEngine().loadContent(tabGeneralHtml);
-    else if (tab == tabContributors)
-      webView.getEngine().loadContent(tabContributorsHtml);
-    else if (tab == tabAcknowledgements)
-      webView.getEngine().loadContent(tabAcknowledgementsHtml);
+    if      (tab == tabGeneral         ) webView.getEngine().loadContent(tabGeneralHtml         );
+    else if (tab == tabContributors    ) webView.getEngine().loadContent(tabContributorsHtml    );
+    else if (tab == tabAcknowledgements) webView.getEngine().loadContent(tabAcknowledgementsHtml);
     else
     {
       dialogStage.close();
