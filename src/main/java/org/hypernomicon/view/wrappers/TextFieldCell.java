@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.wrappers;
@@ -37,11 +37,11 @@ public class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> impl
   private HyperTable table;
 
 //---------------------------------------------------------------------------
-  
+
   private String getString() { return getItem() == null ? "" : getItem().getText(); }
 
 //---------------------------------------------------------------------------
-  
+
   public TextFieldCell(HyperTable table, MutableBoolean canEditIfEmpty, MutableBoolean isNumeric)
   {
     this.table = table;
@@ -52,14 +52,14 @@ public class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> impl
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   @Override public void startEdit()
   {
     if (!isEmpty())
     {
       if (canEditIfEmpty.isFalse())
         if (table.getDataRowCount() <= getTableRow().getIndex()) return;
-      
+
       super.startEdit();
       createTextField();
       setText(null);
@@ -71,7 +71,7 @@ public class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> impl
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   @Override public void cancelEdit()
   {
     super.cancelEdit();
@@ -82,7 +82,7 @@ public class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> impl
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   @Override public void updateItem(HyperTableCell item, boolean empty)
   {
     super.updateItem(item, empty);
@@ -110,23 +110,23 @@ public class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> impl
       }
     }
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public void commitEdit(HyperTableCell newValue)
   {
     super.cancelEdit();
     setGraphic(null);
-          
+
     HyperTableRow row = (HyperTableRow) getTableRow().getItem();
     int colNdx = getTableView().getColumns().indexOf(getTableColumn());
-    
+
     row.setCellValue(colNdx, newValue);
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   private void createTextField()
   {
@@ -137,7 +137,7 @@ public class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> impl
       if (newValue == false)
         commit();
     });
-    
+
     if (isNumeric.isTrue())
     {
       UnaryOperator<TextFormatter.Change> filter = (change) ->
@@ -145,15 +145,15 @@ public class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> impl
         if (change.isReplaced())
           if (change.getText().matches("[^0-9]"))
             change.setText(change.getControlText().substring(change.getRangeStart(), change.getRangeEnd()));
-      
 
-        if (change.isAdded()) 
+
+        if (change.isAdded())
           if (change.getText().matches("[^0-9]"))
             change.setText("");
-        
+
         return change;
       };
-           
+
       textField.setTextFormatter(new TextFormatter<>(filter));
     }
 
@@ -165,9 +165,9 @@ public class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> impl
         textField.setText(item.getText());
         commitEdit(item);
       }
-      
+
       else if (event.getCode() == KeyCode.ENTER)
-        commit(); 
+        commit();
     });
 
   }
@@ -184,5 +184,5 @@ public class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> impl
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
 }

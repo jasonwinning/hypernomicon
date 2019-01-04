@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.items;
@@ -27,13 +27,13 @@ public class HDI_Base
 {
   protected HDI_Schema schema;
   protected Tag mainTag;
-  
+
   public HDI_Base(HDI_Schema newSchema)
   {
     this.schema = newSchema;
     this.mainTag = newSchema.getTag();
   }
-  
+
   public List<Tag> getTags()             { return schema.getTags(); }
   public HyperDataCategory getCategory() { return schema.getCategory(); }
   public HDI_Schema getSchema()          { return schema; }

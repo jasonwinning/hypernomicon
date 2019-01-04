@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.items;
@@ -56,7 +56,7 @@ public final class Author implements Cloneable
   {
     this.work = work;
     this.person = person;
-    this.name = name;    
+    this.name = name;
     this.nameEngChar = name == null ? null : name.toEngChar();
     this.isEditor = isEditor;
     this.isTrans = isTrans;
@@ -66,29 +66,29 @@ public final class Author implements Cloneable
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  @Override public final Author clone() 
+  @Override public final Author clone()
   { try { return (Author) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }}
-  
+
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
   public final PersonName getName()                     { return getName(false); }
-  public final String getLastName()                     { return getLastName(false); }       
+  public final String getLastName()                     { return getLastName(false); }
   public final String getLastName(boolean engChar)      { return getName(engChar).getLast(); }
-  public final String getFirstName()                    { return getFirstName(false); }  
+  public final String getFirstName()                    { return getFirstName(false); }
   public final String getFirstName(boolean engChar)     { return getName(engChar).getFirst(); }
   public final String getNameLastFirst(boolean engChar) { return getName(engChar).getLastFirst(); }
   public final String getFullName(boolean engChar)      { return getName(engChar).getFull(); }
   public final String getBibName()                      { return getName().getBibName(); }
   public final String singleName()                      { return getName().getSingle(); }
-  public final String getNameLastFirst()                { return getNameLastFirst(false); }  
+  public final String getNameLastFirst()                { return getNameLastFirst(false); }
   public final HDT_Person getPerson()                   { return person; }
   public final HDT_Work getWork()                       { return work; }
   public final PersonName getName(boolean engChar)      { return nullSwitch(person, engChar ? nameEngChar : name, () -> person.getName(engChar)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public final boolean getIsEditor()   { return isNull(person) ? isEditor :   (work == null ? false         : db.getNestedBoolean(work, person, tagEditor)); }
   public final boolean getIsTrans()    { return isNull(person) ? isTrans :    (work == null ? false         : db.getNestedBoolean(work, person, tagTranslator)); }
   public final Ternary getInFileName() { return isNull(person) ? inFileName : (work == null ? Ternary.Unset : db.getNestedTernary(work, person, tagInFileName)); }
@@ -109,17 +109,17 @@ public final class Author implements Cloneable
     return result;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public boolean equals(Object obj)
   {
     if ((obj == null) || ((obj instanceof Author) == false)) return false;
-    
+
     Author other = (Author)obj;
-    
+
     if (person != other.person) return false;
-    
+
     if (work != other.work) return false;
 
     if ((person == null) && (other.person == null))
@@ -127,68 +127,68 @@ public final class Author implements Cloneable
         return false;
 
     if (getInFileName() != other.getInFileName()) return false;
-    
+
     if (getIsEditor() != other.getIsEditor()) return false;
-    
+
     if (getIsTrans() != other.getIsTrans()) return false;
-    
+
     return true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public boolean outOfDate()
-  {   
+  {
     for (Author workAuthor : work.getAuthors())
       if (equals(workAuthor))
         return false;
-    
+
     return true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public final boolean equalsObjGroup(ObjectGroup objGroup)
   {
     if (person != objGroup.getPrimary()) return false;
-    
+
     if ((person == null) && (objGroup.getPrimary() == null))
       if (name.equalsExceptParenthetical(new PersonName(objGroup.getPrimaryStr())) == false)
         return false;
-    
+
     NestedValue val = objGroup.getValue(tagInFileName);
-    
+
     if ((val != null) && (val.ternary != getInFileName()))
-      return false;          
-    
+      return false;
+
     val = objGroup.getValue(tagEditor);
-    
+
     if ((val != null) && (val.bool != getIsEditor()))
       return false;
-    
+
     val = objGroup.getValue(tagTranslator);
-    
+
     if ((val != null) && (val.bool != getIsTrans()))
       return false;
-    
+
     return true;
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public final String getSortKey()
   {
     if (nonNull(person)) return person.getSortKey();
-    
+
     String last = getLastName(true), first = getFirstName(true);
-    
+
     if ((last.length() == 0) || (first.length() == 0))
       return last + first;
-    
-    return last + '\u0000' + first;  
+
+    return last + '\u0000' + first;
   }
 
   //---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.tabs;
@@ -54,7 +54,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
 {
   public static enum TabEnum
   {
-    personTab,   institutionTab,   workTab,   miscFileTab,   debateTab,   positionTab,   argumentTab, 
+    personTab,   institutionTab,   workTab,   miscFileTab,   debateTab,   positionTab,   argumentTab,
     noteTab,     termTab,          queryTab,  treeTab,       omniTab,     listTab
   }
 
@@ -62,13 +62,13 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
   private static final Map<Tab, HyperTab<? extends HDT_Base, ? extends HDT_Base>> tabToHyperTab = new HashMap<>();
   private Tab tab;
   private HyperView<HDT_CT> view = null;
-  
+
   protected TabEnum tabEnum;
-  
+
 //---------------------------------------------------------------------------
 
   protected abstract void init(TabEnum tabEnum);
-  
+
   public abstract boolean update();
   public abstract void clear();
   public abstract boolean saveToRecord(boolean showMessage);
@@ -79,7 +79,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
   public abstract void setDividerPositions();
   public abstract void getDividerPositions();
   public abstract void setRecord(HDT_CT record);
- 
+
   public void findWithinDesc(String text)     { messageDialog("Internal error #52009", mtError); }
   public TextViewInfo getMainTextInfo()       { return new TextViewInfo(); }
   public MainTextWrapper getMainTextWrapper() { return null; }
@@ -90,7 +90,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
   public final HDT_CT viewRecord()            { return getView().getViewRecord(); }
   public final Tab getTab()                   { return tab; }
   public final TabEnum getTabEnum()           { return tabEnum; }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -101,13 +101,13 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-    
+
   public static <HDT_RT extends HDT_Base, HDT_CT extends HDT_Base> void addHyperTab(TabEnum tabEnum, Tab tab, String ctrlrFilename) throws IOException
   {
     FXMLLoader loader = new FXMLLoader(App.class.getResource("view/tabs/" + ctrlrFilename));
-    tab.setContent(loader.load());      
+    tab.setContent(loader.load());
     HyperTab<HDT_RT, HDT_CT> hyperTab = loader.getController();
-    
+
     baseInit(tabEnum, tab, hyperTab);
   }
 
@@ -118,23 +118,23 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
   {
     hyperTab.tab = tab;
     hyperTab.init(tabEnum);
-    
+
     enumToHyperTab.put(tabEnum, hyperTab);
     tabToHyperTab.put(tab, hyperTab);
-    
+
     if ((tabEnum != treeTab) && (tabEnum != queryTab))
       ui.addSelectorTab(tabEnum);
   }
-   
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public final boolean saveSearchKey(HDT_Base record, TextField tfSearchKey, boolean showMessage)
   {
-    try 
+    try
     {
       record.setSearchKey(tfSearchKey.getText());
-    } 
+    }
     catch (SearchKeyException e)
     {
       if (showMessage)
@@ -144,11 +144,11 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
         else
           messageDialog("Unable to modify record: search key already exists.", mtError);
       }
-      
+
       focusOnSearchKey();
       return false;
     }
-    
+
     return true;
   }
 
@@ -160,24 +160,24 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
     return nullSwitch(enumToHyperTab.get(tabEnum), hdtNone, HyperTab::getType);
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
   public static final <HDT_RT extends HDT_Base, HDT_CT extends HDT_Base, HyperTabType extends HyperTab<HDT_RT, HDT_CT>> HyperTabType getHyperTab(TabEnum tabEnum)
   {
     return (HyperTabType) enumToHyperTab.get(tabEnum);
   }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static final TabEnum getTabEnumByRecordType(HDT_RecordType recordType)
   {
     switch (recordType)
     {
       case hdtTerm : case hdtConcept : return termTab;
-      
+
       case hdtInstitution : return institutionTab;
       case hdtDebate :      return debateTab;
       case hdtPosition :    return positionTab;
@@ -185,38 +185,38 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
       case hdtWork :        return workTab;
       case hdtMiscFile :    return miscFileTab;
       case hdtNote :        return noteTab;
-      
+
       default :             return personTab;
     }
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static final <HDT_RT extends HDT_Base, HDT_CT extends HDT_Base> HyperTab<HDT_RT, HDT_CT> setTabView(HyperView<HDT_CT> hyperView)
   {
     HyperTab<HDT_RT, HDT_CT> hyperTab = getHyperTab(hyperView.getTabEnum());
     hyperTab.setView(hyperView);
-    return hyperTab;    
+    return hyperTab;
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static final HyperTab<? extends HDT_Base, ? extends HDT_Base> getHyperTabByTab(Tab tab)
   {
     return tabToHyperTab.get(tab);
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private final void setView(HyperView<HDT_CT> hyperView)
   {
     this.view = hyperView;
     setRecord(view.getViewRecord());
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -224,14 +224,14 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
   public HDT_RT activeRecord()
   {
     HDT_CT viewRecord = view.getViewRecord();
-    
+
     if (viewRecord == null) return null;
-    
+
     switch (viewRecord.getType())
     {
       case hdtConcept :
         return (HDT_RT) HDT_Concept.class.cast(viewRecord).term.get();
-        
+
       default :
         return (HDT_RT) viewRecord;
     }
@@ -244,7 +244,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
   {
     if ((getRecordCount() < 1) || (activeRecord() == null))
       return -1;
-    
+
     HDT_RT record = activeRecord();
     return db.records(record.getType()).getKeyNdxByID(record.getID());
   }

@@ -1,8 +1,8 @@
 /*
  * Copyright 2017-2018 Jason Winning
- * 
+ *
  * This file is new with Hypernomicon and is not part of PDF.js
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,24 +14,24 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 function openPdfFile(fileStr, pageNum, sidebarView) {
-  
+
   if (PDFViewerApplication.initialized == false) {
     window.setTimeout(openPdfFile, 50, fileStr, pageNum, sidebarView);
     return;
   }
-  
+
   PDFViewerApplicationOptions.set('initialPage', pageNum);
   PDFViewerApplicationOptions.set('sidebarViewOnLoad', sidebarView);
   PDFViewerApplicationOptions.set('disablePageMode', true);
   PDFViewerApplicationOptions.set('showPreviousViewOnLoad', false);
-  
+
   PDFViewerApplication.pdfViewer.eventBus.on('pagechange', function (e) { javaApp.pageChange(e.pageNumber); });
-  PDFViewerApplication.pdfViewer.eventBus.on('sidebarviewchanged', function (e) { javaApp.sidebarChange(e.view); });  
-  
+  PDFViewerApplication.pdfViewer.eventBus.on('sidebarviewchanged', function (e) { javaApp.sidebarChange(e.view); });
+
   PDFViewerApplication.open(fileStr).then(function() {
     javaApp.openDone(true, { });
   }, function (error) {
@@ -59,7 +59,7 @@ function getPdfData() {
   var params = { intent: 'display' };
   var annotPages = [];
   var pdfDocument = PDFViewerApplication.pdfDocument;
-     
+
   pdfDocument.getPageLabels().then(function (pageLabels) {
     for (var pageNum = 1; pageNum <= pagesCount; ++pageNum) {
       pdfDocument.getPage(pageNum).then(function (pageNum, pdfPage) {

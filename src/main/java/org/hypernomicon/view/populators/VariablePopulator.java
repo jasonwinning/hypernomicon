@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.populators;
@@ -29,14 +29,14 @@ import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
 public class VariablePopulator extends Populator
 {
   private final HashMap<HyperTableRow, Populator> rowToPop = new HashMap<>();
   private final HashMap<HyperTableRow, Boolean> rowToRestricted = new HashMap<>();
-  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
 
   public void setPopulator(HyperTableRow row, Populator populator) { rowToPop.put(row, populator); rowToRestricted.put(row, true); }
   public void setRestricted(HyperTableRow row, boolean restrict)   { rowToRestricted.put(row, restrict); }
@@ -44,52 +44,52 @@ public class VariablePopulator extends Populator
 
   @SuppressWarnings("unchecked")
   public <PopType extends Populator> PopType getPopulator(HyperTableRow row) { return (PopType) rowToPop.get(row); }
-  
+
   @Override public CellValueType getValueType()                                     { return cvtVaries; }
   @Override public void clear()                                                     { rowToPop.clear(); rowToRestricted.clear(); }
   @Override public HyperTableCell addEntry(HyperTableRow row, int id, String value) { return rowToPop.get(row).addEntry(row, id, value); }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
     return nullSwitch(rowToPop.get(row), new ArrayList<>(), pop -> pop.populate(row, force));
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
     return nullSwitch(rowToPop.get(row), null, pop -> pop.match(row, cell));
   }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public boolean hasChanged(HyperTableRow row)
   {
-    return nullSwitch(rowToPop.get(row), true, pop -> pop.hasChanged(row)); 
+    return nullSwitch(rowToPop.get(row), true, pop -> pop.hasChanged(row));
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-  @Override public void setChanged(HyperTableRow row)                                                
-  { 
-    nullSwitch(rowToPop.get(row), pop -> pop.setChanged(row)); 
+  @Override public void setChanged(HyperTableRow row)
+  {
+    nullSwitch(rowToPop.get(row), pop -> pop.setChanged(row));
   }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public HDT_RecordType getRecordType(HyperTableRow row)
   {
-    return nullSwitch(rowToPop.get(row), hdtNone, pop -> pop.getRecordType(row)); 
+    return nullSwitch(rowToPop.get(row), hdtNone, pop -> pop.getRecordType(row));
   }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

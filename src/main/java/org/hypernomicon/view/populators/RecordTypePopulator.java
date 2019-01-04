@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.populators;
@@ -33,42 +33,42 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 public class RecordTypePopulator extends Populator
 {
   private Set<HDT_RecordType> types;
-  private boolean changed = true;  
+  private boolean changed = true;
   final List<HyperTableCell> choices = new ArrayList<>();
 
   public Set<HDT_RecordType> getTypes()                  { return types; }
   public void setTypes(Set<HDT_RecordType> set)          { types = set; changed = true; }
-  
+
   @Override public boolean hasChanged(HyperTableRow row) { return changed; }
   @Override public void setChanged(HyperTableRow row)    { changed = true; }
   @Override public CellValueType getValueType()          { return cvtRecordType; }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
     boolean added;
-    
+
     if ((force == false) && (changed == false)) return choices;
-    
+
     choices.clear();
-    
+
     if (types == null)
       types = EnumSet.noneOf(HDT_RecordType.class);
-      
+
     if (types.size() == 0)
     {
       for (HDT_RecordType type : HDT_RecordType.values())
         if ((type != hdtNone) && (type != hdtAuxiliary))
           types.add(type);
     }
-       
+
     for (HDT_RecordType type : types)
     {
       HyperTableCell cell = new HyperTableCell(-1, db.getTypeName(type), type);
       added = false;
-      
+
       for (int ndx = 0; (ndx <= choices.size()) && (added == false); ndx++)
         if ((ndx == choices.size()) || (HyperTableCell.getCellText(cell).compareTo(HyperTableCell.getCellText(choices.get(ndx))) < 0))
         {
@@ -76,35 +76,35 @@ public class RecordTypePopulator extends Populator
           added = true;
         }
     }
-    
+
     changed = false;
     return choices;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
     for (HyperTableCell choice : populate(row, false))
       if (HyperTableCell.getCellType(choice) == HyperTableCell.getCellType(cell))
         return choice;
-    
+
     return null;
   }
 
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void clear()
   {
     choices.clear();
     changed = true;
     return;
   }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

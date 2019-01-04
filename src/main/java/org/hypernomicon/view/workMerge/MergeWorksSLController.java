@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.workMerge;
@@ -39,36 +39,36 @@ public class MergeWorksSLController extends BibFieldRow
   @FXML private TextField tf2;
   @FXML private TextField tf3;
   @FXML private TextField tf4;
-  
+
   @FXML private GridPane gp;
-  
+
   @FXML private Label lbl;
-  
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   @Override public void mergeInto(BibData bd)
   {
     String str;
-    
+
     if      (rb1.isSelected()) str = tf1.getText();
     else if (rb2.isSelected()) str = tf2.getText();
     else if (rb3.isSelected()) str = tf3.getText();
     else                       str = tf4.getText();
-    
+
     bd.setStr(bibFieldEnum, str);
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override protected void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4)
   {
     this.ap = ap;
     this.bibFieldEnum = bibFieldEnum;
-    
+
     lbl.setText(BibData.getFieldName(bibFieldEnum));
-    
+
     if (bd4 == null)
     {
       deleteGridPaneColumn(gp, 3);
@@ -81,7 +81,7 @@ public class MergeWorksSLController extends BibFieldRow
         rb4.setSelected(true);
       }
     }
-    
+
     if (bd3 == null)
     {
       deleteGridPaneColumn(gp, 2);
@@ -91,24 +91,24 @@ public class MergeWorksSLController extends BibFieldRow
       if (bd3.fieldNotEmpty(bibFieldEnum))
       {
         tf3.setText(bd3.getStr(bibFieldEnum));
-        rb3.setSelected(true);      
+        rb3.setSelected(true);
       }
     }
-    
+
     if (bd2.fieldNotEmpty(bibFieldEnum))
     {
       tf2.setText(bd2.getStr(bibFieldEnum));
-      rb2.setSelected(true);      
+      rb2.setSelected(true);
     }
-    
+
     if (bd1.fieldNotEmpty(bibFieldEnum))
     {
       tf1.setText(bd1.getStr(bibFieldEnum));
-      rb1.setSelected(true);      
+      rb1.setSelected(true);
     }
   }
-   
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

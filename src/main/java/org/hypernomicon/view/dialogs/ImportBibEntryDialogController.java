@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -57,7 +57,7 @@ public class ImportBibEntryDialogController extends HyperDialog
   @FXML private CheckBox chkDeleteFile;
   @FXML private ComboBox<HyperTableCell> cbWork;
   @FXML private Button btnCancel;
-  
+
   private HyperCB hcbWork;
   private boolean createNewWork;
   private boolean failedToLoad = false;
@@ -68,8 +68,8 @@ public class ImportBibEntryDialogController extends HyperDialog
   public boolean getDeleteFile()        { return chkDeleteFile.isSelected(); }
   public boolean getFailedToLoad()      { return failedToLoad; }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static ImportBibEntryDialogController create(String title, List<String> lines, FilePath filePath)
   {
@@ -77,10 +77,10 @@ public class ImportBibEntryDialogController extends HyperDialog
     dlg.init(lines, filePath);
     return dlg;
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void init(List<String> lines, FilePath filePath)
   {
     if (db.bibLibraryIsLinked() == false)
@@ -88,11 +88,11 @@ public class ImportBibEntryDialogController extends HyperDialog
       chkNewEntry.setSelected(false);
       chkNewEntry.setVisible(false);
     }
-    
+
     btnBrowse.setOnAction(event -> btnBrowseClick());
-    btnCreateNew.setOnAction(event -> doImport(true));    
+    btnCreateNew.setOnAction(event -> doImport(true));
     btnExisting.setOnAction(event -> doImport(false));
-    
+
     hcbWork = new HyperCB(cbWork, ctDropDownList, new StandardPopulator(hdtWork), null, false);
 
     if (lines == null)
@@ -105,76 +105,76 @@ public class ImportBibEntryDialogController extends HyperDialog
     else
       loadEntry(lines);
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void loadEntry(FilePath filePath)
   {
     List<String> lines;
-    
+
     try
     {
       lines = FileUtils.readLines(filePath.toFile(), Charsets.UTF_8);
-    } 
+    }
     catch (IOException e)
     {
       messageDialog("An error occurred while trying to read the file " + filePath.toString() + ": " + e.getMessage(), mtError);
       failedToLoad = true;
       return;
     }
-    
+
     tfFile.setText(filePath.toString());
-    
+
     loadEntry(lines);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void loadEntry(List<String> lines)
   {
     taContents.clear();
-    
+
     if (collEmpty(lines))
     {
       failedToLoad = true;
       return;
     }
-    
+
     taContents.setText(strListToStr(lines, false));
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void doImport(boolean createNew)
   {
     this.createNewWork = createNew;
-    
+
     if (isValid() == false) return;
-    
+
     okClicked = true;
     dialogStage.close();
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override protected boolean isValid()
-  { 
+  {
     if ((createNewWork == false) && (hcbWork.selectedID() < 1))
     {
       messageDialog("You must select a work record.", mtError);
       safeFocus(cbWork);
       return false;
     }
-    
-    return true; 
+
+    return true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void btnBrowseClick()
   {
@@ -183,15 +183,15 @@ public class ImportBibEntryDialogController extends HyperDialog
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("RIS File (*.ris)", "*.ris"));
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("BibTeX File (*.bib)", "*.bib"));
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All Files (*.*)", "*.*"));
-    
+
     File dir = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, System.getProperty("user.dir")));
-    
+
     if (dir.exists() == false)
       dir = new File(System.getProperty("user.dir"));
-    
+
     fileChooser.setInitialDirectory(dir);
     FilePath filePath;
-    
+
     if (shownAlready())
       filePath = new FilePath(fileChooser.showOpenDialog(getStage()));
     else
@@ -201,31 +201,31 @@ public class ImportBibEntryDialogController extends HyperDialog
     {
       failedToLoad = true;
       return;
-    }      
-       
+    }
+
     loadEntry(filePath);
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public List<String> getLines()
   {
     return convertMultiLineStrToStrList(taContents.getText(), false);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public FilePath getFilePath()
   {
     if (tfFile.getText().length() > 0)
       return new FilePath(tfFile.getText());
-    
+
     return null;
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

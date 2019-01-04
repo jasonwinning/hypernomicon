@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.populators;
@@ -36,9 +36,9 @@ public class GenericOperandPopulator extends Populator
   public static final int IS_NOT_EMPTY_OPERAND_ID = 6;
 
   @Override public CellValueType getValueType() { return cvtConnective; }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
@@ -50,31 +50,31 @@ public class GenericOperandPopulator extends Populator
                          new HyperTableCell(IS_NOT_EMPTY_OPERAND_ID, "Is not empty", hdtNone));
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
     for (HyperTableCell choice : populate(dummyRow, false))
       if (HyperTableCell.getCellID(choice) == HyperTableCell.getCellID(cell))
         return choice;
-    
+
     return null;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public HyperTableCell getChoice(int id)
   {
     for (HyperTableCell cell : populate(dummyRow, false))
-      if (HyperTableCell.getCellID(cell) == id) 
+      if (HyperTableCell.getCellID(cell) == id)
         return cell;
-    
+
     return new HyperTableCell(-1, "", hdtNone);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

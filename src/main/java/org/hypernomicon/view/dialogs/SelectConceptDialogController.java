@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -51,8 +51,8 @@ public class SelectConceptDialogController extends HyperDialog
   public boolean createNew, alreadyChanging = false;
   private HDT_Term term;
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static SelectConceptDialogController create(String title, HDT_Concept oldConcept)
   {
@@ -60,18 +60,18 @@ public class SelectConceptDialogController extends HyperDialog
     scd.init(oldConcept);
     return scd;
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void init(HDT_Concept oldConcept)
   {
     hcbTerm = new HyperCB(cbTerm, ctDropDownList, new StandardPopulator(hdtTerm), null, false);
-    
+
     CustomRecordPopulator pop = new CustomRecordPopulator(hdtGlossary, (row, force) ->
     {
       List<HDT_Base> glossaries = new ArrayList<>();
-      
+
       HDT_Term term = hcbTerm.selectedRecord();
       if (term != null)
       {
@@ -83,29 +83,29 @@ public class SelectConceptDialogController extends HyperDialog
         else
         {
           List<HDT_Glossary> termGlossaries = term.getGlossaries();
-          
+
           for (HDT_Glossary glossary : db.glossaries)
             if (termGlossaries.contains(glossary) == false)
               glossaries.add(glossary);
         }
       }
-      
+
       return glossaries;
     });
-    
+
     hcbGlossary = new HyperCB(cbGlossary, ctDropDownList, pop, null);
-    
+
     hcbTerm.addBlankEntry();
-    
+
     cbTerm.getSelectionModel().selectedItemProperty().addListener((observable, oldCell, newCell) ->
     {
       if (alreadyChanging) return;
-      
+
       alreadyChanging = true;
-      
+
       HDT_Term term = HyperTableCell.getRecord(newCell);
       List<HyperTableCell> glossaryCells = hcbGlossary.populate(true);
-            
+
       if ((term != null) && (oldConcept == null))
       {
         for (HyperTableCell cell : glossaryCells)
@@ -116,21 +116,21 @@ public class SelectConceptDialogController extends HyperDialog
       {
         for (HyperTableCell cell : glossaryCells)
           if (cell.getID() == oldConcept.glossary.getID())
-            hcbGlossary.selectID(1);        
+            hcbGlossary.selectID(1);
       }
-      
+
       alreadyChanging = false;
     });
-    
+
     btnCreate.setOnAction(event -> btnCreateClick());
     createNew = false;
   }
-  
+
   public HDT_Term     getTerm()     { return term; }
   public HDT_Glossary getGlossary() { return hcbGlossary.selectedRecord(); }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void btnCreateClick()
   {
@@ -140,9 +140,9 @@ public class SelectConceptDialogController extends HyperDialog
       safeFocus(tfSearchKey);
       return;
     }
-    
+
     term = db.createNewBlankRecord(hdtTerm);
-       
+
     try
     {
       term.setSearchKey(tfSearchKey.getText(), true);
@@ -156,19 +156,19 @@ public class SelectConceptDialogController extends HyperDialog
 
       db.deleteRecord(hdtTerm, term.getID());
       term = null;
-      
+
       safeFocus(tfSearchKey);
-      
+
       return;
     }
-    
+
     okClicked = true;
     createNew = true;
     dialogStage.close();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override protected boolean isValid()
   {
@@ -178,20 +178,20 @@ public class SelectConceptDialogController extends HyperDialog
       safeFocus(cbTerm);
       return false;
     }
-    
+
     if (hcbGlossary.selectedRecord() == null)
     {
       messageDialog("You must select a glossary.", mtError);
       safeFocus(cbGlossary);
       return false;
     }
-    
+
     term = hcbTerm.selectedRecord();
-       
+
     return true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.bib;
@@ -37,19 +37,19 @@ public class BibAuthorsStandalone extends BibAuthors
 {
   private final EnumMap<AuthorType, List<BibAuthor>> authors = new EnumMap<>(AuthorType.class);
   private String oneLiner; // Sometimes all the authors appear in one line, in various formats and with various delimiting characters
-  
-  public BibAuthorsStandalone()  
+
+  public BibAuthorsStandalone()
   {
     authors.put(AuthorType.author, new ArrayList<>());
     authors.put(AuthorType.editor, new ArrayList<>());
     authors.put(AuthorType.translator, new ArrayList<>());
   }
-    
+
   @Override public void add(BibAuthor author)   { authors.get(author.getType()).add(author); }
-   
+
   public void setOneLiner(String str)
-  { 
-    oneLiner = ultraTrim(convertToSingleLine(safeStr(str))); 
+  {
+    oneLiner = ultraTrim(convertToSingleLine(safeStr(str)));
   }
 
 //---------------------------------------------------------------------------
@@ -59,7 +59,7 @@ public class BibAuthorsStandalone extends BibAuthors
   {
     return (authors.get(AuthorType.author).size() == 0) &&
            (authors.get(AuthorType.editor).size() == 0) &&
-           (authors.get(AuthorType.translator).size() == 0);    
+           (authors.get(AuthorType.translator).size() == 0);
   }
 
 //---------------------------------------------------------------------------
@@ -69,16 +69,16 @@ public class BibAuthorsStandalone extends BibAuthors
   {
     if (listsAreEmpty() == false)
       return false;
-    
+
     return safeStr(oneLiner).length() == 0;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear() 
-  { 
-    authors.get(AuthorType.author).clear(); 
+  @Override public void clear()
+  {
+    authors.get(AuthorType.author).clear();
     authors.get(AuthorType.editor).clear();
     authors.get(AuthorType.translator).clear();
     oneLiner = "";
@@ -92,8 +92,8 @@ public class BibAuthorsStandalone extends BibAuthors
     if (listsAreEmpty())
       if (safeStr(oneLiner).length() > 0)
         return oneLiner;
-    
-    return super.getStr();    
+
+    return super.getStr();
   }
 
 //---------------------------------------------------------------------------
@@ -105,22 +105,22 @@ public class BibAuthorsStandalone extends BibAuthors
       if (listsAreEmpty())
         if (safeStr(oneLiner).length() > 0)
           return oneLiner;
-    
+
     return super.getStr(authorType);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private List<BibAuthor> getOneLinerAsList()
   {
     oneLiner = safeStr(oneLiner);
-    
+
     List<BibAuthor> list = new ArrayList<>();
-    
+
     if (oneLiner.length() > 1)
       new SplitString(oneLiner, ';').forEach(authorStr -> list.add(new BibAuthor(AuthorType.author, new PersonName(authorStr))));
-    
+
     return list;
   }
 
@@ -131,7 +131,7 @@ public class BibAuthorsStandalone extends BibAuthors
   {
     if (listsAreEmpty())
       return getOneLinerAsList().iterator();
-    
+
     return readOnlyIterator(Iterators.concat(authors.get(AuthorType.author).iterator(),
                                              authors.get(AuthorType.editor).iterator(),
                                              authors.get(AuthorType.translator).iterator()));
@@ -147,12 +147,12 @@ public class BibAuthorsStandalone extends BibAuthors
       authorList.addAll(getOneLinerAsList());
       return;
     }
-    
+
     authorList.addAll(authors.get(AuthorType.author));
     editorList.addAll(authors.get(AuthorType.editor));
     translatorList.addAll(authors.get(AuthorType.translator));
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

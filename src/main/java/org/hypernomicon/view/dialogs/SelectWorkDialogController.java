@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -44,16 +44,16 @@ public class SelectWorkDialogController extends HyperDialog
   @FXML ComboBox<HyperTableCell> cbWork;
   @FXML Button btnOK;
   @FXML Button btnCancel;
-  
+
   private HyperCB hcbAuthor, hcbWork;
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public HDT_Work getWork() { return hcbWork.selectedRecord(); }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static SelectWorkDialogController create(String title, HDT_Person author)
   {
@@ -62,32 +62,32 @@ public class SelectWorkDialogController extends HyperDialog
     return swd;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void init(HDT_Person author)
   {
     hcbAuthor = new HyperCB(cbAuthor, ctDropDownList, new StandardPopulator(hdtPerson), null, false);
     hcbWork = new HyperCB(cbWork, ctDropDownList, new HybridSubjectPopulator(rtAuthorOfWork), null, false);
-    
-    cbAuthor.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> 
-    {    
+
+    cbAuthor.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    {
       if (newValue == null) return;
-      
+
       if (HyperTableCell.getCellID(oldValue) != HyperTableCell.getCellID(newValue))
       {
         ((HybridSubjectPopulator)hcbWork.getPopulator()).setObj(Populator.dummyRow, getRecord(newValue));
         hcbWork.selectID(-1);
       }
     });
-    
+
     hcbAuthor.addAndSelectEntryOrBlank(author, HDT_Base::getCBText);
-      
-    hcbWork.addBlankEntry();    
+
+    hcbWork.addBlankEntry();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override protected boolean isValid()
   {
@@ -97,11 +97,11 @@ public class SelectWorkDialogController extends HyperDialog
       safeFocus(cbWork);
       return false;
     }
-    
+
     return true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

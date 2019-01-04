@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.wrappers;
@@ -34,27 +34,27 @@ import static org.hypernomicon.util.Util.*;
 
 public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
 {
-  private long ctr; 
+  private long ctr;
   private double lastX, lastY;
   private ScrollBar scrollBar = null;
   private final Node node;
   private static final DataFormat HYPERNOMICON_DATA_FORMAT = new DataFormat("application/Hypernomicon");
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   public DragNDropHoverHelper(Node node)
   {
     this.node = node;
     reset();
   }
-  
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   private ScrollBar getScrollBar()
   {
-    for (Node child: node.lookupAll(".scroll-bar")) 
+    for (Node child: node.lookupAll(".scroll-bar"))
       if (child instanceof ScrollBar)
       {
         ScrollBar sb = (ScrollBar) child;
@@ -66,29 +66,29 @@ public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   public void reset()
   {
     ctr = 0;
     lastX = -1;
-    lastY = -1;    
+    lastY = -1;
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   public void scroll(DragEvent dragEvent)
   {
     if (scrollBar == null) scrollBar = getScrollBar();
-    
+
     if ((lastX != dragEvent.getSceneX()) || (lastY != dragEvent.getSceneY()))
     {
       ctr = System.currentTimeMillis();
       lastX = dragEvent.getSceneX();
       lastY = dragEvent.getSceneY();
     }
-        
+
     if ((lastY - 35) < node.localToScene(node.getBoundsInLocal()).getMinY())
     {
       scrollBar.decrement();
@@ -101,18 +101,18 @@ public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
       ctr = System.currentTimeMillis();
     }
   }
-  
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   public void expand(TreeItem<RowType> treeItem)
   {
     if (ctr == 0) return;
-    
+
     runDelayedInFXThread(1, 650, event ->
     {
       long diff = System.currentTimeMillis() - ctr;
-      
+
       if ((diff > 650) && (treeItem.isExpanded() == false))
       {
         treeItem.setExpanded(true);
@@ -122,7 +122,7 @@ public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   public static interface DragNDropContainer<RowType extends AbstractTreeRow<RowType>>
   {
@@ -133,7 +133,7 @@ public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   public static <RowType extends AbstractTreeRow<RowType>> void setupHandlers(Cell<RowType> cell, DragNDropContainer<RowType> container)
   {
@@ -148,7 +148,7 @@ public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
       dragBoard.setContent(content);
       event.consume();
     });
-    
+
     cell.setOnDragDone(event ->
     {
       container.dragDone();
@@ -158,24 +158,24 @@ public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
     if (cell instanceof TreeCell<?>)
     {
       TreeCell<RowType> treeCell = (TreeCell<RowType>)cell;
-      
+
       treeCell.setOnDragOver(event ->
       {
         if (container.acceptDrag(treeCell.getItem(), event, treeCell.getTreeItem()))
           event.acceptTransferModes(TransferMode.ANY);
-  
+
         event.consume();
       });
     }
     else if (cell instanceof TreeTableRow<?>)
     {
       TreeTableRow<RowType> treeTableRow = (TreeTableRow<RowType>)cell;
-      
+
       treeTableRow.setOnDragOver(event ->
       {
         if (container.acceptDrag(treeTableRow.getItem(), event, treeTableRow.getTreeItem()))
           event.acceptTransferModes(TransferMode.ANY);
-  
+
         event.consume();
       });
     }
@@ -189,15 +189,15 @@ public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
         event.consume();
       });
     }
-    
+
     cell.setOnDragDropped(event ->
     {
       container.dragDroppedOnto(cell.getItem());
       event.consume();
     });
   }
-  
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
 }

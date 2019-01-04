@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.records;
@@ -40,25 +40,25 @@ public class HDT_Note extends HDT_RecordWithConnector
   public HDT_Note(HDT_RecordState xmlState, HyperDataset<HDT_Note> dataset)
   {
     super(xmlState, dataset, tagName);
-    
+
     parentNotes = getObjList(rtParentNoteOfNote);
     subNotes = getSubjList(rtParentNoteOfNote);
     folder = getObjPointer(rtFolderOfNote);
   }
-    
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getFolderStr()         
-  {  
+  public String getFolderStr()
+  {
     return folder.isNull() ? "" : db.getPath(PREF_KEY_TOPICAL_PATH, null).relativize(folder.get().getPath().getFilePath()).toString();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public void setParentNotes(List<HDT_Note> list) { updateObjectsFromList(rtParentNoteOfNote, list); }
-  
+
   @Override public String listName()        { return name(); }
   @Override public HDT_RecordType getType() { return hdtNote; }
   @Override public boolean isUnitable()     { return true; }
@@ -70,19 +70,19 @@ public class HDT_Note extends HDT_RecordWithConnector
   {
     if (folder.isNotNull())
       return folder.get();
-    
+
     HDT_Folder defFolder;
-    
+
     for (HDT_Note parent : parentNotes)
     {
       defFolder = parent.getDefaultFolder();
       if (defFolder != null) return defFolder;
     }
-    
+
     return null;
   }
-  
+
 //---------------------------------------------------------------------------
-//--------------------------------------------------------------------------- 
-  
+//---------------------------------------------------------------------------
+
 }

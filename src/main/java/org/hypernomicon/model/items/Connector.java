@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.items;
@@ -30,16 +30,16 @@ public class Connector
 {
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
-  
-  public Connector(HDT_RecordWithConnector record)   
-  { 
-    this.record = record; 
+
+  public Connector(HDT_RecordWithConnector record)
+  {
+    this.record = record;
     mainText = new MainText(this);
-    
+
     if (record.getType() == hdtHub)
       link = new StrongLink((HDT_Hub) record);  // This only gets used if the record will be loaded from a record state; a new StrongLink is created
   }                                             // that overwrites this one in StrongLink.connectRecords
-  
+
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
@@ -49,7 +49,7 @@ public class Connector
   boolean alreadyModifying = false;
 
   public HDT_RecordType getType()            { return getSpoke().getType(); }
-  public boolean isLinked()                  { return link != null; }  
+  public boolean isLinked()                  { return link != null; }
   public StrongLink getLink()                { return link; }
   public MainText getMainText()              { return mainText; }
   public HDT_Hub getHub()                    { return link == null ? null : link.getHub(); }
@@ -58,20 +58,20 @@ public class Connector
   public static boolean isEmpty(Connector c) { return (c == null) || HDT_Record.isEmpty(c.getSpoke()); }
 
   @Override public int hashCode()            { return 31 * (record == null ? 0 : record.hashCode()); }
-  
+
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public void modifyNow()                          
-  { 
+  public void modifyNow()
+  {
     if (db.runningConversion) return;
     if (alreadyModifying) return;
-    
+
     alreadyModifying = true;
-    
-    if (isLinked()) link.modifyNow();    
+
+    if (isLinked()) link.modifyNow();
     record.modifyNow();
-        
+
     alreadyModifying = false;
   }
 
@@ -83,7 +83,7 @@ public class Connector
   {
     if (HDT_Record.isEmptyThrowsException(getHub()))
       link = null;
-    
+
     mainText.resolvePointers();
   }
 
@@ -93,22 +93,22 @@ public class Connector
   final void expire()
   {
     if (getType() == hdtHub) return;
-    
+
     if (isLinked())
       link.disconnectRecord(getType(), false);
-    
+
     mainText.expire();
   }
-  
+
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
-  
+
   @Override public boolean equals(Object obj)
   {
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    
+
     return record == Connector.class.cast(obj).record;
   }
 
@@ -118,12 +118,12 @@ public class Connector
   public void initFromHub(HDT_Hub hub)
   {
     link = hub.getLink();
-    
+
     db.replaceMainText(mainText, hub.getMainText());
-    
+
     mainText = hub.getMainText();
   }
-  
+
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 }

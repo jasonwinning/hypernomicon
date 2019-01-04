@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon;
@@ -34,14 +34,14 @@ public class InterProcDaemon extends Thread
     super();
     setDaemon(true);
   }
-  
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   @Override public void run()
   {
     try (ServerSocket serverSocket = new ServerSocket(PORT, 1))
-    {      
+    {
       while (true)
       {
         try (Socket clientSocket = serverSocket.accept();  // Wait for a connection
@@ -49,38 +49,38 @@ public class InterProcDaemon extends Thread
              BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())))
         {
           String line;
-          
+
           do { line = in.readLine(); }
           while (line == null);
-          
+
           int numArgs = parseInt(line, 0);
-          
+
           if (numArgs > 0)
           {
-            ArrayList<String> args = new ArrayList<>();  
-            
+            ArrayList<String> args = new ArrayList<>();
+
             for (int ndx = 0; ndx < numArgs; ndx++)
             {
               do { line = in.readLine(); }
               while (line == null);
-              
+
               args.add(line);
             }
-            
+
             runInFXThread(() -> ui.handleArgs(args));
           }
-          
+
           out.println("Roger; out.");
         }
       }
-    } 
+    }
     catch (IOException e)
     {
       messageDialog("InterProcDaemon terminated unexpectedly: " + e.getMessage(), mtError);
     }
   }
-  
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
 }

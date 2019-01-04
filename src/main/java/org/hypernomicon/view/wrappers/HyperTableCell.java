@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.wrappers;
@@ -27,7 +27,7 @@ import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
 public final class HyperTableCell implements Comparable <HyperTableCell>, Cloneable
 {
@@ -35,10 +35,10 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
   {
     hsmStandard, hsmTextSimple, hsmNumeric, hsmLast, hsmWork
   }
-  
+
   public static final HyperTableCell trueCell = new HyperTableCell(1, "", hdtNone);
   public static final HyperTableCell falseCell = new HyperTableCell(0, "", hdtNone);
-  
+
   private int id;
   private String text;
   private HDT_RecordType type;
@@ -53,17 +53,17 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
   public static String getCellText(HyperTableCell cell)         { return cell == null ? "" : safeStr(cell.text); }
   public static HDT_RecordType getCellType(HyperTableCell cell) { return ((cell == null) || (cell.type == null)) ? hdtNone : cell.type; }
 
-  @Override public HyperTableCell clone() 
+  @Override public HyperTableCell clone()
   { try { return (HyperTableCell) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }}
-  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+
   public HyperTableCell(int newID, String newText, HDT_RecordType newType) { this(newID, newText, newType, hsmStandard); }
   public HyperTableCell(HDT_Base record, String newText)                   { this(record.getID(), newText, record.getType(), hsmStandard); }
   public HyperTableCell(HDT_Base record)                                   { this(record.getID(), "", record.getType(), hsmStandard); }
-  
+
   public HyperTableCell(HDT_Base record, String newText, HyperCellSortMethod sm) { this(record.getID(), newText, record.getType(), sm); }
-  
+
   public HyperTableCell(int newID, String newText, HDT_RecordType newType, HyperCellSortMethod newSortMethod)
   {
     id = newID;
@@ -72,9 +72,9 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
     sortMethod = newSortMethod;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public int hashCode()
   {
     final int prime = 31;
@@ -85,34 +85,34 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
     return result;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public boolean equals(Object obj)
   {
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    
+
     HyperTableCell other = (HyperTableCell) obj;
-    
+
     if (getCellType(this) != getCellType(other))
     {
       if ((id < 0) && (other.id < 0))
         if (safeStr(text).length() == 0)
           if (safeStr(other.text).length() == 0)
             return true;
-      
+
       return false;
     }
-    
+
     if (((id >= 0) || (other.id >= 0)) && (id != other.id)) return false;
-    
-    return safeStr(text).equals(safeStr(other.text));    
+
+    return safeStr(text).equals(safeStr(other.text));
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public HyperTableCell getCopyWithID(int newID)
   {
@@ -120,89 +120,89 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
     newCell.id = newID;
     return newCell;
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static HyperTableCell simpleSortValue(HyperTableCell cell)
   {
     HyperTableCell newCell = cell.clone();
     newCell.sortMethod = hsmTextSimple;
     return newCell;
   }
- 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public int compareTo(HyperTableCell otherCell)
   {
     String thisKey = "", otherKey = "";
-    
+
     if (sortMethod == hsmLast)
       return Integer.MAX_VALUE;
     else if (otherCell.sortMethod == hsmLast)
       return Integer.MIN_VALUE + 1;
-    
+
     if (sortMethod == hsmTextSimple)
       return text.compareTo(otherCell.text);
     else if (sortMethod == hsmNumeric)
     {
       return parseInt(text, Integer.MAX_VALUE) - parseInt(HyperTableCell.getCellText(otherCell), Integer.MAX_VALUE);
-    }     
+    }
     else if (sortMethod == hsmWork)
     {
       HDT_Work thisWork = getRecord(this), otherWork = getRecord(otherCell);
-            
+
       int numAuthors = Math.max(thisWork.getAuthors().size(), otherWork.getAuthors().size());
       int ndx, cResult;
-      
+
       for (ndx = 0; ndx < numAuthors; ndx++)
       {
         if ((ndx >= thisWork.getAuthors().size()) || (ndx >= otherWork.getAuthors().size()))
           return thisWork.getAuthors().size() - otherWork.getAuthors().size();
-        
+
         cResult = thisWork.getAuthors().get(ndx).getSortKey().compareTo(otherWork.getAuthors().get(ndx).getSortKey());
-        
+
         if (cResult != 0) return cResult;
       }
-      
+
       cResult = thisWork.getYear().compareTo(otherWork.getYear());
       if (cResult != 0) return cResult;
-      
+
       return thisWork.getSortKey().compareTo(otherWork.getSortKey());
     }
-        
+
     if (id > 0)
       if (type != null)
         if (type != hdtNone)
           thisKey = db.records(type).getByID(id).getSortKey();
-    
+
     if (thisKey.length() == 0) thisKey = makeSortKeyByType(text, type);
-    
+
     if (otherCell.id > 0)
       if (otherCell.type != null)
         if (otherCell.type != hdtNone)
           otherKey = db.records(otherCell.type).getByID(otherCell.id).getSortKey();
-    
+
     if (otherKey.length() == 0) otherKey = makeSortKeyByType(otherCell.text, otherCell.type);
-    
+
     return thisKey.compareTo(otherKey);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
   public static <HDT_T extends HDT_Base> HDT_T getRecord(HyperTableCell cell)
   {
     int id = getCellID(cell);
     if (id < 1) return null;
-    
+
     HDT_RecordType type = getCellType(cell);
     return type == hdtNone ? null : (HDT_T)db.records(type).getByID(id);
   }
- 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

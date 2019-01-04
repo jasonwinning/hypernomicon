@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.populators;
@@ -36,43 +36,43 @@ public class RelationPopulator extends Populator
 {
   private final HDT_RecordType objType;
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------    
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public RelationPopulator(HDT_RecordType objType)                 { this.objType = objType; }
-  
+
   @Override public CellValueType getValueType()                    { return cvtRelation; }
   @Override public HDT_RecordType getRecordType(HyperTableRow row) { return objType; }
 
-//---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
-  
+//---------------------------------------------------------------------------
+
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
     List<HyperTableCell> cells = new ArrayList<>();
     EnumSet<RelationType> relTypes = objType == hdtNone ? EnumSet.allOf(RelationType.class) : getRelationsForObjType(objType);
-    
+
     relTypes.remove(rtNone);
     relTypes.remove(rtUnited);
-    
+
     relTypes.forEach(relType -> cells.add(new HyperTableCell(relType.getCode(), relType.getTitle(), objType)));
 
     return cells;
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
     for (HyperTableCell choice : populate(nullSwitch(row, dummyRow), false))
       if (HyperTableCell.getCellID(choice) == HyperTableCell.getCellID(cell))
         return choice;
-    
+
     return null;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

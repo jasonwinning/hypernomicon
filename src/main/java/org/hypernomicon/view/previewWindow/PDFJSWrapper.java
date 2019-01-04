@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.previewWindow;
@@ -65,60 +65,60 @@ public class PDFJSWrapper
   private PDFJSPageChangeHandler pageChangeHndlr;
   private PDFJSRetrievedDataHandler retrievedDataHndlr;
   private int numPages = -1, curPage = -1;
-  private JavascriptToJava javascriptToJava;  
+  private JavascriptToJava javascriptToJava;
   private Browser browser = null, oldBrowser = null;
   private BrowserView browserView = null;
   private static String viewerHTMLStr = null;
   private static final String basePlaceholder = "<!-- base placeholder -->";
   private AnchorPane apBrowser = null;
   private Runnable postBrowserLoadCode = null;
-  
+
   private final boolean showJavascriptConsoleMessagesInJavaConsole = true;
-  
+
   public int getNumPages() { return numPages; }
   public int getCurPage()  { return curPage; }
 
 //---------------------------------------------------------------------------
-  
+
   public static enum PDFJSCommand
   {
     pjsOpen,
     pjsClose,
     pjsNumPages
   }
-  
+
 //---------------------------------------------------------------------------
-  
+
   @FunctionalInterface public interface PDFJSDoneHandler {
     public void handle(PDFJSCommand cmd, boolean success, String errMessage);
   }
-  
+
 //---------------------------------------------------------------------------
-  
+
   @FunctionalInterface public interface PDFJSPageChangeHandler {
     public void handle(int newPage);
   }
 
 //---------------------------------------------------------------------------
-  
+
   @FunctionalInterface public interface PDFJSRetrievedDataHandler {
     public void handle(Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel, List<Integer> hilitePages);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public PDFJSWrapper(AnchorPane apBrowser, PDFJSDoneHandler doneHndlr, 
+  public PDFJSWrapper(AnchorPane apBrowser, PDFJSDoneHandler doneHndlr,
                                             PDFJSPageChangeHandler pageChangeHndlr,
                                             PDFJSRetrievedDataHandler retrievedDataHndlr)
-  { 
+  {
     this.doneHndlr = doneHndlr;
     this.pageChangeHndlr = pageChangeHndlr;
     this.retrievedDataHndlr = retrievedDataHndlr;
     this.apBrowser = apBrowser;
-    
+
     javascriptToJava = new JavascriptToJava();
-    
+
     pdfjsMode = true; // Setting this to true so that viewer html is loaded in reloadBrowser
     reloadBrowser(null);
   }
@@ -127,11 +127,11 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 
   public boolean reloadBrowser(Runnable stuffToDoAfterLoadingViewerHtml)
-  {    
+  {
     if (browser != null)
     {
       removeFromAnchor(browserView);
-      oldBrowser = browser;      
+      oldBrowser = browser;
     }
 
     try
@@ -141,7 +141,7 @@ public class PDFJSWrapper
     catch (ExceptionInInitializerError e)
     {
       String msg = safeStr(e.getCause().getMessage());
-      
+
       messageDialog("Unable to initialize preview window" + (msg.length() == 0 ? "" : (": " + msg)), mtError);
       jxBrowserDisabled = true;
       return false;
@@ -149,14 +149,14 @@ public class PDFJSWrapper
     catch (Exception e)
     {
       String msg = safeStr(e.getMessage());
-      
-      messageDialog("Unable to initialize preview window" + (msg.length() == 0 ? "" : (": " + msg)), mtError);  
+
+      messageDialog("Unable to initialize preview window" + (msg.length() == 0 ? "" : (": " + msg)), mtError);
       jxBrowserDisabled = true;
       return false;
     }
-    
+
     browserCoreInitialized  = true;
-    
+
     if (viewerHTMLStr == null)
     {
       try { initViewerHTML(); }
@@ -164,80 +164,80 @@ public class PDFJSWrapper
       {
         messageDialog("Unable to initialize preview window: Unable to read HTML file", mtError);
         jxBrowserDisabled = true;
-        return false;      
+        return false;
       }
     }
-    
+
     BrowserPreferences preferences = browser.getPreferences();
 
     preferences.setAllowRunningInsecureContent(true);
     preferences.setJavaScriptCanAccessClipboard(true);
     preferences.setLocalStorageEnabled(true);
     preferences.setAllowScriptsToCloseWindows(true);
-    
+
     browser.setPreferences(preferences);
-    
+
     browserView = new BrowserView(browser);
-    
+
     AnchorPane.setTopAnchor(browserView, 0.0);
     AnchorPane.setBottomAnchor(browserView, 0.0);
     AnchorPane.setLeftAnchor(browserView, 0.0);
     AnchorPane.setRightAnchor(browserView, 0.0);
-    
+
     apBrowser.getChildren().add(browserView);
-    
+
     addCustomProtocolHandler("jar");
     addViewerHTMLProtocolHandler();
-   
+
     apBrowser.setOnMouseEntered(event ->
     {
       safeFocus(browserView);
     });
-    
+
     browser.setPopupHandler(new com.teamdev.jxbrowser.chromium.javafx.DefaultPopupHandler());
-    
-    browser.setDialogHandler(new DefaultDialogHandler(browserView) 
+
+    browser.setDialogHandler(new DefaultDialogHandler(browserView)
     {
       @Override public void onAlert(DialogParams params) { MessageDialog.show(browserView, "Alert", params.getMessage()); }
     });
-    
-    if (showJavascriptConsoleMessagesInJavaConsole) browser.addConsoleListener(event -> 
+
+    if (showJavascriptConsoleMessagesInJavaConsole) browser.addConsoleListener(event ->
     {
       String msg = event.getMessage();
       Level level = event.getLevel();
-      
+
       if (level == Level.WARNING)
         return;
-      
+
       if (level == Level.LOG)
       {
         if (app.debugging() == false) return;
-        
-        if (msg.toLowerCase().contains("unrecognized link type")) 
+
+        if (msg.toLowerCase().contains("unrecognized link type"))
           return;
       }
-      
+
       System.out.println("JS " + event.getLevel() + ": " + msg);
     });
-    
+
     browser.loadURL("viewerhtml:///html");
-    
+
     while (browser.isLoading()) sleepForMillis(50);
-    
-    browser.addLoadListener(new LoadAdapter() 
+
+    browser.addLoadListener(new LoadAdapter()
     {
-      @Override public void onFinishLoadingFrame(FinishLoadingEvent event) 
+      @Override public void onFinishLoadingFrame(FinishLoadingEvent event)
       {
-        if (event.isMainFrame()) 
+        if (event.isMainFrame())
         {
           ready = true;
-          
+
           JSValue window = browser.executeJavaScriptAndReturnValue("window");
-            
+
           window.asObject().setProperty("javaApp", javascriptToJava);
 
           pdfjsMode = browser.executeJavaScriptAndReturnValue("'PDFViewerApplication' in window").getBooleanValue();
-                   
+
           if (postBrowserLoadCode != null)
           {
             postBrowserLoadCode.run();
@@ -246,9 +246,9 @@ public class PDFJSWrapper
         }
       }
     });
-    
+
     Runnable runnable = () ->
-    {   
+    {
       if (oldBrowser != null)
       {
         oldBrowser.dispose();
@@ -258,12 +258,12 @@ public class PDFJSWrapper
       if (stuffToDoAfterLoadingViewerHtml != null)
         stuffToDoAfterLoadingViewerHtml.run();
     };
-    
+
     if (pdfjsMode)
       loadViewerHtml(runnable);
     else
-      runnable.run();    
-    
+      runnable.run();
+
     return true;
   }
 
@@ -282,10 +282,10 @@ public class PDFJSWrapper
   private void loadViewerHtml(Runnable stuffToDoAfterLoading)
   {
     clearHtml();
-    
+
     postBrowserLoadCode = stuffToDoAfterLoading;
-    
-    browser.loadHTML(viewerHTMLStr);   
+
+    browser.loadHTML(viewerHTMLStr);
   }
 
 //---------------------------------------------------------------------------
@@ -294,27 +294,27 @@ public class PDFJSWrapper
   private static void initViewerHTML() throws IOException
   {
     StringBuilder viewerHTMLSB = new StringBuilder();
-    
+
     readResourceTextFile("resources/pdfjs/web/viewer.html", viewerHTMLSB, false);
-    
+
     int ndx = viewerHTMLSB.indexOf(basePlaceholder);
-    
+
     String pathStr = App.class.getResource("resources/pdfjs/web").toExternalForm();
-    
-    if ((pathStr.indexOf("file:/") >= 0) && !(pathStr.indexOf("file:///") >= 0)) 
+
+    if ((pathStr.indexOf("file:/") >= 0) && !(pathStr.indexOf("file:///") >= 0))
       pathStr = pathStr.replace("file:/", "file:///");
-    
+
     String baseTag = "<base href=\"" + pathStr + "/\" />";
-    
+
     viewerHTMLSB.replace(ndx, ndx + basePlaceholder.length(), baseTag);
-    
+
     viewerHTMLStr = viewerHTMLSB.toString();
   }
-  
+
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   private void addViewerHTMLProtocolHandler()
   {
     ProtocolService protocolService = browser.getContext().getProtocolService();
@@ -326,16 +326,16 @@ public class PDFJSWrapper
         URLResponse response = new URLResponse();
 
         response.setData(String.valueOf("<html><body>&nbsp;</body></html>").getBytes());
-        
-        response.getHeaders().setHeader("Content-Type", "text/html");        
+
+        response.getHeaders().setHeader("Content-Type", "text/html");
         return response;
       }
     });
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   private void addCustomProtocolHandler(String protocol)
   {
     ProtocolService protocolService = browser.getContext().getProtocolService();
@@ -347,29 +347,29 @@ public class PDFJSWrapper
         URLResponse response = new URLResponse();
         //response.getHeaders().setHeader("Access-Control-Allow-Origin", "*");
         URL path = null;
-        
+
         try
-        {        
+        {
           String pathStr = request.getURL();
-          
+
           while (pathStr.matches(".*file:\\/[^/].*"))
             pathStr = pathStr.replaceFirst("file:\\/", "file:///");
-          
+
           path = new URL(pathStr);
         }
         catch (Exception e) { return null; }
 
         try (InputStream inputStream = path.openStream(); DataInputStream stream = new DataInputStream(inputStream))
-        {          
+        {
           byte[] data = new byte[stream.available()];
           stream.readFully(data);
           response.setData(data);
           String mimeType = getMimeType(path.toString());
           response.getHeaders().setHeader("Content-Type", mimeType);
           return response;
-        } 
+        }
         catch (Exception e) { noOp(); }
-        
+
         return null;
       }
     });
@@ -378,7 +378,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getMimeType(String path) 
+  private static String getMimeType(String path)
   {
     if (path.endsWith(".html")) return "text/html";
     if (path.endsWith(".css"))  return "text/css";
@@ -386,60 +386,60 @@ public class PDFJSWrapper
     if (path.endsWith(".js"))   return "text/javascript";
     return "text/html";
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-    
+
   public class JavascriptToJava
-  {   
+  {
     public void pageChange(int newPage)
     {
       curPage = newPage;
       pageChangeHndlr.handle(newPage);
     }
-    
+
 //---------------------------------------------------------------------------
-    
+
     public void sidebarChange(int view)
     {
       appPrefs.putInt(PREF_KEY_PDFJS_SIDEBAR_VIEW, view);
     }
 
-//---------------------------------------------------------------------------    
-    
+//---------------------------------------------------------------------------
+
     public void printVal(JSValue val)
     {
       printJSValue(val, 0);
     }
-    
+
 //---------------------------------------------------------------------------
-    
+
     public void setData(JSObject obj)
     {
       ArrayList<Integer> hilitePages = new ArrayList<>();
       HashMap<String, Integer> labelToPage = new HashMap<>();
       HashMap<Integer, String> pageToLabel = new HashMap<>();
-      
+
       JSArray annotPages = obj.getProperty("annotPages").asArray();
-      
+
       for (int ndx = 0; ndx < annotPages.length(); ndx++)
       {
         int pageNum = annotPages.get(ndx).asNumber().getInteger();
-        
+
         if (hilitePages.contains(pageNum) == false)
           hilitePages.add(pageNum);
       }
-      
+
       hilitePages.sort(null);
-      
+
       JSValue val = obj.getProperty("pageLabels");
-      
+
       if (val.isArray())
-      {      
+      {
         JSArray pageLabels = val.asArray();
-        
+
         if (pageLabels.isNull() == false)
-        {        
+        {
           for (int page = 1; page <= pageLabels.length(); page++)
           {
             String label = pageLabels.get(page - 1).getStringValue();
@@ -447,37 +447,37 @@ public class PDFJSWrapper
             pageToLabel.put(page, label);
           }
         }
-      }                
-      
+      }
+
       retrievedDataHndlr.handle(labelToPage, pageToLabel, hilitePages);
     }
 
-//---------------------------------------------------------------------------    
-    
+//---------------------------------------------------------------------------
+
     public void openDone(Boolean success, JSObject errMessage)
     {
       ready = true;
-      
+
       if (success)
       {
-        numPages = browser.executeJavaScriptAndReturnValue("PDFViewerApplication.pagesCount").asNumber().getInteger();        
-        browser.executeJavaScript("getPdfData();");        
+        numPages = browser.executeJavaScriptAndReturnValue("PDFViewerApplication.pagesCount").asNumber().getInteger();
+        browser.executeJavaScript("getPdfData();");
         opened = true;
       }
       else
       {
         printVal(errMessage);
       }
-      
+
       doneHndlr.handle(PDFJSCommand.pjsOpen, success, "");
     }
 
 //---------------------------------------------------------------------------
-    
+
     public void closeDone(Boolean success, JSObject errMessage)
     {
       ready = true;
-      
+
       if (success)
       {
         opened = false;
@@ -487,8 +487,8 @@ public class PDFJSWrapper
       else
       {
         printVal(errMessage);
-      }      
-      
+      }
+
       doneHndlr.handle(PDFJSCommand.pjsClose, success, "");
     }
   }
@@ -503,17 +503,17 @@ public class PDFJSWrapper
       doneHndlr.handle(PDFJSCommand.pjsClose, false, "Unable to close because the viewer is already closed.");
       return;
     }
-    
+
     browser.executeJavaScript("closePdfFile();");
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public void loadHtml(String html)
   {
     clearHtml();
-    
+
     browser.loadHTML(html);
   }
 
@@ -523,7 +523,7 @@ public class PDFJSWrapper
   public void loadFile(FilePath file)
   {
     clearHtml();
-    
+
     browser.loadURL(file.toURLString());
   }
 
@@ -534,48 +534,48 @@ public class PDFJSWrapper
                           SidebarView_THUMBS = 1,
                           SidebarView_OUTLINE = 2,
                           SidebarView_ATTACHMENTS = 3;
-  
+
   public void loadPdf(FilePath file, int initialPage)
   {
     Runnable runnable = () ->
     {
       opened = false;
       boolean readyToOpen = false;
-      
+
       for (int ndx = 0; (ndx < 100) && !readyToOpen; ndx++)
       {
         readyToOpen = browser.executeJavaScriptAndReturnValue("'openPdfFile' in window").getBooleanValue();
         if (!readyToOpen) sleepForMillis(50);
       }
-      
+
       if (!readyToOpen)
       {
         messageDialog("An error occurred while trying to show PDF file preview.", mtError);
         return;
       }
-      
-      browser.executeJavaScript("openPdfFile(\"" + file.toURLString() + "\", " + 
+
+      browser.executeJavaScript("openPdfFile(\"" + file.toURLString() + "\", " +
                                                    String.valueOf(initialPage) + ", " +
-                                                   appPrefs.getInt(PREF_KEY_PDFJS_SIDEBAR_VIEW, SidebarView_NONE) + ");");      
-      ready = false;           
+                                                   appPrefs.getInt(PREF_KEY_PDFJS_SIDEBAR_VIEW, SidebarView_NONE) + ");");
+      ready = false;
     };
-    
+
     if (pdfjsMode == false)
       loadViewerHtml(runnable);
     else
       runnable.run();
   }
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void goToPage(int pageNum)
   {
     if (!ready) return;
-    
+
     browser.executeJavaScript("PDFViewerApplication.pdfViewer.currentPageNumber = " + pageNum + ";");
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -584,7 +584,7 @@ public class PDFJSWrapper
     clearHtml();
 
     browser.addDisposeListener(event -> disposeHndlr.run());
-    browser.dispose();         
+    browser.dispose();
   }
 
 //---------------------------------------------------------------------------
@@ -594,10 +594,10 @@ public class PDFJSWrapper
   {
     for (int ndx = 0; ndx < indent; ndx++)
       text = " " + text;
-    
+
     System.out.println(text);
   }
-  
+
   private void printJSValue(JSValue val, int indent)
   {
     if (val.isNull())              { printIndented("NULL", indent); }
@@ -612,43 +612,43 @@ public class PDFJSWrapper
     else if (val.isArray())
     {
       JSArray array = val.asArray();
-      
+
       for (int ndx = 0; ndx < array.length(); ndx++)
       {
         printIndented("[" + ndx + "]", indent);
         printJSValue(array.get(ndx), indent + 2);
       }
     }
-    
+
     else if (val.isObject())
     {
       JSObject obj = val.asObject();
-      
+
       for (String propName : obj.getPropertyNames())
-      {        
+      {
         printIndented(propName + ":", indent);
         printJSValue(obj.getProperty(propName), indent + 2);
       }
     }
-    
+
     else if (val.isJavaObject())
     {
       Object obj = val.asJavaObject();
-      
+
       printIndented(obj.getClass().getName() + ": " + obj.toString(), indent);
     }
-    
+
     else  { printIndented("NONE OF THE ABOVE", indent); }
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   void prepareToHide()
   {
     removeFromAnchor(browserView);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -656,8 +656,8 @@ public class PDFJSWrapper
   {
     apBrowser.getChildren().add(browserView);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
 }

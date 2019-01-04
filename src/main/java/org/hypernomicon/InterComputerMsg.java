@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon;
@@ -40,7 +40,7 @@ public class InterComputerMsg
   private final String dest;
   private final HDB_MessageType type;
   private final long sentTime;
-  
+
   public InterComputerMsg(String source, String dest, HDB_MessageType type)
   {
     this.source = source;
@@ -48,24 +48,24 @@ public class InterComputerMsg
     this.type = type;
     sentTime = Instant.now().getEpochSecond();
   }
-  
+
   public String getSource()        { return source; }
   public String getDest()          { return dest; }
   public HDB_MessageType getType() { return type; }
   public long getSentTime()        { return sentTime; }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public boolean writeToDisk()
   {
     List<String> s;
     FilePath filePath;
-  
+
     s = new ArrayList<String>();
     s.add(source);
     s.add(dest);
-  
+
     switch (type)
     {
       case hmtEchoRequest    : s.add("echo request");    filePath = db.getRequestMessageFilePath();  break;
@@ -74,7 +74,7 @@ public class InterComputerMsg
       case hmtUnlockComplete : s.add("unlock complete"); filePath = db.getResponseMessageFilePath(); break;
       default : return false;
     }
-  
+
     try { FileUtils.writeLines(filePath.toFile(), s); }
     catch (IOException e) { return false; }
     return true;
@@ -88,14 +88,14 @@ public class InterComputerMsg
     List<String> s;
     String source, dest;
     HDB_MessageType type;
-     
+
     if (filePath.exists())
     {
-      try { s = FileUtils.readLines(filePath.toFile(), "UTF-8"); } 
+      try { s = FileUtils.readLines(filePath.toFile(), "UTF-8"); }
       catch (IOException e) { return null; }
-      
+
       if (s.size() != 3) return null;
-      
+
       if (s.get(0).equals(getComputerName()))
         return null;
 
@@ -110,13 +110,13 @@ public class InterComputerMsg
         case "unlock complete" : type = hmtUnlockComplete; break;
         default : type = hmtNone;
       }
-      
+
       return new InterComputerMsg(source, dest, type);
     }
-  
+
     return null;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.items;
@@ -42,9 +42,9 @@ public class KeyWork implements Comparable<KeyWork>
     abstract public int getID();
     abstract public HDT_RecordType getType();
     abstract public HDT_Base getRecord();
-    
+
     public boolean isExpired() { return false; }
-    
+
     //---------------------------------------------------------------------------
 
     @Override public int hashCode()
@@ -62,20 +62,20 @@ public class KeyWork implements Comparable<KeyWork>
     {
       if (this == obj) return true;
       if ((obj instanceof RecordPointer) == false) return false;
-      
+
       RecordPointer other = (RecordPointer) obj;
 
       if (getID() == other.getID())
         if (getType() == other.getType())
           return true;
-      
+
       return false;
     }
   }
-  
+
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
-  
+
   private class OfflineRecordPointer extends RecordPointer
   {
     private final HDT_RecordType type;
@@ -92,31 +92,31 @@ public class KeyWork implements Comparable<KeyWork>
     @Override public int getID()              { return id; }
     @Override public HDT_RecordType getType() { return type; }
     @Override public HDT_Base getRecord()     { return db.records(getType()).getByID(getID()); }
-    
+
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
   }
-  
+
   private class OnlineRecordPointer extends RecordPointer
   {
     private final HDT_Base record;
-    
+
     public OnlineRecordPointer(HDT_Base record)
     {
       this.record = record;
     }
-    
+
     @Override public int getID()              { return record.getID(); }
     @Override public HDT_RecordType getType() { return record.getType(); }
     @Override public HDT_Base getRecord()     { return record; }
-    
+
     @Override public boolean isExpired()      { return HDT_Record.isEmpty(record); }
   }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
-  
+
   private final RecordPointer record;
   private String searchKey = "";
   private boolean searchKeyInitialized = false;
@@ -126,7 +126,7 @@ public class KeyWork implements Comparable<KeyWork>
 
   public KeyWork(HDT_RecordWithPath recordWithPath)
   {
-    record = new OnlineRecordPointer(recordWithPath);    
+    record = new OnlineRecordPointer(recordWithPath);
   }
 
   //---------------------------------------------------------------------------
@@ -138,7 +138,7 @@ public class KeyWork implements Comparable<KeyWork>
       record = new OnlineRecordPointer(db.records(recordType).getByID(recordID));
     else
       record = new OfflineRecordPointer(recordType, recordID);
-    
+
     this.searchKey = searchKey;
     searchKeyInitialized = true;
   }
@@ -152,12 +152,12 @@ public class KeyWork implements Comparable<KeyWork>
   public boolean isExpired()            { return record == null ? true : record.isExpired(); }
   public KeyWork getOnlineCopy()        { return new KeyWork(getRecordType(), getRecordID(), getSearchKey(), true); }
   public KeyWork getOfflineCopy()       { return new KeyWork(getRecordType(), getRecordID(), getSearchKey(), false); }
-  
+
   @Override public int hashCode()       { return record.hashCode(); }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
- 
+
   private String makeSearchKey()
   {
     String searchKey;
@@ -166,31 +166,31 @@ public class KeyWork implements Comparable<KeyWork>
     {
       HDT_Work work = (HDT_Work) record.getRecord();
       searchKey = WorkTabController.makeWorkSearchKey(work.getAuthors(), work.getYear(), work);
-      
+
       if (searchKey.length() == 0)
       {
         if (work.largerWork.isNotNull())
         {
           String lwSearchKey = new SplitString(work.largerWork.get().getSearchKey(), ';').next();
-          
+
           if (lwSearchKey.length() == 0)
             lwSearchKey = WorkTabController.makeWorkSearchKey(work.largerWork.get().getAuthors(), work.largerWork.get().getYear(), work);
-          
+
           if (lwSearchKey.length() == 0)
             lwSearchKey = (work.largerWork.get().getYear() + " " + work.largerWork.get().name()).trim();
-            
-          searchKey = new SplitString(work.name(), ':').next() + " in " + 
+
+          searchKey = new SplitString(work.name(), ':').next() + " in " +
                       new SplitString(lwSearchKey, ':').next();
         }
         else
           searchKey = (work.getYear() + " " + work.name()).trim();
       }
-        
+
       searchKey = new SplitString(searchKey, ':').next();
     }
     else
       searchKey = HDT_MiscFile.class.cast(record.getRecord()).name();
-    
+
     return searchKey;
   }
 
@@ -201,12 +201,12 @@ public class KeyWork implements Comparable<KeyWork>
   {
     return getSearchKey(false);
   }
-  
+
   public String getSearchKey(boolean updateFirst)
   {
     if (updateFirst || (searchKeyInitialized == false))
       updateSearchKeyAndCheckIfActive();
-    
+
     return searchKey;
   }
 
@@ -216,34 +216,34 @@ public class KeyWork implements Comparable<KeyWork>
   private boolean updateSearchKeyAndCheckIfActive()
   {
     searchKeyInitialized = true;
-    
+
     if (searchKey.length() == 0)
       searchKey = makeSearchKey(); // Try using the author and year and see if that is a keyword match
-    
+
     if (searchKey.length() > 0)
     {
       SearchKeyword hyperKey = db.getKeyByKeyword(searchKey);
-  
+
       if (hyperKey != null)
       {
         if (hyperKey.record.getID() == record.getID())
           if (hyperKey.record.getType() == record.getType())
             return true;
-        
+
         searchKey = "";
       }
     }
 
     String activeKeyWord = record.getRecord().getFirstActiveKeyWord();
-    
+
     if (activeKeyWord.length() == 0)
     {
       if (searchKey.length() == 0)
-        searchKey = makeSearchKey(); // Use the author and year; the only reason why it wasn't a keyword match is because there are no active keywords      
-      
+        searchKey = makeSearchKey(); // Use the author and year; the only reason why it wasn't a keyword match is because there are no active keywords
+
       return false;
     }
-    
+
     searchKey = activeKeyWord;
     return true;
   }
@@ -255,17 +255,17 @@ public class KeyWork implements Comparable<KeyWork>
   {
     if (updateSearchKeyAndCheckIfActive())
       return searchKey;
-    
+
     return "<a id=\"" + record.getID() + "\" type=\"" + db.getTypeTagStr(record.getType()) + "\">" + searchKey + "</a>";
   }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
-  
+
   private int getYear()
   {
     int year = 0;
-    
+
     if (record.getType() == hdtWork)
       year = parseInt(HDT_Work.class.cast(record.getRecord()).getYear(), 0);
     else if (record.getType() == hdtMiscFile)
@@ -274,7 +274,7 @@ public class KeyWork implements Comparable<KeyWork>
       if (work != null)
         year = parseInt(work.getYear(), 0);
     }
-    
+
     return year;
   }
 
@@ -286,12 +286,12 @@ public class KeyWork implements Comparable<KeyWork>
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    
+
     KeyWork other = (KeyWork) obj;
 
     if ((other.record != null) && (record != null))
       return record.equals(other.record);
-    
+
     return false;
   }
 
@@ -302,10 +302,10 @@ public class KeyWork implements Comparable<KeyWork>
   {
     int year1 = getYear(),
         year2 = o.getYear();
-           
+
     if (year1 == year2)
       return getSearchKey().compareToIgnoreCase(o.getSearchKey());
-      
+
     return year1 - year2;
   }
 

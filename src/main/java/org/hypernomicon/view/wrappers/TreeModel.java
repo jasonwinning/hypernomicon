@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.wrappers;
@@ -46,13 +46,13 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
   private AbstractTreeWrapper<RowType> treeWrapper = null;
   private RowType rootRow;
   private Map<HDT_RecordType, Set<HDT_RecordType>> parentChildRelations;
-  
+
   public boolean pruningOperationInProgress = false;
 
   public void expandMainBranch() { rootRow.treeItem.setExpanded(true); }
 
 //---------------------------------------------------------------------------
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
 
   private class MappingFromRecordToRows
   {
@@ -71,29 +71,29 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
     public void addRow(RowType row)
     {
       HDT_Base record = row.getRecord();
-      
+
       if (recordToRows.containsKey(record) == false)
         if (tcb != null) tcb.add(record);
-        
+
       recordToRows.put(record, row);
     }
 
     //---------------------------------------------------------------------------
-    //--------------------------------------------------------------------------- 
+    //---------------------------------------------------------------------------
 
     public void removeRow(RowType row)
     {
       HDT_Base record = row.getRecord();
-      
+
       if (recordToRows.remove(record, row) == false) return;
-      
+
       if (tcb != null) tcb.checkIfShouldBeRemoved(record);
     }
   }
 
 //---------------------------------------------------------------------------
-//--------------------------------------------------------------------------- 
-  
+//---------------------------------------------------------------------------
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -121,7 +121,7 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
   public void reset(HDT_Base rootRecord)
   {
     clear();
-    
+
     rootRow = treeWrapper.newRow(rootRecord, this);
     treeWrapper.getRoot().getChildren().add(treeWrapper.getTreeItem(rootRow));
     recordToRows.addRow(rootRow);
@@ -131,40 +131,40 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
 //---------------------------------------------------------------------------
 
   public void removeRecord(HDT_Base record)
-  {    
+  {
     parentToChildren.getForwardSet(record).forEach(child  -> unassignParent(child , record));
     parentToChildren.getReverseSet(record).forEach(parent -> unassignParent(record, parent));
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   public void copyTo(TreeModel<RowType> dest)
-  {   
-    parentToChildren.getAllHeads().forEach(parent -> 
+  {
+    parentToChildren.getAllHeads().forEach(parent ->
       parentToChildren.getForwardSet(parent).forEach(child ->
         dest.assignParent(child, parent)));
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void unassignParent(HDT_Base child, HDT_Base parent)
-  {       
+  {
     if (parentToChildren.getForwardSet(parent).contains(child) == false) return;
-    
+
     new ArrayList<>(recordToRows.getRowsForRecord(parent)).forEach(row -> row.treeItem.getChildren().removeIf(childItem ->
     {
       RowType childRow = childItem.getValue();
-      
+
       if (childRow.getRecord() != child) return false;
 
       removeChildRows(childRow);
       recordToRows.removeRow(childRow);
-      
+
       return pruningOperationInProgress == false;  // prevent ConcurrentModificationException
     }));
-    
+
     parentToChildren.removeForward(parent, child);
   }
 
@@ -179,46 +179,46 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
 
       removeChildRows(childRow);
       recordToRows.removeRow(childRow);
-      
+
       return pruningOperationInProgress == false;  // prevent ConcurrentModificationException
-    });    
+    });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public void assignParent(HDT_Base child, HDT_Base parent)
-  {    
+  {
     if (parentToChildren.getForwardSet(parent).contains(child)) return;
-    
+
     parentToChildren.addForward(parent, child);
-       
+
     for (RowType row : new ArrayList<>(recordToRows.getRowsForRecord(parent)))
     {
       RowType childRow = treeWrapper.newRow(child, this);
-      
+
       insertTreeItem(treeWrapper.getTreeItem(row).getChildren(), childRow);
       recordToRows.addRow(childRow);
       addChildRows(childRow);
     }
   }
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private void insertTreeItem(ObservableList<TreeItem<RowType>> list, RowType newRow)
   {
     TreeItem<RowType> newItem = treeWrapper.getTreeItem(newRow);
-    
+
     int ndx = Collections.binarySearch(list, newItem, (item1, item2) -> item1.getValue().compareTo(item2.getValue()));
-    
+
     if (ndx < 0)
       ndx = (ndx + 1) * -1;
-    
+
     list.add(ndx, newItem);
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private void addChildRows(RowType parentRow)
@@ -231,10 +231,10 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
       addChildRows(childRow);
     });
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public Set<RowType> getRowsForRecord(HDT_Base record)
   {
     return recordToRows.getRowsForRecord(record);
@@ -254,7 +254,7 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
   private void addParentChildRelationMapping(HDT_RecordType parentType, HDT_RecordType childType)
   {
     Set<HDT_RecordType> childTypes;
-    
+
     if (parentChildRelations.containsKey(parentType))
       childTypes = parentChildRelations.get(parentType);
     else
@@ -262,7 +262,7 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
       childTypes = EnumSet.noneOf(HDT_RecordType.class);
       parentChildRelations.put(parentType, childTypes);
     }
-    
+
     childTypes.add(childType);
   }
 
@@ -275,7 +275,7 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
     {
       addParentChildRelationMapping(hdtWork, recordType);
       addParentChildRelationMapping(hdtMiscFile, recordType);
-      
+
       db.addKeyWorkHandler(recordType, (keyWork, record, affirm) ->
       {
         if (affirm) assignParent(keyWork, record);
@@ -286,7 +286,7 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
     {
       addParentChildRelationMapping(recordType, hdtWork);
       addParentChildRelationMapping(recordType, hdtMiscFile);
-      
+
       db.addKeyWorkHandler(recordType, (keyWork, record, affirm) ->
       {
         if (affirm) assignParent(record, keyWork);
@@ -297,7 +297,7 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public void addParentChildRelation(RelationType relType, boolean forward)
   {
     HDT_RecordType objType  = db.getObjType(relType),
@@ -306,9 +306,9 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
     if (forward)
     {
       addParentChildRelationMapping(objType, subjType);
-      
+
       db.addRelationChangeHandler(relType, (child, parent, affirm) ->
-      {     
+      {
         if (affirm) assignParent(child, parent);
         else        unassignParent(child, parent);
       });
@@ -316,9 +316,9 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
     else
     {
       addParentChildRelationMapping(subjType, objType);
-      
+
       db.addRelationChangeHandler(relType, (child, parent, affirm) ->
-      {     
+      {
         if (affirm) assignParent(parent, child);
         else        unassignParent(parent, child);
       });

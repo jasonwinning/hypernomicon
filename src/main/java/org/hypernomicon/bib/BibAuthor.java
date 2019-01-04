@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.bib;
@@ -39,16 +39,16 @@ public final class BibAuthor implements Cloneable
     this.person = person;
     this.name = name;
   }
-  
+
   public BibAuthor(AuthorType type, HDT_Person person) { this(type, person, null); }
   public BibAuthor(AuthorType type, PersonName name)   { this(type, null, name);   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public BibAuthor(AuthorType type, Author author)
   {
-    this.type = type;    
+    this.type = type;
     person = author.getPerson();
     name = person == null ? author.getName() : null;
   }
@@ -61,13 +61,13 @@ public final class BibAuthor implements Cloneable
   public final String getFamily()     { return getName().getLast(); }
   public final PersonName getName()   { return person == null ? name : person.getName(); }
   public final HDT_Person getPerson() { return person; }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public final BibAuthor clone() 
+  @Override public final BibAuthor clone()
   { try { return (BibAuthor) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }}
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -75,14 +75,14 @@ public final class BibAuthor implements Cloneable
   {
     final int prime = 31;
     int result = 1;
-    
+
     String first = "", last = "";
-    
+
     if (getName() != null)
     {
       first = getName().getFirst(); last = getName().getLast();
     }
-    
+
     result = prime * result + safeStr(last).hashCode();
     result = prime * result + safeStr(first).hashCode();
     result = prime * result + (person == null ? 0 : person.hashCode());
@@ -101,23 +101,23 @@ public final class BibAuthor implements Cloneable
     BibAuthor other = (BibAuthor) obj;
 
     if (type != other.type) return false;
-       
+
     if (person == null)
     {
       if (other.person != null) return false;
-      
+
       String first = "", last = "", otherFirst = "", otherLast = "";
-      
+
       if (name != null)
       {
         first = name.getFirst(); last = name.getLast();
       }
-      
+
       if (other.name != null)
       {
         otherFirst = other.name.getFirst(); otherLast = other.name.getLast();
       }
-      
+
       if (safeStr(first).equals(safeStr(otherFirst)) == false) return false;
       if (safeStr(last).equals(safeStr(otherLast)) == false) return false;
     }
@@ -125,7 +125,7 @@ public final class BibAuthor implements Cloneable
 
     return true;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

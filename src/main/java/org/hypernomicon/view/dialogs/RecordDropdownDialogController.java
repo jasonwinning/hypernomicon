@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -38,17 +38,17 @@ public class RecordDropdownDialogController<HDT_T extends HDT_Base> extends Hype
   @FXML ComboBox<HyperTableCell> cbRecord;
   @FXML Button btnOK;
   @FXML Button btnCancel;
-  
+
   private HyperCB hcbRecord;
   private String typeName;
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public HDT_T getRecord() { return hcbRecord.selectedRecord(); }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static <HDT_T2 extends HDT_Base> RecordDropdownDialogController<HDT_T2> create(String title, HDT_RecordType recordType)
   {
@@ -57,8 +57,8 @@ public class RecordDropdownDialogController<HDT_T extends HDT_Base> extends Hype
     return rdd;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void init(HDT_RecordType recordType)
   {
@@ -66,8 +66,8 @@ public class RecordDropdownDialogController<HDT_T extends HDT_Base> extends Hype
     typeName = db.getTypeName(recordType);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override protected boolean isValid()
   {
@@ -77,11 +77,11 @@ public class RecordDropdownDialogController<HDT_T extends HDT_Base> extends Hype
       safeFocus(cbRecord);
       return false;
     }
-    
+
     return true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

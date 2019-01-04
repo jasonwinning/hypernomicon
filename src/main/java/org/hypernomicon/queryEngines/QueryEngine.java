@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.queryEngines;
@@ -41,27 +41,27 @@ public abstract class QueryEngine<HDT_T extends HDT_Base>
     qtNotes(9),
     qtFiles(10),
     qtConcepts(11),
-    qtReport(12), 
+    qtReport(12),
     qtNone(13);
-    
-    private final int code;  
-  
-    private QueryType(int code) { this.code = code; }  
-  
+
+    private final int code;
+
+    private QueryType(int code) { this.code = code; }
+
     public int getCode() { return code; }
-    
+
     public static QueryType codeToVal(int num)
     {
-      for (QueryType val : QueryType.values()) 
+      for (QueryType val : QueryType.values())
         if (val.getCode() == num) return val;
-      
+
       return null;
     }
-    
+
     public static QueryType fromRecordType(HDT_RecordType recordType)
     {
       if (recordType == null) return qtAllRecords;
-      
+
       switch (recordType)
       {
         case hdtArgument:       return qtArguments;
@@ -74,23 +74,23 @@ public abstract class QueryEngine<HDT_T extends HDT_Base>
         case hdtPosition:       return qtPositions;
         case hdtConcept:        return qtConcepts;
         case hdtWork:           return qtWorks;
-        default:                return qtAllRecords;        
+        default:                return qtAllRecords;
       }
     }
   }
-  
+
   public abstract QueryType getQueryType();
-  
+
   public abstract void addQueries(QueryPopulator pop, HyperTableRow row);
-  
+
   public abstract void queryChange(int query, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3);
-  
+
   public abstract boolean evaluate(HDT_T record, boolean firstCall, boolean lastCall);
-    
+
   public void op1Change(int query, HyperTableCell op1, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3) { }
-  
+
   public void op2Change(int query, HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3) { }
-  
+
   public abstract QuerySource getSource(int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3);
 
   public abstract boolean needsMentionsIndex(int query);

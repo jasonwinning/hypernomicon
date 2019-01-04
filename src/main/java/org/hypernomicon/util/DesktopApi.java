@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.util;
@@ -35,43 +35,43 @@ import org.hypernomicon.util.filePath.FilePath;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-public class DesktopApi 
+public class DesktopApi
 {
   @SuppressWarnings("unused")
-  public static boolean browse(String url) 
+  public static boolean browse(String url)
   {
     if ((SystemUtils.IS_OS_WINDOWS) || (SystemUtils.IS_OS_MAC))
       return browseDESKTOP(url);
-      
+
     try
     {
       new URI(url);
-    } 
+    }
     catch (URISyntaxException e)
     {
       return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ". " + e.getMessage());
     }
-    
+
     return openSystemSpecific(url);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
-  public static boolean open(FilePath filePath) 
+
+  public static boolean open(FilePath filePath)
   {
     if (FilePath.isEmpty(filePath)) return true;
-    
+
     if ((SystemUtils.IS_OS_WINDOWS) || (SystemUtils.IS_OS_MAC))
       return openDesktop(filePath);
-    
+
     return openSystemSpecific(filePath.toString());
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
-  public static boolean edit(FilePath filePath) 
+
+  public static boolean edit(FilePath filePath)
   {
     // you can try something like
     // runCommand("gimp", "%s", file.getPath())
@@ -79,32 +79,32 @@ public class DesktopApi
 
     if ((SystemUtils.IS_OS_WINDOWS) || (SystemUtils.IS_OS_MAC))
       return editDesktop(filePath);
-    
+
     return openSystemSpecific(filePath.toString());
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
-  private static boolean openSystemSpecific(String pathStr) 
+
+  private static boolean openSystemSpecific(String pathStr)
   {
-    if (SystemUtils.IS_OS_LINUX) 
+    if (SystemUtils.IS_OS_LINUX)
     {
       if (runCommand("kde-open", "%s", pathStr)) return true;
       if (runCommand("gnome-open", "%s", pathStr)) return true;
       if (runCommand("xdg-open", "%s", pathStr)) return true;
       //if (runCommand("exo-open", "%s", path)) return true;
       //if (runCommand("gvfs-open", "%s", path)) return true;
-      
+
       messageDialog("Unable to open the file: " + pathStr + ".", mtError);
     }
 
-    if (SystemUtils.IS_OS_MAC) 
+    if (SystemUtils.IS_OS_MAC)
     {
       if (runCommand("open", "%s", pathStr)) return true;
     }
 
-    if (SystemUtils.IS_OS_WINDOWS) 
+    if (SystemUtils.IS_OS_WINDOWS)
     {
       if (runCommand("explorer", "%s", pathStr)) return true;
     }
@@ -114,21 +114,21 @@ public class DesktopApi
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
-  private static boolean browseDESKTOP(String url) 
+
+  private static boolean browseDESKTOP(String url)
   {
-    try 
+    try
     {
-      if (!Desktop.isDesktopSupported()) 
+      if (!Desktop.isDesktopSupported())
         return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ".");
-      
-      if (!Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) 
+
+      if (!Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
         return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ".");
-      
+
       Desktop.getDesktop().browse(new URI(url));
       return true;
-    } 
-    catch (Exception e) 
+    }
+    catch (Exception e)
     {
       return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ". " + e.getMessage());
     }
@@ -136,20 +136,20 @@ public class DesktopApi
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
-  private static boolean openDesktop(FilePath filePath) 
+
+  private static boolean openDesktop(FilePath filePath)
   {
-    try 
+    try
     {
-      if (!Desktop.isDesktopSupported()) 
+      if (!Desktop.isDesktopSupported())
         return falseWithErrorMessage("An error occurred while trying to open the file: " + filePath);
 
-      if (!Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) 
+      if (!Desktop.getDesktop().isSupported(Desktop.Action.OPEN))
         return falseWithErrorMessage("An error occurred while trying to open the file: " + filePath);
 
       Desktop.getDesktop().open(filePath.toFile());
       return true;
-    } 
+    }
     catch (Exception e)
     {
       return falseWithErrorMessage("An error occurred while trying to open the file: " + filePath + ". " + e.getMessage());
@@ -158,21 +158,21 @@ public class DesktopApi
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
-  private static boolean editDesktop(FilePath filePath) 
+
+  private static boolean editDesktop(FilePath filePath)
   {
-    try 
+    try
     {
-      if (!Desktop.isDesktopSupported()) 
+      if (!Desktop.isDesktopSupported())
         return falseWithErrorMessage("An error occurred while trying to edit the file: " + filePath + ".");
 
-      if (!Desktop.getDesktop().isSupported(Desktop.Action.EDIT)) 
+      if (!Desktop.getDesktop().isSupported(Desktop.Action.EDIT))
         return falseWithErrorMessage("An error occurred while trying to edit the file: " + filePath + ".");
 
       Desktop.getDesktop().edit(filePath.toFile());
       return true;
-    } 
-    catch (Exception e) 
+    }
+    catch (Exception e)
     {
       return falseWithErrorMessage("An error occurred while trying to edit the file: " + filePath + ". " + e.getMessage());
     }
@@ -180,39 +180,39 @@ public class DesktopApi
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
-  public static boolean runCommand(String command, String args, String pathStr) 
+
+  public static boolean runCommand(String command, String args, String pathStr)
   {
     String[] parts = prepareCommand(command, args, pathStr);
 
-    try 
+    try
     {
       Process p = Runtime.getRuntime().exec(parts);
       if (p == null) return false;
-      
+
       try { p.waitFor(); } catch(Exception e) { noOp(); };
 
-      try 
+      try
       {
         int retval = p.exitValue();
-        if (retval == 0) 
+        if (retval == 0)
         {
           // Process terminated normally.
           return true;
-        } 
-        else 
+        }
+        else
         {
           // Process crashed.
           return false;
         }
-      } 
-      catch (IllegalThreadStateException itse) 
+      }
+      catch (IllegalThreadStateException itse)
       {
         // Process is running.
         return false;
       }
-    } 
-    catch (IOException e) 
+    }
+    catch (IOException e)
     {
       // Error running command.
       return false;
@@ -221,15 +221,15 @@ public class DesktopApi
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
-  private static String[] prepareCommand(String command, String args, String pathStr) 
+
+  private static String[] prepareCommand(String command, String args, String pathStr)
   {
     List<String> parts = new ArrayList<String>();
     parts.add(command);
 
-    if (args != null) 
+    if (args != null)
     {
-      for (String s : args.split(" ")) 
+      for (String s : args.split(" "))
       {
         s = String.format(s, pathStr); // put in the filename thing
 
@@ -239,7 +239,7 @@ public class DesktopApi
 
     return parts.toArray(new String[parts.size()]);
   }
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

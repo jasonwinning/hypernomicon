@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.bib;
@@ -45,9 +45,9 @@ public class XMPNode
 {
   private final XMPNode parent;
   private final XMPMeta xmpMeta;
-  private final XMPPropertyInfo propInfo;  
-  private final LinkedHashMap<String, LinkedHashMap<String, XMPNode>> prefixToNameToChild = new LinkedHashMap<>();  
-  private final ArrayList<XMPNode> elements = new ArrayList<>();  
+  private final XMPPropertyInfo propInfo;
+  private final LinkedHashMap<String, LinkedHashMap<String, XMPNode>> prefixToNameToChild = new LinkedHashMap<>();
+  private final ArrayList<XMPNode> elements = new ArrayList<>();
   private final String ns, path, value, prefix, name;
   private final int arrayNdx;
 
@@ -62,20 +62,20 @@ public class XMPNode
     XMPMeta xmpMeta = XMPMetaFactory.parseFromBuffer(byteArray);
 
     XMPNode root = new XMPNode(xmpMeta, null, null);
-    
+
     XMPIterator it = xmpMeta.iterator();
-    
+
     while (it.hasNext())
     {
       XMPPropertyInfo propInfo = (XMPPropertyInfo) it.next();
-      
+
       if (propInfo.getPath() != null)
         root.addDescendant(propInfo);
     }
-    
+
     return root;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -83,28 +83,28 @@ public class XMPNode
   {
     public String prefix = null, name = null;
     int arrayNdx = -1;
-    
+
     public PathParts(String str)
     {
       if (str == null) return;
       if (str.length() == 0) return;
-      
+
       if (str.startsWith("["))
       {
         arrayNdx = parseInt(str.substring(1, str.indexOf(']')), 0) - 1;
         return;
       }
-      
+
       int ndx = str.indexOf(":");
       prefix = str.substring(0, ndx);
       name = str.substring(ndx + 1);
-      
+
       ndx = name.indexOf("[");
       if (ndx >= 0)
       {
         arrayNdx = parseInt(name.substring(ndx + 1, name.indexOf(']')), 0) - 1;
         name = name.substring(0, ndx);
-      }      
+      }
     }
   }
 
@@ -119,7 +119,7 @@ public class XMPNode
 
     if (propInfo != null)
     {
-      ns = nullSwitch(propInfo.getNamespace(), parent.getNamespace());      
+      ns = nullSwitch(propInfo.getNamespace(), parent.getNamespace());
       path = propInfo.getPath();
       value = propInfo.getValue();
     }
@@ -129,14 +129,14 @@ public class XMPNode
       path = null;
       value = null;
     }
-      
+
     if (path != null)
     {
       int ndx = path.lastIndexOf("/");
       String subPath = path.substring(ndx + 1);
 
       PathParts parts = new PathParts(subPath);
-      
+
       prefix = parts.prefix;
       name = parts.name;
       arrayNdx = parts.arrayNdx;
@@ -157,17 +157,17 @@ public class XMPNode
     String subPath = targetInfo.getPath().substring(safeStr(path).length());
     if (subPath.startsWith("/"))
       subPath = subPath.substring(1);
-    
+
     int ndx = subPath.indexOf("/");
     if (ndx >= 0)
       subPath = subPath.substring(0, ndx);
 
     PathParts parts = new PathParts(subPath);
-    
+
     if (subPath.contains(":"))
     {
       LinkedHashMap<String, XMPNode> nameToChild;
-      
+
       if (prefixToNameToChild.containsKey(parts.prefix) == false)
       {
         nameToChild = new LinkedHashMap<>();
@@ -175,24 +175,24 @@ public class XMPNode
       }
       else
         nameToChild = prefixToNameToChild.get(parts.prefix);
-      
+
       if (nameToChild.containsKey(parts.name))
       {
         nameToChild.get(parts.name).addDescendant(targetInfo);
         return;
       }
-      
+
       XMPNode child = new XMPNode(xmpMeta, this, targetInfo);
       nameToChild.put(parts.name, child);
-      return;      
+      return;
     }
-    
+
     if (elements.size() > parts.arrayNdx)
     {
       elements.get(parts.arrayNdx).addDescendant(targetInfo);
       return;
     }
-    
+
     XMPNode child = new XMPNode(xmpMeta, this, targetInfo);
     elements.add(child);
     return;
@@ -202,30 +202,30 @@ public class XMPNode
 //---------------------------------------------------------------------------
 
   public static String escape(String str) { return str.replace(",", "@&$"); }
-  
+
   public void addCsvLines(ArrayList<String> csvFile)
   {
     String line = "";
-    
+
     if (safeStr(value).length() > 0)
     {
       if (arrayNdx >= 0)
         line = "[" + (arrayNdx + 1) + "]";
-      
+
       line = line + escape(value) + "," + getCsvPath();
     }
-    
+
     line = convertToSingleLine(line);
     line = line.replace("\"", "");
-    
+
     if (line.length() > 0)
       if (csvFile.contains(line) == false)
         csvFile.add(line);
-    
+
     prefixToNameToChild.values().forEach(nameToChild ->
       nameToChild.values().forEach(child ->
         child.addCsvLines(csvFile)));
-    
+
     elements.forEach(child -> child.addCsvLines(csvFile));
   }
 
@@ -235,10 +235,10 @@ public class XMPNode
   public String getCsvPath()
   {
     String line = "";
-    
+
     if (parent != null)
       line = parent.getCsvPath();
-    
+
     if (safeStr(name).length() > 0)
     {
       if (line.length() > 0)
@@ -246,10 +246,10 @@ public class XMPNode
       else
         line = escape(prefix) + "," + escape(name);
     }
-    
+
     return line;
   }
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -257,11 +257,11 @@ public class XMPNode
   {
     if (safeStr(name).toLowerCase().contains("journaldoi") == false)
       bd.extractDOIandISBNs(value);
-    
+
     prefixToNameToChild.values().forEach(nameToChild ->
       nameToChild.values().forEach(child ->
         child.extractDOIandISBNs(bd)));
-    
+
     elements.forEach(child -> child.extractDOIandISBNs(bd));
   }
 
@@ -272,18 +272,18 @@ public class XMPNode
   {
     if (elements.isEmpty() == false)
     {
-      if (prefix.equals("dc")) 
+      if (prefix.equals("dc"))
       {
         if (name.equals("creator"))
         {
           bd.getAuthors().clear();
-          
+
           elements.forEach(child -> bd.getAuthors().add(AuthorType.author, new PersonName(child.value)));
         }
         else if (name.equals("title"))
         {
           bd.setMultiStr(bfTitle, Collections.emptyList());
-          
+
           elements.forEach(child -> bd.addStr(bfTitle, child.value));
         }
         else if (name.equals("description"))
@@ -296,17 +296,17 @@ public class XMPNode
         if (elements.size() > 0)
         {
           YearType yt = YearType.getByDesc(name);
-          
+
           if (yt != ytUnknown)
             bd.setYear(elements.get(0).value, yt);
         }
       }
     }
-    
+
     if (safeStr(prefix).startsWith("prism"))
     {
       YearType yt = YearType.getByDesc(name);
-      
+
       if (yt != ytUnknown)
         bd.setYear(value, yt);
       else
@@ -327,10 +327,10 @@ public class XMPNode
     prefixToNameToChild.values().forEach(nameToChild ->
       nameToChild.values().forEach(child ->
         child.extractBibData(bd)));
-    
+
     elements.forEach(child -> child.extractBibData(bd));
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.queryEngines;
@@ -35,40 +35,40 @@ public class ArgumentQueryEngine extends QueryEngine<HDT_Argument>
   {
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void queryChange(int query, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3)
   {
     switch (query)
     {
-      
+
     }
   }
-   
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public boolean evaluate(HDT_Argument record, boolean firstCall, boolean lastCall)
   {
     switch (curQuery)
     {
-      
+
     }
-    
+
     return false;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public QueryType getQueryType()
   {
     return QueryType.qtArguments;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public QuerySource getSource(int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3)
   {
@@ -77,19 +77,19 @@ public class ArgumentQueryEngine extends QueryEngine<HDT_Argument>
       default :
         break;
     }
-    
+
     return new DatasetQuerySource(hdtArgument);
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public boolean needsMentionsIndex(int query)
   {
     return false;
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

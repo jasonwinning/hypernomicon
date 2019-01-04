@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.populators;
@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.hypernomicon.model.records.HDT_RecordType;
 
-//---------------------------------------------------------------------------    
+//---------------------------------------------------------------------------
 
 public class ExternalColumnPopulator extends Populator
 {
@@ -37,17 +37,17 @@ public class ExternalColumnPopulator extends Populator
   @Override public CellValueType getValueType()                                    { return cvtRecord; }
   @Override public HDT_RecordType getRecordType(HyperTableRow row)                 { return hT.getTypeByCol(colNdx); }
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)    { return hT.getSelByCol(colNdx).contains(cell) ? cell.clone() : null; }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------    
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public ExternalColumnPopulator(HyperTable hT, int colNdx)
   {
     this.hT = hT;
     this.colNdx = colNdx;
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------    
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

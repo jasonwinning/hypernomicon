@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -43,8 +43,8 @@ public class VerdictDialogController extends HyperDialog
 
   public HyperCB hcbVerdict;
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static VerdictDialogController create(String title, HDT_Base parent)
   {
@@ -53,44 +53,44 @@ public class VerdictDialogController extends HyperDialog
     return vdc;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void init(HDT_Base parent)
   {
     lblParentName.setText(parent.getCBText());
-    
+
     if (parent.getType() == hdtPosition)
     {
       lblParentType.setText("Target Position:");
-      hcbVerdict = new HyperCB(cbVerdict, ctDropDownList, new StandardPopulator(hdtPositionVerdict), null, false);  
+      hcbVerdict = new HyperCB(cbVerdict, ctDropDownList, new StandardPopulator(hdtPositionVerdict), null, false);
     }
     else if (parent.getType() == hdtArgument)
     {
       lblParentType.setText("Target Argument:");
-      hcbVerdict = new HyperCB(cbVerdict, ctDropDownList, new StandardPopulator(hdtPositionVerdict), null, false);  
+      hcbVerdict = new HyperCB(cbVerdict, ctDropDownList, new StandardPopulator(hdtPositionVerdict), null, false);
     }
     else
     {
       messageDialog("Internal Error: 90902", mtError);
     }
-    
+
     hcbVerdict.addBlankEntry();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override protected boolean isValid()
   {
     if (hcbVerdict.selectedID() > 0) return true;
-    
+
     messageDialog("You must select a verdict.", mtError);
     safeFocus(cbVerdict);
-    return false;       
+    return false;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

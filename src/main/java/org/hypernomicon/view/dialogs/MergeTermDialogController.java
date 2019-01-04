@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -39,28 +39,28 @@ public class MergeTermDialogController extends HyperDialog
   @FXML public TextField tfKey1;
   @FXML public TextField tfKey2;
   @FXML public TextField tfKey3;
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override protected boolean isValid()
   {
     if (getKey().replace("^", "").replace("$", "").trim().length() < 3)
     {
       messageDialog("Search key of a term record cannot be zero-length.", mtError);
-      
+
       if      (rbKey1.isSelected()) safeFocus(tfKey1);
       else if (rbKey2.isSelected()) safeFocus(tfKey2);
       else                          safeFocus(tfKey3);
-      
+
       return false;
     }
-    
+
     return true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static MergeTermDialogController create(String title, HDT_Term term1, HDT_Term term2)
   {
@@ -69,34 +69,34 @@ public class MergeTermDialogController extends HyperDialog
     return mtd;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void init(HDT_Term term1, HDT_Term term2)
-  {   
+  {
     String name1 = term1.listName(),
            name2 = term2.listName(),
            key1  = term1.getSearchKey(),
            key2  = term2.getSearchKey();
-    
+
     tfName1.setText(name1);
     tfName2.setText(name2);
-    
+
     if ((name1.length() == 0) && (name2.length() > 0))
       rbName2.setSelected(true);
 
     tfKey1.setText(key1);
     tfKey2.setText(key2);
-    
+
     if ((key1.length() == 0) && (key2.length() > 0))
       rbKey2.setSelected(true);
-    
+
     tfName3.textProperty().addListener((observable, oldValue, newValue) -> rbName3.setSelected(true));
     tfKey3 .textProperty().addListener((observable, oldValue, newValue) -> rbKey3 .setSelected(true));
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public String getName()
   {
@@ -105,8 +105,8 @@ public class MergeTermDialogController extends HyperDialog
     else                           return tfName3.getText();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public String getKey()
   {
@@ -115,7 +115,7 @@ public class MergeTermDialogController extends HyperDialog
     else                          return tfKey3.getText();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

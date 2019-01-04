@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -37,11 +37,11 @@ public class ChangeParentDialogController extends HyperDialog
   @FXML private TextField tfChild;
   @FXML private TextField tfNewParent;
   @FXML private TextField tfOldParent;
-  
+
   private TransferMode transferMode = null;
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static ChangeParentDialogController create(String title, HDT_Base oldParent, HDT_Base newParent, HDT_Base child, boolean copyIsOK)
   {
@@ -50,8 +50,8 @@ public class ChangeParentDialogController extends HyperDialog
     return cpd;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void init(HDT_Base oldParent, HDT_Base newParent, HDT_Base child, boolean copyIsOK)
   {
@@ -66,41 +66,41 @@ public class ChangeParentDialogController extends HyperDialog
     tfChild.setText(child.name());
     tfOldParent.setText(oldParent.name());
     tfNewParent.setText(newParent.name());
-    
-    btnCopy.setDisable(copyIsOK == false);      
-    
+
+    btnCopy.setDisable(copyIsOK == false);
+
     transferMode = null;
   }
 
   public TransferMode getTransferMode() { return transferMode; }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @FXML private void btnMoveClick()
   {
-    transferMode = TransferMode.MOVE;    
+    transferMode = TransferMode.MOVE;
     btnOkClick();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @FXML private void btnCopyClick()
   {
-    transferMode = TransferMode.COPY;    
+    transferMode = TransferMode.COPY;
     btnOkClick();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override protected boolean isValid()
   {
     return true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

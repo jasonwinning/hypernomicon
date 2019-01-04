@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -50,79 +50,79 @@ public class ChooseParentDialogController extends HyperDialog
   @FXML TreeTableColumn<TreeRow, HyperTreeCellValue> tcName;
   @FXML TreeTableColumn<TreeRow, String> tcType;
   @FXML TreeTableColumn<TreeRow, String> tcDesc;
-  
+
   public TreeWrapper popupTree;
   public static String title;
   public EnumSet<HDT_RecordType> types;
   public HDT_Base parent;
   private HDT_Base child;
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   @Override protected boolean isValid()
   {
     if (types.contains(popupTree.selectedItem().getValue().getRecordType()) == false)
       return falseWithErrorMessage("You must " + title.toLowerCase() + ".");
-    
+
     TreeRow row = popupTree.selectedItem().getValue();
     parent = row.getRecord();
-    
+
     if (((parent.getID() == child.getID())) && (parent.getType() == child.getType()))
       return falseWithErrorMessage("A record cannot be its own parent. Please select another record.");
-    
+
     RelationType relType = getRelation(child.getType(), parent.getType());
-    
+
     switch (child.getType())
     {
-      case hdtWorkLabel : case hdtNote : case hdtPosition : case hdtDebate : case hdtArgument : 
-        
+      case hdtWorkLabel : case hdtNote : case hdtPosition : case hdtDebate : case hdtArgument :
+
         if (db.getObjectList(relType, child, true).contains(parent))
           return falseWithErrorMessage("The record already has that " + db.getTypeName(parent.getType()).toLowerCase() + " as a parent.");
-        
-        break;       
-        
+
+        break;
+
       case hdtWork : case hdtMiscFile :
-        
+
         switch (parent.getType())
         {
           case hdtWorkLabel :
-            
+
             if (db.getObjectList(relType, child, true).contains(parent))
               return falseWithErrorMessage("The record already has that " + db.getTypeName(parent.getType()).toLowerCase() + " as a parent.");
-            
+
             if (child.getType() == hdtMiscFile)
               if (HDT_MiscFile.class.cast(child).work.isNotNull())
                 return falseWithErrorMessage("A file record's labels cannot be changed while it is attached to a work record.");
-            
+
             break;
-            
+
           case hdtWork :
-            
+
             if (db.getObjectList(relType, child, true).size() > 0)
               return falseWithErrorMessage("A " + db.getTypeName(child.getType()).toLowerCase() + " cannot have more than one parent work record.");
 
             break;
-            
+
           case hdtArgument : // the parent can only be a work for this case
-            
+
             if (db.getObjectList(relType, parent, true).contains(child))
               return falseWithErrorMessage("That work is already listed as a source for that argument.");
-            
+
             break;
-            
-          default : break;            
+
+          default : break;
         }
-        
+
       default : break;
     }
-    
+
     return true;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public static ChooseParentDialogController create(String title, HDT_Base child, EnumSet<HDT_RecordType> types)
   {
     ChooseParentDialogController cpd = HyperDialog.create("ChooseParentDialog.fxml", title, true);
@@ -140,17 +140,17 @@ public class ChooseParentDialogController extends HyperDialog
     this.child = child;
     int ctr = 1;
     parent = null;
-    
+
     title = "Select a ";
-    
+
     Iterator<HDT_RecordType> it = types.iterator();
-    
+
     while (it.hasNext())
     {
       HDT_RecordType type = it.next();
-      
+
       title += db.getTypeName(type);
-      
+
       if (ctr < types.size())
       {
         if (types.size() == 2)
@@ -160,27 +160,27 @@ public class ChooseParentDialogController extends HyperDialog
         else
           title += ", ";
       }
-        
+
       ctr++;
     }
-     
+
     title = title + " record";
     getStage().setTitle(title);
-    
+
     tcName.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue().getNameCell()));
     tcType.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getValue().getTypeString()));
     tcDesc.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getValue().getDescString()));
-        
+
     popupTree.reset();
-    
+
     TreeWrapper tree = ui.getTree();
     tree.debateTree.copyTo(popupTree.debateTree);
     tree.noteTree.copyTo(popupTree.noteTree);
     tree.labelTree.copyTo(popupTree.labelTree);
-    
+
     popupTree.sort();
     popupTree.expandMainBranches();
-        
+
     ttv.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
       if (newValue != null)
@@ -189,7 +189,7 @@ public class ChooseParentDialogController extends HyperDialog
         tfPath.clear();
     });
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

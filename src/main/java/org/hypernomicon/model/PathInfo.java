@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model;
@@ -40,7 +40,7 @@ public class PathInfo
     fkFolder,
     fkUnknown
   }
-  
+
 //---------------------------------------------------------------------------
 
   private final HDT_Folder parentFolder;
@@ -53,15 +53,15 @@ public class PathInfo
   public FilePath getFilePath()       { return filePath; }
   public FileKind getFileKind()       { return fileKind; }
   public boolean isDirectory()        { return (fileKind == fkFolder) || (fileKind == fkFolderRecord); }
-  
+
   @Override public String toString()  { return filePath.toString(); }
 
 //---------------------------------------------------------------------------
-  
+
   public PathInfo(FilePath filePath)
   {
     this.filePath = filePath;
-    
+
     if (filePath.equals(db.getRootFilePath()))
     {
       fileKind = fkFolderRecord;
@@ -69,46 +69,46 @@ public class PathInfo
       hyperPath = db.folders.getByID(HyperDB.ROOT_FOLDER_ID).getPath();
       return;
     }
-    
+
     if (db.getRootFilePath().isSubpath(filePath))
-    {      
+    {
       parentFolder = getParentFolderOfPath(filePath);
-         
+
       Set<HyperPath> set = db.filenameMap.get(filePath.getNameOnly().toString());
-      
+
       if (set != null) for (HyperPath setHyperPath : set)
-      {          
+      {
         if (parentFolder == setHyperPath.getParentFolder())
         {
           switch (setHyperPath.getRecordType())
           {
-            case hdtPerson : 
-              
-              hyperPath = setHyperPath; 
-              fileKind = fkPicture; 
+            case hdtPerson :
+
+              hyperPath = setHyperPath;
+              fileKind = fkPicture;
               return;
-              
-            case hdtFolder : 
-              
-              hyperPath = setHyperPath; 
-              fileKind = fkFolderRecord; 
+
+            case hdtFolder :
+
+              hyperPath = setHyperPath;
+              fileKind = fkFolderRecord;
               return;
-              
-            case hdtWorkFile : case hdtMiscFile : 
-              
-              hyperPath = setHyperPath; 
-              fileKind = fkFileRecord; 
+
+            case hdtWorkFile : case hdtMiscFile :
+
+              hyperPath = setHyperPath;
+              fileKind = fkFileRecord;
               return;
-              
-            case hdtNone : 
-              
+
+            case hdtNone :
+
               break;
-              
-            default : 
-              
-              hyperPath = null; 
-              fileKind = fkUnknown; 
-              messageDialog("Internal error #68754", mtError); 
+
+            default :
+
+              hyperPath = null;
+              fileKind = fkUnknown;
+              messageDialog("Internal error #68754", mtError);
               return;
           }
         }
@@ -116,16 +116,16 @@ public class PathInfo
     }
     else
       parentFolder = null;
-    
+
     hyperPath = null;
-    
+
     if (filePath.exists() == false)
       fileKind = fkUnknown;
     else if (filePath.isDirectory())
       fileKind = fkFolder;
     else
       fileKind = fkFile;
-    
+
     return;
   }
 
@@ -137,10 +137,10 @@ public class PathInfo
     for (HyperPath hyperPath : HyperPath.getHyperPathSetForFilePath(filePath.getParent()))
       if (hyperPath.getRecordType() == hdtFolder)
         return (HDT_Folder) hyperPath.getRecord();
-    
+
     return null;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.items;
@@ -34,7 +34,7 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
 {
   private RelationType relType;
   private HDT_Base target;
-  
+
   public HDI_OnlineNestedPointer(HDI_Schema newSchema, HDT_Base newRecord)
   {
     super(newSchema, newRecord);
@@ -48,14 +48,14 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
   public HDT_Base get()            { return target; }
   public void set(HDT_Base target) { this.target = target; }
 
-  @Override public String getResultTextForTag(Tag tag) { return nullSwitch(target, "", HDT_Base::listName); }  
+  @Override public String getResultTextForTag(Tag tag) { return nullSwitch(target, "", HDT_Base::listName); }
   @Override public void expire()                       { target = null; }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
- 
-  @Override public void resolvePointers() 
-  { 
+
+  @Override public void resolvePointers()
+  {
     if (HDT_Record.isEmpty(target))
       target = null;
   }
@@ -74,9 +74,9 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
   @Override public void getToOfflineValue(HDI_OfflineNestedPointer val, Tag tag)
   {
     val.objID = -1;
-    
+
     if (HDT_Record.isEmpty(target) == false)
-      val.objID = target.getID();      
+      val.objID = target.getID();
   }
 
 //---------------------------------------------------------------------------
@@ -85,7 +85,7 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
   @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
   {
     if (!searchLinkedRecords) return;
-    
+
     if (target != null)
       list.add(target.listName());
   }

@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -40,10 +40,10 @@ public class FavOrderDialogController extends HyperDialog
   @FXML private Button btnOk;
 
   @Override protected boolean isValid() { return true; }
-   
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static FavOrderDialogController create(String title)
   {
     FavOrderDialogController fod = HyperDialog.create("FavOrderDialog.fxml", title, true);
@@ -51,79 +51,79 @@ public class FavOrderDialogController extends HyperDialog
     return fod;
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void init()
-  {   
+  {
     lvRecord.setCellFactory(listView -> new ListCell<MenuItem>()
     {
-      @Override public void updateItem(MenuItem item, boolean empty) 
+      @Override public void updateItem(MenuItem item, boolean empty)
       {
         super.updateItem(item, empty);
         setText(item == null ? "" : item.getText());
-      }      
+      }
     });
-    
+
     lvRecord.setItems(new FilteredList<>(ui.mnuFavorites.getItems(), item -> ui.mnuFavorites.getItems().indexOf(item) >= FIRST_FAV_MENU_ITEM_NDX));
-    
+
     btnRecordUp.setOnAction(event -> moveRecord(-1));
     btnRecordDown.setOnAction(event -> moveRecord(1));
-    
+
     lvQuery.setCellFactory(listView -> new ListCell<MenuItem>()
     {
-      @Override public void updateItem(MenuItem item, boolean empty) 
+      @Override public void updateItem(MenuItem item, boolean empty)
       {
         super.updateItem(item, empty);
         setText(item == null ? "" : item.getText());
-      }      
+      }
     });
-    
+
     lvQuery.setItems(new FilteredList<>(ui.mnuQueries.getItems(), item -> ui.mnuQueries.getItems().indexOf(item) >= 0));
-    
+
     btnQueryUp.setOnAction(event -> moveQuery(-1));
     btnQueryDown.setOnAction(event -> moveQuery(1));
   }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void moveRecord(int diff)
   {
     int oldNdx = lvRecord.getSelectionModel().getSelectedIndex() + FIRST_FAV_MENU_ITEM_NDX;
-    int newNdx = oldNdx + diff; 
+    int newNdx = oldNdx + diff;
     ObservableList<MenuItem> items = ui.mnuFavorites.getItems();
-    
+
     if ((newNdx >= FIRST_FAV_MENU_ITEM_NDX) && (newNdx < items.size()))
     {
-      MenuItem item = items.remove(oldNdx);        
+      MenuItem item = items.remove(oldNdx);
       items.add(newNdx, item);
       lvRecord.getSelectionModel().select(item);
     }
-    
+
     safeFocus(lvRecord);
   }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void moveQuery(int diff)
   {
     int oldNdx = lvQuery.getSelectionModel().getSelectedIndex();
-    int newNdx = oldNdx + diff; 
+    int newNdx = oldNdx + diff;
     ObservableList<MenuItem> items = ui.mnuQueries.getItems();
-    
+
     if ((newNdx >= 0) && (newNdx < items.size()))
     {
-      MenuItem item = items.remove(oldNdx);        
+      MenuItem item = items.remove(oldNdx);
       items.add(newNdx, item);
       lvQuery.getSelectionModel().select(item);
     }
-    
+
     safeFocus(lvQuery);
   }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

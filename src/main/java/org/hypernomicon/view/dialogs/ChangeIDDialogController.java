@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -39,17 +39,17 @@ import javafx.scene.control.TextField;
 public class ChangeIDDialogController extends HyperDialog
 {
   public HyperCB hcbType, hcbRecord;
-  
+
   @FXML private ComboBox<HyperTableCell> cbType;
   @FXML private ComboBox<HyperTableCell> cbRecord;
   @FXML public TextField tfOldID;
   @FXML public TextField tfNewID;
   @FXML private Button btnNextID;
   @FXML private Label lblNotAvailable;
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static ChangeIDDialogController create(String title)
   {
     ChangeIDDialogController cid = HyperDialog.create("ChangeIDDialog.fxml", title, true);
@@ -57,69 +57,69 @@ public class ChangeIDDialogController extends HyperDialog
     return cid;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void init()
   {
     hcbType = new HyperCB(cbType, ctDropDownList, new RecordTypePopulator(), null, false);
     hcbRecord = new HyperCB(cbRecord, ctDropDownList, new RecordByTypePopulator(), null);
-      
+
     cbType.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
       HDT_RecordType oldType = HyperTableCell.getCellType(oldValue),
                      newType = HyperTableCell.getCellType(newValue);
-      
+
       if (oldType == newType) return;
-      
+
       ((RecordByTypePopulator) hcbRecord.getPopulator()).setRecordType(Populator.dummyRow, newType);
       hcbRecord.selectID(-1);
     });
-    
+
     cbRecord.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
       int oldID = HyperTableCell.getCellID(oldValue),
           newID = HyperTableCell.getCellID(newValue);
       HDT_RecordType type = hcbType.selectedType();
-      
+
       if (oldID == newID) return;
-      
+
       lblNotAvailable.setVisible(false);
       tfNewID.clear();
-      
+
       if ((newID < 1) || (type == hdtNone))
       {
         tfOldID.clear();
         return;
       }
-          
+
       tfOldID.setText("" + newID);
     });
-    
+
     btnNextID.setOnAction(event ->
-    { 
+    {
       if (hcbRecord.selectedID() > 0)
         tfNewID.setText("" + db.getNextID(hcbRecord.selectedType()));
     });
-    
+
     tfNewID.textProperty().addListener((observable, oldValue, newValue) ->
     {
       int id = parseInt(newValue, -1);
       HDT_RecordType type = hcbRecord.selectedType();
-      
+
       if (id > 0)
         if (db.idAvailable(type, id) == false)
         {
           lblNotAvailable.setVisible(true);
           return;
         }
-      
+
       lblNotAvailable.setVisible(false);
     });
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override protected boolean isValid()
   {
@@ -129,7 +129,7 @@ public class ChangeIDDialogController extends HyperDialog
       safeFocus(cbRecord);
       return false;
     }
-    
+
     if ((parseInt(tfNewID.getText(), -1) < 1) || (lblNotAvailable.isVisible()))
     {
       messageDialog("You must enter a valid numeric ID.", mtError);
@@ -138,7 +138,7 @@ public class ChangeIDDialogController extends HyperDialog
     }
 
     HDT_Base record = db.records(hcbRecord.selectedType()).getByID(parseInt(tfOldID.getText(), -1));
-    
+
     if ((record == null) || (record.changeID(parseInt(tfNewID.getText(), -1)) == false))
       return falseWithErrorMessage("Unable to change record ID.");
 
@@ -146,7 +146,7 @@ public class ChangeIDDialogController extends HyperDialog
     return true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

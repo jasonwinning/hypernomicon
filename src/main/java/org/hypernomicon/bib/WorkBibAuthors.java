@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.bib;
@@ -25,12 +25,12 @@ import org.hypernomicon.model.records.HDT_Work;
 public class WorkBibAuthors extends BibAuthors
 {
   private final HDT_Work work;
-  
+
   public WorkBibAuthors(HDT_Work work) { this.work = work; }
-  
+
   @Override public boolean isEmpty() { return work.getAuthors().isEmpty(); }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void getLists(ArrayList<BibAuthor> authorList, ArrayList<BibAuthor> editorList, ArrayList<BibAuthor> translatorList)
@@ -39,16 +39,16 @@ public class WorkBibAuthors extends BibAuthors
     {
       if ((author.getIsEditor() == false) && (author.getIsTrans() == false))
         authorList.add(new BibAuthor(AuthorType.author, author));
-      
+
       if (author.getIsEditor())
         editorList.add(new BibAuthor(AuthorType.editor, author));
-      
+
       if (author.getIsTrans())
         translatorList.add(new BibAuthor(AuthorType.translator, author));
     });
   }
-  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.items;
@@ -38,10 +38,10 @@ import java.util.Set;
 
 public class HDI_OfflineConnector extends HDI_OfflineBase
 {
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public static class DisplayItem
   {
     public DisplayItem(int recordID, HDT_RecordType recordType)
@@ -49,55 +49,55 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
       this.recordID = recordID;
       this.recordType = recordType;
     }
-    
+
     public DisplayItem(DisplayItemType type)
     {
       this.type = type;
     }
-    
+
     public DisplayItemType type = diRecord;
     public int recordID = -1;
     public HDT_RecordType recordType = hdtNone;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   int hubID;
   String htmlText;
   ArrayList<DisplayItem> displayItems;
   ArrayList<KeyWork> keyWorks;
   HashMap<HDT_RecordType, Set<Integer>> usedKeyWorks;
-  
+
   private static HashMap<String, DisplayItemType> strToItemType = null;
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public HDI_OfflineConnector(HDI_Schema newSchema, HDT_RecordState recordState)
   {
     super(newSchema, recordState);
     htmlText = "";
-    
+
     hubID = -1;
     keyWorks = new ArrayList<>();
     displayItems = new ArrayList<DisplayItem>();
     usedKeyWorks = new HashMap<>();
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public List<KeyWork> getKeyWorks() { return Collections.unmodifiableList(keyWorks); }
   public int getHubID()              { return hubID; }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   static private void initMap()
   {
     strToItemType = new HashMap<>();
-    
+
     strToItemType.put(DI_TYPE_DESC, diDescription);
     strToItemType.put(DI_TYPE_RECORD, diRecord);
     strToItemType.put(DI_TYPE_KEY_WORKS, diKeyWorks);
@@ -105,30 +105,30 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, LinkedHashMap<Tag, HDI_OfflineBase> nestedItems)
   {
     switch (tag)
     {
       case tagHub :
-        
+
         hubID = objID;
         break;
-      
+
       case tagDisplayRecord :
 
         if (strToItemType == null) initMap();
         DisplayItemType itemType = strToItemType.get(nodeText);
-        
+
         switch (itemType)
-        {         
-          case diRecord: displayItems.add(new DisplayItem(objID, objType)); break;            
+        {
+          case diRecord: displayItems.add(new DisplayItem(objID, objType)); break;
           default:       displayItems.add(new DisplayItem(itemType));       break;
-        }        
+        }
         return;
-        
+
       case tagKeyWork :
-        
+
         if ((objType == hdtWork) || (objType == hdtMiscFile))
         {
           Set<Integer> idSet = usedKeyWorks.get(objType);
@@ -137,7 +137,7 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
             idSet = new HashSet<Integer>();
             usedKeyWorks.put(objType, idSet);
           }
-          
+
           if (idSet.contains(objID) == false)
           {
             keyWorks.add(new KeyWork(objType, objID, nodeText, false));
@@ -145,12 +145,12 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
           }
         }
         return;
-        
+
       default :
 
         htmlText = nodeText;
         return;
-    }    
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -159,22 +159,22 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
   private static final String DI_TYPE_DESC = "description";
   private static final String DI_TYPE_RECORD = "record";
   private static final String DI_TYPE_KEY_WORKS = "key_works";
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   @Override public void writeToXml(Tag tag, StringBuilder xml)
   {
     if (tag == tagHub)
     {
       if (hubID > 0)
         writePointerTag(xml, tag, hubID, hdtNone, db.hubs.getByID(hubID).getXMLObjectName());
-      
+
       return;
     }
-    
+
     if (hubID > 0) return;
-    
+
     switch (tag)
     {
       case tagDisplayRecord :
@@ -184,42 +184,42 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
           switch (displayItem.type)
           {
             case diDescription:
-              
+
               writeStringTag(xml, tag, DI_TYPE_DESC);
               break;
-              
+
             case diKeyWorks:
-              
+
               writeStringTag(xml, tag, DI_TYPE_KEY_WORKS);
               break;
-              
+
             case diRecord:
-              
+
               writePointerTag(xml, tag, displayItem.recordID, displayItem.recordType, DI_TYPE_RECORD);
               break;
-              
+
             default:
               break;
           }
         }
 
         break;
-        
+
       case tagKeyWork :
 
         for (KeyWork keyWork : keyWorks)
           writePointerTag(xml, tag, keyWork.getRecordID(), keyWork.getRecordType(), keyWork.getSearchKey(false));
 
         break;
-        
+
       default :
-        
+
         writeStringTag(xml, tag, htmlText);
         return;
-    }    
+    }
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.relations;
@@ -32,7 +32,7 @@ public class HyperSubjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HD
   final HDT_ObjType obj;
 
   static final String modErrMsg = "Internal error: An attempt was made to modify a subject list.";
-  
+
   public HyperSubjList(RelationSet<HDT_SubjType, HDT_ObjType> relSet, HDT_ObjType obj)
   {
     this.relSet = relSet;
@@ -82,12 +82,12 @@ public class HyperSubjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HD
   @Override public Object[] toArray()
   {
     List<HDT_SubjType> subjList = relSet.getUnmodifiableSubjectList(obj);
-    
+
     Object[] array = new Object[subjList.size()];
-    
+
     for (int ndx = 0; ndx < subjList.size(); ndx++)
       array[ndx] = subjList.get(ndx);
-    
+
     return array;
   }
 
@@ -98,16 +98,16 @@ public class HyperSubjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HD
   @Override public <T> T[] toArray(T[] a)
   {
     List<HDT_SubjType> subjList = relSet.getUnmodifiableSubjectList(obj);
-    
+
     if (a.length < subjList.size())
       a = (T[]) new HDT_Base[subjList.size()];
-        
+
     for (int ndx = 0; ndx < subjList.size(); ndx++)
       a[ndx] = (T) subjList.get(ndx);
-    
+
     if (a.length > subjList.size())
       a[subjList.size()] = null;
-    
+
     return a;
   }
 
@@ -121,15 +121,15 @@ public class HyperSubjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HD
     {
       if ((o instanceof HDT_Base) == false)
         return false;
-      
+
       if (HDT_Base.class.cast(o).getType() != relSet.getSubjType())
         return false;
-      
+
       HDT_SubjType subj = (HDT_SubjType)o;
-      
+
       if (relSet.alreadyHasAsSubject(obj, subj) == false) return false;
     }
-    
+
     return true;
   }
 
@@ -140,9 +140,9 @@ public class HyperSubjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HD
   @Override public int indexOf(Object o)
   {
     if ((o instanceof HDT_Base) == false) return -1;
-    
+
     if (HDT_Base.class.cast(o).getType() != relSet.getSubjType()) return -1;
-    
+
     return relSet.getSubjectNdx(obj, (HDT_SubjType)o);
   }
 
@@ -154,37 +154,37 @@ public class HyperSubjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HD
     if ((o instanceof List) == false) return false;
 
     List<?> list = List.class.cast(o);
-    
+
     if (list.size() != size()) return false;
-    
+
     for (int ndx = 0; ndx < list.size(); ndx++)
       if (list.get(ndx) != get(ndx)) return false;
-   
+
     return true;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void reorder(ArrayList<HDT_SubjType> list, boolean modTracking)
   {
     boolean changed = false;
-    
+
     if (size() != list.size()) throw new NoSuchElementException();
-    
+
     for (HDT_SubjType record : list)
       if (contains(record) == false) throw new NoSuchElementException();
-    
+
     for (int ndx = 0; ndx < size(); ndx++)
     {
       if (list.contains(get(ndx)) == false) throw new NoSuchElementException();
       if (list.get(ndx) != get(ndx)) changed = true;
     }
-    
+
     relSet.reorderSubjects(obj, list);
     if (modTracking && changed) obj.modifyNow();
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

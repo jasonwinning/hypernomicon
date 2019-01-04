@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -30,8 +30,8 @@ public class NewLinkDialogController extends HyperDialog
   @FXML public TextField tfURL;
   @FXML private Button btnOk;
   @FXML private Button btnCancel;
-  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override protected boolean isValid()
@@ -42,18 +42,18 @@ public class NewLinkDialogController extends HyperDialog
       safeFocus(tfDisplayText);
       return false;
     }
-    
+
     if (tfURL.getText().trim().length() == 0)
     {
       messageDialog("Enter a web address (URL).", mtError);
       safeFocus(tfURL);
       return false;
     }
-    
-    return true;   
+
+    return true;
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static NewLinkDialogController create(String title, String selText)
@@ -63,28 +63,28 @@ public class NewLinkDialogController extends HyperDialog
     return nld;
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private void init(String selText)
   {
     String clipText = getClipboardText(true).trim();
     selText = selText.trim();
-    
+
     if (isStringUrl(selText))
     {
       tfURL.setText(selText);
-      tfDisplayText.setText(clipText.length() > 0 ? clipText : selText);      
+      tfDisplayText.setText(clipText.length() > 0 ? clipText : selText);
       return;
     }
-    
+
     if (isStringUrl(clipText))
       tfURL.setText(clipText);
 
     tfDisplayText.setText(selText.length() > 0 ? selText : clipText);
   }
-  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }

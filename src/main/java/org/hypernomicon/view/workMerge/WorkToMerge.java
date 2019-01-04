@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.workMerge;
@@ -55,60 +55,60 @@ public class WorkToMerge
   public HDT_WorkType getWorkType()                       { return hcbType.selectedRecord(); }
   public BibData getBibData()                             { return bibData; }
   public boolean hasField(BibFieldEnum bibFieldEnum)      { return bibData == null ? false : bibData.fieldNotEmpty(bibFieldEnum); }
-   
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
 
-  public WorkToMerge(BibData bibData, RadioButton rbTitle, TextField tfTitle, RadioButton rbType, ComboBox<HyperTableCell> cbType, 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public WorkToMerge(BibData bibData, RadioButton rbTitle, TextField tfTitle, RadioButton rbType, ComboBox<HyperTableCell> cbType,
                                       RadioButton rbYear, TextField tfYear, RadioButton rbAuthors, TableView<HyperTableRow> tvAuthors,
                                       HDT_Work destWork, boolean creatingNewWork)
   {
     this.bibData = bibData;
     this.creatingNewWork = creatingNewWork;
-    
+
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), null);
-    
+
     htAuthors = new HyperTable(tvAuthors, 0, true, "");
-    
+
     htAuthors.addCol(hdtPerson, ctDropDownList);
-    
+
     HDT_Work workRecord = nullSwitch(bibData.getWork(), destWork, work -> work);
-    
+
     htAuthors.addCheckboxColWithUpdateHandler(createAuthorRecordHandler(htAuthors, () -> workRecord));
-    
+
     htAuthors.addCheckboxCol();
     htAuthors.addCheckboxCol();
-    
+
     tfTitle.setText(bibData.getStr(bfTitle));
-    if (tfTitle.getText().isEmpty() == false) rbTitle.setSelected(true); 
-    
+    if (tfTitle.getText().isEmpty() == false) rbTitle.setSelected(true);
+
     tfYear.setText(bibData.getStr(bfYear));
     if (tfYear.getText().isEmpty() == false) rbYear.setSelected(true);
-    
+
     if (bibData.getWork() != null)
       loadFromWork(bibData.getWork(), rbType);
     else
       loadFromBibData(rbType, destWork);
-    
+
     if (htAuthors.getDataRowCount() > 0)
       rbAuthors.setSelected(true);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void loadFromWork(HDT_Work workRecord, RadioButton rbType)
-  {    
+  {
     if (creatingNewWork)
     {
-      hcbType.addAndSelectEntryOrBlank(workRecord.workType, HDT_Base::name);       
+      hcbType.addAndSelectEntryOrBlank(workRecord.workType, HDT_Base::name);
       rbType.setSelected(true);
     }
-    
+
     htAuthors.buildRows(workRecord.getAuthors(), (row, author) ->
     {
       HDT_Person authorRecord = author.getPerson();
-      
+
       if (authorRecord == null)
       {
         Populator pop = htAuthors.getPopulator(0);
@@ -127,25 +127,25 @@ public class WorkToMerge
     });
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void loadFromBibData(RadioButton rbType, HDT_Work destWork)
-  {   
+  {
     HDT_WorkType workType = bibData.getWorkType();
-    
+
     if (workType != null)
     {
       hcbType.addAndSelectEntry(workType, HDT_Base::name);
       rbType.setSelected(true);
     }
-    
+
     htAuthors.getPopulator(0).populate(null, false);
-    
+
     WorkDialogController.loadFromBibAuthors(bibData.getAuthors(), htAuthors, false, destWork);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.records;
@@ -34,20 +34,20 @@ public class HDT_Concept extends HDT_RecordWithConnector
 {
   public final HyperSubjPointer<HDT_Term, HDT_Concept> term;
   public final HyperObjPointer<HDT_Concept, HDT_Glossary> glossary;
-  
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   public HDT_Concept(HDT_RecordState xmlState, HyperDataset<HDT_Concept> dataset)
   {
     super(xmlState, dataset, tagName);
-    
+
     term = getSubjPointer(rtConceptOfTerm);
     glossary = getObjPointer(rtGlossaryOfConcept);
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   @Override public String name()                        { return term.get().name(); }
   @Override public String getSearchKey()                { return term.get().getSearchKey(); }
@@ -56,19 +56,19 @@ public class HDT_Concept extends HDT_RecordWithConnector
   @Override public String getXMLObjectName()            { return getExtendedName(); }
   @Override public String getNameEngChar()              { return term.get().getNameEngChar(); }
   @Override public String getFirstActiveKeyWord()       { return term.get().getFirstActiveKeyWord(); }
-  @Override public void setName(String str)             { term.get().setName(str); }  
+  @Override public void setName(String str)             { term.get().setName(str); }
   @Override public String listName()                    { return name(); }
   @Override public HDT_RecordType getType()             { return hdtConcept; }
-  @Override public boolean isUnitable()                 { return true; }  
+  @Override public boolean isUnitable()                 { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void setNameInternal(String str, boolean update) 
-  { 
+  @Override protected void setNameInternal(String str, boolean update)
+  {
     if (term.isNotNull())
       term.get().setNameInternal(str, update);
-    
+
     super.setNameInternal(str, update);
   }
 
@@ -79,30 +79,30 @@ public class HDT_Concept extends HDT_RecordWithConnector
   {
     if (glossary.isNull())
       return name();
-    
+
     if (glossary.get().getID() == 1)
       if (term.get().concepts.size() == 1)
         return name();
-    
+
     return name() + " (" + glossary.get().name() + ")";
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setSearchKey(String newKey) throws SearchKeyException       
-  { 
+  @Override public void setSearchKey(String newKey) throws SearchKeyException
+  {
     if (term.isNotNull())
-      term.get().setSearchKey(newKey); 
+      term.get().setSearchKey(newKey);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setSearchKey(String newKey, boolean noMod) throws SearchKeyException 
-  { 
+  @Override public void setSearchKey(String newKey, boolean noMod) throws SearchKeyException
+  {
     if (term.isNotNull())
-      term.get().setSearchKey(newKey, noMod); 
+      term.get().setSearchKey(newKey, noMod);
   }
 
 //---------------------------------------------------------------------------

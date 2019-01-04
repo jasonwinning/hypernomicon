@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.bib.zotero;
@@ -37,66 +37,66 @@ import static org.hypernomicon.bib.BibData.AuthorType.*;
 public class ZoteroAuthors extends BibAuthors
 {
   private static final ImmutableTable<EntryType, String, AuthorType> creatorTypes = buildCreatorTypes();
-  
+
   private final JsonArray creatorsArr;
   private final EntryType entryType;
-  
+
   public ZoteroAuthors(JsonArray creatorsArr, EntryType entryType)
   {
     this.creatorsArr = creatorsArr;
     this.entryType = entryType;
   }
 
-//---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
-  
-  @Override public void clear()                   
-  {     
+//---------------------------------------------------------------------------
+
+  @Override public void clear()
+  {
     creatorsArr.removeObjIf(creatorObj ->
     {
       String aTypeStr = creatorObj.getStrSafe("creatorType");
       AuthorType aType = getAuthorTypeForStr(aTypeStr);
-      
-      return aType != null;  // If the creatorType is one that does not map onto a 
-    });                      // Hypernomicon-aware type (author, editor, or translator) then ignore             
+
+      return aType != null;  // If the creatorType is one that does not map onto a
+    });                      // Hypernomicon-aware type (author, editor, or translator) then ignore
   }
-  
-//---------------------------------------------------------------------------  
+
 //---------------------------------------------------------------------------
-  
+//---------------------------------------------------------------------------
+
   @Override public void getLists(ArrayList<BibAuthor> authorList, ArrayList<BibAuthor> editorList, ArrayList<BibAuthor> translatorList)
   {
     authorList.clear();
     editorList.clear();
     translatorList.clear();
-    
+
     creatorsArr.getObjs().forEach(creatorObj ->
     {
       String aTypeStr = creatorObj.getStrSafe("creatorType");
       AuthorType aType = getAuthorTypeForStr(aTypeStr);
-      
+
       if (aType == null) return;
 
       ArrayList<BibAuthor> list = null;
-      
+
       switch (aType)
       {
         case author     : list = authorList;     break;
         case editor     : list = editorList;     break;
         case translator : list = translatorList; break;
       }
-      
+
       String firstName = creatorObj.getStrSafe("firstName"),
              lastName = creatorObj.getStrSafe("lastName");
-      
+
       if ((firstName.length() > 0) || (lastName.length() > 0))
         list.add(new BibAuthor(aType, new PersonName(firstName, lastName)));
       else
-        list.add(new BibAuthor(aType, new PersonName(creatorObj.getStrSafe("name"))));      
+        list.add(new BibAuthor(aType, new PersonName(creatorObj.getStrSafe("name"))));
     });
   }
-  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void add(BibAuthor bibAuthor)
@@ -106,17 +106,17 @@ public class ZoteroAuthors extends BibAuthors
 
     JsonObj creatorObj = new JsonObj();
     creatorObj.put("creatorType", aTypeStr);
-       
+
     String firstName = bibAuthor.getGiven();
-    
+
     while (firstName.contains("("))
       firstName = removeFirstParenthetical(firstName);
-    
+
     creatorObj.put("firstName", firstName);
     creatorObj.put("lastName", bibAuthor.getFamily());
-    
+
     // Now the new author should be inserted before the authors that don't map to a Hypernomicon author type
-    
+
     int insertNdx = -1;
     for (int ndx = 0; ndx < creatorsArr.size(); ndx++)
     {
@@ -126,14 +126,14 @@ public class ZoteroAuthors extends BibAuthors
         break;
       }
     }
-    
+
     if (insertNdx == -1)
       creatorsArr.add(creatorObj);
     else
       creatorsArr.add(insertNdx, creatorObj);
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private AuthorType getAuthorTypeForStr(String str)
@@ -141,51 +141,51 @@ public class ZoteroAuthors extends BibAuthors
     return creatorTypes.get(entryType, str);
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private String getCreatorTypeStr(AuthorType authorType)
   {
     return getCreatorTypeStr(entryType, authorType);
   }
-  
+
   public static String getCreatorTypeStr(EntryType entryType, AuthorType authorType)
   {
     if (authorType == null) return "";
-    
+
     for (Entry<String, AuthorType> entry : creatorTypes.row(entryType).entrySet())
     {
       if (entry.getValue().equals(authorType))
         return entry.getKey();
     }
-    
-    return "";   
+
+    return "";
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private static ImmutableTable<EntryType, String, AuthorType> buildCreatorTypes()
   {
     return new ImmutableTable.Builder<EntryType, String, AuthorType>()
-    
-      .put(etArtwork, "artist", author)        
+
+      .put(etArtwork, "artist", author)
 
       .put(etAudioRecording, "performer", author)
 
       .put(etBill, "sponsor", author)
-      .put(etBill, "cosponsor", author)      
+      .put(etBill, "cosponsor", author)
 
       .put(etBlogPost, "author", author)
 
       .put(etBook, "author", author)
       .put(etBook, "editor", editor)
       .put(etBook, "translator", translator)
-      
+
       .put(etBookChapter, "author", author)
       .put(etBookChapter, "editor", editor)
       .put(etBookChapter, "translator", translator)
-      
+
       .put(etCase, "author", author)
 
       .put(etConferencePaper, "author", author)
@@ -257,11 +257,11 @@ public class ZoteroAuthors extends BibAuthors
 
       .put(etWebPage, "author", author)
       .put(etWebPage, "translator", translator)
-      
+
       .build();
  }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }

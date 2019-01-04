@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.util;
@@ -35,7 +35,7 @@ import com.google.common.collect.Sets;
 public class BidiOneToManyRecordMap
 {
   private Map<HDT_Base, Set<HDT_Base>> forwardMap, reverseMap;
-  
+
   public BidiOneToManyRecordMap()
   {
     forwardMap = new ConcurrentHashMap<>();
@@ -46,26 +46,26 @@ public class BidiOneToManyRecordMap
 //---------------------------------------------------------------------------
 
   public void clear() { forwardMap.clear(); reverseMap.clear(); }
-  
+
   @SuppressWarnings("unchecked") public <HDT_T extends HDT_Base> Set<HDT_T> getForwardSet(HDT_Base fromRecord) { return (Set<HDT_T>) getSet(forwardMap, fromRecord); }
   @SuppressWarnings("unchecked") public <HDT_T extends HDT_Base> Set<HDT_T> getReverseSet(HDT_Base fromRecord) { return (Set<HDT_T>) getSet(reverseMap, fromRecord); }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public void addForward(HDT_Base fromRecord, HDT_Base toRecord)
   {
     if (fromRecord.getType() == hdtHub)
     {
       StrongLink link = ((HDT_Hub) fromRecord).getLink();
-      
+
       if (nonNull(link.getNote()))     addForwardMapping(link.getNote(), toRecord);
       if (nonNull(link.getLabel()))    addForwardMapping(link.getLabel(), toRecord);
       if (nonNull(link.getDebate()))   addForwardMapping(link.getDebate(), toRecord);
       if (nonNull(link.getPosition())) addForwardMapping(link.getPosition(), toRecord);
       if (nonNull(link.getConcept()))  addForwardMapping(link.getConcept(), toRecord);
     }
-          
+
     addForwardMapping(fromRecord, toRecord);
   }
 
@@ -77,29 +77,29 @@ public class BidiOneToManyRecordMap
     getSet(forwardMap, fromRecord).add(toRecord);
     getSet(reverseMap, toRecord).add(fromRecord);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public void removeForward(HDT_Base fromRecord, HDT_Base toRecord)
   {
     getSet(forwardMap, fromRecord).remove(toRecord);
     getSet(reverseMap, toRecord).remove(fromRecord);
   }
-    
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
- 
+
   private Set<HDT_Base> getSet(Map<HDT_Base, Set<HDT_Base>> map1, HDT_Base record1)
   {
     if (map1.containsKey(record1)) return map1.get(record1);
-    
+
     Set<HDT_Base> set = Sets.newConcurrentHashSet();
-    
+
     map1.put(record1, set);
     return set;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -115,11 +115,11 @@ public class BidiOneToManyRecordMap
   private void removeForwardKey(HDT_Base key)
   {
     if (forwardMap.containsKey(key) == false) return;
-    
+
     forwardMap.get(key).removeIf(target ->
     {
       getSet(reverseMap, target).remove(key);
-      return true;      
+      return true;
     });
   }
 
@@ -133,7 +133,7 @@ public class BidiOneToManyRecordMap
     reverseMap.get(key).removeIf(target ->
     {
       getSet(forwardMap, target).remove(key);
-      return true;      
+      return true;
     });
   }
 
@@ -143,13 +143,13 @@ public class BidiOneToManyRecordMap
   public Set<HDT_Base> getAllHeads()
   {
     Set<HDT_Base> heads = Sets.newConcurrentHashSet();
-    
+
     forwardMap.forEach((head, set) ->
     {
       if ((head.getID() != -1) && (set.isEmpty() == false))
         heads.add(head);
     });
-    
+
     return heads;
   }
 

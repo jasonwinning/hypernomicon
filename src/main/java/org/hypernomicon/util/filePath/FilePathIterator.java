@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.util.filePath;
@@ -34,7 +34,7 @@ public class FilePathIterator implements Iterator<FilePath>
   public FilePathIterator(FilenameMap<Set<FilePath>> nameToPaths)
   {
     nameIterator = nameToPaths.values().iterator();
-    if (nameIterator.hasNext()) 
+    if (nameIterator.hasNext())
       pathIterator = nameIterator.next().iterator();
     else
       pathIterator = null;
@@ -47,13 +47,13 @@ public class FilePathIterator implements Iterator<FilePath>
   {
     if (pathIterator != null)
       if (pathIterator.hasNext()) return true;
-    
+
     while (nameIterator.hasNext())
     {
       pathIterator = nameIterator.next().iterator();
       if (pathIterator.hasNext()) return true;
     }
-    
+
     return false;
   }
 
@@ -63,15 +63,15 @@ public class FilePathIterator implements Iterator<FilePath>
   @Override public FilePath next()
   {
     if (pathIterator != null)
-      if (pathIterator.hasNext()) 
+      if (pathIterator.hasNext())
         return pathIterator.next();
-    
+
     while (nameIterator.hasNext())
     {
       pathIterator = nameIterator.next().iterator();
       if (pathIterator.hasNext()) return pathIterator.next();
     }
-    
+
     throw new NoSuchElementException();
   }
 
@@ -81,10 +81,10 @@ public class FilePathIterator implements Iterator<FilePath>
   @Override public void remove()
   {
     if (pathIterator == null) throw new IllegalStateException();
-    
+
     pathIterator.remove();
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

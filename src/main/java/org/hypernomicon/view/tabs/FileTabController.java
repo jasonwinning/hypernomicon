@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.tabs;
@@ -84,54 +84,54 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   private HyperCB hcbWork, hcbFileType;
   public FileDialogController fdc = null;
   private HDT_MiscFile curMiscFile;
-  
+
   @Override public HDT_RecordType getType()                                 { return hdtMiscFile; }
-  @Override public void enable(boolean enabled)                             { ui.tabFiles.getContent().setDisable(enabled == false); }  
+  @Override public void enable(boolean enabled)                             { ui.tabFiles.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text)                         { mainText.hilite(text); }
   @Override public TextViewInfo getMainTextInfo()                           { return mainText.getViewInfo(); }
   @Override public MainTextWrapper getMainTextWrapper()                     { return mainText; }
   @Override public void focusOnSearchKey()                                  { safeFocus(tfSearchKey); }
-  @Override public void newClick(HDT_RecordType objType, HyperTableRow row) { return; }  
+  @Override public void newClick(HDT_RecordType objType, HyperTableRow row) { return; }
   @Override public void setRecord(HDT_MiscFile activeRecord)                { curMiscFile = activeRecord; }
-  
+
   @FXML public boolean btnManageClick()                                     { return showFileDialog(); }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public boolean update()
   {
     btnTree.setDisable(ui.getTree().getRowsForRecord(curMiscFile).size() == 0);
-    
+
     tfName.setText(curMiscFile.name());
     tfSearchKey.setText(curMiscFile.getSearchKey());
     checkAnnotated.setSelected(curMiscFile.getAnnotated());
-        
+
     refreshFile();
-    
+
     mainText.loadFromRecord(curMiscFile, true, getView().getTextInfo());
-    
+
     hcbFileType.addAndSelectEntry(curMiscFile.fileType, HDT_Base::getCBText);
-    
+
   // Populate key mentioners
   // -----------------------
-    
+
     WorkTabController.populateDisplayersAndKeyMentioners(curMiscFile, htKeyMentioners);
-        
+
  // populate authors
  // ----------------
 
    hcbWork.addAndSelectEntry(curMiscFile.work, HDT_Base::getCBText);
-   
+
    cbWorkChange();
-   
+
    safeFocus(tfName);
-     
+
     return true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void refreshFile()
   {
@@ -139,7 +139,7 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     {
       FilePath filePath = curMiscFile.getPath().getFilePath();
       FilePath relPath = db.getRootFilePath().relativize(filePath);
-      
+
       if (relPath == null)
         tfFileName.setText(filePath.getNameOnly().toString());
       else
@@ -148,22 +148,22 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     else
       tfFileName.setText("");
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void cbWorkChange()
   {
     int workID = hcbWork.selectedID();
 
     htLabels.setCanAddRows(workID < 1);
     htAuthors.setCanAddRows(workID < 1);
-    
+
     htLabels.clear();
-    htAuthors.clear();   
-    
+    htAuthors.clear();
+
     if (curMiscFile == null) return;
-    
+
     if (workID > 0)
     {
       HDT_Work work = db.works.getByID(workID);
@@ -175,11 +175,11 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     {
       htAuthors.buildRows(curMiscFile.authors, (row, author) -> row.setCellValue(1, author, author.getCBText()));
       htLabels.buildRows(curMiscFile.labels,   (row, label)  -> row.setCellValue(2, label, label.getExtendedText()));
-    }  
+    }
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void addShowMenuItem(String text, EventHandler<ActionEvent> handler)
   {
@@ -187,37 +187,37 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     menuItem.setOnAction(handler);
     btnShow.getItems().add(menuItem);
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void init(TabEnum tabEnum)
-  {       
+  {
     this.tabEnum = tabEnum;
     mainText = new MainTextWrapper(apDescription);
     tfFileName.setEditable(false);
-    
+
     addShowMenuItem("Show in system explorer", event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.getPath().getFilePath()); });
     addShowMenuItem("Show in file manager", event ->    { if (tfFileName.getText().length() > 0) ui.goToFileInManager(curMiscFile.getPath().getFilePath()); });
     addShowMenuItem("Copy path to clipboard", event ->  { if (tfFileName.getText().length() > 0) copyToClipboard(curMiscFile.getPath().toString()); });
-        
-    addShowMenuItem("Unassign file", event -> 
+
+    addShowMenuItem("Unassign file", event ->
     {
       if (ui.cantSaveRecord(true)) return;
       curMiscFile.getPath().clear();
       ui.update();
     });
-    
+
     htAuthors = new HyperTable(tvAuthors, 1, true, PREF_KEY_HT_FILE_AUTHORS);
-    
+
     htAuthors.addActionCol(ctGoBtn, 1);
     htAuthors.addCol(hdtPerson, ctDropDownList);
-    
+
     htAuthors.addRemoveMenuItem();
     htAuthors.addChangeOrderMenuItem(true);
-    
+
     htLabels = new HyperTable(tvLabels, 2, true, PREF_KEY_HT_FILE_LABELS);
-    
+
     htLabels.addActionCol(ctGoBtn, 2);
     htLabels.addActionCol(ctBrowseBtn, 2);
     htLabels.addCol(hdtWorkLabel, ctDropDownList);
@@ -226,53 +226,53 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     htLabels.addChangeOrderMenuItem(true);
 
     htKeyMentioners = new HyperTable(tvKeyMentions, 1, false, PREF_KEY_HT_FILE_MENTIONERS);
-    
+
     htKeyMentioners.addCol(hdtNone, ctNone);
     htKeyMentioners.addCol(hdtNone, ctNone);
     htKeyMentioners.addCol(hdtNone, ctNone);
-    
+
     hcbFileType = new HyperCB(cbFileType, ctDropDown, new StandardPopulator(hdtFileType), null);
     hcbWork = new HyperCB(cbWork, ctDropDownList, new StandardPopulator(hdtWork), null);
-    
+
     hcbWork.getComboBox().getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
       cbWorkChange();
     });
-    
+
     btnWork  .setOnAction(event -> ui.goToRecord(HyperTableCell.getRecord(hcbWork.selectedHTC()), true));
     btnTree  .setOnAction(event -> ui.goToTreeRecord(curMiscFile));
     btnLaunch.setOnAction(event -> { if (tfFileName.getText().length() > 0) launchFile(curMiscFile.getPath().getFilePath()); });
     btnShow  .setOnAction(event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.getPath().getFilePath()); });
-    
+
     btnManage.setTooltip(new Tooltip("Update or rename file"));
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void clear()
-  {   
+  {
     mainText.clear(true);
     tfName.setText("");
     tfFileName.setText("");
     tfSearchKey.setText("");
     checkAnnotated.setSelected(false);
-    
+
     htAuthors.clear();
     htLabels.clear();
     htKeyMentioners.clear();
-    
+
     hcbFileType.clear();
     hcbWork.clear();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public boolean saveToRecord(boolean showMessage)
   {
     if (!saveSearchKey(curMiscFile, tfSearchKey, showMessage)) return false;
-    
+
     int fileTypeID = hcbFileType.selectedID();
     if ((fileTypeID < 1) && (hcbFileType.getText().length() == 0))
     {
@@ -280,9 +280,9 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
       safeFocus(this.cbFileType);
       return false;
     }
-    
+
     mainText.save();
-    
+
     curMiscFile.work.setID(hcbWork.selectedID());
 
     if (curMiscFile.work.isNull())
@@ -320,50 +320,50 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     return true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public boolean showFileDialog()
   {
     fdc = FileDialogController.create("Miscellaneous file", hdtMiscFile, curMiscFile, (HDT_Work) getHyperTab(workTab).activeRecord(), tfName.getText());
-    
+
     boolean result = fdc.showModal();
-    
+
     if (result)
-    {    
+    {
       if (curMiscFile.getPath().isEmpty())
         tfFileName.setText("");
       else
         tfFileName.setText(db.getRootFilePath().relativize(curMiscFile.getPath().getFilePath()).toString());
-      
-      tfName.setText(fdc.tfRecordName.getText());      
+
+      tfName.setText(fdc.tfRecordName.getText());
     }
-    
+
     fdc = null;
     return result;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public void setDividerPositions()
   {
     setDividerPosition(spBottomVert, PREF_KEY_FILE_BOTTOM_VERT, 0);
     setDividerPosition(spRightHoriz, PREF_KEY_FILE_RIGHT_HORIZ, 0);
-    setDividerPosition(spRightVert, PREF_KEY_FILE_RIGHT_VERT, 0);    
+    setDividerPosition(spRightVert, PREF_KEY_FILE_RIGHT_VERT, 0);
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public void getDividerPositions()
   {
     getDividerPosition(spBottomVert, PREF_KEY_FILE_BOTTOM_VERT, 0);
     getDividerPosition(spRightHoriz, PREF_KEY_FILE_RIGHT_HORIZ, 0);
-    getDividerPosition(spRightVert, PREF_KEY_FILE_RIGHT_VERT, 0);    
+    getDividerPosition(spRightVert, PREF_KEY_FILE_RIGHT_VERT, 0);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

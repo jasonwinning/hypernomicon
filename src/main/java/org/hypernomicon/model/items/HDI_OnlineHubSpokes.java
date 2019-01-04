@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.items;
@@ -30,7 +30,7 @@ import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Hub;
 
 public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
-{ 
+{
   private HDT_Hub hub;
 
 //---------------------------------------------------------------------------
@@ -39,7 +39,7 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
   public HDI_OnlineHubSpokes(HDI_Schema newSchema, HDT_Hub newRecord)
   {
     super(newSchema, newRecord);
-    
+
     hub = newRecord;
   }
 
@@ -48,14 +48,14 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 
   @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords) { return; }
   @Override public String getResultTextForTag(Tag tag)                                           { return null; }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void setFromOfflineValue(HDI_OfflineHubSpokes val, Tag tag) throws RelationCycleException
   {
     StrongLink link = hub.getLink();
-    
+
     if (val.debateID   > 0)  link.debateSpoke   = db.debates   .getByID(val.debateID  ).getConnector();
     if (val.positionID > 0)  link.positionSpoke = db.positions .getByID(val.positionID).getConnector();
     if (val.noteID     > 0)  link.noteSpoke     = db.notes     .getByID(val.noteID    ).getConnector();
@@ -70,7 +70,7 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
   {
     StrongLink link = hub.getLink();
     HDT_Base record;
-    
+
     record = link.getDebate();   if (record != null) val.debateID   = record.getID();
     record = link.getPosition(); if (record != null) val.positionID = record.getID();
     record = link.getNote();     if (record != null) val.noteID     = record.getID();
@@ -81,11 +81,11 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void resolvePointers() 
+  @Override public void resolvePointers()
   {
     int spokeCount = 0;
     StrongLink link = hub.getLink();
-   
+
     if (Connector.isEmpty(link.noteSpoke    ))  link.noteSpoke     = null;  else  spokeCount++;
     if (Connector.isEmpty(link.conceptSpoke ))  link.conceptSpoke  = null;  else  spokeCount++;
     if (Connector.isEmpty(link.labelSpoke   ))  link.labelSpoke    = null;  else  spokeCount++;

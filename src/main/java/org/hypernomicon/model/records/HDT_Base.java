@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.records;
@@ -35,20 +35,20 @@ public interface HDT_Base
   public int getID();
   public HDT_RecordType getType();
   public void assignID() throws HDB_InternalError;
-  
+
   public void bringStoredCopyOnline() throws RelationCycleException, SearchKeyException, HubChangedException;
   public boolean hasStoredState();
   public HDT_RecordState getRecordStateBackup();
   public void restoreTo(HDT_RecordState backupState) throws RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException;
   public void saveToStoredState() throws HDB_InternalError;
   public void writeStoredStateToXML(StringBuilder xml);
-     
+
   public void modifyNow();
   public void viewNow();
   public Instant getModifiedDate();
   public Instant getViewDate();
   public Instant getCreationDate();
-  
+
   public HDI_Schema getSchema(Tag tag);
   public String getResultTextForTag(Tag tag);
   public boolean getTagBoolean(Tag tag);
@@ -60,7 +60,7 @@ public interface HDT_Base
   public boolean isExpired();
   public boolean isDummy();
   public boolean changeID(int newID);
-  
+
   public void getAllStrings(ArrayList<String> list, boolean searchLinkedRecords);
   public String name();
   public Tag getNameTag();

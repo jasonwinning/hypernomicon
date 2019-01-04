@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.bib;
@@ -46,8 +46,8 @@ import org.hypernomicon.util.filePath.FilePath;
 public class BibUtils
 {
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static class PdfMetadata
   {
@@ -55,14 +55,14 @@ public class BibUtils
     public XMPNode xmpRoot = null;
     public BibDataStandalone bd = new BibDataStandalone();
 
-  //---------------------------------------------------------------------------  
-  //--------------------------------------------------------------------------- 
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
     public void setDocInfo(PDDocumentInformation docInfo)
     {
       this.docInfo = docInfo;
       if (docInfo == null) return;
-      
+
       bd.extractDOIandISBNs(docInfo.getAuthor());
       bd.extractDOIandISBNs(docInfo.getCreator());
       bd.extractDOIandISBNs(docInfo.getKeywords());
@@ -70,65 +70,65 @@ public class BibUtils
       bd.extractDOIandISBNs(docInfo.getSubject());
       bd.extractDOIandISBNs(docInfo.getTitle());
       bd.extractDOIandISBNs(docInfo.getTrapped());
-      
+
       for (String key : docInfo.getMetadataKeys())
         if (key.toLowerCase().contains("journaldoi") == false)
           bd.extractDOIandISBNs(docInfo.getCustomMetadataValue(key));
     }
 
-  //---------------------------------------------------------------------------  
-  //--------------------------------------------------------------------------- 
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
     public void setXmpRoot(XMPNode xmpRoot)
     {
       this.xmpRoot = xmpRoot;
-      
+
       if (xmpRoot != null)
         xmpRoot.extractDOIandISBNs(bd);
     }
-    
-    //---------------------------------------------------------------------------  
-    //--------------------------------------------------------------------------- 
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
 
     public BibData extractBibData()
     {
       if (bd == null) bd = new BibDataStandalone();
 
       if (safeStr(docInfo.getAuthor()).length() > 0)
-      {                
+      {
         bd.getAuthors().clear();
         BibAuthorsStandalone.class.cast(bd.getAuthors()).setOneLiner(docInfo.getAuthor());
       }
-      
+
       if (safeStr(docInfo.getTitle()).length() > 0)
         bd.setTitle(docInfo.getTitle());
 
       if (safeStr(docInfo.getSubject()).length() > 0)
         bd.addStr(bfMisc, docInfo.getSubject());
-      
+
       if (xmpRoot != null)
         xmpRoot.extractBibData(bd);
-      
+
       return bd;
     }
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @SuppressWarnings("resource")
   public static PdfMetadata getPdfMetadata(FilePath filePath, PdfMetadata md) throws IOException, XMPException
   {
     PDDocument pdfDoc = null;
-    
+
     try
     {
       pdfDoc = PDDocument.load(filePath.toFile());
-      
+
       md.setDocInfo(pdfDoc.getDocumentInformation());
-            
-      PDMetadata metadata = pdfDoc.getDocumentCatalog().getMetadata();                   
-      
+
+      PDMetadata metadata = pdfDoc.getDocumentCatalog().getMetadata();
+
       if (metadata != null)
       {
         byte[] byteArray = metadata.toByteArray();
@@ -141,25 +141,25 @@ public class BibUtils
       PDFTextStripper pdfStripper = new PDFTextStripper();
       pdfStripper.setStartPage(1);
       pdfStripper.setEndPage(7);
-      
+
       String parsedText = pdfStripper.getText(pdfDoc);
-      
+
       BibData bd = new BibDataStandalone();
-      
+
       parsedText = parsedText.replace('\u0002', '/'); // sometimes slash in DOI is encoded as STX control character
-      
+
       bd.extractDOIandISBNs(parsedText);
-      
+
       if (bd.getStr(bfDOI).length() == 0)
       {
         parsedText = parsedText.replaceAll("\\h*", ""); // remove whitespace
         bd.extractDOIandISBNs(parsedText);
       }
-      
+
       md.bd.setStr(bfDOI, bd.getStr(bfDOI));
       if (md.bd.getMultiStr(bfISBNs).isEmpty())
         md.bd.setMultiStr(bfISBNs, bd.getMultiStr(bfISBNs));
-      
+
       return md;
     }
     finally
@@ -169,16 +169,16 @@ public class BibUtils
         try { pdfDoc.close(); }
         catch (IOException e) { throw e; }
       }
-    }    
+    }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 // DOI legal characters according to Crossref: "a-z", "A-Z", "0-9" and "-._;()/"
-// But I've seen at least one Crossref DOI that included a colon 
-  
-  public static String matchDOI(String str) 
+// But I've seen at least one Crossref DOI that included a colon
+
+  public static String matchDOI(String str)
   {
     Pattern p = Pattern.compile("(\\A|\\D)(10\\.\\d{4,}[0-9.]*/[a-zA-Z0-9\\-._;:()/\\\\]+)(\\z|\\D)");
     Matcher m = p.matcher(str);
@@ -196,25 +196,25 @@ public class BibUtils
   {
     return matchISSN(str, null);
   }
-  
+
   public static List<String> matchISSN(String str, List<String> list)
   {
     if (list == null) list = new ArrayList<>();
     if (safeStr(str).length() == 0) return list;
-    
+
     str = str.replaceAll("\\p{Pd}", "-").toUpperCase(); // treat all dashes the same
-    
+
     Pattern p = Pattern.compile("(\\A|\\G|[^0-9\\-])(\\d{4}-\\d{3}[\\dxX])(\\z|[^0-9\\-])");
     Matcher m = p.matcher(str);
-    
+
     while (m.find())
     {
       String found = m.group(2).replace("-", "");
-      
+
       int n;
-      
+
       int sum = 0;
-      
+
       for (int x = 0; x < 8; x++)
       {
         char c = found.charAt(x);
@@ -223,19 +223,19 @@ public class BibUtils
           n = 10;
         else
           n = parseInt(String.valueOf(c), -1);
-        
+
         sum = sum + (n * (8 - x));
       }
 
       if ((sum > 0) && ((sum % 11) == 0))
-      {        
+      {
         found = m.group(2);
-        
+
         if (list.contains(found) == false)
           list.add(found);
       }
     }
-    
+
     return list;
   }
 
@@ -246,42 +246,42 @@ public class BibUtils
   {
     return matchISBN(str, null);
   }
-  
+
   public static List<String> matchISBN(String str, List<String> list)
   {
     if (list == null) list = new ArrayList<>();
     if (safeStr(str).length() == 0) return list;
-    
+
     matchISBNiteration(str, list);
-    
+
     while (str.contains(" "))
       str = str.replace(" ", "");
 
     matchISBNiteration(str, list);
-    
+
     return list;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void matchISBNiteration(String str, List<String> list) 
+  private static void matchISBNiteration(String str, List<String> list)
   {
     str = str.replaceAll("\\p{Pd}", "-")  // treat all dashes the same
              .replaceAll("\\u00AD", "-")  // "soft hyphen" is not included in the \p{Pd} class
-    
+
              .replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0');
-       
+
     while (str.contains("--"))
       str = str.replace("--", "-");
-    
+
     Pattern p = Pattern.compile("(\\A|\\G|[^0-9\\-])((\\d-?){12}\\d)(\\z|[^0-9\\-])");
     Matcher m = p.matcher(str);
-    
+
     while (m.find())
     {
       String found = m.group(2).replace("-", "");
-      
+
       int n, sum = 0;
       for (int x = 0; x < 12; x++)
       {
@@ -289,26 +289,26 @@ public class BibUtils
         n = parseInt(String.valueOf(found.charAt(x)), -1);
         sum = sum + (coeff * n);
       }
-      
+
       n = parseInt(StringUtils.right(found, 1), -1);
-      
+
       if ((sum > 0) && (((10 - (sum % 10)) % 10) == n))
       {
         if (list.contains(found) == false)
           list.add(found);
       }
     }
-       
+
     p = Pattern.compile("(\\A|\\G|[^0-9\\-])((\\d-?){9}[0-9xX])(\\z|[^0-9xX\\-])");
     m = p.matcher(str);
-    
+
     while (m.find())
     {
       String found = m.group(2).toUpperCase().replace("-", "");
       int n;
-      
+
       int sum1 = 0, sum2 = 0;
-      
+
       for (int x = 0; x < 10; x++)
       {
         char c = found.charAt(x);
@@ -317,105 +317,105 @@ public class BibUtils
           n = 10;
         else
           n = parseInt(String.valueOf(c), -1);
-        
+
         sum1 = sum1 + (n * (10 - x));
         sum2 = sum2 + (n * (x + 1));
       }
-      
+
       if ((sum1 > 0) && (sum2 > 0) && ((sum1 % 11) == 0) && ((sum2 % 11) == 0))
-      {       
+      {
         if (list.contains(found) == false)
           list.add(found);
       }
     }
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static String getCrossrefUrl(String doi) { return getCrossrefUrl(null, null, null, doi); }
-  
+
   public static String getCrossrefUrl(String title, String yearStr, List<ObjectGroup> authGroups, String doi)
   {
     String url = "https://api.crossref.org/works", auths = "", eds = "";
-    
+
     if (doi.length() > 0)
       return url + "/" + doi;
-    
+
     if (safeStr(title).length() == 0) return url;
-    
+
     url = url + "?";
-        
+
     if (authGroups != null)
     {
       for (ObjectGroup authGroup : authGroups)
       {
         boolean ed = authGroup.getValue(tagEditor).bool,
                 tr = authGroup.getValue(tagTranslator).bool;
-  
+
         HDT_Person person = authGroup.getPrimary();
         String name;
-        
+
         if (person == null)
           name = convertToEnglishChars(new PersonName(authGroup.getPrimaryStr()).getLast());
         else
           name = person.getLastNameEngChar();
-              
+
         if (ed)
           eds = eds + "+" + name;
         else if (tr == false)
-          auths = auths + "+" + name;      
+          auths = auths + "+" + name;
       }
     }
-    
+
     if (auths.length() == 0) auths = eds;
-    
+
     title = convertToEnglishChars(title).trim();
     title = title.replace(":", "");
     title = title.replace("?", "");
-     
-    title = title.replace(' ', '+');    
-    
+
+    title = title.replace(' ', '+');
+
     yearStr = safeStr(yearStr);
-    
+
     if (yearStr.length() > 0)
     {
       int year = parseInt(yearStr, -1);
       if (year > 1929)
         url = url + "query=" + yearStr + "&";
     }
-    
+
     if (auths.length() > 0)
       url = url + "query.author=" + escapeURL(auths, false);
-    
+
     if (title.length() > 0)
     {
       if (auths.length() > 0)
         url = url + "&";
-      
+
       if ((auths.length() == 0) && (yearStr.length() == 0))
         url = url + "query=" + escapeURL(title, false); // For some reason this works better when there is only a title
       else
         url = url + "query.title=" + escapeURL(title, false);
     }
-    
+
     return url;
   }
- 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static String getGoogleUrl(String isbn) { return getGoogleUrl(null, null, isbn); }
-  
+
   public static String getGoogleUrl(String title, List<ObjectGroup> authGroups, String isbn)
   {
     String url = "https://www.googleapis.com/books/v1/volumes?q=";
-    
+
     if (isbn.length() > 0)
       return url + escapeURL("isbn:" + isbn, false);
-    
+
     if (safeStr(title).length() == 0) return url;
-    
+
     String auths = "", eds = "";
     if (authGroups != null)
     {
@@ -423,30 +423,30 @@ public class BibUtils
       {
         boolean ed = authGroup.getValue(tagEditor).bool,
                 tr = authGroup.getValue(tagTranslator).bool;
-  
+
         HDT_Person person = authGroup.getPrimary();
         String name;
-        
+
         if (person == null)
           name = convertToEnglishChars(new PersonName(authGroup.getPrimaryStr()).getLast());
         else
           name = person.getLastNameEngChar();
-              
+
         if (ed)
           eds = eds + (eds.length() > 0 ? "+" : "") + "inauthor:" + name;
         else if (tr == false)
-          auths = auths + (auths.length() > 0 ? "+" : "") + "inauthor:" + name;      
+          auths = auths + (auths.length() > 0 ? "+" : "") + "inauthor:" + name;
       }
     }
-    
+
     if (auths.length() == 0) auths = eds;
-    
+
     title = convertToEnglishChars(title).trim();
     title = title.replace(":", "");
     title = title.replace("?", "");
-     
+
     title = title.replace(' ', '+');
-    
+
     if (title.length() > 0)
       url = url + escapeURL("\"" + title + "\"", false);
 
@@ -457,12 +457,12 @@ public class BibUtils
 
       url = url + escapeURL(auths, false);
     }
-    
+
     return url;
   }
- 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static EntryType parseGoogleBooksType(String gbType)
   {
@@ -470,14 +470,14 @@ public class BibUtils
     {
       case "BOOK" : return etBook;
       case "MAGAZINE" : return etMagazine;
-      
+
       default : return etOther;
     }
   }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
- 
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static EntryType parsePrismAggregationType(String paType)
   {
     switch (paType)
@@ -491,13 +491,13 @@ public class BibUtils
       case "newsletter" : return etNewsletterArticle;
       case "other" : return etOther;
       case "pamphlet": return etPamphlet;
-      
+
       default : return etOther;
     }
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static EntryType parseCrossrefType(String crType)
   {
@@ -529,13 +529,13 @@ public class BibUtils
       case "report-series" : return etReportSeries;
       case "standard" : return etStandard;
       case "standard-series": return etStandardSeries;
-      
+
       default : return etOther;
     }
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static EntryType parseRISType(String risType)
   {
@@ -596,13 +596,13 @@ public class BibUtils
       case "THES" : return etThesis;
       case "UNPB" : return etUnpublishedWork;
       case "VIDEO" : return etVideoRecording;
-      
+
       default : return etOther;
     }
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static EntryType parseBibTexType(String btType)
   {
@@ -622,7 +622,7 @@ public class BibUtils
       case "proceedings" : return etConferenceProceedings;
       case "techreport" : return etTechnicalReport;
       case "unpublished" : return etUnpublishedWork;
-      
+
       default : return etOther;
     }
   }
@@ -631,11 +631,11 @@ public class BibUtils
 //---------------------------------------------------------------------------
 
   private static final EnumHashBiMap<EntryType, String> entryTypeMap = initMap();
-  
+
   private static EnumHashBiMap<EntryType, String> initMap()
   {
     EnumHashBiMap<EntryType, String> map = EnumHashBiMap.create(EntryType.class);
-    
+
     map.put(etJournal, "Journal");
     map.put(etJournalVolume, "Journal Volume");
     map.put(etJournalArticle, "Journal Article");
@@ -749,7 +749,7 @@ public class BibUtils
     map.put(etPamphlet, "Pamphlet");
     map.put(etBrochure, "Brochure");
     map.put(etOther, "Other");
-    
+
     return map;
   }
 
@@ -763,13 +763,13 @@ public class BibUtils
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
- 
+
   public static String getEntryTypeName(EntryType et)
   {
     return nullSwitch(et, "", t -> entryTypeMap.getOrDefault(t, ""));
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

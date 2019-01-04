@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.util;
@@ -34,25 +34,25 @@ public class VersionNumber implements Comparable<VersionNumber>
   public VersionNumber(int minParts, int... parts)
   {
     List<Integer> tempParts = new ArrayList<>();
-    
+
     for (int part : parts)
       tempParts.add(part);
-    
+
     while (tempParts.size() < minParts)
       tempParts.add(0);
-    
+
     this.parts = Collections.unmodifiableList(tempParts);
   }
-  
+
   public VersionNumber(int minParts, String str)
   {
     List<Integer> tempParts = new ArrayList<>();
-    
+
     Arrays.asList(str.split("\\.")).forEach(partStr -> tempParts.add(parseInt(partStr, 0)));
-    
+
     while (tempParts.size() < minParts)
       tempParts.add(0);
-    
+
     this.parts = Collections.unmodifiableList(tempParts);
   }
 
@@ -65,23 +65,23 @@ public class VersionNumber implements Comparable<VersionNumber>
   {
     if (ndx >= parts.size())
       return 0;
-    
+
     return parts.get(ndx);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String toString()
   {
     String str = "";
-    
+
     for (int part : parts)
       str = str.length() == 0 ? String.valueOf(part) : str + "." + String.valueOf(part);
-      
+
     return str;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -89,19 +89,19 @@ public class VersionNumber implements Comparable<VersionNumber>
   {
     final int prime = 31;
     int result = 1;
-    
+
     List<Integer> newList = new ArrayList<>();
     boolean gotNonzero = false;
-    
+
     for (int ndx = parts.size() - 1; ndx >= 0; ndx--)
     {
       if (parts.get(ndx) > 0)
         gotNonzero = true;
-      
+
       if (gotNonzero)
         newList.add(0, parts.get(ndx));
     }
-    
+
     for (int part : newList)
       result = prime * result + part;
 
@@ -117,11 +117,11 @@ public class VersionNumber implements Comparable<VersionNumber>
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
     VersionNumber other = (VersionNumber) obj;
-    
+
     for (int ndx = 0; ndx < Math.max(parts.size(), other.numParts()); ndx++)
       if (getPart(ndx) != other.getPart(ndx))
         return false;
-    
+
     return true;
   }
 
@@ -135,12 +135,12 @@ public class VersionNumber implements Comparable<VersionNumber>
       int cmp = Integer.compare(parts.get(ndx), o.getPart(ndx));
       if (cmp != 0) return cmp;
     }
-    
+
     return 0;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  
+
 }

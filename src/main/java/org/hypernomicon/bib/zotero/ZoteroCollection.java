@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.bib.zotero;
@@ -25,7 +25,7 @@ public class ZoteroCollection implements ZoteroEntity, BibCollection
 {
   private boolean synced;
   private JsonObj jObj;
-  
+
   public ZoteroCollection(JsonObj jObj)
   {
     update(jObj, false, false);
@@ -33,30 +33,30 @@ public class ZoteroCollection implements ZoteroEntity, BibCollection
 
   @Override public ZoteroEntityType getType() { return ZoteroEntityType.zoteroCollection; }
   @Override public boolean isSynced()         { return synced; }
-  @Override public String getCollectionKey()  { return getKey(); }  
+  @Override public String getCollectionKey()  { return getKey(); }
   @Override public String getName()           { return jObj.getObj("data").getStr("name"); }
   @Override public String getKey()            { return jObj.getStr("key"); }
   @Override public long getVersion()          { return jObj.getLong("version", 0); }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
-  @Override public String getParentKey()      
+
+  @Override public String getParentKey()
   {
     String parentKey = jObj.getObj("data").getStrSafe("parentCollection");
-    
+
     if (parentKey.length() > 0)
       return parentKey;
-    
+
     return null;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge)         
-  { 
-    this.jObj = jObj;   
+  @Override public void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge)
+  {
+    this.jObj = jObj;
     if (jObj.containsKey("synced"))
     {
       synced = jObj.getBoolean("synced", false);
@@ -71,9 +71,9 @@ public class ZoteroCollection implements ZoteroEntity, BibCollection
   {
     JsonObj jDiskObj = jObj.clone();
     jDiskObj.put("synced", (isSynced() ? "true" : "false"));
-    jArr.add(jDiskObj);      
+    jArr.add(jDiskObj);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

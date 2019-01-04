@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.wrappers;
@@ -43,12 +43,12 @@ public class TreeRow extends AbstractTreeRow<TreeRow>
 
   public TreeRow(HDT_Base record, TreeModel<TreeRow> treeModel)
   {
-    this.record = record;    
+    this.record = record;
     this.treeModel = treeModel;
     text = "";
 
     if (record == null) return;
-       
+
     treeItem = new TreeItem<TreeRow>(this);
   }
 
@@ -61,7 +61,7 @@ public class TreeRow extends AbstractTreeRow<TreeRow>
     record = null;
     treeModel = null;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -69,44 +69,44 @@ public class TreeRow extends AbstractTreeRow<TreeRow>
   public String getCBText()               { return record == null ? text : "(" + db.getTypeName(getRecordType()) + ") " + getName(); }
   public String getName()                 { return nullSwitch(record, text, () -> record.getType() == hdtWork ? record.getCBText() : record.listName()); }
 
-  public String getDescString() 
-  { 
+  public String getDescString()
+  {
     return (record != null) && record.hasDesc() ? HDT_RecordWithDescription.class.cast(record).getDesc().getPlainForDisplay() : "";
   }
-  
+
   @Override public String toString()               { return getCBText(); }
   @Override public ImageView getGraphic()          { return graphic != null ? graphic : getImageViewForRelativePath(ui.getGraphicRelativePath(record)); }
   @Override public HDT_RecordType getRecordType()  { return record == null ? hdtNone : record.getType(); }
   @Override public int getRecordID()               { return record == null ? -1 : record.getID(); }
   @Override public HDT_Base getRecord()            { return record; }
   @Override public int compareTo(TreeRow o)        { return record.getSortKey().compareTo(o.record.getSortKey()); }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public String getTypeString()
-  {    
+  {
     if (record == null) return "";
 
     treeItem.setGraphic(getGraphic());
 
     String typeName;
-    
+
     if (getRecordType() != hdtWork)
     {
       typeName = db.getTypeName(record.getType());
       if (record.isUnitable())
         if (((HDT_RecordWithConnector)record).isLinked())
           typeName = typeName + " (linked)";
-      
+
       return typeName;
     }
-    
+
     HDT_Work work = (HDT_Work)record;
-    
+
     HDT_WorkType workType = work.workType.get();
     if (workType == null) return HDT_Work.addFileIndicator("Work", work);
-    
+
     switch (workType.getEnumVal())
     {
       case wtPaper :    typeName = "Paper"; break;
@@ -116,8 +116,8 @@ public class TreeRow extends AbstractTreeRow<TreeRow>
       case wtWebPage:   typeName = "Web Page"; break;
       default:          typeName = "Work";
     }
-      
-    return HDT_Work.addFileIndicator(typeName, work);          
+
+    return HDT_Work.addFileIndicator(typeName, work);
   }
 
 //---------------------------------------------------------------------------

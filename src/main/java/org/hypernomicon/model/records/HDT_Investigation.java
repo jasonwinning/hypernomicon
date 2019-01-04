@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.records;
@@ -26,21 +26,21 @@ import org.hypernomicon.model.relations.HyperObjPointer;
 
 public class HDT_Investigation extends HDT_RecordWithConnector
 {
-  public final HyperObjPointer<HDT_Investigation, HDT_Person> person; 
-  
+  public final HyperObjPointer<HDT_Investigation, HDT_Person> person;
+
   public HDT_Investigation(HDT_RecordState xmlState, HyperDataset<HDT_Investigation> dataset)
   {
     super(xmlState, dataset, tagName);
-    
+
     person = getObjPointer(rtPersonOfInv);
   }
-    
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String listName()        { return name(); }
   @Override public HDT_RecordType getType() { return hdtInvestigation; }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

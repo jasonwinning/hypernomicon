@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.records;
@@ -29,21 +29,21 @@ public class HDT_PersonGroup extends HDT_Record
 {
   public final List<HDT_PersonGroup> parentGroups;
   public final List<HDT_PersonGroup> subGroups;
-  
+
   public HDT_PersonGroup(HDT_RecordState xmlState, HyperDataset<HDT_PersonGroup> dataset)
   {
-    super(xmlState, dataset, tagName);       
-    
+    super(xmlState, dataset, tagName);
+
     parentGroups = getObjList(rtParentGroupOfGroup);
     subGroups = getSubjList(rtParentGroupOfGroup);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   @Override public String listName()        { return name(); }
   @Override public HDT_RecordType getType() { return hdtPersonGroup; }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

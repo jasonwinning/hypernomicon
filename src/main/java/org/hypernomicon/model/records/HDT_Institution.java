@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.records;
@@ -35,22 +35,22 @@ public class HDT_Institution extends HDT_Record
 {
   public final HyperSubjList<HDT_Person, HDT_Institution> persons;
   public final HyperSubjList<HDT_Institution, HDT_Institution> subInstitutions;
-  
+
   public final HyperObjPointer<HDT_Institution, HDT_State> state;
   public final HyperObjPointer<HDT_Institution, HDT_Country> country;
   public final HyperObjPointer<HDT_Institution, HDT_InstitutionType> instType;
   public final HyperObjPointer<HDT_Institution, HDT_Institution> parentInst;
-  
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
-  
+//---------------------------------------------------------------------------
+
   public HDT_Institution(HDT_RecordState xmlState, HyperDataset<HDT_Institution> dataset)
   {
     super(xmlState, dataset, tagName);
-    
+
     subInstitutions = getSubjList(rtParentInstOfInst);
     persons = getSubjList(rtInstOfPerson);
-    
+
     state = getObjPointer(rtStateOfInst);
     country = getObjPointer(rtCountryOfInst);
     instType = getObjPointer(rtTypeOfInst);
@@ -59,49 +59,49 @@ public class HDT_Institution extends HDT_Record
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public void setCity(String newCity) { updateTagString(tagCity, newCity); }
   public String getCity()             { return getTagString(tagCity); }
-  public boolean isDeptOrFaculty()    { return (instType.getID() == HDT_InstitutionType.FACULTY_INST_TYPE_ID) || 
+  public boolean isDeptOrFaculty()    { return (instType.getID() == HDT_InstitutionType.FACULTY_INST_TYPE_ID) ||
                                                (instType.getID() == HDT_InstitutionType.DEPARTMENT_INST_TYPE_ID); }
-  
+
   public void setWebLink(String newLink) { updateTagString(tagWebLink, newLink); }
   public String getWebLink()             { return getTagString(tagWebLink); }
- 
+
   @Override public HDT_RecordType getType() { return hdtInstitution; }
-     
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String getXMLObjectName()    
-  { 
+  @Override public String getXMLObjectName()
+  {
     if (parentInst.isNull())
       return name();
-    
+
     int parentType = parentInst.get().instType.getID();
-    
+
     if ((parentType == 1) || (parentType == 6))
       return name();
 
-    return parentInst.get().name() + " " + name(); 
+    return parentInst.get().name() + " " + name();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String listName()
-  { 
+  {
     if (parentInst.isNull())
       return name();
-    
+
     int parentType = parentInst.get().instType.getID();
-    
+
     if ((parentType == 1) || (parentType == 6))
       return name();
-    
+
     return name() + ", " + parentInst.get().name();
   }
-   
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -109,7 +109,7 @@ public class HDT_Institution extends HDT_Record
   {
     while (subInstitutions.isEmpty() == false)
       db.deleteRecord(hdtInstitution, subInstitutions.get(0).getID());
-    
+
     super.expire();
   }
 
@@ -123,11 +123,11 @@ public class HDT_Institution extends HDT_Record
       subInst.setCity(getCity());
       subInst.state.set(state.get());
       subInst.country.set(country.get());
-      
+
       subInst.overwriteSubInstLocations();
     });
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

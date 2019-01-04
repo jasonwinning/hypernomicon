@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.items;
@@ -53,21 +53,21 @@ public class Authors implements Iterable<Author>
   private class AuthorIterator implements Iterator<Author>
   {
     private int nextNdx = 0;
-    
+
     @Override public boolean hasNext() { return nextNdx < size(); }
 
     @Override public Author next()
     {
-      if (hasNext()) return get(nextNdx++);      
+      if (hasNext()) return get(nextNdx++);
       throw new NoSuchElementException();
-    }    
+    }
   }
-  
+
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
-  
+
   private final HyperObjList<HDT_Work, HDT_Person> objList, objListNoMod;
-  private final HDT_Work work;  
+  private final HDT_Work work;
   private final List<Author> authorList;
   private boolean allRecords = true; // if this is true, ignore authorList and treat as pointer multi
 
@@ -79,10 +79,10 @@ public class Authors implements Iterable<Author>
     this.objList = objList;
     this.work = work;
     authorList = new ArrayList<>();
-    
+
     objListNoMod = db.getObjectList(rtAuthorOfWork, work, false);
   }
-  
+
   public final int size()  { return allRecords ? objList.size() : authorList.size(); }
   public boolean isEmpty() { return size() == 0; }
   final void expire()      { clearNoMod(); }
@@ -90,7 +90,7 @@ public class Authors implements Iterable<Author>
   @Override public Iterator<Author> iterator() { return new AuthorIterator(); }
 
   final void resolvePointers() throws HDB_InternalError { db.resolvePointersByRelation(rtAuthorOfWork, work); }
-  
+
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
@@ -106,7 +106,7 @@ public class Authors implements Iterable<Author>
   public Collection<Author> asCollection()
   {
     Collection<Author> set = new LinkedHashSet<>();
-    
+
     forEach(set::add);
 
     return set;
@@ -127,7 +127,7 @@ public class Authors implements Iterable<Author>
     if (allRecords)
       return;
 
-    authorList.add(new Author(work, person));    
+    authorList.add(new Author(work, person));
   }
 
   //---------------------------------------------------------------------------
@@ -137,25 +137,25 @@ public class Authors implements Iterable<Author>
   {
     if (allRecords)
       initAuthorList();
-    
+
     boolean editor = false, translator = false;
     Ternary inFileName = Ternary.Unset;
-    
+
     if (tagToNestedItem != null)
     {
       for (Entry<Tag, HDI_OfflineBase> entry : tagToNestedItem.entrySet())
       {
         switch (entry.getKey())
         {
-          case tagInFileName: inFileName = HDI_OfflineTernary.class.cast(entry.getValue()).get(); break;                 
+          case tagInFileName: inFileName = HDI_OfflineTernary.class.cast(entry.getValue()).get(); break;
           case tagEditor:     editor     = HDI_OfflineBoolean.class.cast(entry.getValue()).get(); break;
           case tagTranslator: translator = HDI_OfflineBoolean.class.cast(entry.getValue()).get(); break;
           default : break;
         }
       }
     }
-    
-    authorList.add(new Author(work, name, editor, translator, inFileName));    
+
+    authorList.add(new Author(work, name, editor, translator, inFileName));
   }
 
   //---------------------------------------------------------------------------
@@ -171,7 +171,7 @@ public class Authors implements Iterable<Author>
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
-    
+
   void clearNoMod()
   {
     objListNoMod.clear();
@@ -185,13 +185,13 @@ public class Authors implements Iterable<Author>
   void clear()
   {
     objList.clear();
-    
+
     if (authorList.isEmpty() == false)
     {
       authorList.clear();
       work.modifyNow();
     }
-      
+
     allRecords = true;
   }
 
@@ -201,12 +201,12 @@ public class Authors implements Iterable<Author>
   public Author getAuthor(PersonName personName)
   {
     if (allRecords) return null;
-    
+
     for (Author author : authorList)
       if (author.getPerson() == null)
         if (author.getName().equals(personName))
           return author;
-    
+
     return null;
   }
 
@@ -214,24 +214,24 @@ public class Authors implements Iterable<Author>
   //---------------------------------------------------------------------------
 
   public void update(List<ObjectGroup> objGroups)
-  {    
+  {
     db.updateObjectGroups(rtAuthorOfWork, work, objGroups);
     allRecords = true;
-    
+
     for (ObjectGroup objGroup : objGroups)
     {
       if (objGroup.getPrimary() == null)
       {
         allRecords = false;
-        
+
         ensurePresent(objGroup, tagInFileName);
         ensurePresent(objGroup, tagEditor);
         ensurePresent(objGroup, tagTranslator);
       }
     }
-    
+
     authorList.clear();
-    
+
     if (allRecords == false)
       setListFromObjectGroups(authorList, objGroups, work);
   }
@@ -242,35 +242,35 @@ public class Authors implements Iterable<Author>
   public void update(Author oldAuthor, Author newAuthor)
   {
     if (oldAuthor.equals(newAuthor)) return;
-    
+
     int ndx = authorList.indexOf(oldAuthor);
-    
+
     if ((ndx == -1) || (oldAuthor.getPerson() != null) || (newAuthor.getPerson() != null) || (oldAuthor.getWork() != work) || (newAuthor.getWork() != work))
     {
       messageDialog("Internal error #38891", mtError);
       return;
     }
-      
+
     authorList.set(ndx, newAuthor);
-      
+
     work.modifyNow();
   }
-  
+
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
   public static void setListFromObjectGroups(List<Author> authorList, List<ObjectGroup> objGroups, HDT_Work work)
   {
     authorList.clear();
-    
+
     objGroups.forEach(objGroup ->
     {
       if (objGroup.getPrimary() != null)
         authorList.add(new Author(work, (HDT_Person) objGroup.getPrimary()));
       else
-        authorList.add(new Author(work, new PersonName(objGroup.getPrimaryStr()), 
-                                        objGroup.getValue(tagEditor).bool, 
-                                        objGroup.getValue(tagTranslator).bool, 
+        authorList.add(new Author(work, new PersonName(objGroup.getPrimaryStr()),
+                                        objGroup.getValue(tagEditor).bool,
+                                        objGroup.getValue(tagTranslator).bool,
                                         objGroup.getValue(tagInFileName).ternary));
     });
   }
@@ -281,9 +281,9 @@ public class Authors implements Iterable<Author>
   public static List<Author> getListFromObjectGroups(List<ObjectGroup> objGroups, HDT_Work work)
   {
     List<Author> authorList = new ArrayList<>();
-    
+
     setListFromObjectGroups(authorList, objGroups, work);
-        
+
     return authorList;
   }
 
@@ -298,7 +298,7 @@ public class Authors implements Iterable<Author>
     if (author == null) return;
 
     NestedValue val = new NestedValue(db.getNestedSchema(rtAuthorOfWork, tag).getCategory());
-    
+
     switch (tag)
     {
       case tagInFileName : val.ternary = author.getInFileName(); break;
@@ -307,7 +307,7 @@ public class Authors implements Iterable<Author>
       default : break;
     }
 
-    objGroup.addNestedEntry(tagInFileName, val);   
+    objGroup.addNestedEntry(tagInFileName, val);
   }
 
   //---------------------------------------------------------------------------
@@ -315,14 +315,14 @@ public class Authors implements Iterable<Author>
 
   public void add(HDT_Person person)
   {
-    add(person, false, false, Ternary.Unset); 
+    add(person, false, false, Ternary.Unset);
   }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
   public void add(Author author)
-  {   
+  {
     if (author.getPerson() == null)
       add(author.getName(), author.getIsEditor(), author.getIsTrans(), author.getInFileName());
     else
@@ -336,26 +336,26 @@ public class Authors implements Iterable<Author>
   {
     if (allRecords)
       initAuthorList();
-    
+
     authorList.add(new Author(work, name, isEditor, isTrans, inFileName));
-    work.modifyNow();    
+    work.modifyNow();
   }
-  
+
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
   private void add(HDT_Person person, boolean isEditor, boolean isTrans, Ternary inFileName)
   {
     objList.add(person);
-    
+
     if (isEditor) work.setPersonIsEditor(person, true);
     if (isTrans) work.setPersonIsTranslator(person, true);
     if (inFileName != Ternary.Unset) work.setPersonIsInFileName(person, inFileName);
-    
+
     if (allRecords)
       return;
 
-    authorList.add(new Author(work, person));    
+    authorList.add(new Author(work, person));
   }
 
   //---------------------------------------------------------------------------
@@ -363,45 +363,45 @@ public class Authors implements Iterable<Author>
 
   public Author setAuthorRecord(Author oldAuthor, HDT_Person person)
   {
-    if (oldAuthor.getPerson() != null)      
+    if (oldAuthor.getPerson() != null)
     {
       messageDialog("Internal error #73222", mtError);
       return oldAuthor;
     }
-    
+
     HDT_Person insertAfter = null;
-    
+
     for (Author author : authorList)
     {
       HDT_Person curPerson = author.getPerson();
       if (curPerson != null) insertAfter = curPerson;
-      
+
       if (author == oldAuthor)
       {
         if (insertAfter == null)
           objListNoMod.add(0, person);
         else
           objListNoMod.add(objListNoMod.indexOf(insertAfter) + 1, person);
-        
+
         work.setPersonIsEditor(person, author.getIsEditor());
         work.setPersonIsTranslator(person, author.getIsTrans());
         work.setPersonIsInFileName(person, author.getInFileName());
-        
+
         Author newAuthor = new Author(work, person);
-        
+
         authorList.set(authorList.indexOf(oldAuthor), newAuthor);
-        
+
         return newAuthor;
       }
     }
-    
+
     messageDialog("Internal error #73223", mtError);
     return oldAuthor;
   }
 
 //---------------------------------------------------------------------------
-//--------------------------------------------------------------------------- 
-  
+//---------------------------------------------------------------------------
+
   public static String getShortAuthorsStr(Collection<Author> authors, boolean sort, boolean fullNameIfSingleton)
   {
     return getAuthorsStr(authors, ',', true, true, sort, fullNameIfSingleton);
@@ -411,10 +411,10 @@ public class Authors implements Iterable<Author>
 //---------------------------------------------------------------------------
 
   public static String getLongAuthorsStr(Collection<Author> authors, boolean fullNameIfSingleton)
-  {   
+  {
     return getAuthorsStr(authors, ';', false, false, false, fullNameIfSingleton);
   }
-   
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -422,47 +422,47 @@ public class Authors implements Iterable<Author>
   {
     if (authorCol.size() == 0)
       return "";
-    
+
     List<Author> authors = new ArrayList<>(authorCol);
     String peopleStr = "";
-    
+
     if (authors.size() == 1)
     {
       if (firstInitials && (fullNameIfSingleton == false))
         return authors.get(0).getBibName();
-      
+
       return authors.get(0).getNameLastFirst();
     }
-    
+
     if (sort)
       authors.sort((x, y) -> x.getNameLastFirst(true).compareTo(y.getNameLastFirst(true)));
-    
+
     for (int ndx = 0; ndx < authors.size(); ndx++)
     {
       if (ndx != 0)
       {
         peopleStr = peopleStr + delimiter + " ";
-        
+
         if ((ndx == (authors.size() - 1)) && amp)
           peopleStr = peopleStr.trim() + " & ";
       }
-      
+
       if (firstInitials)
         peopleStr = peopleStr + authors.get(ndx).getBibName();
       else
         peopleStr = peopleStr + authors.get(ndx).getNameLastFirst();
     }
-    
+
     return peopleStr;
   }
-  
+
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
   public void setAll(BibAuthors bibAuthors)
   {
     clear();
-    
+
     if ((bibAuthors == null) || bibAuthors.isEmpty()) return;
 
     ArrayList<PersonName> nameList = new ArrayList<>();
@@ -471,19 +471,19 @@ public class Authors implements Iterable<Author>
     HashMap<PersonName, Boolean> nameToTr = new HashMap<>();
 
     bibAuthors.getListsForWorkMerge(nameList, personList, nameToEd, nameToTr, work);
-    
+
     for (int ndx = 0; ndx < nameList.size(); ndx++)
     {
       PersonName name = nameList.get(ndx);
       HDT_Person person = personList.get(ndx);
-      
+
       if (person != null)
         add(person, nameToEd.get(name), nameToTr.get(name), Ternary.Unset);
       else
         add(name, nameToEd.get(name), nameToTr.get(name), Ternary.Unset);
     }
   }
-  
+
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 

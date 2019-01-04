@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.records;
@@ -39,22 +39,22 @@ public class HDT_WorkFile extends HDT_Record implements HDT_RecordWithPath
 {
   private final HyperPath path;
   public final List<HDT_Work> works;
-  
+
   public HDT_WorkFile(HDT_RecordState xmlState, HyperDataset<HDT_WorkFile> dataset)
   {
     super(xmlState, dataset, tagName);
-       
-    works = getSubjList(rtWorkFileOfWork);    
+
+    works = getSubjList(rtWorkFileOfWork);
     path = new HyperPath(getObjPointer(rtFolderOfWorkFile), this);
   }
-  
+
   @Override public String listName()        { return path.getNameStr(); }
   @Override public HDT_RecordType getType() { return hdtWorkFile; }
   @Override public HyperPath getPath()      { return path; }
-  
+
   public boolean getAnnotated()         { return getTagBoolean(tagAnnotated); }
   public void setAnnotated(boolean val) { updateTagBoolean(tagAnnotated, val); }
-   
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -63,16 +63,16 @@ public class HDT_WorkFile extends HDT_Record implements HDT_RecordWithPath
     path.clear();
     super.expire();
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static class FileNameAuthor
-  {   
+  {
     public String name;
     public boolean isEditor;
     public boolean isTrans;
-    
+
     public FileNameAuthor(String name, boolean isEditor, boolean isTrans)
     {
       this.name = name;
@@ -87,7 +87,7 @@ public class HDT_WorkFile extends HDT_Record implements HDT_RecordWithPath
   {
     public int code;
     public String beforeSep, withinSep, afterSep;
-    
+
     public FileNameComponentConfig(int code, String beforeSep, String withinSep, String afterSep)
     {
       this.code = code;
@@ -96,21 +96,21 @@ public class HDT_WorkFile extends HDT_Record implements HDT_RecordWithPath
       this.afterSep = afterSep;
     }
   }
-  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+
   public static String makeFileName(List<FileNameAuthor> authors, String year, String title, String ext)
   {
     ArrayList<FileNameComponentConfig> configList = new ArrayList<>();
     FileNameComponentConfig authConfig = null;
-    
+
     String fileName = "";
 
     configList.add(new FileNameComponentConfig(db.prefs.getInt(PREF_KEY_FN_COMPONENT_1, BLANK_FN_COMPONENT),
                                                db.prefs.get(PREF_KEY_FN_BEFORE_SEP_1, ""),
                                                db.prefs.get(PREF_KEY_FN_WITHIN_SEP_1, " "),
                                                db.prefs.get(PREF_KEY_FN_AFTER_SEP_1, "")));
-    
+
     configList.add(new FileNameComponentConfig(db.prefs.getInt(PREF_KEY_FN_COMPONENT_2, BLANK_FN_COMPONENT),
                                                db.prefs.get(PREF_KEY_FN_BEFORE_SEP_2, ""),
                                                db.prefs.get(PREF_KEY_FN_WITHIN_SEP_2, " "),
@@ -139,18 +139,18 @@ public class HDT_WorkFile extends HDT_Record implements HDT_RecordWithPath
         break;
       }
     }
-    
+
     for (FileNameComponentConfig config : configList)
       fileName = fileName + getFNComponent(config, authConfig, authors, year, title);
-    
+
     fileName = fileName.trim();
-    
+
     if (db.prefs.getBoolean(PREF_KEY_FN_POSIX, false))
     {
       fileName = convertToEnglishChars(fileName);
       while (fileName.startsWith("-"))
         fileName = fileName.substring(1);
-      
+
       String newName = "";
       for (int pos = 0; pos < fileName.length(); pos++)
       {
@@ -161,41 +161,41 @@ public class HDT_WorkFile extends HDT_Record implements HDT_RecordWithPath
             (fileName.charAt(pos) == '_'))
           newName = newName + fileName.charAt(pos);
       }
-      
+
       fileName = "" + newName;
     }
-    
+
     if (db.prefs.getBoolean(PREF_KEY_FN_LOWERCASE, false))
       fileName = fileName.toLowerCase();
-    
+
     fileName = FilePath.removeInvalidFileNameChars(fileName);
-                
+
     int maxLen = db.prefs.getInt(PREF_KEY_FN_MAX_CHAR, 255);
     int extLen;
-    
+
     if (ext.length() > 0)
     {
       extLen = ext.length() + FilenameUtils.EXTENSION_SEPARATOR_STR.length();
       if ((fileName.length() + extLen) > maxLen)
         fileName = fileName.substring(0, (maxLen - extLen));
-      
+
       return fileName.trim() + FilenameUtils.EXTENSION_SEPARATOR_STR + ext;
     }
-    
+
     if (fileName.length() > maxLen)
       fileName = fileName.substring(0, maxLen);
-    
+
     return fileName.trim();
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   private static String getAuthorStr(List<FileNameAuthor> authors, boolean isEditor, boolean isTrans)
   {
     String authorStr, comp = "";
     int pos;
-    
+
     for (FileNameAuthor author : authors)
     {
       if (((author.isEditor == false) && (author.isTrans == false) && (isEditor == false) && (isTrans == false)) ||
@@ -204,15 +204,15 @@ public class HDT_WorkFile extends HDT_Record implements HDT_RecordWithPath
       {
         authorStr = "" + author.name;
         pos = authorStr.indexOf(',');
-        
+
         if (pos >= 0)
           authorStr = authorStr.substring(0, pos);
-        
+
         comp = comp.length() == 0 ? ("" + authorStr) : (comp + " " + authorStr);
       }
     }
-    
-    return comp;    
+
+    return comp;
   }
 
 //---------------------------------------------------------------------------
@@ -227,12 +227,12 @@ public class HDT_WorkFile extends HDT_Record implements HDT_RecordWithPath
     switch (config.code)
     {
       case AUTHOR_FN_COMPONENT :
-        
-        comp = getAuthorStr(authors, false, false);                
+
+        comp = getAuthorStr(authors, false, false);
         break;
-        
+
       case EDITOR_FN_COMPONENT :
-        
+
         if ((db.prefs.getBoolean(PREF_KEY_FN_TREAT_ED_AS_AUTHOR, true)) && (authConfig != null))
         {
           treatAsAuthor = true;
@@ -242,44 +242,44 @@ public class HDT_WorkFile extends HDT_Record implements HDT_RecordWithPath
               treatAsAuthor = false;
           }
         }
-        
+
         if (treatAsAuthor)
           config = authConfig;
-        
+
         comp = getAuthorStr(authors, true, false);
         break;
 
       case TRANS_FN_COMPONENT :
-        
+
         comp = getAuthorStr(authors, false, true);
         break;
 
       case TITLE_FN_COMPONENT :
-        
+
         comp = title;
         pos = indexOfAny(":?*|\"<>/\\", comp);
 
         if (pos >= 0)
           comp = comp.substring(0, pos);
-        
+
         break;
-               
+
       case YEAR_FN_COMPONENT :
-        
+
         comp = year;
         break;
-        
+
       default :
-        
+
         comp = "";
         break;
     }
-   
+
     comp = ultraTrim(comp).replace(" ", config.withinSep);
-    
+
     if (comp.length() > 0)
       comp = config.beforeSep + comp + config.afterSep;
-    
+
     return comp;
   }
 

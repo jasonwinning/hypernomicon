@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model;
@@ -33,7 +33,7 @@ public final class HDI_Schema
   private final List<Tag> tags;
   private final HyperDataCategory category;
   private final RelationType relType;
-  
+
 //---------------------------------------------------------------------------
 
   public final Tag getTag()                    { return tags.get(0); }
@@ -49,15 +49,15 @@ public final class HDI_Schema
     this.tags = Arrays.asList(tags);
     this.category = category;
     relType = rtNone;
-    
+
     switch (category)
     {
       case hdcPointerMulti : case hdcPointerSingle : case hdcPath : case hdcAuthors :
         messageDialog("Internal error #42009", mtError);
         break;
-        
+
       default : break;
-    }      
+    }
   }
 
 //---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.records;
@@ -37,24 +37,24 @@ public class HDT_Debate extends HDT_RecordWithConnector
   public HDT_Debate(HDT_RecordState xmlState, HyperDataset<HDT_Debate> dataset)
   {
     super(xmlState, dataset, tagName);
-    
+
     largerDebates = getObjList(rtParentDebateOfDebate);
-    
+
     subDebates = getSubjList(rtParentDebateOfDebate);
     positions = getSubjList(rtDebateOfPosition);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-   
+
   @Override public String listName()        { return name(); }
   @Override public HDT_RecordType getType() { return hdtDebate; }
   @Override public boolean isUnitable()     { return true; }
 
   public void setLargerDebates(List<HDT_Debate> list) { updateObjectsFromList(rtParentDebateOfDebate, list); }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
- 
+
 }

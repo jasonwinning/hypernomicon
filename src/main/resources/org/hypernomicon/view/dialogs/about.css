@@ -1,9 +1,9 @@
 .anchor-pane
 {
-  -fx-background-color: #241f24; 
+  -fx-background-color: #241f24;
 }
 
-.text-area 
+.text-area
 {
   -fx-background-color: transparent;
   -fx-text-fill: #906f6f;
@@ -16,7 +16,7 @@
 .tab
 {
   -fx-background-color: #241f24;
-  -fx-text-base-color: #906f6f;  
+  -fx-text-base-color: #906f6f;
 }
 
 .tab:selected
@@ -31,7 +31,7 @@
   -fx-font-size: 13px;
 }
 
-.text-area .scroll-pane 
+.text-area .scroll-pane
 {
   -fx-background-color: transparent;
 }

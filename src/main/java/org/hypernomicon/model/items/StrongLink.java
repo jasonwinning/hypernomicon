@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.items;
@@ -31,19 +31,19 @@ import org.hypernomicon.model.records.*;
 public class StrongLink
 {
   private boolean alreadyModifying = false;
-  
+
   Connector noteSpoke, conceptSpoke, debateSpoke, positionSpoke, labelSpoke;
   HDT_Hub hub = null;
-  
+
 //---------------------------------------------------------------------------
-  
+
   public StrongLink(HDT_Hub hub)
   {
     this.hub = hub;
   }
 
 //---------------------------------------------------------------------------
-  
+
   public HDT_Hub getHub()           { return hub; }
   public HDT_Note getNote()         { return (HDT_Note     ) nullSwitch(noteSpoke    , null, sp -> sp.getSpoke()); }
   public HDT_Concept getConcept()   { return (HDT_Concept  ) nullSwitch(conceptSpoke , null, sp -> sp.getSpoke()); }
@@ -58,7 +58,7 @@ public class StrongLink
   {
     if (db.runningConversion) return;
     if (alreadyModifying) return;
-    
+
     alreadyModifying = true;
 
     if (nonNull(hub))           hub.modifyNow();
@@ -66,7 +66,7 @@ public class StrongLink
     if (nonNull(conceptSpoke))  conceptSpoke.modifyNow();
     if (nonNull(debateSpoke))   debateSpoke.modifyNow();
     if (nonNull(positionSpoke)) positionSpoke.modifyNow();
-    if (nonNull(labelSpoke))    labelSpoke.modifyNow();    
+    if (nonNull(labelSpoke))    labelSpoke.modifyNow();
 
     alreadyModifying = false;
   }
@@ -77,16 +77,16 @@ public class StrongLink
   public Set<Connector> getSpokes()
   {
     Set<Connector> set = new LinkedHashSet<>();
-    
+
     for (HDT_RecordType cType : new HDT_RecordType[] { hdtDebate, hdtPosition, hdtConcept, hdtNote, hdtWorkLabel })
     {
       Connector spoke = getSpoke(cType);
       if (spoke != null) set.add(spoke);
     }
-    
+
     return set;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -99,11 +99,11 @@ public class StrongLink
       case hdtDebate :    return debateSpoke;
       case hdtConcept :   return conceptSpoke;
       case hdtWorkLabel : return labelSpoke;
-        
+
       default : return null;
     }
   }
-   
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -113,16 +113,16 @@ public class StrongLink
     StrongLink link = null;
     MainText mainText = null;
     int ndx;
-   
+
     if ((spoke1.getType() == hdtPosition) && (spoke2.getType() == hdtDebate))  // Sanity checks
       return falseWithErrorMessage("A position record and a problem/debate record cannot be linked together.");
     if ((spoke2.getType() == hdtPosition) && (spoke1.getType() == hdtDebate))
       return falseWithErrorMessage("A position record and a problem/debate record cannot be linked together.");
-    if (spoke1.getType() == spoke2.getType()) 
+    if (spoke1.getType() == spoke2.getType())
       return falseWithErrorMessage("Two records of the same type cannot be linked together.");
     if ((spoke1.getSpoke().isUnitable() == false) || (spoke2.getSpoke().isUnitable() == false))
       return falseWithErrorMessage("One or more of the records are not of a linkable type.");
-    
+
     Connector spokes[] = new Connector[2];
 
     if (spoke1.isLinked())
@@ -132,7 +132,7 @@ public class StrongLink
 
       link = spoke1.getLink();
       hub = link.hub;
-      
+
       if ((link.getPosition() != null) || (link.getDebate() != null))
         if ((spoke2.getType() == hdtPosition) || (spoke2.getType() == hdtDebate))
         {
@@ -160,10 +160,10 @@ public class StrongLink
 
     else
     {
-      hub = db.createNewBlankRecord(hdtHub);      
+      hub = db.createNewBlankRecord(hdtHub);
       link = hub.getLink();
     }
-    
+
     spokes[0] = spoke1;
     spokes[1] = spoke2;
 
@@ -180,15 +180,15 @@ public class StrongLink
         default : break;
       }
     }
-   
+
     mainText = new MainText(spoke1.getMainText(), spoke2.getMainText(), hub.getConnector(), newDesc);
-    
+
     db.replaceMainText(hub.getMainText(), mainText);
     hub.getConnector().mainText = mainText;
-    
+
     spoke1.link = link;
     spoke2.link = link;
-    
+
     if (spoke1.getSpoke().name().length() == 0)
       spoke1.getSpoke().setName(spoke2.getSpoke().name());
     else if (spoke2.getSpoke().name().length() == 0)
@@ -198,16 +198,16 @@ public class StrongLink
     {
       db.replaceMainText(spoke.mainText, mainText);
       spoke.mainText = mainText;
-      
+
       if (spoke.getType() == hdtWorkLabel)
         ((HDT_WorkLabel) spoke.getSpoke()).refreshSubjects();
     }
-    
+
     link.modifyNow();
-    
+
     return true;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -218,10 +218,10 @@ public class StrongLink
     int numSpokes = 0;
 
     if (hub == null) return false;
-      
+
     // check number of spokes
 
-    if (nonNull(conceptSpoke))  { numSpokes++; if (spokeType != hdtConcept)   otherSpoke = getSpoke(hdtConcept); }    
+    if (nonNull(conceptSpoke))  { numSpokes++; if (spokeType != hdtConcept)   otherSpoke = getSpoke(hdtConcept); }
     if (nonNull(positionSpoke)) { numSpokes++; if (spokeType != hdtPosition)  otherSpoke = getSpoke(hdtPosition); }
     if (nonNull(debateSpoke))   { numSpokes++; if (spokeType != hdtDebate)    otherSpoke = getSpoke(hdtDebate); }
     if (nonNull(noteSpoke))     { numSpokes++; if (spokeType != hdtNote)      otherSpoke = getSpoke(hdtNote); }
@@ -246,7 +246,7 @@ public class StrongLink
 
     firstSpoke.link = null;
     firstSpoke.mainText = new MainText(hub.getMainText(), firstSpoke);
-    
+
     // Done disconnecting, now need to disconnect other connector if only one left
 
     if (numSpokes > 2)  return true;

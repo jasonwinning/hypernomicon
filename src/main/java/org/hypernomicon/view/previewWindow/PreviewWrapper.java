@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.previewWindow;
@@ -59,7 +59,7 @@ public class PreviewWrapper
     public List<Integer> navList;
     public int navNdx;
   }
-  
+
   private FilePath filePathShowing = null;
   private int fileNdx, pageNum = -1, pageNumShowing = -1, workStartPageNum = -1, workEndPageNum = -1, numPages = 0;
   private PreviewSource src;
@@ -74,7 +74,7 @@ public class PreviewWrapper
   private PreviewFile curPrevFile;
   private ToggleButton btn;
   private AnchorPane ap;
-  
+
   public PreviewSource getSource()      { return src; }
   public int getPageNum()               { return pageNum; }
   public int getNumPages()              { return numPages; }
@@ -87,29 +87,29 @@ public class PreviewWrapper
   public HDT_RecordWithPath getRecord() { return curPrevFile == null ? null : curPrevFile.record; }
   public ToggleButton getToggleButton() { return btn; }
   FilePath getFilePathShowing()         { return filePathShowing; }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public PreviewWrapper(PreviewSource src, AnchorPane ap, Tab tab, ToggleButton btn, PreviewWindow window)
-  {     
+  {
     this.src = src;
     this.tab = tab;
     this.window = window;
     this.btn = btn;
     this.ap = ap;
-    
+
     fileList = new ArrayList<>();
     fileNdx = -1;
-           
+
     btn.selectedProperty().addListener((observable, oldValue, newValue) ->
     {
       if (newValue) window.tpPreview.getSelectionModel().select(tab);
     });
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @SuppressWarnings("unused")
   private void doneHndlr(PDFJSCommand cmd, boolean success, String errMessage)
@@ -117,143 +117,143 @@ public class PreviewWrapper
     switch (cmd)
     {
       case pjsOpen:
-                 
+
         if (curPrevFile == null) return;
-        
+
         numPages = jsWrapper.getNumPages();
-        Platform.runLater(() -> 
-        {          
+        Platform.runLater(() ->
+        {
           if (curPrevFile != null)
             if (curPrevFile.navNdx == -1) incrementNav();
-          
-          refreshControls(); 
+
+          refreshControls();
         });
-        
+
         break;
-        
+
       case pjsClose:
-        
+
         viewerClear = true;
         break;
-        
+
       default :
     }
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void pageChangeHndlr(int newPageNumShowing)
-  { 
+  {
     pageNumShowing = newPageNumShowing;
-    
+
     if (pageNum == pageNumShowing) return;
 
     pageNum = pageNumShowing;
-    
+
     incrementNav();
-    
+
     if (window.curSource() == src)
       Platform.runLater(this::refreshControls);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void retrievedDataHndlr(Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel, List<Integer> hilitePages)
   {
     this.labelToPage = labelToPage;
     this.pageToLabel = pageToLabel;
     this.hilitePages = hilitePages;
-    
+
     if (window.curSource() == src)
-      Platform.runLater(this::refreshControls);    
+      Platform.runLater(this::refreshControls);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void initJS()
   {
     if (App.jxBrowserDisabled)
       return;
-    
-    jsWrapper = new PDFJSWrapper(ap, 
+
+    jsWrapper = new PDFJSWrapper(ap,
         (cmd, success, errMessage)              -> doneHndlr(cmd, success, errMessage),
         (newPageNumShowing)                     -> pageChangeHndlr(newPageNumShowing),
         (labelToPage, pageToLabel, hilitePages) -> retrievedDataHndlr(labelToPage, pageToLabel, hilitePages));
-    
+
     if (App.jxBrowserDisabled)
       return;
-    
-    initialized = true;
-    viewerClear = false;    
-  }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
 
-  public void setWorkPageNums(int start, int end) 
-  { 
+    initialized = true;
+    viewerClear = false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void setWorkPageNums(int start, int end)
+  {
     workStartPageNum = start;
     workEndPageNum = end;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void go()
   {
     if (curPrevFile == null) return;
-    
+
     if (curPrevFile.record != null)
       ui.goToRecord(curPrevFile.record, true);
     else if (curPrevFile.filePath != null)
       ui.goToRecord(HyperPath.getFileFromFilePath(curPrevFile.filePath), true);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public boolean enableNavButton(boolean isForward)
   {
     if (curPrevFile == null) return false;
-    
+
     if (isForward)
       return (curPrevFile.navNdx + 1) < curPrevFile.navList.size();
 
     return curPrevFile.navNdx >= 1;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public boolean enableFileNavButton(boolean isForward)
   {
     if (isForward)
       return (fileNdx + 1) < fileList.size();
-    
+
     return fileNdx >= 1;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private boolean addMenuItem(ObservableList<MenuItem> menu, int ndx)
   {
     menu.add(getMenuItemForNavNdx(ndx));
-    
-    return menu.size() == 15;   
+
+    return menu.size() == 15;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void refreshNavMenu(ObservableList<MenuItem> menu, boolean isForward)
   {
     menu.clear();
     if (curPrevFile == null) return;
-    
+
     if (isForward)
     {
       for (int ndx = curPrevFile.navNdx + 1; ndx < curPrevFile.navList.size(); ndx++)
@@ -263,49 +263,49 @@ public class PreviewWrapper
     {
       for (int ndx = curPrevFile.navNdx - 1; ndx >= 0; ndx--)
         if (addMenuItem(menu, ndx)) return;
-    }    
+    }
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private MenuItem getMenuItemForNavNdx(int ndx)
   {
     MenuItem item;
     int page = curPrevFile.navList.get(ndx);
     String pageLabel = safeStr(getLabelByPage(page)), pageStr = String.valueOf(page);
-    
-    if ((pageLabel.length() > 0) && (pageLabel.equals(pageStr) == false)) 
+
+    if ((pageLabel.length() > 0) && (pageLabel.equals(pageStr) == false))
       item = new MenuItem("Page " + pageLabel + " (" + pageStr + ")");
     else
       item = new MenuItem("Page " + pageStr);
-    
+
     item.setOnAction(event ->
     {
       curPrevFile.navNdx = ndx;
       setPreview(page, false);
     });
-    
+
     return item;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void navClick(boolean isForward)
   {
     if (enableNavButton(isForward) == false) return;
-    
+
     if (isForward)
       curPrevFile.navNdx++;
     else
       curPrevFile.navNdx--;
-    
+
     setPreview(curPrevFile.navList.get(curPrevFile.navNdx), false);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void fileNavClick(boolean isForward)
   {
@@ -313,16 +313,16 @@ public class PreviewWrapper
       fileNdx++;
     else
       fileNdx--;
-    
+
     PreviewFile prevFile = fileList.get(fileNdx);
-    
+
     int pageNum =  prevFile.navNdx < 0 ? 1 : prevFile.navList.get(prevFile.navNdx);
-    
+
     setPreview(prevFile.filePath, pageNum, prevFile.record, false, prevFile);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void clearPreview()
   {
@@ -333,45 +333,45 @@ public class PreviewWrapper
     workEndPageNum = -1;
     curPrevFile = null;
     fileNdx = -1;
-    
+
     if (window.curSource() == src) window.clearControls();
-    
+
     if (initialized == false) return;
-    
+
     if (initialized)
       if (viewerClear == false)
-        jsWrapper.close();    
-    
+        jsWrapper.close();
+
     if (window.curSource() == src)
       needsRefresh = false;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void setPreview(FilePath filePath, int pageNum, HDT_Base record)
   {
     setPreview(filePath, pageNum, record, true, null);
   }
-  
+
   private void setPreview(FilePath filePath, int pageNum, HDT_Base record, boolean incrementNav, PreviewFile prevFile)
   {
     boolean fileChanged = true;
-    
+
     if (record != null)
       if ((record.getType() != hdtWork) && (record.getType() != hdtMiscFile))
         record = null;
-    
+
     if (getRecord() == record)
       if (FilePath.isEmpty(getFilePath()) == false)
         if (curPrevFile.filePath.equals(filePath))
         {
           fileChanged = false;
-          
+
           if (this.pageNum == pageNum)
             return;
         }
-    
+
     if (fileChanged)
     {
       if (prevFile != null)
@@ -379,22 +379,22 @@ public class PreviewWrapper
       else
       {
         curPrevFile = new PreviewFile();
-        
+
         curPrevFile.filePath = filePath;
         curPrevFile.record = (HDT_RecordWithPath)record;
         curPrevFile.navList = new ArrayList<>();
         curPrevFile.navNdx = -1;
-          
+
         fileNdx++;
         while (fileList.size() > fileNdx)
           fileList.remove(fileNdx);
-        
+
         fileList.add(curPrevFile);
       }
     }
-    
+
     this.pageNum = pageNum;
-    
+
     if (filePath == null)
       clearPreview();
     else if ((window.curSource() == src) && window.getStage().isShowing())
@@ -403,37 +403,37 @@ public class PreviewWrapper
     {
       if ((window.curSource() == src) && contentsWindow.getStage().isShowing())
         refreshControls();
-      
+
       needsRefresh = true;
-    }      
+    }
   }
 
-  //---------------------------------------------------------------------------  
-  //---------------------------------------------------------------------------   
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
   public void setPreview(int pageNum, boolean incrementNav)
   {
     setPreview(getFilePath(), pageNum, getRecord(), incrementNav, null);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void refreshControls()
-  {   
+  {
     FilePath filePath = getFilePath();
-    
+
     if ((pageNum <= 0) || FilePath.isEmpty(filePath) || viewerErrOccurred || (filePath.exists() == false))
     {
       clearPreview();
       return;
     }
-    
-    window.refreshControls(pageNum, numPages, filePath, getRecord());    
+
+    window.refreshControls(pageNum, numPages, filePath, getRecord());
   }
 
-  //---------------------------------------------------------------------------  
-  //---------------------------------------------------------------------------   
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
   private void finishRefresh(boolean forceReload, boolean incrementNav)
   {
@@ -442,13 +442,13 @@ public class PreviewWrapper
       clearPreview();
       return;
     }
-    
+
     viewerErrOccurred = false;
-    
+
     if (forceReload || (curPrevFile.filePath.equals(filePathShowing) == false))
     {
       MediaType mimetype = getMediaType(curPrevFile.filePath);
-      
+
       if (mimetype.toString().contains("html") ||
           mimetype.toString().contains("openxmlformats-officedocument") ||
           mimetype.toString().contains("pdf")  ||
@@ -459,18 +459,18 @@ public class PreviewWrapper
       {
         filePathShowing = null;
         pageNumShowing = -1;
-             
+
         window.clearControls();
         needsRefresh = false;
-        
+
         viewerClear = false;
 
         if (viewerErrOccurred) return;
-        
+
         labelToPage = null;
         pageToLabel = null;
         hilitePages = null;
-        
+
         if (mimetype.toString().contains("pdf"))
           jsWrapper.loadPdf(curPrevFile.filePath, pageNum);
         else if (mimetype.toString().contains("openxmlformats-officedocument"))
@@ -480,9 +480,9 @@ public class PreviewWrapper
             DocumentConverter converter = new DocumentConverter();
             Result<String> result = converter.convertToHtml(curPrevFile.filePath.toFile());
             String html = result.getValue(); // The generated HTML
-            
+
             result.getWarnings().forEach(msg -> System.out.println(msg));
-            
+
             jsWrapper.loadHtml(html);
           }
           catch (IOException e)
@@ -492,66 +492,66 @@ public class PreviewWrapper
         }
         else
           jsWrapper.loadFile(curPrevFile.filePath);
-        
+
         filePathShowing = curPrevFile.filePath;
         pageNumShowing = -1;
-               
+
         return;
       }
       else
       {
         clearPreview();
         return;
-      }      
+      }
     }
-      
+
     if (pageNum != pageNumShowing)
     {
       jsWrapper.goToPage(pageNum);
     }
-    
+
     if (incrementNav)
       incrementNav();
-    
-    refreshControls();    
+
+    refreshControls();
   }
 
-  //---------------------------------------------------------------------------  
-  //---------------------------------------------------------------------------   
-  
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
   public void refreshPreview(boolean forceReload, boolean incrementNav)
-  {            
+  {
     if (initialized == false)
       initJS();
-    
+
     if (window.disablePreviewUpdating) return;
-    
+
     needsRefresh = false;
-    
+
     if (forceReload)
       jsWrapper.reloadBrowser(() -> Platform.runLater(() -> finishRefresh(forceReload, incrementNav)));
     else
       finishRefresh(forceReload, incrementNav);
   }
 
-  //---------------------------------------------------------------------------  
-  //---------------------------------------------------------------------------   
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
   private void incrementNav()
   {
     curPrevFile.navNdx++;
-    
+
     while (curPrevFile.navList.size() > curPrevFile.navNdx)
       curPrevFile.navList.remove(curPrevFile.navNdx);
-    
+
     curPrevFile.navList.add(pageNum);
-    
+
     // Now remove adjacent duplicates
-    
+
     Iterator<Integer> it = curPrevFile.navList.iterator();
     int ndx = 0;
     int prevPage = -1;
-    
+
     while (it.hasNext())
     {
       int page = it.next();
@@ -568,31 +568,31 @@ public class PreviewWrapper
       }
     }
   }
-  
-  //---------------------------------------------------------------------------  
-  //---------------------------------------------------------------------------   
 
-  public int getPageByLabel(String label)   
-  { 
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  public int getPageByLabel(String label)
+  {
     if ((labelToPage == null) || labelToPage.isEmpty())
       return parseInt(label, -1);
-        
+
     return labelToPage.getOrDefault(label, -1);
   }
 
-  //---------------------------------------------------------------------------  
-  //---------------------------------------------------------------------------   
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
-  public String getLabelByPage(int page)    
-  { 
+  public String getLabelByPage(int page)
+  {
     if ((pageToLabel == null) || pageToLabel.isEmpty())
       return String.valueOf(page);
-    
+
     return pageToLabel.getOrDefault(page, "");
   }
-  
-  //---------------------------------------------------------------------------  
-  //---------------------------------------------------------------------------   
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
   public void updatePage(int newPageNum)
   {
@@ -601,12 +601,12 @@ public class PreviewWrapper
     if (curPrevFile == null) return;
     if (curPrevFile.filePath == null) return;
     if (newPageNum > numPages) return;
-    
+
     setPreview(curPrevFile.filePath, newPageNum, curPrevFile.record);
   }
-   
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void setWorkPageFromContentsWindow(int pageNum, boolean isStart)
   {
@@ -616,22 +616,22 @@ public class PreviewWrapper
       workEndPageNum = pageNum;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public boolean setCurPageAsWorkPage(boolean isStart)
   {
     if ((curPrevFile == null) || (curPrevFile.record == null) || (curPrevFile.record.getType() != hdtWork))
       return false;
-    
+
     if (isStart)
       workStartPageNum = pageNum;
     else
       workEndPageNum = pageNum;
-    
+
     HDT_Work work = (HDT_Work) curPrevFile.record;
     HDT_WorkFile workFile = (HDT_WorkFile) HyperPath.getFileFromFilePath(curPrevFile.filePath);
-    
+
     if (isStart)
       work.setStartPageNum(workFile, pageNum);
     else
@@ -640,92 +640,92 @@ public class PreviewWrapper
     if (ui.currentTab().getTabEnum() == TabEnum.workTab)
       if (ui.currentTab().activeRecord() == curPrevFile.record)
         WorkTabController.class.cast(ui.currentTab()).setPageNum(workFile, pageNum, isStart);
-        
+
     contentsWindow.update(workFile, pageNum, true);
-    
+
     return true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public int lowestHilitePage()
   {
     return collEmpty(hilitePages) ? -1 : hilitePages.get(0);
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public int highestHilitePage()
   {
     return collEmpty(hilitePages) ? -1 : hilitePages.get(hilitePages.size() - 1);
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public int getPrevHilite(int curPage)
   {
     if (collEmpty(hilitePages)) return -1;
-    
+
     int newPage = -1;
-    
+
     for (Integer page : hilitePages)
       if (page < curPage)
         if (page > newPage)
           newPage = page;
-      
+
     return newPage;
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public int getNextHilite(int curPage)
   {
     if (collEmpty(hilitePages)) return -1;
-    
+
     int newPage = numPages + 1;
-    
+
     for (Integer page : hilitePages)
       if (page > curPage)
         if (page < newPage)
           newPage = page;
-      
+
     return newPage > numPages ? -1 : newPage;
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   void cleanup(Runnable disposeHndlr)
-  {   
+  {
     if (initialized)
       jsWrapper.cleanup(disposeHndlr);
     else
       disposeHndlr.run();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   void prepareToHide()
   {
     if (initialized)
       jsWrapper.prepareToHide();
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   void prepareToShow()
   {
     if (initialized)
       jsWrapper.prepareToShow();
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

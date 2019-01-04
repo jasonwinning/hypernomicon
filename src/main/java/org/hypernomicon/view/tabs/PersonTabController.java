@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.tabs;
@@ -96,7 +96,7 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
 public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 {
@@ -133,128 +133,128 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
   public FilePath curPicture = null;
   private Rectangle2D viewPort = null;
   private HDT_Person lastPerson = null;
-  
+
   private HyperCB hcbRank, hcbStatus, hcbField, hcbSubfield;
-  
+
   private HDT_Person curPerson;
   private boolean alreadyChangingName = false;
- 
+
   @Override public HDT_RecordType getType()             { return hdtPerson; }
   @Override public void enable(boolean enabled)         { ui.tabPersons.getContent().setDisable(enabled == false); }
   @Override public void focusOnSearchKey()              { safeFocus(tfSearchKey); }
   @Override public void setRecord(HDT_Person person)    { curPerson = person; }
   @Override public MainTextWrapper getMainTextWrapper() { return mainText; }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
- 
-  @Override public void rescale() 
-  { 
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void rescale()
+  {
     ivPerson.setFitHeight(ivPerson.getFitHeight() * displayScale);
     ivPerson.setFitWidth(ivPerson.getFitWidth() * displayScale);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public boolean update()
-  {   
+  {
     alreadyChangingName = true;
-    
+
     tfFirst.setText(curPerson.getFirstName());
     tfLast.setText(curPerson.getLastName());
-    
+
     alreadyChangingName = false;
-    
+
     tfORCID.setText(curPerson.getOrcID());
     tfPersonLink.setText(curPerson.getWebLink());
     tfSearchKey.setText(curPerson.getSearchKey());
-       
+
     curPicture = curPerson.getPath().getFilePath();
     viewPort = curPerson.getViewPort();
     refreshPicture();
 
     hcbRank.addAndSelectEntry(curPerson.rank, HDT_Base::name);
     hcbStatus.addAndSelectEntry(curPerson.status,  HDT_Base::name);
-    
+
     mainText.loadFromRecord(curPerson, true, getView().getTextInfo());
-       
+
     if (curPerson.field.isNotNull())
     {
       hcbField.addAndSelectEntry(curPerson.field, HDT_Base::name);
       hcbSubfield.selectID(curPerson.subfield.getID());
-    }    
-  
+    }
+
     htPersonInst.buildRows(curPerson.institutions, (row, inst) ->
     {
       if (inst.parentInst.isNotNull())
         row.setCellValue(1, inst.parentInst.get(), inst.parentInst.get().name());
-      
+
       row.setCellValue(2, inst, inst.name());
     });
-    
+
     HashSet<HDT_Base> topicRecordsAdded = new HashSet<>();
-    
+
     curPerson.works.forEach(work ->
     {
 // Populate the debates
 // --------------------
-      
+
       for (HDT_Argument argument : work.arguments)
         if (htArguments.containsRecord(argument) == false)
-          if (addArgToTopicTable(argument, topicRecordsAdded, emptySet(), emptySet()))          
-            topicRecordsAdded.add(work);          
+          if (addArgToTopicTable(argument, topicRecordsAdded, emptySet(), emptySet()))
+            topicRecordsAdded.add(work);
 
 // Populate the works
 // ------------------
-     
+
       if (htWorks.containsRecord(work) == false)
       {
         HyperTableRow row = htWorks.newDataRow();
         row.setCellValue(0, work, work.getYear(), HyperCellSortMethod.hsmNumeric);
-        
+
         String typeName = "";
-        
+
         HDT_WorkType workType = work.workType.get();
-        
+
         if (workType != null)
           typeName = work.workType.get().listName();
-        
+
         typeName = HDT_Work.addFileIndicator(typeName, work);
-                
+
         row.setCellValue(1, workType == null ? -1 : workType.getID(), typeName, hdtWorkType);
-        
+
         String roleText = "";
         if (work.personIsEditor(curPerson)) roleText = "Ed";
         if (work.personIsTranslator(curPerson)) roleText = roleText.length() == 0 ? "Tr" : roleText + ", Tr";
-        
+
         row.setCellValue(2, work, roleText);
-        
+
         row.setCellValue(3, work.investigations.isEmpty() ? -1 : work.investigations.get(0).getID(), work.getInvText(curPerson), hdtInvestigation);
 
         row.setCellValue(4, work, work.name());
-        
+
         if (work.getAuthors().size() > 1)
         {
           ArrayList<Author> authors = new ArrayList<>();
           int authorID = -1;
-          
+
           for (Author author : work.getAuthors())
             if (curPerson != author.getPerson())
             {
               authors.add(author);
-              
+
               if ((authorID == -1) && (author.getPerson() != null))
                 authorID = author.getPerson().getID();
             }
-          
+
           row.setCellValue(5, authorID, Authors.getShortAuthorsStr(authors, false, true), hdtPerson);
         }
       }
     });
-      
+
     curPerson.miscFiles.forEach(file ->
-    {      
+    {
       if (htWorks.containsRecord(file) == false)
       {
         HyperTableRow row = htWorks.newDataRow();
@@ -270,29 +270,29 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
         row.setCellValue(4, file, file.name());
       }
     });
-    
+
  // Add topic records to be populated to sets
  // -----------------------------------------
-    
+
     Set<MainText> displayers = db.getDisplayers(curPerson.getMainText());
     LinkedHashSet<HDT_Argument> argsToAdd = new LinkedHashSet<>();
     LinkedHashSet<HDT_Position> posToAdd = new LinkedHashSet<>();
     LinkedHashSet<HDT_Base> otherToAdd = new LinkedHashSet<>();
-    
+
     displayers.forEach(displayerText ->
     {
       HDT_RecordWithConnector displayer = displayerText.getRecord();
-           
+
       if (displayer.getType() == hdtHub)
       {
         StrongLink link = HDT_Hub.class.cast(displayer).getLink();
-        
+
         if      (link.getDebate  () != null) displayer = link.getDebate();
         else if (link.getPosition() != null) displayer = link.getPosition();
         else if (link.getConcept () != null) displayer = link.getConcept();
         else                                 displayer = link.getNote();
       }
-      
+
       if (topicRecordsAdded.contains(displayer) == false)
       {
         switch (displayer.getType())
@@ -303,16 +303,16 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
         }
       }
     });
-    
+
     curPerson.works.forEach(work -> addMentioners(work, argsToAdd, posToAdd, otherToAdd, topicRecordsAdded));
 
     curPerson.miscFiles.forEach(file -> addMentioners(file, argsToAdd, posToAdd, otherToAdd, topicRecordsAdded));
-    
+
  // Populate the topic records from sets
  // ------------------------------------
-    
+
     argsToAdd.forEach(arg -> addArgToTopicTable(arg, topicRecordsAdded, posToAdd, otherToAdd));
-    
+
     posToAdd.forEach(pos -> { if (topicRecordsAdded.contains(pos) == false)
     {
       HyperTableRow row = htArguments.newDataRow();
@@ -320,19 +320,19 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       row.setCellValue(0, pos, pos.listName());
       topicRecordsAdded.add(pos);
     }});
-    
+
     otherToAdd.forEach(topic -> { if (topicRecordsAdded.contains(topic) == false)
     {
       if (topic == curPerson) return;
-      
+
       HyperTableRow row = htArguments.newDataRow();
       addOtherToTopicTable(topic, row);
-      row.setCellValue(0, topic, topic.listName());        
+      row.setCellValue(0, topic, topic.listName());
       topicRecordsAdded.add(topic);
     }});
-    
-    curPerson.investigations.forEach(this::addInvView);  
-   
+
+    curPerson.investigations.forEach(this::addInvView);
+
     if (curPerson != lastPerson)
     {
       htWorks.getTV().getSortOrder().clear();
@@ -342,24 +342,24 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     {
       ArrayList<TableColumn<HyperTableRow, ?>> list = new ArrayList<>();
       list.addAll(htWorks.getTV().getSortOrder());
-      
+
       htWorks.getTV().getSortOrder().clear();
       htWorks.getTV().getSortOrder().addAll(list);
     }
 
     setDefaultWorkPreview();
-    
+
     lastPerson = curPerson;
-    
+
     safeFocus(tfLast);
-       
+
     return true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-  private void setDefaultWorkPreview() 
+  private void setDefaultWorkPreview()
   {
     if (curPerson.works.isEmpty())
     {
@@ -369,11 +369,11 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
           previewWindow.setPreview(pvsPersonTab, miscFile.getPath().getFilePath(), -1, -1, miscFile);
           return;
         }
-      
+
       previewWindow.setPreview(pvsPersonTab, null, -1, -1, null);
       return;
     }
-    
+
     for (HDT_Work work : curPerson.works)
       if (work.workFiles.isEmpty() == false)
       {
@@ -382,30 +382,30 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       }
 
     HDT_Work work = curPerson.works.get(0);
-    previewWindow.setPreview(pvsPersonTab, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);   
+    previewWindow.setPreview(pvsPersonTab, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void addMentioners(HDT_RecordWithPath mentioned, Set<HDT_Argument> argsToAdd, Set<HDT_Position> posToAdd, Set<HDT_Base> otherToAdd, HashSet<HDT_Base> topicRecordsAdded)
-  {    
+  {
     Consumer<HDT_WorkLabel> consumer = label ->
     {
       if ((label.isLinked() == false) && (topicRecordsAdded.contains(label) == false))
-        otherToAdd.add(label);      
+        otherToAdd.add(label);
     };
-    
+
     if      (mentioned.getType() == hdtWork    ) HDT_Work    .class.cast(mentioned).labels.forEach(consumer);
     else if (mentioned.getType() == hdtMiscFile) HDT_MiscFile.class.cast(mentioned).labels.forEach(consumer);
 
     Set<HDT_RecordWithConnector> mentioners = db.getKeyWorkMentioners(mentioned);
     if (mentioners == null) return;
-    
+
     mentioners.forEach(mentioner ->
     {
       StrongLink link = mentioner.getLink();
-      
+
       if (link != null)
       {
         if      (link.getDebate  () != null) mentioner = link.getDebate();
@@ -413,7 +413,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
         else if (link.getConcept () != null) mentioner = link.getConcept();
         else                                 mentioner = link.getNote();
       }
-      
+
       if (topicRecordsAdded.contains(mentioner) == false)
       {
         switch (mentioner.getType())
@@ -423,18 +423,18 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
           default :          otherToAdd.add(mentioner); break;
         }
       }
-    }); 
+    });
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private boolean addArgToTopicTable(HDT_Argument argument, HashSet<HDT_Base> topicRecordsAdded, Set<HDT_Position> posToAdd, Set<HDT_Base> otherToAdd)
   {
-    if (topicRecordsAdded.contains(argument)) return false;    
-    
-    ArrayList<HDT_Position> positions = new ArrayList<>();    
-    
+    if (topicRecordsAdded.contains(argument)) return false;
+
+    ArrayList<HDT_Position> positions = new ArrayList<>();
+
     if (argument.positions.size() > 0)
     {
       argument.positions.forEach(position ->
@@ -442,20 +442,20 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
         if (argument.isInFavor(position))
           positions.add(position);
       });
-      
+
       if (positions.isEmpty())
         positions.addAll(argument.positions);
-      
+
       positions.forEach(position ->
       {
         HyperTableRow row = htArguments.newDataRow();
         addPosToTopicTable(position, row, otherToAdd);
         posToAdd.remove(position);
-        
+
         row.setCellValue(0, argument, argument.listName());
-        
+
         nullSwitch(argument.getPosVerdict(position), verdict -> row.setCellValue(3, argument, verdict.listName()));
-          
+
         row.setCellValue(4, argument, argument.listName());
       });
     }
@@ -463,23 +463,23 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     {
       HyperTableRow row = htArguments.newDataRow();
       row.setCellValue(0, argument, argument.listName());
-      
+
       nullSwitch(argument.getDebate(), debate ->
       {
         addOtherToTopicTable(debate, row);
-        otherToAdd.remove(debate);               
+        otherToAdd.remove(debate);
       });
-            
+
       row.setCellValue(4, argument, argument.listName());
     }
-    
+
     topicRecordsAdded.add(argument);
-    
+
     return true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void addPosToTopicTable(HDT_Position position, HyperTableRow row, Set<HDT_Base> otherToAdd)
   {
@@ -488,60 +488,60 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     nullSwitch(position.getDebate(), debate ->
     {
       addOtherToTopicTable(debate, row);
-      otherToAdd.remove(debate); 
+      otherToAdd.remove(debate);
     });
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void addOtherToTopicTable(HDT_Base displayer, HyperTableRow row)
-  {    
+  {
     if (displayer.getType() == hdtWorkLabel)
       row.setCellValue(1, displayer, HDT_WorkLabel.class.cast(displayer).getExtendedText());
     else
       row.setCellValue(1, displayer, displayer.listName());
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void refreshPicture()
   {
     Image picture = null;
-    
+
     if (FilePath.isEmpty(curPicture) == false)
     {
       picture = new Image(curPicture.toURI().toString());
       if (!picture.isError())
       {
-        ivPerson.setImage(picture);      
-        ivPerson.setViewport(viewPort);      
+        ivPerson.setImage(picture);
+        ivPerson.setViewport(viewPort);
         lblPicture.setVisible(false);
         return;
       }
     }
-      
+
     ivPerson.setImage(null);
     lblPicture.setVisible(true);
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public void clear()
   {
     alreadyChangingName = true;
-    
+
     tfFirst.clear();
     tfLast.clear();
-    
+
     alreadyChangingName = false;
-    
+
     tfPersonLink.clear();
     tfORCID.clear();
     tfSearchKey.clear();
-    
+
     if (db.isLoaded() && (FilePath.isEmpty(curPicture) == false))
       if (curPicture.exists())
       {
@@ -549,7 +549,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
         if (set.isEmpty())
           db.fileNoLongerInUse(curPicture);
       }
-    
+
     curPicture = null;
     ivPerson.setImage(null);
     viewPort = null;
@@ -559,48 +559,48 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     hcbStatus.clear();
     hcbField.clear();
     hcbSubfield.clear();
-    
+
     mainText.clear(true);
-    
+
     htPersonInst.clear();
     htWorks.clearKeepSortOrder();
     htArguments.clear();
-    
+
     invViews.removeIf(iV ->
     {
       tpPerson.getTabs().remove(iV.tab);
-      return true;      
+      return true;
     });
-    
+
     if ((curPerson != lastPerson) || (curPerson == null))
       htWorks.getTV().getSortOrder().clear();
   }
-   
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public boolean saveToRecord(boolean showMessage)
   {
     int ndx, subfieldID;
     boolean noDelete;
-    HDT_Subfield subfield;    
-     
+    HDT_Subfield subfield;
+
     if (!saveSearchKey(curPerson, tfSearchKey, showMessage)) return false;
-       
+
     if (FilePath.isEmpty(curPicture))
       curPerson.getPath().assign(db.folders.getByID(HyperDB.PICTURES_FOLDER_ID), new FilePath(""));
     else
       curPerson.getPath().assign(db.folders.getByID(HyperDB.PICTURES_FOLDER_ID), curPicture.getNameOnly());
-    
+
     curPerson.setViewPort(viewPort);
-    
+
     // Save investigations
     // -----------------------------------------------------------------
-    
+
     for (InvestigationView iV : invViews)
     {
       HDT_Investigation inv = db.investigations.getByID(iV.id);
-      
+
       try
       {
         inv.setSearchKey(iV.tfSearchKey.getText());
@@ -611,7 +611,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
           messageDialog("Unable to modify investigation \"" + iV.tfName.getText() + "\": search key must be at least 3 characters.", mtError);
         else
           messageDialog("Unable to modify investigation \"" + iV.tfName.getText() + "\": search key already exists.", mtError);
-        
+
         tpPerson.getSelectionModel().select(iV.tab);
         safeFocus(iV.tfSearchKey);
         return false;
@@ -620,10 +620,10 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       inv.setName(iV.tfName.getText());
       iV.textWrapper.saveToRecord(inv);
     }
-       
+
     // Now delete the unused investigations
     // ------------------------------------
-    
+
     for (ndx = 0; ndx < curPerson.investigations.size(); ndx++)
     {
       noDelete = false;
@@ -634,35 +634,35 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
         if (iV.id == inv.getID())
           noDelete = true;
       }
-      
+
       if (noDelete == false)
       {
         db.deleteRecord(hdtInvestigation, inv.getID());
         ndx--;
-      }      
+      }
     }
-    
+
     // End of save investigations
     // ----------------------------------------------------------------------------------------------------
-    
+
     PersonName personName = new PersonName(tfFirst.getText(), tfLast.getText());
-    
-    if ((personName.getFirst().equalsIgnoreCase(curPerson.getFirstName()) == false) || 
+
+    if ((personName.getFirst().equalsIgnoreCase(curPerson.getFirstName()) == false) ||
         (personName.getLast().equalsIgnoreCase(curPerson.getLastName()) == false))
       if (saveNameToRecord(personName) == false) return false;
-    
+
     curPerson.setWebLink(tfPersonLink.getText());
     curPerson.setORCID(tfORCID.getText());
     curPerson.rank.setID(hcbRank.selectedID());
     curPerson.field.setID(hcbField.selectedID());
     curPerson.status.setID(hcbStatus.selectedID());
-    
+
     curPerson.setInstitutions(htPersonInst.saveToList(2, hdtInstitution));
-    
+
     mainText.save();
-    
+
  // save subfield
-   
+
     subfieldID = hcbSubfield.selectedID();
     if ((subfieldID < 1) && (hcbField.selectedID() > 0))
     {
@@ -674,28 +674,28 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
         subfield.field.setID(hcbField.selectedID());
       }
     }
-   
+
     if ((subfieldID > 0) && (hcbField.selectedID() > 0))
       curPerson.subfield.setID(subfieldID);
     else
       curPerson.subfield.setID(-1);
-       
+
     // Now delete the unused subfields
-    for (ndx = 0; ndx < db.subfields.size(); ndx++) 
-    { 
+    for (ndx = 0; ndx < db.subfields.size(); ndx++)
+    {
       subfield = db.subfields.getByIDNdx(ndx);
-      if (subfield.persons.isEmpty()) 
-      { 
-        db.deleteRecord(hdtSubfield, subfield.getID()); 
+      if (subfield.persons.isEmpty())
+      {
+        db.deleteRecord(hdtSubfield, subfield.getID());
         ndx--;
-      } 
+      }
     }
-    
+
     return true;
-  }  
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private boolean saveNameToRecord(PersonName personName)
   {
@@ -703,45 +703,45 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     {
       curPerson.setName(personName);
       return true;
-    }    
-    
+    }
+
     List<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
-    
+
     HyperTask task = NewPersonDialogController.createDupCheckTask(singletonList(personName), singletonList(new Author(curPerson)), matchedAuthorsList, null);
-    
+
     if (!HyperTask.performTaskWithProgressDialog(task)) return false;
-    
+
     ArrayList<Author> matchedAuthors = matchedAuthorsList.get(0);
-    
+
     if (matchedAuthors.size() > 0)
     {
       NewPersonDialogController npdc = NewPersonDialogController.create(personName, tfSearchKey.getText(), true, curPerson, null, matchedAuthors);
-      
+
       if (npdc.showModal() == false) return false;
     }
     else
     {
       curPerson.setName(personName);
     }
-    
+
     return true;
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
 
-  @Override protected void init(TabEnum tabEnum) 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected void init(TabEnum tabEnum)
   {
     this.tabEnum = tabEnum;
     mainText = new MainTextWrapper(apOverview);
-    
-    PopulatorFilter popFilter = record -> 
+
+    PopulatorFilter popFilter = record ->
     {
       HDT_Institution inst = (HDT_Institution)record;
-      
+
       return (inst.subInstitutions.size() > 0) || inst.parentInst.isNull();
     };
-    
+
     htPersonInst = new HyperTable(tvPersonDept, 2, true, PREF_KEY_HT_PERSON_INST);
 
     htPersonInst.addActionCol(ctGoNewBtn, 1);
@@ -754,23 +754,23 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
     htPersonInst.addRemoveMenuItem();
     htPersonInst.addChangeOrderMenuItem(true);
-    
+
     htWorks = new HyperTable(tvWorks, 4, false, PREF_KEY_HT_PERSON_WORKS);
-    
+
     htWorks.addCol(hdtNone, ctNone);
     htWorks.addCol(hdtWorkType, ctNone);
     htWorks.addCol(hdtNone, ctNone);
     htWorks.addCol(hdtInvestigation, ctInvSelect);
     htWorks.addCol(hdtWork, ctNone);
     htWorks.addCol(hdtPerson, ctNone);
-    
+
     tvWorks.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
       if (newValue == null) return;
       if (oldValue == newValue) return;
-      
+
       HDT_RecordWithPath record = newValue.getRecord();
-            
+
       if (record == null)
         setDefaultWorkPreview();
       else if (record.getType() == hdtWork)
@@ -779,143 +779,143 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
         previewWindow.setPreview(pvsPersonTab, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
       }
       else
-        previewWindow.setPreview(pvsPersonTab, record.getPath().getFilePath(), -1, -1, record);        
+        previewWindow.setPreview(pvsPersonTab, record.getPath().getFilePath(), -1, -1, record);
     });
-    
+
     htArguments = new HyperTable(tvArguments, 4, false, PREF_KEY_HT_PERSON_ARG);
-    
+
     htArguments.addIconCol();
     htArguments.addCol(hdtNone, ctNone);
     htArguments.addCol(hdtPosition, ctNone);
     htArguments.addCol(hdtNone, ctNone);      // record type = hdtNone so that the column will sort purely based on the displayed text
     htArguments.addCol(hdtArgument, ctNone);
-    
+
     hcbRank = new HyperCB(cbRank, ctDropDownList, new StandardPopulator(hdtRank), null);
     hcbStatus = new HyperCB(cbStatus, ctDropDownList, new StandardPopulator(hdtPersonStatus), null);
     hcbField = new HyperCB(cbField, ctDropDownList, new StandardPopulator(hdtField), null);
     hcbSubfield = new HyperCB(cbSubfield, ctDropDown, new SubjectPopulator(rtFieldOfSubfield, false), null);
 
     tfFirst.setTooltip(new Tooltip("To indicate what name the person informally goes by, write it in parentheses. For example, \"William (Bill)\""));
-    
+
     tfFirst.textProperty().addListener((observable, oldValue, newValue) ->
     {
       if (alreadyChangingName) return;
-      updateSearchKey(new PersonName(newValue, tfLast.getText()), false); 
+      updateSearchKey(new PersonName(newValue, tfLast.getText()), false);
     });
-    
+
     UnaryOperator<TextFormatter.Change> filter = (change) ->
     {
       if (alreadyChangingName) return change;
-      
+
       if (change.getText().length() > 1)
       {
         if ((tfFirst.getText().length() == 0) && (change.getControlText().length() == 0))
         {
           alreadyChangingName = true;
           String newText = change.getControlNewText();
-                    
+
           PersonName personName = new PersonName(newText);
-          
+
           tfFirst.setText(personName.getFirst());
-          
+
           change.setRange(0, change.getControlText().length());
-          change.setText(personName.getLast());           
-                    
+          change.setText(personName.getLast());
+
           alreadyChangingName = false;
           updateSearchKey(personName, false);
           return change;
         }
       }
-      
+
       if (change.isContentChange())
         updateSearchKey(new PersonName(tfFirst.getText(), change.getControlNewText()), false);
-      
+
       return change;
     };
-         
-    tfLast.setTextFormatter(new TextFormatter<>(filter));    
-       
-    cbField.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> 
-    {    
+
+    tfLast.setTextFormatter(new TextFormatter<>(filter));
+
+    cbField.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    {
       if (newValue == null) return;
-      
+
       if (HyperTableCell.getCellID(oldValue) != HyperTableCell.getCellID(newValue))
       {
         ((SubjectPopulator)hcbSubfield.getPopulator()).setObj(null, getRecord(newValue));
-        if (HyperTableCell.getCellID(oldValue) > 0) 
+        if (HyperTableCell.getCellID(oldValue) > 0)
           hcbSubfield.selectID(-1);
       }
     });
-    
+
     lblSearchKey.setTooltip(new Tooltip("Regenerate search key"));
-    
+
     lblSearchKey.setOnMouseClicked(event -> lblSearchKeyClick());
-    
+
     lblPersonLink.setOnMouseClicked(event -> openWebLink(tfPersonLink.getText()));
-    
+
     tpPerson.getSelectionModel().selectedItemProperty().addListener((o, ov, nv) -> tpPersonChange(ov, nv));
-    
+
     lblORCID.setOnMouseClicked(event -> searchORCID(tfORCID.getText(), tfFirst.getText(), tfLast.getText()));
-    
-    btnGoogle.setOnAction(event -> searchGoogle(tfFirst.getText() + " " + tfLast.getText() + " " + HyperTableCell.getCellText(cbField.getSelectionModel().getSelectedItem()), true));  
+
+    btnGoogle.setOnAction(event -> searchGoogle(tfFirst.getText() + " " + tfLast.getText() + " " + HyperTableCell.getCellText(cbField.getSelectionModel().getSelectedItem()), true));
     btnScholar.setOnAction(event -> btnScholarClick());
-    
+
     invViews = new ArrayList<InvestigationView>();
 
     ivPerson.setOnMouseClicked(event ->
     {
       PictureDialogController ctrlr = PictureDialogController.create("Edit Picture", viewPort, this);
-      
+
       if (ctrlr.showModal())
         viewPort = ctrlr.getViewPort();
-      
+
       PictureDialogController.httpClient.stop();
       refreshPicture();
     });
-    
+
     initWorkContextMenu();
     initArgContextMenu();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void btnScholarClick()
   {
     String first1 = ultraTrim(removeFirstParenthetical(tfFirst.getText())),
            last = ultraTrim(tfLast.getText());
-    
+
     int ndx = first1.indexOf(' ');
-    
+
     if (ndx < 0)
     {
       searchScholar(first1 + " " + last, "", "");
       return;
     }
-    
+
     String first3 = String.valueOf(first1.charAt(0));
-    
+
     for (; ndx >= 0; ndx = first1.indexOf(' ', ndx + 1))
       first3 = first3 + String.valueOf(first1.charAt(ndx + 1));
-    
+
     first3 = first3.toUpperCase();
 
     String first2 = ultraTrim(first1.replaceAll("^[^\\s]\\.", "")
                                     .replaceAll("\\s[^\\s]\\.", ""));
-    
+
     ndx = first2.indexOf(' ');
     if (ndx >=0)
       first2 = first2.substring(0, ndx);
-    
+
     PopupDialog dlg = new PopupDialog("How should the name be phrased? Initials often works well with Google Scholar.");
-    
+
     dlg.addButton(first1 + " " + last, mrYes);
     dlg.addButton(first2 + " " + last, mrNo);
     dlg.addButton(first3 + " " + last, mrOk);
     dlg.addButton("Cancel", mrCancel);
-    
+
     DialogResult result = dlg.showModal();
-    
+
     switch (result)
     {
       case mrYes : searchScholar(first1 + " " + last, "", ""); break;
@@ -925,19 +925,19 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     }
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void lblSearchKeyClick()
   {
     updateSearchKey(new PersonName(tfFirst.getText(), tfLast.getText()), true);
   }
-  
+
   private void updateSearchKey(PersonName personName, boolean overwrite)
   {
     if (db.isLoaded() == false) return;
     if (curPerson == null) return;
-    
+
     if (overwrite == false)
       if (curPerson.getSearchKey().length() > 0) return;
 
@@ -946,48 +946,48 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     tfSearchKey.setText(sb.toString());
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void initArgContextMenu()
   {
-    for (HDT_RecordType type : new HDT_RecordType[] { hdtArgument, hdtPosition,      hdtDebate, 
-                                                      hdtTerm,     hdtNote,          hdtWork, 
+    for (HDT_RecordType type : new HDT_RecordType[] { hdtArgument, hdtPosition,      hdtDebate,
+                                                      hdtTerm,     hdtNote,          hdtWork,
                                                       hdtMiscFile, hdtInvestigation, hdtPerson })
     {
       htArguments.addContextMenuItem(db.getTypeName(type) + " Record...", type.getRecordClass(), record -> ui.goToRecord(record, true));
-    }    
+    }
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void initWorkContextMenu()
   {
     RecordListView.addDefaultMenuItems(htWorks);
-    
-    htWorks.addContextMenuItem("Go to work record", HDT_Work.class, 
+
+    htWorks.addContextMenuItem("Go to work record", HDT_Work.class,
       work -> ui.goToRecord(work, true));
-    
-    htWorks.addContextMenuItem("Go to file record", HDT_MiscFile.class, 
+
+    htWorks.addContextMenuItem("Go to file record", HDT_MiscFile.class,
       miscFile -> ui.goToRecord(miscFile, true));
-    
-    htWorks.addContextMenuItem("Assign investigations", HDT_Work.class, 
+
+    htWorks.addContextMenuItem("Assign investigations", HDT_Work.class,
       work -> showInvSelectDialog(htWorks.getRowByRecord(work)));
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void showInvSelectDialog(HyperTableRow row)
   {
     if (row.getRecord().getType() != hdtWork) return;
-    
+
     HDT_Work work = row.getRecord();
     HDT_Person curPerson = (HDT_Person) ui.activeRecord();
-    
+
     InvestigationsDialogController dlg = InvestigationsDialogController.create("Assign investigations - " + work.name(), work, curPerson);
-    
+
     if (dlg.showModal() == false)
       return;
 
@@ -1010,13 +1010,13 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       PersonTabController personTabCtrlr = HyperTab.getHyperTab(TabEnum.personTab);
       personTabCtrlr.addInvView(inv);
     }
-    
-    HyperTableCell newValue = new HyperTableCell(work.investigations.isEmpty() ? -1 : work.investigations.get(0).getID(), work.getInvText(curPerson), hdtInvestigation); 
+
+    HyperTableCell newValue = new HyperTableCell(work.investigations.isEmpty() ? -1 : work.investigations.get(0).getID(), work.getInvText(curPerson), hdtInvestigation);
     row.setCellValue(3, newValue);
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   class InvestigationView
   {
@@ -1027,19 +1027,19 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     public Tab tab;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void deleteInvestigation(Event event)
   {
     InvestigationView view = null;
     Tab tab;
     int invID;
-    
+
     if (confirmDialog("Are you sure you want to delete the investigation?"))
     {
       tab = (Tab) event.getSource();
-      
+
       for (InvestigationView iV : invViews)
       {
         if (iV.tab.equals(tab))
@@ -1048,58 +1048,58 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
           break;
         }
       }
-      
+
       if (view == null) return;
-      
+
       if (view.id < 1)
         return;           // this is the only scenario where the event is allowed to continue propagating
-      
+
       invID = view.id;
-      
+
       if (ui.cantSaveRecord(true))
       {
         event.consume();
         return;
       }
-      
+
       Iterator<InvestigationView> it = invViews.iterator();
-      
+
       while (it.hasNext())
       {
         view = it.next();
-        
+
         if (view.id == invID)
         {
           event.consume();
           it.remove();
           tpPerson.getTabs().remove(view.tab);
-          
+
           ui.btnSaveClick();
           return;
         }
       }
     }
-    
-    event.consume();   
+
+    event.consume();
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public InvestigationView addInvView(HDT_Investigation inv)
   {
     String newName = "", newSearchKey = "";
     InvestigationView iV = new InvestigationView();
-    
+
     iV.id = inv.getID();
     newName = inv.listName();
     newSearchKey = inv.getSearchKey();
-  
+
     iV.tab = new Tab();
     iV.tfName = new TextField(newName);
     iV.tab.setText(newName);
     iV.tfSearchKey = new TextField(newSearchKey);
-    
+
     iV.tab.setOnCloseRequest(this::deleteInvestigation);
 
     BorderPane bPane = new BorderPane();
@@ -1107,7 +1107,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
     GridPane gPane = new GridPane();
     gPane.add(new Label("Investigation name:"), 0, 0); // column=2 row=1
-    bPane.setTop(gPane);      
+    bPane.setTop(gPane);
     gPane.add(iV.tfName, 1, 0);
     gPane.add(new Label("Search key:"), 2, 0);
     gPane.add(iV.tfSearchKey, 3, 0);
@@ -1124,29 +1124,29 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     gPane.getColumnConstraints().add(cc4);
 
     gPane.setHgap(3);
-    
+
     iV.textWrapper = new MainTextWrapper(aPane);
     bPane.setCenter(aPane);
-    
-    iV.textWrapper.loadFromRecord(inv, false, new TextViewInfo()); 
-    
+
+    iV.textWrapper.loadFromRecord(inv, false, new TextViewInfo());
+
     iV.tfName.textProperty().addListener((observable, oldText, newText) -> iV.tab.setText(newText));
-    
+
     iV.tab.setContent(bPane);
     tpPerson.getTabs().add(tpPerson.getTabs().size() - 1, iV.tab);
-    
+
     invViews.add(iV);
-    
+
     return iV;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void tpPersonChange(Tab oldValue, Tab newValue)
   {
     InvestigationView iV = null;
-       
+
     if (oldValue == tabOverview)
       mainText.hide();
     else if (oldValue != tabNew)
@@ -1154,11 +1154,11 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       for (InvestigationView view : invViews)
         if (view.tab == oldValue)
           iV = view;
-      
+
       if (iV != null)
         iV.textWrapper.hide();
     }
-    
+
     if (newValue == tabNew)
     {
       HDT_Investigation inv = db.createNewBlankRecord(hdtInvestigation);
@@ -1166,59 +1166,59 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
       iV = addInvView(inv);
       tpPerson.getSelectionModel().select(iV.tab);
-      
+
       final InvestigationView finalIV = iV;
       Platform.runLater(finalIV.tfName::requestFocus);
     }
     else if (newValue == tabOverview)
     {
       htWorks.clearFilter();
-      mainText.showReadOnly();     
+      mainText.showReadOnly();
     }
     else
     {
       for (InvestigationView view : invViews)
         if (view.tab == newValue)
           iV = view;
-      
+
       if (iV == null) return;
-      
+
       if (iV.id < 1)
         htWorks.clearFilter();
       else
       {
         final HDT_Investigation inv = db.investigations.getByID(iV.id);
 
-        htWorks.setFilter(row -> 
+        htWorks.setFilter(row ->
         {
           HDT_Base record = row.getRecord();
           if ((record == null) || (record.getType() != hdtWork)) return false;
-          
+
           return HDT_Work.class.cast(record).investigations.contains(inv);
         });
-        db.investigations.getByID(iV.id).viewNow(); 
+        db.investigations.getByID(iV.id).viewNow();
       }
-      
+
       iV.textWrapper.showReadOnly();
     }
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void newInstClick(HyperTableRow row, String newName, int colNdx)
   {
     HDT_Institution subInst;
     HDT_Institution parentInst = null;
- 
+
     if (ui.cantSaveRecord(true)) return;
-        
+
     HDT_Institution oldParent = row.getRecord(1);
     if ((newName.length() > 0) && (colNdx == 1))
       oldParent = null;
-    
+
     NewInstDialogController newInstDialog = NewInstDialogController.create("New Institution or Institutional Division", oldParent, newName, colNdx == 1);
-    
+
     if (newInstDialog.showModal())
     {
       if (newInstDialog.rbNew.isSelected())
@@ -1236,22 +1236,22 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       subInst.parentInst.set(parentInst);
       subInst.setName(newInstDialog.tfName.getText());
       subInst.instType.setID(newInstDialog.hcbType.selectedID());
-      
+
       subInst.setCity(parentInst.getCity());
       subInst.state.set(parentInst.state.get());
       subInst.country.set(parentInst.country.get());
 
       curPerson.institutions.add(subInst);
-      
-      if (newInstDialog.rbNew.isSelected()) 
+
+      if (newInstDialog.rbNew.isSelected())
         ui.goToRecord(parentInst, false);
       else
         ui.update();
     }
-  } 
+  }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void showInvestigation(int id)
   {
@@ -1266,20 +1266,20 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     }
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public MainTextWrapper getInvMainTextWrapper(int id)
   {
     for (InvestigationView iV : invViews)
       if (iV.id == id)
         return iV.textWrapper;
-    
+
     return null;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public void newClick(HDT_RecordType objType, HyperTableRow row)
   {
@@ -1288,15 +1288,15 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       case hdtInstitution :
         newInstClick(row, "", -1);
         break;
-        
+
       default:
         break;
     }
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private void btnNewWorkClick()
   {
     if (ui.cantSaveRecord(true)) return;
@@ -1306,26 +1306,26 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     work.getAuthors().add(curPerson);
 
     ui.goToRecord(work, false);
-    
+
     WorkTabController workCtrlr = HyperTab.getHyperTab(workTab);
-    
+
     if (workCtrlr.showWorkDialog(null) == false)
       ui.deleteCurrentRecord(false);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public void findWithinDesc(String text)
   {
     Tab tab = tpPerson.getSelectionModel().getSelectedItem();
-    
+
     if (tab.equals(tabOverview))
     {
       mainText.hilite(text);
       return;
     }
-    
+
     for (InvestigationView iV : invViews)
       if (iV.tab.equals(tab))
       {
@@ -1333,17 +1333,17 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
         return;
       }
   }
-  
-//---------------------------------------------------------------------------  
+
 //---------------------------------------------------------------------------
-  
+//---------------------------------------------------------------------------
+
   @Override public TextViewInfo getMainTextInfo()
   {
     Tab tab = tpPerson.getSelectionModel().getSelectedItem();
-    
+
     if (tab.equals(tabOverview))
       return mainText.getViewInfo();
-    
+
     for (InvestigationView iV : invViews)
       if (iV.tab.equals(tab))
         return iV.textWrapper.getViewInfo();
@@ -1351,7 +1351,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     return new TextViewInfo();
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void setDividerPositions()
@@ -1361,7 +1361,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     setDividerPosition(spVert, PREF_KEY_PERSON_BOTTOM_VERT, 1);
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void getDividerPositions()
@@ -1369,9 +1369,9 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     getDividerPosition(spTopHoriz, PREF_KEY_PERSON_TOP_HORIZ, 0);
     getDividerPosition(spVert, PREF_KEY_PERSON_MID_VERT, 0);
     getDividerPosition(spVert, PREF_KEY_PERSON_BOTTOM_VERT, 1);
-  }  
+  }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -36,16 +36,16 @@ public class MergeSpokeDialogController extends HyperDialog
   @FXML private WebView view1;
   @FXML private WebView view2;
   @FXML private HTMLEditor he3;
-  
+
   private String mainText1, mainText2;
-   
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override protected boolean isValid() { return true; }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static MergeSpokeDialogController create(String title, HDT_RecordWithConnector record1, HDT_RecordWithConnector record2)
   {
@@ -54,29 +54,29 @@ public class MergeSpokeDialogController extends HyperDialog
     return msd;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void init(HDT_RecordWithConnector record1, HDT_RecordWithConnector record2)
-  {   
+  {
     rbDesc1.setText(db.getTypeName(record1.getType()));
     rbDesc2.setText(db.getTypeName(record2.getType()));
 
     mainText1 = record1.getMainText().getHtml();
     mainText2 = record2.getMainText().getHtml();
-    
+
     view1.getEngine().loadContent(makeLinksExternal(getHtmlEditorText(mainText1).replace("contenteditable=\"true\"", "contentEditable=\"false\"")));
     view2.getEngine().loadContent(makeLinksExternal(getHtmlEditorText(mainText2).replace("contenteditable=\"true\"", "contentEditable=\"false\"")));
-    
+
     if (extractTextFromHTML(mainText1).trim().length() == 0)
       if (extractTextFromHTML(mainText2).trim().length() > 0)
         rbDesc2.setSelected(true);
-    
+
     he3.setHtmlText(MainTextController.disableLinks(getHtmlEditorText("")));
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public String getDesc()
   {
@@ -88,7 +88,7 @@ public class MergeSpokeDialogController extends HyperDialog
       return MainTextController.getHtmlFromEditor(he3.getHtmlText());
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

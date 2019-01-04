@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.records;
@@ -46,80 +46,80 @@ public class HDT_Folder extends HDT_Record implements HDT_RecordWithPath
 
   private final HyperPath path;
   private boolean checkedForExistence;
-  
+
   public HDT_Folder(HDT_RecordState xmlState, HyperDataset<HDT_Folder> dataset)
   {
     super(xmlState, dataset, tagName); // tagName is not actually used; name should always be blank
-    
+
     checkedForExistence = false;
-    
-    childFolders = getSubjList(rtParentFolderOfFolder);    
+
+    childFolders = getSubjList(rtParentFolderOfFolder);
     miscFiles = getSubjList(rtFolderOfMiscFile);
     workFiles = getSubjList(rtFolderOfWorkFile);
     notes = getSubjList(rtFolderOfNote);
-    
+
     HyperObjPointer<HDT_Folder, HDT_Folder> parentFolder = getObjPointer(rtParentFolderOfFolder);
     path = new HyperPath(parentFolder, this);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public HyperPath getPath()      { return path; }    
+  @Override public HyperPath getPath()      { return path; }
   @Override public String name()            { return path.getNameStr(); }
   @Override public String getCBText()       { return path.getNameStr(); }
-  @Override public String listName()        { return path.getNameStr(); }  
+  @Override public String listName()        { return path.getNameStr(); }
   @Override public void expire()            { path.clear(); super.expire(); }
   @Override public HDT_RecordType getType() { return hdtFolder; }
 
-//---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
-  
+//---------------------------------------------------------------------------
+
   public boolean renameTo(String newName)
   {
     if (getID() == HyperDB.ROOT_FOLDER_ID)
       return falseWithErrorMessage("Unable to rename the folder: Root folder cannot be renamed.");
-    
+
     if (path.getParentFolder() == null)
       return falseWithErrorMessage("Unable to rename the folder: parent folder record is null.");
-    
+
     FilePath srcFilePath = path.getFilePath();
-    
+
     if (srcFilePath.exists() == false)
       return falseWithErrorMessage("Unable to rename the folder: it does not exist.");
-    
+
     FilePath parentFilePath = path.getParentFolder().path.getFilePath();
-    
+
     if (parentFilePath.exists() == false)
       return falseWithErrorMessage("Unable to rename the folder: parent folder does not exist.");
-        
+
     FilePath destFilePath = parentFilePath.resolve(new FilePath(newName));
-    
+
     if (destFilePath.exists())
       return falseWithErrorMessage("Unable to rename the folder: a file or folder already has that name.");
-    
+
     folderTreeWatcher.stop();
-    
+
     try
     {
-      if (srcFilePath.anyOpenFilesInDir()) 
+      if (srcFilePath.anyOpenFilesInDir())
       {
         App.folderTreeWatcher.createNewWatcherAndStart();
         return false;
       }
-      
-      srcFilePath.renameDirectory(destFilePath);      
-    } 
+
+      srcFilePath.renameDirectory(destFilePath);
+    }
     catch (IOException e)
     {
       folderTreeWatcher.createNewWatcherAndStart();
-      return falseWithErrorMessage("Unable to rename the folder: " + e.getMessage()); 
+      return falseWithErrorMessage("Unable to rename the folder: " + e.getMessage());
     }
-    
+
     db.unmapFilePath(srcFilePath);
     setNameInternal(newName, true);
     path.assign(path.getParentFolder(), new FilePath(newName));
-    
+
     switch (getID())
     {
       case HyperDB.BOOKS_FOLDER_ID :     db.prefs.put(PREF_KEY_BOOKS_PATH,      newName); break;
@@ -131,120 +131,120 @@ public class HDT_Folder extends HDT_Record implements HDT_RecordWithPath
       case HyperDB.UNENTERED_FOLDER_ID : db.prefs.put(PREF_KEY_UNENTERED_PATH,  newName); break;
       default :                                                                           break;
     }
-    
+
     folderTreeWatcher.createNewWatcherAndStart();
-    
+
     return true;
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   // singleCall means that this function isn't being called repeatedly; just a one-off
-  
+
   public boolean delete(boolean singleCall)
   {
     if (HyperDB.isProtectedRecord(getID(), getType()))
       return falseWithErrorMessage("The folder \"" + path.getFilePath() + "\" cannot be deleted.");
-    
+
     if (path.getParentFolder() == null)
       return falseWithErrorMessage("Unable to delete the folder \"" + path.getFilePath() + "\": parent folder record is null.");
-    
+
     FilePath filePath = path.getFilePath();
-    
+
     if (filePath.exists() == false)
       return falseWithErrorMessage("Unable to rename the folder \"" + path.getFilePath() + "\": it does not exist.");
 
     boolean restartWatcher = folderTreeWatcher.stop();
-    
+
     try
     {
-      if (filePath.anyOpenFilesInDir()) 
+      if (filePath.anyOpenFilesInDir())
       {
         App.folderTreeWatcher.createNewWatcherAndStart();
         return false;
       }
-      
+
       filePath.deleteDirectory(singleCall);
       db.unmapFilePath(filePath);
-    } 
+    }
     catch (IOException e)
     {
       folderTreeWatcher.createNewWatcherAndStart();
-      return falseWithErrorMessage("An error occurred while attempting to delete the folder \"" + path.getFilePath() + "\": " + e.getMessage()); 
+      return falseWithErrorMessage("An error occurred while attempting to delete the folder \"" + path.getFilePath() + "\": " + e.getMessage());
     }
-    
+
     deleteFolderRecordTree(this);
-    
+
     if (restartWatcher)
       folderTreeWatcher.createNewWatcherAndStart();
-    
+
     return true;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public static void deleteFolderRecordTree(HDT_Folder folder)
   {
     FilePath filePath = folder.getPath().getFilePath();
-    
+
     if (folder.childFolders.isEmpty() == false)
       folder.childFolders.forEach(HDT_Folder::deleteFolderRecordTree);
-    
+
     int folderID = folder.getID();
     if (folderID > 0)
       db.deleteRecord(hdtFolder, folderID);
-    
+
     db.unmapFilePath(filePath);
   }
-  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void checkExists()
   {
     if (checkedForExistence) return;
-    
+
     checkedForExistence = true;
-    
+
     if (getID() != HyperDB.ROOT_FOLDER_ID)
       if (path.getFilePath().exists() == false)
         if ((getID() < HyperDB.FIRST_USER_FOLDER_ID) || (path.getRecordsString().length() > 0))
           messageDialog("The folder: \"" + path.getFilePath() + "\" is referred to by one or more database records but cannot be found." + System.lineSeparator() + System.lineSeparator() +
                         "Next time, only use the Hypernomicon File Manager to make changes to move, rename, or delete database folders.", mtWarning);
-    
+
     childFolders.forEach(HDT_Folder::checkExists);
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public boolean containsFilesThatAreInUse()
   {
     if ((workFiles.size() > 0) || (miscFiles.size() > 0)) return true;
-    
+
     for (HDT_Folder childFolder : childFolders)
       if (childFolder.path.getRecordsString().length() > 0)
         return true;
-    
+
     return false;
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public boolean hasNoNonFolderRecordDependencies()
   {
     if ( ! (notes.isEmpty() && workFiles.isEmpty() && miscFiles.isEmpty())) return false;
-    
+
     for (HDT_Folder child : childFolders)
       if (child.hasNoNonFolderRecordDependencies() == false) return false;
-    
+
     return true;
   }
-  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }

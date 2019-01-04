@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -34,7 +34,7 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 public class NewDatabaseDialogController extends HyperDialog
 {
-  @FXML private Button btnOK; 
+  @FXML private Button btnOK;
   @FXML private Button btnCancel;
   @FXML private CheckBox cbInst;
   @FXML private CheckBox cbFields;
@@ -49,16 +49,16 @@ public class NewDatabaseDialogController extends HyperDialog
   @FXML private TextField tfTopicFolders;
   @FXML private TextField tfMiscFiles;
   @FXML private TextField tfResults;
-  
+
   private String newPath;
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override protected boolean isValid()
   {
     boolean success;
-    
+
     try
     {
       success              = new File(newPath + File.separator + tfPictures    .getText()).mkdirs();
@@ -73,17 +73,17 @@ public class NewDatabaseDialogController extends HyperDialog
     {
       return falseWithErrorMessage("An error occurred while trying to create the directories: " + e.getMessage());
     }
-    
+
     return success ? true : falseWithErrorMessage("An error occurred while trying to create the directories.");
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public EnumSet<HDT_RecordType> getChoices()
   {
     EnumSet<HDT_RecordType> choices = EnumSet.noneOf(HDT_RecordType.class);
-    
+
     if (cbCountries.isSelected()) choices.add(hdtCountry);
 
     if (cbFields.isSelected())
@@ -96,12 +96,12 @@ public class NewDatabaseDialogController extends HyperDialog
     if (cbRanks.isSelected())     choices.add(hdtRank);
     if (cbStates.isSelected())    choices.add(hdtState);
     if (cbStatus.isSelected())    choices.add(hdtPersonStatus);
-        
+
     return choices;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static NewDatabaseDialogController create(String title, String newPath)
   {
@@ -110,8 +110,8 @@ public class NewDatabaseDialogController extends HyperDialog
     return ndd;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void init(String newPath)
   {
@@ -122,29 +122,29 @@ public class NewDatabaseDialogController extends HyperDialog
     tfMiscFiles   .setText(DEFAULT_MISC_FILES_PATH);
     tfResults     .setText(DEFAULT_RESULTS_PATH);
     tfTopicFolders.setText(DEFAULT_TOPICAL_PATH);
-    
+
     this.newPath = newPath;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public HashMap<String, String> getFolders()
   {
     HashMap<String, String> folders = new HashMap<>();
-    
+
     folders.put(PREF_KEY_PICTURES_PATH  , tfPictures    .getText());
     folders.put(PREF_KEY_BOOKS_PATH     , tfBooks       .getText());
     folders.put(PREF_KEY_PAPERS_PATH    , tfPapers      .getText());
     folders.put(PREF_KEY_UNENTERED_PATH , tfUnentered   .getText());
     folders.put(PREF_KEY_MISC_FILES_PATH, tfMiscFiles   .getText());
     folders.put(PREF_KEY_RESULTS_PATH   , tfResults     .getText());
-    folders.put(PREF_KEY_TOPICAL_PATH   , tfTopicFolders.getText()); 
-    
+    folders.put(PREF_KEY_TOPICAL_PATH   , tfTopicFolders.getText());
+
     return folders;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

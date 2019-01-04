@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.mainText;
@@ -107,7 +107,7 @@ public class MainTextController
   @FXML private AnchorPane anchorPane;
   @FXML private GridPane gridPane;
   @FXML private HiddenSidesPane hsPane;
-  
+
   private HyperCB hcbType, hcbName, hcbKeyType, hcbKeyName;
   private HDT_RecordWithConnector curRecord;
   BooleanProperty prop = null;
@@ -117,31 +117,31 @@ public class MainTextController
 
   public List<DisplayItem> getDisplayItems() { return lvRecords.getItems(); }
   public boolean isEmpty()                   { return getHtmlAndKeyWorks(new ArrayList<KeyWork>()).trim().length() == 0; }
-  
+
   public int getScrollPos()    { return nullSwitch(getWebView(), 0, webView -> MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
-  
+
   private void clearText()     { he.setHtmlText(disableLinks(getHtmlEditorText(""))); }
   private WebView getWebView() { return (WebView) he.lookup("WebView"); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear() 
-  { 
+  public void clear()
+  {
     taKeyWorks.clear();
     clearDisplayItems();
-    clearText(); 
+    clearText();
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void focus()                        
-  { 
+  public void focus()
+  {
     runDelayedInFXThread(5, 100, event ->
     {
       final WebView view = getWebView();
-      Platform.runLater(() -> 
+      Platform.runLater(() ->
       {
         view.fireEvent(new MouseEvent(MouseEvent.MOUSE_PRESSED, 15, 100, 200, 200, MouseButton.PRIMARY, 1, false, false, false, false, false, false, false, false, false, false, null));
         he.requestFocus();
@@ -152,162 +152,162 @@ public class MainTextController
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
- 
+
   @SuppressWarnings("restriction")
   public void init()
   {
     final WebView webview = getWebView();
     GridPane.setHgrow(webview, Priority.ALWAYS);
     GridPane.setVgrow(webview, Priority.ALWAYS);
-           
+
     RecordTypePopulator rtp = new RecordTypePopulator();
     EnumSet<HDT_RecordType> typeSet = EnumSet.noneOf(HDT_RecordType.class);
-    
+
     EnumSet.allOf(HDT_RecordType.class).forEach(type ->
     {
       if (type.hasConnector() && (type != hdtHub) && (type != hdtWorkLabel))
         typeSet.add(type);
     });
-    
+
     rtp.setTypes(typeSet);
-    
+
     hcbType = new HyperCB(cbType, ctDropDownList, rtp, null);
     hcbName = new HyperCB(cbName, ctDropDownList, new RecordByTypePopulator(), null);
-    
-    hcbType.getComboBox().getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> 
-    {    
+
+    hcbType.getComboBox().getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    {
       if (newValue == null) return;
-      
+
       HDT_RecordType oldType = HyperTableCell.getCellType(oldValue),
                      newType = HyperTableCell.getCellType(newValue);
-      
+
       if (oldType != newType)
-      {        
+      {
         appPrefs.put(PREF_KEY_DISPLAY_RECORD_TYPE, db.getTypeTagStr(newType));
-        
+
         ((RecordByTypePopulator)hcbName.getPopulator()).setRecordType(dummyRow, newType);
-        if (oldType != hdtNone) 
+        if (oldType != hdtNone)
           hcbName.selectID(-1);
       }
     });
-       
+
     rtp = new RecordTypePopulator();
     rtp.setTypes(EnumSet.of(hdtWork, hdtMiscFile));
-    
+
     hcbKeyType = new HyperCB(cbKeyType, ctDropDownList, rtp, null);
     hcbKeyName = new HyperCB(cbKeyName, ctDropDownList, new RecordByTypePopulator(), null);
-    
+
     Background bg = new Background(new BackgroundFill(Color.SLATEBLUE, null, null));
-    
+
     hsPane.setBackground(bg);
-    
+
     hsPane.setTriggerDistance(32.0);
-    
+
     prop = new SimpleBooleanProperty();
     prop.bind(cbType.focusedProperty().or(cbName.focusedProperty()));
-    
-    prop.addListener((observable, oldValue, newValue) -> 
+
+    prop.addListener((observable, oldValue, newValue) ->
     {
       if (newValue)
         hsPane.setPinnedSide(Side.RIGHT);
       else
       {
         hsPane.setPinnedSide(null);
-        
+
         com.sun.glass.ui.Robot robot = com.sun.glass.ui.Application.GetApplication().createRobot();
         int x = robot.getMouseX(), y = robot.getMouseY();
-        
+
         Bounds bounds = hsPane.getBoundsInLocal();
         Bounds screenBounds = hsPane.localToScreen(bounds);
-        
+
         if (screenBounds == null) return;
-        
+
         if (screenBounds.contains(x, y) == false)
           hsPane.hide();
       }
     });
-    
+
     hcbKeyType.getComboBox().getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
       if (newValue == null) return;
-      
+
       if (HyperTableCell.getCellType(oldValue) != HyperTableCell.getCellType(newValue))
       {
         ((RecordByTypePopulator)hcbKeyName.getPopulator()).setRecordType(dummyRow, HyperTableCell.getCellType(newValue));
-        if (HyperTableCell.getCellType(oldValue) != hdtNone) 
+        if (HyperTableCell.getCellType(oldValue) != hdtNone)
           hcbKeyName.selectID(-1);
-      }      
+      }
     });
-    
+
     lvRecords.setCellFactory(listView -> new ListCell<DisplayItem>()
     {
-      @Override public void updateItem(DisplayItem item, boolean empty) 
+      @Override public void updateItem(DisplayItem item, boolean empty)
       {
         super.updateItem(item, empty);
-        
+
         if (empty || item == null)
         {
           setText(null);
           return;
         }
-        
+
         switch (item.type)
         {
           case diDescription: setText("This record's description"); break;
           case diKeyWorks:    setText("Key works"); break;
-          case diRecord:      setText(db.getTypeName(item.record.getType()) + ": " + item.record.getCBText()); break;            
-          default:            setText(""); break;          
-        }        
-      }      
+          case diRecord:      setText(db.getTypeName(item.record.getType()) + ": " + item.record.getCBText()); break;
+          default:            setText(""); break;
+        }
+      }
     });
 
     btnMoveUp.setDisable(true);
     btnMoveDown.setDisable(true);
     btnRemove.setDisable(true);
     btnInsert.setDisable(true);
-    
+
     cbName.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
       btnInsert.setDisable(HyperTableCell.getRecord(newValue) == null);
     });
-    
+
     cbKeyName.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
       btnAdd.setDisable(HyperTableCell.getRecord(newValue) == null);
     });
-    
+
     lvRecords.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
-      if (newValue == null) 
+      if (newValue == null)
       {
         btnMoveUp.setDisable(true);
         btnMoveDown.setDisable(true);
         btnRemove.setDisable(true);
         return;
       }
-      
+
       btnMoveUp.setDisable(false);
       btnMoveDown.setDisable(false);
-      
+
       switch (newValue.type)
       {
         case diRecord:
           btnRemove.setDisable(false);
           break;
-          
+
         default:
           btnRemove.setDisable(true);
           break;
       }
     });
-    
-    btnMoveUp  .setOnAction(event -> btnMoveUpClick());    
-    btnMoveDown.setOnAction(event -> btnMoveDownClick());    
-    btnRemove  .setOnAction(event -> btnRemoveClick());    
+
+    btnMoveUp  .setOnAction(event -> btnMoveUpClick());
+    btnMoveDown.setOnAction(event -> btnMoveDownClick());
+    btnRemove  .setOnAction(event -> btnRemoveClick());
     btnInsert  .setOnAction(event -> btnInsertClick());
     btnAdd     .setOnAction(event -> btnAddClick());
     btnNew     .setOnAction(event -> btnNewClick());
-    
+
     webview.setOnContextMenuRequested(event ->
     {
       MenuItem menuItem1 = new MenuItem("Paste plain text");
@@ -315,28 +315,28 @@ public class MainTextController
 
       MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks");
       menuItem2.setOnAction(getPlainTextAction(true));
-      
+
       setHTMLContextMenu(menuItem1, menuItem2);
     });
-    
+
     he.setOnMouseClicked(Event::consume);
     he.setOnMousePressed(Event::consume);
     he.setOnMouseReleased(Event::consume);
-    
+
     ToolBar bar = (ToolBar) he.lookup(".top-toolbar");
-    
+
     Button btnLink = new Button("", getImageViewForRelativePath("resources/images/world_link.png"));
     btnLink.setTooltip(new Tooltip("Insert web link"));
     btnLink.setOnAction(event -> btnLinkClick());
-    
+
     Button btnClear = new Button("", getImageViewForRelativePath("resources/images/broom.png"));
     btnClear.setTooltip(new Tooltip("Clear"));
-    btnClear.setOnAction(event -> 
+    btnClear.setOnAction(event ->
     {
       clearText();
       safeFocus(he);
     });
-    
+
     Button btnEditLayout = new Button("", getImageViewForRelativePath("resources/images/document_insert.png"));
     btnEditLayout.setTooltip(new Tooltip("Edit layout"));
     btnEditLayout.setOnAction(event ->
@@ -344,7 +344,7 @@ public class MainTextController
       hsPane.show(Side.RIGHT, true);
       runDelayedInFXThread(5, 100, e -> cbType.requestFocus());
     });
-       
+
     bar.getItems().add(btnLink);
     bar.getItems().add(btnClear);
     bar.getItems().add(btnEditLayout);
@@ -353,7 +353,7 @@ public class MainTextController
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   private void btnNewClick()
   {
@@ -369,96 +369,96 @@ public class MainTextController
     keyWorks.add(keyWork);
     curRecord.getMainText().setKeyWorksFromList(keyWorks, true);
     ui.goToRecord(keyRecord, false);
-    
+
     if (keyType == hdtWork)
     {
       WorkTabController workCtrlr = HyperTab.getHyperTab(workTab);
-      
+
       if (workCtrlr.showWorkDialog(null) == false)
         ui.deleteCurrentRecord(false);
     }
     else
     {
       FileTabController fileCtrlr = HyperTab.getHyperTab(miscFileTab);
-      
+
       if (fileCtrlr.showFileDialog() == false)
         ui.deleteCurrentRecord(false);
     }
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   private void btnAddClick()
-  {  
+  {
     int keyID = hcbKeyName.selectedID();
     if (keyID < 1) return;
-    
+
     HDT_RecordType keyType = hcbKeyType.selectedType();
-    
+
     ArrayList<KeyWork> list = new ArrayList<>();
-    
+
     getKeyWorks(list);
-    
+
     for (KeyWork keyWork : list)
       if ((keyWork.getRecordID() == keyID) && (keyWork.getRecordType() == keyType))
         return;
-    
+
     KeyWork keyWork = new KeyWork((HDT_RecordWithPath) db.records(keyType).getByID(keyID));
-    
+
     String keyText = taKeyWorks.getText();
     if (keyText.length() == 0)
       keyText = keyWork.getEditorText();
     else
       keyText = keyText + ", " + keyWork.getEditorText();
-    
+
     taKeyWorks.setText(keyText);
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   private void btnMoveUpClick()
   {
     DisplayItem item = lvRecords.getSelectionModel().getSelectedItem();
-    
+
     if (item == null)
-    { 
+    {
       safeFocus(lvRecords);
       return;
     }
-    
+
     int ndx = lvRecords.getItems().indexOf(item);
     if (ndx == 0)
-    { 
+    {
       safeFocus(lvRecords);
       return;
     }
-    
+
     lvRecords.getItems().remove(ndx);
     lvRecords.getItems().add(ndx - 1, item);
     lvRecords.getSelectionModel().clearAndSelect(ndx - 1);
-    
+
     hsPane.requestLayout();
     safeFocus(lvRecords);
   }
-  
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   private void btnMoveDownClick()
   {
     DisplayItem item = lvRecords.getSelectionModel().getSelectedItem();
-    
+
     if (item == null)
-    { 
+    {
       safeFocus(lvRecords);
       return;
     }
-    
+
     int ndx = lvRecords.getItems().indexOf(item);
     if (ndx == lvRecords.getItems().size() - 1)
-    { 
+    {
       safeFocus(lvRecords);
       return;
     }
@@ -466,89 +466,89 @@ public class MainTextController
     lvRecords.getItems().remove(ndx);
     lvRecords.getItems().add(ndx + 1, item);
     lvRecords.getSelectionModel().clearAndSelect(ndx + 1);
-    
-    hsPane.requestLayout();
-    safeFocus(lvRecords);  
-  }
-  
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
 
-  private void btnRemoveClick()
-  {
-    DisplayItem item = lvRecords.getSelectionModel().getSelectedItem();
-    
-    if ((item != null) && (item.type == diRecord))
-      lvRecords.getItems().remove(item);
-      
     hsPane.requestLayout();
     safeFocus(lvRecords);
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+
+  private void btnRemoveClick()
+  {
+    DisplayItem item = lvRecords.getSelectionModel().getSelectedItem();
+
+    if ((item != null) && (item.type == diRecord))
+      lvRecords.getItems().remove(item);
+
+    hsPane.requestLayout();
+    safeFocus(lvRecords);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void btnInsertClick()
   {
-    HDT_RecordWithConnector record = HyperTableCell.getRecord(hcbName.selectedHTC());    
+    HDT_RecordWithConnector record = HyperTableCell.getRecord(hcbName.selectedHTC());
     if (record == null) return;
-    
+
     DisplayItem item = new DisplayItem(record);
     int ndx = lvRecords.getSelectionModel().getSelectedIndex();
     if (ndx == -1)
       lvRecords.getItems().add(item);
     else
       lvRecords.getItems().add(ndx, item);
-    
+
     hsPane.requestLayout();
-    
+
     safeFocus(lvRecords);
-    
+
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
-   
+//---------------------------------------------------------------------------
+
   private void btnLinkClick()
   {
     WebEngine engine = getWebView().getEngine();
-    
+
     String selText = (String) engine.executeScript("window.getSelection().rangeCount < 1 ? \"\" : window.getSelection().getRangeAt(0).toString()");
-    
+
     NewLinkDialogController dlg = NewLinkDialogController.create("Insert Link", convertToSingleLine(selText));
-    
+
     if (dlg.showModal() == false) return;
-              
+
     String urlText = dlg.tfURL.getText();
-    
+
     String anchorTag = "<a title=\"" + htmlEscaper.escape(urlText) + "\" href=\"" + urlText + "\">" + htmlEscaper.escape(dlg.tfDisplayText.getText()) + "</a>";
-       
+
     engine.executeScript("insertHtmlAtCursor('" + anchorTag + "')");
   }
-  
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   private EventHandler<ActionEvent> getPlainTextAction(boolean noCarriageReturns)
   {
     return event ->
     {
       String text = getClipboardText(noCarriageReturns);
-      
+
       if (text.length() == 0) return;
-      
+
       text =  htmlEscaper.escape(text);
-    
+
       if (noCarriageReturns == false)
       {
         text = text.replaceAll("\\R", "<br>")
                    .replaceAll("\\v", "<br>");
       }
-      
+
       getWebView().getEngine().executeScript("insertHtmlAtCursor('" + text + "')");
     };
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -557,7 +557,7 @@ public class MainTextController
     return hyperText.replace("<style>", "<script>\n" +
         "function insertHtmlAtCursor(html)\n" +
         "{\n" +
-        "  var range, node;\n" + 
+        "  var range, node;\n" +
         "  if (window.getSelection && window.getSelection().getRangeAt)\n" +
         "  {\n" +
         "    if (window.getSelection().rangeCount < 1) window.getSelection().addRange(document.createRange());\n" +
@@ -572,7 +572,7 @@ public class MainTextController
         "    range.deleteContents();\n" +
         "    range.pasteHTML(html);\n" +
         "  }\n" +
-        "}\n\n" +   
+        "}\n\n" +
         "</script><style>a { pointer-events: none; }");
   }
 
@@ -582,12 +582,12 @@ public class MainTextController
   public static String getHtmlFromEditor(String editorHtml)
   {
     Document doc = Jsoup.parse(editorHtml);
-       
-    doc.getElementsByTag("script").forEach(Element::remove);   
+
+    doc.getElementsByTag("script").forEach(Element::remove);
     doc.getElementsByAttributeValue("id", "key_works").forEach(Element::remove);
-    
-    editorHtml = doc.html();    
-    
+
+    editorHtml = doc.html();
+
     return editorHtml.replace("a { pointer-events: none; }", "");
   }
 
@@ -597,14 +597,14 @@ public class MainTextController
   private void getKeyWorks(List<KeyWork> keyWorksArg)
   {
     keyWorksArg.clear();
-    
+
     Document subDoc = Jsoup.parse(taKeyWorks.getText());
-          
+
     subDoc.getElementsByTag("a").forEach(aElement ->
     {
       int id = parseInt(aElement.attributes().get("id") , -1);
       HDT_RecordType type = db.parseTypeTagStr(aElement.attributes().get("type"));
-      
+
       if ((id > 0) && (type != hdtNone))
       {
         nullSwitch((HDT_RecordWithPath) db.records(type).getByID(id), record ->
@@ -612,23 +612,23 @@ public class MainTextController
           keyWorksArg.add(new KeyWork(record.getType(), record.getID(), aElement.ownText(), true));
         });
       }
-      
+
       aElement.remove();
     });
-    
+
     HashSet<HDT_RecordWithPath> keyWorkRecords = new HashSet<>();
     KeywordLinkList list = new KeywordLinkList();
     String kwText = extractTextFromHTML(subDoc.html());
     list.generate(kwText);
-    
+
     list.getLinks().forEach(link ->
     {
       HDT_Base record = link.key.record;
-      
+
       if ((record.getType() == hdtWork) || (record.getType() == hdtMiscFile))
       {
         HDT_RecordWithPath keyWorkRecord = (HDT_RecordWithPath) record;
-        
+
         if (keyWorkRecords.contains(keyWorkRecord) == false)
         {
           String str = kwText.substring(link.offset, link.offset + link.length);
@@ -643,16 +643,16 @@ public class MainTextController
 //---------------------------------------------------------------------------
 
   public String getHtmlAndKeyWorks(List<KeyWork> keyWorksArg)
-  {    
+  {
     getKeyWorks(keyWorksArg);
-    return getHtmlFromEditor(he.getHtmlText()); 
+    return getHtmlFromEditor(he.getHtmlText());
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void setFromMainText(MainText mainText)
-  {   
+  {
     if (mainText != null)
       set(mainText.getRecord(), mainText.getHtml(), mainText.getDisplayItemsCopy(), mainText.getKeyWorks());
     else
@@ -665,10 +665,10 @@ public class MainTextController
   private void clearDisplayItems()
   {
     lvRecords.setItems(FXCollections.observableArrayList());
-    
+
     hcbKeyName.selectID(-1);
     ListView<HyperTableCell> lv = getCBListView(cbKeyName);
-    if (lv != null) lv.scrollTo(0);    
+    if (lv != null) lv.scrollTo(0);
   }
 
 //---------------------------------------------------------------------------
@@ -679,82 +679,82 @@ public class MainTextController
     String keyWorksText = "";
     curRecord = record;
     disableCache(taKeyWorks);
-    
+
     clearDisplayItems();
-    
+
     if ((keyWorks != null) && (MainText.typeHasKeyWorks(record.getType())))
     {
       if (borderPane.getTop() == null)
         borderPane.setTop(tpKeyWorks);
-      
+
       tpKeyWorks.setExpanded((keyWorks.size() > 0) || (record.getType() != hdtPerson));
-      
+
       HashMap<String, String> linkMap = new HashMap<>();
       List<String> searchKeys = new ArrayList<String>();
-      
+
       keyWorks.forEach(keyWork ->
-      {             
+      {
         String searchKey = keyWork.getSearchKey(true);
-        
+
         linkMap.put(searchKey, keyWork.getEditorText());
         searchKeys.add(searchKey);
       });
-      
+
       searchKeys.sort((s1, s2) -> s1.compareToIgnoreCase(s2));
-      
+
       boolean first = true;
-      
+
       for (String searchKey : searchKeys)
       {
         if (first)
           keyWorksText = keyWorksText + linkMap.get(searchKey);
         else
           keyWorksText = keyWorksText + ", " + linkMap.get(searchKey);
-        
+
         first = false;
       }
     }
     else
       if (borderPane.getTop() == tpKeyWorks)
         borderPane.setTop(null);
-    
+
     he.setHtmlText(disableLinks(getHtmlEditorText(html)));
     taKeyWorks.setText(keyWorksText);
-    
+
     if (hcbType.selectedType() == hdtNone)
     {
       HDT_RecordType type = db.parseTypeTagStr(appPrefs.get(PREF_KEY_DISPLAY_RECORD_TYPE, ""));
-      
+
       hcbType.selectType(type == hdtNone ? hdtConcept : type);
     }
-    
+
     hcbName.setChoicesChanged();
-    
+
     if (hcbKeyType.selectedType() == hdtWork)
       hcbKeyName.setChoicesChanged();
     else
       hcbKeyType.selectType(hdtWork);
-    
+
     if (displayItems == null) return;
-    
+
     lvRecords.setItems(FXCollections.observableArrayList(displayItems));
-   
+
     int descNdx = -1;
     for (int ndx = displayItems.size() - 1; ndx >= 0; ndx--)
     {
       DisplayItemType type = displayItems.get(ndx).type;
-      
+
       if (type == diRecord)
       {
         if ((ndx + 1) < displayItems.size())
           lvRecords.getSelectionModel().select(ndx + 1);
-        
+
         return;
       }
       else if (type == diDescription)
         descNdx = ndx;
     }
-    
+
     if (descNdx >= 0)
       lvRecords.getSelectionModel().select(descNdx);
   }

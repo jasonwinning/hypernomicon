@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.bib;
@@ -31,13 +31,13 @@ import static org.hypernomicon.util.Util.*;
 public class WorkBibData extends BibData
 {
   private final HDT_Work work;
-  
+
   public WorkBibData(HDT_Work work)
   {
     this.work = work;
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public boolean linkedToWork()                  { return true; }
@@ -46,55 +46,55 @@ public class WorkBibData extends BibData
   @Override public void setWorkType(HDT_WorkType workType) { work.setWorkType(workType.getEnumVal()); }
   @Override public BibAuthors getAuthors()                 { return new WorkBibAuthors(work); }
 
-//---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
-  
+//---------------------------------------------------------------------------
+
   private BibEntry getBibEntry()
   {
     String entryKey = work.getBibEntryKey();
-    
+
     if (entryKey.length() > 0)
       return db.getBibEntryByKey(entryKey);
-    
+
     return null;
   }
-  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public EntryType getEntryType()
   {
     return nullSwitch(getBibEntry(), convertWorkTypeToEntryType(work.getWorkTypeValue()), bibEntry -> bibEntry.getEntryType());
   }
-  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void setMultiStr(BibFieldEnum bibFieldEnum, List<String> list)
   {
     switch (bibFieldEnum)
     {
-      case bfTitle : 
-        
+      case bfTitle :
+
         String allStr = "";
-        
+
         for (String titleStr : list)
           allStr = BibField.addTitleComponent(allStr, titleStr);
 
-        work.setName(allStr);           
+        work.setName(allStr);
         return;
-        
+
       case bfMisc  : work.setMiscBib(strListToStr(list, true)); return;
-        
+
       case bfISBNs : work.setISBNs(list); return;
-        
+
       default      : break;
     }
 
     nullSwitch(getBibEntry(), bibEntry -> bibEntry.setMultiStr(bibFieldEnum, list));
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void setEntryType(EntryType entryType)
@@ -102,7 +102,7 @@ public class WorkBibData extends BibData
     nullSwitch(getBibEntry(), bibEntry -> bibEntry.setEntryType(entryType));
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void setStr(BibFieldEnum bibFieldEnum, String newStr)
@@ -118,7 +118,7 @@ public class WorkBibData extends BibData
     nullSwitch(getBibEntry(), bibEntry -> bibEntry.setStr(bibFieldEnum, newStr));
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public List<String> getMultiStr(BibFieldEnum bibFieldEnum)
@@ -128,12 +128,12 @@ public class WorkBibData extends BibData
       case bfTitle : return singletonMutableList(work.name());
       case bfISBNs : return work.getISBNs();
       case bfMisc  : return convertMultiLineStrToStrList(work.getMiscBib(), true);
-      
+
       default      : return nullSwitch(getBibEntry(), new ArrayList<>(), bibEntry -> bibEntry.getMultiStr(bibFieldEnum));
     }
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public String getStr(BibFieldEnum bibFieldEnum)
@@ -145,12 +145,12 @@ public class WorkBibData extends BibData
       case bfURL   : return work.getWebLink();
       case bfTitle : return work.name();
       case bfMisc  : return work.getMiscBib();
-      
+
       default      : return nullSwitch(getBibEntry(), "", bibEntry -> bibEntry.getStr(bibFieldEnum));
     }
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }

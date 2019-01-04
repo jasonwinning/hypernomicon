@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.records;
@@ -45,9 +45,9 @@ import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.filePath.FilePath;
 
 public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithPath
-{ 
+{
   private final Authors authors;
-  
+
   public final List<HDT_Person> authorRecords;
   public final HyperObjList<HDT_Work, HDT_Investigation> investigations;
   public final HyperObjList<HDT_Work, HDT_WorkLabel> labels;
@@ -55,7 +55,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   public final HyperSubjList<HDT_Work, HDT_Work> subWorks;
   public final HyperSubjList<HDT_MiscFile, HDT_Work> miscFiles;
   public final HyperSubjList<HDT_Argument, HDT_Work> arguments;
-  
+
   public final HyperObjPointer<HDT_Work, HDT_WorkType> workType;
   public final HyperObjPointer<HDT_Work, HDT_Work> largerWork;
 
@@ -65,30 +65,30 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   public HDT_Work(HDT_RecordState xmlState, HyperDataset<HDT_Work> dataset)
   {
     super(xmlState, dataset, tagTitle);
-    
+
     if (dataset != null)
     {
       authors = new Authors(getObjList(rtAuthorOfWork), this);
-      
+
       authorRecords = Collections.unmodifiableList(getObjList(rtAuthorOfWork));
       investigations = getObjList(rtInvestigationOfWork);
       labels = getObjList(rtLabelOfWork);
       workFiles = Collections.unmodifiableList(getObjList(rtWorkFileOfWork));
-      
+
       subWorks = getSubjList(rtParentWorkOfWork);
       miscFiles = getSubjList(rtWorkOfMiscFile);
       arguments = getSubjList(rtWorkOfArgument);
-      
+
       workType = getObjPointer(rtTypeOfWork);
       largerWork = getObjPointer(rtParentWorkOfWork);
     }
     else
     {
-      authors  = null; authorRecords = null; investigations = null; labels   = null; workFiles  = null; 
-      subWorks = null; miscFiles     = null; arguments      = null; workType = null; largerWork = null;      
-    }    
+      authors  = null; authorRecords = null; investigations = null; labels   = null; workFiles  = null;
+      subWorks = null; miscFiles     = null; arguments      = null; workType = null; largerWork = null;
+    }
   }
-     
+
   public void setInvestigations(List<HDT_Investigation> list) { updateObjectsFromList(rtInvestigationOfWork, list); }
   public void setWorkLabels(List<HDT_WorkLabel> list)         { updateObjectsFromList(rtLabelOfWork, list); }
 
@@ -98,7 +98,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   @Override public String listName()        { return name(); }
   @Override public HDT_RecordType getType() { return hdtWork; }
   @Override public HyperPath getPath()      { return workFiles.isEmpty() ? HyperPath.EmptyPath : workFiles.get(0).getPath(); }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -112,7 +112,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   public int getStartPageNum()   { return workFiles.isEmpty() ? -1 : getStartPageNum(workFiles.get(0)); }
   public int getEndPageNum()     { return workFiles.isEmpty() ? -1 : getEndPageNum(workFiles.get(0)); }
   public boolean canLaunch()     { return ! (getPath().isEmpty() && getWebLink().isEmpty()); }
-  
+
   public void setYear(String str)        { updateTagString(tagYear, str); }
   public void setBibEntryKey(String str) { updateBibEntryKey(str); }
   public void setMiscBib(String str)     { updateTagString(tagMiscBib, str); }
@@ -120,48 +120,48 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   public void setWebLink(String str)     { updateTagString(tagWebLink, str); }
 
 //---------------------------------------------------------------------------
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
 
   public Ternary personIsInFileName(HDT_Person person)                       { return db.getNestedTernary(this, person, tagInFileName); }
   public void setPersonIsInFileName(HDT_Person person, Ternary inFileName)   { db.updateNestedTernary(this, person, tagInFileName, inFileName); }
   public boolean personIsEditor(HDT_Person person)                           { return db.getNestedBoolean(this, person, tagEditor); }
-  public void setPersonIsEditor(HDT_Person person, boolean isEditor)         { db.updateNestedBoolean(this, person, tagEditor, isEditor); }  
+  public void setPersonIsEditor(HDT_Person person, boolean isEditor)         { db.updateNestedBoolean(this, person, tagEditor, isEditor); }
   public boolean personIsTranslator(HDT_Person person)                       { return db.getNestedBoolean(this, person, tagTranslator); }
   public void setPersonIsTranslator(HDT_Person person, boolean isTranslator) { db.updateNestedBoolean(this, person, tagTranslator, isTranslator); }
 
 //---------------------------------------------------------------------------
-//--------------------------------------------------------------------------- 
-  
+//---------------------------------------------------------------------------
+
   // pass -1 to clear the value
-  
+
   public void setStartPageNum(HDT_WorkFile workFile, int val) { db.updateNestedString(this, workFile, tagStartPageNum, val < 0 ? "" : String.valueOf(val)); }
   public int getStartPageNum(HDT_WorkFile workFile)           { return parseInt(db.getNestedString(this, workFile, tagStartPageNum), -1); }
   public void setEndPageNum(HDT_WorkFile workFile, int val)   { db.updateNestedString(this, workFile, tagEndPageNum, val < 0 ? "" : String.valueOf(val)); }
   public int getEndPageNum(HDT_WorkFile workFile)             { return parseInt(db.getNestedString(this, workFile, tagEndPageNum), -1); }
-  
+
 //---------------------------------------------------------------------------
-//--------------------------------------------------------------------------- 
-  
-  public void setAuthors(List<ObjectGroup> newGroups)         
-  { 
+//---------------------------------------------------------------------------
+
+  public void setAuthors(List<ObjectGroup> newGroups)
+  {
     boolean theSame = true;
-        
+
     if (newGroups.size() != authors.size())
       theSame = false;
     else
-    {     
+    {
       for (int ndx = 0; ndx < newGroups.size(); ndx++)
         if (authors.get(ndx).equalsObjGroup(newGroups.get(ndx)) == false)
           theSame = false;
     }
-    
+
     if (theSame) return;
 
     authors.update(newGroups);
   }
- 
+
 //---------------------------------------------------------------------------
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
 
   public String getShortAuthorsStr(boolean fullNameIfSingleton)
   {
@@ -172,85 +172,85 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 //---------------------------------------------------------------------------
 
   public String getLongAuthorsStr(boolean fullNameIfSingleton)
-  {   
+  {
     return Authors.getLongAuthorsStr(getAuthors().asCollection(), fullNameIfSingleton);
   }
-  
+
 //---------------------------------------------------------------------------
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
 
   @Override public String getCBText()
   {
     String authorStr = getShortAuthorsStr(false);
     String yearStr = getYear();
     String titleStr = name();
-    
+
     String cbStr = "";
-    
+
     if (authorStr.length() > 0)
       cbStr = authorStr + " ";
-    
+
     if (yearStr.length() > 0)
       cbStr = cbStr + "(" + yearStr + ") ";
-    
+
     if (titleStr.length() > 0)
       cbStr = cbStr + titleStr;
-    
+
     return cbStr;
   }
- 
+
 //---------------------------------------------------------------------------
-//--------------------------------------------------------------------------- 
-  
+//---------------------------------------------------------------------------
+
   public void setLargerWork(int newID)
   {
-    setLargerWork(newID, false);  
+    setLargerWork(newID, false);
   }
-  
-  public void setLargerWork(int newID, boolean noIsbnUpdate)          
-  { 
+
+  public void setLargerWork(int newID, boolean noIsbnUpdate)
+  {
     boolean ask = false;
-    
+
     if (largerWork.getID() == newID) return;
-    
+
     largerWork.setID(newID);
-    
+
     if (newID < 1) return;
     HDT_Work largerWork = db.works.getByID(newID);
-    
+
     /***********************************************/
     /*          Update ISBNs                       */
     /***********************************************/
-    
+
     if (noIsbnUpdate == false)
     {
       List<String> ISBNs = getISBNs(), lwISBNs = largerWork.getISBNs();
-      
+
       boolean notAllInLW = false, notAllInSW = false;
-      
+
       for (String isbn : ISBNs)
         if (lwISBNs.contains(isbn) == false)
           notAllInLW = true;
-      
+
       for (String isbn : lwISBNs)
         if (ISBNs.contains(isbn) == false)
           notAllInSW = true;
-      
+
       if ((notAllInLW == false) && (notAllInSW == true))
       {
         updateISBNstrRecursively(largerWork.getTagString(tagISBN));
-      }   
+      }
       else if (notAllInLW)
       {
         if (confirmDialog("Recursively update ISBN(s) for contained/container works?"))
         {
           List<String> allISBNs = new ArrayList<>();
           allISBNs.addAll(ISBNs);
-          
+
           for (String isbn : lwISBNs)
             if (ISBNs.contains(isbn) == false)
               allISBNs.add(isbn);
-          
+
           String isbnStr = "";
           for (String isbn : allISBNs)
           {
@@ -259,28 +259,28 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
             else
               isbnStr = isbn;
           }
-          
+
           HDT_Work ancestor = this;
           while (ancestor.largerWork.isNotNull())
             ancestor = ancestor.largerWork.get();
-          
+
           ancestor.updateISBNstrRecursively(isbnStr);
         }
       }
     }
-        
+
     if (largerWork.workFiles.isEmpty()) return;
 
     /***********************************************/
     /*          Update work files                  */
     /***********************************************/
-    
+
     if (workFiles.isEmpty())
     {
-      largerWork.workFiles.forEach(workFile -> addWorkFile(workFile.getID(), true, true));      
+      largerWork.workFiles.forEach(workFile -> addWorkFile(workFile.getID(), true, true));
       return;
     }
-    
+
     if (workFiles.size() != largerWork.workFiles.size())
       ask = true;
     else
@@ -289,10 +289,10 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
         if (largerWork.workFiles.contains(workFile) == false)
           ask = true;
     }
-      
+
     if (ask)
     {
-      String msg = workFiles.size() == 1 ? " file is " : " files are "; 
+      String msg = workFiles.size() == 1 ? " file is " : " files are ";
       if (confirmDialog("Currently, " + workFiles.size() + msg + "attached to the child work. Replace with parent work file(s)?"))
       {
         getObjList(rtWorkFileOfWork).clear();
@@ -300,52 +300,52 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
       }
     }
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void replaceWorkFile(HDT_WorkFile oldWorkFile, HDT_WorkFile workFile)
   {
     HyperObjList<HDT_Work, HDT_WorkFile> workFileList = getObjList(rtWorkFileOfWork);
-    
+
     int ndx = workFileList.indexOf(oldWorkFile);
-    
+
     if (ndx > -1)
       workFileList.set(ndx, workFile);
-    
+
     subWorks.forEach(childWork -> childWork.replaceWorkFile(oldWorkFile, workFile));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addWorkFile(int newID, boolean alsoAddToEmptySubworks, boolean confirmToRemoveFromUnenteredSet)                  
-  { 
+  public void addWorkFile(int newID, boolean alsoAddToEmptySubworks, boolean confirmToRemoveFromUnenteredSet)
+  {
     HDT_WorkFile workFile = db.workFiles.getByID(newID);
     boolean okToRemoveFromUnenteredSet;
-    
+
     getObjList(rtWorkFileOfWork).add(workFile);
-    
+
     for (HDT_Work work : workFile.works)
     {
       if ((work.getID() != getID()) && (work.getWorkTypeValue() == WorkTypeEnum.wtUnenteredSet))
       {
         if (confirmToRemoveFromUnenteredSet)
-          okToRemoveFromUnenteredSet = confirmDialog("Okay to remove the file from the the unentered set of work files: \"" + work.name() + "\"?");          
+          okToRemoveFromUnenteredSet = confirmDialog("Okay to remove the file from the the unentered set of work files: \"" + work.name() + "\"?");
         else
           okToRemoveFromUnenteredSet = true;
-        
+
         if (okToRemoveFromUnenteredSet)
           db.getObjectList(rtWorkFileOfWork, work, true).remove(workFile);
       }
     }
-    
+
     if (alsoAddToEmptySubworks == false) return;
-    
+
     for (HDT_Work childWork : subWorks)
       if (childWork.workFiles.isEmpty()) childWork.addWorkFile(newID, true, confirmToRemoveFromUnenteredSet);
   }
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -356,8 +356,8 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
       case wtBook:    return db.getPath(PREF_KEY_BOOKS_PATH, null);
       case wtChapter: return db.getPath(PREF_KEY_BOOKS_PATH, null);
       case wtPaper:   return db.getPath(PREF_KEY_PAPERS_PATH, null);
-      default:        return db.getPath(PREF_KEY_MISC_FILES_PATH, null);     
-    }    
+      default:        return db.getPath(PREF_KEY_MISC_FILES_PATH, null);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -366,16 +366,16 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   public void launch(int pageNum)
   {
     if (workFiles.isEmpty() && getWebLink().isEmpty()) return;
-    
+
     viewNow();
-    
+
     if (getPath().isEmpty())
     {
       openWebLink(getWebLink());
       return;
     }
-      
-    if (pageNum < 1) pageNum = getStartPageNum();    
+
+    if (pageNum < 1) pageNum = getStartPageNum();
     launchWorkFile(getPath().getFilePath(), pageNum);
   }
 
@@ -390,7 +390,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
       if (inv.person.get() == person)
         invText = invText.length() == 0 ? inv.listName() : invText + ", " + inv.listName();
     }
-    
+
     return invText;
   }
 
@@ -400,14 +400,14 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   public static String addFileIndicator(String str, HDT_Work work)
   {
     if (work == null) return str;
-    
+
     String indicator = "";
-    
+
     if (work.workFiles.isEmpty() == false)
       indicator = work.workFiles.get(0).getPath().getFilePath().getExtensionOnly();
     else if (safeStr(work.getWebLink()).length() > 0)
       indicator = "web";
-    
+
     return indicator.length() == 0 ? str : new String(str + " (" + indicator + ")").trim();
   }
 
@@ -417,7 +417,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   private void updateISBNstrRecursively(String newISBNs)
   {
     updateTagString(tagISBN, newISBNs);
-    
+
     subWorks.forEach(child -> child.updateISBNstrRecursively(newISBNs));
   }
 
@@ -425,24 +425,24 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 //---------------------------------------------------------------------------
 
   public void setISBNs(List<String> list)
-  {   
+  {
     String isbnStr = "";
     List<String> allIsbns = new ArrayList<>();
-        
+
     list.forEach(isbn -> BibUtils.matchISBN(isbn, allIsbns));
-    
+
     boolean unequal = false;
     List<String> curISBNs = getISBNs();
     for (String isbn : allIsbns)
       if (curISBNs.contains(isbn) == false)
         unequal = true;
-    
+
     for (String isbn : curISBNs)
       if (allIsbns.contains(isbn) == false)
         unequal = true;
-    
+
     if (unequal == false) return;
-    
+
     for (String isbn : allIsbns)
     {
       if (isbnStr.length() > 0)
@@ -450,7 +450,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
       else
         isbnStr = isbn;
     }
-   
+
     if (largerWork.isNotNull())
     {
       if (confirmDialog("Recursively update ISBN(s) for contained/container works?"))
@@ -458,7 +458,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
         HDT_Work ancestor = this;
         while (ancestor.largerWork.isNotNull())
           ancestor = ancestor.largerWork.get();
-        
+
         ancestor.updateISBNstrRecursively(isbnStr);
         return;
       }
@@ -481,16 +481,16 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   public BibData getBibData()
   {
     String entryKey = getBibEntryKey();
-    
+
     if (entryKey.length() > 0)
     {
       BibData bibData = db.getBibEntryByKey(entryKey);
       if (bibData != null) return bibData;
     }
-    
+
     return new WorkBibData(this);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

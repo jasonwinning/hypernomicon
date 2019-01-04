@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.items;
@@ -48,7 +48,7 @@ public class HDI_OnlinePersonName extends HDI_OnlineBase<HDI_OfflinePersonName>
   @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
   {
     if (tag == tagLastName)
-      list.add(record.listName()); 
+      list.add(record.listName());
   }
 
 //---------------------------------------------------------------------------
@@ -57,7 +57,7 @@ public class HDI_OnlinePersonName extends HDI_OnlineBase<HDI_OfflinePersonName>
   @Override public String getResultTextForTag(Tag tag)
   {
     HDT_Person person = (HDT_Person) record;
-    
+
     return tag == tagFirstName ? person.getFirstName() : person.getLastName();
   }
 
@@ -67,7 +67,7 @@ public class HDI_OnlinePersonName extends HDI_OnlineBase<HDI_OfflinePersonName>
   @Override public void getToOfflineValue(HDI_OfflinePersonName val, Tag tag)
   {
     HDT_Person person = (HDT_Person) record;
-    
+
     if (tag == tagFirstName) val.firstName = person.getFirstName();
     else                     val.lastName  = person.getLastName();
   }

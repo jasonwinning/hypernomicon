@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.bib;
@@ -38,16 +38,16 @@ public class BibDataStandalone extends BibData
   private final HashMap<BibFieldEnum, BibField> bibFieldEnumToBibField = new HashMap<>();
   protected YearType yearType;      // Internally-used descriptor indicates where year field came from for purposes of determining priority
   private BibAuthorsStandalone authors = new BibAuthorsStandalone();
-  
+
   public BibDataStandalone()
   {
     entryType = EntryType.etUnentered;
     workType = null;
-    
-    EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum -> 
+
+    EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum ->
     {
       BibFieldType type = bibFieldEnumToType.get(bibFieldEnum);
-      
+
       switch (type)
       {
         case bftString : case bftMultiString :
@@ -56,7 +56,7 @@ public class BibDataStandalone extends BibData
           bibFields.add(bibField);
           bibFieldEnumToBibField.put(bibFieldEnum, bibField);
           break;
-          
+
         default :
           break;
       }
@@ -73,17 +73,17 @@ public class BibDataStandalone extends BibData
     for (BibFieldEnum bibFieldEnum : BibFieldEnum.values())
     {
       BibFieldType type = bibFieldEnumToType.get(bibFieldEnum);
-      
+
       switch (type)
       {
-        case bftString :      setStr(bibFieldEnum, bd.getStr(bibFieldEnum)); break;          
-        case bftMultiString : setMultiStr(bibFieldEnum, bd.getMultiStr(bibFieldEnum)); break;          
-        case bftEntryType :   entryType = bd.getEntryType(); break;          
-        case bftWorkType :    workType = bd.getWorkType(); break;          
+        case bftString :      setStr(bibFieldEnum, bd.getStr(bibFieldEnum)); break;
+        case bftMultiString : setMultiStr(bibFieldEnum, bd.getMultiStr(bibFieldEnum)); break;
+        case bftEntryType :   entryType = bd.getEntryType(); break;
+        case bftWorkType :    workType = bd.getWorkType(); break;
         case bftAuthor :      break;
       }
     }
-    
+
     bd.getAuthors().forEach(getAuthors()::add);
   }
 
@@ -106,19 +106,19 @@ public class BibDataStandalone extends BibData
   {
     if (this.yearType != null)
       if (this.yearType.ordinal() > yearType.ordinal()) return;
-    
+
     String year = extractYear(text);
-    
-    setStr(bfYear, year);    
+
+    setStr(bfYear, year);
   }
-   
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void setStr(BibFieldEnum bibFieldEnum, String newStr)
-  { 
+  {
     bibFieldEnumToBibField.get(bibFieldEnum).setStr(newStr);
-    
+
     if (bibFieldEnum == bfYear)
       yearType = YearType.highestPriority();
   }
@@ -129,36 +129,36 @@ public class BibDataStandalone extends BibData
   @Override public List<String> getMultiStr(BibFieldEnum bibFieldEnum)
   {
     BibField bibField = bibFieldEnumToBibField.get(bibFieldEnum);
-    
+
     if (bibField.isMultiStr() == false)
     {
       messageDialog("Internal error #90226", mtError);
       return null;
     }
-    
+
     return bibField.getMultiStr();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   @Override public String getStr(BibFieldEnum bibFieldEnum)
   {
     if (bibFieldEnumToType.get(bibFieldEnum) == bftString)
       return bibFieldEnumToBibField.get(bibFieldEnum).getStr();
-    
+
     switch (bibFieldEnum)
     {
       case bfEntryType :
         return BibUtils.getEntryTypeName(entryType);
-      
+
       case bfWorkType :
         return workType == null ? "" : workType.getCBText();
-        
+
       case bfContainerTitle: case bfMisc: case bfTitle:
         return bibFieldEnumToBibField.get(bibFieldEnum).getStr();
-      
-      case bfAuthors: return authors.getStr(AuthorType.author);      
+
+      case bfAuthors: return authors.getStr(AuthorType.author);
       case bfEditors: return authors.getStr(AuthorType.editor);
       case bfTranslators: return authors.getStr(AuthorType.translator);
 
@@ -178,10 +178,10 @@ public class BibDataStandalone extends BibData
       messageDialog("Internal error #90228", mtError);
       return;
     }
-    
+
     bibFieldEnumToBibField.get(bibFieldEnum).addStr(newStr);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

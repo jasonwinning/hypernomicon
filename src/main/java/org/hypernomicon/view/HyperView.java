@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view;
@@ -36,12 +36,12 @@ public class HyperView<HDT_CT extends HDT_Base>
   {
     public TextViewInfo()              { return; }
     public TextViewInfo(int scrollPos) { this.scrollPos = scrollPos; }
-    
+
     public HashSet<String> openDivits = null;
     public int scrollPos = 0;
     public boolean detailedWorks = false;
   }
-  
+
   private HDT_CT viewRecord;
   private final int tabRecordKeyNdx;
   private final HDT_RecordType tabRecordType;
@@ -53,10 +53,10 @@ public class HyperView<HDT_CT extends HDT_Base>
   public HDT_RecordType getTabRecordType() { return tabRecordType; }
   public TabEnum getTabEnum()              { return tabEnum; }
   public HDT_CT getViewRecord()            { return viewRecord; }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public HyperView(HyperTab.TabEnum tabEnum, HDT_CT record)
   {
     this(tabEnum, record, new TextViewInfo());
@@ -64,7 +64,7 @@ public class HyperView<HDT_CT extends HDT_Base>
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public HyperView(HyperTab.TabEnum tabEnum, HDT_CT record, TextViewInfo textInfo)
   {
     if (record == null)
@@ -73,14 +73,14 @@ public class HyperView<HDT_CT extends HDT_Base>
       tabRecordKeyNdx = db.terms.getKeyNdxByID(HDT_Concept.class.cast(record).term.getID());
     else
       tabRecordKeyNdx = db.records(record.getType()).getKeyNdxByID(record.getID());
-    
-    this.tabEnum = tabEnum;   
+
+    this.tabEnum = tabEnum;
     this.textInfo = textInfo;
-    
+
     tabRecordType = getRecordTypeByTabEnum(tabEnum);
     viewRecord = record;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -88,10 +88,10 @@ public class HyperView<HDT_CT extends HDT_Base>
   public void refresh()
   {
     if (viewRecord == null) return;
-    
+
     viewRecord = (HDT_CT) db.records(viewRecord.getType()).getByID(viewRecord.getID());
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.wrappers;
@@ -37,7 +37,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableCell;
 import javafx.scene.input.KeyCode;
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
 public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> implements CommitableWrapper
 {
@@ -49,11 +49,11 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
   private HyperTable table;
   private MutableBoolean dontCreateNewRecord;
   private CellTextHandler textHndlr;
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
 
-  public ComboBoxCell(HyperTable table, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction, 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public ComboBoxCell(HyperTable table, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction,
                       MutableBoolean dontCreateNewRecord, CellTextHandler textHndlr)
   {
     super();
@@ -65,8 +65,8 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     this.textHndlr = textHndlr;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public void startEdit()
   {
@@ -75,51 +75,51 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
       super.startEdit();
       createComboBox();
       table.cellBeingEdited = this;
-      
+
       hCB.populate(false);
-      
+
       HyperTableCell cell = getItem();
-      
+
       cB.setValue(cell);
       if (cell != null)
         cB.getSelectionModel().select(cell);
-      
+
       setGraphic(cB);
       safeFocus(cB);
       AutoCompleteCB.scrollToValue(cB);
       cB.show();
     }
-  }  
+  }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public void cancelEdit()
-  { 
+  {
     table.cellBeingEdited = null;
     return;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public void commitEdit(HyperTableCell newValue)
-  {   
+  {
     super.cancelEdit();
     setGraphic(null);
-    
+
     HyperTableRow row = (HyperTableRow) getTableRow().getItem();
     int colNdx = getTableView().getColumns().indexOf(getTableColumn());
-    
+
     if (hCB.somethingWasTyped)
       if (hCB.typedMatch != null)
         newValue = hCB.typedMatch;
-    
+
     row.setCellValue(colNdx, newValue);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public void updateItem(HyperTableCell item, boolean empty)
   {
@@ -132,7 +132,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
       setGraphic(null);
     }
     else
-    {    
+    {
       if (this.isEditing())
       {
         if (hCB != null)
@@ -148,10 +148,10 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
         setGraphic(null);
       }
     }
-  }  
+  }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void createComboBox()
   {
@@ -160,24 +160,24 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     cB.setMinHeight(18.0 * displayScale);
     cB.setPrefHeight(18.0 * displayScale);
     cB.setMaxHeight(18.0 * displayScale);
-    
+
     HyperTableRow row = (HyperTableRow) this.getTableRow().getItem();
-    
+
     if (populator.getValueType() == cvtVaries)
     {
       VariablePopulator vp = (VariablePopulator)populator;
       ctrlType = vp.getRestricted(row) ? ctDropDownList : ctDropDown;
     }
-    
+
     hCB = new HyperCB(cB, ctrlType, populator, row, false, table);
-    
+
     hCB.dontCreateNewRecord = dontCreateNewRecord.booleanValue();
-    
+
     hCB.setOnAction(onAction);
-        
+
     cB.focusedProperty().addListener((observable, oldValue, newValue) ->
     {
-      if (newValue == false)    
+      if (newValue == false)
         commit();
     });
 
@@ -192,8 +192,8 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     });
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private String getString()
   {
@@ -203,16 +203,16 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     return getItem() == null ? "" : getItem().getText();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public void commit()
   {
     if (isEditing())
       commitEdit(hCB.selectedHTC());
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

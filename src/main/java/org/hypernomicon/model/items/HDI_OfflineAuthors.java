@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.items;
@@ -40,11 +40,11 @@ public class HDI_OfflineAuthors extends HDI_OfflineBase
   {
     public int personID = -1;
     public PersonName name = PersonName.EMPTY;
-    public Map<Tag, HDI_OfflineBase> nestedItems = null;    
+    public Map<Tag, HDI_OfflineBase> nestedItems = null;
   }
-  
+
   List<OfflineAuthor> authors = new ArrayList<>();
-  
+
   public HDI_OfflineAuthors(HDI_Schema newSchema, HDT_RecordState recordState)
   {
     super(newSchema, recordState);
@@ -60,18 +60,18 @@ public class HDI_OfflineAuthors extends HDI_OfflineBase
       nodeText = ultraTrim(convertToSingleLine(nodeText));
       if (nodeText.length() == 0) return;
     }
-    
+
     OfflineAuthor author = new OfflineAuthor();
 
     if (objID > 0)
       author.personID = objID;
     else
       author.name = new PersonName(nodeText);
-    
+
     if (nestedItems != null)
       if (nestedItems.isEmpty() == false)
         author.nestedItems = nestedItems;
-    
+
     authors.add(author);
   }
 
@@ -81,14 +81,14 @@ public class HDI_OfflineAuthors extends HDI_OfflineBase
   @Override public void writeToXml(Tag tag, StringBuilder xml)
   {
     String name;
-    
+
     for (OfflineAuthor author : authors)
     {
       if (author.personID > 0)
         name = db.persons.getByID(author.personID).getName().getLastFirst();
       else
         name = author.name.getLastFirst();
-      
+
       if (author.nestedItems != null)
         writePointerTagWithNestedPointers(xml, tag, author.personID, name, author.nestedItems, true);
       else

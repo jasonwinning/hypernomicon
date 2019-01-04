@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.relations;
@@ -41,19 +41,19 @@ public class HyperSubjIterator<HDT_SubjType extends HDT_Base, HDT_ObjType extend
 
   @Override public boolean hasNext() { return nextNdx < list.size(); }
   @Override public void remove()     { throw new UnsupportedOperationException(modErrMsg); }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public HDT_SubjType next()
-  {   
+  {
     if (hasNext())
-    {  
+    {
       HDT_SubjType record = list.get(nextNdx);
       nextNdx++;
       return record;
     }
-    
+
     throw new NoSuchElementException();
   }
 

@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.relations;
@@ -36,7 +36,7 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
     this.relSet = relSet;
     this.subj = subj;
     this.modTracking = modTracking;
-    
+
     lastException = null;
   }
 
@@ -49,12 +49,12 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   public boolean isNotNull()          { return get() != null; }
   public Exception getLastException() { return lastException; }
 
-  @SuppressWarnings("unchecked") 
+  @SuppressWarnings("unchecked")
   public boolean setID(int newID)     { return set(newID < 1 ? null : (HDT_ObjType) db.records(relSet.getObjType()).getByID(newID)); }
-  
+
   @Override public int hashCode()           { return super.hashCode(); }
   @Override public boolean equals(Object o) { return o instanceof HyperObjPointer<?, ?> ? ((HyperObjPointer<?, ?>) o).get() == get() : false; }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -63,7 +63,7 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
     if (get() == obj) return true;
 
     relSet.clearObjects(subj);
-    
+
     try
     {
       if (obj != null)
@@ -75,20 +75,20 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
         }
         relSet.setObject(subj, obj, -1, true);
       }
-      
+
       if (modTracking) subj.modifyNow();
     }
     catch (RelationCycleException e)
     {
       messageDialog(e.getMessage(), mtError);
-      
+
       lastException = e;
       return false;
     }
-    
+
     return true;
   }
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

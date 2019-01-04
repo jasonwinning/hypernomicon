@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.bib;
@@ -36,18 +36,18 @@ public class BibField
   private final BibFieldEnum bibFieldEnum;
   private final BibFieldType type;
   private final List<String> strList = new ArrayList<String>();
-  
+
   private String str;
-  
+
   public BibField(BibFieldEnum bibFieldEnum)
   {
     this.bibFieldEnum = bibFieldEnum;
-    
+
     type = BibData.getFieldType(bibFieldEnum);
   }
-  
+
   public boolean isMultiStr() { return type == bftMultiString; }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -58,42 +58,42 @@ public class BibField
       messageDialog("Internal error #90225", mtError);
       return;
     }
-    
+
     str = newStr;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
-  public String getStr() 
-  { 
+
+  public String getStr()
+  {
     if (type == bftString)
       return safeStr(str);
 
     String allStr = "";
-    
+
     switch (bibFieldEnum)
-    {      
+    {
       case bfContainerTitle: case bfTitle:
-        
+
         for (String titleStr : strList)
           allStr = addTitleComponent(allStr, titleStr);
-        
+
         return allStr;
-        
+
       case bfMisc:
-        
+
         for (String miscStr : strList)
         {
           if (miscStr.length() > 0)
           {
             if (allStr.length() > 0)
               allStr = allStr + System.lineSeparator();
-            
+
             allStr = allStr + miscStr;
           }
         }
-        
+
         return allStr;
 
       default:
@@ -108,20 +108,20 @@ public class BibField
   public static String addTitleComponent(String str, String titleStr)
   {
     titleStr = titleStr.trim();
-    
+
     if (titleStr.length() > 0)
     {
       if (str.length() > 0)
       {
         if (StringUtils.isAlpha(StringUtils.right(str, 1)))
           str = str + ":";
-        
+
         str = str + " ";
       }
-      
+
       str = str + titleStr;
     }
-    
+
     return str;
   }
 
@@ -143,20 +143,20 @@ public class BibField
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public List<String> getMultiStr() 
+  public List<String> getMultiStr()
   {
     if (type != bftMultiString)
     {
       messageDialog("Internal error #90231", mtError);
       return null;
     }
-    
-    return Collections.unmodifiableList(strList); 
+
+    return Collections.unmodifiableList(strList);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
- 
+
   public void clear()
   {
     if (type == bftMultiString)
@@ -175,27 +175,27 @@ public class BibField
       messageDialog("Internal error #90229", mtError);
       return;
     }
-    
+
     if (ultraTrim(safeStr(newStr)).length() == 0) return;
-    
+
     switch (bibFieldEnum)
     {
-      case bfISBNs : 
-        
+      case bfISBNs :
+
         matchISBN(newStr, strList);
         break;
-      
+
       case bfISSNs :
-        
-        matchISSN(newStr, strList);                 
+
+        matchISSN(newStr, strList);
         break;
-        
+
       default :
         strList.add(newStr);
         break;
     }
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

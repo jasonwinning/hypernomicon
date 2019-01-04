@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.util;
@@ -44,19 +44,19 @@ public class FilenameMap<T> implements Map<String, T>
   @Override public void clear()                                      { lowerToList.clear(); nameToObject.clear(); }
   @Override public void putAll(Map<? extends String, ? extends T> m) { m.forEach(this::put); }
   @Override public boolean containsKey(Object key)                   { return key instanceof String ? findKey((String) key).length() > 0 : false; }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private String findKey(String query)
   {
     ArrayList<String> list = lowerToList.get(query.toLowerCase());
-    
+
     if (list == null) return "";
-    
+
     for (String entry : list)
       if (FilenameUtils.equalsNormalizedOnSystem(entry, query)) return entry;
-      
+
     return "";
   }
 
@@ -66,9 +66,9 @@ public class FilenameMap<T> implements Map<String, T>
   @Override public T get(Object key)
   {
     if ((key instanceof String) == false) return null;
-    
+
     String realKey = findKey((String) key);
-    
+
     return realKey.length() == 0 ? null : nameToObject.get(realKey);
   }
 
@@ -78,13 +78,13 @@ public class FilenameMap<T> implements Map<String, T>
   @Override public T put(String key, T value)
   {
     if ((value == null) || (safeStr(key).length() == 0)) return null;
-    
+
     T oldVal = remove(key);
 
     ArrayList<String> list = lowerToList.get(key.toLowerCase());
     list.add(key);
     nameToObject.put(key, value);
-    
+
     return oldVal;
   }
 
@@ -94,25 +94,25 @@ public class FilenameMap<T> implements Map<String, T>
   @Override public T remove(Object key)
   {
     if ((key instanceof String) == false) return null;
-    
+
     String strKey = (String) key;
     T oldVal = get(strKey);
-    
+
     ArrayList<String> list = lowerToList.get(strKey.toLowerCase());
     if (list == null)
     {
       list = new ArrayList<String>();
       lowerToList.put(strKey.toLowerCase(), list);
     }
-    
+
     String realKey = findKey(strKey);
-    
+
     if (realKey.length() > 0)
     {
       list.remove(realKey);
       nameToObject.remove(realKey);
     }
-    
+
     return oldVal;
   }
 

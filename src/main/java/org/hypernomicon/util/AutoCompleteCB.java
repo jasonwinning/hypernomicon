@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.util;
@@ -40,64 +40,64 @@ import org.hypernomicon.model.records.HDT_Person;
 
 /**
  * Helper class for ComboBox autocompletion
- * 
+ *
  * Based on code from the following blog post:
  * http://tech.chitgoks.com/2013/08/20/how-to-create-autocomplete-combobox-or-textfield-in-java-fx-2/
- * 
+ *
  * @since   1.0
  */
 
-public class AutoCompleteCB implements EventHandler<KeyEvent> 
-{  
+public class AutoCompleteCB implements EventHandler<KeyEvent>
+{
   private ComboBox<HyperTableCell> cb;
   private HyperCB hcb;
   private boolean limitToChoices;
   private HyperTableCell startValue;
-  
-  public AutoCompleteCB(HyperCB newHCB, boolean limitToChoices) 
+
+  public AutoCompleteCB(HyperCB newHCB, boolean limitToChoices)
   {
     this.limitToChoices = limitToChoices;
-    
+
     cb = newHCB.getComboBox();
     hcb = newHCB;
-    
+
     cb.setEditable(true);
-          
+
     // add a focus listener such that if not in focus, reset the filtered typed keys
     cb.getEditor().focusedProperty().addListener((observable, oldValue, newValue) ->
     {
       newHCB.somethingWasTyped = false;
-      
-      if (newValue)        
+
+      if (newValue)
         startValue = hcb.selectedHTC();
       else
         selectClosestResultBasedOnTextFieldValue(false, false);
     });
-      
-    cb.setOnMouseClicked(event -> 
+
+    cb.setOnMouseClicked(event ->
     {
       newHCB.somethingWasTyped = false;
       selectClosestResultBasedOnTextFieldValue(true, true);
     });
-    
-    cb.setOnAction(event -> 
+
+    cb.setOnAction(event ->
     {
-      if ((hcb.somethingWasTyped) && (hcb.listenForActionEvents)) 
+      if ((hcb.somethingWasTyped) && (hcb.listenForActionEvents))
       {
         hcb.listenForActionEvents = false;
-                 
+
         hcb.getOnAction().handle(event);
         hcb.somethingWasTyped = false;
-        
+
         hcb.listenForActionEvents = true;
-      }       
+      }
     });
   }
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void handle(KeyEvent event) 
+  @Override public void handle(KeyEvent event)
   {
     if (event.isControlDown() || event.getCode() == KeyCode.BACK_SPACE ||
         event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT ||
@@ -107,40 +107,40 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
       hcb.typedMatch = null;
       return;
     }
-    
+
     hcb.somethingWasTyped = true;
-               
+
     ObservableList<HyperTableCell> items = cb.getItems();
-    
-    if (collEmpty(items)) 
+
+    if (collEmpty(items))
     {
       hcb.typedMatch = null;
       return;
-    }   
-    
+    }
+
     TextField cbEditor = cb.getEditor();
-    String typed = cbEditor.getText().substring(0, cbEditor.getSelection().getStart()); // Get unselected text    
-    String typedLC = typed.toLowerCase();    
+    String typed = cbEditor.getText().substring(0, cbEditor.getSelection().getStart()); // Get unselected text
+    String typedLC = typed.toLowerCase();
     boolean match = false;
-    
+
     Iterator<HyperTableCell> it = items.iterator();
-    
+
     while (it.hasNext() && (match == false))
     {
       HyperTableCell cell = it.next();
 
       String cellText = HyperTableCell.getCellText(cell);
-      
+
       if (cellText.toLowerCase().startsWith(typedLC))
       {
         match = true;
         cbEditor.setText(typed + cellText.substring(typed.length()));
       }
-     
+
       if (match == false)
       {
-        HDT_Base record = HyperTableCell.getRecord(cell);      
-        
+        HDT_Base record = HyperTableCell.getRecord(cell);
+
         if (record != null)
         {
           if (record.getType() == hdtPerson)
@@ -159,42 +159,42 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
           }
         }
       }
-        
+
       if (match)
       {
-        hcb.typedMatch = cell;        
-        
+        hcb.typedMatch = cell;
+
         cbEditor.positionCaret(typed.length());
         cbEditor.selectEnd();
       }
     }
-    
+
     if (match == false)
       hcb.typedMatch = null;
   }
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static boolean scrollToValue(ComboBox<HyperTableCell> cb)
   {
-    ObservableList<HyperTableCell> items = cb.getItems();        
+    ObservableList<HyperTableCell> items = cb.getItems();
     if (items == null) return false;
-    
-    String editorText = cb.getEditor().getText();    
-    
+
+    String editorText = cb.getEditor().getText();
+
     if (editorText.length() == 0) return false;
 
-    for (int ndx = 0; ndx < items.size(); ndx++) 
+    for (int ndx = 0; ndx < items.size(); ndx++)
     {
       String cellText = HyperTableCell.getCellText(items.get(ndx));
-      
-      if (editorText.equalsIgnoreCase(cellText)) 
+
+      if (editorText.equalsIgnoreCase(cellText))
       {
-        try 
-        {          
+        try
+        {
           ListView<HyperTableCell> lv = getCBListView(cb);
-          
+
           if (lv.getItems().size() > ndx)
           {
             lv.getSelectionModel().clearAndSelect(ndx);
@@ -206,7 +206,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
             lv.getSelectionModel().clearSelection();
             return false;
           }
-        } 
+        }
         catch (Exception e) { noOp(); }
       }
     }
@@ -230,16 +230,16 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
   {
     String editorText = cb.getEditor().getText();
     boolean found = scrollToValue(cb);
- 
-    if (!found && affect) 
-    {           
+
+    if (!found && affect)
+    {
       cb.getSelectionModel().clearSelection();
       cb.getEditor().setText(editorText);
       cb.getEditor().end();
     }
-    
-    if (!inFocus && (editorText.trim().length() > 0)) 
-    {  
+
+    if (!inFocus && (editorText.trim().length() > 0))
+    {
       // press enter key programmatically to have this entry added
       if (limitToChoices)
       {
@@ -250,15 +250,15 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
           return;
         }
       }
-      
+
       KeyEvent ke = new KeyEvent(null, cb, KeyEvent.KEY_RELEASED, KeyCode.ENTER.toString(), KeyCode.ENTER.getName(), KeyCode.ENTER, false, false, false, false);
       cb.fireEvent(ke);
     }
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }
-    
+
 

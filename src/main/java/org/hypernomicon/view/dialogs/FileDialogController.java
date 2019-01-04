@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -62,53 +62,53 @@ public class FileDialogController extends HyperDialog
   @FXML private Button btnUseRecord;
   @FXML private Button btnOk;
   @FXML public Button btnCancel;
-  
+
   public FilePath srcFilePath;
   private HDT_RecordWithPath curFileRecord;
   private HDT_RecordType recordType;
   private HDT_Work curWork;
   private boolean copyOnly;
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void setRB_CurrentLocationOnly()
   {
     rbCopy.setDisable(true);
     rbMove.setDisable(true);
     rbNeither.setDisable(false);
-    
-    rbNeither.setSelected(true);    
+
+    rbNeither.setSelected(true);
   }
-  
+
   private void setRB_OtherLocationsOK()
   {
     rbCopy.setDisable(false);
     rbMove.setDisable(copyOnly);
     rbNeither.setDisable(false);
-    
+
     if (rbMove.isSelected() && copyOnly)
       rbCopy.setSelected(true);
-    
+
     if ((copyOnly == false) && rbNeither.isSelected())
       rbMove.setSelected(true);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void setRB_CopyOnly()
   {
     rbCopy.setDisable(false);
     rbMove.setDisable(true);
     rbNeither.setDisable(true);
-    
+
     rbCopy.setSelected(true);
     copyOnly = true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static FileDialogController create(String title, HDT_RecordType recordType, HDT_RecordWithPath curFileRecord, HDT_Work curWork, String recordName)
   {
@@ -117,26 +117,26 @@ public class FileDialogController extends HyperDialog
     return fdc;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void init(HDT_RecordType recordType, HDT_RecordWithPath curFileRecord, HDT_Work curWork, String recordName)
-  {   
+  {
     this.curFileRecord = curFileRecord;
     this.curWork = curWork;
     this.recordType = recordType;
     this.srcFilePath = null;
     copyOnly = false;
-    
+
     tfFileName.disableProperty().bind(chkDontChangeFilename.selectedProperty());
-    
+
     if (curFileRecord != null)
     {
       srcFilePath = curFileRecord.getPath().getFilePath();
       if (FilePath.isEmpty(srcFilePath) == false)
       {
         tfCurrentPath.setText(srcFilePath.toString());
-        
+
         if (db.getPath(PREF_KEY_UNENTERED_PATH, null).isSubpath(srcFilePath))
           tfNewPath.setText(db.getPath(PREF_KEY_MISC_FILES_PATH, null).toString());
         else
@@ -148,27 +148,27 @@ public class FileDialogController extends HyperDialog
       else
         setRB_CurrentLocationOnly();
     }
-    
+
     rbNeither.setDisable(FilePath.isEmpty(srcFilePath));
-    
+
     if (recordType == hdtWorkFile)
     {
       lblName.setText("This will be the description");
       btnUseRecord.setText("Use description");
-           
+
       if (curFileRecord != null)
         tfRecordName.setText(curFileRecord.name());
       else
-      {             
+      {
         FilePath newFilePath = null;
-        
+
         if (curWork.workFiles.size() > 0)
           newFilePath = curWork.getPath().getFilePath();
-          
+
         if (FilePath.isEmpty(newFilePath) == false)
           tfNewPath.setText(newFilePath.getDirOnly().toString());
         else
-          tfNewPath.setText(db.getPath(PREF_KEY_TOPICAL_PATH, null).toString());           
+          tfNewPath.setText(db.getPath(PREF_KEY_TOPICAL_PATH, null).toString());
       }
     }
     else
@@ -177,21 +177,21 @@ public class FileDialogController extends HyperDialog
       {
         if (FilePath.isEmpty(srcFilePath) == false)
           tfNewPath.setText(srcFilePath.getDirOnly().toString());
-        else      
+        else
           tfNewPath.setText(db.getPath(PREF_KEY_MISC_FILES_PATH, null).toString());
       }
-      
+
       tfRecordName.setText(recordName);
     }
-      
+
     if (FilePath.isEmpty(srcFilePath) == false)
       tfFileName.setText(srcFilePath.getNameOnly().toString());
-    
+
     tfCurrentPath.setEditable(false);
     tfNewPath.setEditable(false);
-    
+
     rbCopy.setDisable(true); // The only way copy is allowed is if the user selects a file by clicking browse first
-    
+
     onShown = () ->
     {
       if (recordType == hdtWorkFile)
@@ -207,53 +207,53 @@ public class FileDialogController extends HyperDialog
     };
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @FXML private void btnLaunchClick()
   {
-    launchFile(srcFilePath);    
+    launchFile(srcFilePath);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @FXML private void btnBrowseOldClick()
   {
     FileChooser fileChooser = new FileChooser();
-    
+
     if (recordType == hdtWorkFile)
     {
       WorkTypeEnum enumVal = curWork.getWorkTypeValue();
-      
+
       switch (enumVal)
       {
         case wtBook: case wtChapter: case wtNone: case wtPaper:
 
-          fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Adobe PDF file (*.pdf)", "*.pdf"));       
+          fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Adobe PDF file (*.pdf)", "*.pdf"));
           break;
-          
+
         default :
           break;
       }
     }
-    
-    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));   
+
+    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
     fileChooser.setInitialDirectory(db.getPath(PREF_KEY_UNENTERED_PATH, null).toFile());
 
     FilePath chosenFilePath = new FilePath(fileChooser.showOpenDialog(getStage()));
 
     if (FilePath.isEmpty(chosenFilePath)) return;
-    
+
     srcFilePath = chosenFilePath;
     copyOnly = false;
-    
+
     // See if the chosen file is currently assigned to a file record
-    
+
     HDT_RecordWithPath existingRecord = getRecordFromFilePath(chosenFilePath);
-    
+
     if (existingRecord != null)
-    { 
+    {
       if (existingRecord == curFileRecord) // chosen file is the one already attached to this record
       {
         setRB_CurrentLocationOnly();
@@ -274,8 +274,8 @@ public class FileDialogController extends HyperDialog
           messageDialog("That file is already in use as a picture, person record ID: " + existingRecord.getID(), mtInformation);
         else
           messageDialog("That file is already in use, record ID: " + existingRecord.getID(), mtInformation);
-               
-        // disable moving, only enable copying       
+
+        // disable moving, only enable copying
         setRB_CopyOnly();
       }
     }
@@ -289,27 +289,27 @@ public class FileDialogController extends HyperDialog
       {
         if (rbNeither.isSelected())
           rbMove.setSelected(true);
-        rbNeither.setDisable(true);        
+        rbNeither.setDisable(true);
       }
-      
+
       rbMove.setDisable(false);
       rbCopy.setDisable(false);
     }
-    
+
     tfCurrentPath.setText(srcFilePath.toString());
     tfFileName.setText(srcFilePath.getNameOnly().toString());
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private HDT_RecordWithPath getRecordFromFilePath(FilePath filePath)
   {
     HDT_RecordWithPath record, firstRecord = null;
     Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
-    
+
     if (collEmpty(set)) return null;
-    
+
     for (HyperPath setPath : set)
     {
       record = setPath.getRecord();
@@ -320,12 +320,12 @@ public class FileDialogController extends HyperDialog
         if (firstRecord == null) firstRecord = record;
       }
     }
-    
+
     return firstRecord;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @FXML private void btnUseRecordClick()
   {
@@ -333,39 +333,39 @@ public class FileDialogController extends HyperDialog
     if (ext.length() > 0) ext = FilenameUtils.EXTENSION_SEPARATOR_STR + ext;
     tfFileName.setText(tfRecordName.getText() + ext);
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @FXML private void btnUseFileClick()
   {
     tfRecordName.setText(FilenameUtils.getBaseName(tfFileName.getText()));
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @FXML private void btnExploreClick()
   {
     launchFile(new FilePath(tfNewPath.getText()));
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @FXML private void btnBrowseNewClick()
   {
     DirectoryChooser dirChooser = new DirectoryChooser();
-    
+
     FilePath chosenFilePath = new FilePath(tfNewPath.getText());
-    
+
     dirChooser.setTitle("Select new location");
-    
+
     if (chosenFilePath.exists() && chosenFilePath.isDirectory())
       dirChooser.setInitialDirectory(chosenFilePath.toFile());
     else
       dirChooser.setInitialDirectory(db.getRootFilePath().toFile());
-        
+
     chosenFilePath = new FilePath(dirChooser.showDialog(dialogStage));
     if (FilePath.isEmpty(chosenFilePath)) return;
 
@@ -376,20 +376,20 @@ public class FileDialogController extends HyperDialog
     }
 
     tfNewPath.setText(chosenFilePath.getDirOnly().toString());
-    
+
     setRB_OtherLocationsOK();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override protected boolean isValid()
-  {   
+  {
     if (FilePath.isEmpty(srcFilePath))
     {
       messageDialog("You must enter a source file name.", mtError);
       safeFocus(tfCurrentPath);
-      return false;       
+      return false;
     }
 
     if ((chkDontChangeFilename.isSelected() == false) && (tfFileName.getText().length() == 0))
@@ -397,8 +397,8 @@ public class FileDialogController extends HyperDialog
       messageDialog("You must enter a destination file name.", mtError);
       safeFocus(tfFileName);
       return false;
-    }          
-    
+    }
+
     if (tfNewPath.getText().length() == 0)
     {
       messageDialog("You must enter a destination path.", mtError);
@@ -407,25 +407,25 @@ public class FileDialogController extends HyperDialog
     }
 
     // check to see if destination file name currently points to a file in the database
-    
+
     FilePath fileName;
     boolean success = true;
     FilePath destFilePath = null;
-    
+
     if (chkDontChangeFilename.isSelected())
       fileName = srcFilePath.getNameOnly();
     else
       fileName = new FilePath(tfFileName.getText());
-      
+
     if (rbNeither.isSelected())
       destFilePath = srcFilePath.getDirOnly().resolve(fileName);
     else
       destFilePath = new FilePath(tfNewPath.getText()).resolve(fileName);
-    
+
     HDT_RecordWithPath existingRecord = getRecordFromFilePath(destFilePath);
-    
+
     if (existingRecord != null)
-    { 
+    {
       if (existingRecord == curFileRecord) // chosen file is the one already attached to this record
       {
         // Nothing needs to be done here
@@ -456,7 +456,7 @@ public class FileDialogController extends HyperDialog
         if (rbCopy.isSelected())
           success = srcFilePath.copyTo(destFilePath, true);
         else
-        {         
+        {
           if (srcFilePath.equals(destFilePath))
             success = true;
           else
@@ -468,19 +468,19 @@ public class FileDialogController extends HyperDialog
       }
       catch (IOException e)
       {
-        return falseWithErrorMessage("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + " the file. Reason: " + e.getMessage());     
+        return falseWithErrorMessage("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + " the file. Reason: " + e.getMessage());
       }
-    }  
+    }
     else
     {
       if (srcFilePath.equals(destFilePath))
         success = true;
       else
-      {       
+      {
         try
         {
           success = srcFilePath.renameTo(fileName.toString());
-          
+
           if (success == false)
             messageDialog("Unable to rename the file.", mtError);
           else
@@ -492,15 +492,15 @@ public class FileDialogController extends HyperDialog
         }
       }
     }
-    
+
     if (!success) return false;
-    
+
     if ((recordType == hdtWorkFile) && (curFileRecord == null))
     {
       HDT_WorkFile workFile = (HDT_WorkFile) HyperPath.createRecordAssignedToPath(hdtWorkFile, destFilePath);
       if (workFile == null)
         return falseWithErrorMessage("Internal error #67830");
-      
+
       workFile.setName(tfRecordName.getText());
       curWork.addWorkFile(workFile.getID(), true, true);
     }
@@ -508,18 +508,18 @@ public class FileDialogController extends HyperDialog
     {
       if (recordType == hdtWorkFile)
         HDT_WorkFile.class.cast(curFileRecord).setName(tfRecordName.getText());
-      
+
       HDT_Folder folder = HyperPath.getFolderFromFilePath(destFilePath.getDirOnly(), true);
       if (folder == null)
         return falseWithErrorMessage("Internal error 22937");
-      
-      curFileRecord.getPath().assign(folder, destFilePath.getNameOnly());                
+
+      curFileRecord.getPath().assign(folder, destFilePath.getNameOnly());
     }
-      
+
     return true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

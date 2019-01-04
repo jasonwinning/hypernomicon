@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.wrappers;
@@ -30,17 +30,17 @@ public abstract class AbstractTreeRow<RowType extends AbstractTreeRow<RowType>> 
   protected TreeItem<RowType> treeItem = null;
   protected TreeModel<RowType> treeModel;
   protected ImageView graphic = null;
-  
+
 //---------------------------------------------------------------------------
- 
+
   public abstract ImageView getGraphic();
   public abstract HDT_RecordType getRecordType();
-  public abstract int getRecordID();  
+  public abstract int getRecordID();
   public abstract HDT_Base getRecord();
 
   public final TreeModel<RowType> getTreeModel() { return treeModel; }
   public final TreeItem<RowType> getTreeItem()   { return treeItem; }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -63,14 +63,14 @@ public abstract class AbstractTreeRow<RowType extends AbstractTreeRow<RowType>> 
   public final boolean hasAncestorOfType(HDT_RecordType recordType)
   {
     if (treeItem.getParent() == null) return false;
-    
+
     RowType parent = treeItem.getParent().getValue();
     if (parent.getRecordType() == recordType) return true;
-    
+
     return parent.hasAncestorOfType(recordType);
   }
 
 //---------------------------------------------------------------------------
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
 
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.relations;
@@ -42,7 +42,7 @@ public class NestedValue
 //---------------------------------------------------------------------------
 
   public NestedValue(HDI_OnlineBase<? extends HDI_OfflineBase> item)
-  { 
+  {
     switch (item.getCategory())
     {
       case hdcString : str = HDI_OnlineString.class.cast(item).get(); break;
@@ -51,7 +51,7 @@ public class NestedValue
       case hdcNestedPointer : target = HDI_OnlineNestedPointer.class.cast(item).get(); break;
       default : break;
     }
-    
+
     hdc = item.getCategory();
   }
 
@@ -77,7 +77,7 @@ public class NestedValue
     result = prime * result + (ternary == null ? 0 : ternary.hashCode());
     return result;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -86,11 +86,11 @@ public class NestedValue
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    
+
     NestedValue other = (NestedValue) obj;
-    
+
     if (hdc != other.hdc) return false;
-    
+
     switch (hdc)
     {
       case hdcString        : return str.equals(other.str);
@@ -109,7 +109,7 @@ public class NestedValue
   public static boolean isEmpty(Ternary ternary) { return ternary == Ternary.Unset; }
   public static boolean isEmpty(int id)          { return id < 1; }
   public static boolean isEmpty(HDT_Base target) { return HDT_Record.isEmpty(target); }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -124,7 +124,7 @@ public class NestedValue
       default               : return true;
     }
   }
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

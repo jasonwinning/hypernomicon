@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -42,14 +42,14 @@ public class AboutDialogController extends HyperDialog
   private @FXML Tab tabContributors;
   private @FXML Tab tabAcknowledgements;
   private @FXML Tab tabLicense;
-  
+
   private String tabGeneralHtml, tabContributorsHtml, tabAcknowledgementsHtml;
-  
+
   @Override protected boolean isValid() { return true; }
-  
-//---------------------------------------------------------------------------  
+
 //---------------------------------------------------------------------------
-  
+//---------------------------------------------------------------------------
+
   public static AboutDialogController create(String title)
   {
     AboutDialogController adc = HyperDialog.create("AboutDialog.fxml", title, false);
@@ -57,53 +57,53 @@ public class AboutDialogController extends HyperDialog
     return adc;
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private void init()
   {
     String buildDate = manifestValue("Build-Time"),
            version = manifestValue("Impl-Version");
-     
+
     if (safeStr(buildDate).length() == 0)
       buildDate = "not found";
-    
+
     if (safeStr(version).length() == 0)
       version = "1.0.1";
-        
+
     String family = Font.getDefault().getFamily();
-    
+
     String htmlStart = "<html><head>" + MainTextWrapper.getScriptContent() +
         "<style>a:link { color:#906f6f; } a:visited { color:#906f6f; }</style>" +
         "</head><body style='margin: 0; padding: 0; font-family: " + family + "; font-size: 10pt; color: #906f6f;' bgcolor=\"#241f24\">";
-    
+
     tabGeneralHtml = htmlStart + "Version: " + version + "<br>" +
         "Build date: " + buildDate + "<br>" +
-        "Copyright \u00a9 2015-2019 Jason Winning.<br><br>" + 
+        "Copyright \u00a9 2015-2019 Jason Winning.<br><br>" +
         "Operating system: " + SystemUtils.OS_NAME + "<br>" +
         "Operating system version: " + SystemUtils.OS_VERSION + "<br>" +
         "Java runtime: " + SystemUtils.JAVA_RUNTIME_NAME + "<br>" +
         "Java runtime version: " + SystemUtils.JAVA_RUNTIME_VERSION + "<br>" +
         anchorTag("Website", "http://hypernomicon.org/") + "&nbsp;&nbsp;&nbsp;" +
         anchorTag("GitHub repo", "https://github.com/jasonwinning/hypernomicon") + "</body></html>";
-    
+
     webView.getEngine().titleProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
     {
       MainTextWrapper.handleJSEvent("", webView.getEngine(), new TextViewInfo());
     });
-    
+
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
-    
+
     tabContributorsHtml = htmlStart + "Original design and development: " + anchorTag("Jason Winning", "http://jasonwinning.com") + "<br><br>" +
         anchorTag("List at GitHub", "https://github.com/jasonwinning/hypernomicon/contributors") + "&nbsp;&nbsp;&nbsp;" +
         anchorTag("Add your name to this list!", "https://akrabat.com/the-beginners-guide-to-contributing-to-a-github-project/") +
         "</body></html>";
-    
+
     tabAcknowledgementsHtml = htmlStart + "<div style='-webkit-column-count: 3;'>Hypernomicon uses the following software:<br><ul>" +
 
-        "<li>" + "Apache " + anchorTag("Commons", "https://commons.apache.org/") + ", " + 
-        anchorTag("PDFBox", "https://pdfbox.apache.org/") + ", " + 
-        anchorTag("Tika", "https://tika.apache.org/") + ", " + 
+        "<li>" + "Apache " + anchorTag("Commons", "https://commons.apache.org/") + ", " +
+        anchorTag("PDFBox", "https://pdfbox.apache.org/") + ", " +
+        anchorTag("Tika", "https://tika.apache.org/") + ", " +
         anchorTag("HttpClient", "https://hc.apache.org/httpcomponents-client-ga/") + "</li>" +
         "<li>" + anchorTag("Guava", "https://github.com/google/guava") + "</li>" +
         "<li>" + anchorTag("JxBrowser", "https://www.teamdev.com/jxbrowser") + "</li>" +
@@ -124,23 +124,23 @@ public class AboutDialogController extends HyperDialog
 
         "<li>" + anchorTag("FatCow", "http://www.fatcow.com/free-icons") + "</li>" +
         "<li>" + anchorTag("Fugue", "http://p.yusukekamiyamane.com/") + "</li></ul>" +
-        
+
         "</div></body></html>";
-    
+
     tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> updateHtml(newTab));
-    
+
     updateHtml(tabPane.getSelectionModel().getSelectedItem());
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private String anchorTag(String text, String url)
   {
     return "<a href=\"\" onclick=\"openURL('" + url + "'); return false;\">" + text + "</a>";
   }
-  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private void updateHtml(Tab tab)
@@ -151,12 +151,12 @@ public class AboutDialogController extends HyperDialog
     else
     {
       dialogStage.close();
-      
+
       Platform.runLater(() -> ui.showSearch(true, QueryType.qtReport, ReportEngine.QUERY_LICENSE_AND_NOTICE, null, null, null, ""));
     }
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }

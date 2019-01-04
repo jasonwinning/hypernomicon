@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.wrappers;
@@ -33,30 +33,30 @@ import java.util.HashMap;
 
 public class ResultsRow
 {
-  private HashMap<Integer, String> customValues = new HashMap<>();  
-  
+  private HashMap<Integer, String> customValues = new HashMap<>();
+
   private HDT_Base record;
   private String cbText;
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public ResultsRow(HDT_Base record) { this.record = record; this.cbText = ""; }
   public ResultsRow(String cbText)   { this.record = null;   this.cbText = cbText; }
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public  HDT_Base getRecord()                              { return record; }
   public  void setCustomValue(int customCode, String value) { customValues.put(customCode, value); }
   public  String getTagText(Tag tag)                        { return record == null ? "" : record.getResultTextForTag(tag); }
-  public  String getCustomText(int customCode)              { return customValues.getOrDefault(customCode, ""); } 
+  public  String getCustomText(int customCode)              { return customValues.getOrDefault(customCode, ""); }
   public  String getRecordID()                              { return record == null ? "" : String.valueOf(record.getID()); }
   public  String getRecordName()                            { return record == null ? "" : record.listName(); }
   public  String getSearchKey()                             { return record == null ? "" : record.getSearchKey(); }
-  public  String getSortKey()                               { return record == null ? "" : record.getSortKey(); }  
+  public  String getSortKey()                               { return record == null ? "" : record.getSortKey(); }
   public  String getCBText()                                { return record == null ? cbText : record.listName(); }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -71,21 +71,21 @@ public class ResultsRow
   {
     if (record == null)
       return new ResultCellValue<Instant>("", Instant.MIN);
-    
+
     if (record.getType() == hdtNone)
       return new ResultCellValue<Instant>("", Instant.MIN);
-    
+
     Instant i = null;
-    
+
     switch (dateType)
     {
-      case dateTypeCreation: i = record.getCreationDate(); break;         
+      case dateTypeCreation: i = record.getCreationDate(); break;
       case dateTypeModified: i = record.getModifiedDate(); break;
       case dateTypeView:     i = record.getViewDate();     break;
-        
+
       default: break;
     }
-    
+
     return nullSwitch(i, new ResultCellValue<Instant>("", Instant.MIN), j -> new ResultCellValue<Instant>(dateTimeToUserReadableStr(j), j));
   }
 
@@ -95,7 +95,7 @@ public class ResultsRow
   public String getRecordType()
   {
     if (record == null) return "";
-    
+
     HDT_RecordType type = record.getType();
     return type == hdtNone ? "" : db.getTypeName(type);
   }

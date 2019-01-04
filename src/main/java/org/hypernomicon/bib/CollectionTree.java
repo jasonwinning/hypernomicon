@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.bib;
@@ -33,35 +33,35 @@ import static org.hypernomicon.bib.CollectionTree.BibCollectionType.*;
 public class CollectionTree
 {
   public static enum BibCollectionType { bctAll, bctUnsorted, bctTrash, bctUser }
-  
+
   private final TreeView<BibCollectionRow> treeView;
   private final HashMap<String, BibCollectionRow> keyToRow;
-  
+
   private BibCollectionRow treeRowAllEntries, treeRowUnsorted, treeRowTrash;
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void selectAllEntries()    { treeView.getSelectionModel().select(treeRowAllEntries.getTreeItem()); }  
+  public void selectAllEntries()    { treeView.getSelectionModel().select(treeRowAllEntries.getTreeItem()); }
   public void selectTrash()         { treeView.getSelectionModel().select(treeRowTrash.getTreeItem()); }
   public void selectKey(String key) { treeView.getSelectionModel().select(keyToRow.get(key).getTreeItem()); }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public CollectionTree(TreeView<BibCollectionRow> treeView)
   {
     this.treeView = treeView;
     keyToRow = new HashMap<>();
-    
-    treeView.setCellFactory(theTreeView -> 
+
+    treeView.setCellFactory(theTreeView ->
     {
       TreeCell<BibCollectionRow> row = new TreeCell<>();
-      
+
       row.itemProperty().addListener((observable, oldValue, newValue) ->
       {
         if (oldValue == newValue) return;
-           
+
         if (newValue == null)
         {
           row.setText(null);
@@ -71,43 +71,43 @@ public class CollectionTree
         else
           row.setText(newValue.getText());
       });
-      
+
       return row;
     });
   }
-  
-//---------------------------------------------------------------------------  
+
 //---------------------------------------------------------------------------
-  
+//---------------------------------------------------------------------------
+
   public void clear()
   {
     if (treeView.getRoot() != null)
     {
       treeView.getRoot().getChildren().clear();
       treeView.setRoot(null);
-    }    
-   
+    }
+
     keyToRow.clear();
-    
+
     treeView.setRoot(new TreeItem<BibCollectionRow>(null));
     treeView.setShowRoot(false);
-    
-    treeRowAllEntries = new BibCollectionRow(bctAll); 
-    treeRowUnsorted = new BibCollectionRow(bctUnsorted); 
+
+    treeRowAllEntries = new BibCollectionRow(bctAll);
+    treeRowUnsorted = new BibCollectionRow(bctUnsorted);
     treeRowTrash = new BibCollectionRow(bctTrash);
-    
+
     treeView.getRoot().getChildren().add(treeRowAllEntries.getTreeItem());
     treeView.getRoot().getChildren().add(treeRowUnsorted.getTreeItem());
     treeView.getRoot().getChildren().add(treeRowTrash.getTreeItem());
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void refresh(Map<String, BibCollection> keyToColl)
   {
     pruneNode(treeView.getRoot(), keyToColl);
-    
+
     keyToColl.forEach((key, coll) ->
     {
       if (keyToRow.containsKey(key) == false)
@@ -115,45 +115,45 @@ public class CollectionTree
     });
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private TreeItem<BibCollectionRow> addToTree(String childKey, BibCollection childColl, Map<String, BibCollection> keyToColl)
-  {     
-    TreeItem<BibCollectionRow> parentItem;    
+  {
+    TreeItem<BibCollectionRow> parentItem;
     String parentKey = childColl.getParentKey();
-    
+
     if (parentKey == null)
       parentItem = treeView.getRoot();
     else if (keyToRow.containsKey(parentKey))
       parentItem = keyToRow.get(parentKey).getTreeItem();
     else
       parentItem = addToTree(parentKey, keyToColl.get(parentKey), keyToColl);
-    
+
     BibCollectionRow childRow = new BibCollectionRow(childColl);
     keyToRow.put(childKey, childRow);
     insertTreeItem(parentItem.getChildren(), childRow);
-    
+
     return childRow.getTreeItem();
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private void pruneNode(TreeItem<BibCollectionRow> treeItem, Map<String, BibCollection> keyToColl)
   {
     Iterator<TreeItem<BibCollectionRow>> it = treeItem.getChildren().iterator();
-    
+
     while (it.hasNext())
     {
-      boolean removed = false;      
+      boolean removed = false;
       TreeItem<BibCollectionRow> childItem = it.next();
-      
+
       BibCollectionRow row = childItem.getValue();
       if (row.getType() == BibCollectionType.bctUser)
       {
         String key = row.getKey();
-        
+
         if (keyToColl.containsKey(key) == false)
         {
           it.remove();
@@ -163,18 +163,18 @@ public class CollectionTree
         else
           row.updateCollObj(keyToColl.get(key));
       }
-      
+
       if (removed == false)
         pruneNode(childItem, keyToColl);
     }
   }
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void rebuild(Map<String, BibCollection> keyToColl)
   {
     clear();
-    
+
     keyToColl.forEach((childKey, childColl)  ->
     {
       BibCollectionRow childRow = keyToRow.get(childKey);
@@ -183,28 +183,28 @@ public class CollectionTree
         childRow = new BibCollectionRow(childColl);
         keyToRow.put(childKey, childRow);
       }
-     
+
       String parentKey = childColl.getParentKey();
       if (parentKey == null)
       {
         insertTreeItem(treeView.getRoot().getChildren(), childRow);
       }
       else
-      {        
+      {
         BibCollection parentColl = keyToColl.get(parentKey);
         BibCollectionRow parentRow = keyToRow.get(parentKey);
         if (parentRow == null)
-        {          
+        {
           parentRow = new BibCollectionRow(parentColl);
           keyToRow.put(parentKey, parentRow);
         }
-        
+
         insertTreeItem(parentRow.getTreeItem().getChildren(), childRow);
-      }      
+      }
     });
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private void insertTreeItem(ObservableList<TreeItem<BibCollectionRow>> list, BibCollectionRow newRow)
@@ -217,11 +217,11 @@ public class CollectionTree
         return;
       }
     }
-    
+
     list.add(newRow.getTreeItem());
   }
- 
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }

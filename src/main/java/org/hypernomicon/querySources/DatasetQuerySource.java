@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.querySources;
@@ -25,10 +25,10 @@ import org.hypernomicon.model.records.HDT_RecordType;
 public class DatasetQuerySource implements QuerySource
 {
   private final HDT_RecordType type;
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public DatasetQuerySource(HDT_RecordType type) { this.type = type; }
 
   public HDT_RecordType recordType()             { return type; }
@@ -37,8 +37,8 @@ public class DatasetQuerySource implements QuerySource
   @Override public QuerySourceType sourceType()            { return QuerySourceType.QST_recordsByType; }
   @Override public boolean containsRecord(HDT_Base record) { return record.getType() == type; }
   @Override public HDT_Base getRecord(int ndx)             { return db.records(type).getByIDNdx(ndx); }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

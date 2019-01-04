@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view;
@@ -102,7 +102,7 @@ import javafx.util.StringConverter;
 //---------------------------------------------------------------------------
 
 public final class MainController
-{   
+{
   @FXML private BorderPane mainPane;
   @FXML private StackPane stackPane;
   @FXML private ToolBar tbGoTo;
@@ -191,59 +191,59 @@ public final class MainController
   public HyperViewSequence viewSequence;
   public final EnumHashBiMap<TabEnum, Tab> selectorTabs = EnumHashBiMap.create(TabEnum.class);
   public HyperFavorites favorites;
-  public OmniFinder omniFinder;  
+  public OmniFinder omniFinder;
   public HyperCB hcbGoTo;
   public HyperTable htFind;
   public final ComboBox<TreeRow> cbTreeGoTo = new ComboBox<>();
   private ComboBox<ResultsRow> cbResultGoTo = null;
   private ClickHoldButton chbBack, chbForward;
   public TextField selectorTF = null;
-  
+
   public HDT_Base treeSubjRecord = null, treeObjRecord = null;
   public final List<TreeTargetType> treeTargetTypes = new ArrayList<>();
-  
+
   private double toolBarWidth = 0;
   public Tooltip ttDates;
   private boolean selectorTabChangeIsProgrammatic = false, maximized = false, internetNotCheckedYet = true;
   private double maxWidth = 0.0, maxHeight = 0.0;
-  
+
   public static final String TREE_SELECT_BTN_CAPTION = "Select";
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public ObservableList<ResultsRow> results() { return curQV.resultsTable.getTV().getItems(); }
   public MenuBar getMenuBar()                 { return menuBar; }
   public TreeWrapper getTree()                { return TreeTabController.class.cast(getHyperTab(treeTab)).tree; }
   public Stage primaryStage()                 { return app.getPrimaryStage(); }
-  
+
   @FXML private void mnuExitClick()           { shutDown(true, true, true); }
   @FXML private void mnuExitNoSaveClick()     { if (confirmDialog("Abandon changes and quit?")) shutDown(false, true, false); }
   @FXML void mnuAboutClick()                  { AboutDialogController.create("About " + appTitle).showModal(); }
   @FXML private void mnuChangeFavOrderClick() { FavOrderDialogController.create("Change Order of Favorites").showModal(); }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void init() throws IOException
-  {   
+  {
     menuBar.setUseSystemMenuBar(true);
-    
+
     updateProgress("", -1);
 
     Stage stage = primaryStage();
 
     windows.push(stage);
-    
+
     stage.focusedProperty().addListener((Observable, oldValue, newValue) ->
     {
       if (windows.getCyclingFocus()) return;
-      
+
       if ((newValue == null) || (newValue.booleanValue() == false)) return;
-      
+
       windows.push(stage);
     });
-    
+
     stage.widthProperty().addListener((Observable, oldValue, newValue) ->
     {
       if (newValue.doubleValue() < oldValue.doubleValue())
@@ -255,19 +255,19 @@ public final class MainController
         maxWidth = newValue.doubleValue();
       }
     });
-    
+
     stage.heightProperty().addListener((observable, oldValue, newValue) ->
     {
       if (newValue.doubleValue() < oldValue.doubleValue())
         maximized = false;
       else if ((newValue.doubleValue() >= maxHeight) && (stage.getWidth() >= maxWidth) && (maxHeight > 0.0))
-      {  
+      {
         maximized = true;
         maxHeight = newValue.doubleValue();
         maxWidth = stage.getWidth();
       }
     });
-    
+
     stage.maximizedProperty().addListener((observable, oldValue, newValue) ->
     {
       if (newValue && !oldValue)
@@ -277,12 +277,12 @@ public final class MainController
         maxHeight = stage.getHeight();
       }
     });
-    
+
     MainTextWrapper.init();
 
     ttDates = new Tooltip("No dates to show.");
     ttDates.setStyle("-fx-font-size: 14px;");
-    
+
     PersonTabController     .addHyperTab(personTab     , tabPersons     , "PersonTab.fxml");
     InstitutionTabController.addHyperTab(institutionTab, tabInstitutions, "InstitutionTab.fxml");
     WorkTabController       .addHyperTab(workTab       , tabWorks       , "WorkTab.fxml");
@@ -291,73 +291,73 @@ public final class MainController
     PositionTab             .addHyperTab(positionTab   , tabPositions   , new PositionTab());
     ArgumentTab             .addHyperTab(argumentTab   , tabArguments   , new ArgumentTab());
     NoteTab                 .addHyperTab(noteTab       , tabNotes       , new NoteTab());
-    TermTab                 .addHyperTab(termTab       , tabTerms       , new TermTab());        
+    TermTab                 .addHyperTab(termTab       , tabTerms       , new TermTab());
     QueriesTabController    .addHyperTab(queryTab      , tabQueries     , "QueriesTab.fxml");
     TreeTabController       .addHyperTab(treeTab       , tabTree        , "TreeTab.fxml");
-    
+
     addSelectorTab(omniTab);
     addSelectorTab(listTab);
-       
+
     chbBack = new ClickHoldButton(btnBack, Side.TOP);
     chbForward = new ClickHoldButton(btnForward, Side.TOP);
-    
+
     btnBack.setTooltip(new Tooltip("Click to go back, hold to see history"));
     btnForward.setTooltip(new Tooltip("Click to go forward, hold to see history"));
-    
+
     chbBack   .setOnAction(event -> btnBackClick());
     chbForward.setOnAction(event -> btnForwardClick());
-    
+
     viewSequence = new HyperViewSequence(tabPane, chbForward, chbBack);
-   
+
     tabViewSelector.disableProperty().bind(BooleanExpression.booleanExpression(tabQueries.selectedProperty().or(tabTree.selectedProperty())).not());
-       
+
     setSelectorTab(selectorTabPane.getTabs().get(selectorTabPane.getTabs().size() - 1));
-      
+
     hcbGoTo = new HyperCB(cbGoTo, ctDropDown, new RecordByTypePopulator(), null);
-    
+
     htFind = new HyperTable(tvFind, 1, false, PREF_KEY_HT_FIND); htFind.disableRefreshAfterCellUpdate = true;
-    
+
     htFind.addIconCol();
     htFind.addCol(hdtNone, ctIncremental);
     htFind.addCol(hdtNone, ctNone);
     htFind.addCol(hdtNone, ctNone);
-           
+
     htFind.setOnShowMore(() -> tfOmniGoToChange(tfOmniGoTo.getText(), true));
-    
+
     RecordListView.addDefaultMenuItems(htFind);
-    
+
     omniFinder = new OmniFinder(htFind);
-    
+
     btnFileMgr.setOnAction(event -> runFileMgr());
     btnBibMgr .setOnAction(event -> runBibMgr());
-    
+
     btnGoTo.setOnAction         (event -> btnGoToClick(false));
     mnuRecordSelect.setOnAction (event -> btnGoToClick(true));
-    
+
     hcbGoTo.setInnerOnAction(event -> recordLookup());
     hcbGoTo.dontCreateNewRecord = true;
-    
-    mnuImportBibFile     .setOnAction(event -> importBibFile(null, null));     
+
+    mnuImportBibFile     .setOnAction(event -> importBibFile(null, null));
     mnuImportBibClipboard.setOnAction(event -> importBibFile(convertMultiLineStrToStrList(getClipboardText(false), false), null));
-    
+
     mnuFindNextAll       .setOnAction(event -> getTree().find(cbTreeGoTo.getEditor().getText(), true,  false));
     mnuFindPreviousAll   .setOnAction(event -> getTree().find(cbTreeGoTo.getEditor().getText(), false, false));
     mnuFindNextInName    .setOnAction(event -> getTree().find(cbTreeGoTo.getEditor().getText(), true,  true ));
     mnuFindPreviousInName.setOnAction(event -> getTree().find(cbTreeGoTo.getEditor().getText(), false, true ));
-    
+
     btnSaveAll.       setOnAction(event -> saveAllToDisk(true, true, true));
     btnDelete.        setOnAction(event -> deleteCurrentRecord(true));
     btnRevert.        setOnAction(event -> update());
     btnAdvancedSearch.setOnAction(event -> showSearch(false));
-    
+
     if (appPrefs.getBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true))
       btnPointerLaunch.setSelected(true);
     else
       btnPointerPreview.setSelected(true);
-    
+
     btnPointerLaunch.selectedProperty().addListener((observable, oldValue, newValue) ->
     {
-      if ((newValue == null) || (newValue.booleanValue() == false) || (newValue.equals(oldValue))) return;    
+      if ((newValue == null) || (newValue.booleanValue() == false) || (newValue.equals(oldValue))) return;
       appPrefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true);
     });
 
@@ -372,44 +372,44 @@ public final class MainController
       if (appPrefs.getBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true))
         btnPointerLaunch.setSelected(true);
     });
-    
+
     btnPointerPreview.setOnAction(event ->
     {
       if (appPrefs.getBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true) == false)
         btnPointerPreview.setSelected(true);
     });
-    
+
     btnIncrement.setOnAction(event -> incDecClick(true));
     btnDecrement.setOnAction(event -> incDecClick(false));
-    
+
     btnTextSearch.setTooltip(new Tooltip("Search within description"));
-    
+
     apFindBackground.setOnMousePressed(event -> hideFindTable());
-    
+
     tfOmniGoTo.setOnAction(event -> htFind.doRowAction());
-    
+
     ttDates.setAutoHide(true);
-    
+
     tabTree        .setGraphic(getImageViewForRelativePath("resources/images/treeview-small.png"));
     tabQueries     .setGraphic(getImageViewForRelativePath("resources/images/glasses-db.png"));
     tabOmniSelector.setGraphic(getImageViewForRelativePath("resources/images/globe.png"));
     tabViewSelector.setGraphic(getImageViewForRelativePath("resources/images/details.png"));
-    
+
     favorites = new HyperFavorites(mnuFavorites, mnuQueries);
-    
+
     HyperTab.getHyperTabs().forEach(hyperTab ->
     {
       TabEnum hyperTabEnum = hyperTab.getTabEnum();
       String path = getGraphicRelativePathByType(HyperTab.getRecordTypeByTabEnum(hyperTabEnum));
-      
+
       ImageView graphic = getImageViewForRelativePath(path);
-      if (graphic == null) return; 
+      if (graphic == null) return;
 
       hyperTab.getTab().setGraphic(graphic);
-      
+
       nullSwitch(selectorTabs.get(hyperTabEnum), selectorTab -> selectorTab.setGraphic(getImageViewForRelativePath(path)));
     });
-    
+
     if (SystemUtils.IS_OS_MAC)
     {
       topHBox.getChildren().remove(topToolBar);
@@ -419,14 +419,14 @@ public final class MainController
       midAnchorPane.getChildren().add(topToolBar);
       AnchorPane.setTopAnchor(topToolBar, 0.0);
       AnchorPane.setRightAnchor(topToolBar, 0.0);
-      
+
       midAnchorPane.widthProperty().addListener((observable, oldValue, newValue) ->
-      {        
+      {
         if ((newValue != null) && (newValue.doubleValue() > 1))
           adjustToolBar(newValue.doubleValue());
-      });      
+      });
     }
-    
+
     if (JIntellitype.isJIntellitypeSupported())
     {
       JIntellitype.getInstance().addIntellitypeListener(code ->
@@ -434,29 +434,29 @@ public final class MainController
         switch (code)
         {
           case JIntellitype.APPCOMMAND_BROWSER_BACKWARD :
-            
+
             if (primaryStage().isFocused())
               Platform.runLater(this::btnBackClick);
             else if (fileManagerDlg != null)
               if (fileManagerDlg.getStage().isShowing() && fileManagerDlg.getStage().isFocused())
                 Platform.runLater(fileManagerDlg::btnBackClick);
             return;
-            
+
           case JIntellitype.APPCOMMAND_BROWSER_FORWARD :
-            
+
             if (primaryStage().isFocused())
               Platform.runLater(this::btnForwardClick);
-            else if (fileManagerDlg != null) 
+            else if (fileManagerDlg != null)
               if (fileManagerDlg.getStage().isShowing() && fileManagerDlg.getStage().isFocused())
                 Platform.runLater(fileManagerDlg::btnForwardClick);
             return;
         }
       });
     }
-       
+
 //---------------------------------------------------------------------------
 
-    db.addDeleteHandler((record) -> 
+    db.addDeleteHandler((record) ->
     {
       if (record.getType() == hdtPerson)
       {
@@ -464,44 +464,44 @@ public final class MainController
         if (personHyperTab.activeRecord() == record)
           personHyperTab.curPicture = null;  // User has already been asked if they want to delete the picture; don't ask again
       }
-      
+
       for (QueryView qv : QueriesTabController.class.cast(HyperTab.getHyperTab(queryTab)).queryViews)
         qv.resultsTable.getTV().getItems().removeIf(row -> row.getRecord() == record);
 
       int ndx = favorites.indexOfRecord(record);
-      
+
       if (ndx > -1)
       {
         mnuFavorites.getItems().remove(ndx);
         updateFavorites();
       }
-      
-      viewSequence.removeRecord(record); 
+
+      viewSequence.removeRecord(record);
     });
 
-//---------------------------------------------------------------------------    
-    
+//---------------------------------------------------------------------------
+
     selectorTabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) ->
     {
       if ((newTab == null) || (oldTab == newTab)) return;
-        
-      if ((oldTab != null) && (oldTab != tabOmniSelector) && (oldTab != tabViewSelector))        
+
+      if ((oldTab != null) && (oldTab != tabOmniSelector) && (oldTab != tabViewSelector))
         oldTab.setContent(null);
-      
+
       if ((newTab != tabOmniSelector) && (newTab != tabViewSelector))
         newTab.setContent(apGoTo);
-      
+
       if (selectorTabChangeIsProgrammatic) return;
-      
-      updateSelectorTab(true);      
+
+      updateSelectorTab(true);
     });
-   
+
 //---------------------------------------------------------------------------
-    
+
     tfOmniGoTo.setOnMouseClicked(event ->
     {
       if (htFind.getDataRowCount() > 0)
-        showFindTable();      
+        showFindTable();
     });
 
 //---------------------------------------------------------------------------
@@ -511,58 +511,58 @@ public final class MainController
       if ((newValue != null) && (newValue.equals(oldValue) == false))
         tfOmniGoToChange(newValue, false);
     });
-    
-//---------------------------------------------------------------------------    
-    
+
+//---------------------------------------------------------------------------
+
     tfOmniGoTo.setOnKeyPressed(event ->
     {
       switch (event.getCode())
       {
         case DOWN : case UP : case PAGE_DOWN : case PAGE_UP :
-          
+
           showFindTable();
           tvFind.fireEvent(event.copyFor(tvFind, tvFind));
           event.consume();
           break;
-          
-        default : break;          
+
+        default : break;
       }
     });
-      
+
 //---------------------------------------------------------------------------
-    
+
     ivDates.setOnMouseEntered(event ->
     {
       if (ttDates.isShowing() == false)
         Platform.runLater(() -> ttDates.show(ivDates, event.getScreenX(), event.getScreenY()));
     });
-    
-//---------------------------------------------------------------------------    
-    
+
+//---------------------------------------------------------------------------
+
     tfRecord.focusedProperty().addListener((observable, oldValue, newValue) ->
     {
-      if (newValue) 
+      if (newValue)
         tfRecord.setText("");
       else
         updateBottomPanel(true);
     });
-    
-//---------------------------------------------------------------------------    
-    
+
+//---------------------------------------------------------------------------
+
     tfID.focusedProperty().addListener((observable, oldValue, newValue) ->
     {
       if ((newValue.booleanValue() == false) && (activeRecord() != null))
         tfID.setText("" + activeRecord().getID());
       else
-        tfID.setText("");  
+        tfID.setText("");
     });
-    
-//---------------------------------------------------------------------------    
-    
+
+//---------------------------------------------------------------------------
+
     tfRecord.setOnAction(event ->
     {
       if ((activeTab() == treeTab) || (activeTab() == queryTab)) return;
-      if (activeRecord() == null) 
+      if (activeRecord() == null)
       {
         tfRecord.setText("");
         return;
@@ -577,46 +577,46 @@ public final class MainController
           goToRecord(db.records(activeType()).getByKeyNdx(newRecordNdx), true);
           return;
         }
-      
+
       tfRecord.setText("");
     });
 
-//---------------------------------------------------------------------------    
-    
-    btnPreviewWindow.setOnAction(event -> 
+//---------------------------------------------------------------------------
+
+    btnPreviewWindow.setOnAction(event ->
     {
       PreviewSource src = determinePreviewContext();
-      
+
       if (activeTab() == TabEnum.miscFileTab)
       {
         HDT_MiscFile miscFile = (HDT_MiscFile) activeRecord();
-        
+
         if (miscFile == null)
           previewWindow.clearPreview(src);
         else
           previewWindow.setPreview(src, miscFile.getPath().getFilePath(), -1, -1, miscFile);
       }
-        
+
       openPreviewWindow(src);
     });
-    
-//---------------------------------------------------------------------------    
-    
+
+//---------------------------------------------------------------------------
+
     tfID.setOnAction(event ->
     {
       if ((activeTab() == treeTab) || (activeTab() == queryTab)) return;
-      
+
       HDT_Base record = activeRecord();
-      if (record == null) 
+      if (record == null)
       {
         tfID.setText("");
         return;
       }
-      
+
       int newRecordID = parseInt(tfID.getText(), -1);
-      if (record.getID() == newRecordID) 
+      if (record.getID() == newRecordID)
         return;
-     
+
       if ((newRecordID > 0) && db.records(activeType()).getIDNdxByID(newRecordID) > -1)
       {
         goToRecord(db.records(activeType()).getByID(newRecordID), true);
@@ -625,19 +625,19 @@ public final class MainController
 
       tfID.setText("" + activeRecord().getID());
     });
-    
-//---------------------------------------------------------------------------    
-    
-    mnuFindWithinName.setOnAction(event -> 
+
+//---------------------------------------------------------------------------
+
+    mnuFindWithinName.setOnAction(event ->
     {
       if (selectorTabEnum() == omniTab)
         showSearch(true, QueryType.qtAllRecords, QUERY_WITH_NAME_CONTAINING, null, new HyperTableCell(-1, selectorTF.getText(), hdtNone), null, selectorTF.getText());
       else
-        mnuFindWithinNameClick(); 
+        mnuFindWithinNameClick();
     });
-    
-//---------------------------------------------------------------------------    
-    
+
+//---------------------------------------------------------------------------
+
     mnuFindWithinAnyField.setOnAction(event ->
     {
       if (selectorTabEnum() == omniTab)
@@ -645,28 +645,28 @@ public final class MainController
       else
         showSearch(true, QueryType.fromRecordType(selectorType()), QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(-1, selectorTF.getText(), hdtNone), null, selectorTF.getText());
     });
-           
+
 //---------------------------------------------------------------------------
-    
-    primaryStage().setOnCloseRequest(event -> 
+
+    primaryStage().setOnCloseRequest(event ->
     {
       shutDown(true, true, true);
       event.consume();
     });
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void addSelectorTab(TabEnum tabEnum)
   {
     int ndx = selectorTabPane.getTabs().size() - (selectorTabs.size() + 1);
-    
+
     selectorTabs.put(tabEnum, selectorTabPane.getTabs().get(ndx));
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public PreviewSource determinePreviewContext()
   {
@@ -674,104 +674,104 @@ public final class MainController
     {
       switch (activeTab())
       {
-        case personTab : return pvsPersonTab;          
-        case workTab :   return pvsWorkTab;          
-        case queryTab :  return pvsQueryTab;        
+        case personTab : return pvsPersonTab;
+        case workTab :   return pvsWorkTab;
+        case queryTab :  return pvsQueryTab;
         case treeTab :   return pvsTreeTab;
-        default :        return pvsOther;                 
+        default :        return pvsOther;
       }
     }
-    
+
     if ((fileManagerDlg != null) && fileManagerDlg.getStage().isShowing() && fileManagerDlg.getStage().isFocused())
       return pvsManager;
-    
+
     return pvsOther;
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void btnForwardClick()
   {
     if (btnForward.isDisabled()) return;
     if (cantSaveRecord(true)) return;
-    
+
     viewSequence.stepForward();
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void btnBackClick()
   {
     if (btnBack.isDisabled()) return;
     if (cantSaveRecord(true)) return;
-    
+
     viewSequence.stepBack();
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void openPreviewWindow(PreviewSource src)
   {
     if (App.jxBrowserDisabled) return;
-    
+
     if (src != null)
       previewWindow.switchTo(src);
-    
+
     if (previewWindow.getStage().isShowing())
       windows.focusStage(previewWindow.getStage());
     else
       previewWindow.showNonmodal();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void runFileMgr()
-  {   
+  {
     if (fileManagerDlg.getStage().isShowing())
     {
       windows.focusStage(fileManagerDlg.getStage());
       return;
     }
-   
+
     if (cantSaveRecord(true)) return;
-    
+
     fileManagerDlg.showNonmodal();
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void runBibMgr()
-  {   
+  {
     if (bibManagerDlg.getStage().isShowing())
     {
       windows.focusStage(bibManagerDlg.getStage());
       return;
     }
-   
+
     bibManagerDlg.showNonmodal();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void adjustToolBar(double anchorWidth)
   {
     if (anchorWidth == 0)
       anchorWidth = midAnchorPane.getWidth();
-    
+
     Point2D p2 = midAnchorPane.localToScreen(anchorWidth, 0);
     Point2D p1 = tabTree.getGraphic().localToScreen(16, 0);
-    
+
     if ((p1.getX() > 1) && (p2.getX() > 1))
     {
       if (toolBarWidth == 0)
         toolBarWidth = topToolBar.getWidth();
-      
+
       if (toolBarWidth > 1)
       {
         double diff = ((p2.getX() - toolBarWidth) - p1.getX()) - 36;
@@ -779,36 +779,36 @@ public final class MainController
       }
     }
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @FXML public void btnTextSearchClick()
-  {   
+  {
     if (db.isLoaded() == false) return;
 
     hideFindTable();
-    
+
     currentTab().findWithinDesc(selectorTF.getText());
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void btnGoToClick(boolean fromMenu)
   {
     if (selectorTabEnum() != listTab)
     {
       hcbGoTo.triggerOnAction();
-      
+
       if (hcbGoTo.selectedID() > 0)
         recordLookup();
 
       return;
     }
-    
+
     TabEnum curTab = activeTab();
-    
+
     if (curTab == queryTab)
     {
       curQV.resultsTable.dblClick(curQV.resultsTable.getTV().getSelectionModel().getSelectedItem());
@@ -821,23 +821,23 @@ public final class MainController
       goToRecord(getTree().selectedRecord(), false);
       return;
     }
-    
+
     String text = cbTreeGoTo.getEditor().getText();
     if (text.length() > 0)
       getTree().findAgain(text);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public String getGraphicRelativePath(HDT_Base record)
   {
     switch (record.getType())
     {
       case hdtWork :
-                
+
         WorkTypeEnum workType = HDT_Work.class.cast(record).getWorkTypeValue();
-        
+
         switch (workType)
         {
           case wtBook:            return "resources/images/book.png";
@@ -847,28 +847,28 @@ public final class MainController
           case wtRecording:       return "resources/images/recording.png";
           case wtWebPage:         return "resources/images/text-html.png";
           case wtUnenteredSet:    return "resources/images/inbox-document-text.png";
-          default:                return "resources/images/unknown.png";     
+          default:                return "resources/images/unknown.png";
         }
-        
+
       case hdtMiscFile :
-        
+
         HDT_MiscFile miscFile = (HDT_MiscFile) record;
-        
+
         if (miscFile.getPath().isEmpty() == false)
           return getImageRelPathForFilePath(miscFile.getPath().getFilePath(), null);
 
         break;
-        
+
       default :
-        
+
         break;
     }
-    
+
     return getGraphicRelativePathByType(record.getType());
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public String getGraphicRelativePathByType(HDT_RecordType type)
   {
@@ -900,22 +900,22 @@ public final class MainController
     HDT_RecordType type = selectorType();
     String query = selectorTF.getText();
     boolean backClick = activeTab() != queryTab;
-    
+
     lblStatus.setText("");
-    
+
     if (!showSearch(true, QueryType.fromRecordType(type), QUERY_WITH_NAME_CONTAINING, null, new HyperTableCell(-1, query, hdtNone), null, query))
     {
       discardLastQuery(backClick);
       return;
     }
-    
+
     // The following is done inside a runLater command because the results table gets populated inside a runLater; this runLater needs
     // to run after that one
-    
+
     Platform.runLater(() ->
     {
       int num = results().size();
-      
+
       if (num == 1)
         goToRecord(results().get(0).getRecord(), false);
       else if (num == 0)
@@ -925,16 +925,16 @@ public final class MainController
       }
     });
   }
-  
+
   // This assumes that the Queries tab is currently selected
   //
   public void discardLastQuery(boolean backClick)
   {
     QueriesTabController.class.cast(HyperTab.getHyperTab(queryTab)).closeCurrentView();
-       
+
     if (backClick) btnBackClick();
   }
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -948,7 +948,7 @@ public final class MainController
       {
         if (cantSaveRecord(false))
           if (prompt)
-            if (confirmDialog("Unable to accept most recent changes to this record; however, all or data will be saved. Continue exiting?") == false)             
+            if (confirmDialog("Unable to accept most recent changes to this record; however, all or data will be saved. Continue exiting?") == false)
               return;
 
         if (appPrefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))
@@ -961,45 +961,45 @@ public final class MainController
               return;
           }
         }
-           
+
         saveAllToDisk(false, false, false);
       }
 
       HyperTab.getHyperTabs().forEach(HyperTab::clear);
-          
+
       folderTreeWatcher.stop();
-     
-      try { db.close(null); } 
+
+      try { db.close(null); }
       catch (HDB_InternalError e)
       {
         messageDialog(e.getMessage(), mtError);
       }
     }
-    
+
     closeWindows(true);
-    
+
     if (JIntellitype.isJIntellitypeSupported())
-      JIntellitype.getInstance().cleanUp();     
-    
+      JIntellitype.getInstance().cleanUp();
+
     Stage stage = primaryStage();
-    
+
     if (savePrefs)
     {
       getHyperTabs().forEach(HyperTab::getDividerPositions);
       fileManagerDlg.getDividerPositions();
       bibManagerDlg.getDividerPositions();
-      
+
       boolean iconified = stage.isIconified();
       boolean fullScreen = stage.isFullScreen();
       boolean maximized;
-      
+
       if (Environment.isMac())
         maximized = this.maximized;
       else
         maximized = stage.isMaximized(); // stage.maximized is never changed from true to false on Mac OS X. JDK-8087618
-      
+
       if (fullScreen || maximized) iconified = false; // This has to be done due to bug JDK-8087997
-      
+
       appPrefs.putDouble(PREF_KEY_WINDOW_X, stage.getX());
       appPrefs.putDouble(PREF_KEY_WINDOW_Y, stage.getY());
       appPrefs.putDouble(PREF_KEY_WINDOW_WIDTH, stage.getWidth());
@@ -1007,7 +1007,7 @@ public final class MainController
       appPrefs.putBoolean(PREF_KEY_WINDOW_ICONIFIED, iconified);
       appPrefs.putBoolean(PREF_KEY_WINDOW_FULLSCREEN, fullScreen);
       appPrefs.putBoolean(PREF_KEY_WINDOW_MAXIMIZED, maximized);
-  
+
       if (fileManagerDlg.shownAlready())
       {
         appPrefs.putDouble(PREF_KEY_FM_WINDOW_X, fileManagerDlg.getStage().getX());
@@ -1015,7 +1015,7 @@ public final class MainController
         appPrefs.putDouble(PREF_KEY_FM_WINDOW_WIDTH, fileManagerDlg.getStage().getWidth());
         appPrefs.putDouble(PREF_KEY_FM_WINDOW_HEIGHT, fileManagerDlg.getStage().getHeight());
       }
-  
+
       if (bibManagerDlg.shownAlready())
       {
         appPrefs.putDouble(PREF_KEY_BM_WINDOW_X, bibManagerDlg.getStage().getX());
@@ -1023,7 +1023,7 @@ public final class MainController
         appPrefs.putDouble(PREF_KEY_BM_WINDOW_WIDTH, bibManagerDlg.getStage().getWidth());
         appPrefs.putDouble(PREF_KEY_BM_WINDOW_HEIGHT, bibManagerDlg.getStage().getHeight());
       }
-  
+
       if (previewWindow.shownAlready())
       {
         appPrefs.putDouble(PREF_KEY_PREV_WINDOW_X, previewWindow.getStage().getX());
@@ -1031,15 +1031,15 @@ public final class MainController
         appPrefs.putDouble(PREF_KEY_PREV_WINDOW_WIDTH, previewWindow.getStage().getWidth());
         appPrefs.putDouble(PREF_KEY_PREV_WINDOW_HEIGHT, previewWindow.getStage().getHeight());
       }
-      
+
       if (contentsWindow.shownAlready())
       {
         appPrefs.putDouble(PREF_KEY_CONTENTS_WINDOW_X, contentsWindow.getStage().getX());
         appPrefs.putDouble(PREF_KEY_CONTENTS_WINDOW_Y, contentsWindow.getStage().getY());
         appPrefs.putDouble(PREF_KEY_CONTENTS_WINDOW_WIDTH, contentsWindow.getStage().getWidth());
-        appPrefs.putDouble(PREF_KEY_CONTENTS_WINDOW_HEIGHT, contentsWindow.getStage().getHeight());      
+        appPrefs.putDouble(PREF_KEY_CONTENTS_WINDOW_HEIGHT, contentsWindow.getStage().getHeight());
       }
-      
+
       HyperTable.saveColWidthsToPrefs();
     }
 
@@ -1047,10 +1047,10 @@ public final class MainController
       Platform.runLater(previewWindow::cleanup); // This eventually closes the application main window
     else
       stage.close();
-    
+
     return;
   }
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -1065,24 +1065,24 @@ public final class MainController
     if ((exitingApp == false) || (Environment.isMac() == false))
       if ((previewWindow != null) && previewWindow.getStage().isShowing())
         previewWindow.getStage().close();
-    
+
     if ((contentsWindow != null) && contentsWindow.getStage().isShowing())
       contentsWindow.getStage().close();
-  } 
+  }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void enableAll(boolean enabled)
   {
     boolean disabled = (enabled == false);
-    
+
     gpBottom.getChildren().forEach(node -> node.setDisable(disabled));
-    
+
     apStatus.setDisable(false);
-    
+
     getHyperTabs().forEach(hyperTab -> hyperTab.enable(enabled));
-    
+
     mnuNewDatabase.setDisable(disabled);
     mnuCloseDatabase.setDisable(disabled);
     mnuExitNoSave.setDisable(disabled);
@@ -1090,7 +1090,7 @@ public final class MainController
     mnuNewField.setDisable(disabled);
     mnuNewCountry.setDisable(disabled);
     mnuNewRank.setDisable(disabled);
-    mnuNewPersonStatus.setDisable(disabled);    
+    mnuNewPersonStatus.setDisable(disabled);
     mnuSaveReloadAll.setDisable(disabled);
     mnuRevertToDiskCopy.setDisable(disabled);
     mnuAddToQueryResults.setDisable(disabled);
@@ -1100,26 +1100,26 @@ public final class MainController
     btnMentions.setDisable(disabled);
     btnAdvancedSearch.setDisable(disabled);
     btnSaveAll.setDisable(disabled);
-    
-    if (disabled) 
+
+    if (disabled)
       getTree().clear();
-      
+
     hideFindTable();
-    
+
     updateBibImportMenus();
     updateFavorites();
     updateTopicFolders();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void updateBibImportMenus()
   {
-    mnuImportBibFile.setVisible(db.bibLibraryIsLinked());    
+    mnuImportBibFile.setVisible(db.bibLibraryIsLinked());
     mnuImportBibClipboard.setVisible(db.bibLibraryIsLinked());
     mnuBibImportSeparator.setVisible(db.bibLibraryIsLinked());
-    
+
     if (db.bibLibraryIsLinked())
     {
       if (topToolBar.getItems().contains(btnBibMgr) == false)
@@ -1129,43 +1129,43 @@ public final class MainController
       topToolBar.getItems().remove(btnBibMgr);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void initResultCB()
   {
     cbResultGoTo = new ComboBox<ResultsRow>();
     cbResultGoTo.setEditable(true);
-    
+
     copyRegionLayout(cbGoTo, cbResultGoTo);
-    
+
     QueriesTabController queriesTab = HyperTab.getHyperTab(queryTab);
     queriesTab.setCB(cbResultGoTo);
-    
-    cbResultGoTo.setConverter(new StringConverter<ResultsRow>() 
+
+    cbResultGoTo.setConverter(new StringConverter<ResultsRow>()
     {
-      @Override public String toString(ResultsRow row) 
+      @Override public String toString(ResultsRow row)
       {
         return nullSwitch(row, "", ResultsRow::getCBText);
       }
-  
-      @Override public ResultsRow fromString(String string) 
+
+      @Override public ResultsRow fromString(String string)
       {
         if (cbResultGoTo.getItems() == null)
           return new ResultsRow("");
-        
-        for (ResultsRow row : cbResultGoTo.getItems()) 
-          if (string.equals(row.getCBText())) 
+
+        for (ResultsRow row : cbResultGoTo.getItems())
+          if (string.equals(row.getCBText()))
             return row;
-        
+
         return new ResultsRow(string);
       }
     });
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void updateDatesTooltip(HDT_Base record)
   {
     if (record == null)
@@ -1173,29 +1173,29 @@ public final class MainController
     else
     {
       try
-      { 
-        ttDates.setText("Created: " + dateTimeToUserReadableStr(record.getCreationDate()) + 
+      {
+        ttDates.setText("Created: " + dateTimeToUserReadableStr(record.getCreationDate()) +
                         "\nModified: " + dateTimeToUserReadableStr(record.getModifiedDate()) +
                         "\nAccessed: " + dateTimeToUserReadableStr(record.getViewDate()));
       }
       catch(Exception e)
       {
-        ttDates.setText("No dates to show."); 
+        ttDates.setText("No dates to show.");
       }
     }
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-      
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public boolean saveAllToDisk(boolean saveRecord, boolean restartWatcher, boolean updateUI)
   {
     if (db.isLoaded() == false)
       return falseWithErrorMessage("No database is currently loaded.");
-    
+
     if (saveRecord)
       if (cantSaveRecord(false)) return false;
-    
+
     db.prefs.putInt(PREF_KEY_PERSON_ID     , getHyperTab(personTab     ).getActiveID());
     db.prefs.putInt(PREF_KEY_INSTITUTION_ID, getHyperTab(institutionTab).getActiveID());
     db.prefs.putInt(PREF_KEY_DEBATE_ID     , getHyperTab(debateTab     ).getActiveID());
@@ -1205,60 +1205,60 @@ public final class MainController
     db.prefs.putInt(PREF_KEY_TERM_ID       , getHyperTab(termTab       ).getActiveID());
     db.prefs.putInt(PREF_KEY_FILE_ID       , getHyperTab(miscFileTab   ).getActiveID());
     db.prefs.putInt(PREF_KEY_NOTE_ID       , getHyperTab(noteTab       ).getActiveID());
-    
+
     db.prefs.put(PREF_KEY_RECORD_TYPE, db.getTypeTagStr(activeType() == hdtNone ? hdtPerson : activeType()));
 
     boolean watcherWasRunning = folderTreeWatcher.stop();
-    
+
     if (db.bibLibraryIsLinked())
       bibManagerDlg.saveToDisk();
-    
+
     db.saveAllToDisk(favorites);
-    
+
     if (restartWatcher && watcherWasRunning)
       folderTreeWatcher.createNewWatcherAndStart();
-    
+
     if (updateUI) update();
-    
+
     lblStatus.setText("Database last saved to XML files: " + timeToUserReadableStr(LocalDateTime.now()));
-    
+
     return true;
   }
-     
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @FXML void mnuSaveReloadAllClick()
   {
     if (saveAllToDisk(true, false, false) == false) return;
-    
+
     if (loadDataFromDisk())
     {
       viewSequence.refresh();
-      
+
       HyperTab.getHyperTabs().forEach(this::refreshTab);
-      
+
       if (activeTab() == queryTab)
         HyperTab.getHyperTab(queryTab).clear();
- 
+
       update();
     }
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public <HDT_RT extends HDT_Base, HDT_CT extends HDT_Base> void refreshTab(HyperTab<HDT_RT, HDT_CT> hyperTab)
   {
-    HyperView<HDT_CT> view = hyperTab.getView(); 
+    HyperView<HDT_CT> view = hyperTab.getView();
     if (view == null) return;
 
     view.refresh();
     nullSwitch(view.getViewRecord(), record -> hyperTab.setRecord(record));
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void mnuOpenClick()
   {
@@ -1266,25 +1266,25 @@ public final class MainController
 
     FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter(appTitle + " files (*.hdb)", "*.hdb");
     fileChooser.getExtensionFilters().add(extFilter);
-    
+
     File dir = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, System.getProperty("user.dir")));
-    
+
     if (dir.exists() == false)
       dir = new File(System.getProperty("user.dir"));
-    
+
     fileChooser.setInitialDirectory(dir);
 
     FilePath filePath = new FilePath(fileChooser.showOpenDialog(primaryStage()));
 
     if (FilePath.isEmpty(filePath)) return;
-    
+
     if (cantSaveRecord(true)) return;
-    
+
     if (db.isLoaded())
     {
       if (confirmDialog("Save data to XML files?"))
         saveAllToDisk(false, false, false);
-      
+
       closeWindows(false);
       clearAllTabsAndViews();
     }
@@ -1295,33 +1295,33 @@ public final class MainController
     loadDB();
   }
 
-  //---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void mnuNewDatabaseClick()
   {
     DirectoryChooser dirChooser = new DirectoryChooser();
-    
+
     File file = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, ""));
-    
+
     dirChooser.setTitle("Select an empty folder in which to create database");
-    
+
     if (file.exists() && file.isDirectory())
       dirChooser.setInitialDirectory(file);
     else
       dirChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
-    
+
     file = dirChooser.showDialog(primaryStage());
-    
+
     if (file == null) return;
 
     String[] list = file.list();
     if (list == null)
     {
       messageDialog("Selected item is not a folder.", mtError);
-      return;     
+      return;
     }
-    
+
     if (list.length != 0)
     {
       messageDialog("The selected folder is not empty.", mtError);
@@ -1329,20 +1329,20 @@ public final class MainController
     }
 
     if (cantSaveRecord(true)) return;
-    
+
     if (db.isLoaded())
     {
-      if (confirmDialog("Save data to XML files?")) 
+      if (confirmDialog("Save data to XML files?"))
         saveAllToDisk(false, false, false);
     }
-    
+
     NewDatabaseDialogController dlg = NewDatabaseDialogController.create("Customize How Database Will Be Created", file.getPath());
-    
+
     if (dlg.showModal() == false)
       return;
 
     closeWindows(false);
-    
+
     try { db.newDB(file.getPath(), dlg.getChoices(), dlg.getFolders()); }
     catch (HDB_InternalError e)
     {
@@ -1352,24 +1352,24 @@ public final class MainController
     }
 
     clearAllTabsAndViews();
-    
+
     saveAllToDisk(false, false, false);
 
     loadDB();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void clearAllTabsAndViews()
   {
     HyperTab.getHyperTabs().forEach(this::clearTab);
-    
+
     previewWindow.clearAll();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public <HDT_RT extends HDT_Base, HDT_CT extends HDT_Base> void clearTab(HyperTab<HDT_RT, HDT_CT> hyperTab)
   {
@@ -1377,9 +1377,9 @@ public final class MainController
     hyperTab.clear();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML public void btnSaveClick()
   {
     if (btnSave.getText().equals(TREE_SELECT_BTN_CAPTION))
@@ -1392,13 +1392,13 @@ public final class MainController
     update();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @FXML void btnCreateClick()
   {
     if (cantSaveRecord(true)) return;
-    
+
     HDT_RecordType type = selectorType();
     String name = "";
 
@@ -1416,71 +1416,71 @@ public final class MainController
         PersonName personName = new PersonName(name);
         person.setName(personName);
         HDT_Person.makeSearchKey(personName, person, searchKey);
-        
+
         try { person.setSearchKey(searchKey.toString()); } catch (SearchKeyException e) { noOp(); }
       }
       else
         record.setName(titleCase(name).trim());
     }
-    
+
     if (type == hdtTerm)
-    {  
+    {
       HDT_Concept concept = db.createNewBlankRecord(hdtConcept);
       HDT_Term.class.cast(record).concepts.add(concept);
       concept.glossary.set(db.glossaries.getByID(1));
     }
-    
+
     goToRecord(record, false);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void deleteCurrentRecord(boolean confirm)
-  {    
+  {
     HDT_Base record = activeRecord();
-    
+
     if (record == null) return;
-        
+
     switch (record.getType())
     {
       case hdtGlossary :
-        
+
         if (activeTab() != treeTab)
         {
           messageDialog("Glossary records can only be deleted from the tree tab.", mtError);
           return;
         }
-        
+
         HDT_Glossary glossary = (HDT_Glossary) record;
-        
+
         if (glossary.concepts.isEmpty() == false)
         {
           messageDialog("A glossary record can only be deleted if it does not contain any terms.", mtError);
           return;
         }
-        
+
         break;
-      
+
       case hdtNone : case hdtConcept : case hdtFolder : case hdtWorkFile : case hdtHub :
-        
+
         messageDialog("Records of that type cannot be deleted by this method.", mtError);
         return;
-        
+
       default :
         break;
     }
-    
-    if (confirm) if (confirmDialog("Are you sure you want to delete this record?") == false) return;  
-    
+
+    if (confirm) if (confirmDialog("Are you sure you want to delete this record?") == false) return;
+
     db.deleteRecord(record.getType(), record.getID());
 
     viewSequence.activateCurrentSlot();
     fileManagerDlg.setNeedRefresh();
   }
-   
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @FXML public void mnuCloseClick()
   {
@@ -1493,31 +1493,31 @@ public final class MainController
     }
 
     clearAllTabsAndViews();
-    
+
     treeSubjRecord = null;
     closeWindows(false);
-        
-    try { db.close(null); } 
+
+    try { db.close(null); }
     catch (HDB_InternalError e)
     {
       messageDialog(e.getMessage(), mtError);
       shutDown(false, true, false); // An error in db.close is unrecoverable.
       return;
     }
-        
+
     enableAll(false);
-    
+
     updateBottomPanel(true);
     tfRecord.setText("");
     tfID.setText("");
     hcbGoTo.clear();
-    
+
     primaryStage().setTitle(appTitle);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void updateTopicFolders()
   {
     while (mnuFolders.getItems().size() > 10) // Clear the topical folder items that currently exist
@@ -1531,17 +1531,17 @@ public final class MainController
 
     FilePath topicsPath = db.getPath(PREF_KEY_TOPICAL_PATH, null);
     mnuFolders.setDisable(false);
-    
+
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(topicsPath.toPath(), "**"))
     {
       stream.forEach(entry ->
       {
         FilePath entryFilePath = new FilePath(entry);
-        
+
         if (entryFilePath.isDirectory())
         {
           FilePath relFilePath = topicsPath.relativize(entryFilePath);
-          
+
           if (FilePath.isEmpty(relFilePath) == false)
           {
             MenuItem item = new MenuItem();
@@ -1554,10 +1554,10 @@ public final class MainController
     }
     catch (DirectoryIteratorException | IOException ex) { noOp(); }
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML public void mnuChangeIDClick()
   {
     if (db.isLoaded() == false)
@@ -1566,32 +1566,32 @@ public final class MainController
       return;
     }
 
-    if (cantSaveRecord(true)) return;   
-    
+    if (cantSaveRecord(true)) return;
+
     ChangeIDDialogController ctrlr = ChangeIDDialogController.create("Change Record ID");
-    
+
     if (ctrlr.showModal())
     {
       HDT_RecordType changedType = ctrlr.hcbRecord.selectedType();
       int oldID = parseInt(ctrlr.tfOldID.getText(), -100),
           newID = parseInt(ctrlr.tfNewID.getText(), -1);
-      
+
       db.rebuildMentions();
-                      
+
       favorites.changeRecordID(changedType, oldID, newID);
 
       update();
     }
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML public void mnuNewFieldClick()        { mnuNewCategoryClick(hdtField); }
   @FXML public void mnuNewRankClick()         { mnuNewCategoryClick(hdtRank); }
   @FXML public void mnuNewCountryClick()      { mnuNewCategoryClick(hdtCountry); }
   @FXML public void mnuNewPersonStatusClick() { mnuNewCategoryClick(hdtPersonStatus); }
-  
+
   public void mnuNewCategoryClick(HDT_RecordType type)
   {
     if (db.isLoaded() == false)
@@ -1603,23 +1603,23 @@ public final class MainController
     if (cantSaveRecord(true)) return;
 
     NewCategoryDialogController ctrlr = NewCategoryDialogController.create("New Category", type);
-    
+
     if (ctrlr.showModal() == false) return;
-    
+
     int id = parseInt(ctrlr.tfNewID.getText(), -1);
     type = ctrlr.hcbRecordType.selectedType();
-    
+
     HDT_RecordState recordState = new HDT_RecordState(type, id, ctrlr.tfNewKey.getText(), "", "", "");
-    
+
     try { db.createNewRecordFromState(recordState, true); } catch (Exception e) { noOp(); }
 
     db.records(type).getByID(id).setName(ctrlr.tfNewName.getText());
-          
+
     update();
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @FXML public void mnuFolderClick(Event event)
   {
@@ -1627,29 +1627,29 @@ public final class MainController
     int code = parseInt(item.getId(), 0);
     boolean clipboard = ((code % 10) == 1);
     FilePath filePath = null;
-    
+
     code = code / 10;
-    
+
     switch (code)
     {
-      case 1 : filePath = db.getPath(PREF_KEY_PAPERS_PATH, null);     break;        
-      case 2 : filePath = db.getPath(PREF_KEY_BOOKS_PATH, null);      break;        
-      case 3 : filePath = db.getPath(PREF_KEY_UNENTERED_PATH, null);  break;        
-      case 4 : filePath = db.getPath(PREF_KEY_TOPICAL_PATH, null);    break;        
-      case 5 : filePath = db.getPath(PREF_KEY_PICTURES_PATH, null);   break;        
-      case 6 : filePath = db.getPath(PREF_KEY_MISC_FILES_PATH, null); break;        
+      case 1 : filePath = db.getPath(PREF_KEY_PAPERS_PATH, null);     break;
+      case 2 : filePath = db.getPath(PREF_KEY_BOOKS_PATH, null);      break;
+      case 3 : filePath = db.getPath(PREF_KEY_UNENTERED_PATH, null);  break;
+      case 4 : filePath = db.getPath(PREF_KEY_TOPICAL_PATH, null);    break;
+      case 5 : filePath = db.getPath(PREF_KEY_PICTURES_PATH, null);   break;
+      case 6 : filePath = db.getPath(PREF_KEY_MISC_FILES_PATH, null); break;
       case 7 : filePath = new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")); break;
       case 8 : filePath = db.getPath(PREF_KEY_RESULTS_PATH, null);    break;
     }
-    
+
     if (FilePath.isEmpty(filePath)) return;
-    
+
     if (clipboard)
       copyToClipboard(filePath.toString());
     else
       launchFile(filePath);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -1660,9 +1660,9 @@ public final class MainController
       super(db.getTypeName(record.getType()) + ": " + record.listName());
       isQuery = false;
       favRecord = new HyperTableCell(record.getID(), record.listName(), record.getType());
-      setOnAction(event -> goToRecord(record, true));        
+      setOnAction(event -> goToRecord(record, true));
     }
-    
+
     public FavMenuItem(QueryFavorite query)
     {
       super("Query: " + query.name);
@@ -1670,39 +1670,39 @@ public final class MainController
       this.query = query;
       setOnAction(event -> showSearch(query.autoexec, null, -1, query, null, null, query.name));
     }
-    
+
     public boolean isQuery;
     public QueryFavorite query;
     public HyperTableCell favRecord;
   }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void updateFavorites()
-  { 
+  {
     mnuToggleFavorite.setText("Add to favorites...");
-   
-    if (db.isLoaded() == false) 
+
+    if (db.isLoaded() == false)
     {
       favorites.clear();
       mnuFavorites.setDisable(true);
       return;
     }
-    
+
     mnuFavorites.setDisable(false);
-  
+
     if (viewRecord() != null)
     {
       mnuToggleFavorite.setDisable(false);
-      
+
       if (favorites.indexOfRecord(activeRecord()) > -1)
         mnuToggleFavorite.setText("Remove from favorites...");
     }
     else
       mnuToggleFavorite.setDisable(true);
-  }  
-  
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -1710,47 +1710,47 @@ public final class MainController
   {
     if ((activeTab() == treeTab) || (activeTab() == queryTab)) return;
     if (cantSaveRecord(true)) return;
-    
+
     HDT_Base record = viewRecord();
     if (record == null) return;
-    
+
     int ndx = favorites.indexOfRecord(record);
-    
+
     if (ndx > -1)
       mnuFavorites.getItems().remove(ndx);
     else
       mnuFavorites.getItems().add(new FavMenuItem(record));
-    
+
     updateFavorites();
-  }  
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void initPositionContextMenu(HyperTable ht)
   {
-    ht.addCondContextMenuItem("Launch work file", HDT_Position.class, 
-      pos -> pos.getLaunchableWork() != null,      
+    ht.addCondContextMenuItem("Launch work file", HDT_Position.class,
+      pos -> pos.getLaunchableWork() != null,
       pos -> pos.getLaunchableWork().work.launch(-1));
-    
-    ht.addCondContextMenuItem("Go to work record", HDT_Position.class, 
-      pos -> pos.getWork() != null,      
+
+    ht.addCondContextMenuItem("Go to work record", HDT_Position.class,
+      pos -> pos.getWork() != null,
       pos -> goToRecord(nullSwitch(pos.getLaunchableWork(), pos.getWork()).work, true));
-    
+
     ht.addCondContextMenuItem("Go to person record", HDT_Position.class,
-      pos -> pos.getWorkWithAuthor() != null,    
+      pos -> pos.getWorkWithAuthor() != null,
       pos -> goToRecord(pos.getWorkWithAuthor().author, true));
-        
-    ht.addCondContextMenuItem("Go to argument record", HDT_Position.class, 
+
+    ht.addCondContextMenuItem("Go to argument record", HDT_Position.class,
       pos -> pos.arguments.size() > 0,
       pos -> goToRecord(nullSwitch(pos.getLaunchableWork(), nullSwitch(pos.getWork(), pos.getArgument())).argument, true));
-    
+
     ht.addContextMenuItem("Go to position record", HDT_Position.class,
       pos -> goToRecord(pos, true));
   }
-   
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void updateProgress(String task, double amount)
   {
@@ -1760,57 +1760,57 @@ public final class MainController
       lblProgress.setVisible(false);
       return;
     }
-    
+
     if (progressBar.isVisible() == false)
       progressBar.setVisible(true);
-    
+
     if (task.length() > 0)
     {
       if (lblProgress.isVisible() == false)
         lblProgress.setVisible(true);
-      
+
       if (lblProgress.getText().equals(task) == false)
         lblProgress.setText(task);
     }
-    
+
     progressBar.setProgress(amount);
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @FXML public void mnuFindMentionsClick()
   {
     if (db.isLoaded() == false) return;
-        
-    searchForMentions(activeRecord(), false);     
+
+    searchForMentions(activeRecord(), false);
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void searchForMentions(HDT_Base record, boolean descOnly)
   {
     boolean noneFound = false, didSearch = false, backClick = activeTab() != queryTab;
-    
+
     if (record == null) return;
-    
+
     HDT_RecordType type = record.getType();
     int id = record.getID();
-    
+
     lblStatus.setText("");
-    
+
     if (descOnly)
       didSearch = showSearch(true, qtAllRecords, QUERY_LINKING_TO_RECORD, null, new HyperTableCell(-1, "", type), new HyperTableCell(id, "", type), "Mentions: " + record.listName());
     else
       didSearch = showSearch(true, qtAllRecords, QUERY_MATCHING_RECORD, null, new HyperTableCell(-1, "", type), new HyperTableCell(id, "", type), "Mentions: " + record.listName());
-    
+
     if (!didSearch)
     {
       discardLastQuery(backClick);
       return;
     }
-    
+
     if (curQV.resultsBackingList.size() == 1)
     {
       if (curQV.resultsBackingList.get(0).getRecord() == record)
@@ -1818,14 +1818,14 @@ public final class MainController
     }
     else if (curQV.resultsBackingList.size() == 0)
       noneFound = true;
-    
+
     if (!noneFound) return;
-    
+
     discardLastQuery(backClick);
     lblStatus.setText("No mentioners: " + db.getTypeName(type).toLowerCase() + " \"" + abbreviate(record.listName()) + "\"");
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @FXML public void mnuAddToQueryResultsClick()
@@ -1837,7 +1837,7 @@ public final class MainController
     }
 
     HDT_Base record = activeRecord();
-       
+
     if (record == null)
     {
       messageDialog("No record is currently selected.", mtError);
@@ -1849,18 +1849,18 @@ public final class MainController
       curQV.clear();
       curQV.resultsTable.getTV().setItems(FXCollections.observableList(curQV.resultsBackingList));
     }
-    
+
     for (ResultsRow row : curQV.resultsBackingList)
       if (row.getRecord() == record) return;
-    
-    curQV.addRecord(record, true);      
+
+    curQV.addRecord(record, true);
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @FXML public void mnuRevertToDiskCopyClick()
-  {    
+  {
     if (db.isLoaded() == false)
     {
       messageDialog("No database is currently loaded.", mtError);
@@ -1868,7 +1868,7 @@ public final class MainController
     }
 
     HDT_Base record = activeRecord();
-       
+
     if (record == null)
     {
       messageDialog("No record is currently selected.", mtError);
@@ -1880,59 +1880,59 @@ public final class MainController
       messageDialog("Unable to revert: the record may not have been previously saved to disk.", mtError);
       return;
     }
-    
+
     if (confirmDialog("Are you sure you want to revert this record to the last version saved to disk?") == false) return;
-    
+
     HDT_Base viewRecord = viewRecord();
-    
+
     if (revertToDiskCopy(record) && (viewRecord != null) && (viewRecord != record))
       revertToDiskCopy(viewRecord);
-    
+
     update();
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public boolean revertToDiskCopy(HDT_Base record)
   {
     boolean success = true;
     String recordStr = db.getTypeName(record.getType()) + " \"" + record.getCBText() + "\"";
-    
+
     HDT_RecordState backupState = record.getRecordStateBackup();
-    
+
     try
     {
       record.bringStoredCopyOnline();
-    } 
+    }
     catch (RelationCycleException e)
     {
       messageDialog("Unable to revert " + recordStr + ": Records would be organized in a cycle as a result.", mtError);
       success = false;
-    } 
+    }
     catch (HubChangedException | SearchKeyException e)
     {
       messageDialog("Unable to revert " + recordStr + ": " + e.getMessage(), mtError);
       success = false;
     }
-    
+
     if (success) return true;
-    
+
     try
     {
       record.restoreTo(backupState);
-    } 
-    catch (RelationCycleException | SearchKeyException | HubChangedException e) { noOp(); } 
+    }
+    catch (RelationCycleException | SearchKeyException | HubChangedException e) { noOp(); }
     catch (HDB_InternalError e)
     {
       messageDialog("Unable to restore " + recordStr + " to pre-reverting state: " + e.getMessage(), mtError);
     }
-    
+
     return false;
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   public void loadDB()
   {
@@ -1940,38 +1940,38 @@ public final class MainController
     {
       if (db.isLoaded() == false)
         clearAllTabsAndViews();
-      
+
       enableAll(db.isLoaded());
       return;
     }
-       
+
     HyperTab.setTabView(new HyperView<HDT_Person>     (personTab,      db.persons     .getByID(db.prefs.getInt(PREF_KEY_PERSON_ID     , -1))));
     HyperTab.setTabView(new HyperView<HDT_Institution>(institutionTab, db.institutions.getByID(db.prefs.getInt(PREF_KEY_INSTITUTION_ID, -1))));
     HyperTab.setTabView(new HyperView<HDT_Debate>     (debateTab,      db.debates     .getByID(db.prefs.getInt(PREF_KEY_DEBATE_ID     , -1))));
     HyperTab.setTabView(new HyperView<HDT_Position>   (positionTab,    db.positions   .getByID(db.prefs.getInt(PREF_KEY_POSITION_ID   , -1))));
     HyperTab.setTabView(new HyperView<HDT_Argument>   (argumentTab,    db.arguments   .getByID(db.prefs.getInt(PREF_KEY_ARGUMENT_ID   , -1))));
     HyperTab.setTabView(new HyperView<HDT_Work>       (workTab,        db.works       .getByID(db.prefs.getInt(PREF_KEY_WORK_ID       , -1))));
-    
+
     HDT_Term term = db.terms.getByID(db.prefs.getInt(PREF_KEY_TERM_ID, -1));
     HDT_Concept concept = (term != null ? term.concepts.get(0) : null);
     HyperTab.setTabView(new HyperView<HDT_Concept>    (termTab,        concept));
-    
+
     HyperTab.setTabView(new HyperView<HDT_MiscFile>   (miscFileTab,    db.miscFiles   .getByID(db.prefs.getInt(PREF_KEY_FILE_ID       , -1))));
-    HyperTab.setTabView(new HyperView<HDT_Note>       (noteTab,        db.notes       .getByID(db.prefs.getInt(PREF_KEY_NOTE_ID       , -1))));      
+    HyperTab.setTabView(new HyperView<HDT_Note>       (noteTab,        db.notes       .getByID(db.prefs.getInt(PREF_KEY_NOTE_ID       , -1))));
     HyperTab.setTabView(new HyperView<HDT_Base>       (queryTab,       null));
     HyperTab.setTabView(new HyperView<HDT_Base>       (treeTab,        null));
 
     enableAll(db.isLoaded());
-    
+
     TabEnum tabEnum = HyperTab.getTabEnumByRecordType(db.parseTypeTagStr(db.prefs.get(PREF_KEY_RECORD_TYPE, "")));
 
-    viewSequence.init();     
-    viewSequence.forwardToNewSlot(tabEnum); 
+    viewSequence.init();
+    viewSequence.forwardToNewSlot(tabEnum);
   }
-  
+
 //---------------------------------------------------------------------------
-//--------------------------------------------------------------------------- 
-  
+//---------------------------------------------------------------------------
+
   public boolean loadDataFromDisk()
   {
     if (SystemUtils.IS_OS_MAC)
@@ -1979,7 +1979,7 @@ public final class MainController
 
     if (appPrefs.get(PREF_KEY_SOURCE_FILENAME, "").length() == 0) return false;
     if (appPrefs.get(PREF_KEY_SOURCE_PATH, "").length() == 0) return false;
-    
+
     if (internetNotCheckedYet && appPrefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))
     {
       internetNotCheckedYet = false;
@@ -1993,19 +1993,19 @@ public final class MainController
           return false;
       }
     }
-    
+
     String otherCompName = db.getLockOwner();
     if (nonNull(otherCompName))
     {
       if (LockedDialogController.create("Database is Currently Locked", otherCompName).showModal() == false)
         return false;
-      
+
       if (nonNull(db.getLockOwner()))
         return false;
     }
-    
+
     boolean success = false;
-    
+
     try { success = db.loadAllFromDisk(favorites); }
     catch (HDB_InternalError e)
     {
@@ -2013,76 +2013,76 @@ public final class MainController
       shutDown(false, true, false); // An error in db.close is unrecoverable.
       return false;
     }
-    
+
     if (success)
       success = folderTreeWatcher.createNewWatcherAndStart();
 
-    if (success) 
+    if (success)
     {
       lblStatus.setText("");
       updateTopicFolders();
       getHyperTab(queryTab).clear();
-      
-      gpBottom.setDisable(false);        
+
+      gpBottom.setDisable(false);
       getHyperTab(queryTab).enable(true);
       getHyperTab(treeTab).enable(true);
-      
+
       getTree().expandMainBranches();
       fileManagerDlg.folderTree.expandMainBranches();
-      
-      primaryStage().setTitle(appTitle + " - " + db.getPath("", new FilePath(appPrefs.get(PREF_KEY_SOURCE_FILENAME, ""))));      
+
+      primaryStage().setTitle(appTitle + " - " + db.getPath("", new FilePath(appPrefs.get(PREF_KEY_SOURCE_FILENAME, ""))));
     }
     else
       mnuCloseClick();
-        
+
     return success;
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public boolean cantSaveRecord(boolean showMessage)
-  {    
-    if (db.isLoaded() == false) 
+  {
+    if (db.isLoaded() == false)
       return false;
-    
+
     if ((activeTab() == queryTab) || (activeTab() == treeTab))
       return false;
-    
-    if (activeRecord() == null) 
+
+    if (activeRecord() == null)
       return false;
 
     CommitableWrapper.commitWrapper(primaryStage().getScene().getFocusOwner());
-    
+
     return currentTab().saveToRecord(showMessage) == false;
   }
-  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void goToTreeRecord(HDT_Base record)
-  { 
+  {
     if (db.isLoaded() == false) return;
-    
-    if (cantSaveRecord(true)) 
+
+    if (cantSaveRecord(true))
     {
       treeSubjRecord = null;
       treeObjRecord = null;
       treeTargetTypes.clear();
-      
+
       return;
     }
-      
-    viewSequence.forwardToNewSlotAndView(new HyperView<HDT_Base>(treeTab, record));
-  }  
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
 
-  public TabEnum activeTab()                       { return viewSequence.isEmpty() ? personTab : viewSequence.curTabEnum(); }  
-  public HyperTab<? extends HDT_Base, 
+    viewSequence.forwardToNewSlotAndView(new HyperView<HDT_Base>(treeTab, record));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public TabEnum activeTab()                       { return viewSequence.isEmpty() ? personTab : viewSequence.curTabEnum(); }
+  public HyperTab<? extends HDT_Base,
                   ? extends HDT_Base> currentTab() { return viewSequence.isEmpty() ? null : viewSequence.curHyperTab(); }
-  public HDT_RecordType activeType()               { return viewSequence.isEmpty() ? hdtPerson : viewSequence.curHyperView().getTabRecordType(); }  
+  public HDT_RecordType activeType()               { return viewSequence.isEmpty() ? hdtPerson : viewSequence.curHyperView().getTabRecordType(); }
   public HDT_Base activeRecord()                   { return viewSequence.isEmpty() ? null : currentTab().activeRecord(); }
   public HDT_Base viewRecord()                     { return viewSequence.isEmpty() ? null : currentTab().viewRecord(); }
 
@@ -2092,7 +2092,7 @@ public final class MainController
   public void goToFileInManager(FilePath filePath)
   {
     if (FilePath.isEmpty(filePath)) return;
-    
+
     runFileMgr();
     fileManagerDlg.goToFilePath(filePath);
   }
@@ -2112,13 +2112,13 @@ public final class MainController
   public HDT_RecordWithConnector getSpokeToGoTo(StrongLink link)
   {
     if (link == null) return null;
-    
+
     HDT_RecordWithConnector spoke = link.getConcept();
     if (spoke == null) spoke = link.getDebate();
     if (spoke == null) spoke = link.getPosition();
     if (spoke == null) spoke = link.getNote();
     if (spoke == null) spoke = link.getLabel();
-    
+
     return spoke;
   }
 
@@ -2126,122 +2126,122 @@ public final class MainController
 //---------------------------------------------------------------------------
 
   public void goToRecord(HDT_Base record, boolean save)
-  { 
+  {
     if ((record == null) || (db.isLoaded() == false)) return;
-    
+
     treeSubjRecord = null;
     HDT_Investigation inv = null;
-     
+
     switch (record.getType())
     {
       case hdtHub :
-        
-        record = getSpokeToGoTo(((HDT_Hub)record).getLink());     
+
+        record = getSpokeToGoTo(((HDT_Hub)record).getLink());
         if (record == null) return;
         break;
-        
+
       case hdtGlossary :
-        
+
         goToTreeRecord(record);
         return;
 
       case hdtWorkLabel :
-        
+
         StrongLink link = ((HDT_WorkLabel)record).getLink();
-        
+
         if (link == null)
         {
           goToTreeRecord(record);
-          return;          
+          return;
         }
-          
+
         record = getSpokeToGoTo(link);
         break;
-        
+
       case hdtFolder :
-        
+
         goToFileInManager(HDT_Folder.class.cast(record).getPath().getFilePath());
         return;
 
       case hdtInvestigation :
-        
+
         inv = (HDT_Investigation)record;
         record = inv.person.get();
         break;
-        
+
       case hdtWorkFile :
-        
+
         HDT_WorkFile workFile = (HDT_WorkFile)record;
         if (workFile.works.size() > 0)
           record = workFile.works.get(0);
         break;
-        
+
       case hdtTerm :
-        
+
         record = HDT_Term.class.cast(record).concepts.get(0);
         break;
 
       default : break;
     }
-    
+
     if (HyperTab.getTabEnumByRecordType(record.getType()) == personTab)
       if (record.getType() != hdtPerson) return;
-    
+
     if (windows.getOutermostStage() != primaryStage())
       windows.focusStage(primaryStage());
-    
+
     if (save && cantSaveRecord(true)) return;
 
-    viewSequence.forwardToNewSlotAndView(HyperViewSequence.createViewForRecord(record));  
-    
+    viewSequence.forwardToNewSlotAndView(HyperViewSequence.createViewForRecord(record));
+
     if (inv != null)
       PersonTabController.class.cast(currentTab()).showInvestigation(inv.getID());
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void update()
   {
     updateTopicFolders();
-    
+
     if (db.isLoaded() == false)
     {
-      getTree().clear();      
+      getTree().clear();
       return;
     }
-    
+
     switch (activeTab())
     {
-      case queryTab : case treeTab :        
+      case queryTab : case treeTab :
         HyperTab.getHyperTab(activeTab()).update();
         updateBottomPanel(true);
         return;
-        
+
       default :
         break;
     }
 
     int count = currentTab().getRecordCount();
-    
+
     treeSubjRecord = null;
-    
+
     if (count > 0)
     {
       if (HDT_Record.isEmpty(activeRecord()))
       {
         int ndx = HyperTab.getHyperTab(activeTab()).getView().getTabRecordKeyNdx();
-  
+
         if (ndx >= count)
           ndx = count - 1;
-  
+
         if (ndx < 0)
           ndx = 0;
-        
+
         if (activeTab() == termTab)
           viewSequence.updateCurrentView(HyperViewSequence.createViewForRecord(termTab, db.terms.getByKeyNdx(ndx).concepts.get(0)));
         else
-        {  
+        {
           HDT_Base record = db.records(activeType()).getByKeyNdx(ndx);
           viewSequence.updateCurrentView(HyperViewSequence.createViewForRecord(activeTab(), record));
         }
@@ -2262,51 +2262,51 @@ public final class MainController
         currentTab().enable(false);
         return;
       }
-      
+
       currentTab().enable(true);
       if (currentTab().update())
         activeRecord().viewNow();
     }
   }
- 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public TabEnum selectorTabEnum()
   {
-    Tab tab = selectorTabPane.getSelectionModel().getSelectedItem();    
+    Tab tab = selectorTabPane.getSelectionModel().getSelectedItem();
     return selectorTabs.inverse().get(tab);
   }
-  
+
   public HDT_RecordType selectorType()
   {
     TabEnum tabEnum = selectorTabEnum();
-    
+
     switch (tabEnum)
     {
       case listTab: case omniTab :
         return activeType();
-        
+
       default :
         break;
     }
-    
+
     return HyperTab.getRecordTypeByTabEnum(tabEnum);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @SuppressWarnings("cast")
   public void updateSelectorTab(boolean setFocus)
-  {    
+  {
     TabEnum tabEnum = selectorTabEnum();
     HyperTab<? extends HDT_Base, ? extends HDT_Base> hyperTab = HyperTab.getHyperTab(tabEnum);
     if (hyperTab == null) hyperTab = currentTab();
     selectorTF = null;
-    
+
     int count = hyperTab == null ? 0 : hyperTab.getRecordCount();
-    
+
     mnuRecordSelect.setVisible(true);
     mnuFindNextInName.setVisible(false);
     mnuFindNextAll.setVisible(false);
@@ -2314,83 +2314,83 @@ public final class MainController
     mnuFindWithinName.setVisible(false);
     mnuFindWithinAnyField.setVisible(false);
     mnuFindPreviousInName.setVisible(false);
-       
+
     switch (tabEnum)
     {
       case listTab :
-        
+
         if (activeTab() == queryTab)
         {
           if (cbResultGoTo == null) initResultCB();
-          
+
           apListGoTo.getChildren().setAll(cbResultGoTo);
           selectorTF = cbResultGoTo.getEditor();
         }
-        
+
         if (activeTab() == treeTab)
         {
           mnuFindNextAll.setVisible(true);
           mnuFindPreviousAll.setVisible(true);
           mnuFindPreviousInName.setVisible(true);
           mnuFindNextInName.setVisible(true);
-          
+
           copyRegionLayout(cbGoTo, cbTreeGoTo);
-          apListGoTo.getChildren().setAll(cbTreeGoTo);        
+          apListGoTo.getChildren().setAll(cbTreeGoTo);
           selectorTF = cbTreeGoTo.getEditor();
         }
-        
+
         btnCreateNew.setDisable(true);
-        
+
         break;
-        
+
       case omniTab :
 
         mnuRecordSelect.setVisible(false);
         mnuFindWithinAnyField.setVisible(true);
         mnuFindWithinName.setVisible(true);
-        
+
         selectorTF = tfOmniGoTo;
-        
+
         btnCreateNew.setDisable((activeTab() == queryTab) || (activeTab() == treeTab));
-        
+
         break;
-        
+
       default :
 
         mnuFindWithinAnyField.setVisible(true);
         mnuFindWithinName.setVisible(true);
-        
+
         selectorTF = cbGoTo.getEditor();
         hcbGoTo.clear();
         RecordByTypePopulator.class.cast(hcbGoTo.getPopulator()).setRecordType(Populator.dummyRow, selectorType());
         if (cbGoTo.isEditable() == false) cbGoTo.setEditable(true);
         btnCreateNew.setDisable(false);
-        
+
         if (count > 0)         // HDT_Base cast added to avoid Maven compile errors
           hcbGoTo.addAndSelectEntryOrBlank((HDT_Base)nullSwitch(hyperTab, null, HyperTab::activeRecord), HDT_Base::listName);
-        
+
         break;
     }
-    
+
     hideFindTable();
-    
+
     if (setFocus && (selectorTF != null))
     {
-      Platform.runLater(() -> 
-      {        
+      Platform.runLater(() ->
+      {
         selectorTF.requestFocus();
-        selectorTF.selectAll();                
+        selectorTF.selectAll();
       });
     }
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void attachOrphansToRoots()
   {
     Set<HDT_Position> orphans2 = db.getOrphans(rtParentPosOfPos, HDT_Position.class);
-    
+
     db.getOrphans(rtDebateOfPosition, HDT_Position.class).forEach(position ->
     {
       if (orphans2.contains(position))
@@ -2398,13 +2398,13 @@ public final class MainController
     });
 
     db.getOrphans(rtParentDebateOfDebate, HDT_Debate     .class).forEach(debate -> debate.largerDebates.add(db.debates     .getByID(1)));
-    db.getOrphans(rtParentNoteOfNote    , HDT_Note       .class).forEach(note   -> note  .parentNotes  .add(db.notes       .getByID(1)));    
-    db.getOrphans(rtParentLabelOfLabel  , HDT_WorkLabel  .class).forEach(label  -> label .parentLabels .add(db.workLabels  .getByID(1)));    
+    db.getOrphans(rtParentNoteOfNote    , HDT_Note       .class).forEach(note   -> note  .parentNotes  .add(db.notes       .getByID(1)));
+    db.getOrphans(rtParentLabelOfLabel  , HDT_WorkLabel  .class).forEach(label  -> label .parentLabels .add(db.workLabels  .getByID(1)));
     db.getOrphans(rtParentGroupOfGroup  , HDT_PersonGroup.class).forEach(group  -> group .parentGroups .add(db.personGroups.getByID(1)));
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void updateBottomPanel(boolean refreshDropDown)
   {
@@ -2413,20 +2413,20 @@ public final class MainController
 
     HyperTab<? extends HDT_Base, ? extends HDT_Base> curTab = currentTab();
     if (curTab == null) return;
-    
+
     int count = curTab.getRecordCount();
     int ndx = curTab.getRecordNdx();
     HDT_Base activeRec = activeRecord();
     TabEnum activeTabEnum = activeTab();
 
     attachOrphansToRoots();
-    
+
     btnTextSearch.setDisable(false);
-    
+
   //---------------------------------------------------------------------------
   // Query-specific stuff
   //---------------------------------------------------------------------------
-    
+
     if (activeTabEnum == queryTab)
     {
       btnSave.setDisable(true);
@@ -2437,13 +2437,13 @@ public final class MainController
       btnIncrement.setDisable(true);
       btnDecrement.setDisable(true);
     }
-    
+
   //---------------------------------------------------------------------------
-  // Tree-specific stuff  
+  // Tree-specific stuff
   //---------------------------------------------------------------------------
-    
+
     else if (activeTabEnum == treeTab)
-    {               
+    {
       if (treeSubjRecord == null)
       {
         btnSave.setDisable(true);
@@ -2463,30 +2463,30 @@ public final class MainController
       if (count > 0)
       {
         btnDecrement.setDisable(false);
-        btnIncrement.setDisable(false);        
+        btnIncrement.setDisable(false);
       }
-      
+
       btnDelete.setDisable(activeRec == null);
     }
-    
+
   //---------------------------------------------------------------------------
-  // Single-record-tab-specific stuff  
+  // Single-record-tab-specific stuff
   //---------------------------------------------------------------------------
-    
+
     else
-    {         
+    {
       switch (activeType())
       {
         case hdtArgument: case hdtDebate:   case hdtMiscFile: case hdtNote:
         case hdtPerson:   case hdtPosition: case hdtTerm:     case hdtWork:
-          
+
           btnTextSearch.setDisable(false); break;
-          
+
         default:
-          
+
           btnTextSearch.setDisable(true);
       }
-           
+
       btnSave.setText("Accept Edits");
 
       if (activeRec != null)
@@ -2518,14 +2518,14 @@ public final class MainController
     }
 
   //---------------------------------------------------------------------------
-  // General stuff  
+  // General stuff
   //---------------------------------------------------------------------------
-    
+
     if (count > 0)
       tfRecord.setText((ndx + 1) + " of " + count);
     else
       tfRecord.setText("");
-    
+
     if (activeRec != null)
       tfID.setText(String.valueOf(activeRec.getID()));
     else
@@ -2552,46 +2552,46 @@ public final class MainController
 //---------------------------------------------------------------------------
 
   public boolean showSearch(boolean doSearch, QueryType type, int query, QueryFavorite fav, HyperTableCell op1, HyperTableCell op2, String caption)
-  { 
+  {
     if (cantSaveRecord(true)) return false;
-  
+
     QueriesTabController queriesTab = (QueriesTabController) HyperTab.getHyperTab(queryTab);
-         
+
     viewSequence.forwardToNewSlotAndView(new HyperView<HDT_Base>(queryTab, queriesTab.activeRecord(), queriesTab.getMainTextInfo()));
-    
+
     boolean result = queriesTab.showSearch(doSearch, type, query, fav, op1, op2, caption);
     updateFavorites();
-    
+
     return result;
-  }  
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void recordLookup()
-  {    
+  {
     int nextID = -1;
-    
+
     if (hcbGoTo.somethingWasTyped)
       nextID = HyperTableCell.getCellID(hcbGoTo.typedMatch);
-    
+
     if (nextID < 1)
       nextID = hcbGoTo.selectedID();
-        
+
     if (nextID < 1)
     {
       String text = HyperTableCell.getCellText(hcbGoTo.selectedHTC()).trim();
       if (text.length() > 0)
         lblStatus.setText("No results: searched " + db.getTypeName(selectorType()) + " records for \"" + abbreviate(text) + "\"");
-            
+
       return;
     }
 
     goToRecord(db.records(selectorType()).getByID(nextID), true);
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void incDecClick(boolean increment)
   {
@@ -2600,11 +2600,11 @@ public final class MainController
       getTree().selectNextInstance(increment);
       return;
     }
-    
+
     HDT_RecordType type = activeType();
-  
+
     int ndx = db.records(type).getKeyNdxByID(activeRecord().getID());
-  
+
     if (increment)
     {
       ndx++;
@@ -2615,12 +2615,12 @@ public final class MainController
       if (ndx <= 0) return;
       ndx--;
     }
-      
+
     goToRecord(db.records(type).getByKeyNdx(ndx), true);
   }
-   
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void treeSelect()
   {
@@ -2630,32 +2630,32 @@ public final class MainController
       return;
     }
 
-    HDT_Base record = nullSwitch(getTree().selectedItem(), null, treeItem -> 
-                      nullSwitch(treeItem.getValue(), null, row -> 
+    HDT_Base record = nullSwitch(getTree().selectedItem(), null, treeItem ->
+                      nullSwitch(treeItem.getValue(), null, row ->
                       row.getRecord()));
-    
+
     if (record == null) return;
 
     RelationType relType = rtNone;
-    
+
     for (TreeTargetType ttType : treeTargetTypes)
       if (ttType.objType == record.getType())
         relType = ttType.relType;
-    
+
     if (relType == rtNone)
     {
       String msg = "You must select a record of type: ";
       int lastNdx = treeTargetTypes.size() - 1;
-      
+
       for (int ndx = 0; ndx <= lastNdx; ndx++)
       {
         msg += db.getTypeName(treeTargetTypes.get(ndx).objType);
-        
+
         if       ((ndx == 0) && (lastNdx == 1))   msg += " or ";
         else if  (ndx == (lastNdx - 1))           msg += ", or ";
         else if  (ndx < lastNdx)                  msg += ", ";
       }
-      
+
       messageDialog(msg + ".", mtError);
       return;
     }
@@ -2670,30 +2670,30 @@ public final class MainController
       db.getObjectList(getRelation(treeSubjRecord.getType(), treeObjRecord.getType()), treeSubjRecord, true).remove(treeObjRecord);
 
     HyperObjList<HDT_Base, HDT_Base> objList = db.getObjectList(relType, treeSubjRecord, true);
-    
+
     objList.add(record);
-    try { objList.throwLastException(); } 
+    try { objList.throwLastException(); }
     catch (RelationCycleException e)
     {
       messageDialog("Cannot use selected record: Records would be organized in a cycle as a result.", mtError);
-      
+
       if (treeObjRecord != null)
         db.getObjectList(getRelation(treeSubjRecord.getType(), treeObjRecord.getType()), treeSubjRecord, true).add(treeObjRecord);
     }
-    
+
     goToRecord(treeSubjRecord, false);
   }
-    
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public boolean treeSelectToUnite(HDT_RecordWithConnector record2)
   {
     HDT_RecordWithConnector record1 = (HDT_RecordWithConnector) treeSubjRecord;
-    
+
     if ((record2.getType() == record1.getType()))
       return falseWithErrorMessage("You cannot connect records of the same type.");
-    
+
     if (record2.isLinked())
     {
       if ((record2.getLink().getSpoke(record1.getType()) != null))
@@ -2702,7 +2702,7 @@ public final class MainController
       if (record1.getType() == hdtDebate)
         if ((record2.getLink().getSpoke(hdtPosition) != null))
           return falseWithErrorMessage("The selected " + db.getTypeName(record2.getType()) + " is already connected to a " + db.getTypeName(hdtPosition) + ".");
-      
+
       if (record1.getType() == hdtPosition)
         if ((record2.getLink().getSpoke(hdtDebate) != null))
           return falseWithErrorMessage("The selected " + db.getTypeName(record2.getType()) + " is already connected to a " + db.getTypeName(hdtDebate) + ".");
@@ -2710,7 +2710,7 @@ public final class MainController
       if (record1.isLinked())
         return falseWithErrorMessage("Both records are already linked to other records.");
     }
-    
+
     if (record1.isLinked())
     {
       if ((record1.getLink().getSpoke(record2.getType()) != null))
@@ -2719,47 +2719,47 @@ public final class MainController
       if (record2.getType() == hdtDebate)
         if ((record1.getLink().getSpoke(hdtPosition) != null))
           return falseWithErrorMessage("The selected " + db.getTypeName(record1.getType()) + " is already connected to a " + db.getTypeName(hdtPosition) + ".");
-      
+
       if (record2.getType() == hdtPosition)
         if ((record1.getLink().getSpoke(hdtDebate) != null))
-          return falseWithErrorMessage("The selected " + db.getTypeName(record1.getType()) + " is already connected to a " + db.getTypeName(hdtDebate) + ".");      
+          return falseWithErrorMessage("The selected " + db.getTypeName(record1.getType()) + " is already connected to a " + db.getTypeName(hdtDebate) + ".");
     }
 
     uniteRecords(record1, record2);
     return true;
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void uniteRecords(HDT_RecordWithConnector record1, HDT_RecordWithConnector record2)
   {
     String desc;
-    
+
     if      ((record2.getType() == hdtWorkLabel) && (record2.isLinked() == false))           desc = record1.getMainText().getHtml();
     else if (ultraTrim(convertToSingleLine(record1.getMainText().getPlain())).length() == 0) desc = record2.getMainText().getHtml();
     else if (ultraTrim(convertToSingleLine(record2.getMainText().getPlain())).length() == 0) desc = record1.getMainText().getHtml();
-    else if (record1.getMainText().getHtml().equals(record2.getMainText().getHtml()))        desc = record1.getMainText().getHtml();    
+    else if (record1.getMainText().getHtml().equals(record2.getMainText().getHtml()))        desc = record1.getMainText().getHtml();
     else
     {
       MergeSpokeDialogController frmMerge = MergeSpokeDialogController.create("Select how to merge fields", record1, record2);
-      
+
       if (frmMerge.showModal())
         desc = frmMerge.getDesc();
       else
         return;
     }
-      
+
     if (StrongLink.connectRecords(record1.getConnector(), record2.getConnector(), desc))
     {
       goToRecord(record1, false);
-      return;      
+      return;
     }
 
     update();
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void setSelectorTab(Tab selectorTab)
@@ -2769,52 +2769,52 @@ public final class MainController
     selectorTabChangeIsProgrammatic = false;
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void tfOmniGoToChange(String newValue, boolean showingMore)
   {
     if (newValue.length() > 0)
       showFindTable();
-           
-    if (newValue.length() == 0) 
+
+    if (newValue.length() == 0)
     {
       tvFind.setPlaceholder(new Text(""));
       omniFinder.stop();
       return;
     }
-    
+
     tvFind.setPlaceholder(new Text("Searching..."));
     omniFinder.setQueryAndStart(newValue, showingMore);
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void omniFocus()
   {
-    setSelectorTab(tabOmniSelector);    
+    setSelectorTab(tabOmniSelector);
     safeFocus(tfOmniGoTo);
   }
 
-//---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
- 
+//---------------------------------------------------------------------------
+
   public void showFindTable()
   {
     tvFind.setVisible(true);
     apFindBackground.setMouseTransparent(false);
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void hideFindTable()
-  {    
+  {
     apFindBackground.setMouseTransparent(true);
     tvFind.setVisible(false);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -2822,93 +2822,93 @@ public final class MainController
   {
     if (db.isLoaded() == false) return;
     if (args == null) return;
-    if (args.size() < 1) return;    
+    if (args.size() < 1) return;
     if (windows.getOutermostModality() != Modality.NONE) return;
-    
+
     FilePath filePath = new FilePath(args.get(0));
-    
+
     MediaType mediaType = getMediaType(filePath);
-    
+
     if (mediaType.toString().contains("pdf"))
     {
       if (cantSaveRecord(true)) return;
-      
+
       HDT_Work work = db.createNewBlankRecord(hdtWork);
 
       goToRecord(work, false);
-      
+
       WorkTabController workCtrlr = HyperTab.getHyperTab(workTab);
-      
+
       if (workCtrlr.showWorkDialog(null, filePath) == false)
         deleteCurrentRecord(false);
 
       return;
     }
-       
+
     if (mediaType.toString().contains("text") == false)
     {
       messageDialog("Unable to import file: " + filePath.toString(), mtError);
       return;
     }
-    
+
     importBibFile(null, filePath);
   }
-    
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-    
+
   public void importBibFile(List<String> lines, FilePath filePath)
   {
     if (cantSaveRecord(true)) return;
-    
+
     ImportBibEntryDialogController ibed = ImportBibEntryDialogController.create("Import Bibliography File", lines, filePath);
-    
+
     if (ibed.getFailedToLoad()) return;
-    
+
     if (!ibed.showModal()) return;
-    
+
     lines = ibed.getLines();
     filePath = ibed.getFilePath();
-    
+
     String pathStr = (filePath == null ? "" : " " + filePath.toString());
-    
+
     BibData bd = null;
     Exception ex = null;
-        
+
     try
     {
       bd = BibData.createFromBibTex(lines);
-    } 
+    }
     catch (TokenMgrException | ParseException e)
     {
-      ex = e;      
+      ex = e;
     }
-    
+
     if (bd == null)
-      bd = BibData.createFromRIS(lines);  
-    
+      bd = BibData.createFromRIS(lines);
+
     if (bd == null)
     {
       if (ex == null)
         messageDialog("Unable to parse bibliographic information.", mtError);
       else
         messageDialog("An error occurred while trying to parse BibTex file" + pathStr + ": " + ex.getMessage(), mtError);
-        
+
       return;
     }
-    
+
     boolean creatingNewWork = ibed.getCreateNewWork(),
             creatingNewEntry = ibed.getCreateNewBibEntry();
-    
+
     HDT_Work work = creatingNewWork ? db.createNewBlankRecord(hdtWork) : ibed.getRecord();
-    
+
     BibData workBibData = work.getBibData();
-    
+
     if (work.getBibEntryKey().length() > 0)
       creatingNewEntry = false;
-    
+
     MergeWorksDialogController mwd = null;
-        
+
     try
     {
       mwd = MergeWorksDialogController.create("Import Into Existing Work Record", workBibData, bd, null, null, work, creatingNewWork, creatingNewEntry);
@@ -2918,44 +2918,44 @@ public final class MainController
       messageDialog("Unable to initialize merge dialog window.", mtError);
       return;
     }
-    
+
     if (mwd.showModal() == false)
     {
       if (creatingNewWork) db.deleteRecord(hdtWork, work.getID());
       return;
     }
-    
+
     if (creatingNewEntry)
     {
-      BibEntry entry = db.getBibLibrary().addEntry(mwd.getEntryType());      
+      BibEntry entry = db.getBibLibrary().addEntry(mwd.getEntryType());
       work.setBibEntryKey(entry.getEntryKey());
       workBibData = entry;
     }
-    
+
     mwd.mergeInto(workBibData);
     bibManagerDlg.refresh();
-    
+
     goToRecord(work, false);
     update();
-    
+
     if ((filePath == null) || (ibed.getDeleteFile() == false))
       return;
-    
+
     filePath.deletePromptOnFail(true);
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML public void mnuSettingsClick()        
-  { 
+  @FXML public void mnuSettingsClick()
+  {
     if (db.isLoaded())
       if (cantSaveRecord(true)) return;
-    
+
     OptionsDialogController.create(appTitle + " Settings").showModal();
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }

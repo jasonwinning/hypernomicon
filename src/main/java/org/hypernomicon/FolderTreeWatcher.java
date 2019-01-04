@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon;
@@ -57,7 +57,7 @@ import javafx.application.Platform;
 //---------------------------------------------------------------------------
 
 public class FolderTreeWatcher
-{  
+{
   public static class WatcherEvent
   {
     public static enum WatcherEventKind
@@ -67,35 +67,35 @@ public class FolderTreeWatcher
       wekCreate,
       wekModify
     }
-    
+
     private WatcherEventKind kind;
     private PathInfo oldPathInfo, newPathInfo;
-    
+
     public WatcherEventKind getKind() { return kind; }
     public PathInfo getOldPathInfo()  { return oldPathInfo; }
     public PathInfo getNewPathInfo()  { return newPathInfo; }
-    
+
     public WatcherEvent(WatcherEventKind kind, PathInfo oldPathInfo, PathInfo newPathInfo)
     {
       this.kind = kind;
       this.oldPathInfo = oldPathInfo;
       this.newPathInfo = newPathInfo;
     }
-    
+
     public boolean isDirectory()
     {
       if (oldPathInfo != null)
         if (oldPathInfo.isDirectory()) return true;
       if (newPathInfo != null)
         if (newPathInfo.isDirectory()) return true;
-      
+
       return false;
     }
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public class WatcherThread extends Thread
   {
     private boolean done = false;
@@ -106,14 +106,14 @@ public class FolderTreeWatcher
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
-    
+
     WatcherThread(WatchService watcher, HashMap<WatchKey, HDT_Folder> watchKeyToDir)
     {
       super();
-      
+
       this.watcher = watcher;
       this.watchKeyToDir = watchKeyToDir;
-      
+
       start();
     }
 
@@ -124,35 +124,35 @@ public class FolderTreeWatcher
     {
       while (watcher.poll() != null);
     }
-   
+
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
-    
+
     @Override public void run()
     {
       WatchKey watchKey = null;
       List<WatcherEvent> eventList = null, shortList = null;
       PathInfo oldPathInfo = null, newPathInfo;
       WatcherEvent watcherEvent = null;
-     
-      clearKeyQueue();      
-      
-      try 
+
+      clearKeyQueue();
+
+      try
       {
         registerTree(db.getRootFilePath());
-      } 
+      }
       catch (IOException e)
       {
         e.printStackTrace();
         messageDialog("Unable to start watch service: " + e.getMessage(), mtError);
         return;
       }
-      
+
       if (app.debugging())
         System.out.println("Watcher start");
-      
+
       clearKeyQueue();
-              
+
       while (done == false)
       {
         if (stopRequested)
@@ -160,73 +160,73 @@ public class FolderTreeWatcher
           stopRequested = false;
           return;
         }
-        
+
         eventList = null;
-        
+
         if (handleInterComputerMessage() == false)
         {
           try { watchKey = watcher.poll(FOLDER_TREE_WATCHER_POLL_TIME_MS, TimeUnit.MILLISECONDS); }
           catch (InterruptedException e1) { return; }
         }
-        
+
         if (watchKey != null)
         {
           eventList = new ArrayList<WatcherEvent>();
           newPathInfo = null;
         }
-            
+
         while (watchKey != null)
         {
           int ndx = 0;
 
           shortList = new ArrayList<WatcherEvent>();
-          
-          for (final WatchEvent<?> event : watchKey.pollEvents()) 
+
+          for (final WatchEvent<?> event : watchKey.pollEvents())
           {
             @SuppressWarnings("unchecked")
             WatchEvent<Path> watchEvent = (WatchEvent<Path>) event;
 
             HDT_Folder folder = watchKeyToDir.get(watchKey);
-                      
+
             if (folder == null)
-            {              
+            {
               folder = HyperPath.getFolderFromFilePath(new FilePath((Path)watchKey.watchable()), false);
               watchKeyToDir.put(watchKey, folder);
             }
-            
+
             if (folder.getID() > 0)
             {
               FilePath filePath = folder.getPath().getFilePath().resolve(new FilePath(watchEvent.context())); // This is what actually changed
               newPathInfo = new PathInfo(filePath);
-               
-              if (watchEvent.kind() == ENTRY_CREATE)  
+
+              if (watchEvent.kind() == ENTRY_CREATE)
                 watcherEvent = new WatcherEvent(wekCreate, null, newPathInfo);
               else if (watchEvent.kind() == ENTRY_DELETE)
                 watcherEvent = new WatcherEvent(wekDelete, newPathInfo, null);
               else if (watchEvent.kind() == ENTRY_MODIFY)
                 watcherEvent = new WatcherEvent(wekModify, newPathInfo, newPathInfo);
-              
+
               shortList.add(watcherEvent);
               ndx++;
             }
           }
-          
+
           int deleteNdx = -1, createNdx = -1; ndx = 0;
           for (ndx = 0; ndx < shortList.size(); ndx++)
           {
             watcherEvent = shortList.get(ndx);
-            
+
             if (watcherEvent.getKind() == wekDelete)
               deleteNdx = ndx;
             else if (watcherEvent.getKind() == wekCreate)
-              createNdx = ndx;                         
+              createNdx = ndx;
           }
-          
+
           if ((deleteNdx >= 0) && (createNdx >= 0))
           {
             oldPathInfo = shortList.get(deleteNdx).getOldPathInfo();
             newPathInfo = shortList.get(createNdx).getNewPathInfo();
-            
+
             if (oldPathInfo.getParentFolder() == newPathInfo.getParentFolder())
             {
               watcherEvent = new WatcherEvent(wekRename, oldPathInfo, newPathInfo);
@@ -236,14 +236,14 @@ public class FolderTreeWatcher
               shortList.remove(watcherEvent);
             }
           }
-            
+
           eventList.addAll(shortList);
-          
+
           watchKey.reset();
-          
+
           watchKey = watcher.poll();
         }
-        
+
         if (eventList != null)
         {
           try
@@ -255,8 +255,8 @@ public class FolderTreeWatcher
             messageDialog("Unable to process watcher event list: " + e.getMessage(), mtError);
           }
         }
-      } 
-    }   
+      }
+    }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -267,52 +267,52 @@ public class FolderTreeWatcher
       FilePath filePath;
       String relStr;
       HyperPath hyperPath;
-      
+
       if (app.debugging())
       {
         System.out.println("---------------------------");
         System.out.println("New event list");
         System.out.println("---------------------------");
       }
-      
+
       for (WatcherEvent watcherEvent : eventList)
-      {     
+      {
         PathInfo oldPathInfo = watcherEvent.getOldPathInfo();
         PathInfo newPathInfo = watcherEvent.getNewPathInfo();
-        
+
         switch (watcherEvent.getKind())
         {
           case wekCreate:
-            
+
             if (watcherEvent.isDirectory())
             {
               filePath = newPathInfo.getFilePath();
               registerTree(filePath);
             }
-            
+
             Platform.runLater(fileManagerDlg::refresh);
-            
+
             break;
-            
+
           case wekDelete:
-            
+
             hyperPath = oldPathInfo.getHyperPath();
-            
+
             if (hyperPath != null)
             {
               relStr = hyperPath.getRecordsString();
               if (relStr.length() > 0)
               {
-                if (watcherEvent.isDirectory())                
+                if (watcherEvent.isDirectory())
                   messageDialog("There has been a change to a folder that is in use by the database. This may or may not cause a data integrity problem. Changes to database folders should be made using the Hypernomicon File Manager instead.", mtWarning);
                 else
                 {
                   FilePath oldPath = oldPathInfo.getFilePath();
-                  
+
                   Platform.runLater(() ->
                   {
                     sleepForMillis(2000);
-                    
+
                     if (oldPath.exists() == false)
                       messageDialog("A file that is in use by the database, \"" + oldPath.getNameOnly() + "\", has been deleted or moved from outside the program. This may or may not cause a data integrity problem. Changes to database files should be made using the Hypernomicon File Manager instead.", mtWarning);
                   });
@@ -324,21 +324,21 @@ public class FolderTreeWatcher
                 {
                   folder = (HDT_Folder) hyperPath.getRecord();
                   HDT_Folder.deleteFolderRecordTree(folder);
-                }              
-              }              
+                }
+              }
             }
-            
+
             Platform.runLater(fileManagerDlg::refresh);
-            
+
             break;
-            
+
           case wekModify:
             break;
-            
+
           case wekRename:
-            
+
             hyperPath = oldPathInfo.getHyperPath();
-            
+
             if (hyperPath != null)
             {
               relStr = hyperPath.getRecordsString();
@@ -350,11 +350,11 @@ public class FolderTreeWatcher
                 {
                   FilePath newPath = newPathInfo.getFilePath();
                   final HyperPath hyperPath2 = hyperPath;
-                  
+
                   Platform.runLater(() ->
                   {
                     sleepForMillis(2000);
-                    
+
                     if (newPath.exists())
                     {
                       if (confirmDialog("A file that is in use by the database has been renamed from outside the program." + System.lineSeparator() +
@@ -364,15 +364,15 @@ public class FolderTreeWatcher
                         if (newPath.exists())
                         {
                           hyperPath2.assign(hyperPath2.getParentFolder(), newPath.getNameOnly());
-                          
+
                           HDT_RecordWithPath record = hyperPath2.getRecord();
-                          
+
                           if (record != null)
                           {
                             if (record.getType() == hdtWorkFile)
                             {
                               HDT_WorkFile workFile = (HDT_WorkFile) record;
-                              
+
                               if (ui.activeTab() == workTab)
                               {
                                 if (workFile.works.contains(ui.activeRecord()))
@@ -382,7 +382,7 @@ public class FolderTreeWatcher
                                     tabWorks.wdc.btnCancel.fire();
                                   else if (tabWorks.fdc != null)
                                     tabWorks.fdc.btnCancel.fire();
-                                  
+
                                   tabWorks.refreshFiles();
                                 }
                               }
@@ -394,7 +394,7 @@ public class FolderTreeWatcher
                                 FileTabController tabFiles = (FileTabController) ui.currentTab();
                                 if (tabFiles.fdc != null)
                                   tabFiles.fdc.btnCancel.fire();
-                                
+
                                 tabFiles.refreshFile();
                               }
                             }
@@ -407,39 +407,39 @@ public class FolderTreeWatcher
                   });
                 }
               }
-              
+
               if (watcherEvent.isDirectory())
               {
                 hyperPath.assign(hyperPath.getParentFolder(), newPathInfo.getFilePath().getNameOnly());
                 registerTree(newPathInfo.getFilePath());
-              }                            
+              }
             }
-            
+
             Platform.runLater(fileManagerDlg::refresh);
-            
+
             break;
-            
+
           default:
             break;
-          
+
         }
-        
+
         if (app.debugging())
         {
           switch (watcherEvent.getKind())
           {
-            case wekCreate: System.out.println("Created: \"" + watcherEvent.getNewPathInfo() + "\"");  break;              
-            case wekDelete: System.out.println("Deleted: \"" + watcherEvent.getOldPathInfo() + "\"");  break;              
-            case wekModify: System.out.println("Modified: \"" + watcherEvent.getNewPathInfo() + "\""); break;              
-            case wekRename: System.out.println("Renamed: \"" + watcherEvent.getOldPathInfo() + 
+            case wekCreate: System.out.println("Created: \"" + watcherEvent.getNewPathInfo() + "\"");  break;
+            case wekDelete: System.out.println("Deleted: \"" + watcherEvent.getOldPathInfo() + "\"");  break;
+            case wekModify: System.out.println("Modified: \"" + watcherEvent.getNewPathInfo() + "\""); break;
+            case wekRename: System.out.println("Renamed: \"" + watcherEvent.getOldPathInfo() +
                                                "\" to: \"" + watcherEvent.getNewPathInfo().getFilePath().getNameOnly() + "\""); break;
-              
+
             default:        System.out.println("Unknown event: \"" + watcherEvent.getNewPathInfo() + "\""); break;
           }
         }
       }
-    }        
-                   
+    }
+
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
@@ -447,56 +447,56 @@ public class FolderTreeWatcher
     {
       String compName = getComputerName();
       InterComputerMsg sentMsg, receivedMsg;
-      
+
       if (sentResponse)
       {
         if (db.getRequestMessageFilePath().exists())
           return false;
-               
+
         sentResponse = false;
-        
+
         try { Files.delete(db.getResponseMessageFilePath().toPath()); } catch (IOException e) { noOp(); }
-        
+
         if (requestType == hmtUnlockRequest)
         {
           done = true;
-        
+
           Platform.runLater(() -> ui.shutDown(true, true, false));
         }
-        
+
         return true;
       }
-      
+
       if (db.getRequestMessageFilePath().exists() == false)
         return false;
-      
+
       receivedMsg = InterComputerMsg.checkForMessage(db.getRequestMessageFilePath());
       requestType = hmtNone;
-      
+
       if (receivedMsg != null)
         if (receivedMsg.getDest().equals(compName))
-          requestType = receivedMsg.getType();  
-        
+          requestType = receivedMsg.getType();
+
       switch (requestType)
       {
         case hmtEchoRequest :
-      
+
           sentMsg = new InterComputerMsg(compName, receivedMsg.getSource(), hmtEchoReply);
           sentMsg.writeToDisk();
           sentResponse = true;
           break;
-    
+
         case hmtUnlockRequest :
-  
+
           sentMsg = new InterComputerMsg(compName, receivedMsg.getSource(), hmtUnlockComplete);
           sentMsg.writeToDisk();
           sentResponse = true;
           break;
-  
+
         default :
-          break;                   
+          break;
       }
-      
+
       return true;
     }
   }
@@ -517,26 +517,26 @@ public class FolderTreeWatcher
 //---------------------------------------------------------------------------
 
   public boolean createNewWatcherAndStart()
-  {   
+  {
     stop();
-    
+
     if (disabled || db.isLoaded() == false) return false;
-    
+
     watchKeyToDir = new HashMap<>();
-   
-    try 
+
+    try
     {
-      watcher = FileSystems.getDefault().newWatchService();      
-    } 
+      watcher = FileSystems.getDefault().newWatchService();
+    }
     catch (IOException e)
     {
       e.printStackTrace();
       messageDialog("Unable to start watch service: " + e.getMessage(), mtError);
       return false;
     }
-    
+
     start();
-       
+
     return true;
   }
 
@@ -545,25 +545,25 @@ public class FolderTreeWatcher
 
   private void registerTree(FilePath rootFilePath) throws IOException
   {
-    Files.walkFileTree(rootFilePath.toPath(), new FileVisitor<Path>() 
+    Files.walkFileTree(rootFilePath.toPath(), new FileVisitor<Path>()
     {
       /**
        * Invoked for a directory before entries in the directory are visited.
        */
-      @Override public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attrs) throws IOException 
+      @Override public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attrs) throws IOException
       {
         Objects.requireNonNull(path);
         Objects.requireNonNull(attrs);
-        
+
         if (new FilePath(path).exists() == false) return FileVisitResult.SKIP_SUBTREE;
-        
+
         HDT_Folder folder = HyperPath.getFolderFromFilePath(new FilePath(path), true);
-        
+
         if (folder == null)
           throw new IOException(new HDB_InternalError(92733));
-        
+
         watchKeyToDir.put(path.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY), folder);
-        
+
         return FileVisitResult.CONTINUE;
       }
 
@@ -585,7 +585,7 @@ public class FolderTreeWatcher
         Objects.requireNonNull(path);
 
         if (new FilePath(path).exists() == false) return FileVisitResult.CONTINUE; // If folder doesn't exist just keep going
-        
+
         throw exc;
       }
 
@@ -598,7 +598,7 @@ public class FolderTreeWatcher
         Objects.requireNonNull(path);
 
         if (exc != null) throw exc;
-        
+
         return FileVisitResult.CONTINUE;
       }
 
@@ -613,15 +613,15 @@ public class FolderTreeWatcher
     if (watcherThread == null)
     {
       watcherThread = new WatcherThread(watcher, watchKeyToDir);
-           
+
       stopped = false;
     }
     else if (watcherThread.isAlive() == false)
     {
       stop();
-      
+
       watcherThread = new WatcherThread(watcher, watchKeyToDir);
-      
+
       stopped = false;
     }
   }
@@ -629,11 +629,11 @@ public class FolderTreeWatcher
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean isRunning() 
-  { 
+  public boolean isRunning()
+  {
     if (stopped == true) return false;
-    return watcherThread == null ? false : watcherThread.isAlive(); 
-  } 
+    return watcherThread == null ? false : watcherThread.isAlive();
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -641,14 +641,14 @@ public class FolderTreeWatcher
   public boolean stop()
   {
     boolean wasRunning = isRunning();
-    
+
     if (watcherThread != null)
       if (watcherThread.isAlive())
       {
         stopRequested = true;
         try { watcherThread.join(); } catch (InterruptedException e) { noOp(); }
       }
-    
+
     if (watcher != null)
     {
       if (stopped == false)
@@ -657,10 +657,10 @@ public class FolderTreeWatcher
         {
           watcher.close();
           stopped = true;
-          
+
           if (app.debugging())
             System.out.println("Watcher closed");
-        } 
+        }
         catch (IOException e)
         {
           if (app.debugging())
@@ -668,9 +668,9 @@ public class FolderTreeWatcher
         }
       }
     }
-       
+
     watcherThread = null;
-    
+
     return wasRunning;
   }
 

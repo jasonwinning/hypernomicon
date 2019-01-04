@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -31,36 +31,36 @@ public class NewQueryFavDialogController extends HyperDialog
   @FXML private CheckBox chkAutoExec;
   @FXML private Button btnOk;
   @FXML private Button btnCancel;
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public String getNewName()   { return tfName.getText(); }
   public boolean getAutoExec() { return chkAutoExec.isSelected(); }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static NewQueryFavDialogController create(String title, String newName)
   {
     NewQueryFavDialogController nqf = HyperDialog.create("NewQueryFavDialog.fxml", title, true);
     nqf.init(newName);
-    return nqf;        
+    return nqf;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void init(String newName)
   {
     tfName.setText(newName);
-    
+
     onShown = () -> safeFocus(tfName);
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override protected boolean isValid()
   {
     if (tfName.getText().length() == 0)
@@ -69,11 +69,11 @@ public class NewQueryFavDialogController extends HyperDialog
       safeFocus(tfName);
       return false;
     }
-    
+
     return true;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

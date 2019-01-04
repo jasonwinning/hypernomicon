@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.records;
@@ -23,12 +23,12 @@ import java.util.Map;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
 public enum HDT_RecordType
 {
   hdtNone           (HDT_Base.class),
-  
+
   hdtFolder         (HDT_Folder.class),  // Folders must be brought online first. See HyperPath.assignNameInternal
   hdtPerson         (HDT_Person.class),
   hdtPersonStatus   (HDT_PersonStatus.class),
@@ -56,7 +56,7 @@ public enum HDT_RecordType
   hdtFileType       (HDT_FileType.class),
   hdtNote           (HDT_Note.class),
   hdtGlossary       (HDT_Glossary.class),
-  
+
   hdtAuxiliary      (HDT_Base.class),
 
   hdtHub            (HDT_Hub.class);
@@ -68,7 +68,7 @@ public enum HDT_RecordType
   private final static Map<Class<? extends HDT_Base>, HDT_RecordType> classToType = new HashMap<>();
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   private <T extends HDT_Base> HDT_RecordType(Class<T> klass)
   {
@@ -77,33 +77,33 @@ public enum HDT_RecordType
     gotConnector = HDT_RecordWithConnector.class.isAssignableFrom(klass);
     disregardDates = simple || (klass == HDT_Subfield.class) || (klass == HDT_Hub.class);
   }
-  
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
 
-  public Class<? extends HDT_Base> getRecordClass() { return klass; }  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public Class<? extends HDT_Base> getRecordClass() { return klass; }
   public boolean isSimple()                         { return simple; }
   public boolean hasConnector()                     { return gotConnector; }
   public boolean getDisregardDates()                { return disregardDates; }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   public static final HDT_RecordType typeByRecordClass(Class<? extends HDT_Base> klass)
   {
     if (classToType.isEmpty())
-    {           
+    {
       for (HDT_RecordType type : values())
         classToType.put(type.klass, type);
-      
+
       classToType.put(HDT_Base.class, hdtNone);
     }
-    
+
     return classToType.getOrDefault(klass, hdtNone);
   }
-  
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
 }
 

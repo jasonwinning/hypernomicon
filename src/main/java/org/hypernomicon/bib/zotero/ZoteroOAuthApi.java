@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.bib.zotero;
@@ -36,7 +36,7 @@ public class ZoteroOAuthApi extends DefaultApi10a
   @Override public String getAccessTokenEndpoint()        { return "https://www.zotero.org/oauth/access"; }
   @Override public String getRequestTokenEndpoint()       { return "https://www.zotero.org/oauth/request"; }
   @Override protected String getAuthorizationBaseUrl()    { return "https://www.zotero.org/oauth/authorize"; }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -50,14 +50,14 @@ public class ZoteroOAuthApi extends DefaultApi10a
   {
     if (service == null)
       service = new ServiceBuilder("e9d7bdc517f7cd37a455").apiSecret("89d44b5b0887f9c2a893").build(ZoteroOAuthApi.instance());
-    
+
     return service;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String getAuthorizationUrl(OAuth1RequestToken requestToken) 
+  @Override public String getAuthorizationUrl(OAuth1RequestToken requestToken)
   {
     final ParameterList parameters = new ParameterList();
     parameters.add(OAuthConstants.TOKEN, requestToken.getToken());
@@ -65,7 +65,7 @@ public class ZoteroOAuthApi extends DefaultApi10a
     parameters.add("write_access", "1");
     return parameters.appendTo(getAuthorizationBaseUrl());
   }
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

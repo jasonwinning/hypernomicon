@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  *
  *
  *
@@ -101,9 +101,9 @@ public class HiddenSidesPaneSkin extends SkinBase<HiddenSidesPane> {
         pane.addEventFilter(MouseEvent.MOUSE_MOVED, event -> {
             if (isMouseEnabled() && getSkinnable().getPinnedSide() == null) {
                 Side side = getSide(event);
-                
+
                 boolean doShow = true;
-                
+
                 if (side != null)
                 {
                   switch (side)
@@ -112,10 +112,10 @@ public class HiddenSidesPaneSkin extends SkinBase<HiddenSidesPane> {
                     case LEFT:   doShow = (pane.getLeft  () != null); break;
                     case RIGHT:  doShow = (pane.getRight () != null); break;
                     case TOP:    doShow = (pane.getTop   () != null); break;
-                    default:     doShow = false; break;                  
+                    default:     doShow = false; break;
                   }
                 }
-                
+
                 if ((side != null) && doShow) {
                     show(side, false);
                 } else if (isMouseMovedOutsideSides(event)) {
@@ -224,7 +224,7 @@ public class HiddenSidesPaneSkin extends SkinBase<HiddenSidesPane> {
 
       if (side == null)
         return;
-      
+
         if (hideTimeline != null) {
             hideTimeline.stop();
         }
@@ -255,7 +255,7 @@ public class HiddenSidesPaneSkin extends SkinBase<HiddenSidesPane> {
 
     void hide() {
         if (showTimeline != null) {
-          if (showTimeline.getStatus() == Status.RUNNING) {  
+          if (showTimeline.getStatus() == Status.RUNNING) {
             if (noInterrupt) return;
             showTimeline.stop();
           }

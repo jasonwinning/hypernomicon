@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.records;
@@ -34,20 +34,20 @@ public class HDT_WorkLabel extends HDT_RecordWithConnector
   public final List<HDT_WorkLabel> subLabels;
   public final HyperSubjList<HDT_Work, HDT_WorkLabel> works;
   public final HyperSubjList<HDT_MiscFile, HDT_WorkLabel> miscFiles;
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HDT_WorkLabel(HDT_RecordState xmlState, HyperDataset<HDT_WorkLabel> dataset)
   {
     super(xmlState, dataset, tagText);
-    
+
     parentLabels = getObjList(rtParentLabelOfLabel);
     subLabels = getSubjList(rtParentLabelOfLabel);
     works = getSubjList(rtLabelOfWork);
     miscFiles = getSubjList(rtLabelOfFile);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -55,7 +55,7 @@ public class HDT_WorkLabel extends HDT_RecordWithConnector
   @Override public HDT_RecordType getType()    { return hdtWorkLabel; }
   @Override public String getCBText()          { return getExtendedText(); }
   @Override public boolean isUnitable()        { return true; }
-  
+
   public void setText(String newStr)           { setNameInternal(newStr, true); }
 
 //---------------------------------------------------------------------------
@@ -70,7 +70,7 @@ public class HDT_WorkLabel extends HDT_RecordWithConnector
       if (parentText.length() > 0)
         return parentText + "/" + name();
     }
-  
+
     return name();
   }
 
@@ -79,7 +79,7 @@ public class HDT_WorkLabel extends HDT_RecordWithConnector
 
   // Changes subjects, leaves key works alone
   public void refreshSubjects()
-  {    
+  {
     getMainText().getKeyWorks().forEach(keyWork ->
     {
       if (keyWork.getRecordType() == hdtWork)
@@ -96,24 +96,24 @@ public class HDT_WorkLabel extends HDT_RecordWithConnector
 
     ArrayList<HDT_Work> worksCopy = new ArrayList<HDT_Work>();
     worksCopy.addAll(works);
-    
+
     worksCopy.forEach(work ->
     {
       if (getMainText().getKeyWork(work) == null)
         db.getObjectList(rtLabelOfWork, work, true).remove(this);
     });
-    
+
     ArrayList<HDT_MiscFile> filesCopy = new ArrayList<HDT_MiscFile>();
     filesCopy.addAll(miscFiles);
-    
+
     filesCopy.forEach(file ->
     {
       if (getMainText().getKeyWork(file) == null)
         db.getObjectList(rtLabelOfFile, file, true).remove(this);
     });
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
 }

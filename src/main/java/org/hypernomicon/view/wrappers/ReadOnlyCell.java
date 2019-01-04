@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.wrappers;
@@ -29,37 +29,37 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 
 public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
-{ 
+{
   private boolean incremental;
   private HyperTable table;
   private HyperTableColumn col;
   public static final int INCREMENTAL_ROWS = 20;
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public ReadOnlyCell(HyperTable table, HyperTableColumn col, boolean incremental)
   {
     super();
-    
+
     this.incremental = incremental;
     this.table = table;
     this.col = col;
-    
+
     setOnMouseClicked(mouseEvent ->
     {
       if ((mouseEvent.getButton().equals(MouseButton.PRIMARY)) && (mouseEvent.getClickCount() == 2))
-      {       
+      {
         HyperTableCell cellItem = getItem();
         if (cellItem == null) return;
-        
-        HDT_Base record = HyperTableCell.getRecord(cellItem);       
+
+        HDT_Base record = HyperTableCell.getRecord(cellItem);
         if (record == null) return;
-        
+
         if (table.dblClickHandler != null)
           handleRecord(table.dblClickHandler, record);
         else
-          ui.goToRecord(record, true);          
+          ui.goToRecord(record, true);
       }
     });
   }
@@ -87,11 +87,11 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
       setTooltip(null);
     }
     else
-    {     
+    {
       if ((incremental) && (col.wasMoreButtonClicked() == false))
       {
         HyperTableRow row = (HyperTableRow) getTableRow().getItem();
-        
+
         if (row == null)
         {
           setText("");
@@ -99,33 +99,33 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
           setTooltip(null);
           return;
         }
-        
+
         if (HyperTableCell.getCellType(cell) == hdtAuxiliary)
         {
           setText("");
           setTooltip(null);
           Button cellButton = HyperTableColumn.makeButton(this);
           cellButton.setText("Show more");
-          cellButton.setOnAction(event -> 
+          cellButton.setOnAction(event ->
           {
             if (table.onShowMore != null)
-              table.onShowMore.run(); 
+              table.onShowMore.run();
           });
-          
+
           setGraphic(cellButton);
-          table.showMoreRow = row;          
+          table.showMoreRow = row;
           return;
         }
       }
-      
+
       String text = HyperTableCell.getCellText(cell);
-      
+
       setText(text);
       setTooltip(text.length() == 0 ? null : new Tooltip(text));
       setGraphic(null);
     }
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

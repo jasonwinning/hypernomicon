@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -35,9 +35,9 @@ public class RecordSelectDialogController extends HyperDialog
   @FXML private Button btnOK;
   @FXML private Button btnCancel;
   @FXML public ListView<HyperTableCell> listView;
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static RecordSelectDialogController create(String title, List<HyperTableCell> list)
   {
@@ -46,42 +46,42 @@ public class RecordSelectDialogController extends HyperDialog
     return rsd;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void init(List<HyperTableCell> list)
   {
     if (list == null) return;
     if (list.size() < 1) return;
     HDT_RecordType objType = HyperTableCell.getCellType(list.get(0));
-    
+
     listView.setItems(FXCollections.observableArrayList(list));
-    
-    StringConverter<HyperTableCell> strConv = new StringConverter<HyperTableCell>() 
+
+    StringConverter<HyperTableCell> strConv = new StringConverter<HyperTableCell>()
     {
       @Override public String toString(HyperTableCell cell)     { return HyperTableCell.getCellText(cell); }
       @Override public HyperTableCell fromString(String string) { return new HyperTableCell(-1, string, objType); }
     };
-       
+
     listView.setCellFactory(TextFieldListCell.forListView(strConv));
-    
+
     listView.setOnMouseClicked(mouseEvent ->
     {
       if ((mouseEvent.getButton().equals(MouseButton.PRIMARY)) && (mouseEvent.getClickCount() == 2))
         btnOkClick();
     });
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override protected boolean isValid()
   {
     return true;
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 
 }

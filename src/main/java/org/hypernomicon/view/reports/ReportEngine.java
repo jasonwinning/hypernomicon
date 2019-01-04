@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.reports;
@@ -34,17 +34,17 @@ public abstract class ReportEngine
 {
   public static final int QUERY_DUPLICATE_AUTHORS  = QUERY_FIRST_NDX + 1,
                           QUERY_LICENSE_AND_NOTICE = QUERY_FIRST_NDX + 2;
-  
+
   protected TableView<HyperTableRow> tv;
-  
+
   public abstract void generate(HyperTask task, HyperTableCell param1, HyperTableCell param2, HyperTableCell param3) throws TerminateTaskException;
   public abstract List<HyperTableRow> getRows();
-  public abstract HyperTable prepTable(TableView<HyperTableRow> tv);  
-  public abstract String getHtml(HyperTableRow row);  
+  public abstract HyperTable prepTable(TableView<HyperTableRow> tv);
+  public abstract String getHtml(HyperTableRow row);
   public abstract boolean alwaysShowDescription();
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static void addQueries(QueryPopulator pop, HyperTableRow row)
   {
@@ -52,31 +52,31 @@ public abstract class ReportEngine
     pop.addEntry(row, QUERY_LICENSE_AND_NOTICE, "Application license and notices");
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static ReportEngine createEngine(int report)
   {
     switch (report)
     {
-      case QUERY_DUPLICATE_AUTHORS  : return new DupAuthorsReportEngine();        
+      case QUERY_DUPLICATE_AUTHORS  : return new DupAuthorsReportEngine();
       case QUERY_LICENSE_AND_NOTICE : return new LicenseReportEngine();
     }
-    
+
     return null;
   }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   protected void addCol(String caption, int prefWidth)
   {
     TableColumn<HyperTableRow, HyperTableCell> col = new TableColumn<>(caption);
     col.setPrefWidth(prefWidth);
     tv.getColumns().add(col);
   }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

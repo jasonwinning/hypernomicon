@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.tabs;
@@ -49,24 +49,24 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 
 public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_RecordWithConnector>
-{ 
+{
   @FXML AnchorPane apDescription;
-  @FXML private TextField tfName;  
-  @FXML private TextField tfSearchKey;  
-  @FXML TableView<HyperTableRow> tvLeftChildren;  
-  @FXML TableView<HyperTableRow> tvRightChildren;  
-  @FXML TableView<HyperTableRow> tvParents;  
-  @FXML private Button btnGoogle;  
-  @FXML private Button btnIEP;  
-  @FXML private Button btnSEP;  
+  @FXML private TextField tfName;
+  @FXML private TextField tfSearchKey;
+  @FXML TableView<HyperTableRow> tvLeftChildren;
+  @FXML TableView<HyperTableRow> tvRightChildren;
+  @FXML TableView<HyperTableRow> tvParents;
+  @FXML private Button btnGoogle;
+  @FXML private Button btnIEP;
+  @FXML private Button btnSEP;
   @FXML private Button btnWikipedia;
-  @FXML private Button btnTree;  
+  @FXML private Button btnTree;
   @FXML private Label lblGoTo1;
   @FXML private Label lblGoTo2;
   @FXML private Label lblGoTo3;
   @FXML private Label lblMergeTerms;
-  @FXML Label lblParentCaption;  
-  @FXML GridPane gpToolBar;  
+  @FXML Label lblParentCaption;
+  @FXML GridPane gpToolBar;
   @FXML AnchorPane apLowerPane;
   @FXML SplitPane spMain;
   @FXML SplitPane spChildren;
@@ -76,34 +76,34 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
   private HDT_RecordType recordType;
   private MainTextWrapper mainText;
   private HyperNodeTab<HDT_RT, HDT_CT> hyperTab;
- 
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
 
   public void focusOnSearchKey()              { safeFocus(tfSearchKey); }
   public void hilite(String text)             { mainText.hilite(text); }
   public TextViewInfo getMainTextInfo()       { return mainText.getViewInfo(); }
   public MainTextWrapper getMainTextWrapper() { return mainText; }
- 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void init(HDT_RecordType recordType, HyperNodeTab<HDT_RT, HDT_CT> hyperTab)
   {
     this.recordType = recordType;
     this.hyperTab = hyperTab;
-    
+
     mainText = new MainTextWrapper(apDescription);
-    
+
     if (recordType != hdtConcept)
     {
       lblGoTo3.setPadding(new Insets(0.0, 0.0, 0.0, 0.0));
       tbLinks.getItems().remove(lblMergeTerms);
     }
-    
+
     switch (recordType)
     {
       case hdtDebate : case hdtPosition :
-        
+
         debateLink = null;
         conceptLink = lblGoTo1;
         noteLink = lblGoTo2;
@@ -111,7 +111,7 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
         break;
 
       case hdtNote :
-        
+
         debateLink = lblGoTo1;
         conceptLink = lblGoTo2;
         noteLink = null;
@@ -119,38 +119,38 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
         break;
 
       case hdtConcept :
-        
+
         debateLink = lblGoTo1;
         conceptLink = null;
         noteLink = lblGoTo2;
-        labelLink = lblGoTo3;        
+        labelLink = lblGoTo3;
         break;
 
       default :
-        
+
         debateLink = null;
         conceptLink = null;
         noteLink = null;
         labelLink = null;
     }
-    
+
     btnGoogle.setOnAction(event -> searchGoogle(tfName.getText(), true));
     btnIEP.setOnAction(event -> searchIEP(tfName.getText()));
     btnSEP.setOnAction(event -> searchSEP(tfName.getText()));
     btnWikipedia.setOnAction(event -> searchWikipedia(tfName.getText()));
     btnTree.setOnAction(event -> ui.goToTreeRecord(ui.viewRecord()));
-    
+
     double fontSize = appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
     if (fontSize < 0) fontSize = lblGoTo1.getFont().getSize();
-    
+
     lblGoTo1.setFont(new Font(fontSize + 6.0));
     lblGoTo2.setFont(new Font(fontSize + 6.0));
     lblGoTo3.setFont(new Font(fontSize + 6.0));
     lblMergeTerms.setFont(new Font(fontSize + 6.0));
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public MenuItem makeMenuItem(HDT_RecordWithConnector record)
   {
@@ -162,24 +162,24 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
       record.getLink().disconnectRecord(record.getType(), true);
       ui.update();
     });
-    
+
     return miUnlink;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public MenuItem makeMoveConceptItem()
   {
     MenuItem miMove = new MenuItem();
     miMove.setText("Move this definition to a different term");
     miMove.setOnAction(event -> TermTab.class.cast(hyperTab).moveConcept());
-    
+
     return miMove;
   }
- 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   void updateLinkLabels(HDT_CT record)
   {
@@ -199,20 +199,20 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
         label    = record.getLink().getLabel();
         note     = record.getLink().getNote();
       }
-      
+
       if (record.getType().equals(recordType) == false)
       {
         messageDialog("Internal Error #28788", mtError);
         return;
       }
     }
-       
+
     if ((recordType != hdtDebate) && (recordType != hdtPosition))
     {
       if ((debate != null) || (position != null))
       {
         debateLink.setStyle("-fx-background-color: blue; -fx-text-fill: white;");
-        
+
         if (record.getLink().getDebate() != null)
         {
           debateLink.setText("Go to Debate...");
@@ -225,7 +225,7 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
           debateLink.setContextMenu(new ContextMenu(makeMenuItem(position)));
           setGoToEvent(debateLink, position);
         }
-          
+
         setTooltip(debateLink);
       }
       else
@@ -235,7 +235,7 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
         debateLink.setTooltip(null);
         debateLink.setContextMenu(null);
         setLinkToEvent(debateLink, hdtDebate);
-      }  
+      }
     }
 
     if (recordType != hdtConcept)
@@ -288,9 +288,9 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
       {
         labelLink.setStyle("-fx-background-color: fuchsia; -fx-text-fill: yellow;");
         labelLink.setText("Go to Label...");
-        setTooltip(labelLink);        
+        setTooltip(labelLink);
         labelLink.setContextMenu(new ContextMenu(makeMenuItem(label)));
-        labelLink.setOnMouseClicked(mouseEvent -> 
+        labelLink.setOnMouseClicked(mouseEvent ->
         {
           if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
             ui.goToTreeRecord(record.getLink().getLabel());
@@ -305,12 +305,12 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
         setLinkToEvent(labelLink, hdtWorkLabel);
       }
     }
-    
+
     if (recordType == hdtConcept)
     {
       lblMergeTerms.setTooltip(new Tooltip("Use right/secondary button to move this definition to a different term"));
       lblMergeTerms.setContextMenu(new ContextMenu(makeMoveConceptItem()));
-      lblMergeTerms.setOnMouseClicked(mouseEvent -> 
+      lblMergeTerms.setOnMouseClicked(mouseEvent ->
       {
         if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
           TermTab.class.cast(hyperTab).merge();
@@ -318,40 +318,40 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
     }
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void setTooltip(Label label)
   {
     label.setTooltip(new Tooltip("Use right/secondary button to unlink"));
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void linkToTermClick()
   {
     if (ui.cantSaveRecord(true)) return;
-    
-    SelectConceptDialogController frmSelectConcept = SelectConceptDialogController.create("Term select", null); 
-    
+
+    SelectConceptDialogController frmSelectConcept = SelectConceptDialogController.create("Term select", null);
+
     if (frmSelectConcept.showModal() == false) return;
 
     HDT_RecordWithConnector source = (HDT_RecordWithConnector) ui.activeRecord();
     HDT_Term term = frmSelectConcept.getTerm();
     HDT_Concept concept;
-    
+
     if (frmSelectConcept.createNew)
     {
-      concept = db.createNewBlankRecord(hdtConcept);      
+      concept = db.createNewBlankRecord(hdtConcept);
 
       term.setTerm(source.listName());
-      term.concepts.add(concept);      
+      term.concepts.add(concept);
 
-      concept.glossary.set(db.glossaries.getByID(1));      
+      concept.glossary.set(db.glossaries.getByID(1));
     }
     else if (frmSelectConcept.getGlossary() != null)
-    {     
+    {
       concept = term.getConcept(frmSelectConcept.getGlossary());
     }
     else
@@ -359,9 +359,9 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
 
     ui.uniteRecords(source, concept);
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void setLinkToEvent(Label label, HDT_RecordType type)
   {
@@ -370,60 +370,60 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
       if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
       {
         HDT_Base source = ui.viewRecord();
-    
+
         ui.treeSubjRecord = source;
         ui.treeObjRecord = null;
         ui.treeTargetTypes.clear();
-        
+
         ui.treeTargetTypes.add(new TreeTargetType(rtUnited, type));
         if (type == hdtDebate)
           ui.treeTargetTypes.add(new TreeTargetType(rtUnited, hdtPosition));
-    
+
         ui.goToTreeRecord(db.records(type).getByID(1));
       }
     });
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void setGoToEvent(Label label, HDT_RecordWithConnector record)
   {
     label.setOnMouseClicked(mouseEvent ->
     {
       if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
-        ui.goToRecord(record, true);   
+        ui.goToRecord(record, true);
     });
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------   
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void clear()
   {
     tfName.clear();
     tfSearchKey.clear();
-    
+
     mainText.clear(true);
-    
+
     if (recordType != hdtArgument)
       updateLinkLabels(null);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public boolean save(HDT_CT record, boolean showMessage, HyperNodeTab<HDT_RT, HDT_CT> hyperTab)
-  {       
+  {
     if (record.getType() == hdtConcept)
-    {        
+    {
       if (tfSearchKey.getText().length() == 0)
       {
         messageDialog("Unable to modify record: search key of term cannot be zero-length.", mtError);
         safeFocus(tfSearchKey);
         return false;
       }
-  
+
       if (tfName.getText().length() == 0)
       {
         messageDialog("Unable to modify record: term cannot be zero-length.", mtError);
@@ -431,35 +431,35 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
         return false;
       }
     }
-    
+
     if (!hyperTab.saveSearchKey(record, tfSearchKey, showMessage)) return false;
-    
+
     record.setName(tfName.getText());
-    
+
     mainText.save();
-    
+
     return true;
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public void update(HDT_CT record)
-  {  
+  {
     tfName.setText(record.name());
     tfSearchKey.setText(record.getSearchKey());
-    
+
     mainText.loadFromRecord(record, true, hyperTab.getView().getTextInfo());
-     
+
     if (record.isUnitable())
       updateLinkLabels(record);
-    
+
     record.viewNow();
-    
+
     safeFocus(tfName);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

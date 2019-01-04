@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.relations;
@@ -30,14 +30,14 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   private int endNdx;
 
   @Override public Exception getLastException() { return parentList.getLastException(); }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public HyperObjSubList(HyperObjList<HDT_SubjType, HDT_ObjType> parentList, int startNdx, int endNdx)
   {
     super(parentList.relSet, parentList.subj, parentList.modTracking);
-    
+
     this.parentList = parentList;
     this.startNdx = startNdx;
     this.endNdx = endNdx;
@@ -52,12 +52,12 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   @Override public HDT_ObjType get(int ndx) { return parentList.get(startNdx + ndx); }
 
   @Override public HDT_ObjType set(int ndx, HDT_ObjType element) { return parentList.set(startNdx + ndx, element); }
-  
-  @Override public List<HDT_ObjType> subList(int from, int to) 
-  { 
+
+  @Override public List<HDT_ObjType> subList(int from, int to)
+  {
     return new HyperObjSubList<HDT_SubjType, HDT_ObjType>(parentList, startNdx + from, startNdx + to);
   }
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   {
     for (int ndx = startNdx; ndx < endNdx; ndx++)
       if (parentList.get(ndx) == o) return true;
-    
+
     return false;
   }
 
@@ -76,12 +76,12 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   {
     List<HDT_ObjType> objList = relSet.getUnmodifiableObjectList(subj).subList(startNdx, endNdx);
     if (objList == null) return new Object[0];
-    
+
     Object[] array = new Object[objList.size()];
-    
+
     for (int ndx = 0; ndx < objList.size(); ndx++)
       array[ndx] = objList.get(ndx);
-    
+
     return array;
   }
 
@@ -94,22 +94,22 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
     List<HDT_ObjType> objList = relSet.getUnmodifiableObjectList(subj);
     if (objList != null)
       objList = objList.subList(startNdx, endNdx);
-    
+
     if (objList == null)
     {
       if (a.length > 0) a[0] = null;
       return a;
     }
-    
+
     if (a.length < objList.size())
       a = (T[]) new HDT_Base[objList.size()];
-        
+
     for (int ndx = 0; ndx < objList.size(); ndx++)
       a[ndx] = (T) objList.get(ndx);
-    
+
     if (a.length > objList.size())
       a[objList.size()] = null;
-       
+
     return a;
   }
 
@@ -119,15 +119,15 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   @Override public boolean add(HDT_ObjType e)
   {
     if (parentList.contains(e)) return false;
-    
+
     parentList.add(endNdx, e);
-    
+
     if (parentList.getLastException() == null)
     {
       endNdx++;
       return true;
     }
-    
+
     return false;
   }
 
@@ -142,7 +142,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
       endNdx--;
       return true;
     }
-    
+
     return false;
   }
 
@@ -153,7 +153,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   {
     for (Object o : c)
       if (contains(o) == false) return false;
-    
+
     return true;
   }
 
@@ -163,7 +163,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   @Override public boolean addAll(Collection<? extends HDT_ObjType> c)
   {
     List<HDT_ObjType> added = new ArrayList<>();
-    
+
     for (HDT_ObjType record : c)
     {
       if (add(record))
@@ -173,16 +173,16 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
         if (parentList.lastException != null)
         {
           Exception e = parentList.lastException;
-          
+
           for (HDT_ObjType rec : added)
             remove(rec);
-          
+
           parentList.lastException = e;
           return false;
         }
       }
     }
-    
+
     return added.size() > 0;
   }
 
@@ -192,7 +192,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   @Override public boolean addAll(int index, Collection<? extends HDT_ObjType> c)
   {
     List<HDT_ObjType> added = new ArrayList<>();
-    
+
     for (HDT_ObjType record : c)
     {
       if (parentList.contains(record) == false)
@@ -200,22 +200,22 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
         add(index, record);
         if (parentList.lastException == null)
         {
-          index++;           
+          index++;
           added.add(record);
         }
         else
         {
           Exception e = parentList.lastException;
-          
+
           for (HDT_ObjType rec : added)
             remove(rec);
-          
+
           parentList.lastException = e;
           return false;
         }
       }
     }
-    
+
     return added.size() > 0;
   }
 
@@ -225,7 +225,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   @Override public boolean retainAll(Collection<?> c)
   {
     boolean removedAny = false;
-       
+
     for (int ndx = startNdx; ndx < endNdx; ndx++)
     {
       if (c.contains(relSet.getObject(subj, ndx)) == false)
@@ -235,7 +235,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
         ndx--;
       }
     }
-    
+
     return removedAny;
   }
 
@@ -245,9 +245,9 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   @Override public void add(int index, HDT_ObjType element)
   {
     int oldSize = parentList.size();
-    
+
     parentList.add(startNdx + index, element);
-    
+
     endNdx = endNdx + (parentList.size() - oldSize);
   }
 
@@ -257,11 +257,11 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   @Override public HDT_ObjType remove(int index)
   {
     int oldSize = parentList.size();
-    
+
     HDT_ObjType record = parentList.remove(startNdx + index);
-    
+
     endNdx = endNdx + (parentList.size() - oldSize);
-    
+
     return record;
   }
 
@@ -273,7 +273,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
     for (int ndx = startNdx; ndx < endNdx; ndx++)
       if (get(ndx) == o)
         return ndx;
-       
+
     return -1;
   }
 
@@ -285,7 +285,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
     for (int ndx = endNdx - 1; ndx >= startNdx; ndx++)
       if (get(ndx) == o)
         return ndx;
-       
+
     return -1;
   }
 

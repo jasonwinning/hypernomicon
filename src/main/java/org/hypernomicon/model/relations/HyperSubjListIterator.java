@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.relations;
@@ -44,7 +44,7 @@ public class HyperSubjListIterator<HDT_SubjType extends HDT_Base, HDT_ObjType ex
   @Override public boolean hasPrevious() { return nextNdx > 0; }
   @Override public int nextIndex()       { return nextNdx; }
   @Override public int previousIndex()   { return nextNdx - 1; }
-  
+
   @Override public void remove()            { throw new UnsupportedOperationException(modErrMsg); }
   @Override public void set(HDT_SubjType e) { throw new UnsupportedOperationException(modErrMsg); }
   @Override public void add(HDT_SubjType e) { throw new UnsupportedOperationException(modErrMsg); }
@@ -53,14 +53,14 @@ public class HyperSubjListIterator<HDT_SubjType extends HDT_Base, HDT_ObjType ex
 //---------------------------------------------------------------------------
 
   @Override public HDT_SubjType next()
-  {   
+  {
     if (hasNext())
-    {  
+    {
       HDT_SubjType record = list.get(nextNdx);
       nextNdx++;
       return record;
     }
-    
+
     throw new NoSuchElementException();
   }
 
@@ -70,13 +70,13 @@ public class HyperSubjListIterator<HDT_SubjType extends HDT_Base, HDT_ObjType ex
   @Override public HDT_SubjType previous()
   {
     if (hasPrevious())
-    {  
+    {
       nextNdx--;
       HDT_SubjType record = list.get(nextNdx);
-      
+
       return record;
     }
-    
+
     throw new NoSuchElementException();
   }
 

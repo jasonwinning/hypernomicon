@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.wrappers;
@@ -41,9 +41,9 @@ public class HyperTableRow
   private HashMap<Integer, Populator> populators = new HashMap<Integer, Populator>();
 
 //---------------------------------------------------------------------------
-  
+
   public int getCount()                       { return cells.size(); }
-  public HyperTableCell getCell(int ndx)      { return cells.get(ndx); }  
+  public HyperTableCell getCell(int ndx)      { return cells.get(ndx); }
   public int getID(int ndx)                   { return cells.size() > ndx ? HyperTableCell.getCellID(cells.get(ndx)) : -1; }
   public String getText(int ndx)              { return cells.size() > ndx ? HyperTableCell.getCellText(cells.get(ndx)) : ""; }
   public HDT_RecordType getType(int ndx)      { return cells.size() > ndx ? HyperTableCell.getCellType(cells.get(ndx)) : hdtNone; }
@@ -51,14 +51,14 @@ public class HyperTableRow
 
   public <HDT_T extends HDT_Base> HDT_T getRecord()        { return HyperTableCell.getRecord(cells.get(table.getMainColNdx())); }
   public <HDT_T extends HDT_Base> HDT_T getRecord(int ndx) { return HyperTableCell.getRecord(cells.get(ndx)); }
-  
+
 //---------------------------------------------------------------------------
 
   public HyperTableRow(int colCount, HyperTable table)
   {
     this.table = table;
     cells = FXCollections.observableArrayList();
-    
+
     for (int colNdx = 0; colNdx < colCount; colNdx++)
     {
       cells.add(new HyperTableCell(-1, "", HDT_RecordType.hdtNone));
@@ -73,9 +73,9 @@ public class HyperTableRow
   {
     this.cells = cells;
     this.table = table;
-    
+
     if (cells == null) return;  // this occurs in the case of Populator.dummyRow
-    
+
     for (int colNdx = 0; colNdx < cells.size(); colNdx++)
       populators.put(colNdx, table.getPopulator(colNdx));
   }
@@ -87,20 +87,20 @@ public class HyperTableRow
   {
     if (type == hdtNone)
       return getRecord();
-            
+
     for (HyperTableCell cell : cells)
       if (HyperTableCell.getCellType(cell) == type)
         return HyperTableCell.getRecord(cell);
-    
+
     return null;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public void setCheckboxValue(int colNdx, boolean boolVal) {
-    setCellValue(colNdx, HyperTableCell.fromBoolean(boolVal)); } 
-  
+    setCellValue(colNdx, HyperTableCell.fromBoolean(boolVal)); }
+
   public boolean setCellValue(int colNdx, HDT_Base record, String text) {
     return setCellValue(colNdx, new HyperTableCell(record, text)); }
 
@@ -122,7 +122,7 @@ public class HyperTableRow
     VariablePopulator vp;
     boolean restricted;
     HyperTableColumn col = table.getColumn(colNdx);
-    
+
     if ((cell != null) && (newCell != null))
       if (cell.equals(newCell))
       {
@@ -132,7 +132,7 @@ public class HyperTableRow
 
     if (col.getObjType() == hdtNone)
       newCell = HyperTableCell.simpleSortValue(newCell);
-    
+
     if (col.getPopulator() != null)
     {
       if (col.getPopulator().getValueType() == cvtVaries)
@@ -142,12 +142,12 @@ public class HyperTableRow
       }
       else
         restricted = (col.getCtrlType() == ctDropDownList);
-      
+
       if (restricted)
       {
         Populator populator = col.getPopulator();
         HyperTableCell matchedCell = populator.match(this, newCell);
-        
+
         if (matchedCell != null)
           newCell = matchedCell;
         else if (HyperTableCell.getCellText(newCell).length() > 0)
@@ -157,37 +157,37 @@ public class HyperTableRow
         }
       }
     }
-       
+
     cells.set(colNdx, newCell);
     if (table.getCanAddRows())
     {
-      if (table.getTV().getItems().get(table.getTV().getItems().size() - 1) == this)      
+      if (table.getTV().getItems().get(table.getTV().getItems().size() - 1) == this)
         table.newRow(false);
     }
 
     if (table.disableRefreshAfterCellUpdate == false)
       table.refreshCol(colNdx);                 // Necessary workaround; tableview does not automatically refresh
                                                 // when you change values in the cell objects, just the row objects
-      
+
     CellUpdateHandler handler = col.updateHandler;
     final HyperTableCell finalCell = newCell.clone();
-    
+
     if (handler != null)
     {
       Populator nextPop = null;
       if (table.getColumns().size() > (colNdx + 1))
         nextPop = populators.get(colNdx + 1);
-      
+
       handler.handle(this, finalCell, colNdx + 1, nextPop);
-      
+
       if (table.getColumns().size() > (colNdx + 1))
         table.refreshCol(colNdx + 1);           // Necessary workaround; tableview does not automatically refresh
     }                                           // when you change values in the cell objects, just the row objects
-     
+
     return true;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
 }

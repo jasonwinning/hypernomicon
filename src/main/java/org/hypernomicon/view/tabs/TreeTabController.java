@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.tabs;
@@ -64,7 +64,7 @@ import javafx.scene.web.WebView;
 //---------------------------------------------------------------------------
 
 public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
-{ 
+{
   @FXML private TreeTableView<TreeRow> ttv;
   @FXML private TextField tfPath;
   @FXML private TreeTableColumn<TreeRow, HyperTreeCellValue> tcName;
@@ -76,12 +76,12 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
 
   private TreeModel<TreeRow> debateTree, termTree;
   private TreeModel<TreeRow> labelTree, noteTree;
-  private boolean useViewInfo = false;  
+  private boolean useViewInfo = false;
   private String lastTextHilited = "";
-  
+
   public String textToHilite = "";
   public TreeWrapper tree;
-  
+
   @Override public HDT_RecordType getType()                  { return hdtNone; }
   @Override public void enable(boolean enabled)              { ui.tabTree.getContent().setDisable(enabled == false); }
   @Override public void clear()                              { tree.clear(); }
@@ -94,102 +94,102 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
   @Override public void getDividerPositions()                { return; }
 
   @Override public void newClick(HDT_RecordType objType, HyperTableRow row) { return; }
-  
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public boolean update()
-  { 
+  {
     if (db.isLoaded() == false)
     {
       tree.clear();
       return true;
     }
-       
+
     ttv.getColumns().forEach(col ->
     {
       col.setVisible(false);
       col.setVisible(true);
     });
-    
+
     tree.sort();
     return true;
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override protected void init(TabEnum tabEnum)
-  {      
-    this.tabEnum = tabEnum;    
+  {
+    this.tabEnum = tabEnum;
     tree = new TreeWrapper(ttv, true, ui.cbTreeGoTo);
-       
+
     debateTree = tree.debateTree;
     termTree   = tree.termTree;
     labelTree  = tree.labelTree;
     noteTree   = tree.noteTree;
-    
+
     spMain.showDetailNodeProperty().bind(chkShowDesc.selectedProperty());
-    
+
     tcName.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue().getNameCell()));
     tcType.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getValue().getTypeString()));
     tcDesc.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getValue().getDescString()));
-    
-    ttv.setRowFactory(tTV -> 
+
+    ttv.setRowFactory(tTV ->
     {
       TreeTableRow<TreeRow> row = new TreeTableRow<>();
-      
+
       DragNDropHoverHelper.setupHandlers(row, tree);
 
       row.itemProperty().addListener((o, ov, nv) -> row.setContextMenu(nullSwitch(nv, null, tree::createContextMenu)));
-      
+
       return row;
     });
-    
-    tree.addCondContextMenuItem("Select", HDT_Base.class, 
-      record -> (ui.treeSubjRecord != null) && (record != null) && (db.isLoaded()), 
+
+    tree.addCondContextMenuItem("Select", HDT_Base.class,
+      record -> (ui.treeSubjRecord != null) && (record != null) && (db.isLoaded()),
       record -> ui.treeSelect());
-    
-    tree.addCondContextMenuItem("Go to this record", HDT_Base.class, 
+
+    tree.addCondContextMenuItem("Go to this record", HDT_Base.class,
       record -> (record != null) && (db.isLoaded()),
       record -> ui.goToRecord(record, false));
-    
-    tree.addCondContextMenuItem("Choose parent to assign", HDT_Base.class, 
-      record -> 
+
+    tree.addCondContextMenuItem("Choose parent to assign", HDT_Base.class,
+      record ->
       {
         if ((db.isLoaded() == false) || (record == null)) return false;
         return record.getType() != hdtConcept;
       },
       this::chooseParent);
 
-    tree.addCondContextMenuItem("Detach from this parent", HDT_Base.class, 
+    tree.addCondContextMenuItem("Detach from this parent", HDT_Base.class,
         record -> tree.canDetach(false),
         record -> tree.canDetach(true));
-    
-    tree.addCondContextMenuItem("Launch file...", HDT_Work.class, 
+
+    tree.addCondContextMenuItem("Launch file...", HDT_Work.class,
         work -> work.canLaunch() && db.isLoaded(),
         work -> work.launch(-1));
 
-    tree.addCondContextMenuItem("Launch file...", HDT_MiscFile.class, 
+    tree.addCondContextMenuItem("Launch file...", HDT_MiscFile.class,
         miscFile -> (miscFile.getPath().isEmpty() == false) && db.isLoaded(),
-        miscFile -> 
+        miscFile ->
         {
           miscFile.viewNow();
-          launchFile(miscFile.getPath().getFilePath()); 
+          launchFile(miscFile.getPath().getFilePath());
         });
-    
+
     tree.addCondContextMenuItem("Rename...", HDT_WorkLabel.class,
         label -> db.isLoaded(),
         this::renameRecord);
-    
+
     tree.addCondContextMenuItem("Rename...", HDT_Glossary.class,
         glossary -> db.isLoaded(),
-        this::renameRecord);    
-    
+        this::renameRecord);
+
     tree.addCondContextMenuItem("New label under this record...", HDT_WorkLabel.class,
         label -> db.isLoaded(),
         this::createLabel);
-    
+
     tree.addCondContextMenuItem("New debate under this debate...", HDT_Debate.class,
         debate -> db.isLoaded(),
         debate -> createChild(debate, rtParentDebateOfDebate));
@@ -213,110 +213,110 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
     tree.addCondContextMenuItem("New note under this note...", HDT_Note.class,
         note -> db.isLoaded(),
         note -> createChild(note, rtParentNoteOfNote));
-    
+
     tree.addCondContextMenuItem("New glossary under this glossary...", HDT_Glossary.class,
         glossary -> db.isLoaded(),
         this::createGlossary);
-    
+
     webView.getEngine().titleProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
     {
-      textToHilite = lastTextHilited;      
+      textToHilite = lastTextHilited;
       String mainText = "";
-      
+
       HDT_Base record = tree.selectedRecord();
       if (record == null) return;
-      
+
       if (record.hasDesc())
         mainText = HDT_RecordWithDescription.class.cast(record).getDesc().getHtml();
-      
+
       MainTextWrapper.handleJSEvent(getHtmlEditorText(mainText), webView.getEngine(), new TextViewInfo());
     });
-    
+
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
-    
-    webView.getEngine().getLoadWorker().stateProperty().addListener((ChangeListener<Worker.State>) (ov, oldState, newState) -> 
+
+    webView.getEngine().getLoadWorker().stateProperty().addListener((ChangeListener<Worker.State>) (ov, oldState, newState) ->
     {
-      if (newState == Worker.State.SUCCEEDED) 
-      {        
+      if (newState == Worker.State.SUCCEEDED)
+      {
         if (textToHilite.length() > 0)
           MainTextWrapper.hiliteText(textToHilite, webView.getEngine());
-        
+
         lastTextHilited = textToHilite;
         textToHilite = "";
       }
     });
-    
+
     MainTextWrapper.webViewAddZoom(webView, PREF_KEY_TREETAB_ZOOM);
-    
+
     ttv.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
       boolean clearWV = true, clearPreview = true;
-      
+
       if (newValue != null)
       {
         tfPath.setText(getTreePath(ttv, newValue));
         ui.updateBottomPanel(true);
-        
-        TreeRow row = newValue.getValue();        
-        
+
+        TreeRow row = newValue.getValue();
+
         HDT_Base record = row.getRecord();
         if (record != null)
         {
           switch (record.getType())
           {
             case hdtWorkLabel : case hdtGlossary :
-              
+
               if (record.getID() > 1)
                 record.viewNow();
 
               break;
-              
+
             case hdtWork :
-              
+
               HDT_Work work = (HDT_Work)record;
               previewWindow.setPreview(pvsTreeTab, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
               clearPreview = false;
               break;
-              
+
             case hdtMiscFile :
-              
+
               HDT_MiscFile miscFile = (HDT_MiscFile)record;
               previewWindow.setPreview(pvsTreeTab, miscFile.getPath().getFilePath(), -1, -1, miscFile);
               clearPreview = false;
               break;
-              
+
             default : break;
           }
 
           String desc = record.hasDesc() ? ((HDT_RecordWithDescription)record).getDesc().getHtml() : "";
-          
-          MainTextWrapper.setReadOnlyHTML(getHtmlEditorText(desc), webView.getEngine(), useViewInfo ? getView().getTextInfo() : new TextViewInfo(), null);          
+
+          MainTextWrapper.setReadOnlyHTML(getHtmlEditorText(desc), webView.getEngine(), useViewInfo ? getView().getTextInfo() : new TextViewInfo(), null);
           clearWV = false;
         }
       }
       else
         tfPath.clear();
-            
+
       if (clearWV)
         webView.getEngine().loadContent("");
-      
+
       if (clearPreview)
         previewWindow.setPreview(pvsTreeTab, null, -1, -1, null);
     });
-    
-  //--------------------------------------------------------------------------- 
+
+  //---------------------------------------------------------------------------
   //
   // Tree Update Handlers
-  //  
-  //--------------------------------------------------------------------------- 
-    
+  //
+  //---------------------------------------------------------------------------
+
     db.addDeleteHandler(tree::removeRecord);
-    
+
     noteTree.addKeyWorkRelation(hdtNote, true);
     termTree.addKeyWorkRelation(hdtConcept, true);
     debateTree.addKeyWorkRelation(hdtDebate, true);
     debateTree.addKeyWorkRelation(hdtPosition, true);
-    
+
     debateTree.addParentChildRelation(rtParentDebateOfDebate, true);
     debateTree.addParentChildRelation(rtDebateOfPosition, true);
     debateTree.addParentChildRelation(rtParentPosOfPos, true);
@@ -327,82 +327,82 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
     debateTree.addParentChildRelation(rtWorkOfMiscFile, true);
 
     noteTree.addParentChildRelation(rtParentNoteOfNote, true);
-    
+
     labelTree.addParentChildRelation(rtParentLabelOfLabel, true);
     labelTree.addParentChildRelation(rtLabelOfFile, true);
     labelTree.addParentChildRelation(rtLabelOfWork, true);
     labelTree.addParentChildRelation(rtParentWorkOfWork, true);
     labelTree.addParentChildRelation(rtWorkOfMiscFile, true);
     labelTree.addParentChildRelation(rtWorkOfArgument, true);
-    
+
     termTree.addParentChildRelation(rtGlossaryOfConcept, true);
     termTree.addParentChildRelation(rtParentGlossaryOfGlossary, true);
-    
+
     db.addCloseDBHandler(tree::reset);
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void createChild(HDT_Base parent, RelationType relType)
   {
     HDT_Base child = db.createNewBlankRecord(db.getSubjType(relType));
-    
-    db.getObjectList(relType, child, true).add(parent); 
-    
+
+    db.getObjectList(relType, child, true).add(parent);
+
     ui.goToRecord(child, false);
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void createGlossary(HDT_Glossary glossary)
   {
     RenameDialogController dlg = RenameDialogController.create("Glossary name", ntRecord, "");
-    
+
     if (dlg.showModal())
     {
       HDT_Glossary newGlossary = db.createNewBlankRecord(hdtGlossary);
       newGlossary.setActive(true);
       newGlossary.setName(dlg.getNewName());
       newGlossary.parentGlossaries.add(glossary);
-      
+
       Platform.runLater(() -> { tree.sort(); tree.selectRecord(newGlossary, 0, false); });
-    }  
+    }
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void createLabel(HDT_WorkLabel label)
   {
     RenameDialogController dlg = RenameDialogController.create("Label name", ntRecord, "");
-    
+
     if (dlg.showModal())
     {
       HDT_WorkLabel newLabel = db.createNewBlankRecord(hdtWorkLabel);
       newLabel.setName(dlg.getNewName());
       newLabel.parentLabels.add(label);
-      
+
       Platform.runLater(() -> tree.selectRecord(newLabel, 0, false));
-    }  
+    }
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void renameRecord(HDT_Base record)
   {
     String typeName = db.getTypeName(record.getType());
-    
+
     if (HyperDB.isUnstoredRecord(record.getID(), record.getType()))
     {
       messageDialog("That " + typeName + " cannot be renamed.", mtError);
       return;
     }
-    
+
     RenameDialogController dlg = RenameDialogController.create(typeName + " name", ntRecord, record.name());
-    
+
     if (dlg.showModal())
     {
       record.setName(dlg.getNewName());
@@ -410,96 +410,96 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
     }
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void chooseParent(HDT_Base child)
   {
     EnumSet<HDT_RecordType> types = EnumSet.noneOf(HDT_RecordType.class);
-        
+
     switch (child.getType())
     {
-      case hdtWorkLabel : 
-        
-        types.add(hdtWorkLabel); 
+      case hdtWorkLabel :
+
+        types.add(hdtWorkLabel);
         break;
-        
-      case hdtNote : 
-        
-        types.add(hdtNote); 
+
+      case hdtNote :
+
+        types.add(hdtNote);
         break;
-        
-      case hdtPosition : 
-        
+
+      case hdtPosition :
+
         types.add(hdtDebate);
         types.add(hdtPosition);
         break;
-      
+
       case hdtDebate :
-        
+
         types.add(hdtDebate);
         break;
-        
+
       case hdtArgument :
-        
+
         types.add(hdtPosition);
         types.add(hdtArgument);
         break;
-        
+
       case hdtWork :
-        
+
         types.add(hdtArgument);
         types.add(hdtWork);
         types.add(hdtWorkLabel);
         break;
-        
+
       case hdtMiscFile :
-        
+
         types.add(hdtWork);
         types.add(hdtWorkLabel);
         break;
-      
+
       default :
-        break;        
+        break;
     }
-    
+
     ChooseParentDialogController dlg = ChooseParentDialogController.create("Record select", child, types);
-    
+
     if (dlg.showModal() == false) return;
 
     HDT_Base parent = dlg.parent;
-    
+
     switch (child.getType())
     {
-      case hdtWorkLabel : 
-        
+      case hdtWorkLabel :
+
         HDT_WorkLabel.class.cast(child).parentLabels.add((HDT_WorkLabel) parent);
         break;
-        
-      case hdtNote : 
-        
+
+      case hdtNote :
+
         HDT_Note.class.cast(child).parentNotes.add((HDT_Note) parent);
         break;
-        
-      case hdtPosition : 
-        
+
+      case hdtPosition :
+
         if (parent.getType() == hdtDebate)
           HDT_Position.class.cast(child).debates.add((HDT_Debate) parent);
         else
           HDT_Position.class.cast(child).largerPositions.add((HDT_Position) parent);
         break;
-      
+
       case hdtDebate :
 
         HDT_Debate.class.cast(child).largerDebates.add((HDT_Debate) parent);
         break;
-        
+
       case hdtArgument :
-        
+
         HDT_Argument childArg = (HDT_Argument) child;
-        
+
         VerdictDialogController vdc = VerdictDialogController.create("Select Verdict for " + childArg.getCBText(), parent);
-        
+
         if (vdc.showModal())
         {
           if (parent.getType() == hdtPosition)
@@ -508,9 +508,9 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
             childArg.addCounterArg((HDT_Argument)parent, vdc.hcbVerdict.selectedRecord());
         }
         break;
-        
+
       case hdtWork :
-        
+
         HDT_Work childWork = (HDT_Work) child;
         if (parent.getType() == hdtWork)
           childWork.setLargerWork(parent.getID(), false);
@@ -522,41 +522,41 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
         else
           childWork.labels.add((HDT_WorkLabel) parent);
         break;
-        
+
       case hdtMiscFile :
-        
+
         if (parent.getType() == hdtWork)
           HDT_MiscFile.class.cast(child).work.set((HDT_Work) parent);
         else
           HDT_MiscFile.class.cast(child).labels.add((HDT_WorkLabel) parent);
-        
+
         break;
-        
+
       default :
         break;
     }
-    
+
     ui.update();
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public static String getTreePath(TreeTableView<TreeRow> ttv2, TreeItem<TreeRow> newValue)
   {
     if (newValue == null) return "";
 
     String caption = nullSwitch(newValue.getValue(), "", val -> val.getName());
-    
+
     if (newValue.getParent() == ttv2.getRoot())
       return caption;
     else
       return getTreePath(ttv2, newValue.getParent()) + " / " + caption;
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void findWithinDesc(String text)
   {
     if (tree.selectedRecord() != null)
@@ -571,25 +571,25 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
     return nullSwitch(activeRecord(), 0, ar -> tree.getRowsForRecord(ar).size());
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public int getRecordNdx()
   {
     return nullSwitch(nullSwitch(tree.selectedItem(), null, item -> item.getValue()), -1, row -> tree.getRowsForRecord(row.getRecord()).indexOf(row));
   }
 
-//---------------------------------------------------------------------------  
-//--------------------------------------------------------------------------- 
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void selectRecord(HDT_Base record, boolean useViewInfo)
   {
     this.useViewInfo = useViewInfo;
     tree.selectRecord(record, record == null ? 0 : db.records(record.getType()).getKeyNdxByID(record.getID()), false);
-    this.useViewInfo = false;    
+    this.useViewInfo = false;
   }
- 
+
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
-  
+
 }

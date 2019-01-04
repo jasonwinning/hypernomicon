@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.dialogs;
@@ -38,20 +38,20 @@ public class RenameDialogController extends HyperDialog
     ntFile,
     ntFolder
   }
-  
+
   @FXML private Button btnOk;
   @FXML private Button btnCancel;
   @FXML private Label lblInvalid;
   @FXML private TextField tfName;
-  
+
   private NameType nameType;
   private String oldName;
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public String getNewName() { return tfName.getText(); }
-  
+
   @Override protected boolean isValid()
   {
     if (tfName.getText().length() == 0)
@@ -60,7 +60,7 @@ public class RenameDialogController extends HyperDialog
       safeFocus(tfName);
       return false;
     }
-    
+
     if (nameType != ntRecord)
     {
       if (FilenameUtils.equalsNormalizedOnSystem(oldName, tfName.getText()))
@@ -70,13 +70,13 @@ public class RenameDialogController extends HyperDialog
         return false;
       }
     }
-    
+
     return true;
   }
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
-  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static RenameDialogController create(String title, NameType nameType, String oldName)
   {
     RenameDialogController rdc = HyperDialog.create("RenameDialog.fxml", title, true);
@@ -84,23 +84,23 @@ public class RenameDialogController extends HyperDialog
     return rdc;
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void init(NameType nameType, String oldName)
   {
     this.nameType = nameType;
     this.oldName = oldName;
     tfName.setText(oldName);
-    
+
     if (nameType == ntFolder)
       lblInvalid.setText("Invalid folder name!");
-    
-    tfName.focusedProperty().addListener((ov, oldValue, newValue) -> 
+
+    tfName.focusedProperty().addListener((ov, oldValue, newValue) ->
     {
-      Platform.runLater(() -> 
+      Platform.runLater(() ->
       {
-        if (tfName.isFocused() && !tfName.getText().isEmpty()) 
+        if (tfName.isFocused() && !tfName.getText().isEmpty())
         {
           if ((nameType != NameType.ntRecord) && (FilenameUtils.indexOfExtension(tfName.getText()) >= 0))
             tfName.selectRange(0, FilenameUtils.indexOfExtension(tfName.getText()));
@@ -109,26 +109,26 @@ public class RenameDialogController extends HyperDialog
         }
       });
     });
-    
+
     tfName.textProperty().addListener((observable, oldValue, newValue) ->
     {
       if (newValue == null) return;
       if (oldValue != null)
         if (oldValue.equals(newValue)) return;
-      
+
       if (newValue.length() == 0)
       {
         lblInvalid.setVisible(false);
         btnOk.setDisable(true);
         return;
       }
-      
+
       if (nameType == ntRecord)
       {
         btnOk.setDisable(false);
         return;
       }
-      
+
       if (FilePath.isFilenameValid(newValue))
       {
         lblInvalid.setVisible(false);
@@ -140,11 +140,11 @@ public class RenameDialogController extends HyperDialog
         btnOk.setDisable(true);
       }
     });
-    
+
     onShown = () -> safeFocus(tfName);
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

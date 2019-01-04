@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.bib;
@@ -28,7 +28,7 @@ public class BibCollectionRow
   private final TreeItem<BibCollectionRow> treeItem;
   private final String key;
   private final BibCollectionType type;
-  
+
   private BibCollection coll = null;
 
 //---------------------------------------------------------------------------
@@ -36,7 +36,7 @@ public class BibCollectionRow
 
   public BibCollectionRow(BibCollectionType type) { this(type, null); }
   public BibCollectionRow(BibCollection coll)     { this(bctUser, coll); }
-  
+
   public TreeItem<BibCollectionRow> getTreeItem() { return treeItem; }
   public BibCollectionType getType()              { return type; }
   public BibCollection getCollection()            { return coll; }
@@ -51,7 +51,7 @@ public class BibCollectionRow
     treeItem = new TreeItem<>(this);
     this.type = type;
     this.coll = coll;
-    
+
     key = coll == null ? null : coll.getCollectionKey();
   }
 
@@ -65,13 +65,13 @@ public class BibCollectionRow
       case bctAll:      return "\u00001";
       case bctUnsorted: return "\u00002";
       case bctTrash:    return "\uffff";
-      default:          return coll.getName();      
+      default:          return coll.getName();
     }
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public String getText()
   {
     switch (type)
@@ -79,7 +79,7 @@ public class BibCollectionRow
       case bctAll:      return "All Entries";
       case bctUnsorted: return "Unsorted";
       case bctTrash:    return "Trash";
-      default:          return coll.getName();      
+      default:          return coll.getName();
     }
   }
 

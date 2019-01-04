@@ -12,11 +12,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon;
-	
+
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.Const.*;
@@ -85,7 +85,7 @@ import javafx.scene.input.TransferMode;
 
 /**
  * Main application class for Hypernomicon
- * 
+ *
  * @author  Jason Winning
  * @since   1.0
  */
@@ -93,56 +93,56 @@ public final class App extends Application
 {
   private Stage primaryStage;
   private static final double baseDisplayScale = 81.89306640625;
-  
+
   public static TikaConfig tika;
   public static final FolderTreeWatcher folderTreeWatcher = new FolderTreeWatcher();
-    
+
   private static int total, ctr, lastPercent;
   private static boolean isDebugging;
-  
+
   public static Preferences appPrefs;
 
   public static QueryView curQV;
-  
+
   public static final String appTitle = "Hypernomicon";
-  
+
   public static App app;
   public static MainController ui;
   public static BibManager bibManagerDlg = null;
   public static FileManager fileManagerDlg = null;
   public static PreviewWindow previewWindow = null;
   public static ContentsWindow contentsWindow = null;
-  
+
   public static double displayScale;
-  
+
   private double deltaX;
   private long swipeStartTime;
   private boolean testMainTextEditing = false;
-  
+
   public static boolean jxBrowserDisabled = false;
   public static boolean browserCoreInitialized = false;
   public static String jxBrowserErrMsg = "";
-  
+
   public Stage getPrimaryStage() { return primaryStage; }
   public boolean debugging()     { return isDebugging; }
-  
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
-   
-  public static void main(String[] args) 
-  {                    
-    Logger.getLogger("org.apache").setLevel(Level.WARN);    
-    
+//---------------------------------------------------------------------------
+
+  public static void main(String[] args)
+  {
+    Logger.getLogger("org.apache").setLevel(Level.WARN);
+
     String rtArgs = getRuntimeMXBean().getInputArguments().toString();
     isDebugging = rtArgs.contains("-agentlib:jdwp") || rtArgs.contains("-Xrunjdwp");
-    
+
     launch(args);
   }
-   
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
-  
-  @Override public void init() 
+//---------------------------------------------------------------------------
+
+  @Override public void init()
   {
     app = this;
 
@@ -150,35 +150,35 @@ public final class App extends Application
          PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
          BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())))
     {
-      List<String> args = getParameters().getUnnamed();      
-      out.println(String.valueOf(args.size()));      
-      for (String arg : args) out.println(arg);      
-      String line = null;      
-      while (isNull(line)) line = in.readLine();      
+      List<String> args = getParameters().getUnnamed();
+      out.println(String.valueOf(args.size()));
+      for (String arg : args) out.println(arg);
+      String line = null;
+      while (isNull(line)) line = in.readLine();
       Platform.exit();
       return;
-    } 
-    catch (ConnectException e) { new InterProcDaemon().start(); } 
-    catch (IOException e)      { Platform.exit(); return; }    
-    
+    }
+    catch (ConnectException e) { new InterProcDaemon().start(); }
+    catch (IOException e)      { Platform.exit(); return; }
+
     BrowserPreferences.setChromiumSwitches("--disable-web-security", "--user-data-dir", "--allow-file-access-from-files", "--enable-local-file-accesses");
-    
+
     // On Mac OS X Chromium engine must be initialized in non-UI thread.
     if (Environment.isMac()) initJXBrowser();
-    
+
     appPrefs = Preferences.userNodeForPackage(App.class);
-    
+
     db.init(appPrefs, folderTreeWatcher);
-    
+
     //db.viewTestingInProgress = true;
     //testMainTextEditing = true;
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   public static void initJXBrowser()
-  { 
+  {
     try
     {
       BrowserCore.initialize();
@@ -187,30 +187,30 @@ public final class App extends Application
     catch (Exception e)
     {
       jxBrowserErrMsg = safeStr(e.getMessage());
-      jxBrowserDisabled = true;     
+      jxBrowserDisabled = true;
     }
     catch (ExceptionInInitializerError e)
     {
       jxBrowserErrMsg = safeStr(e.getCause().getMessage());
       jxBrowserDisabled = true;
-    }    
+    }
   }
-  
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   @Override public void start(Stage primaryStage)
-  {   
+  {
     this.primaryStage = primaryStage;
-       
+
     primaryStage.setTitle(appTitle);
-    
+
     if (!initRootLayout())
     {
       Platform.exit();
       return;
     }
-       
+
     if (jxBrowserDisabled)
     {
       if (jxBrowserErrMsg.length() > 0)
@@ -218,43 +218,43 @@ public final class App extends Application
       else
         messageDialog("Unable to initialize preview window", mtError);
     }
-    
+
     List<String> args = new ArrayList<>(getParameters().getUnnamed());
-    
+
     if (args.size() > 0)
-    {  
+    {
       FilePath filePath = new FilePath(args.get(0));
-      
+
       if (filePath.getExtensionOnly().equalsIgnoreCase("hdb"))
       {
         appPrefs.put(PREF_KEY_SOURCE_FILENAME, filePath.getNameOnly().toString());
         appPrefs.put(PREF_KEY_SOURCE_PATH, filePath.getDirOnly().toString());
         args.remove(0);
       }
-    }    
-      
+    }
+
     ui.loadDB();
-    
+
     if (args.size() > 0)
       ui.handleArgs(args);
-    
+
     if (db.viewTestingInProgress)
       testUpdatingAllRecords();
   }
-   
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
- 
+
   private void testUpdatingAllRecords()
-  {   
-    total = db.persons.size()   + db.institutions.size() + db.investigations.size() + db.debates.size() + 
-            db.positions.size() + db.arguments.size()    + db.works.size()          + db.terms.size() + 
+  {
+    total = db.persons.size()   + db.institutions.size() + db.investigations.size() + db.debates.size() +
+            db.positions.size() + db.arguments.size()    + db.works.size()          + db.terms.size() +
             db.miscFiles.size() + db.notes.size();
 
     ctr = 0;
     lastPercent = 0;
-    
-    testUpdatingRecords(hdtPerson);   testUpdatingRecords(hdtInstitution); testUpdatingRecords(hdtInvestigation); testUpdatingRecords(hdtDebate);    
+
+    testUpdatingRecords(hdtPerson);   testUpdatingRecords(hdtInstitution); testUpdatingRecords(hdtInvestigation); testUpdatingRecords(hdtDebate);
     testUpdatingRecords(hdtPosition); testUpdatingRecords(hdtArgument);    testUpdatingRecords(hdtWork);          testUpdatingRecords(hdtTerm);
     testUpdatingRecords(hdtMiscFile); testUpdatingRecords(hdtNote);
   }
@@ -265,142 +265,142 @@ public final class App extends Application
   private void testUpdatingRecords(HDT_RecordType type)
   {
     db.records(type).forEach(record ->
-    {      
+    {
       ui.goToRecord(record, true);
-      
+
       if (testMainTextEditing)
       {
         MainTextWrapper mainText = null;
-        
+
         if (record.getType() == hdtInvestigation)
           mainText = PersonTabController.class.cast(getHyperTab(personTab)).getInvMainTextWrapper(record.getID());
-        else      
+        else
           mainText = ui.currentTab().getMainTextWrapper();
-        
+
         if (nonNull(mainText))
           mainText.beginEditing(false);
       }
-      
+
       int curPercent = (ctr * 100) / total;
       ctr++;
-      
-      if (curPercent > lastPercent)      
+
+      if (curPercent > lastPercent)
       {
         System.out.println("Progress: " + curPercent + " %");
         lastPercent = curPercent;
       }
     });
   }
-  
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
-  
-  public boolean initRootLayout() 
+//---------------------------------------------------------------------------
+
+  public boolean initRootLayout()
   {
     Application.setUserAgentStylesheet(STYLESHEET_MODENA);
-    
+
     try
     {
       tika = new TikaConfig();
       BasicConfigurator.configure();
-      
-      FXMLLoader loader = new FXMLLoader(App.class.getResource("view/Main.fxml"));     
+
+      FXMLLoader loader = new FXMLLoader(App.class.getResource("view/Main.fxml"));
       BorderPane rootLayout = loader.load();
-                
+
       ui = loader.getController();
       ui.init();
 
       Scene scene = new Scene(rootLayout);
-      
+
       scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
-      
-      scene.setOnKeyPressed(event -> 
+
+      scene.setOnKeyPressed(event ->
       {
-        if (event.getCode() == KeyCode.ESCAPE) 
+        if (event.getCode() == KeyCode.ESCAPE)
         {
           ui.hideFindTable();
           event.consume();
         }
       });
-      
+
       KeyCombination keyComb = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
-      scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> 
+      scene.addEventHandler(KeyEvent.KEY_PRESSED, event ->
       {
-        if (keyComb.match(event)) 
+        if (keyComb.match(event))
           ui.omniFocus();
       });
-      
+
       scene.setOnScrollStarted(event ->
       {
         swipeStartTime = System.currentTimeMillis();
         deltaX = event.getDeltaX();
       });
-      
+
       scene.setOnScroll(event -> deltaX = deltaX + event.getDeltaX());
-      
-      scene.setOnScrollFinished(event -> 
+
+      scene.setOnScrollFinished(event ->
       {
         double swipeTime = System.currentTimeMillis() - swipeStartTime;
-        
+
         if (swipeTime < 200)
         {
           if (deltaX > 500)       ui.btnBackClick();
           else if (deltaX < -500) ui.btnForwardClick();
         }
       });
-      
-      scene.setOnDragOver(new EventHandler<DragEvent>() 
+
+      scene.setOnDragOver(new EventHandler<DragEvent>()
       {
-        @Override public void handle(DragEvent event) 
+        @Override public void handle(DragEvent event)
         {
           Dragboard board = event.getDragboard();
 
-          if (board.hasFiles()) 
+          if (board.hasFiles())
             event.acceptTransferModes(TransferMode.ANY);
-          else 
+          else
             event.consume();
         }
       });
-    
+
       // Dropping over surface
-      scene.setOnDragDropped(new EventHandler<DragEvent>() 
+      scene.setOnDragDropped(new EventHandler<DragEvent>()
       {
-        @Override public void handle(DragEvent event) 
+        @Override public void handle(DragEvent event)
         {
           Dragboard board = event.getDragboard();
           boolean success = false;
-          
+
           if (board.hasImage())
             if (isDebugging)
               System.out.println("has image");
-          
-          if (board.hasFiles()) 
+
+          if (board.hasFiles())
           {
             success = true;
             List<String> args = new ArrayList<>();
-            
+
             board.getFiles().forEach(file -> args.add(file.getAbsolutePath()));
-            
+
             Platform.runLater(() -> ui.handleArgs(args));
           }
           event.setDropCompleted(success);
           event.consume();
         }
       });
-      
+
       primaryStage.setScene(scene);
-      
+
       primaryStage.getIcons().setAll(new Image(App.class.getResourceAsStream("resources/images/logo-16x16.png")),
                                      new Image(App.class.getResourceAsStream("resources/images/logo-32x32.png")),
                                      new Image(App.class.getResourceAsStream("resources/images/logo-48x48.png")),
                                      new Image(App.class.getResourceAsStream("resources/images/logo-64x64.png")),
                                      new Image(App.class.getResourceAsStream("resources/images/logo-128x128.png")),
                                      new Image(App.class.getResourceAsStream("resources/images/logo-256x256.png")));
-      
-      ui.hideFindTable();      
-      
+
+      ui.hideFindTable();
+
       initScaling(rootLayout);
-      
+
       double x = appPrefs.getDouble(PREF_KEY_WINDOW_X, primaryStage.getX());
       double y = appPrefs.getDouble(PREF_KEY_WINDOW_Y, primaryStage.getY());
       double width = appPrefs.getDouble(PREF_KEY_WINDOW_WIDTH, primaryStage.getWidth());
@@ -410,110 +410,110 @@ public final class App extends Application
 
       primaryStage.setX(x); // set X and Y first so that window gets full-screened or
       primaryStage.setY(y); // maximized onto the correct monitor if there are more than one
-      
+
       if (fullScreen)     primaryStage.setFullScreen(true);
       else if (maximized) primaryStage.setMaximized(true);
       else
       {
         primaryStage.setWidth(width);
         primaryStage.setHeight(height);
-        
+
         ensureVisible(primaryStage, rootLayout.getPrefWidth(), rootLayout.getPrefHeight());
-      }      
-      
+      }
+
       primaryStage.show();
-      
-      rescale();      
-      
+
+      rescale();
+
       getHyperTabs().forEach(HyperTab::setDividerPositions);
-            
+
       bibManagerDlg = BibManager.create();
 
       bibManagerDlg.getStage().setX(appPrefs.getDouble(PREF_KEY_BM_WINDOW_X, bibManagerDlg.getStage().getX()));
       bibManagerDlg.getStage().setY(appPrefs.getDouble(PREF_KEY_BM_WINDOW_Y, bibManagerDlg.getStage().getY()));
-      
+
       bibManagerDlg.setInitHeight(PREF_KEY_BM_WINDOW_HEIGHT);
       bibManagerDlg.setInitWidth(PREF_KEY_BM_WINDOW_WIDTH);
 
-      db.addBibChangedHandler(() -> 
+      db.addBibChangedHandler(() ->
       {
         bibManagerDlg.setLibrary(db.getBibLibrary());
-        
+
         if (db.bibLibraryIsLinked() == false)
           if (bibManagerDlg.getStage().isShowing())
             bibManagerDlg.getStage().close();
-        
+
         ui.updateBibImportMenus();
-        
+
         if (db.isLoaded())
           ui.update();
       });
-      
+
       fileManagerDlg = FileManager.create();
-      
+
       fileManagerDlg.getStage().setX(appPrefs.getDouble(PREF_KEY_FM_WINDOW_X, fileManagerDlg.getStage().getX()));
       fileManagerDlg.getStage().setY(appPrefs.getDouble(PREF_KEY_FM_WINDOW_Y, fileManagerDlg.getStage().getY()));
-      
+
       fileManagerDlg.setInitHeight(PREF_KEY_FM_WINDOW_HEIGHT);
       fileManagerDlg.setInitWidth(PREF_KEY_FM_WINDOW_WIDTH);
-      
+
       previewWindow = PreviewWindow.create();
-      
+
       previewWindow.getStage().setX(appPrefs.getDouble(PREF_KEY_PREV_WINDOW_X, previewWindow.getStage().getX()));
       previewWindow.getStage().setY(appPrefs.getDouble(PREF_KEY_PREV_WINDOW_Y, previewWindow.getStage().getY()));
-      
+
       previewWindow.setInitWidth(PREF_KEY_PREV_WINDOW_WIDTH);
       previewWindow.setInitHeight(PREF_KEY_PREV_WINDOW_HEIGHT);
-      
+
       contentsWindow = ContentsWindow.create();
-      
+
       contentsWindow.getStage().setX(appPrefs.getDouble(PREF_KEY_CONTENTS_WINDOW_X, contentsWindow.getStage().getX()));
       contentsWindow.getStage().setY(appPrefs.getDouble(PREF_KEY_CONTENTS_WINDOW_Y, contentsWindow.getStage().getY()));
-      
+
       contentsWindow.setInitWidth(PREF_KEY_CONTENTS_WINDOW_WIDTH);
-      contentsWindow.setInitHeight(PREF_KEY_CONTENTS_WINDOW_HEIGHT);      
-    } 
-    catch(IOException | TikaException e) 
+      contentsWindow.setInitHeight(PREF_KEY_CONTENTS_WINDOW_HEIGHT);
+    }
+    catch(IOException | TikaException e)
     {
       messageDialog("Unable to initialize. Reason: " + e.getMessage(), mtError);
-      
+
       if (ui != null)
         ui.shutDown(false, false, false);
-      
+
       return false;
     }
-    
+
     return true;
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   private void initScaling(Parent rootLayout)
   {
     setFontSize(rootLayout);
-    
+
     Text text = new Text("Mac @Wow Cem");
     double fontSize = appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
     if (fontSize > 0)
       text.setFont(new Font(fontSize));
-          
+
     displayScale = (text.getLayoutBounds().getWidth()) / baseDisplayScale;
   }
-  
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   public void rescale()
-  {   
+  {
     scaleNodeForDPI(primaryStage.getScene().getRoot());
-    
+
     MainTextWrapper.rescale();
-    
+
     getHyperTab(TabEnum.personTab).rescale();
-  } 
- 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

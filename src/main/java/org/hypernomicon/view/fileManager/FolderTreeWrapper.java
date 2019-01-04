@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.fileManager;
@@ -49,12 +49,12 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
   private final TreeModel<FileRow> treeModel;
   private final DragNDropHoverHelper<FileRow> ddHoverHelper;
   private final FileTable fileTable;
-  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public TreeModel<FileRow> getTreeModel()                               { return treeModel; }
-  
+
   @Override public TreeItem<FileRow> getRoot()                           { return tv.getRoot(); }
   @Override public void expandMainBranches()                             { treeModel.expandMainBranch(); }
   @Override public void removeRecord(HDT_Base record)                    { treeModel.removeRecord(record); }
@@ -63,32 +63,32 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
   @Override public void scrollToNdx(int ndx)                             { tv.scrollTo(ndx); }
   @Override public TreeItem<FileRow> getTreeItem(FileRow treeRow)        { return treeRow.getTreeItem(); }
 
-//---------------------------------------------------------------------------  
 //---------------------------------------------------------------------------
-  
+//---------------------------------------------------------------------------
+
   public FolderTreeWrapper(TreeView<FileRow> tv, FileTable fileTable)
   {
     this.tv = tv;
     this.fileTable = fileTable;
-    
+
     treeModel = new TreeModel<FileRow>(this, null);
     ddHoverHelper = new DragNDropHoverHelper<>(tv);
-    
+
     clear();
-    
+
     db.addCloseDBHandler(this::reset);
     db.addPreDBChangeHandler(this::reset);
-    
-    tv.setCellFactory(treeView -> 
+
+    tv.setCellFactory(treeView ->
     {
       TreeCell<FileRow> row = new TreeCell<>();
-      
+
       ImageView openImage = getImageViewForRelativePath(ui.getGraphicRelativePathByType(hdtFolder));
-      
+
       row.itemProperty().addListener((observable, oldValue, newValue) ->
       {
         if (oldValue == newValue) return;
-           
+
         if (newValue == null)
         {
           row.setText(null);
@@ -99,17 +99,17 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
         {
           if (newValue.getFilePath() == null) // happens right before a filerow is deleted sometimes
             return;
-                 
+
           row.setText(newValue.getFileName());
           if (row.getGraphic() == null)
             row.setGraphic(openImage);
-          
+
           row.setContextMenu(FileRow.createContextMenu(newValue, fileTable.contextMenuSchemata));
         }
       });
-      
+
       DragNDropHoverHelper.setupHandlers(row, this);
-      
+
       return row;
     });
   }
@@ -117,12 +117,12 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public ArrayList<FileRow> getRowsForRecord(HDT_Base record) 
-  { 
+  @Override public ArrayList<FileRow> getRowsForRecord(HDT_Base record)
+  {
     ArrayList<FileRow> list = new ArrayList<>();
-    
+
     list.addAll(treeModel.getRowsForRecord(record));
-    
+
     return list;
   }
 
@@ -135,51 +135,51 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
     {
       tv.getRoot().getChildren().clear();
       tv.setRoot(null);
-    }    
-   
+    }
+
     tv.setRoot(new TreeItem<FileRow>(null));
     tv.setShowRoot(false);
 
     treeModel.clear();
   }
-  
+
 //---------------------------------------------------------------------------
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
 
   @Override public void reset()
   {
     super.reset();
-    
+
     treeModel.reset(db.folders.getByID(HyperDB.ROOT_FOLDER_ID));
   }
-    
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public FileRow newRow(HDT_Base record, TreeModel<FileRow> treeModel)
   {
     if (record.getType() == hdtFolder)
-    {    
+    {
       return new FileRow(HDT_Folder.class.cast(record).getPath(), treeModel);
     }
-      
+
     messageDialog("Internal error #18726", mtError);
     return null;
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void prune()
   {
-    treeModel.pruningOperationInProgress = true; // prevent ConcurrentModificationException   
-    
+    treeModel.pruningOperationInProgress = true; // prevent ConcurrentModificationException
+
     pruneNode(getRoot());
-    
+
     treeModel.pruningOperationInProgress = false;
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private void pruneNode(TreeItem<FileRow> nodeItem)
@@ -195,18 +195,18 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
           HDT_RecordWithPath folder = hyperPath.getRecord();
           if (folder.getPath().getFilePath().exists() == false)
           {
-            HDT_Folder.deleteFolderRecordTree((HDT_Folder) folder);                        
+            HDT_Folder.deleteFolderRecordTree((HDT_Folder) folder);
             return true;
           }
         }
       }
-      
+
       pruneNode(childItem);
-      return false;      
+      return false;
     });
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void dragDone()
@@ -224,14 +224,14 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
   {
     fileTable.dragDroppedOnto(row);
   }
-  
+
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 
   @Override public boolean acceptDrag(FileRow targetRow, DragEvent dragEvent, TreeItem<FileRow> treeItem)
   {
     ddHoverHelper.scroll(dragEvent);
-    
+
     if (fileTable.draggingRows == null) return false;
     if (targetRow.isDirectory() == false) return false;
     if (fileTable.draggingRows.size() == 1)
@@ -240,13 +240,13 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
       if (srcPath.equals(targetRow.getFilePath())) return false;
       if (srcPath.getDirOnly().equals(targetRow.getFilePath())) return false;
     }
-       
+
     ddHoverHelper.expand(treeItem);
-       
+
     return true;
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }

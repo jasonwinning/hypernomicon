@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.workMerge;
@@ -41,18 +41,18 @@ public class MergeWorksCBController extends BibFieldRow
   @FXML private ComboBox<EntryType> cb2;
   @FXML private ComboBox<EntryType> cb3;
   @FXML private ComboBox<EntryType> cb4;
-  
+
   @FXML private GridPane gp;
-  
+
   @FXML private Label lbl;
-  
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override public void mergeInto(BibData bd) { return; } // EntryType should have already been set by the time this gets called
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public EntryType getEntryType()
   {
@@ -61,18 +61,18 @@ public class MergeWorksCBController extends BibFieldRow
     else if (rb3.isSelected()) return cb3.getValue();
     else                       return cb4.getValue();
   }
- 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
 
-  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+
   @Override protected void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4)
   {
     this.ap = ap;
     this.bibFieldEnum = bibFieldEnum;
-    
+
     lbl.setText(BibData.getFieldName(bibFieldEnum));
-    
+
     if (bd4 == null)
     {
       deleteGridPaneColumn(gp, 3);
@@ -80,16 +80,16 @@ public class MergeWorksCBController extends BibFieldRow
     else
     {
       bibManagerDlg.initCB(cb4);
-      
+
       if (bd4.entryTypeNotEmpty())
-      {        
+      {
         cb4.setValue(bd4.getEntryType());
         cb4.getSelectionModel().select(bd4.getEntryType());
 
         rb4.setSelected(true);
       }
     }
-    
+
     if (bd3 == null)
     {
       deleteGridPaneColumn(gp, 2);
@@ -97,38 +97,38 @@ public class MergeWorksCBController extends BibFieldRow
     else
     {
       bibManagerDlg.initCB(cb3);
-      
+
       if (bd3.entryTypeNotEmpty())
       {
         cb3.setValue(bd3.getEntryType());
         cb3.getSelectionModel().select(bd3.getEntryType());
-        
+
         rb3.setSelected(true);
       }
     }
 
     bibManagerDlg.initCB(cb2);
-    
+
     if (bd2.entryTypeNotEmpty())
     {
       cb2.setValue(bd2.getEntryType());
       cb2.getSelectionModel().select(bd2.getEntryType());
 
-      rb2.setSelected(true);      
+      rb2.setSelected(true);
     }
-    
+
     bibManagerDlg.initCB(cb1);
-    
+
     if (bd1.entryTypeNotEmpty())
-    {      
+    {
       cb1.setValue(bd1.getEntryType());
       cb1.getSelectionModel().select(bd1.getEntryType());
 
-      rb1.setSelected(true);      
+      rb1.setSelected(true);
     }
   }
 
-//---------------------------------------------------------------------------  
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

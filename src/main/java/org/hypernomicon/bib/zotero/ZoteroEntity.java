@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.bib.zotero;
@@ -28,33 +28,33 @@ public interface ZoteroEntity
     zoteroTag,
     zoteroCollection
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public ZoteroEntityType getType();
   public void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge);
   public void saveToDisk(JsonArray jArr);
-  public boolean isSynced(); 
+  public boolean isSynced();
   public long getVersion();
   public String getKey();
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public static ZoteroEntity create(ZoteroWrapper zWrapper, JsonObj jObj)
-  {    
+  {
     JsonObj subObj = jObj.getObj("data");
-    
+
     if (subObj.getStrSafe("itemType").equals("attachment") == false)
       return new ZoteroItem(zWrapper, jObj, false);
-    
+
     if (subObj.containsKey("parentCollection"))
-      return new ZoteroCollection(jObj);      
-    
+      return new ZoteroCollection(jObj);
+
     return null;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

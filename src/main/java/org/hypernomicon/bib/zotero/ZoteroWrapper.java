@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.bib.zotero;
@@ -78,14 +78,14 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   private JsonHttpClient jsonClient;
   private long offlineLibVersion = -1, onlineLibVersion = -1;
   private Instant backoffTime = null, retryTime = null;
-  
+
   static final EnumHashBiMap<EntryType, String> entryTypeMap = initTypeMap();
-  
+
   private String userID = "";
-  private static EnumMap<BibData.EntryType, JsonObj> templates = null;  
+  private static EnumMap<BibData.EntryType, JsonObj> templates = null;
 
   @Override public LibraryType type() { return LibraryType.ltZotero; }
-  
+
   public static enum ZoteroCommand
   {
     zoteroReadItems,
@@ -101,12 +101,12 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     zoteroReadCollectionItems,
     zoteroReadCollectionTopItems,
     zoteroReadCollectionTags,
-    
+
     zoteroReadChangedItemVersions,
     zoteroReadChangedCollVersions,
     zoteroReadTrashVersions,
     zoteroReadDeletions,
-    
+
     zoteroWriteItems
   }
 
@@ -119,67 +119,67 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     this.userID = userID;
     jsonClient = new JsonHttpClient();
   }
-  
+
   public JsonObj getTemplate(BibData.EntryType type) { return templates.get(type); }
-  
+
   @Override public EnumHashBiMap<EntryType, String> getEntryTypeMap() { return entryTypeMap; }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private JsonArray doWriteCommand(ZoteroCommand command, String jsonPostData) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
   {
     String url = "https://api.zotero.org/users/" + userID + "/";
-    
+
     switch (command)
     {
       case zoteroWriteItems:
         url += "items";
         break;
-        
+
       default:
         return null;
     }
-    
+
     JsonArray jsonArray = doHttpRequest(url, true, jsonPostData);
-    
+
     switch (jsonClient.getStatusCode())
     {
       case HttpStatus.SC_OK :
       case HttpStatus.SC_NOT_MODIFIED :
       case HttpStatus.SC_PRECONDITION_FAILED :
-        
+
         return jsonArray;
     }
-      
+
     throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private JsonArray doReadCommand(ZoteroCommand command, String itemKey, String collectionKey) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
   {
     String url = "https://api.zotero.org/users/" + userID + "/";
-    
+
     switch (command)
     {
       case zoteroReadCollection:
         url += "collections/" + collectionKey;
         break;
-        
+
       case zoteroReadCollectionItems:
         url += "collections/" + collectionKey + "/items";
         break;
-        
+
       case zoteroReadCollectionTags:
         url += "collections/" + collectionKey + "/tags";
         break;
-        
+
       case zoteroReadCollectionTopItems:
         url += "collections/" + collectionKey + "/items/top";
         break;
-        
+
       case zoteroReadCollections:
 
         if (collectionKey.length() > 0)
@@ -187,31 +187,31 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         else
           url += "collections";
         break;
-        
+
       case zoteroReadItem:
         url += "items/" + itemKey;
         break;
-        
+
       case zoteroReadItemChildren:
         url += "items/" + itemKey + "/children";
         break;
-        
+
       case zoteroReadItemTags:
         url += "items/" + itemKey + "/tags";
         break;
-        
+
       case zoteroReadItems:
-        
+
         if (itemKey.length() > 0)
           url += "items?itemKey=" + itemKey;
         else
           url += "items";
         break;
-        
+
       case zoteroReadDeletions:
         url += "deleted?since=" + offlineLibVersion;
         break;
-        
+
       case zoteroReadChangedItemVersions:
         url += "items?since=" + offlineLibVersion + "&format=versions";
         break;
@@ -227,37 +227,37 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       case zoteroReadTags:
         url += "tags";
         break;
-        
+
       case zoteroReadTopCollections:
         url += "collections/top";
         break;
-        
+
       case zoteroReadTopItems:
         url += "items/top";
         break;
-        
+
       case zoteroReadTrash:
         if (itemKey.length() > 0)
           url += "items/trash?itemKey=" + itemKey;
         else
           url += "items/trash";
         break;
-        
+
       default:
-        return null;    
+        return null;
     }
-    
+
     JsonArray jsonArray = doHttpRequest(url, false, null);
-    
+
     switch (jsonClient.getStatusCode())
     {
       case HttpStatus.SC_OK :
       case HttpStatus.SC_NOT_MODIFIED :
       case HttpStatus.SC_PRECONDITION_FAILED :
-        
+
         return jsonArray;
     }
-    
+
     throw new HttpResponseException(jsonClient.getStatusCode(), jsonClient.getReasonPhrase());
   }
 
@@ -271,28 +271,28 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     int totalResults = -1;
     JsonArray jsonArray = null;
     RequestBuilder rb;
-       
+
     if (retryTime != null)
     {
       while ((retryTime.compareTo(Instant.now()) > 0) && (syncTask.isCancelled() == false))
         sleepForMillis(30);
     }
-    
+
     if (backoffTime != null)
     {
       while ((backoffTime.compareTo(Instant.now()) > 0) && (syncTask.isCancelled() == false))
         sleepForMillis(30);
     }
-    
+
     if (syncTask.isCancelled()) throw new TerminateTaskException();
-    
+
     if (isPost)
       rb = RequestBuilder.post()
           .setHeader("Zotero-Write-Token", generateWriteToken())
           .setEntity(new StringEntity(postJsonData, Charsets.UTF_8));
     else
       rb = RequestBuilder.get();
-    
+
     request = rb
         .setUri(url)
         .setHeader(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -301,7 +301,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         .setHeader("Zotero-Write-Token", generateWriteToken())
         .setHeader("If-Unmodified-Since-Version", String.valueOf(offlineLibVersion))
         .build();
-    
+
     try
     {
       jsonArray = jsonClient.requestArrayInThisThread(request);
@@ -313,39 +313,39 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         request = null;
         throw new TerminateTaskException();
       }
-      
+
       request = null;
       throw e;
     }
-    
+
     if (jsonClient.getHeaders() != null)
       for (Header header : jsonClient.getHeaders())
       {
         int sec;
-        
+
         switch (header.getName())
         {
           case "Zotero-API-Version"    : apiVersion = header.getValue(); break;
-          case "Total-Results"         : totalResults = parseInt(header.getValue(), -1); break;                    
+          case "Total-Results"         : totalResults = parseInt(header.getValue(), -1); break;
           case "Last-Modified-Version" : onlineLibVersion = parseInt(header.getValue(), -1); break;
-          case "Backoff": 
-            
+          case "Backoff":
+
             sec = parseInt(header.getValue(), -1);
             if (sec > 0)
               backoffTime = Instant.now().plusMillis(sec * 1000);
-  
+
             break;
-  
+
           case "Retry-After":
-          
+
             sec = parseInt(header.getValue(), -1);
             if (sec > 0)
               retryTime = Instant.now().plusMillis(sec * 1000);
-    
+
             break;
         }
       }
-      
+
     request = null;
     return jsonArray;
   }
@@ -357,14 +357,14 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   {
     return randomHexStr(32);
   }
-   
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void getCreatorTypes()
   {
     JsonObj jObj = new JsonObj();
-    
+
     try
     {
       for (String zType : new String[]{"artwork", "audioRecording", "bill", "blogPost", "book", "bookSection", "case", "computerProgram",
@@ -374,13 +374,13 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       {
         jObj.put(zType, doHttpRequest("https://api.zotero.org/itemTypeCreatorTypes?itemType=" + zType, false, null));
       }
-      
+
       StringBuilder json = new StringBuilder(jObj.toString());
-      
+
       FilePath filePath = db.getRootFilePath().resolve(new FilePath(ZOTERO_CREATOR_TYPES_FILE_NAME));
-      
+
       saveStringBuilderToFile(json, filePath);
-    } 
+    }
     catch (UnsupportedOperationException | IOException | ParseException | TerminateTaskException e)
     {
       e.printStackTrace();
@@ -393,7 +393,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   public void getTemplates()
   {
     JsonArray jArr = new JsonArray();
-    
+
     try
     {
       for (String zType : new String[]{"artwork", "audioRecording", "bill", "blogPost", "book", "bookSection", "case", "computerProgram",
@@ -403,137 +403,137 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       {
         jArr.add(doHttpRequest("https://api.zotero.org/items/new?itemType=" + zType, false, null).getObj(0));
       }
-      
+
       StringBuilder json = new StringBuilder(jArr.toString());
-      
+
       FilePath filePath = db.getRootFilePath().resolve(new FilePath(ZOTERO_TEMPLATE_FILE_NAME));
-      
+
       saveStringBuilderToFile(json, filePath);
-    } 
+    }
     catch (UnsupportedOperationException | IOException | ParseException | TerminateTaskException e)
     {
       e.printStackTrace();
     }
   }
 
-  //---------------------------------------------------------------------------  
+  //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
   private boolean syncChangedEntriesToServer() throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
   {
     ArrayList<ZoteroItem> uploadQueue = new ArrayList<>(); // implemented as array because indices are returned by server
     JsonArray jArr = new JsonArray();
-    
+
     for (ZoteroItem entry : getAllEntries())
       if (entry.isSynced() == false)
         uploadQueue.add(entry);
-    
+
     if (uploadQueue.size() == 0) return false;
-    
+
     int statusCode = HttpStatus.SC_OK;
-        
+
     while ((uploadQueue.size() > 0) && (statusCode == HttpStatus.SC_OK) && (syncTask.isCancelled() == false))
     {
       jArr.clear();
-            
+
       int uploadCount = (uploadQueue.size() > 50) ? 50 : uploadQueue.size();
       for (int ndx = 0; ndx < uploadCount; ndx++)
         jArr.add(uploadQueue.get(ndx).exportJsonObjForUploadToServer(false));
-      
+
       jArr = doWriteCommand(ZoteroCommand.zoteroWriteItems, jArr.toString());
-      
+
       if (syncTask.isCancelled()) throw new TerminateTaskException();
-      
+
       statusCode = jsonClient.getStatusCode();
-      
+
       if (statusCode == HttpStatus.SC_OK)
       {
-        JsonObj jSuccess = jArr.getObj(0).getObj("successful");                        
-        JsonObj jUnchanged = jArr.getObj(0).getObj("unchanged");        
+        JsonObj jSuccess = jArr.getObj(0).getObj("successful");
+        JsonObj jUnchanged = jArr.getObj(0).getObj("unchanged");
         JsonObj jFailed = jArr.getObj(0).getObj("failed");
-        
+
         if ((jUnchanged.keySet().isEmpty() == false) || (jFailed.keySet().isEmpty() == false))
           showWriteErrorMessages(jUnchanged, jFailed, uploadQueue);
-        
+
         for (String queueNdx : jSuccess.keySet())
         {
           JsonObj jObj = jSuccess.getObj(queueNdx);
           jObj.put("synced", "true");
           ZoteroItem item = uploadQueue.get(parseInt(queueNdx, -1)); // here we take advantage of the fact that the upload "queue" is an array
-          
+
           String oldKey = item.getEntryKey();
           boolean newEntry = item.isNewEntry();
-          
+
           item.update(jObj, false, false);
-          
+
           if (newEntry)
             updateKey(oldKey, item.getKey());
-          
+
           keyToAllEntry.putIfAbsent(item.getEntryKey(), item);
-          
+
           if (item.getVersion() > onlineLibVersion)
             onlineLibVersion = item.getVersion();
         }
-        
+
         for (int ndx = 0; ndx < uploadCount; ndx++)
           uploadQueue.remove(0);
       }
     }
-    
+
     return true;
   }
 
-  //---------------------------------------------------------------------------  
+  //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
   private void showWriteErrorMessages(JsonObj jUnchanged, JsonObj jFailed, ArrayList<ZoteroItem> uploadQueue)
   {
     ArrayList<String> errMsgList = new ArrayList<>();
-    
+
     errMsgList.add("Attempt(s) to upload changes to server failed:");
-    
+
     String unchanged = "";
     for (String queueNdx : jUnchanged.keySet())
       unchanged = unchanged + (unchanged.length() > 0 ? ", " : "") + jUnchanged.getStr(queueNdx);
-    
+
     if (unchanged.length() > 0)
       errMsgList.add("Unchanged: " + unchanged);
-    
+
     for (String queueNdx : jFailed.keySet())
     {
       ZoteroItem item = uploadQueue.get(parseInt(queueNdx, -1));
       JsonObj jError = jFailed.getObj(queueNdx);
-      errMsgList.add(item.getEntryKey() + " code: " + jError.getLong("code", -1) + " " + jError.getStr("message")); 
+      errMsgList.add(item.getEntryKey() + " code: " + jError.getLong("code", -1) + " " + jError.getStr("message"));
     }
-    
+
     fxThreadReturnValue = null;
-    
+
     runInFXThread(() ->
     {
-      messageDialogSameThread(strListToStr(errMsgList, false), mtError);      
-      
+      messageDialogSameThread(strListToStr(errMsgList, false), mtError);
+
       fxThreadReturnValue = Boolean.TRUE;
     });
-  
+
     while (fxThreadReturnValue == null) sleepForMillis(100);
   }
 
-  //---------------------------------------------------------------------------  
+  //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
   private <ZEntity extends ZoteroEntity> boolean getRemoteUpdates(ZoteroCommand versionsCmd, ZoteroCommand readCmd, Map<String, ZEntity> keyToEntity) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
   {
     ArrayList<String> downloadQueue = new ArrayList<>();
-    
+
     JsonArray jArr = doReadCommand(versionsCmd, "", "");
-    
+
     if (syncTask.isCancelled()) throw new TerminateTaskException();
-    
+
     if ((jsonClient.getStatusCode() == HttpStatus.SC_OK) || (jsonClient.getStatusCode() == HttpStatus.SC_NOT_MODIFIED))
       if (onlineLibVersion <= offlineLibVersion)
         return true;
-    
+
     if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
     {
       JsonObj jObj = jArr.getObj(0);
@@ -541,7 +541,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       for (String key : jObj.keySet())
       {
         ZEntity entity = keyToEntity.get(key);
-        
+
         if (entity == null)
           downloadQueue.add(key);
         else
@@ -551,7 +551,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
             downloadQueue.add(key);
         }
       }
-      
+
       if (versionsCmd == zoteroReadTrashVersions) // This if block is necessary to determine if an item in the trash was remotely restored
         keyToTrashEntry.entrySet().removeIf(entry -> jObj.containsKey(entry.getKey()) == false);
     }
@@ -562,70 +562,70 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       int downloadCount = (downloadQueue.size() > 50) ? 50 : downloadQueue.size();
       for (int ndx = 0; ndx < downloadCount; ndx++)
         keys = keys + (keys.length() == 0 ? downloadQueue.get(ndx) : "," + downloadQueue.get(ndx));
-      
+
       if (readCmd == ZoteroCommand.zoteroReadCollections)
         jArr = doReadCommand(ZoteroCommand.zoteroReadCollections, "", keys);
       else
         jArr = doReadCommand(readCmd, keys, "");
-      
+
       if (syncTask.isCancelled()) throw new TerminateTaskException();
-      
+
       if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
       {
         jArr.getObjs().forEach(jObj ->
         {
-          String key = jObj.getStrSafe("key");          
+          String key = jObj.getStrSafe("key");
           ZEntity entity = keyToEntity.get(key);
           jObj.put("synced", "true");
-          
+
           if (entity == null)
-          {            
+          {
             entity = (ZEntity) ZoteroEntity.create(this, jObj);
-            
+
             if (entity != null)
               keyToEntity.put(key, entity);
           }
           else
-          {           
+          {
             if (entity.isSynced())
-            {              
+            {
               long onlineVersion = jObj.getLong("version", -1);
               if (entity.getVersion() < onlineVersion)
-                entity.update(jObj, true, false);    
+                entity.update(jObj, true, false);
             }
             else
             {
               if (readCmd == ZoteroCommand.zoteroReadItems)
                 doMerge((ZoteroItem)entity, jObj);
-              else              
+              else
                 entity.update(jObj, true, false);     // Conflict resolution is only implemented for items, not collections
             }
           }
-          
+
           downloadQueue.remove(key);
         });
-      }        
+      }
     }
-        
+
     return (jsonClient.getStatusCode() == HttpStatus.SC_OK) || (jsonClient.getStatusCode() == HttpStatus.SC_NOT_MODIFIED);
   }
 
-  //---------------------------------------------------------------------------  
   //---------------------------------------------------------------------------
-  
+  //---------------------------------------------------------------------------
+
   public Boolean fxThreadReturnValue = null;
-  
+
   boolean doMerge(ZoteroItem item, JsonObj jObj)
   {
     fxThreadReturnValue = null;
-    
+
     runInFXThread(() ->
     {
       MergeWorksDialogController mwd = null;
-      
+
       try
       {
-        mwd = MergeWorksDialogController.create("Merge Remote Changes with Local Changes", item, new ZoteroItem(this, jObj, true), 
+        mwd = MergeWorksDialogController.create("Merge Remote Changes with Local Changes", item, new ZoteroItem(this, jObj, true),
                                                 null, null, item.getWork(), false, false);
       }
       catch (IOException e)
@@ -634,40 +634,40 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         fxThreadReturnValue = Boolean.FALSE;
         return;
       }
-      
+
       item.update(jObj, true, true);
-      
+
       if (mwd.showModal())
         mwd.mergeInto(item);
-      
+
       fxThreadReturnValue = Boolean.TRUE;
     });
-  
+
     while (fxThreadReturnValue == null) sleepForMillis(100);
-    
+
     return fxThreadReturnValue.booleanValue();
   }
-   
-//---------------------------------------------------------------------------  
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public SyncTask createNewSyncTask()
-  { 
+  {
     syncTask = new SyncTask() { @Override public Boolean call() throws TerminateTaskException, HyperDataException
     {
-    //---------------------------------------------------------------------------    
+    //---------------------------------------------------------------------------
     // The algorithm for Zotero syncing is described here:
     // https://www.zotero.org/support/dev/web_api/v3/syncing
 
       int statusCode;
-      
+
       try
       {
-      
+
       /*********************************************/
-      /*        Try sending local updates          */ 
+      /*        Try sending local updates          */
       /*********************************************/
-        
+
       if (syncChangedEntriesToServer() == false)
         statusCode = HttpStatus.SC_PRECONDITION_FAILED;
       else
@@ -675,48 +675,48 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         statusCode = jsonClient.getStatusCode();
         changed = true;
       }
-      
+
       if (syncTask.isCancelled()) throw new TerminateTaskException();
-      
+
       /*********************************************/
-      /*         Retrieve remote updates           */ 
+      /*         Retrieve remote updates           */
       /*********************************************/
-      
+
       while (statusCode == HttpStatus.SC_PRECONDITION_FAILED)
       {
         if (!getRemoteUpdates(zoteroReadChangedCollVersions, zoteroReadCollections, keyToColl)) return false;
-        
-        if (onlineLibVersion <= offlineLibVersion) 
-          return true; 
+
+        if (onlineLibVersion <= offlineLibVersion)
+          return true;
         else
           changed = true;
-        
+
         if (!getRemoteUpdates(zoteroReadChangedItemVersions, zoteroReadItems, keyToAllEntry  )) return false;
         if (!getRemoteUpdates(zoteroReadTrashVersions,       zoteroReadTrash, keyToTrashEntry)) return false;
-        
+
         /*********************************************/
-        /*       Retrieve remote deletions           */ 
+        /*       Retrieve remote deletions           */
         /*********************************************/
-        
+
         JsonArray jArr = doReadCommand(ZoteroCommand.zoteroReadDeletions, "", "");
-        
+
         if (syncTask.isCancelled()) throw new TerminateTaskException();
         if (jsonClient.getStatusCode() != HttpStatus.SC_OK) return false;
-        
+
         jArr.getObj(0).getArray("items").getStrs().forEach(key ->
         {
           if (keyToAllEntry.containsKey(key) && (keyToTrashEntry.containsKey(key) == false))
           {
             // A remote deletion will simply override local changes. Undocument code to change this behavior.
-            
+
 //            ZoteroItem item = keyToAllEntry.get(key);
-//            
+//
 //            if (item.isSynced())
 //            {
               HDT_Work work = db.getWorkByBibEntryKey(key);
               if (work != null)
                 work.setBibEntryKey("");
-              
+
               keyToAllEntry.remove(key);
 //            }
 //            else
@@ -728,9 +728,9 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
           else if (keyToTrashEntry.containsKey(key))
           {
             // A remote deletion will simply override local changes. Undocument code to change this behavior.
-            
+
 //            ZoteroItem item = keyToTrashEntry.get(key);
-//            
+//
 //            if (item.isSynced())
 //            {
               keyToAllEntry.remove(key);
@@ -740,12 +740,12 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //            {
 //              // Perform conflict resolution!
 //              noOp();
-//            }          
+//            }
           }
         });
-        
+
 //        it = jArr.getObj(0).getArray("collections").strIterator();
-//        
+//
 //        while (it.hasNext())
 //        {
 //          String key = it.next();
@@ -754,9 +754,9 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
           if (keyToColl.containsKey(key))
           {
             // A remote deletion will simply override local changes. Undocument code to change this behavior.
-            
+
 //            ZoteroCollection coll = keyToColl.get(key);
-//            
+//
 //            if (coll.isSynced())
 //            {
               keyToColl.remove(key);
@@ -768,31 +768,31 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //            }
           }
         });
-        
+
         if (syncTask.isCancelled()) throw new TerminateTaskException();
-        
+
         if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
           offlineLibVersion = onlineLibVersion;
         else
           return false;
-        
+
         /*********************************************/
-        /*      Try sending local updates again      */ 
+        /*      Try sending local updates again      */
         /*********************************************/
         syncChangedEntriesToServer();
-        
+
         if (syncTask.isCancelled()) throw new TerminateTaskException();
-        
+
         statusCode = jsonClient.getStatusCode();
       }
-      
+
       offlineLibVersion = onlineLibVersion;
-      
+
       if (app.debugging())
         System.out.println("libraryVersion: " + offlineLibVersion);
-      
+
       return true;
-      
+
       }
       catch (HttpResponseException e)
       {
@@ -810,63 +810,63 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         throw new HyperDataException(msg, e);
       }
     }};
-    
+
     return syncTask;
   }
-  
-//---------------------------------------------------------------------------  
+
 //---------------------------------------------------------------------------
-  
+//---------------------------------------------------------------------------
+
   private void loadFromJSON(JsonObj jObj)
   {
     jObj.getArray("items").getObjs().forEach(itemJsonObj ->
     {
       ZoteroEntity entity = ZoteroEntity.create(this, itemJsonObj);
-      
+
       if (entity == null) return;
-      
+
       if (entity.getType() == ZoteroEntityType.zoteroItem)
       {
         ZoteroItem item = (ZoteroItem) entity;
-        
+
         keyToAllEntry.put(entity.getKey(), item);
       }
     });
-    
+
     JsonArray jArr = jObj.getArray("trash");
     if (jArr == null) return;
-    
+
     jArr.getObjs().forEach(itemJsonObj ->
     {
       ZoteroEntity entity = ZoteroEntity.create(this, itemJsonObj);
-      
+
       if (entity == null) return;
-      
+
       if (entity.getType() == ZoteroEntityType.zoteroItem)
       {
         ZoteroItem item = (ZoteroItem) entity;
-        
+
         keyToAllEntry.put(entity.getKey(), item);
         keyToTrashEntry.put(entity.getKey(), item);
       }
     });
-    
+
     jObj.getArray("collections").getObjs().forEach(collJsonObj ->
     {
       ZoteroEntity entity = ZoteroEntity.create(this, collJsonObj);
-      
+
       if (entity == null) return;
-      
+
       if (entity.getType() == ZoteroEntityType.zoteroCollection)
       {
         ZoteroCollection coll = (ZoteroCollection) entity;
-        
+
         keyToColl.put(coll.getKey(), coll);
       }
-    });    
+    });
   }
 
-//---------------------------------------------------------------------------  
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void loadFromDisk(FilePath filePath) throws FileNotFoundException, IOException, ParseException
@@ -875,43 +875,43 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     keyToAllEntry.clear();
     keyToTrashEntry.clear();
     keyToColl.clear();
-        
+
     try (InputStream in = new FileInputStream(filePath.toFile()))
     {
-      jMainObj = parseJsonObj(new InputStreamReader(in, StandardCharsets.UTF_8));  
+      jMainObj = parseJsonObj(new InputStreamReader(in, StandardCharsets.UTF_8));
     }
     catch (FileNotFoundException e) { noOp(); }
-    
+
     if (jMainObj != null)
-    {      
+    {
       offlineLibVersion = db.prefs.getLong(PREF_KEY_BIB_LIBRARY_VERSION, -1);
-      
+
       loadFromJSON(jMainObj);
     }
-    
-    initTemplates();    
+
+    initTemplates();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private static final Object lock = new Object();
-  
+
   private static void initTemplates() throws IOException, ParseException
   {
     synchronized (lock)
     {
       if (templates != null) return;
-      
+
       StringBuilder sb = new StringBuilder();
-      
+
       readResourceTextFile("resources/" + ZOTERO_TEMPLATE_FILE_NAME, sb, false);
       JsonArray jArr = parseJson(sb.toString());
-      
+
       if (jArr != null)
       {
         templates = new EnumMap<>(EntryType.class);
-        
+
         jArr.getObjs().forEach(jObj -> templates.put(ZoteroItem.parseZoteroType(jObj.getStrSafe("itemType")), jObj));
       }
     }
@@ -925,33 +925,33 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     JsonObj jMainObj = new JsonObj();
 
     JsonArray jArr = new JsonArray();
-    
+
     for (ZoteroItem entry : getNonTrashEntries())
       entry.saveToDisk(jArr);
-    
+
     jMainObj.put("items", jArr);
-    
+
     jArr = new JsonArray();
-    
+
     for (ZoteroItem entry : keyToTrashEntry.values())
       entry.saveToDisk(jArr);
-    
+
     jMainObj.put("trash", jArr);
-    
+
     jArr = new JsonArray();
-    
+
     for (ZoteroCollection coll : keyToColl.values())
       coll.saveToDisk(jArr);
-    
+
     jMainObj.put("collections", jArr);
-    
+
     StringBuilder json = new StringBuilder(jMainObj.toString());
-    
+
     try
     {
       saveStringBuilderToFile(json, filePath);
       db.prefs.putLong(PREF_KEY_BIB_LIBRARY_VERSION, offlineLibVersion);
-    } 
+    }
     catch (IOException e)
     {
       messageDialog("An error occurred while saving bibliographic data to disk.", mtError);
@@ -962,9 +962,9 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 
   @Override public ZoteroItem addEntry(EntryType newType)
-  {  
+  {
     ZoteroItem item = new ZoteroItem(this, newType);
-    
+
     keyToAllEntry.put(item.getEntryKey(), item);
 
     return item;
@@ -976,33 +976,33 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   @Override public Set<ZoteroItem> getCollectionEntries(String collKey)
   {
     LinkedHashSet<ZoteroItem> view = new LinkedHashSet<>();
-    
+
     getNonTrashEntries().forEach(item ->
     {
       List<String> collKeys = item.getCollKeys(false);
       if (collKeys.contains(collKey))
         view.add(item);
     });
-    
+
     return Collections.unmodifiableSet(view);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public Set<ZoteroItem> getNonTrashEntries() 
-  { 
+  @Override public Set<ZoteroItem> getNonTrashEntries()
+  {
     LinkedHashSet<ZoteroItem> view = new LinkedHashSet<>();
-    
+
     keyToAllEntry.values().forEach(item ->
     {
       if (keyToTrashEntry.containsKey(item.getEntryKey()) == false)
         view.add(item);
     });
-    
+
     return Collections.unmodifiableSet(view);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -1010,19 +1010,19 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   {
     LinkedHashSet<ZoteroItem> view = new LinkedHashSet<>();
     view.addAll(keyToAllEntry.values());
-    
+
     view.removeIf(item ->
     {
       if (keyToTrashEntry.containsKey(item.getEntryKey()))
         return true;
-      
+
       for (String collKey : item.getCollKeys(true))
         if (keyToColl.containsKey(collKey))
           return true;
-      
+
       return false;
     });
-    
+
     return Collections.unmodifiableSet(view);
   }
 
@@ -1032,42 +1032,42 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   private static EnumHashBiMap<EntryType, String> initTypeMap()
   {
     EnumHashBiMap<EntryType, String> map = EnumHashBiMap.create(EntryType.class);
-    
-    map.put(etArtwork, "artwork"); 
-    map.put(etAudioRecording, "audioRecording"); 
-    map.put(etBill, "bill"); 
-    map.put(etBlogPost, "blogPost"); 
-    map.put(etBook, "book"); 
-    map.put(etBookChapter, "bookSection"); 
-    map.put(etCase, "case"); 
-    map.put(etConferencePaper, "conferencePaper"); 
-    map.put(etDictionaryEntry, "dictionaryEntry"); 
-    map.put(etDocument, "document"); 
-    map.put(etEmail, "email"); 
-    map.put(etEncyclopediaArticle, "encyclopediaArticle"); 
-    map.put(etFilm, "film"); 
-    map.put(etForumPost, "forumPost"); 
-    map.put(etHearing, "hearing"); 
-    map.put(etInstantMessage, "instantMessage"); 
-    map.put(etInterview, "interview"); 
-    map.put(etJournalArticle, "journalArticle"); 
-    map.put(etLetter, "letter"); 
-    map.put(etMagazineArticle, "magazineArticle"); 
-    map.put(etManuscript, "manuscript"); 
-    map.put(etMap, "map"); 
-    map.put(etNewspaperArticle, "newspaperArticle"); 
-    map.put(etPatent, "patent"); 
-    map.put(etPodcast, "podcast"); 
-    map.put(etPresentation, "presentation"); 
-    map.put(etRadioBroadcast, "radioBroadcast"); 
+
+    map.put(etArtwork, "artwork");
+    map.put(etAudioRecording, "audioRecording");
+    map.put(etBill, "bill");
+    map.put(etBlogPost, "blogPost");
+    map.put(etBook, "book");
+    map.put(etBookChapter, "bookSection");
+    map.put(etCase, "case");
+    map.put(etConferencePaper, "conferencePaper");
+    map.put(etDictionaryEntry, "dictionaryEntry");
+    map.put(etDocument, "document");
+    map.put(etEmail, "email");
+    map.put(etEncyclopediaArticle, "encyclopediaArticle");
+    map.put(etFilm, "film");
+    map.put(etForumPost, "forumPost");
+    map.put(etHearing, "hearing");
+    map.put(etInstantMessage, "instantMessage");
+    map.put(etInterview, "interview");
+    map.put(etJournalArticle, "journalArticle");
+    map.put(etLetter, "letter");
+    map.put(etMagazineArticle, "magazineArticle");
+    map.put(etManuscript, "manuscript");
+    map.put(etMap, "map");
+    map.put(etNewspaperArticle, "newspaperArticle");
+    map.put(etPatent, "patent");
+    map.put(etPodcast, "podcast");
+    map.put(etPresentation, "presentation");
+    map.put(etRadioBroadcast, "radioBroadcast");
     map.put(etReport, "report");
     map.put(etSoftware, "computerProgram");
-    map.put(etStatute, "statute"); 
-    map.put(etTVBroadcast, "tvBroadcast"); 
-    map.put(etThesis, "thesis"); 
-    map.put(etVideoRecording, "videoRecording"); 
+    map.put(etStatute, "statute");
+    map.put(etTVBroadcast, "tvBroadcast");
+    map.put(etThesis, "thesis");
+    map.put(etVideoRecording, "videoRecording");
     map.put(etWebPage, "webpage");
-    
+
     return map;
   }
 
@@ -1079,55 +1079,55 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     if (row == null) return "";
     ZoteroItem item = (ZoteroItem) row.getEntry();
     if (item == null) return "";
-    
+
     JsonObj jData = item.exportJsonObjForUploadToServer(true);
     jData = nullSwitch(jData.getObj("data"), jData);
-        
+
     StringBuilder html = new StringBuilder();
-    
+
     html.append("<html><head><style>")
-        .append("td.fieldName { vertical-align: text-top; text-align: right; padding-right:10px; }</style></head><body>") 
+        .append("td.fieldName { vertical-align: text-top; text-align: right; padding-right:10px; }</style></head><body>")
         .append("<table style=\"font-size:9pt; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,sans-serif; } line-height:10pt;\">");
 
     for (String key : jData.keySet())
     {
       String fieldName = key;
-      
+
       switch (fieldName)
       {
-        case "relations" : case "collections" : case "key" : 
+        case "relations" : case "collections" : case "key" :
         case "dateAdded" : case "accessDate" : case "dateModified" : continue;
-          
+
         case "url"  : fieldName = "URL"; break;
-        
+
         case "ISBN" : case "DOI" : case "ISSN" : break;
-        
+
         default : fieldName = camelToTitle(fieldName); break;
       }
-      
+
       switch (jData.getType(key))
       {
-        case ARRAY:                  
+        case ARRAY:
 
           JsonArray jArr = jData.getArray(key);
-          
+
           if (key.equals("creators"))
             addCreatorsHtml(jArr, html);
           else
             addArrayHtml(fieldName, jArr, html);
-          
+
           break;
-                            
+
         case STRING:
-          
+
           addStringHtml(fieldName, jData.getStrSafe(key), html);
           break;
-          
+
         default:
-          break;        
+          break;
       }
     }
-      
+
     html.append("</table></body></html>");
     return html.toString();
   }
@@ -1138,10 +1138,10 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   private static void addStringHtml(String fieldName, String str, StringBuilder html)
   {
     if (str.length() == 0) return;
-    
+
     if (fieldName.equals("Item Type"))
       str = camelToTitle(str);
-    
+
     html.append("<tr><td class=\"fieldName\">" + fieldName + "</td><td>")
         .append(str)
         .append("</td></tr>");
@@ -1155,22 +1155,22 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     creatorsArr.getObjs().forEach(node ->
     {
       String type = node.getStrSafe("creatorType");
-      
+
       if (type.length() == 0) return;
 
       type = camelToTitle(type);
       PersonName personName;
-      String firstName = ultraTrim(node.getStrSafe("firstName")),      
+      String firstName = ultraTrim(node.getStrSafe("firstName")),
              lastName = ultraTrim(node.getStrSafe("lastName"));
-      
+
       if ((firstName.length() > 0) || (lastName.length() > 0))
         personName = new PersonName(firstName, lastName);
       else
       {
-        personName = new PersonName(node.getStrSafe("name"));        
+        personName = new PersonName(node.getStrSafe("name"));
         if (personName.isEmpty()) return;
       }
-      
+
       html.append("<tr><td class=\"fieldName\">" + type + "</td><td>")
           .append(personName.getLastFirst())
           .append("</td></tr>");
@@ -1181,16 +1181,16 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 
   private static void addArrayHtml(String fieldName, JsonArray jArr, StringBuilder html)
-  {       
+  {
     ArrayList<String> list = new ArrayList<>();
-    
+
     for (int ndx = 0; ndx < jArr.size(); ndx++)
     {
       String str = jArr.getStrSafe(ndx);
       list.add(str);
     }
 
-    addStringListHtml(fieldName, list, html);    
+    addStringListHtml(fieldName, list, html);
   }
 
 //---------------------------------------------------------------------------
@@ -1199,21 +1199,21 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   private static void addStringListHtml(String fieldName, List<String> list, StringBuilder html)
   {
     list.removeIf(str -> (str == null) || (ultraTrim(str).length() == 0));
-    
+
     if (list.size() == 0) return;
-    
+
     html.append("<tr><td class=\"fieldName\">" + fieldName + "</td><td>");
-    
+
     for (int ndx = 0; ndx < list.size(); ndx++)
     {
       html.append(list.get(ndx));
       if (ndx < (list.size() - 1))
         html.append("<br>");
     }
-    
+
     html.append("</td></tr>");
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

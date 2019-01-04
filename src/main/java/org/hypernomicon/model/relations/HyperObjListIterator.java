@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.relations;
@@ -45,20 +45,20 @@ public class HyperObjListIterator<HDT_SubjType extends HDT_Base, HDT_ObjType ext
   @Override public int nextIndex()         { return nextNdx; }
   @Override public int previousIndex()     { return nextNdx - 1; }
   @Override public void add(HDT_ObjType e) { list.add(nextNdx, e); }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public HDT_ObjType next()
-  {   
+  {
     if (hasNext())
-    {  
+    {
       HDT_ObjType record = list.get(nextNdx);
       lastNdx = nextNdx;
       nextNdx++;
       return record;
     }
-    
+
     throw new NoSuchElementException();
   }
 
@@ -68,14 +68,14 @@ public class HyperObjListIterator<HDT_SubjType extends HDT_Base, HDT_ObjType ext
   @Override public HDT_ObjType previous()
   {
     if (hasPrevious())
-    {  
+    {
       nextNdx--;
       HDT_ObjType record = list.get(nextNdx);
       lastNdx = nextNdx;
-      
+
       return record;
     }
-    
+
     throw new NoSuchElementException();
 
   }
@@ -87,14 +87,14 @@ public class HyperObjListIterator<HDT_SubjType extends HDT_Base, HDT_ObjType ext
   {
     if (lastNdx < 0)
       throw new IllegalStateException();
-    
+
     if (lastNdx >= list.size())
       throw new IllegalStateException();
-    
+
     list.remove(lastNdx);
-    
+
     if (nextNdx > lastNdx) nextNdx--;
-      
+
     lastNdx = -1;
   }
 
@@ -105,10 +105,10 @@ public class HyperObjListIterator<HDT_SubjType extends HDT_Base, HDT_ObjType ext
   {
     if (lastNdx < 0)
       throw new IllegalStateException();
-    
+
     if (lastNdx >= list.size())
       throw new IllegalStateException();
-   
+
     list.set(lastNdx, e);
   }
 

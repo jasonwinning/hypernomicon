@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.view.wrappers;
@@ -59,7 +59,7 @@ public class ResultsTable implements RecordListView
   public static final ArrayList<ColumnGroup> colGroups = new ArrayList<ColumnGroup>();
   private static ColumnGroup generalGroup;
   private List<HyperMenuItem<? extends HDT_Base>> contextMenuItems;
-  
+
   public TableView<ResultsRow> getTV() { return tv; }
 
 //---------------------------------------------------------------------------
@@ -71,32 +71,32 @@ public class ResultsTable implements RecordListView
       this.tag = tag;
       this.caption = caption;
     }
-    
+
     public Tag tag;
     public String caption;
     public TableColumn<ResultsRow, ? extends ResultCellValue<? extends Comparable<?>>> col;
   }
-  
+
 //---------------------------------------------------------------------------
-  
+
   public static class ColumnGroup
   {
     public ColumnGroup(HDT_RecordType type, String caption, Set<Tag> tags)
     {
       this.type = type;
       this.caption = caption;
-      
+
       for (Tag tag : tags)
         items.add(new ColumnGroupItem(tag, db.getTagHeader(tag)));
     }
-    
+
     public <Comp_T extends Comparable<Comp_T>> void setColumns(TableColumn<ResultsRow, ResultCellValue<Comp_T>> col, Tag tag)
     {
       for (ColumnGroupItem item : items)
         if (item.tag == tag)
           item.col = col;
     }
-    
+
     public HDT_RecordType type;
     public String caption;
     public ArrayList<ColumnGroupItem> items = new ArrayList<ColumnGroupItem>();
@@ -110,27 +110,27 @@ public class ResultsTable implements RecordListView
   {
     public Comp_T get(String str);
   }
-  
+
   public static class ResultCellValue<Comp_T extends Comparable<Comp_T>> implements Comparable<ResultCellValue<Comp_T>>
   {
     private String text;
     private Comparable<Comp_T> sortVal = null;
     private StringToComparable<Comp_T> strToComp = null;
-    
+
     public ResultCellValue(String text, Comparable<Comp_T> sortVal)
     {
       this.text = text;
       this.sortVal = sortVal;
     }
-    
+
     public ResultCellValue(String text, StringToComparable<Comp_T> strToComp)
     {
       this.text = text;
       this.strToComp = strToComp;
     }
-    
-    public ObservableValue<ResultCellValue<Comp_T>> getObservable() { return new SimpleObjectProperty<ResultCellValue<Comp_T>>(this); } 
-    
+
+    public ObservableValue<ResultCellValue<Comp_T>> getObservable() { return new SimpleObjectProperty<ResultCellValue<Comp_T>>(this); }
+
     @Override public String toString() { return text; }
 
     @SuppressWarnings("unchecked")
@@ -138,26 +138,26 @@ public class ResultsTable implements RecordListView
     {
       if (strToComp != null)
         return strToComp.get(text).compareTo(other.strToComp.get(other.text));
-      
+
       return sortVal.compareTo((Comp_T) other.sortVal);
-    }    
+    }
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public ResultsTable(TableView<ResultsRow> tvResults)
   {
     tv = tvResults;
-       
+
     tv.setItems(FXCollections.observableArrayList());
     contextMenuItems = new ArrayList<>();
-    
+
     tv.setPlaceholder(new Label("There are no query results to display."));
     tv.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-    
+
     initColumns();
-       
+
     tv.setRowFactory(theTV ->
     {
       final TableRow<ResultsRow> row = new TableRow<>();
@@ -167,7 +167,7 @@ public class ResultsTable implements RecordListView
         if ((mouseEvent.getButton().equals(MouseButton.PRIMARY)) && (mouseEvent.getClickCount() == 2))
           dblClick(row.getItem());
       });
-      
+
       row.itemProperty().addListener((observable, oldValue, newValue) ->
       {
         if (newValue == null)
@@ -175,7 +175,7 @@ public class ResultsTable implements RecordListView
         else
           row.setContextMenu(createContextMenu(newValue));
       });
-      
+
       return row;
     });
   }
@@ -186,19 +186,19 @@ public class ResultsTable implements RecordListView
   private ContextMenu createContextMenu(ResultsRow row)
   {
     boolean noneVisible = true;
-    
+
     HDT_Base record = row.getRecord();
     if (record == null) return null;
 
     ContextMenu rowMenu = new ContextMenu();
-    
+
     for (HyperMenuItem<? extends HDT_Base> hItem : contextMenuItems)
     {
       MenuItem newItem = createContextMenuItem(hItem, record, rowMenu);
-      
-      if (newItem.isVisible()) noneVisible = false;      
+
+      if (newItem.isVisible()) noneVisible = false;
     }
-    
+
     if (noneVisible) return null;
     return rowMenu;
   }
@@ -210,22 +210,22 @@ public class ResultsTable implements RecordListView
   private <HDT_T extends HDT_Base> MenuItem createContextMenuItem(HyperMenuItem<HDT_T> hItem, HDT_Base record, ContextMenu rowMenu)
   {
     MenuItem newItem = new MenuItem(hItem.caption);
-    
+
     newItem.setOnAction(event ->
     {
       rowMenu.hide();
       hItem.recordHandler.handle((HDT_T) record);
     });
-    
+
     rowMenu.getItems().add(newItem);
-    
+
     boolean visible = false;
-    
+
     if ((record.getType() == hItem.recordType) || (hItem.recordType == hdtNone))
       visible = (hItem.condRecordHandler.handle((HDT_T) record));
-      
+
     newItem.setVisible(visible);
-    
+
     return newItem;
   }
 
@@ -234,7 +234,7 @@ public class ResultsTable implements RecordListView
 
   public void dblClick(ResultsRow row)
   {
-    if (row != null)    
+    if (row != null)
       ui.goToRecord(row.getRecord(), true);
   }
 
@@ -247,7 +247,7 @@ public class ResultsTable implements RecordListView
     tv.getItems().clear();
     colGroups.clear();
     tv.setContextMenu(null);
-    
+
     initColumns();
   }
 
@@ -258,39 +258,39 @@ public class ResultsTable implements RecordListView
   {
     return new ResultCellValue<Comp_T>(str, strToComp).getObservable();
   }
-  
+
   public static final double RESULT_COL_MAX_WIDTH = 400.0;
-  
+
   public void initColumns()
   {
     datesAdded = false;
     generalGroup = new ColumnGroup(hdtNone, "General", EnumSet.noneOf(Tag.class));
     ColumnGroupItem item;
-    
+
     colGroups.add(generalGroup);
-    
+
     TableColumn<ResultsRow, ResultCellValue<Integer>> intCol;
     TableColumn<ResultsRow, ResultCellValue<String>> strCol;
-    
+
     intCol = new TableColumn<ResultsRow, ResultCellValue<Integer>>("ID");
-    
-    intCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordID(), str -> Integer.valueOf(parseInt(str, -1))));        
+
+    intCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordID(), str -> Integer.valueOf(parseInt(str, -1))));
     intCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
     tv.getColumns().add(intCol);
-    
+
     item = new ColumnGroupItem(tagNone, "ID");
     generalGroup.items.add(item);
     item.col = intCol;
-    
+
     strCol = new TableColumn<ResultsRow, ResultCellValue<String>>("Name");
-    strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordName(), str -> makeSortKeyByType(str, hdtWork)));  
+    strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordName(), str -> makeSortKeyByType(str, hdtWork)));
     strCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
     tv.getColumns().add(strCol);
 
     item = new ColumnGroupItem(tagNone, "Name");
     generalGroup.items.add(item);
     item.col = strCol;
-    
+
     strCol = new TableColumn<ResultsRow, ResultCellValue<String>>("Type");
     strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordType(), str -> str.trim().toLowerCase()));
     strCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
@@ -299,36 +299,36 @@ public class ResultsTable implements RecordListView
     item = new ColumnGroupItem(tagNone, "Type");
     generalGroup.items.add(item);
     item.col = strCol;
-    
+
     strCol = new TableColumn<ResultsRow, ResultCellValue<String>>("Search Key");
     strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getSearchKey(), str -> str.trim().toLowerCase()));
     strCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
     tv.getColumns().add(strCol);
     strCol.setVisible(false);
-    
+
     item = new ColumnGroupItem(tagNone, "Search Key");
     generalGroup.items.add(item);
     item.col = strCol;
-    
+
     strCol = new TableColumn<ResultsRow, ResultCellValue<String>>("Sort Key");
-    strCol.setCellValueFactory(cellData -> 
+    strCol.setCellValueFactory(cellData ->
     {
       String sortKey = cellData.getValue().getSortKey();
-      return new ResultCellValue<String>(sortKey, sortKey).getObservable(); 
+      return new ResultCellValue<String>(sortKey, sortKey).getObservable();
     });
-    
+
     strCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
     tv.getColumns().add(strCol);
     strCol.setVisible(false);
-    
+
     item = new ColumnGroupItem(tagNone, "Sort Key");
     generalGroup.items.add(item);
     item.col = strCol;
-    
+
     Node showHideColumnsButton = tv.lookup(".show-hide-columns-button");
-    
+
     if (showHideColumnsButton != null)
-      showHideColumnsButton.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> 
+      showHideColumnsButton.addEventFilter(MouseEvent.MOUSE_PRESSED, event ->
       {
         SelectColumnsDialogController.create("Select Columns").showModal();
         event.consume();
@@ -339,10 +339,10 @@ public class ResultsTable implements RecordListView
 //---------------------------------------------------------------------------
 
   public void addDateColumns()
-  {   
+  {
     if (datesAdded) return;
     datesAdded = true;
-    
+
     Platform.runLater(() ->
     {
       TableColumn<ResultsRow, ResultCellValue<Instant>> col;
@@ -351,23 +351,23 @@ public class ResultsTable implements RecordListView
       col = new TableColumn<ResultsRow, ResultCellValue<Instant>>("Date created");
       col.setCellValueFactory(cellData -> cellData.getValue().getCreationDateCellValue().getObservable());
       tv.getColumns().add(col);
-      
+
       item = new ColumnGroupItem(tagNone, "Date created");
       generalGroup.items.add(item);
       item.col = col;
-      
-      col = new TableColumn<ResultsRow, ResultCellValue<Instant>>("Date modified");      
+
+      col = new TableColumn<ResultsRow, ResultCellValue<Instant>>("Date modified");
       col.setCellValueFactory(cellData -> cellData.getValue().getModifiedDateCellValue().getObservable());
       tv.getColumns().add(col);
-      
+
       item = new ColumnGroupItem(tagNone, "Date modified");
       generalGroup.items.add(item);
       item.col = col;
-      
+
       col = new TableColumn<ResultsRow, ResultCellValue<Instant>>("Date accessed");
       col.setCellValueFactory(cellData -> cellData.getValue().getViewDateCellValue().getObservable());
       tv.getColumns().add(col);
-      
+
       item = new ColumnGroupItem(tagNone, "Date accessed");
       generalGroup.items.add(item);
       item.col = col;
@@ -381,47 +381,47 @@ public class ResultsTable implements RecordListView
   {
     TableColumn<ResultsRow, ResultCellValue<String>> col = new TableColumn<ResultsRow, ResultCellValue<String>>(db.getTagHeader(tag));
     StringToComparable<String> strToComp;
-    
+
     if (tag == tagTitle)
       strToComp = str -> makeSortKeyByType(str, hdtWork);
     else
       strToComp = str -> str.trim().toLowerCase();
-      
+
     col.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getTagText(tag), strToComp));
-    
+
     col.setMaxWidth(RESULT_COL_MAX_WIDTH);
-    
+
     tv.getColumns().add(col);
-    
+
     return col;
   }
 
 //---------------------------------------------------------------------------
-//--------------------------------------------------------------------------- 
-  
+//---------------------------------------------------------------------------
+
   @Override public <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addContextMenuItem(String caption, Class<HDT_T> klass, RecordHandler<HDT_T> handler)
   {
     return addCondContextMenuItem(caption, klass, record -> true, handler);
   }
 
 //---------------------------------------------------------------------------
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
 
   @Override public <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addCondContextMenuItem(String caption, Class<HDT_T> klass, CondRecordHandler<HDT_T> condHandler, RecordHandler<HDT_T> handler)
   {
     HyperMenuItem<HDT_T> mnu;
-       
+
     mnu = new HyperMenuItem<>(caption);
     mnu.recordType = HDT_RecordType.typeByRecordClass(klass);
     mnu.condRecordHandler = condHandler;
     mnu.recordHandler = handler;
-    
+
     contextMenuItems.add(mnu);
     return mnu;
   }
 
 //---------------------------------------------------------------------------
-//--------------------------------------------------------------------------- 
+//---------------------------------------------------------------------------
 
   public HDT_Base selectedRecord()
   {

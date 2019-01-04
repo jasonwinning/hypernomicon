@@ -1,6 +1,6 @@
 /*
  * Copyright 2015-2019 Jason Winning
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  */
 
 package org.hypernomicon.model.records;
@@ -31,7 +31,7 @@ public class HDT_Position extends HDT_RecordWithConnector
 {
   public final List<HDT_Debate> debates;
   public final List<HDT_Position> largerPositions;
-  
+
   public final List<HDT_Argument> arguments;
   public final List<HDT_Position> subPositions;
 
@@ -41,27 +41,27 @@ public class HDT_Position extends HDT_RecordWithConnector
   public HDT_Position(HDT_RecordState xmlState, HyperDataset<HDT_Position> dataset)
   {
     super(xmlState, dataset, tagName);
-       
+
     debates = getObjList(rtDebateOfPosition);
     largerPositions = getObjList(rtParentPosOfPos);
-    
+
     arguments = getSubjList(rtPositionOfArgument);
     subPositions = getSubjList(rtParentPosOfPos);
-  } 
-  
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   @Override public String listName()        { return name(); }
   @Override public HDT_RecordType getType() { return hdtPosition; }
   @Override public boolean isUnitable()     { return true; }
-  
+
   public void setLargerPositions(List<HDT_Position> list) { updateObjectsFromList(rtParentPosOfPos, list); }
   public void setDebates(List<HDT_Debate> list)           { updateObjectsFromList(rtDebateOfPosition, list); };
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   public HDT_Debate getDebate()
   {
     HDT_Position position = this;
@@ -71,7 +71,7 @@ public class HDT_Position extends HDT_RecordWithConnector
 
     if (position.debates.size() > 0)
       return position.debates.get(0);
-    
+
     return null;
   }
 
@@ -81,13 +81,13 @@ public class HDT_Position extends HDT_RecordWithConnector
   public LinkedHashSet<Author> getPeople()
   {
     LinkedHashSet<Author> people = new LinkedHashSet<>();
-    
+
     subPositions.forEach(subPos -> people.addAll(subPos.getPeople()));
-    
+
     for (HDT_Argument arg : arguments)
       if (arg.isInFavor(this))
         people.addAll(arg.getPeople());
-    
+
     return people;
   }
 
@@ -98,7 +98,7 @@ public class HDT_Position extends HDT_RecordWithConnector
   {
     public HDT_Argument argument = null;
     public HDT_Work work = null;
-    public HDT_Person author = null;   
+    public HDT_Person author = null;
   }
 
 //---------------------------------------------------------------------------
@@ -113,7 +113,7 @@ public class HDT_Position extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 
   private PositionSource getSource(boolean noAuthorOK, boolean noWorkOK, boolean noFileNameOK)
-  { 
+  {
     PositionSource ps = new PositionSource();
     PositionSource webPs = null;
 
@@ -122,9 +122,9 @@ public class HDT_Position extends HDT_RecordWithConnector
       if (arg.isInFavor(this))
       {
         ps.argument = arg;
-        
+
         for (HDT_Work work : arg.works)
-        {          
+        {
           if (work.getPath().isEmpty() == false)
           {
             if (work.authorRecords.size() > 0)
@@ -133,27 +133,27 @@ public class HDT_Position extends HDT_RecordWithConnector
               ps.author = work.authorRecords.get(0);
               return ps;
             }
-            
-            if (noAuthorOK) 
+
+            if (noAuthorOK)
             {
               ps.work = work;
               return ps;
             }
           }
-          
+
           else if ((work.getWebLink().isEmpty() == false) && (webPs == null))
-          {            
+          {
             if (work.authorRecords.size() > 0)
             {
               webPs = new PositionSource();
               webPs.work = work;
               webPs.author = work.authorRecords.get(0);
             }
-            else if (noAuthorOK) 
+            else if (noAuthorOK)
             {
               webPs = new PositionSource();
               webPs.work = work;
-            }            
+            }
           }
 
           if (work.authorRecords.size() > 0)
@@ -172,11 +172,11 @@ public class HDT_Position extends HDT_RecordWithConnector
             return ps;
           }
         }
-        
+
         if (noWorkOK) return ps;
       }
     }
-  
+
     return webPs;
   }
 
