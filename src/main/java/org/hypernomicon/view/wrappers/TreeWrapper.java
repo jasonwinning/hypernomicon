@@ -394,7 +394,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 
     if (oldParent == newParent)
     {
-      messageDialog("Unable copy or move source record: It is already attached to destination record.", mtError);
+      messageDialog("Unable to copy or move source record: It is already attached to destination record.", mtError);
       return;
     }
 
@@ -406,7 +406,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 
     if ((oldRelType == rtNone) || (newRelType == rtNone))
     {
-      messageDialog("Unable copy or move source record: Internal error #33948.", mtError);
+      messageDialog("Unable to copy or move source record: Internal error #33948.", mtError);
       return;
     }
 
@@ -423,7 +423,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 
     if (db.getObjectList(newRelType, subjRecord, true).contains(objRecord))
     {
-      messageDialog("Unable copy or move source record: It is already attached to destination record.", mtError);
+      messageDialog("Unable to copy or move source record: It is already attached to destination record.", mtError);
       return;
     }
 

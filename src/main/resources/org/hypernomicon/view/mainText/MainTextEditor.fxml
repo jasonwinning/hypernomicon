@@ -25,14 +25,14 @@
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.web.HTMLEditor?>
 <?import org.hypernomicon.view.controls.HiddenSidesPane?>
 
-<BorderPane fx:id="borderPane" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.mainText.MainTextController">
+<BorderPane fx:id="borderPane" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.mainText.MainTextController">
    <center>
       <HiddenSidesPane fx:id="hsPane">
         <content>
@@ -74,6 +74,11 @@
                         <Button fx:id="btnInsert" layoutX="41.0" layoutY="4.0" mnemonicParsing="false" text="Insert" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                      </children>
                   </AnchorPane>
+                  <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="1">
+                     <children>
+                        <Button fx:id="btnRemove" layoutX="23.0" layoutY="4.0" mnemonicParsing="false" text="Remove" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                     </children>
+                  </AnchorPane>                  
                   <AnchorPane GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
                      <children>
                         <Label layoutX="11.0" layoutY="6.0" text="Type:" />
@@ -86,11 +91,6 @@
                         <ComboBox fx:id="cbName" layoutX="62.0" layoutY="2.0" prefWidth="150.0" AnchorPane.leftAnchor="62.0" AnchorPane.rightAnchor="0.0" />
                      </children>
                   </AnchorPane>
-                  <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="1">
-                     <children>
-                        <Button fx:id="btnRemove" layoutX="23.0" layoutY="4.0" mnemonicParsing="false" text="Remove" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-                     </children>
-                  </AnchorPane>
                </children>
             </GridPane>
           </StackPane>
@@ -98,7 +98,7 @@
       </HiddenSidesPane>
    </center>
    <top>
-      <TitledPane fx:id="tpKeyWorks" text="Key Works" BorderPane.alignment="CENTER">
+      <TitledPane fx:id="tpKeyWorks" focusTraversable="false" text="Key Works" BorderPane.alignment="CENTER">
          <content>
             <GridPane style="-fx-padding: 0;">
                <columnConstraints>

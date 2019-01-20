@@ -26,7 +26,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.workMerge.MergeWorksMLController">
+<AnchorPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.workMerge.MergeWorksMLController">
   <children>
      <GridPane fx:id="gp" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columnConstraints>
@@ -40,27 +40,6 @@
            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
         </rowConstraints>
         <children>
-           <AnchorPane GridPane.rowIndex="1">
-               <children>
-                  <TextArea fx:id="ta1" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-               </children>
-           </AnchorPane>
-           <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
-              <children>
-                 <TextArea fx:id="ta2" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-              </children>
-           </AnchorPane>
-           <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="1">
-              <children>
-                 <TextArea fx:id="ta3" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-              </children>
-           </AnchorPane>
-           <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="1">
-              <children>
-                 <TextArea fx:id="ta4" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-              </children>
-           </AnchorPane>
-           <AnchorPane GridPane.columnIndex="3" />
            <GridPane>
               <columnConstraints>
                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -138,6 +117,26 @@
                  </AnchorPane>
               </children>
            </GridPane>
+           <AnchorPane GridPane.rowIndex="1">
+               <children>
+                  <TextArea fx:id="ta1" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+               </children>
+           </AnchorPane>
+           <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
+              <children>
+                 <TextArea fx:id="ta2" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+              </children>
+           </AnchorPane>
+           <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="1">
+              <children>
+                 <TextArea fx:id="ta3" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+              </children>
+           </AnchorPane>
+           <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="1">
+              <children>
+                 <TextArea fx:id="ta4" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+              </children>
+           </AnchorPane>
         </children>
      </GridPane>
   </children>

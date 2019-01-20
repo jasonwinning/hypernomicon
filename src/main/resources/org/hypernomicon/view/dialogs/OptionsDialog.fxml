@@ -31,7 +31,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane maxHeight="356.0" minHeight="356.0" minWidth="1026.0" prefHeight="356.0" prefWidth="1026.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.OptionsDialogController">
+<AnchorPane maxHeight="356.0" minHeight="356.0" minWidth="1026.0" prefHeight="356.0" prefWidth="1026.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.OptionsDialogController">
    <children>
       <TabPane fx:id="tabPane" layoutX="56.0" layoutY="31.0" prefHeight="364.0" prefWidth="1104.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <tabs>
@@ -69,36 +69,29 @@
                                     <TextField fx:id="tfImageEditor" layoutX="-349.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                  </children>
                               </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                 <children>
+                                    <Button fx:id="btnImageEditorBrowse" layoutX="15.0" layoutY="-5.0" mnemonicParsing="false" onAction="#btnImageEditorBrowseClick" text="..." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+                                 <children>
+                                    <Label text="PDF viewer path" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+                                 </children>
+                              </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
                                  <children>
                                     <TextField fx:id="tfPDFReader" layoutX="-8.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                 </children></AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                 <children>
+                                    <Button fx:id="btnPDFReaderBrowse" layoutX="-9.0" layoutY="2.0" mnemonicParsing="false" onAction="#btnPDFReaderClick" text="..." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                  </children></AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
                                  <children>
                                     <CheckBox fx:id="chkInternet" layoutY="4.0" mnemonicParsing="false" text="Check for internet connection" />
                                  </children>
                               </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="9" />
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="10" />
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="11" />
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" />
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                 <children>
-                                    <Button fx:id="btnImageEditorBrowse" layoutX="15.0" layoutY="-5.0" mnemonicParsing="false" onAction="#btnImageEditorBrowseClick" text="..." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                                 <children>
-                                    <Button fx:id="btnPDFReaderBrowse" layoutX="-9.0" layoutY="2.0" mnemonicParsing="false" onAction="#btnPDFReaderClick" text="..." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                 </children></AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="9" />
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="10" />
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="11" />
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5" GridPane.rowSpan="2">
                                  <children>
                                     <GridPane layoutX="32.0" layoutY="-22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -137,11 +130,6 @@
                                  <children>
                                     <CheckBox fx:id="chkAutoRetrieveBib" layoutY="4.0" mnemonicParsing="false" text="Automatically retrieve bibliographic info for selected file internet in Work File dialog" />
                                  </children></AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-                                 <children>
-                                    <Label text="PDF viewer path" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-                                 </children>
-                              </AnchorPane>
                            </children>
                            <padding>
                               <Insets left="4.0" right="4.0" />
@@ -178,24 +166,9 @@
                                     <Label layoutX="16.0" layoutY="6.0" text="Component" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="7.0" />
                                  </children>
                               </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
                                  <children>
-                                    <ComboBox fx:id="cbComponent1" layoutX="-26.0" layoutY="3.0" prefWidth="150.0" promptText="Author last names" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                 <children>
-                                    <ComboBox fx:id="cbComponent2" prefWidth="150.0" promptText="Editors" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                                 <children>
-                                    <ComboBox fx:id="cbComponent3" prefWidth="150.0" promptText="Translators" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
-                                 <children>
-                                    <ComboBox fx:id="cbComponent4" prefWidth="150.0" promptText="Year" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                    <Label layoutX="14.0" layoutY="6.0" text="Before-component separator" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="7.0" />
                                  </children>
                               </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3">
@@ -203,69 +176,9 @@
                                     <Label layoutX="9.0" layoutY="7.0" text="Within-component separator" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="7.0" />
                                  </children>
                               </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
-                                 <children>
-                                    <TextField fx:id="tfSepWithin1" layoutX="14.0" layoutY="3.0" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
-                                 <children>
-                                    <TextField fx:id="tfSepWithin2" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="3">
-                                 <children>
-                                    <TextField fx:id="tfSepWithin3" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="4">
-                                 <children>
-                                    <TextField fx:id="tfSepWithin4" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                                 </children>
-                              </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4">
                                  <children>
                                     <Label layoutX="14.0" layoutY="6.0" text="After-component separator" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="7.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="1">
-                                 <children>
-                                    <TextField fx:id="tfSepAfter1" layoutX="14.0" layoutY="3.0" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="2">
-                                 <children>
-                                    <TextField fx:id="tfSepAfter2" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="3">
-                                 <children>
-                                    <TextField fx:id="tfSepAfter3" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="26.0" prefWidth="185.0" GridPane.columnIndex="4" GridPane.rowIndex="4">
-                                 <children>
-                                    <TextField fx:id="tfSepAfter4" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
-                                 <children>
-                                    <Label layoutX="-4.0" layoutY="6.0" text="1." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="6.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-                                 <children>
-                                    <Label text="2." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="6.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
-                                 <children>
-                                    <Label text="3." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="6.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
-                                 <children>
-                                    <Label text="4." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="6.0" />
                                  </children>
                               </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5">
@@ -273,9 +186,59 @@
                                     <Label layoutX="19.0" layoutY="6.0" text="Test value (separate by semicolons)" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="7.0" />
                                  </children>
                               </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+                                 <children>
+                                    <Label layoutX="-4.0" layoutY="6.0" text="1." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="6.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                 <children>
+                                    <ComboBox fx:id="cbComponent1" layoutX="-26.0" layoutY="3.0" prefWidth="150.0" promptText="Author last names" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                 <children>
+                                    <TextField fx:id="tfSepBefore1" layoutX="-2.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                                 <children>
+                                    <TextField fx:id="tfSepWithin1" layoutX="14.0" layoutY="3.0" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="1">
+                                 <children>
+                                    <TextField fx:id="tfSepAfter1" layoutX="14.0" layoutY="3.0" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="1">
                                  <children>
                                     <TextField fx:id="tfTest1" layoutY="2.0" text="Ross, Don" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+                                 <children>
+                                    <Label text="2." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="6.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                 <children>
+                                    <ComboBox fx:id="cbComponent2" prefWidth="150.0" promptText="Editors" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                                 <children>
+                                    <TextField fx:id="tfSepBefore2" layoutX="-2.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
+                                 <children>
+                                    <TextField fx:id="tfSepWithin2" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="2">
+                                 <children>
+                                    <TextField fx:id="tfSepAfter2" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
                                  </children>
                               </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="2">
@@ -283,9 +246,59 @@
                                     <TextField fx:id="tfTest2" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
                                  </children>
                               </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
+                                 <children>
+                                    <Label text="3." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="6.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                 <children>
+                                    <ComboBox fx:id="cbComponent3" prefWidth="150.0" promptText="Translators" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                                 <children>
+                                    <TextField fx:id="tfSepBefore3" layoutX="-2.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="3">
+                                 <children>
+                                    <TextField fx:id="tfSepWithin3" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="3">
+                                 <children>
+                                    <TextField fx:id="tfSepAfter3" text=" " AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="3">
                                  <children>
                                     <TextField fx:id="tfTest3" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
+                                 <children>
+                                    <Label text="4." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="6.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                 <children>
+                                    <ComboBox fx:id="cbComponent4" prefWidth="150.0" promptText="Year" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="4">
+                                 <children>
+                                    <TextField fx:id="tfSepBefore4" layoutX="-2.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="4">
+                                 <children>
+                                    <TextField fx:id="tfSepWithin4" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="26.0" prefWidth="185.0" GridPane.columnIndex="4" GridPane.rowIndex="4">
+                                 <children>
+                                    <TextField fx:id="tfSepAfter4" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
                                  </children>
                               </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="4">
@@ -303,6 +316,11 @@
                                     <ComboBox fx:id="cbComponent5" prefWidth="150.0" promptText="Title, no subtitle" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
                                  </children>
                               </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="5">
+                                 <children>
+                                    <TextField fx:id="tfSepBefore5" layoutX="-2.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                                 </children>
+                              </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="5">
                                  <children>
                                     <TextField fx:id="tfSepWithin5" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
@@ -318,47 +336,17 @@
                                     <TextField fx:id="tfTest5" layoutX="87.0" layoutY="2.0" text="Rainforest Realism: A Dennettian Theory of Existence" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
                                  </children>
                               </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
-                                 <children>
-                                    <Label layoutX="14.0" layoutY="6.0" text="Before-component separator" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="7.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                                 <children>
-                                    <TextField fx:id="tfSepBefore1" layoutX="-2.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
-                                 <children>
-                                    <TextField fx:id="tfSepBefore3" layoutX="-2.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
-                                 <children>
-                                    <TextField fx:id="tfSepBefore2" layoutX="-2.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="4">
-                                 <children>
-                                    <TextField fx:id="tfSepBefore4" layoutX="-2.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="5">
-                                 <children>
-                                    <TextField fx:id="tfSepBefore5" layoutX="-2.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
-                                 </children>
-                              </AnchorPane>
                            </children>
                         </GridPane>
                         <CheckBox fx:id="chkTreatEdAsAuthor" layoutX="14.0" layoutY="152.0" mnemonicParsing="false" text="If there are no authors, treat editor(s) as author(s)" />
                         <CheckBox fx:id="chkAddInitial" layoutX="14.0" layoutY="174.0" mnemonicParsing="false" text="Add first initial if author last name is not unique (not yet implemented)" />
                         <CheckBox fx:id="chkYearLetter" layoutX="14.0" layoutY="196.0" mnemonicParsing="false" text="Add letter to year if there are multiple works for that author/year (not yet implemented)" />
                         <CheckBox fx:id="chkPosix" layoutX="14.0" layoutY="218.0" mnemonicParsing="false" text="Enforce POSIX compatibility (other than filename length)" />
+                        <CheckBox fx:id="chkLowercase" layoutX="14.0" layoutY="240.0" mnemonicParsing="false" text="Enforce lowercase (do this if file will be made available for download)" />
+                        <Label layoutX="14.0" layoutY="264.0" text="Maximum number of characters (usually 255):" />
                         <TextField fx:id="tfMaxChar" layoutX="260.0" layoutY="260.0" text="255" />
                         <Label fx:id="lblExample" layoutX="14.0" layoutY="288.0" text="Example:" />
                         <TextField fx:id="tfExample" layoutX="69.0" layoutY="284.0" prefHeight="25.0" prefWidth="957.0" AnchorPane.leftAnchor="69.0" AnchorPane.rightAnchor="0.0" />
-                        <CheckBox fx:id="chkLowercase" layoutX="14.0" layoutY="240.0" mnemonicParsing="false" text="Enforce lowercase (do this if file will be made available for download)" />
-                        <Label layoutX="14.0" layoutY="264.0" text="Maximum number of characters (usually 255):" />
                      </children>
                   </AnchorPane>
               </content>
@@ -388,6 +376,11 @@
                                     <Label layoutX="15.0" layoutY="-5.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 1." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
                                  </children>
                               </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+                                 <children>
+                                    <Button fx:id="btnAuthorize" layoutY="5.0" maxWidth="140.0" minWidth="140.0" mnemonicParsing="false" prefWidth="140.0" text="Link to Zotero account" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="5.0" />
+                                 </children>
+                              </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
                                  <children>
                                     <Label layoutY="-2.0" text="Click button to initiate process of linking to Zotero account." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
@@ -396,6 +389,15 @@
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
                                  <children>
                                     <Label fx:id="lblStep2" layoutX="8.0" layoutY="-2.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 2." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                 <children>
+                                    <Label fx:id="lblRedirect" layoutY="8.0" text="Go to verification web page" underline="true" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="8.0">
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
+                                    </Label>
                                  </children>
                               </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
@@ -408,6 +410,11 @@
                                     <Label fx:id="lblStep3" layoutX="-11.0" layoutY="1.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 3." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
                                  </children>
                               </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                 <children>
+                                    <TextField fx:id="tfVerificationCode" layoutX="-65.0" layoutY="4.0" prefHeight="23.0" prefWidth="248.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0" />
+                                 </children>
+                              </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="5">
                                  <children>
                                     <Label fx:id="lblStep3Instructions" layoutX="-21.0" layoutY="4.0" text="Enter verification code." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
@@ -418,33 +425,14 @@
                                     <Label fx:id="lblStep4" layoutX="-1.0" layoutY="-1.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 4." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
                                  </children>
                               </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="7">
-                                 <children>
-                                    <Label fx:id="lblStep4Instructions" layoutX="-260.0" layoutY="7.0" text="When you click this button, Hypernomicon uses the verification code you entered to finalize the linking process." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-                                 <children>
-                                    <Button fx:id="btnAuthorize" layoutY="5.0" maxWidth="140.0" minWidth="140.0" mnemonicParsing="false" prefWidth="140.0" text="Link to Zotero account" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="5.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                 <children>
-                                    <Label fx:id="lblRedirect" layoutY="8.0" text="Go to verification web page" underline="true" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="8.0">
-                                       <cursor>
-                                          <Cursor fx:constant="HAND" />
-                                       </cursor>
-                                    </Label>
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
-                                 <children>
-                                    <TextField fx:id="tfVerificationCode" layoutX="-65.0" layoutY="4.0" prefHeight="23.0" prefWidth="248.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0" />
-                                 </children>
-                              </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                                  <children>
                                     <Button fx:id="btnVerify" layoutY="5.0" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" prefWidth="60.0" text="Verify" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="5.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="7">
+                                 <children>
+                                    <Label fx:id="lblStep4Instructions" layoutX="-260.0" layoutY="7.0" text="When you click this button, Hypernomicon uses the verification code you entered to finalize the linking process." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
                                  </children>
                               </AnchorPane>
                            </children>

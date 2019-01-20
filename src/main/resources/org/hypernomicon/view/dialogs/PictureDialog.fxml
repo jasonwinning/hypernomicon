@@ -31,7 +31,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="421.0" prefWidth="490.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.PictureDialogController">
+<AnchorPane prefHeight="421.0" prefWidth="490.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.PictureDialogController">
    <children>
       <AnchorPane fx:id="apPicture" layoutX="5.0" layoutY="30.0" prefHeight="239.0" prefWidth="480.0" AnchorPane.bottomAnchor="152.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="30.0">
          <children>
@@ -69,66 +69,10 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <RadioButton fx:id="rbCurrent" mnemonicParsing="false" text="Current file:" GridPane.rowIndex="1">
+            <RadioButton fx:id="rbNone" mnemonicParsing="false" text="No picture">
                <toggleGroup>
                   <ToggleGroup fx:id="tgPicture" />
-               </toggleGroup>
-            </RadioButton>
-            <RadioButton fx:id="rbFile" mnemonicParsing="false" text="Local file:" toggleGroup="$tgPicture" GridPane.rowIndex="2" />
-            <RadioButton fx:id="rbWeb" mnemonicParsing="false" text="Web address:" toggleGroup="$tgPicture" GridPane.rowIndex="3" />
-            <TextField fx:id="tfFile" prefHeight="22.0" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2" GridPane.valignment="TOP">
-               <GridPane.margin>
-                  <Insets />
-               </GridPane.margin>
-            </TextField>
-            <AnchorPane GridPane.columnIndex="4" GridPane.rowIndex="2">
-               <children>
-                  <Button fx:id="btnBrowse" mnemonicParsing="false" prefHeight="22.0" text="Browse" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="4" GridPane.rowIndex="1" />
-               </children>
-            </AnchorPane>
-            <TextField fx:id="tfWeb" prefHeight="22.0" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="3" GridPane.valignment="TOP" />
-            <TextField fx:id="tfName" prefHeight="22.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="4" GridPane.valignment="TOP" />
-            <Label fx:id="lblChangeName" text="Change file name:" underline="true" GridPane.rowIndex="4">
-               <cursor>
-                  <Cursor fx:constant="HAND" />
-               </cursor></Label>
-            <AnchorPane GridPane.rowIndex="5">
-               <children>
-                  <Button fx:id="btnRefresh" mnemonicParsing="false" prefHeight="22.0" text="Refresh Selected Image" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.rowIndex="4" />
-               </children>
-            </AnchorPane>
-            <AnchorPane GridPane.columnIndex="4" GridPane.rowIndex="5">
-               <children>
-                  <Button fx:id="btnCancel" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="22.0" text="Cancel" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="4" GridPane.rowIndex="4" />
-               </children>
-            </AnchorPane>
-            <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="5">
-               <children>
-                  <Button fx:id="btnShow" mnemonicParsing="false" prefHeight="22.0" text="Show in Folder" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-               </children>
-            </AnchorPane>
-            <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="5">
-               <children>
-                  <Button fx:id="btnOK" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="22.0" prefWidth="55.0" text="Save" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="3" GridPane.rowIndex="4" />
-               </children>
-            </AnchorPane>
-            <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="5">
-               <children>
-                  <Button fx:id="btnEdit" mnemonicParsing="false" prefHeight="22.0" text="Edit Image" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="2" GridPane.rowIndex="4" />
-               </children>
-            </AnchorPane>
-            <TextField fx:id="tfCurrent" editable="false" prefHeight="22.0" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="1" GridPane.valignment="TOP" />
-            <AnchorPane GridPane.columnIndex="4" GridPane.rowIndex="3">
-               <children>
-                  <Button fx:id="btnGoogle" layoutX="8.0" layoutY="1.0" mnemonicParsing="false" prefHeight="22.0" text="Google" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane GridPane.columnIndex="4" GridPane.rowIndex="1">
-               <children>
-                  <Button fx:id="btnDelete" layoutX="8.0" mnemonicParsing="false" prefHeight="22.0" text="Delete" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-               </children>
-            </AnchorPane>
-            <RadioButton fx:id="rbNone" mnemonicParsing="false" text="No picture" toggleGroup="$tgPicture" />
+               </toggleGroup></RadioButton>
             <AnchorPane GridPane.columnIndex="1" GridPane.columnSpan="3">
                <children>
                   <ProgressBar fx:id="progressBar" visible="false" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
@@ -145,6 +89,61 @@
                         </ImageView>
                      </graphic>
                   </Button>
+               </children>
+            </AnchorPane>
+            <RadioButton fx:id="rbCurrent" mnemonicParsing="false" text="Current file:" toggleGroup="$tgPicture" GridPane.rowIndex="1" />
+            <TextField fx:id="tfCurrent" editable="false" prefHeight="22.0" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="1" GridPane.valignment="TOP" />
+            <AnchorPane GridPane.columnIndex="4" GridPane.rowIndex="1">
+               <children>
+                  <Button fx:id="btnDelete" layoutX="8.0" mnemonicParsing="false" prefHeight="22.0" text="Delete" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+               </children>
+            </AnchorPane>
+            <RadioButton fx:id="rbFile" mnemonicParsing="false" text="Local file:" toggleGroup="$tgPicture" GridPane.rowIndex="2" />
+            <TextField fx:id="tfFile" prefHeight="22.0" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2" GridPane.valignment="TOP">
+               <GridPane.margin>
+                  <Insets />
+               </GridPane.margin>
+            </TextField>
+            <AnchorPane GridPane.columnIndex="4" GridPane.rowIndex="2">
+               <children>
+                  <Button fx:id="btnBrowse" mnemonicParsing="false" prefHeight="22.0" text="Browse" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="4" GridPane.rowIndex="1" />
+               </children>
+            </AnchorPane>
+            <RadioButton fx:id="rbWeb" mnemonicParsing="false" text="Web address:" toggleGroup="$tgPicture" GridPane.rowIndex="3" />
+            <TextField fx:id="tfWeb" prefHeight="22.0" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="3" GridPane.valignment="TOP" />
+            <AnchorPane GridPane.columnIndex="4" GridPane.rowIndex="3">
+               <children>
+                  <Button fx:id="btnGoogle" layoutX="8.0" layoutY="1.0" mnemonicParsing="false" prefHeight="22.0" text="Google" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+               </children>
+            </AnchorPane>
+            <Label fx:id="lblChangeName" text="Change file name:" underline="true" GridPane.rowIndex="4">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor></Label>
+            <TextField fx:id="tfName" prefHeight="22.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="4" GridPane.valignment="TOP" />
+            <AnchorPane GridPane.rowIndex="5">
+               <children>
+                  <Button fx:id="btnRefresh" mnemonicParsing="false" prefHeight="22.0" text="Refresh Selected Image" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.rowIndex="4" />
+               </children>
+            </AnchorPane>
+            <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="5">
+               <children>
+                  <Button fx:id="btnShow" mnemonicParsing="false" prefHeight="22.0" text="Show in Folder" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+               </children>
+            </AnchorPane>
+            <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="5">
+               <children>
+                  <Button fx:id="btnEdit" mnemonicParsing="false" prefHeight="22.0" text="Edit Image" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+               </children>
+            </AnchorPane>
+            <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="5">
+               <children>
+                  <Button fx:id="btnOK" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="22.0" prefWidth="55.0" text="Save" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="3" GridPane.rowIndex="4" />
+               </children>
+            </AnchorPane>
+            <AnchorPane GridPane.columnIndex="4" GridPane.rowIndex="5">
+               <children>
+                  <Button fx:id="btnCancel" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="22.0" text="Cancel" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="4" GridPane.rowIndex="4" />
                </children>
             </AnchorPane>
          </children>

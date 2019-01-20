@@ -32,7 +32,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="775.0" prefWidth="1103.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.NodeTabController">
+<AnchorPane prefHeight="775.0" prefWidth="1103.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.NodeTabController">
    <children>
       <SplitPane fx:id="spMain" dividerPositions="0.2910737386804657, 0.7089262613195343" layoutX="472.0" layoutY="270.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
@@ -54,31 +54,6 @@
                               <Insets right="4.0" top="4.0" />
                            </GridPane.margin>
                         </Label>
-                        <Label fx:id="lblParentCaption" text="Parent Records:" GridPane.rowIndex="1">
-                           <GridPane.margin>
-                              <Insets right="4.0" top="4.0" />
-                           </GridPane.margin>
-                        </Label>
-                        <TableView fx:id="tvParents" editable="true" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                          <columns>
-                            <TableColumn maxWidth="48.0" minWidth="48.0" prefWidth="48.0" />
-                            <TableColumn maxWidth="48.0" minWidth="48.0" prefWidth="48.0" />
-                              <TableColumn prefWidth="149.0" text="Type" />
-                              <TableColumn prefWidth="524.0" text="Name" />
-                          </columns>
-                        </TableView>
-                        <Button id="noScale" fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" GridPane.rowIndex="1">
-                           <graphic>
-                              <ImageView fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@../../resources/images/treeview.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                           <GridPane.margin>
-                              <Insets right="20.0" top="30.0" />
-                           </GridPane.margin>
-                        </Button>
                         <GridPane GridPane.columnIndex="1">
                           <columnConstraints>
                             <ColumnConstraints hgrow="SOMETIMES" percentWidth="70.0" />
@@ -101,6 +76,31 @@
                               </AnchorPane>
                            </children>
                         </GridPane>
+                        <Label fx:id="lblParentCaption" text="Parent Records:" GridPane.rowIndex="1">
+                           <GridPane.margin>
+                              <Insets right="4.0" top="4.0" />
+                           </GridPane.margin>
+                        </Label>
+                        <Button id="noScale" fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" GridPane.rowIndex="1">
+                           <graphic>
+                              <ImageView fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../resources/images/treeview.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                           <GridPane.margin>
+                              <Insets right="20.0" top="30.0" />
+                           </GridPane.margin>
+                        </Button>
+                        <TableView fx:id="tvParents" editable="true" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                          <columns>
+                            <TableColumn maxWidth="48.0" minWidth="48.0" prefWidth="48.0" />
+                            <TableColumn maxWidth="48.0" minWidth="48.0" prefWidth="48.0" />
+                              <TableColumn prefWidth="149.0" text="Type" />
+                              <TableColumn prefWidth="524.0" text="Name" />
+                          </columns>
+                        </TableView>
                         <Label fx:id="lblArguesThat" text="Argues that:" visible="false" GridPane.rowIndex="2">
                            <GridPane.margin>
                               <Insets right="4.0" top="4.0" />

@@ -25,7 +25,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane maxHeight="99.0" minHeight="99.0" prefHeight="99.0" prefWidth="567.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.NewQueryFavDialogController">
+<AnchorPane maxHeight="99.0" minHeight="99.0" prefHeight="99.0" prefWidth="567.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.NewQueryFavDialogController">
    <children>
       <GridPane layoutX="60.0" layoutY="19.0" prefHeight="98.0" prefWidth="567.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columnConstraints>
@@ -49,14 +49,14 @@
                   <CheckBox fx:id="chkAutoExec" layoutX="14.0" layoutY="9.0" mnemonicParsing="false" text="Query should execute immediately when invoked" AnchorPane.leftAnchor="6.0" AnchorPane.rightAnchor="6.0" />
                </children>
             </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-               <children>
-                  <Button fx:id="btnCancel" cancelButton="true" layoutX="23.0" layoutY="9.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="70.0" text="Cancel" AnchorPane.leftAnchor="4.0" />
-               </children>
-            </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
                <children>
                   <Button fx:id="btnOk" defaultButton="true" layoutX="213.0" layoutY="9.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="70.0" text="OK" AnchorPane.rightAnchor="4.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+               <children>
+                  <Button fx:id="btnCancel" cancelButton="true" layoutX="23.0" layoutY="9.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="70.0" text="Cancel" AnchorPane.leftAnchor="4.0" />
                </children>
             </AnchorPane>
          </children>

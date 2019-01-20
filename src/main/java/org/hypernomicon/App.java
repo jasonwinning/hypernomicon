@@ -152,8 +152,7 @@ public final class App extends Application
       List<String> args = getParameters().getUnnamed();
       out.println(args.size());
       args.forEach(out::println);
-      String line;
-      do { line = in.readLine(); } while (line == null);
+      for (String line = null; line == null; line = in.readLine());
       Platform.exit();
       return;
     }

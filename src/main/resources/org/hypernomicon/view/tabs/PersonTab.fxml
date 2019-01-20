@@ -35,7 +35,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="881.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.PersonTabController">
+<AnchorPane prefHeight="881.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.PersonTabController">
    <children>
       <SplitPane fx:id="spVert" dividerPositions="0.6166, 0.7998" layoutX="120.0" layoutY="96.0" orientation="VERTICAL" prefHeight="412.0" prefWidth="419.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
@@ -56,6 +56,15 @@
                                           <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                                        </rowConstraints>
                                        <children>
+                                          <ImageView fx:id="ivPerson" fitHeight="250.0" fitWidth="203.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="19.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="23.0" AnchorPane.topAnchor="0.0" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                                             <viewport>
+                                                <Rectangle2D />
+                                             </viewport>
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor>
+                                          </ImageView>
+                                          <Label fx:id="lblPicture" mouseTransparent="true" text="Click here to add picture." />
                                           <GridPane prefHeight="192.0" prefWidth="336.0" GridPane.columnIndex="1">
                                             <columnConstraints>
                                               <ColumnConstraints hgrow="NEVER" maxWidth="60.0" minWidth="60.0" prefWidth="60.0" />
@@ -76,25 +85,40 @@
                                              <children>
                                                 <Label text="Last:">
                                                 </Label>
-                                                <Label text="First:" GridPane.rowIndex="1">
-                                                </Label>
-                                                <Label text="Rank:" GridPane.rowIndex="2">
-                                                </Label>
-                                                <Label text="Status:" GridPane.rowIndex="3">
-                                                </Label>
-                                                <Label text="Field:" GridPane.rowIndex="4">
-                                                </Label>
-                                                <Label text="Specialty:" GridPane.rowIndex="5">
-                                                </Label>
 
                                                       <TextField fx:id="tfLast" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
+                                                <Label text="First:" GridPane.rowIndex="1">
+                                                </Label>
                                                 <TextField fx:id="tfFirst" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" />
+                                                <Label text="Rank:" GridPane.rowIndex="2">
+                                                </Label>
                                                 <ComboBox fx:id="cbRank" maxWidth="1.7976931348623157E308" prefHeight="22.0" prefWidth="209.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" />
+                                                <Label text="Status:" GridPane.rowIndex="3">
+                                                </Label>
                                                 <ComboBox fx:id="cbStatus" maxWidth="1.7976931348623157E308" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                                <Label text="Field:" GridPane.rowIndex="4">
+                                                </Label>
                                                 <ComboBox fx:id="cbField" maxWidth="1.7976931348623157E308" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                                <Label text="Specialty:" GridPane.rowIndex="5">
+                                                </Label>
                                                 <ComboBox fx:id="cbSubfield" maxWidth="1.7976931348623157E308" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                                <Label fx:id="lblPersonLink" text="Link:" underline="true" GridPane.rowIndex="6">
+                                                   <cursor>
+                                                      <Cursor fx:constant="HAND" />
+                                                   </cursor>
+                                                </Label>
                                                 <TextField fx:id="tfPersonLink" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                                <Label fx:id="lblSearchKey" text="Search Key:" underline="true" GridPane.rowIndex="7">
+                                                   <cursor>
+                                                      <Cursor fx:constant="HAND" />
+                                                   </cursor>
+                                                </Label>
                                                 <TextField fx:id="tfSearchKey" prefHeight="22.0" prefWidth="319.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                                                <Label fx:id="lblORCID" text="ORCID:" underline="true" GridPane.rowIndex="8">
+                                                   <cursor>
+                                                      <Cursor fx:constant="HAND" />
+                                                   </cursor>
+                                                </Label>
                                                 <TextField fx:id="tfORCID" GridPane.columnIndex="1" GridPane.rowIndex="8" />
                                                 <GridPane GridPane.columnSpan="2" GridPane.rowIndex="9">
                                                   <columnConstraints>
@@ -123,36 +147,12 @@
                                                       </AnchorPane>
                                                    </children>
                                                 </GridPane>
-                                                <Label fx:id="lblSearchKey" text="Search Key:" underline="true" GridPane.rowIndex="7">
-                                                   <cursor>
-                                                      <Cursor fx:constant="HAND" />
-                                                   </cursor>
-                                                </Label>
-                                                <Label fx:id="lblPersonLink" text="Link:" underline="true" GridPane.rowIndex="6">
-                                                   <cursor>
-                                                      <Cursor fx:constant="HAND" />
-                                                   </cursor>
-                                                </Label>
-                                                <Label fx:id="lblORCID" text="ORCID:" underline="true" GridPane.rowIndex="8">
-                                                   <cursor>
-                                                      <Cursor fx:constant="HAND" />
-                                                   </cursor>
-                                                </Label>
 
                                                    </children>
                                              <padding>
                                                 <Insets left="3.0" />
                                              </padding>
                                           </GridPane>
-                                          <ImageView fx:id="ivPerson" fitHeight="250.0" fitWidth="203.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="19.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="23.0" AnchorPane.topAnchor="0.0" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
-                                             <viewport>
-                                                <Rectangle2D />
-                                             </viewport>
-                                             <cursor>
-                                                <Cursor fx:constant="HAND" />
-                                             </cursor>
-                                          </ImageView>
-                                          <Label fx:id="lblPicture" mouseTransparent="true" text="Click here to add picture." />
                                        </children>
                                     </GridPane>
                                  </top>

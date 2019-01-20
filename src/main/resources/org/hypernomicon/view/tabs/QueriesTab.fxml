@@ -27,8 +27,23 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane prefHeight="677.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.QueriesTabController">
+<AnchorPane prefHeight="677.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.QueriesTabController">
    <children>
+      <Label layoutX="6.0" layoutY="6.0" text="Show:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="6.0" />
+      <CheckBox fx:id="chkShowFields" layoutX="44.0" layoutY="6.0" mnemonicParsing="false" selected="true" text="Fields" AnchorPane.leftAnchor="44.0" AnchorPane.topAnchor="6.0" />
+      <CheckBox fx:id="chkShowDesc" layoutX="107.0" layoutY="6.0" mnemonicParsing="false" text="Description" AnchorPane.leftAnchor="107.0" AnchorPane.topAnchor="6.0" />
+      <Button fx:id="btnToggleFavorite" layoutX="200.0" layoutY="2.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="146.0" text="Remove from Favorites" AnchorPane.leftAnchor="200.0" AnchorPane.topAnchor="2.0" />
+      <Label layoutX="356.0" layoutY="6.0" text="Name:" AnchorPane.leftAnchor="356.0" AnchorPane.topAnchor="6.0" />
+      <TextField fx:id="tfName" layoutX="394.0" layoutY="2.0" prefHeight="25.0" prefWidth="487.0" AnchorPane.leftAnchor="394.0" AnchorPane.rightAnchor="232.0" />
+      <Button fx:id="btnClear" layoutX="889.0" layoutY="2.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="80.0" text="Reset Fields" AnchorPane.rightAnchor="149.0" />
+      <Button fx:id="btnExecute" layoutX="966.0" layoutY="2.0" maxHeight="24.0" minHeight="24.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="80.0" style="-fx-font-weight: bold;" text="Execute" AnchorPane.rightAnchor="67.0">
+         <graphic>
+            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../resources/images/glasses-db.png" />
+               </image>
+            </ImageView>
+         </graphic></Button>
       <TabPane fx:id="tabPane" layoutY="28.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="28.0">
          <tabs>
             <Tab fx:id="tabNew" closable="false" text="+">
@@ -42,20 +57,5 @@
             </Tab>
          </tabs>
       </TabPane>
-      <Button fx:id="btnToggleFavorite" layoutX="200.0" layoutY="2.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="146.0" text="Remove from Favorites" AnchorPane.leftAnchor="200.0" AnchorPane.topAnchor="2.0" />
-      <Label layoutX="356.0" layoutY="6.0" text="Name:" AnchorPane.leftAnchor="356.0" AnchorPane.topAnchor="6.0" />
-      <TextField fx:id="tfName" layoutX="394.0" layoutY="2.0" prefHeight="25.0" prefWidth="487.0" AnchorPane.leftAnchor="394.0" AnchorPane.rightAnchor="232.0" />
-      <Button fx:id="btnExecute" layoutX="966.0" layoutY="2.0" maxHeight="24.0" minHeight="24.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="80.0" style="-fx-font-weight: bold;" text="Execute" AnchorPane.rightAnchor="67.0">
-         <graphic>
-            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@../../resources/images/glasses-db.png" />
-               </image>
-            </ImageView>
-         </graphic></Button>
-      <Button fx:id="btnClear" layoutX="889.0" layoutY="2.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="80.0" text="Reset Fields" AnchorPane.rightAnchor="149.0" />
-      <CheckBox fx:id="chkShowFields" layoutX="44.0" layoutY="6.0" mnemonicParsing="false" selected="true" text="Fields" AnchorPane.leftAnchor="44.0" AnchorPane.topAnchor="6.0" />
-      <CheckBox fx:id="chkShowDesc" layoutX="107.0" layoutY="6.0" mnemonicParsing="false" text="Description" AnchorPane.leftAnchor="107.0" AnchorPane.topAnchor="6.0" />
-      <Label layoutX="6.0" layoutY="6.0" text="Show:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="6.0" />
    </children>
 </AnchorPane>

@@ -25,7 +25,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="500.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.InvestigationsDialogController">
+<AnchorPane prefHeight="500.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.InvestigationsDialogController">
    <children>
       <GridPane layoutX="150.0" layoutY="205.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columnConstraints>
@@ -43,6 +43,12 @@
                   <ListView fx:id="listView" layoutX="150.0" layoutY="144.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                </children>
             </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
+               <children>
+                  <CheckBox fx:id="chkNew" layoutY="5.0" mnemonicParsing="false" text="Add new:" AnchorPane.leftAnchor="4.0" />
+                  <TextField fx:id="tfNew" layoutX="76.0" layoutY="2.0" prefHeight="22.0" prefWidth="420.0" AnchorPane.leftAnchor="76.0" AnchorPane.rightAnchor="4.0" />
+               </children>
+            </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
                <children>
                   <Button fx:id="btnOk" defaultButton="true" layoutX="175.0" layoutY="2.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="50.0" text="OK" AnchorPane.bottomAnchor="1.0" AnchorPane.rightAnchor="2.0" />
@@ -51,12 +57,6 @@
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                <children>
                   <Button fx:id="btnCancel" cancelButton="true" layoutX="15.0" layoutY="2.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="50.0" text="Cancel" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="2.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
-               <children>
-                  <TextField fx:id="tfNew" layoutX="76.0" layoutY="2.0" prefHeight="22.0" prefWidth="420.0" AnchorPane.leftAnchor="76.0" AnchorPane.rightAnchor="4.0" />
-                  <CheckBox fx:id="chkNew" layoutY="5.0" mnemonicParsing="false" text="Add new:" AnchorPane.leftAnchor="4.0" />
                </children>
             </AnchorPane>
          </children>

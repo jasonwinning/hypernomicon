@@ -23,8 +23,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-
-<AnchorPane prefHeight="418.0" prefWidth="599.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.FavOrderDialogController">
+<AnchorPane prefHeight="418.0" prefWidth="599.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.FavOrderDialogController">
    <children>
       <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <columnConstraints>
@@ -44,10 +43,10 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                <children>
+                  <ListView fx:id="lvQuery" AnchorPane.bottomAnchor="28.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                   <Button fx:id="btnQueryUp" mnemonicParsing="false" text="Move Up" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="6.0" />
                   <Button fx:id="btnQueryDown" mnemonicParsing="false" text="Move Down" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="73.0" />
                   <Button fx:id="btnOk" defaultButton="true" layoutX="236.0" layoutY="379.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="60.0" text="OK" AnchorPane.bottomAnchor="3.0" AnchorPane.rightAnchor="6.0" />
-                  <ListView fx:id="lvQuery" AnchorPane.bottomAnchor="28.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                </children>
             </AnchorPane>
          </children>

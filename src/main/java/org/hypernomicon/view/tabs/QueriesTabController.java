@@ -41,6 +41,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -1415,7 +1416,9 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
     AnchorPane.setTopAnchor(fileBtn, 2.0);
     AnchorPane.setRightAnchor(fileBtn, 0.0);
-    AnchorPane.class.cast(getTab().getContent()).getChildren().add(fileBtn);
+
+    ObservableList<Node> children = AnchorPane.class.cast(getTab().getContent()).getChildren();
+    children.add(children.indexOf(tabPane), fileBtn);
   }
 
 //---------------------------------------------------------------------------

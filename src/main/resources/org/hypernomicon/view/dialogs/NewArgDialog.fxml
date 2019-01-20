@@ -31,7 +31,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane minHeight="200.0" minWidth="300.0" prefHeight="668.0" prefWidth="1126.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.NewArgDialogController">
+<AnchorPane minHeight="200.0" minWidth="300.0" prefHeight="668.0" prefWidth="1126.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.NewArgDialogController">
    <children>
       <Label layoutX="33.0" layoutY="23.0" text="Position:" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="12.0">
       </Label>
@@ -41,44 +41,8 @@
       </Label>
       <Label layoutX="12.0" layoutY="151.0" text="Person:" AnchorPane.bottomAnchor="141.0" AnchorPane.leftAnchor="12.0">
       </Label>
-      <WebView fx:id="view" layoutX="111.0" layoutY="34.0" prefHeight="217.0" prefWidth="1003.0" AnchorPane.bottomAnchor="417.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="34.0" />
-      <TitledPane animated="false" collapsible="false" layoutX="24.0" layoutY="176.0" prefHeight="101.0" prefWidth="693.0" text="Work" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0">
-        <content>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="106.0" prefWidth="691.0">
-               <children>
-                  <RadioButton fx:id="rbNew" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="New" AnchorPane.leftAnchor="6.0">
-                     <toggleGroup>
-                        <ToggleGroup fx:id="radioGroup" />
-                     </toggleGroup></RadioButton>
-                  <RadioButton fx:id="rbExisting" layoutX="21.8" layoutY="46.0" mnemonicParsing="false" text="Existing" toggleGroup="$radioGroup" AnchorPane.leftAnchor="6.0" />
-                  <TextField fx:id="tfTitle" layoutX="149.4" layoutY="11.0" prefHeight="22.0" prefWidth="588.0" AnchorPane.leftAnchor="71.0" AnchorPane.rightAnchor="8.0" />
-                  <ComboBox fx:id="cbWork" layoutX="79.0" layoutY="42.0" prefHeight="22.0" prefWidth="594.0" AnchorPane.leftAnchor="71.0" AnchorPane.rightAnchor="8.0" />
-               </children>
-            </AnchorPane>
-        </content>
-      </TitledPane>
-      <GridPane layoutX="25.0" layoutY="286.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-        <columnConstraints>
-          <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-        </rowConstraints>
-         <children>
-            <Button fx:id="btnOK" defaultButton="true" maxWidth="50.0" minWidth="50.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="50.0" text="OK">
-               <GridPane.margin>
-                  <Insets right="4.0" />
-               </GridPane.margin>
-            </Button>
-            <Button fx:id="btnCancel" cancelButton="true" maxWidth="50.0" minWidth="50.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="50.0" text="Cancel" GridPane.columnIndex="1">
-               <GridPane.margin>
-                  <Insets left="4.0" />
-               </GridPane.margin>
-            </Button>
-         </children>
-      </GridPane>
       <TextField fx:id="tfPosition" editable="false" layoutX="125.0" layoutY="9.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="9.0" />
+      <WebView fx:id="view" layoutX="111.0" layoutY="34.0" prefHeight="217.0" prefWidth="1003.0" AnchorPane.bottomAnchor="417.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="34.0" />
       <GridPane layoutX="111.0" layoutY="248.0" prefHeight="281.0" prefWidth="1003.0" AnchorPane.bottomAnchor="136.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0">
         <columnConstraints>
           <ColumnConstraints hgrow="NEVER" maxWidth="21.0" minWidth="21.0" prefWidth="21.0" />
@@ -176,6 +140,11 @@
                   <RadioButton fx:id="rbArgName8" layoutX="-29.0" layoutY="7.0" mnemonicParsing="false" toggleGroup="$argNameGroup" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="0.0" />
                </children>
             </AnchorPane>
+            <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="7">
+               <children>
+                  <TextField fx:id="tfArgName8" prefHeight="25.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+               </children>
+            </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="8">
                <children>
                   <CheckBox fx:id="cbIncludeAuth" layoutY="10.0" mnemonicParsing="false" text="Include author's name in name of argument" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" />
@@ -208,11 +177,42 @@
                   </GridPane>
                </children>
             </AnchorPane>
-            <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="7">
+         </children>
+      </GridPane>
+      <TitledPane animated="false" collapsible="false" focusTraversable="false" layoutX="24.0" layoutY="176.0" prefHeight="101.0" prefWidth="693.0" text="Work" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0">
+        <content>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="106.0" prefWidth="691.0">
                <children>
-                  <TextField fx:id="tfArgName8" prefHeight="25.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                  <RadioButton fx:id="rbNew" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="New" AnchorPane.leftAnchor="6.0">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="radioGroup" />
+                     </toggleGroup></RadioButton>
+                  <TextField fx:id="tfTitle" layoutX="149.4" layoutY="11.0" prefHeight="22.0" prefWidth="588.0" AnchorPane.leftAnchor="71.0" AnchorPane.rightAnchor="8.0" />
+                  <RadioButton fx:id="rbExisting" layoutX="21.8" layoutY="46.0" mnemonicParsing="false" text="Existing" toggleGroup="$radioGroup" AnchorPane.leftAnchor="6.0" />
+                  <ComboBox fx:id="cbWork" layoutX="79.0" layoutY="42.0" prefHeight="22.0" prefWidth="594.0" AnchorPane.leftAnchor="71.0" AnchorPane.rightAnchor="8.0" />
                </children>
             </AnchorPane>
+        </content>
+      </TitledPane>
+      <GridPane layoutX="25.0" layoutY="286.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <columnConstraints>
+          <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <Button fx:id="btnOK" defaultButton="true" maxWidth="50.0" minWidth="50.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="50.0" text="OK">
+               <GridPane.margin>
+                  <Insets right="4.0" />
+               </GridPane.margin>
+            </Button>
+            <Button fx:id="btnCancel" cancelButton="true" maxWidth="50.0" minWidth="50.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="50.0" text="Cancel" GridPane.columnIndex="1">
+               <GridPane.margin>
+                  <Insets left="4.0" />
+               </GridPane.margin>
+            </Button>
          </children>
       </GridPane>
    </children>

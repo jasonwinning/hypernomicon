@@ -31,7 +31,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="646.0" prefWidth="1039.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.workMerge.MergeWorksDialogController">
+<AnchorPane prefHeight="646.0" prefWidth="1039.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.workMerge.MergeWorksDialogController">
    <children>
       <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" layoutX="333.0" layoutY="150.0" vbarPolicy="ALWAYS" AnchorPane.bottomAnchor="32.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <content>
@@ -224,66 +224,6 @@
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
                                 </rowConstraints>
                                  <children>
-                                    <AnchorPane GridPane.rowIndex="1">
-                                       <children>
-                                          <TableView fx:id="tvAuthors1" editable="true" layoutX="22.0" layoutY="-12.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                            <columns>
-                                              <TableColumn prefWidth="75.0" text="Name" />
-                                              <TableColumn maxWidth="39.0" minWidth="39.0" prefWidth="39.0" text="Rec." />
-                                                <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Ed." />
-                                                <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Tr." />
-                                            </columns>
-                                             <columnResizePolicy>
-                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                             </columnResizePolicy>
-                                          </TableView>
-                                       </children>
-                                    </AnchorPane>
-                                    <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                       <children>
-                                          <TableView fx:id="tvAuthors2" editable="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                             <columns>
-                                                <TableColumn prefWidth="75.0" text="Name" />
-                                                <TableColumn maxWidth="39.0" minWidth="39.0" prefWidth="39.0" text="Rec." />
-                                                <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Ed." />
-                                                <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Tr." />
-                                             </columns>
-                                             <columnResizePolicy>
-                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                             </columnResizePolicy>
-                                          </TableView>
-                                       </children>
-                                    </AnchorPane>
-                                    <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="1">
-                                       <children>
-                                          <TableView fx:id="tvAuthors3" editable="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                             <columns>
-                                                <TableColumn prefWidth="75.0" text="Name" />
-                                                <TableColumn maxWidth="39.0" minWidth="39.0" prefWidth="39.0" text="Rec." />
-                                                <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Ed." />
-                                                <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Tr." />
-                                             </columns>
-                                             <columnResizePolicy>
-                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                             </columnResizePolicy>
-                                          </TableView>
-                                       </children>
-                                    </AnchorPane>
-                                    <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="1">
-                                       <children>
-                                          <TableView fx:id="tvAuthors4" editable="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                             <columns>
-                                                <TableColumn prefWidth="75.0" text="Name" />
-                                                <TableColumn maxWidth="39.0" minWidth="39.0" prefWidth="39.0" text="Rec." />
-                                                <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Ed." />
-                                                <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Tr." />
-                                             </columns>
-                                             <columnResizePolicy>
-                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                             </columnResizePolicy>
-                                          </TableView>
-                                       </children>
-                                    </AnchorPane>
                                     <AnchorPane>
                                        <children>
                                           <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -365,6 +305,66 @@
                                           </AnchorPane>
                                        </children>
                                     </GridPane>
+                                    <AnchorPane GridPane.rowIndex="1">
+                                       <children>
+                                          <TableView fx:id="tvAuthors1" editable="true" layoutX="22.0" layoutY="-12.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                            <columns>
+                                              <TableColumn prefWidth="75.0" text="Name" />
+                                              <TableColumn maxWidth="39.0" minWidth="39.0" prefWidth="39.0" text="Rec." />
+                                                <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Ed." />
+                                                <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Tr." />
+                                            </columns>
+                                             <columnResizePolicy>
+                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                             </columnResizePolicy>
+                                          </TableView>
+                                       </children>
+                                    </AnchorPane>
+                                    <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                       <children>
+                                          <TableView fx:id="tvAuthors2" editable="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                             <columns>
+                                                <TableColumn prefWidth="75.0" text="Name" />
+                                                <TableColumn maxWidth="39.0" minWidth="39.0" prefWidth="39.0" text="Rec." />
+                                                <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Ed." />
+                                                <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Tr." />
+                                             </columns>
+                                             <columnResizePolicy>
+                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                             </columnResizePolicy>
+                                          </TableView>
+                                       </children>
+                                    </AnchorPane>
+                                    <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                       <children>
+                                          <TableView fx:id="tvAuthors3" editable="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                             <columns>
+                                                <TableColumn prefWidth="75.0" text="Name" />
+                                                <TableColumn maxWidth="39.0" minWidth="39.0" prefWidth="39.0" text="Rec." />
+                                                <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Ed." />
+                                                <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Tr." />
+                                             </columns>
+                                             <columnResizePolicy>
+                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                             </columnResizePolicy>
+                                          </TableView>
+                                       </children>
+                                    </AnchorPane>
+                                    <AnchorPane GridPane.columnIndex="3" GridPane.rowIndex="1">
+                                       <children>
+                                          <TableView fx:id="tvAuthors4" editable="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                             <columns>
+                                                <TableColumn prefWidth="75.0" text="Name" />
+                                                <TableColumn maxWidth="39.0" minWidth="39.0" prefWidth="39.0" text="Rec." />
+                                                <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Ed." />
+                                                <TableColumn maxWidth="31.0" minWidth="31.0" prefWidth="31.0" text="Tr." />
+                                             </columns>
+                                             <columnResizePolicy>
+                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                             </columnResizePolicy>
+                                          </TableView>
+                                       </children>
+                                    </AnchorPane>
                                  </children>
                               </GridPane>
                            </children>
@@ -377,8 +377,8 @@
                </children>
             </AnchorPane>
          </content>
-      </ScrollPane>
-      <Button cancelButton="true" layoutX="962.0" layoutY="474.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="4.0" />
+      </ScrollPane>      
       <Button defaultButton="true" layoutX="890.0" layoutY="474.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="60.0" text="OK" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="69.0" />
+      <Button cancelButton="true" layoutX="962.0" layoutY="474.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="4.0" />
    </children>
 </AnchorPane>

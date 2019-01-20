@@ -32,7 +32,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane prefHeight="809.0" prefWidth="1417.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.bib.BibManager">
+<AnchorPane prefHeight="809.0" prefWidth="1417.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.bib.BibManager">
    <children>
       <GridPane AnchorPane.bottomAnchor="32.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <columnConstraints>
@@ -43,35 +43,6 @@
             <RowConstraints vgrow="ALWAYS" />
          </rowConstraints>
          <children>
-            <SplitPane fx:id="spMain" dividerPositions="0.17597173144876324, 0.8056537102473498" prefHeight="160.0" prefWidth="200.0" GridPane.rowIndex="1">
-              <items>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-                     <children>
-                        <TreeView fx:id="treeView" layoutX="63.0" layoutY="284.0" prefHeight="758.0" prefWidth="277.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                     </children>
-                  </AnchorPane>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-                     <children>
-                        <TableView fx:id="tableView" layoutX="180.0" layoutY="202.0" prefHeight="200.0" prefWidth="200.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                          <columns>
-                            <TableColumn editable="false" prefWidth="75.0" text="ItemKey" />
-                              <TableColumn editable="false" prefWidth="75.0" text="Type" />
-                            <TableColumn editable="false" prefWidth="75.0" text="Authors" />
-                              <TableColumn editable="false" prefWidth="362.0" text="Title" />
-                              <TableColumn editable="false" minWidth="0.0" prefWidth="88.0" text="Year" />
-                              <TableColumn editable="false" prefWidth="150.0" text="Work Record ID" />
-                              <TableColumn editable="false" prefWidth="362.0" text="Published In" visible="false" />
-                          </columns>
-                        </TableView>
-                     </children>
-                  </AnchorPane>
-                  <AnchorPane>
-                     <children>
-                        <WebView fx:id="webView" layoutX="17.0" layoutY="229.0" prefHeight="-1.0" prefWidth="-1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                     </children>
-                  </AnchorPane>
-              </items>
-            </SplitPane>
             <ToolBar fx:id="toolBar" prefHeight="40.0" prefWidth="200.0">
               <items>
                   <Button fx:id="btnDelete" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
@@ -121,10 +92,39 @@
                   </Button>
               </items>
             </ToolBar>
+            <SplitPane fx:id="spMain" dividerPositions="0.17597173144876324, 0.8056537102473498" prefHeight="160.0" prefWidth="200.0" GridPane.rowIndex="1">
+              <items>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                     <children>
+                        <TreeView fx:id="treeView" layoutX="63.0" layoutY="284.0" prefHeight="758.0" prefWidth="277.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                     </children>
+                  </AnchorPane>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                     <children>
+                        <TableView fx:id="tableView" layoutX="180.0" layoutY="202.0" prefHeight="200.0" prefWidth="200.0" tableMenuButtonVisible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                          <columns>
+                            <TableColumn editable="false" prefWidth="75.0" text="ItemKey" />
+                              <TableColumn editable="false" prefWidth="75.0" text="Type" />
+                            <TableColumn editable="false" prefWidth="75.0" text="Authors" />
+                              <TableColumn editable="false" prefWidth="362.0" text="Title" />
+                              <TableColumn editable="false" minWidth="0.0" prefWidth="88.0" text="Year" />
+                              <TableColumn editable="false" prefWidth="150.0" text="Work Record ID" />
+                              <TableColumn editable="false" prefWidth="362.0" text="Published In" visible="false" />
+                          </columns>
+                        </TableView>
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane>
+                     <children>
+                        <WebView fx:id="webView" layoutX="17.0" layoutY="229.0" prefHeight="-1.0" prefWidth="-1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                     </children>
+                  </AnchorPane>
+              </items>
+            </SplitPane>
          </children>
       </GridPane>
-      <Button fx:id="btnSelect" layoutX="1065.0" layoutY="781.0" mnemonicParsing="false" prefWidth="60.0" text="Select" AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="292.0" />
       <Label fx:id="lblSelect" alignment="CENTER_RIGHT" layoutX="2.0" layoutY="785.0" prefHeight="17.0" prefWidth="1056.0" text="Assigning to work record: Dennett 1991 Real Patterns" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="359.0" />
+      <Button fx:id="btnSelect" layoutX="1065.0" layoutY="781.0" mnemonicParsing="false" prefWidth="60.0" text="Select" AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="292.0" />
       <Button fx:id="btnCreateNew" layoutX="1129.0" layoutY="782.0" mnemonicParsing="false" prefWidth="85.0" text="Create New:" AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="203.0" />
       <ComboBox fx:id="cbNewType" layoutX="1260.0" layoutY="783.0" prefHeight="25.0" prefWidth="197.0" AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="2.0" />
    </children>

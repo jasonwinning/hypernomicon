@@ -16,13 +16,16 @@
    limitations under the License.
 -->
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import java.lang.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="376.0" prefWidth="609.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.LockedDialogController">
+<AnchorPane prefHeight="376.0" prefWidth="609.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.LockedDialogController">
    <children>
       <TextArea fx:id="taOutput" editable="false" layoutX="171.0" layoutY="41.0" prefHeight="322.0" prefWidth="609.0" AnchorPane.bottomAnchor="54.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
       <GridPane hgap="4.0" layoutX="179.0" layoutY="248.0" prefHeight="54.0" prefWidth="609.0" vgap="4.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
@@ -47,6 +50,7 @@
                   <Button fx:id="btnTryTerminate" layoutX="36.0" layoutY="5.0" mnemonicParsing="false" onAction="#btnTryTerminateClick" text="Try to save/terminate other instance" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                </children>
             </AnchorPane>
+            <Label fx:id="lblSeconds" text="Elapsed: 0 s" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <children>
                   <Button fx:id="btnStop" disable="true" layoutX="52.0" layoutY="4.0" mnemonicParsing="false" onAction="#btnStopClick" text="Stop trying" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
@@ -62,7 +66,6 @@
                   <Button fx:id="btnCancel" layoutX="52.0" layoutY="3.0" mnemonicParsing="false" onAction="#btnCancelClick" text="Cancel" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                </children>
             </AnchorPane>
-            <Label fx:id="lblSeconds" text="Elapsed: 0 s" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
          </children>
          <padding>
             <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />

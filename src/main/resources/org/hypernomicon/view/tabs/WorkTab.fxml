@@ -39,7 +39,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.WorkTabController">
+<GridPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.WorkTabController">
   <columnConstraints>
     <ColumnConstraints hgrow="NEVER" maxWidth="53.0" minWidth="53.0" prefWidth="53.0" />
       <ColumnConstraints hgrow="SOMETIMES" />
@@ -67,6 +67,26 @@
             </Button>
          </children>
       </AnchorPane>
+      <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+         <children>
+            <Label fx:id="lblTitle" layoutX="2.0" layoutY="9.0" text="Title:" underline="true" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor></Label>
+            <TextField fx:id="tfTitle" layoutX="39.0" layoutY="5.0" maxHeight="22.0" prefHeight="22.0" prefWidth="563.0" AnchorPane.leftAnchor="38.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+         </children>
+      </AnchorPane>
+      <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
+         <children>
+            <Label fx:id="lblSearchKey" layoutY="9.0" text="Search key:" underline="true" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="9.0">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor></Label>
+            <TextField fx:id="tfSearchKey" layoutX="66.0" layoutY="3.0" prefHeight="22.0" prefWidth="331.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="148.0" AnchorPane.topAnchor="5.0" />
+            <Button fx:id="btnWorldCat" maxWidth="90.0" minWidth="61.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="75.0" text="WorldCat" AnchorPane.rightAnchor="68.0" AnchorPane.topAnchor="5.0" />
+            <Button fx:id="btnScholar" maxWidth="66.0" minWidth="64.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="64.0" text="Scholar" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+         </children>
+      </AnchorPane>
       <AnchorPane fx:id="apLowerMid" GridPane.columnIndex="1" GridPane.rowIndex="1">
          <children>
             <Label layoutX="58.0" layoutY="7.0" text="Type:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0" />
@@ -75,6 +95,12 @@
             <TextField fx:id="tfYear" layoutX="205.0" layoutY="5.0" prefHeight="22.0" prefWidth="40.0" text="2222" AnchorPane.leftAnchor="205.0" AnchorPane.topAnchor="5.0" />
             <Button fx:id="btnLargerWork" layoutX="253.0" layoutY="4.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="83.0" text="Larger Work:" AnchorPane.topAnchor="5.0" />
             <ComboBox fx:id="cbLargerWork" layoutX="333.0" layoutY="5.0" prefHeight="22.0" prefWidth="320.0" AnchorPane.leftAnchor="339.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="apLowerRight" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+         <children>
+            <Button fx:id="btnOpenLink" mnemonicParsing="false" prefHeight="22.0" prefWidth="50.0" text="Link:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="5.0" />
+            <TextField fx:id="tfLink" layoutX="55.0" prefHeight="22.0" prefWidth="435.0" AnchorPane.leftAnchor="55.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
          </children>
       </AnchorPane>
       <SplitPane fx:id="spVert" dividerPositions="0.25338753387533874, 0.7642276422764228" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
@@ -160,24 +186,13 @@
                                       <content>
                                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                                           <children>
-                                            <TextField fx:id="tfDOI" layoutX="82.0" layoutY="3.0" prefHeight="25.0" prefWidth="165.0" AnchorPane.leftAnchor="124.0" AnchorPane.topAnchor="3.0" />
-                                                <TableView fx:id="tvISBN" editable="true" layoutX="682.0" layoutY="41.0" prefHeight="200.0" prefWidth="174.0" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0">
-                                                  <columns>
-                                                    <TableColumn prefWidth="75.0" text="ISBN" />
-                                                  </columns>
-                                                   <columnResizePolicy>
-                                                      <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                                   </columnResizePolicy>
-                                                </TableView>
-                                                <Button fx:id="btnUseDOI" layoutX="4.0" layoutY="84.0" mnemonicParsing="false" prefWidth="118.0" text="Use this DOI" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="84.0" />
-                                                <Button fx:id="btnUseISBN" layoutX="4.0" layoutY="111.0" mnemonicParsing="false" prefWidth="118.0" text="Use these ISBNs" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="111.0" />
-                                                <Button fx:id="btnMergeBib" layoutX="4.0" layoutY="138.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="118.0" text="Merge" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="138.0" />
                                                 <SplitMenuButton fx:id="btnDOI" alignment="CENTER" contentDisplay="CENTER" layoutX="-13.0" layoutY="3.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="118.0" text="DOI" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="3.0">
                                                   <items>
                                                     <MenuItem fx:id="mnuGoogle" mnemonicParsing="false" text="Search this DOI on Google" />
                                                     <MenuItem fx:id="mnuCrossref" mnemonicParsing="false" text="Retrieve bibliographic information from Crossref using this DOI" />
                                                   </items>
                                                 </SplitMenuButton>
+                                            <TextField fx:id="tfDOI" layoutX="82.0" layoutY="3.0" prefHeight="25.0" prefWidth="165.0" AnchorPane.leftAnchor="124.0" AnchorPane.topAnchor="3.0" />
                                                 <MenuButton fx:id="btnWebQuery" layoutX="4.0" layoutY="30.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="118.0" text="Web Query" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="30.0">
                                                   <items>
                                                     <MenuItem fx:id="mnuFindDOIonCrossref" mnemonicParsing="false" text="Find DOI and bibliographic information on Crossref" />
@@ -190,16 +205,9 @@
                                                     <MenuItem fx:id="mnuStoreMetadata" mnemonicParsing="false" text="Store this metadata into PDF" />
                                                   </items>
                                                 </MenuButton>
-                                                <Button fx:id="btnStop" layoutX="640.0" layoutY="30.0" mnemonicParsing="false" visible="false" AnchorPane.rightAnchor="181.0" AnchorPane.topAnchor="30.0">
-                                                   <graphic>
-                                                      <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                                                         <image>
-                                                            <Image url="@../../resources/images/cancel.png" />
-                                                         </image>
-                                                      </ImageView>
-                                                   </graphic>
-                                                </Button>
-                                                <ProgressBar fx:id="progressBar" layoutX="450.0" layoutY="33.0" prefWidth="200.0" visible="false" AnchorPane.rightAnchor="220.0" AnchorPane.topAnchor="33.0" />
+                                                <Button fx:id="btnUseDOI" layoutX="4.0" layoutY="84.0" mnemonicParsing="false" prefWidth="118.0" text="Use this DOI" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="84.0" />
+                                                <Button fx:id="btnUseISBN" layoutX="4.0" layoutY="111.0" mnemonicParsing="false" prefWidth="118.0" text="Use these ISBNs" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="111.0" />
+                                                <Button fx:id="btnMergeBib" layoutX="4.0" layoutY="138.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="118.0" text="Merge" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="138.0" />
                                                 <TabPane fx:id="tpBib" layoutX="220.0" layoutY="63.0" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="ALL_TABS" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="124.0" AnchorPane.rightAnchor="181.0" AnchorPane.topAnchor="30.0">
                                                   <tabs>
                                                     <Tab fx:id="tabMiscBib" closable="false" text="Misc. Info">
@@ -236,6 +244,24 @@
                                                       </Tab>
                                                   </tabs>
                                                 </TabPane>
+                                                <ProgressBar fx:id="progressBar" layoutX="450.0" layoutY="33.0" prefWidth="200.0" visible="false" AnchorPane.rightAnchor="220.0" AnchorPane.topAnchor="33.0" />
+                                                <Button fx:id="btnStop" layoutX="640.0" layoutY="30.0" mnemonicParsing="false" visible="false" AnchorPane.rightAnchor="181.0" AnchorPane.topAnchor="30.0">
+                                                   <graphic>
+                                                      <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                                         <image>
+                                                            <Image url="@../../resources/images/cancel.png" />
+                                                         </image>
+                                                      </ImageView>
+                                                   </graphic>
+                                                </Button>
+                                                <TableView fx:id="tvISBN" editable="true" layoutX="682.0" layoutY="41.0" prefHeight="200.0" prefWidth="174.0" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0">
+                                                  <columns>
+                                                    <TableColumn prefWidth="75.0" text="ISBN" />
+                                                  </columns>
+                                                   <columnResizePolicy>
+                                                      <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                                   </columnResizePolicy>
+                                                </TableView>
                                           </children>
                                         </AnchorPane>
                                       </content>
@@ -260,21 +286,21 @@
                                     </Tab>
                                  </tabs>
                               </TabPane>
-                              <Button fx:id="btnLaunch" mnemonicParsing="false" prefHeight="24.0" prefWidth="75.0" text="Launch" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0">
-                                 <graphic>
-                                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@../../resources/images/rocket-fly.png" />
-                                       </image>
-                                    </ImageView>
-                                 </graphic>
-                              </Button>
-                              <Button fx:id="btnNewChapter" mnemonicParsing="false" onAction="#btnNewChapterClick" prefHeight="24.0" prefWidth="86.0" text="New Chapter" AnchorPane.rightAnchor="79.0" AnchorPane.topAnchor="2.0" />
                               <Button fx:id="btnBibManager" layoutX="671.0" layoutY="2.0" mnemonicParsing="false" prefWidth="32.0" AnchorPane.rightAnchor="167.0" AnchorPane.topAnchor="2.0">
                                  <graphic>
                                     <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
                                           <Image url="@../../resources/images/card-catalog_tr.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic>
+                              </Button>
+                              <Button fx:id="btnNewChapter" mnemonicParsing="false" onAction="#btnNewChapterClick" prefHeight="24.0" prefWidth="86.0" text="New Chapter" AnchorPane.rightAnchor="79.0" AnchorPane.topAnchor="2.0" />
+                              <Button fx:id="btnLaunch" mnemonicParsing="false" prefHeight="24.0" prefWidth="75.0" text="Launch" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0">
+                                 <graphic>
+                                    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../../resources/images/rocket-fly.png" />
                                        </image>
                                     </ImageView>
                                  </graphic>
@@ -341,31 +367,5 @@
             </TabPane>
         </items>
       </SplitPane>
-      <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-         <children>
-            <Label fx:id="lblTitle" layoutX="2.0" layoutY="9.0" text="Title:" underline="true" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0">
-               <cursor>
-                  <Cursor fx:constant="HAND" />
-               </cursor></Label>
-            <TextField fx:id="tfTitle" layoutX="39.0" layoutY="5.0" maxHeight="22.0" prefHeight="22.0" prefWidth="563.0" AnchorPane.leftAnchor="38.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
-         </children>
-      </AnchorPane>
-      <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
-         <children>
-            <Button fx:id="btnWorldCat" maxWidth="90.0" minWidth="61.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="75.0" text="WorldCat" AnchorPane.rightAnchor="68.0" AnchorPane.topAnchor="5.0" />
-            <Button fx:id="btnScholar" maxWidth="66.0" minWidth="64.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="64.0" text="Scholar" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
-            <Label fx:id="lblSearchKey" layoutY="9.0" text="Search key:" underline="true" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="9.0">
-               <cursor>
-                  <Cursor fx:constant="HAND" />
-               </cursor></Label>
-            <TextField fx:id="tfSearchKey" layoutX="66.0" layoutY="3.0" prefHeight="22.0" prefWidth="331.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="148.0" AnchorPane.topAnchor="5.0" />
-         </children>
-      </AnchorPane>
-      <AnchorPane fx:id="apLowerRight" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
-         <children>
-            <Button fx:id="btnOpenLink" mnemonicParsing="false" prefHeight="22.0" prefWidth="50.0" text="Link:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="5.0" />
-            <TextField fx:id="tfLink" layoutX="55.0" prefHeight="22.0" prefWidth="435.0" AnchorPane.leftAnchor="55.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
-         </children>
-      </AnchorPane>
    </children>
 </GridPane>

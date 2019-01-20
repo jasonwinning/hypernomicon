@@ -29,7 +29,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="710.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.InstitutionTabController">
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="710.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.InstitutionTabController">
    <children>
       <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <columnConstraints>
@@ -49,12 +49,33 @@
                   <TextField fx:id="tfName" layoutX="55.0" layoutY="3.0" prefHeight="22.0" prefWidth="408.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
                </children>
             </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+               <children>
+                  <Button fx:id="btnLink" layoutY="3.0" mnemonicParsing="false" text="Link:" AnchorPane.leftAnchor="2.0" />
+                  <TextField fx:id="tfLink" layoutX="44.0" layoutY="3.0" prefHeight="22.0" prefWidth="402.0" AnchorPane.leftAnchor="44.0" AnchorPane.rightAnchor="4.0" />
+               </children>
+            </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
                <children>
                   <Label layoutX="1.0" layoutY="8.0" text="Type:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
                   <ComboBox fx:id="cbType" layoutX="44.0" layoutY="3.0" prefHeight="22.0" prefWidth="148.0" AnchorPane.leftAnchor="40.0" />
-                  <ComboBox fx:id="cbParentInst" layoutX="300.0" layoutY="3.0" prefWidth="150.0" AnchorPane.leftAnchor="300.0" AnchorPane.rightAnchor="4.0" />
                   <Button fx:id="btnParent" layoutX="193.0" layoutY="3.0" maxWidth="105.0" minWidth="105.0" mnemonicParsing="false" prefWidth="105.0" text="Parent Institution:" AnchorPane.leftAnchor="193.0" AnchorPane.topAnchor="3.0" />
+                  <ComboBox fx:id="cbParentInst" layoutX="300.0" layoutY="3.0" prefWidth="150.0" AnchorPane.leftAnchor="300.0" AnchorPane.rightAnchor="4.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+               <children>
+                  <Label layoutX="28.0" layoutY="7.0" text="City:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
+                  <TextField fx:id="tfCity" layoutX="58.0" layoutY="3.0" prefHeight="22.0" prefWidth="225.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+               <children>
+                  <Label text="State:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
+                  <ComboBox fx:id="cbState" layoutX="34.0" layoutY="4.0" prefHeight="22.0" prefWidth="60.0" AnchorPane.leftAnchor="34.0" AnchorPane.topAnchor="4.0" />
+                  <Label layoutX="97.0" layoutY="7.0" text="Country:" AnchorPane.leftAnchor="97.0" AnchorPane.topAnchor="7.0" />
+                  <ComboBox fx:id="cbCountry" layoutX="143.0" prefHeight="22.0" prefWidth="231.0" AnchorPane.leftAnchor="143.0" AnchorPane.rightAnchor="76.0" AnchorPane.topAnchor="4.0" />
+                  <Hyperlink fx:id="hlGoogleMaps" layoutX="374.0" layoutY="4.0" onAction="#linkClick" text="Google maps" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0" />
                </children>
             </AnchorPane>
             <AnchorPane GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
@@ -87,27 +108,6 @@
                         </AnchorPane>
                     </items>
                   </SplitPane>
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-               <children>
-                  <Label text="State:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
-                  <ComboBox fx:id="cbState" layoutX="34.0" layoutY="4.0" prefHeight="22.0" prefWidth="60.0" AnchorPane.leftAnchor="34.0" AnchorPane.topAnchor="4.0" />
-                  <Label layoutX="97.0" layoutY="7.0" text="Country:" AnchorPane.leftAnchor="97.0" AnchorPane.topAnchor="7.0" />
-                  <ComboBox fx:id="cbCountry" layoutX="143.0" prefHeight="22.0" prefWidth="231.0" AnchorPane.leftAnchor="143.0" AnchorPane.rightAnchor="76.0" AnchorPane.topAnchor="4.0" />
-                  <Hyperlink fx:id="hlGoogleMaps" layoutX="374.0" layoutY="4.0" onAction="#linkClick" text="Google maps" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-               <children>
-                  <Button fx:id="btnLink" layoutY="3.0" mnemonicParsing="false" text="Link:" AnchorPane.leftAnchor="2.0" />
-                  <TextField fx:id="tfLink" layoutX="44.0" layoutY="3.0" prefHeight="22.0" prefWidth="402.0" AnchorPane.leftAnchor="44.0" AnchorPane.rightAnchor="4.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-               <children>
-                  <Label layoutX="28.0" layoutY="7.0" text="City:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
-                  <TextField fx:id="tfCity" layoutX="58.0" layoutY="3.0" prefHeight="22.0" prefWidth="225.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
                </children>
             </AnchorPane>
          </children>

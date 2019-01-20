@@ -27,10 +27,8 @@
 <?import javafx.scene.web.HTMLEditor?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane prefHeight="645.0" prefWidth="1193.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.MergeSpokeDialogController">
+<AnchorPane prefHeight="645.0" prefWidth="1193.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.MergeSpokeDialogController">
    <children>
-      <Button fx:id="btnOk" layoutX="453.0" layoutY="416.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="60.0" text="OK" AnchorPane.bottomAnchor="7.0" AnchorPane.rightAnchor="75.0" />
-      <Button fx:id="btnCancel" layoutX="522.0" layoutY="416.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" AnchorPane.bottomAnchor="7.0" AnchorPane.rightAnchor="7.0" />
       <TitledPane animated="false" collapsible="false" layoutX="85.0" layoutY="138.0" prefHeight="270.0" prefWidth="589.0" text="Description" AnchorPane.bottomAnchor="37.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <content>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
@@ -55,26 +53,26 @@
                               </RadioButton>
                            </children>
                         </AnchorPane>
-                        <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
-                           <children>
-                              <RadioButton fx:id="rbDesc2" mnemonicParsing="false" text="Note:" toggleGroup="$tgDesc" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                           </children>
-                        </AnchorPane>
-                        <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-                           <children>
-                              <RadioButton fx:id="rbDesc3" mnemonicParsing="false" text="Alternate:" toggleGroup="$tgDesc" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                           </children>
-                        </AnchorPane>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                            <children>
                               <TitledPane collapsible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                               <WebView fx:id="view1" prefHeight="-1.0" prefWidth="-1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="1.0" />
                            </children>
                         </AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+                           <children>
+                              <RadioButton fx:id="rbDesc2" mnemonicParsing="false" text="Note:" toggleGroup="$tgDesc" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                           </children>
+                        </AnchorPane>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                            <children>
                               <TitledPane collapsible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                               <WebView fx:id="view2" prefHeight="-1.0" prefWidth="-1.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="1.0" />
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+                           <children>
+                              <RadioButton fx:id="rbDesc3" mnemonicParsing="false" text="Alternate:" toggleGroup="$tgDesc" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                            </children>
                         </AnchorPane>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
@@ -88,5 +86,7 @@
             </AnchorPane>
         </content>
       </TitledPane>
+      <Button fx:id="btnOk" layoutX="453.0" layoutY="416.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="60.0" text="OK" AnchorPane.bottomAnchor="7.0" AnchorPane.rightAnchor="75.0" />
+      <Button fx:id="btnCancel" layoutX="522.0" layoutY="416.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" AnchorPane.bottomAnchor="7.0" AnchorPane.rightAnchor="7.0" />
    </children>
 </AnchorPane>

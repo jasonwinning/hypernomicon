@@ -34,7 +34,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<SplitPane fx:id="spBottomVert" dividerPositions="0.7655086848635235" orientation="VERTICAL" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.FileTabController">
+<SplitPane fx:id="spBottomVert" dividerPositions="0.7655086848635235" orientation="VERTICAL" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.FileTabController">
    <items>
       <GridPane>
          <columnConstraints>
@@ -48,18 +48,23 @@
             <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowSpan="2">
+               <children>
+                  <Button id="noScale" fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" AnchorPane.leftAnchor="8.0" AnchorPane.topAnchor="8.0">
+                     <graphic>
+                        <ImageView fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../../resources/images/treeview.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+               </children>
+            </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                <children>
                   <Label text="Name:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0" />
                   <TextField fx:id="tfName" layoutX="122.0" layoutY="3.0" prefHeight="22.0" AnchorPane.leftAnchor="38.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-               <children>
-                  <Label text="Type:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0" />
-                  <ComboBox fx:id="cbFileType" layoutX="48.0" layoutY="3.0" prefHeight="22.0" prefWidth="129.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0" />
-                  <Button fx:id="btnWork" layoutX="174.0" layoutY="3.0" maxWidth="83.0" minWidth="83.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="83.0" text="Work:" AnchorPane.leftAnchor="174.0" AnchorPane.topAnchor="5.0" />
-                  <ComboBox fx:id="cbWork" layoutX="261.0" layoutY="5.0" prefHeight="22.0" prefWidth="404.0" AnchorPane.leftAnchor="261.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
@@ -68,6 +73,14 @@
                   <TextField fx:id="tfSearchKey" layoutX="140.0" layoutY="3.0" prefHeight="22.0" prefWidth="218.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="196.0" AnchorPane.topAnchor="5.0" />
                   <CheckBox fx:id="checkAnnotated" layoutX="296.0" layoutY="8.0" mnemonicParsing="false" text="Annotated" AnchorPane.rightAnchor="119.0" AnchorPane.topAnchor="8.0" />
                   <SplitMenuButton fx:id="btnShow" layoutX="332.0" layoutY="3.0" mnemonicParsing="false" text="Show in Folder" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+               <children>
+                  <Label text="Type:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0" />
+                  <ComboBox fx:id="cbFileType" layoutX="48.0" layoutY="3.0" prefHeight="22.0" prefWidth="129.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0" />
+                  <Button fx:id="btnWork" layoutX="174.0" layoutY="3.0" maxWidth="83.0" minWidth="83.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="83.0" text="Work:" AnchorPane.leftAnchor="174.0" AnchorPane.topAnchor="5.0" />
+                  <ComboBox fx:id="cbWork" layoutX="261.0" layoutY="5.0" prefHeight="22.0" prefWidth="404.0" AnchorPane.leftAnchor="261.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
@@ -88,19 +101,6 @@
                         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@../../resources/images/rocket-fly.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowSpan="2">
-               <children>
-                  <Button id="noScale" fx:id="btnTree" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="40.0" AnchorPane.leftAnchor="8.0" AnchorPane.topAnchor="8.0">
-                     <graphic>
-                        <ImageView fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../../resources/images/treeview.png" />
                            </image>
                         </ImageView>
                      </graphic>

@@ -1191,7 +1191,7 @@ public class WorkDialogController extends HyperDialog
     {
       if ((newWorkFile == null) && (oldWorkFile != null))
         if (oldWorkFile.works.size() > 1)
-          if (confirmDialog("The same file that was associated with this work is associated with or works as well. Should these also be updated?"))
+          if (confirmDialog("The same file that was associated with this work is associated with other works as well. Should these also be updated?"))
             newWorkFile = oldWorkFile;
     }
 

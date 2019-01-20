@@ -26,7 +26,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane maxHeight="170.0" minHeight="170.0" prefHeight="170.0" prefWidth="1193.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.MergeTermDialogController">
+<AnchorPane maxHeight="170.0" minHeight="170.0" prefHeight="170.0" prefWidth="1193.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.MergeTermDialogController">
    <children>
       <GridPane layoutX="182.0" layoutY="21.0" prefHeight="138.0" prefWidth="589.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columnConstraints>
@@ -39,7 +39,7 @@
          <children>
             <AnchorPane prefHeight="200.0" prefWidth="200.0">
                <children>
-                  <TitledPane animated="false" collapsible="false" layoutX="39.0" layoutY="-32.0" text="Record Name" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <TitledPane animated="false" collapsible="false" focusTraversable="false" layoutX="39.0" layoutY="-32.0" text="Record Name" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <content>
                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                            <children>
@@ -62,24 +62,24 @@
                                              </toggleGroup></RadioButton>
                                        </children>
                                     </AnchorPane>
-                                    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
-                                       <children>
-                                          <RadioButton fx:id="rbName2" layoutX="14.0" layoutY="7.0" mnemonicParsing="false" text="Term 2:" toggleGroup="$tgName" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="9.0" />
-                                       </children>
-                                    </AnchorPane>
-                                    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-                                       <children>
-                                          <RadioButton fx:id="rbName3" layoutX="14.0" layoutY="9.0" mnemonicParsing="false" text="Alternate:" toggleGroup="$tgName" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="9.0" />
-                                       </children>
-                                    </AnchorPane>
                                     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                                        <children>
                                           <TextField fx:id="tfName1" editable="false" layoutX="2.0" layoutY="6.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="6.0" />
                                        </children>
                                     </AnchorPane>
+                                    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+                                       <children>
+                                          <RadioButton fx:id="rbName2" layoutX="14.0" layoutY="7.0" mnemonicParsing="false" text="Term 2:" toggleGroup="$tgName" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="9.0" />
+                                       </children>
+                                    </AnchorPane>
                                     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                        <children>
                                           <TextField fx:id="tfName2" editable="false" layoutX="2.0" layoutY="5.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="6.0" />
+                                       </children>
+                                    </AnchorPane>
+                                    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+                                       <children>
+                                          <RadioButton fx:id="rbName3" layoutX="14.0" layoutY="9.0" mnemonicParsing="false" text="Alternate:" toggleGroup="$tgName" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="9.0" />
                                        </children>
                                     </AnchorPane>
                                     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
@@ -97,7 +97,7 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                <children>
-                  <TitledPane animated="false" collapsible="false" layoutX="39.0" layoutY="-32.0" text="Search Key" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <TitledPane animated="false" collapsible="false" focusTraversable="false" layoutX="39.0" layoutY="-32.0" text="Search Key" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <content>
                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                            <children>
@@ -120,24 +120,24 @@
                                              </toggleGroup></RadioButton>
                                        </children>
                                     </AnchorPane>
-                                    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
-                                       <children>
-                                          <RadioButton fx:id="rbKey2" layoutX="14.0" layoutY="7.0" mnemonicParsing="false" text="Term 2:" toggleGroup="$tgKey" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="9.0" />
-                                       </children>
-                                    </AnchorPane>
-                                    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-                                       <children>
-                                          <RadioButton fx:id="rbKey3" layoutX="14.0" layoutY="9.0" mnemonicParsing="false" text="Alternate:" toggleGroup="$tgKey" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="9.0" />
-                                       </children>
-                                    </AnchorPane>
                                     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                                        <children>
                                           <TextField fx:id="tfKey1" editable="false" layoutX="2.0" layoutY="6.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="6.0" />
                                        </children>
                                     </AnchorPane>
+                                    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+                                       <children>
+                                          <RadioButton fx:id="rbKey2" layoutX="14.0" layoutY="7.0" mnemonicParsing="false" text="Term 2:" toggleGroup="$tgKey" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="9.0" />
+                                       </children>
+                                    </AnchorPane>
                                     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                        <children>
                                           <TextField fx:id="tfKey2" editable="false" layoutX="2.0" layoutY="5.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="6.0" />
+                                       </children>
+                                    </AnchorPane>
+                                    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+                                       <children>
+                                          <RadioButton fx:id="rbKey3" layoutX="14.0" layoutY="9.0" mnemonicParsing="false" text="Alternate:" toggleGroup="$tgKey" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="9.0" />
                                        </children>
                                     </AnchorPane>
                                     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
