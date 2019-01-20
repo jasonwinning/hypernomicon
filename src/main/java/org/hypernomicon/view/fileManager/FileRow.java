@@ -59,7 +59,7 @@ public class FileRow extends AbstractTreeRow<FileRow>
     this.treeModel = treeModel;
 
     if (treeModel != null)
-      treeItem = new TreeItem<FileRow>(this);
+      treeItem = new TreeItem<>(this);
   }
 
 //---------------------------------------------------------------------------
@@ -89,7 +89,7 @@ public class FileRow extends AbstractTreeRow<FileRow>
   {
     Instant i = hyperPath.getFilePath().lastModified();
 
-    return new FileCellValue<Instant>(dateTimeToUserReadableStr(i), i);
+    return new FileCellValue<>(dateTimeToUserReadableStr(i), i);
   }
 
 //---------------------------------------------------------------------------
@@ -100,12 +100,12 @@ public class FileRow extends AbstractTreeRow<FileRow>
     long size;
 
     try                   { size = hyperPath.getFilePath().size(); }
-    catch (IOException e) { return new FileCellValue<Long>("", Long.valueOf(-1)); }
+    catch (IOException e) { return new FileCellValue<>("", Long.valueOf(-1)); }
 
     if (size >= 1000)
-      return new FileCellValue<Long>(numberFormat.format(size / 1000) + " KB", Long.valueOf(size));
+      return new FileCellValue<>(numberFormat.format(size / 1000) + " KB", Long.valueOf(size));
 
-    return new FileCellValue<Long>(String.valueOf(size) + " bytes", Long.valueOf(size));
+    return new FileCellValue<>(String.valueOf(size) + " bytes", Long.valueOf(size));
   }
 
 //---------------------------------------------------------------------------

@@ -1754,12 +1754,14 @@ public class Util
   @FunctionalInterface public static interface ObjExpression<T1>     { public T1      evaluate(); }
   @FunctionalInterface public static interface ObjFunction<T1, T2>   { public T1      evaluate(T2 obj); }
 
-  public static <T>      void    nullSwitch(T  obj,              VoidFunction<T>       ex) { if (obj != null)           ex.evaluate(obj); }
-  public static <T>      boolean nullSwitch(T  obj, boolean def, BoolExpression        ex) { return obj == null ? def : ex.evaluate()   ; }
-  public static <T1, T2> T1      nullSwitch(T2 obj, T1      def, ObjExpression<T1>     ex) { return obj == null ? def : ex.evaluate()   ; }
-  public static <T1, T2> T1      nullSwitch(T2 obj, T1      def, ObjFunction<T1, T2>   ex) { return obj == null ? def : ex.evaluate(obj); }
+  public static <T>      void    nullSwitch(T  obj,              VoidFunction<T>     ex) { if (obj != null)           ex.evaluate(obj); }
+  public static <T>      boolean nullSwitch(T  obj, boolean def, BoolExpression      ex) { return obj == null ? def : ex.evaluate()   ; }
+  public static <T1, T2> T1      nullSwitch(T2 obj, T1      def, ObjExpression<T1>   ex) { return obj == null ? def : ex.evaluate()   ; }
+  public static <T1, T2> T1      nullSwitch(T2 obj, T1      def, ObjFunction<T1, T2> ex) { return obj == null ? def : ex.evaluate(obj); }
 
   public static <T> T nullSwitch(T obj, T def) { return obj == null ? def : obj; }
+
+  public static <T> T that(T obj) { return obj; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1770,7 +1772,7 @@ public class Util
 
     grid.getChildren().forEach(child ->
     {
-      int r = nullSwitch(GridPane.getRowIndex(child), new Integer(0)).intValue();
+      int r = nullSwitch(GridPane.getRowIndex(child), 0);
 
       if (r > rowNdx)
         GridPane.setRowIndex(child, r - 1);
@@ -1793,7 +1795,7 @@ public class Util
 
     grid.getChildren().forEach(child ->
     {
-      int c = nullSwitch(GridPane.getColumnIndex(child), new Integer(0)).intValue();
+      int c = nullSwitch(GridPane.getColumnIndex(child), 0);
 
       if (c > columnNdx)
         GridPane.setColumnIndex(child, c - 1);

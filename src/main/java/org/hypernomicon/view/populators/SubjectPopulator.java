@@ -53,14 +53,14 @@ public class SubjectPopulator extends Populator
 
   public SubjectPopulator(RelationType relType, boolean trackObjByRow, boolean nameOnly)
   {
-    rowToChoices = new HashMap<HyperTableRow, List<HyperTableCell>>();
-    rowToChanged = new HashMap<HyperTableRow, Boolean>();
+    rowToChoices = new HashMap<>();
+    rowToChanged = new HashMap<>();
 
     this.relType = relType;
     this.trackObjByRow = trackObjByRow;
     this.nameOnly = nameOnly;
 
-    rowToObj = trackObjByRow ? new HashMap<HyperTableRow, HDT_Base>() : null;
+    rowToObj = trackObjByRow ? new HashMap<>() : null;
   }
 
 //---------------------------------------------------------------------------

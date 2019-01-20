@@ -72,7 +72,7 @@ public class LockedDialogController extends HyperDialog
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    public void run()
+    @Override public void run()
     {
       InterComputerMsg receivedMsg;
 

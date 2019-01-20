@@ -190,7 +190,7 @@ public class DesktopApi
       Process p = Runtime.getRuntime().exec(parts);
       if (p == null) return false;
 
-      try { p.waitFor(); } catch(Exception e) { noOp(); };
+      try { p.waitFor(); } catch(Exception e) { noOp(); }
 
       try
       {
@@ -224,7 +224,7 @@ public class DesktopApi
 
   private static String[] prepareCommand(String command, String args, String pathStr)
   {
-    List<String> parts = new ArrayList<String>();
+    List<String> parts = new ArrayList<>();
     parts.add(command);
 
     if (args != null)

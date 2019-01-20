@@ -58,9 +58,9 @@ public class RecordByTypePopulator extends Populator
     this.filter = filter;
     this.nameOnly = nameOnly;
 
-    rowToChoices = new HashMap<HyperTableRow, List<HyperTableCell>>();
-    rowToChanged = new HashMap<HyperTableRow, Boolean>();
-    rowToRecordType = new HashMap<HyperTableRow, HDT_RecordType>();
+    rowToChoices = new HashMap<>();
+    rowToChanged = new HashMap<>();
+    rowToRecordType = new HashMap<>();
   }
 
   @Override public CellValueType getValueType()        { return cvtRecord; }
@@ -150,7 +150,7 @@ public class RecordByTypePopulator extends Populator
       record = getNextRecord(it);
     }
 
-    ArrayList<Integer> recent = new ArrayList<Integer>();
+    ArrayList<Integer> recent = new ArrayList<>();
 
     for (int ndx = 0; ndx < num; ndx++)
     {
@@ -186,7 +186,7 @@ public class RecordByTypePopulator extends Populator
 
     if (recordType == hdtNone) return choices;
 
-    HashMap<Integer, Boolean> map = new HashMap<Integer, Boolean>();
+    HashMap<Integer, Boolean> map = new HashMap<>();
     boolean firstAdd = true;
     ArrayList<Integer> recent;
 

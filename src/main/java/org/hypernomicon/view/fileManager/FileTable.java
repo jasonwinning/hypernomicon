@@ -140,13 +140,13 @@ public class FileTable implements DragNDropContainer<FileRow>
     TableColumn<FileRow, FileCellValue<Long>>    sizeCol    = (TableColumn<FileRow, FileCellValue<Long>>)    fileTV.getColumns().get(3);
     TableColumn<FileRow, String>                 recordsCol = (TableColumn<FileRow, String>)                 fileTV.getColumns().get(4);
 
-    nameCol.setCellValueFactory(cellData -> new SimpleObjectProperty<FileRow>(cellData.getValue()));
+    nameCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue()));
     nameCol.setComparator((v1, v2) -> v1.getFileName().compareToIgnoreCase(v2.getFileName()));
 
-    modDateCol.setCellValueFactory(cellData -> new SimpleObjectProperty<FileCellValue<Instant>>(cellData.getValue().getModifiedDateCellValue()));
+    modDateCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getModifiedDateCellValue()));
 
     typeCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getTypeString()));
-    sizeCol.setCellValueFactory(cellData -> new SimpleObjectProperty<FileCellValue<Long>>(cellData.getValue().getSizeCellValue()));
+    sizeCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getSizeCellValue()));
     sizeCol.setStyle( "-fx-alignment: CENTER-RIGHT;");
 
     recordsCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getHyperPath().getRecordsString()));

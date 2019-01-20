@@ -47,9 +47,9 @@ public class ChooseParentDialogController extends HyperDialog
   @FXML private TextField tfPath;
   @FXML private Button btnCancel;
   @FXML private Button btnOk;
-  @FXML TreeTableColumn<TreeRow, HyperTreeCellValue> tcName;
-  @FXML TreeTableColumn<TreeRow, String> tcType;
-  @FXML TreeTableColumn<TreeRow, String> tcDesc;
+  @FXML private TreeTableColumn<TreeRow, HyperTreeCellValue> tcName;
+  @FXML private TreeTableColumn<TreeRow, String> tcType;
+  @FXML private TreeTableColumn<TreeRow, String> tcDesc;
 
   public TreeWrapper popupTree;
   public static String title;

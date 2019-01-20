@@ -81,7 +81,7 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 
     hubID = -1;
     keyWorks = new ArrayList<>();
-    displayItems = new ArrayList<DisplayItem>();
+    displayItems = new ArrayList<>();
     usedKeyWorks = new HashMap<>();
   }
 
@@ -134,7 +134,7 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
           Set<Integer> idSet = usedKeyWorks.get(objType);
           if (idSet == null)
           {
-            idSet = new HashSet<Integer>();
+            idSet = new HashSet<>();
             usedKeyWorks.put(objType, idSet);
           }
 

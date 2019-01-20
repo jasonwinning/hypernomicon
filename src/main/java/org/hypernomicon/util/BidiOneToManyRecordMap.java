@@ -18,8 +18,7 @@
 package org.hypernomicon.util;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-
-import static java.util.Objects.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.Map;
 
@@ -34,13 +33,8 @@ import com.google.common.collect.Sets;
 
 public class BidiOneToManyRecordMap
 {
-  private Map<HDT_Base, Set<HDT_Base>> forwardMap, reverseMap;
-
-  public BidiOneToManyRecordMap()
-  {
-    forwardMap = new ConcurrentHashMap<>();
-    reverseMap = new ConcurrentHashMap<>();
-  }
+  private final Map<HDT_Base, Set<HDT_Base>> forwardMap = new ConcurrentHashMap<>(),
+                                             reverseMap = new ConcurrentHashMap<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -55,18 +49,28 @@ public class BidiOneToManyRecordMap
 
   public void addForward(HDT_Base fromRecord, HDT_Base toRecord)
   {
-    if (fromRecord.getType() == hdtHub)
+    if (toRecord.getType() == hdtHub)
+    {
+      StrongLink link = ((HDT_Hub) toRecord).getLink();
+
+      nullSwitch(link.getNote    (), note    -> addForward(fromRecord, note   ));
+      nullSwitch(link.getLabel   (), label   -> addForward(fromRecord, label  ));
+      nullSwitch(link.getDebate  (), debate  -> addForward(fromRecord, debate ));
+      nullSwitch(link.getPosition(), pos     -> addForward(fromRecord, pos    ));
+      nullSwitch(link.getConcept (), concept -> addForward(fromRecord, concept));
+    }
+    else if (fromRecord.getType() == hdtHub)
     {
       StrongLink link = ((HDT_Hub) fromRecord).getLink();
 
-      if (nonNull(link.getNote()))     addForwardMapping(link.getNote(), toRecord);
-      if (nonNull(link.getLabel()))    addForwardMapping(link.getLabel(), toRecord);
-      if (nonNull(link.getDebate()))   addForwardMapping(link.getDebate(), toRecord);
-      if (nonNull(link.getPosition())) addForwardMapping(link.getPosition(), toRecord);
-      if (nonNull(link.getConcept()))  addForwardMapping(link.getConcept(), toRecord);
+      nullSwitch(link.getNote    (), note    -> addForward(note   , toRecord));
+      nullSwitch(link.getLabel   (), label   -> addForward(label  , toRecord));
+      nullSwitch(link.getDebate  (), debate  -> addForward(debate , toRecord));
+      nullSwitch(link.getPosition(), pos     -> addForward(pos    , toRecord));
+      nullSwitch(link.getConcept (), concept -> addForward(concept, toRecord));
     }
-
-    addForwardMapping(fromRecord, toRecord);
+    else
+      addForwardMapping(fromRecord, toRecord);
   }
 
 //---------------------------------------------------------------------------

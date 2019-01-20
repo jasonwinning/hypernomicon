@@ -240,7 +240,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     List<HDT_Glossary> oldList = curTerm.getGlossaries(),
                        newList = htGlossaries.saveToList(1, hdtGlossary);
 
-    Set<HDT_Glossary> set = new HashSet<HDT_Glossary>();
+    Set<HDT_Glossary> set = new HashSet<>();
 
     newList.removeIf(glossary ->
     {

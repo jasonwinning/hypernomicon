@@ -101,7 +101,7 @@ public class FilenameMap<T> implements Map<String, T>
     ArrayList<String> list = lowerToList.get(strKey.toLowerCase());
     if (list == null)
     {
-      list = new ArrayList<String>();
+      list = new ArrayList<>();
       lowerToList.put(strKey.toLowerCase(), list);
     }
 

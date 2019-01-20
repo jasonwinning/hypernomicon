@@ -40,10 +40,10 @@ import javafx.scene.control.ComboBox;
 
 public class SelectWorkDialogController extends HyperDialog
 {
-  @FXML ComboBox<HyperTableCell> cbAuthor;
-  @FXML ComboBox<HyperTableCell> cbWork;
-  @FXML Button btnOK;
-  @FXML Button btnCancel;
+  @FXML private ComboBox<HyperTableCell> cbAuthor;
+  @FXML private ComboBox<HyperTableCell> cbWork;
+  @FXML private Button btnOK;
+  @FXML private Button btnCancel;
 
   private HyperCB hcbAuthor, hcbWork;
 

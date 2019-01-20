@@ -94,7 +94,7 @@ public class HDT_WorkLabel extends HDT_RecordWithConnector
       }
     });
 
-    ArrayList<HDT_Work> worksCopy = new ArrayList<HDT_Work>();
+    ArrayList<HDT_Work> worksCopy = new ArrayList<>();
     worksCopy.addAll(works);
 
     worksCopy.forEach(work ->
@@ -103,7 +103,7 @@ public class HDT_WorkLabel extends HDT_RecordWithConnector
         db.getObjectList(rtLabelOfWork, work, true).remove(this);
     });
 
-    ArrayList<HDT_MiscFile> filesCopy = new ArrayList<HDT_MiscFile>();
+    ArrayList<HDT_MiscFile> filesCopy = new ArrayList<>();
     filesCopy.addAll(miscFiles);
 
     filesCopy.forEach(file ->

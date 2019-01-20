@@ -56,7 +56,7 @@ public class ResultsTable implements RecordListView
 {
   private TableView<ResultsRow> tv;
   private boolean datesAdded = false;
-  public static final ArrayList<ColumnGroup> colGroups = new ArrayList<ColumnGroup>();
+  public static final ArrayList<ColumnGroup> colGroups = new ArrayList<>();
   private static ColumnGroup generalGroup;
   private List<HyperMenuItem<? extends HDT_Base>> contextMenuItems;
 
@@ -99,7 +99,7 @@ public class ResultsTable implements RecordListView
 
     public HDT_RecordType type;
     public String caption;
-    public ArrayList<ColumnGroupItem> items = new ArrayList<ColumnGroupItem>();
+    public ArrayList<ColumnGroupItem> items = new ArrayList<>();
     public TypeCheckBox checkBox;
   }
 
@@ -129,7 +129,7 @@ public class ResultsTable implements RecordListView
       this.strToComp = strToComp;
     }
 
-    public ObservableValue<ResultCellValue<Comp_T>> getObservable() { return new SimpleObjectProperty<ResultCellValue<Comp_T>>(this); }
+    public ObservableValue<ResultCellValue<Comp_T>> getObservable() { return new SimpleObjectProperty<>(this); }
 
     @Override public String toString() { return text; }
 
@@ -256,7 +256,7 @@ public class ResultsTable implements RecordListView
 
   private <Comp_T extends Comparable<Comp_T>> ObservableValue<ResultCellValue<Comp_T>> getCustomCellValue(String str, StringToComparable<Comp_T> strToComp)
   {
-    return new ResultCellValue<Comp_T>(str, strToComp).getObservable();
+    return new ResultCellValue<>(str, strToComp).getObservable();
   }
 
   public static final double RESULT_COL_MAX_WIDTH = 400.0;
@@ -272,7 +272,7 @@ public class ResultsTable implements RecordListView
     TableColumn<ResultsRow, ResultCellValue<Integer>> intCol;
     TableColumn<ResultsRow, ResultCellValue<String>> strCol;
 
-    intCol = new TableColumn<ResultsRow, ResultCellValue<Integer>>("ID");
+    intCol = new TableColumn<>("ID");
 
     intCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordID(), str -> Integer.valueOf(parseInt(str, -1))));
     intCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
@@ -282,7 +282,7 @@ public class ResultsTable implements RecordListView
     generalGroup.items.add(item);
     item.col = intCol;
 
-    strCol = new TableColumn<ResultsRow, ResultCellValue<String>>("Name");
+    strCol = new TableColumn<>("Name");
     strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordName(), str -> makeSortKeyByType(str, hdtWork)));
     strCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
     tv.getColumns().add(strCol);
@@ -291,7 +291,7 @@ public class ResultsTable implements RecordListView
     generalGroup.items.add(item);
     item.col = strCol;
 
-    strCol = new TableColumn<ResultsRow, ResultCellValue<String>>("Type");
+    strCol = new TableColumn<>("Type");
     strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordType(), str -> str.trim().toLowerCase()));
     strCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
     tv.getColumns().add(strCol);
@@ -300,7 +300,7 @@ public class ResultsTable implements RecordListView
     generalGroup.items.add(item);
     item.col = strCol;
 
-    strCol = new TableColumn<ResultsRow, ResultCellValue<String>>("Search Key");
+    strCol = new TableColumn<>("Search Key");
     strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getSearchKey(), str -> str.trim().toLowerCase()));
     strCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
     tv.getColumns().add(strCol);
@@ -310,11 +310,11 @@ public class ResultsTable implements RecordListView
     generalGroup.items.add(item);
     item.col = strCol;
 
-    strCol = new TableColumn<ResultsRow, ResultCellValue<String>>("Sort Key");
+    strCol = new TableColumn<>("Sort Key");
     strCol.setCellValueFactory(cellData ->
     {
       String sortKey = cellData.getValue().getSortKey();
-      return new ResultCellValue<String>(sortKey, sortKey).getObservable();
+      return new ResultCellValue<>(sortKey, sortKey).getObservable();
     });
 
     strCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
@@ -348,7 +348,7 @@ public class ResultsTable implements RecordListView
       TableColumn<ResultsRow, ResultCellValue<Instant>> col;
       ColumnGroupItem item;
 
-      col = new TableColumn<ResultsRow, ResultCellValue<Instant>>("Date created");
+      col = new TableColumn<>("Date created");
       col.setCellValueFactory(cellData -> cellData.getValue().getCreationDateCellValue().getObservable());
       tv.getColumns().add(col);
 
@@ -356,7 +356,7 @@ public class ResultsTable implements RecordListView
       generalGroup.items.add(item);
       item.col = col;
 
-      col = new TableColumn<ResultsRow, ResultCellValue<Instant>>("Date modified");
+      col = new TableColumn<>("Date modified");
       col.setCellValueFactory(cellData -> cellData.getValue().getModifiedDateCellValue().getObservable());
       tv.getColumns().add(col);
 
@@ -364,7 +364,7 @@ public class ResultsTable implements RecordListView
       generalGroup.items.add(item);
       item.col = col;
 
-      col = new TableColumn<ResultsRow, ResultCellValue<Instant>>("Date accessed");
+      col = new TableColumn<>("Date accessed");
       col.setCellValueFactory(cellData -> cellData.getValue().getViewDateCellValue().getObservable());
       tv.getColumns().add(col);
 
@@ -379,7 +379,7 @@ public class ResultsTable implements RecordListView
 
   public TableColumn<ResultsRow, ResultCellValue<String>> addTagColumn(Tag tag)
   {
-    TableColumn<ResultsRow, ResultCellValue<String>> col = new TableColumn<ResultsRow, ResultCellValue<String>>(db.getTagHeader(tag));
+    TableColumn<ResultsRow, ResultCellValue<String>> col = new TableColumn<>(db.getTagHeader(tag));
     StringToComparable<String> strToComp;
 
     if (tag == tagTitle)

@@ -19,6 +19,7 @@ package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.records.HDT_RecordState.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.model.items.HDI_OfflineTernary.Ternary.*;
 
 import java.util.LinkedHashMap;
 
@@ -49,7 +50,7 @@ public class HDI_OfflineTernary extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  Ternary value = Ternary.Unset;
+  Ternary value = Unset;
 
   public HDI_OfflineTernary(HDI_Schema newSchema, HDT_RecordState recordState)
   {
@@ -61,7 +62,7 @@ public class HDI_OfflineTernary extends HDI_OfflineBase
 
   @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, LinkedHashMap<Tag, HDI_OfflineBase> nestedItems)
   {
-    value = parseBoolean(nodeText) ? Ternary.True : Ternary.False;
+    value = parseBoolean(nodeText) ? True : False;
   }
 
 //---------------------------------------------------------------------------
@@ -69,7 +70,7 @@ public class HDI_OfflineTernary extends HDI_OfflineBase
 
   @Override public void writeToXml(Tag tag, StringBuilder xml)
   {
-    if (value != Ternary.Unset)
+    if (value != Unset)
       writeBooleanTag(xml, tag, value.boolVal());
   }
 

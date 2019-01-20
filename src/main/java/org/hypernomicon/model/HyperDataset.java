@@ -109,9 +109,9 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private final HyperCore<HDT_DT> core = new HyperCore<HDT_DT>();
+  private final HyperCore<HDT_DT> core = new HyperCore<>();
   private final HDT_RecordType type;
-  private final ArrayList<HDT_DT> needIDs = new ArrayList<HDT_DT>();
+  private final ArrayList<HDT_DT> needIDs = new ArrayList<>();
   private final LinkedHashMap<Tag, HDI_Schema> tagToSchema = new LinkedHashMap<>();
   private Tag mainTextTag = null;
   private boolean online = false;

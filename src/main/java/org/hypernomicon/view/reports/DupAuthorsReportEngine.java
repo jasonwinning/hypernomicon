@@ -175,7 +175,7 @@ public class DupAuthorsReportEngine extends ReportEngine
       }
 
       NewPersonDialogController npdc = NewPersonDialogController.create(author1.getName(), null, false, author1.getPerson(),
-                                                                        author1, new ArrayList<Author>(Collections.singletonList(author2)));
+                                                                        author1, new ArrayList<>(Collections.singletonList(author2)));
 
       if (npdc.showModal() == false) return;
 

@@ -49,7 +49,7 @@ public class TreeRow extends AbstractTreeRow<TreeRow>
 
     if (record == null) return;
 
-    treeItem = new TreeItem<TreeRow>(this);
+    treeItem = new TreeItem<>(this);
   }
 
 //---------------------------------------------------------------------------

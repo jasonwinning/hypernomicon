@@ -44,29 +44,28 @@ public class StrongLink
 
 //---------------------------------------------------------------------------
 
-  public HDT_Hub getHub()           { return hub; }
-  public HDT_Note getNote()         { return (HDT_Note     ) nullSwitch(noteSpoke    , null, sp -> sp.getSpoke()); }
-  public HDT_Concept getConcept()   { return (HDT_Concept  ) nullSwitch(conceptSpoke , null, sp -> sp.getSpoke()); }
-  public HDT_Debate getDebate()     { return (HDT_Debate   ) nullSwitch(debateSpoke  , null, sp -> sp.getSpoke()); }
-  public HDT_Position getPosition() { return (HDT_Position ) nullSwitch(positionSpoke, null, sp -> sp.getSpoke()); }
-  public HDT_WorkLabel getLabel()   { return (HDT_WorkLabel) nullSwitch(labelSpoke   , null, sp -> sp.getSpoke()); }
+  public HDT_Hub       getHub()      { return hub; }
+  public HDT_Note      getNote()     { return (HDT_Note     ) nullSwitch(noteSpoke    , null, sp -> sp.getSpoke()); }
+  public HDT_Concept   getConcept()  { return (HDT_Concept  ) nullSwitch(conceptSpoke , null, sp -> sp.getSpoke()); }
+  public HDT_Debate    getDebate()   { return (HDT_Debate   ) nullSwitch(debateSpoke  , null, sp -> sp.getSpoke()); }
+  public HDT_Position  getPosition() { return (HDT_Position ) nullSwitch(positionSpoke, null, sp -> sp.getSpoke()); }
+  public HDT_WorkLabel getLabel()    { return (HDT_WorkLabel) nullSwitch(labelSpoke   , null, sp -> sp.getSpoke()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public void modifyNow()
   {
-    if (db.runningConversion) return;
-    if (alreadyModifying) return;
+    if (db.runningConversion || alreadyModifying) return;
 
     alreadyModifying = true;
 
-    if (nonNull(hub))           hub.modifyNow();
-    if (nonNull(noteSpoke))     noteSpoke.modifyNow();
-    if (nonNull(conceptSpoke))  conceptSpoke.modifyNow();
-    if (nonNull(debateSpoke))   debateSpoke.modifyNow();
+    if (nonNull(hub          )) hub          .modifyNow();
+    if (nonNull(noteSpoke    )) noteSpoke    .modifyNow();
+    if (nonNull(conceptSpoke )) conceptSpoke .modifyNow();
+    if (nonNull(debateSpoke  )) debateSpoke  .modifyNow();
     if (nonNull(positionSpoke)) positionSpoke.modifyNow();
-    if (nonNull(labelSpoke))    labelSpoke.modifyNow();
+    if (nonNull(labelSpoke   )) labelSpoke   .modifyNow();
 
     alreadyModifying = false;
   }
@@ -79,10 +78,7 @@ public class StrongLink
     Set<Connector> set = new LinkedHashSet<>();
 
     for (HDT_RecordType cType : new HDT_RecordType[] { hdtDebate, hdtPosition, hdtConcept, hdtNote, hdtWorkLabel })
-    {
-      Connector spoke = getSpoke(cType);
-      if (spoke != null) set.add(spoke);
-    }
+      nullSwitch(getSpoke(cType), spoke -> set.add(spoke));
 
     return set;
   }
@@ -94,10 +90,10 @@ public class StrongLink
   {
     switch (cType)
     {
-      case hdtNote :      return noteSpoke;
-      case hdtPosition :  return positionSpoke;
-      case hdtDebate :    return debateSpoke;
-      case hdtConcept :   return conceptSpoke;
+      case hdtNote      : return noteSpoke;
+      case hdtPosition  : return positionSpoke;
+      case hdtDebate    : return debateSpoke;
+      case hdtConcept   : return conceptSpoke;
       case hdtWorkLabel : return labelSpoke;
 
       default : return null;
@@ -111,8 +107,6 @@ public class StrongLink
   {
     HDT_Hub hub = null;
     StrongLink link = null;
-    MainText mainText = null;
-    int ndx;
 
     if ((spoke1.getType() == hdtPosition) && (spoke2.getType() == hdtDebate))  // Sanity checks
       return falseWithErrorMessage("A position record and a problem/debate record cannot be linked together.");
@@ -167,21 +161,21 @@ public class StrongLink
     spokes[0] = spoke1;
     spokes[1] = spoke2;
 
-    for (ndx = 0; ndx < 2; ndx++)
+    for (int ndx = 0; ndx < 2; ndx++)
     {
       switch (spokes[ndx].getType())
       {
-        case hdtNote :      link.noteSpoke = spokes[ndx]; break;
-        case hdtPosition :  link.positionSpoke = spokes[ndx]; break;
-        case hdtDebate :    link.debateSpoke = spokes[ndx]; break;
-        case hdtConcept :   link.conceptSpoke = spokes[ndx]; break;
-        case hdtWorkLabel : link.labelSpoke = spokes[ndx]; break;
+        case hdtNote      : link.noteSpoke     = spokes[ndx]; break;
+        case hdtPosition  : link.positionSpoke = spokes[ndx]; break;
+        case hdtDebate    : link.debateSpoke   = spokes[ndx]; break;
+        case hdtConcept   : link.conceptSpoke  = spokes[ndx]; break;
+        case hdtWorkLabel : link.labelSpoke    = spokes[ndx]; break;
 
         default : break;
       }
     }
 
-    mainText = new MainText(spoke1.getMainText(), spoke2.getMainText(), hub.getConnector(), newDesc);
+    MainText mainText = new MainText(spoke1.getMainText(), spoke2.getMainText(), hub.getConnector(), newDesc);
 
     db.replaceMainText(hub.getMainText(), mainText);
     hub.getConnector().mainText = mainText;
@@ -189,10 +183,8 @@ public class StrongLink
     spoke1.link = link;
     spoke2.link = link;
 
-    if (spoke1.getSpoke().name().length() == 0)
-      spoke1.getSpoke().setName(spoke2.getSpoke().name());
-    else if (spoke2.getSpoke().name().length() == 0)
-      spoke2.getSpoke().setName(spoke1.getSpoke().name());
+    if      (spoke1.getSpoke().name().length() == 0) spoke1.getSpoke().setName(spoke2.getSpoke().name());
+    else if (spoke2.getSpoke().name().length() == 0) spoke2.getSpoke().setName(spoke1.getSpoke().name());
 
     for (Connector spoke : spokes)
     {
@@ -213,19 +205,18 @@ public class StrongLink
 
   public boolean disconnectRecord(HDT_RecordType spokeType, boolean deleteHub)
   {
-    Connector firstSpoke = null, otherSpoke = null;
-
-    int numSpokes = 0;
-
     if (hub == null) return false;
+
+    Connector firstSpoke = null, otherSpoke = null;
+    int numSpokes = 0;
 
     // check number of spokes
 
-    if (nonNull(conceptSpoke))  { numSpokes++; if (spokeType != hdtConcept)   otherSpoke = getSpoke(hdtConcept); }
-    if (nonNull(positionSpoke)) { numSpokes++; if (spokeType != hdtPosition)  otherSpoke = getSpoke(hdtPosition); }
-    if (nonNull(debateSpoke))   { numSpokes++; if (spokeType != hdtDebate)    otherSpoke = getSpoke(hdtDebate); }
-    if (nonNull(noteSpoke))     { numSpokes++; if (spokeType != hdtNote)      otherSpoke = getSpoke(hdtNote); }
-    if (nonNull(labelSpoke))    { numSpokes++; if (spokeType != hdtWorkLabel) otherSpoke = getSpoke(hdtWorkLabel); }
+    if (nonNull(conceptSpoke )) { numSpokes++; if (spokeType != hdtConcept  ) otherSpoke = getSpoke(hdtConcept  ); }
+    if (nonNull(positionSpoke)) { numSpokes++; if (spokeType != hdtPosition ) otherSpoke = getSpoke(hdtPosition ); }
+    if (nonNull(debateSpoke  )) { numSpokes++; if (spokeType != hdtDebate   ) otherSpoke = getSpoke(hdtDebate   ); }
+    if (nonNull(noteSpoke    )) { numSpokes++; if (spokeType != hdtNote     ) otherSpoke = getSpoke(hdtNote     ); }
+    if (nonNull(labelSpoke   )) { numSpokes++; if (spokeType != hdtWorkLabel) otherSpoke = getSpoke(hdtWorkLabel); }
 
     if (numSpokes == 0) return false;
 
@@ -233,11 +224,11 @@ public class StrongLink
 
     switch (spokeType)
     {
-      case hdtNote :      firstSpoke = getSpoke(hdtNote);      noteSpoke = null;     break;
-      case hdtDebate :    firstSpoke = getSpoke(hdtDebate);    debateSpoke = null;   break;
-      case hdtPosition :  firstSpoke = getSpoke(hdtPosition);  positionSpoke = null; break;
-      case hdtConcept :   firstSpoke = getSpoke(hdtConcept);   conceptSpoke = null;  break;
-      case hdtWorkLabel : firstSpoke = getSpoke(hdtWorkLabel); labelSpoke = null;    break;
+      case hdtNote      : firstSpoke = getSpoke(hdtNote     ); noteSpoke     = null; break;
+      case hdtDebate    : firstSpoke = getSpoke(hdtDebate   ); debateSpoke   = null; break;
+      case hdtPosition  : firstSpoke = getSpoke(hdtPosition ); positionSpoke = null; break;
+      case hdtConcept   : firstSpoke = getSpoke(hdtConcept  ); conceptSpoke  = null; break;
+      case hdtWorkLabel : firstSpoke = getSpoke(hdtWorkLabel); labelSpoke    = null; break;
 
       default :           return false;
     }

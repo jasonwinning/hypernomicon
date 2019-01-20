@@ -46,10 +46,10 @@ public class HyperSubjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HD
   @Override public boolean isEmpty()                                      { return size() == 0; }
   @Override public HDT_SubjType get(int ndx)                              { return relSet.getSubject(obj, ndx); }
   @Override public int lastIndexOf(Object o)                              { return indexOf(o); }
-  @Override public List<HDT_SubjType> subList(int fromIndex, int toIndex) { return new HyperSubjSubList<HDT_SubjType, HDT_ObjType>(this, fromIndex, toIndex); }
-  @Override public Iterator<HDT_SubjType> iterator()                      { return new HyperSubjIterator<HDT_SubjType, HDT_ObjType>(this); }
-  @Override public ListIterator<HDT_SubjType> listIterator()              { return new HyperSubjListIterator<HDT_SubjType, HDT_ObjType>(this, 0); }
-  @Override public ListIterator<HDT_SubjType> listIterator(int index)     { return new HyperSubjListIterator<HDT_SubjType, HDT_ObjType>(this, index); }
+  @Override public List<HDT_SubjType> subList(int fromIndex, int toIndex) { return new HyperSubjSubList<>(this, fromIndex, toIndex); }
+  @Override public Iterator<HDT_SubjType> iterator()                      { return new HyperSubjIterator<>(this); }
+  @Override public ListIterator<HDT_SubjType> listIterator()              { return new HyperSubjListIterator<>(this, 0); }
+  @Override public ListIterator<HDT_SubjType> listIterator(int index)     { return new HyperSubjListIterator<>(this, index); }
   @Override public int hashCode()                                         { return super.hashCode(); }
 
   @Override public boolean add(HDT_SubjType subj)                                  { throw new UnsupportedOperationException(modErrMsg); }

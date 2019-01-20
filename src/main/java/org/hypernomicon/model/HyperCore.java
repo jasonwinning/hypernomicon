@@ -79,10 +79,10 @@ public final class HyperCore<HDT_DT extends HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final ArrayList<KeyIDpair> sortedKeys = new ArrayList<KeyIDpair>();
-  private final ArrayList<Integer> sortedIDs = new ArrayList<Integer>();
-  private final HashMap<Integer, String> idToKey = new HashMap<Integer, String>();
-  private final HashMap<Integer, HDT_DT> idToRecord = new HashMap<Integer, HDT_DT>();
+  private final ArrayList<KeyIDpair> sortedKeys = new ArrayList<>();
+  private final ArrayList<Integer> sortedIDs = new ArrayList<>();
+  private final HashMap<Integer, String> idToKey = new HashMap<>();
+  private final HashMap<Integer, HDT_DT> idToRecord = new HashMap<>();
 
   int idCount()                { return sortedIDs.size(); }
   String getKeyByID(int id)    { return idToKey.get(id); }

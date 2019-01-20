@@ -90,7 +90,7 @@ public class HyperTable implements RecordListView
   private ObservableList<HyperTableRow> rows;
   private SortedList<HyperTableRow> sortedRows;
   private FilteredList<HyperTableRow> filteredRows;
-  final ArrayList<TableColumn<HyperTableRow, HyperTableCell>> tableCols = new ArrayList<TableColumn<HyperTableRow, HyperTableCell>>();
+  final ArrayList<TableColumn<HyperTableRow, HyperTableCell>> tableCols = new ArrayList<>();
   private List<HyperMenuItem<? extends HDT_Base>> contextMenuItems;
   RecordHandler<? extends HDT_Base> dblClickHandler = null;
   Runnable onShowMore = null;
@@ -246,7 +246,7 @@ public class HyperTable implements RecordListView
     if (prefID.length() > 0)
       registerTable(tv, prefID, dialog);
 
-    cols = new ArrayList<HyperTableColumn>();
+    cols = new ArrayList<>();
     rows = FXCollections.observableArrayList();
 
     contextMenuItems = new ArrayList<>();

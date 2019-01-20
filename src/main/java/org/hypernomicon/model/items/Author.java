@@ -26,7 +26,6 @@ import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.relations.NestedValue;
 import org.hypernomicon.model.relations.ObjectGroup;
 
 public final class Author implements Cloneable
@@ -89,9 +88,9 @@ public final class Author implements Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final boolean getIsEditor()   { return isNull(person) ? isEditor :   (work == null ? false         : db.getNestedBoolean(work, person, tagEditor)); }
-  public final boolean getIsTrans()    { return isNull(person) ? isTrans :    (work == null ? false         : db.getNestedBoolean(work, person, tagTranslator)); }
-  public final Ternary getInFileName() { return isNull(person) ? inFileName : (work == null ? Ternary.Unset : db.getNestedTernary(work, person, tagInFileName)); }
+  public final boolean getIsEditor()   { return person == null ? isEditor   : (work == null ? false         : db.getNestedBoolean(work, person, tagEditor)); }
+  public final boolean getIsTrans()    { return person == null ? isTrans    : (work == null ? false         : db.getNestedBoolean(work, person, tagTranslator)); }
+  public final Ternary getInFileName() { return person == null ? inFileName : (work == null ? Ternary.Unset : db.getNestedTernary(work, person, tagInFileName)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -126,13 +125,9 @@ public final class Author implements Cloneable
       if (name.equals(other.name) == false)
         return false;
 
-    if (getInFileName() != other.getInFileName()) return false;
-
-    if (getIsEditor() != other.getIsEditor()) return false;
-
-    if (getIsTrans() != other.getIsTrans()) return false;
-
-    return true;
+    return (getInFileName() == other.getInFileName()) &&
+           (getIsEditor  () == other.getIsEditor  ()) &&
+           (getIsTrans   () == other.getIsTrans   ());
   }
 
 //---------------------------------------------------------------------------
@@ -154,26 +149,12 @@ public final class Author implements Cloneable
   {
     if (person != objGroup.getPrimary()) return false;
 
-    if ((person == null) && (objGroup.getPrimary() == null))
-      if (name.equalsExceptParenthetical(new PersonName(objGroup.getPrimaryStr())) == false)
-        return false;
-
-    NestedValue val = objGroup.getValue(tagInFileName);
-
-    if ((val != null) && (val.ternary != getInFileName()))
+    if ((person == null) && (name.equalsExceptParenthetical(new PersonName(objGroup.getPrimaryStr())) == false))
       return false;
 
-    val = objGroup.getValue(tagEditor);
-
-    if ((val != null) && (val.bool != getIsEditor()))
-      return false;
-
-    val = objGroup.getValue(tagTranslator);
-
-    if ((val != null) && (val.bool != getIsTrans()))
-      return false;
-
-    return true;
+    return nullSwitch(objGroup.getValue(tagInFileName), true, val -> val.ternary == getInFileName()) &&
+           nullSwitch(objGroup.getValue(tagEditor    ), true, val -> val.bool    == getIsEditor  ()) &&
+           nullSwitch(objGroup.getValue(tagTranslator), true, val -> val.bool    == getIsTrans   ());
   }
 
 //---------------------------------------------------------------------------

@@ -159,21 +159,16 @@ public class HyperViewSequence
     if (viewList.isEmpty() && (okToInsert == false)) return;
 
     HyperTab<? extends HDT_Base, ? extends HDT_Base> hyperTab = curHyperTab();
+
     HDT_Base record = hyperTab.activeRecord();
+    if ((record != null) && HDT_Record.isEmpty(record)) // Make sure active record was not just deleted
+      return;
 
-    if (record != null)
-      if (HDT_Record.isEmpty(record))
-        return;
+    record = hyperTab.viewRecord();                     // Make sure view record was not just deleted
+    if ((record != null) && HDT_Record.isEmpty(record)) // If concept was just deleted, active record (term) will be null
+      return;                                           // so we also have to check view record (concept)
 
-    updateTabView(hyperTab);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private <HDT_RT extends HDT_Base, HDT_CT extends HDT_Base> void updateTabView(HyperTab<HDT_RT, HDT_CT> hyperTab)
-  {
-    updateCurrentView(new HyperView<HDT_CT>(curTabEnum(), hyperTab.viewRecord(), hyperTab.getMainTextInfo()));
+    updateCurrentView(new HyperView<>(curTabEnum(), record, hyperTab.getMainTextInfo()));
   }
 
 //---------------------------------------------------------------------------
@@ -250,7 +245,7 @@ public class HyperViewSequence
           HyperView<? extends HDT_Base> view;
 
           if (record.getType() == hdtWorkLabel)
-            view = new HyperView<HDT_Base>(treeTab, record);
+            view = new HyperView<>(treeTab, record);
           else
             view = createViewForRecord(record);
 
@@ -271,7 +266,7 @@ public class HyperViewSequence
 
   public static <HDT_RT extends HDT_Base> HyperView<HDT_RT> createViewForRecord(TabEnum tabEnum, HDT_RT record)
   {
-    return new HyperView<HDT_RT>(tabEnum, record);
+    return new HyperView<>(tabEnum, record);
   }
 
 //---------------------------------------------------------------------------

@@ -20,6 +20,8 @@ package org.hypernomicon.view.dialogs;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
+import static org.hypernomicon.util.Util.*;
+
 import java.util.List;
 
 import javafx.collections.FXCollections;
@@ -51,8 +53,7 @@ public class RecordSelectDialogController extends HyperDialog
 
   private void init(List<HyperTableCell> list)
   {
-    if (list == null) return;
-    if (list.size() < 1) return;
+    if (collEmpty(list)) return;
     HDT_RecordType objType = HyperTableCell.getCellType(list.get(0));
 
     listView.setItems(FXCollections.observableArrayList(list));

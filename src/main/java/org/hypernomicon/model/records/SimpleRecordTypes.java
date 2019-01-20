@@ -68,31 +68,31 @@ public class SimpleRecordTypes
 
   public static final class HDT_State extends HDT_SimpleRecord
   { public HDT_State(HDT_RecordState xmlState, HyperDataset<HDT_State> dataset)                     { super(xmlState, dataset);  }
-    public HDT_RecordType getType()                                                                 { return hdtState;           } }
+    @Override public HDT_RecordType getType()                                                       { return hdtState;           } }
 
   public static final class HDT_Country extends HDT_SimpleRecord
   { public HDT_Country(HDT_RecordState xmlState, HyperDataset<HDT_Country> dataset)                 { super(xmlState, dataset);  }
-    public HDT_RecordType getType()                                                                 { return hdtCountry;         } }
+    @Override public HDT_RecordType getType()                                                       { return hdtCountry;         } }
 
   public static final class HDT_Rank extends HDT_SimpleRecord
   { public HDT_Rank(HDT_RecordState xmlState, HyperDataset<HDT_Rank> dataset)                       { super(xmlState, dataset);  }
-    public HDT_RecordType getType()                                                                 { return hdtRank;            } }
+    @Override public HDT_RecordType getType()                                                       { return hdtRank;            } }
 
   public static final class HDT_PersonStatus extends HDT_SimpleRecord
   { public HDT_PersonStatus(HDT_RecordState xmlState, HyperDataset<HDT_PersonStatus> dataset)       { super(xmlState, dataset);  }
-    public HDT_RecordType getType()                                                                 { return hdtPersonStatus;    } }
+    @Override public HDT_RecordType getType()                                                       { return hdtPersonStatus;    } }
 
   public static final class HDT_Field extends HDT_SimpleRecord
   { public HDT_Field(HDT_RecordState xmlState, HyperDataset<HDT_Field> dataset)                     { super(xmlState, dataset);  }
-    public HDT_RecordType getType()                                                                 { return hdtField;           } }
+    @Override public HDT_RecordType getType()                                                       { return hdtField;           } }
 
   public static final class HDT_PositionVerdict extends HDT_Verdict
   { public HDT_PositionVerdict(HDT_RecordState xmlState, HyperDataset<HDT_PositionVerdict> dataset) { super(xmlState, dataset);  }
-    public HDT_RecordType getType()                                                                 { return hdtPositionVerdict; } }
+    @Override public HDT_RecordType getType()                                                       { return hdtPositionVerdict; } }
 
   public static final class HDT_ArgumentVerdict extends HDT_Verdict
   { public HDT_ArgumentVerdict(HDT_RecordState xmlState, HyperDataset<HDT_ArgumentVerdict> dataset) { super(xmlState, dataset);  }
-    public HDT_RecordType getType()                                                                 { return hdtArgumentVerdict; } }
+    @Override public HDT_RecordType getType()                                                       { return hdtArgumentVerdict; } }
 
   public static final class HDT_InstitutionType extends HDT_SimpleRecord
   {
@@ -100,7 +100,7 @@ public class SimpleRecordTypes
     public static final int DEPARTMENT_INST_TYPE_ID = 10;
 
     public HDT_InstitutionType(HDT_RecordState xmlState, HyperDataset<HDT_InstitutionType> dataset) { super(xmlState, dataset);  }
-    public HDT_RecordType getType()                                                                 { return hdtInstitutionType; } }
+    @Override public HDT_RecordType getType()                                                       { return hdtInstitutionType; } }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

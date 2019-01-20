@@ -97,7 +97,7 @@ public class OmniFinder
     cellLists = new ArrayList<>();
     rows = new ArrayList<>();
 
-    tierToTypeSet = new EnumMap<TierEnum, LinkedHashSet<HDT_RecordType>>(TierEnum.class);
+    tierToTypeSet = new EnumMap<>(TierEnum.class);
     records = new HashSet<>();
 
     tierToTypeSet.put(tierExactName,        typeSet);

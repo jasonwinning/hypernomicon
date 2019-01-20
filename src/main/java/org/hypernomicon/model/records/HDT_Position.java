@@ -57,7 +57,7 @@ public class HDT_Position extends HDT_RecordWithConnector
   @Override public boolean isUnitable()     { return true; }
 
   public void setLargerPositions(List<HDT_Position> list) { updateObjectsFromList(rtParentPosOfPos, list); }
-  public void setDebates(List<HDT_Debate> list)           { updateObjectsFromList(rtDebateOfPosition, list); };
+  public void setDebates(List<HDT_Debate> list)           { updateObjectsFromList(rtDebateOfPosition, list); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

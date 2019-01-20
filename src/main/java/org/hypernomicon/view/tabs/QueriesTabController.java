@@ -386,54 +386,51 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
       if (newFav != null) invokeFavorite(newFav);
 
-      if (doSearch)
+      if (doSearch == false) return false;
+
+      if (type != null)
       {
-        if (type != null)
+        programmaticFieldChange = true;
+
+        htFields.clear();
+        HyperTableRow row = htFields.newDataRow();
+
+        htFields.selectID(0, row, type.getCode());
+
+        if (query > -1)
         {
-          programmaticFieldChange = true;
+          htFields.selectID(1, row, query);
 
-          htFields.clear();
-          HyperTableRow row = htFields.newDataRow();
-
-          htFields.selectID(0, row, type.getCode());
-
-          if (query > -1)
+          if (op1 != null)
           {
-            htFields.selectID(1, row, query);
-
-            if (op1 != null)
-            {
-              if (getCellID(op1) > 0)
-                htFields.selectID(2, row, getCellID(op1));
-              else if (getCellText(op1).length() == 0)
-                htFields.selectType(2, row, getCellType(op1));
-              else
-                row.setCellValue(2, op1.clone());
-            }
-
-            if (op2 != null)
-            {
-              if (getCellID(op2) > 0)
-                htFields.selectID(3, row, getCellID(op2));
-              else if (getCellText(op2).length() == 0)
-                htFields.selectType(3, row, getCellType(op2));
-              else
-                row.setCellValue(3, op2.clone());
-            }
+            if (getCellID(op1) > 0)
+              htFields.selectID(2, row, getCellID(op1));
+            else if (getCellText(op1).length() == 0)
+              htFields.selectType(2, row, getCellType(op1));
+            else
+              row.setCellValue(2, op1.clone());
           }
 
-          programmaticFieldChange = false;
-
-          htFields.selectRow(0);
+          if (op2 != null)
+          {
+            if (getCellID(op2) > 0)
+              htFields.selectID(3, row, getCellID(op2));
+            else if (getCellText(op2).length() == 0)
+              htFields.selectType(3, row, getCellType(op2));
+            else
+              row.setCellValue(3, op2.clone());
+          }
         }
 
-        if (caption.length() > 0)
-          tab.setText(caption);
+        programmaticFieldChange = false;
 
-        return btnExecuteClick(caption.length() == 0);
+        htFields.selectRow(0);
       }
 
-      return false;
+      if (caption.length() > 0)
+        tab.setText(caption);
+
+      return btnExecuteClick(caption.length() == 0);
     }
 
   //---------------------------------------------------------------------------
@@ -636,20 +633,29 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
       switchToRecordMode();
 
       QuerySource combinedSource;
-      Set<HDT_Base> filteredRecords = new LinkedHashSet<HDT_Base>();
+      Set<HDT_Base> filteredRecords = new LinkedHashSet<>();
       boolean hasFiltered = false, hasUnfiltered = false, needMentionsIndex = false;
       EnumSet<HDT_RecordType> unfilteredTypes = EnumSet.noneOf(HDT_RecordType.class);
       LinkedHashMap<HyperTableRow, QuerySource> sources = new LinkedHashMap<>();
       HDT_RecordType singleType = null;
+      boolean showDesc = false;
 
       for (HyperTableRow row : htFields.getDataRows())
       {
         int query = row.getID(1);
         if (query < 0) continue;
 
-        QueryEngine<? extends HDT_Base> engine = typeToEngine.get(getQueryType(row));
+        if (query == QUERY_ANY_FIELD_CONTAINS)
+          showDesc = true;
 
-        if (queryNeedsMentionsIndex(query, engine))
+        QueryType type = getQueryType(row);
+
+        if ((type == qtAllRecords) && ((query == AllQueryEngine.QUERY_LINKING_TO_RECORD)    ||
+                                       (query == AllQueryEngine.QUERY_MATCHING_RECORD  )    ||
+                                       (query == AllQueryEngine.QUERY_MATCHING_STRING  )))
+          showDesc = true;
+
+        if (queryNeedsMentionsIndex(query, typeToEngine.get(type)))
           needMentionsIndex = true;
       }
 
@@ -815,6 +821,9 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
         colGroups.forEach(colGroup -> colGroup.setColumns(col, tag));
       });
+
+      if (showDesc)
+        chkShowDesc.setSelected(true);
 
       return true;
     }
@@ -1433,15 +1442,15 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
     if (curQV != null)
     {
-      curQV.spMain.showDetailNodeProperty().unbind();
+      curQV.spMain .showDetailNodeProperty().unbind();
       curQV.spLower.showDetailNodeProperty().unbind();
     }
 
-    chkShowFields.setSelected(qV.spMain.isShowDetailNode());
-    chkShowDesc.setSelected(qV.spLower.isShowDetailNode());
+    chkShowFields.setSelected(qV.spMain .isShowDetailNode());
+    chkShowDesc  .setSelected(qV.spLower.isShowDetailNode());
 
-    qV.spMain.showDetailNodeProperty().bind(chkShowFields.selectedProperty());
-    qV.spLower.showDetailNodeProperty().bind(chkShowDesc.selectedProperty());
+    qV.spMain .showDetailNodeProperty().bind(chkShowFields.selectedProperty());
+    qV.spLower.showDetailNodeProperty().bind(chkShowDesc  .selectedProperty());
 
     curQV = qV;
     updateCB();
@@ -1520,7 +1529,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
       case QUERY_ANY_FIELD_CONTAINS :
 
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<>();
         record.getAllStrings(list, searchLinkedRecords);
 
         String val1 = getCellText(param1).toLowerCase();

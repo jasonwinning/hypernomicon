@@ -371,22 +371,42 @@ public class NewPersonDialogController extends HyperDialog
 
     HashSet<HDT_Person> matchedPersons = new HashSet<>();
 
-    HDT_Work work1 = nullSwitch(person1.author, null, author -> author.getWork());
+    HDT_Work work1 = nullSwitch(person1.author, null, author1 -> author1.getWork());
 
     for (PersonForDupCheck person2 : list)
     {
-      if      (nullSwitch(person1.author     , false, author -> author == person2.author     )) continue;
-      else if (nullSwitch(person1.getPerson(), false, person -> person == person2.getPerson())) continue;
-
-      if ((work1 != null) && (person1.fullLCNameEngChar.equals(person2.fullLCNameEngChar)))
-        if (nullSwitch(person2.author, false, author -> work1 == author.getWork()))
-          continue;
+      if      (nullSwitch(person1.author     , false, author1    -> author1    == person2.author     )) continue;
+      else if (nullSwitch(person1.getPerson(), false, personRec1 -> personRec1 == person2.getPerson())) continue;
 
       boolean isMatch = false;
 
-      if      (person1.keySetNoNicknames.isSubsetOf(person2.keySet))        isMatch = true;
-      else if (person2.keySetNoNicknames.isSubsetOf(person1.keySet))        isMatch = true;
-      else if (person1.fullLCNameEngChar.equals(person2.fullLCNameEngChar)) isMatch = true;
+      if (person1.fullLCNameEngChar.equals(person2.fullLCNameEngChar))
+      {
+        if (work1 != null)
+        {
+          Author author2 = person2.author;
+
+          if (author2 != null)
+          {
+            if (work1 == author2.getWork())
+              continue;
+
+            if (nullSwitch(author2.getPerson(), false, personRec2 -> work1.getAuthors().containsPerson(personRec2)))
+              continue;
+          }
+        }
+
+        if (nullSwitch(person2.author     , false, author2    ->
+            nullSwitch(author2.getWork()  , false, work2      ->
+            nullSwitch(person1.author     , false, author1    ->
+            nullSwitch(author1.getPerson(), false, personRec1 -> work2.getAuthors().containsPerson(personRec1))))))
+          continue;
+
+        isMatch = true;
+      }
+      else if (person1.keySetNoNicknames.isSubsetOf(person2.keySet) ||
+               person2.keySetNoNicknames.isSubsetOf(person1.keySet))
+        isMatch = true;
 
       if (isMatch)
       {

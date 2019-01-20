@@ -62,7 +62,7 @@ public class InterComputerMsg
     List<String> s;
     FilePath filePath;
 
-    s = new ArrayList<String>();
+    s = new ArrayList<>();
     s.add(source);
     s.add(dest);
 

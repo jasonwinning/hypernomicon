@@ -71,7 +71,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
     this.tv = tv;
     this.fileTable = fileTable;
 
-    treeModel = new TreeModel<FileRow>(this, null);
+    treeModel = new TreeModel<>(this, null);
     ddHoverHelper = new DragNDropHoverHelper<>(tv);
 
     clear();

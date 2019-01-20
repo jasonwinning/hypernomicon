@@ -693,8 +693,7 @@ public final class MainController
 
   public void btnForwardClick()
   {
-    if (btnForward.isDisabled()) return;
-    if (cantSaveRecord(true)) return;
+    if (btnForward.isDisabled() || cantSaveRecord(true)) return;
 
     viewSequence.stepForward();
   }
@@ -704,8 +703,7 @@ public final class MainController
 
   public void btnBackClick()
   {
-    if (btnBack.isDisabled()) return;
-    if (cantSaveRecord(true)) return;
+    if (btnBack.isDisabled() || cantSaveRecord(true)) return;
 
     viewSequence.stepBack();
   }
@@ -1134,7 +1132,7 @@ public final class MainController
 
   public void initResultCB()
   {
-    cbResultGoTo = new ComboBox<ResultsRow>();
+    cbResultGoTo = new ComboBox<>();
     cbResultGoTo.setEditable(true);
 
     copyRegionLayout(cbGoTo, cbResultGoTo);
@@ -1945,21 +1943,21 @@ public final class MainController
       return;
     }
 
-    HyperTab.setTabView(new HyperView<HDT_Person>     (personTab,      db.persons     .getByID(db.prefs.getInt(PREF_KEY_PERSON_ID     , -1))));
-    HyperTab.setTabView(new HyperView<HDT_Institution>(institutionTab, db.institutions.getByID(db.prefs.getInt(PREF_KEY_INSTITUTION_ID, -1))));
-    HyperTab.setTabView(new HyperView<HDT_Debate>     (debateTab,      db.debates     .getByID(db.prefs.getInt(PREF_KEY_DEBATE_ID     , -1))));
-    HyperTab.setTabView(new HyperView<HDT_Position>   (positionTab,    db.positions   .getByID(db.prefs.getInt(PREF_KEY_POSITION_ID   , -1))));
-    HyperTab.setTabView(new HyperView<HDT_Argument>   (argumentTab,    db.arguments   .getByID(db.prefs.getInt(PREF_KEY_ARGUMENT_ID   , -1))));
-    HyperTab.setTabView(new HyperView<HDT_Work>       (workTab,        db.works       .getByID(db.prefs.getInt(PREF_KEY_WORK_ID       , -1))));
+    HyperTab.setTabView(new HyperView<>(personTab,      db.persons     .getByID(db.prefs.getInt(PREF_KEY_PERSON_ID     , -1))));
+    HyperTab.setTabView(new HyperView<>(institutionTab, db.institutions.getByID(db.prefs.getInt(PREF_KEY_INSTITUTION_ID, -1))));
+    HyperTab.setTabView(new HyperView<>(debateTab,      db.debates     .getByID(db.prefs.getInt(PREF_KEY_DEBATE_ID     , -1))));
+    HyperTab.setTabView(new HyperView<>(positionTab,    db.positions   .getByID(db.prefs.getInt(PREF_KEY_POSITION_ID   , -1))));
+    HyperTab.setTabView(new HyperView<>(argumentTab,    db.arguments   .getByID(db.prefs.getInt(PREF_KEY_ARGUMENT_ID   , -1))));
+    HyperTab.setTabView(new HyperView<>(workTab,        db.works       .getByID(db.prefs.getInt(PREF_KEY_WORK_ID       , -1))));
 
     HDT_Term term = db.terms.getByID(db.prefs.getInt(PREF_KEY_TERM_ID, -1));
-    HDT_Concept concept = (term != null ? term.concepts.get(0) : null);
-    HyperTab.setTabView(new HyperView<HDT_Concept>    (termTab,        concept));
+    HDT_Concept concept = term != null ? term.concepts.get(0) : null;
+    HyperTab.setTabView(new HyperView<>(termTab,        concept));
 
-    HyperTab.setTabView(new HyperView<HDT_MiscFile>   (miscFileTab,    db.miscFiles   .getByID(db.prefs.getInt(PREF_KEY_FILE_ID       , -1))));
-    HyperTab.setTabView(new HyperView<HDT_Note>       (noteTab,        db.notes       .getByID(db.prefs.getInt(PREF_KEY_NOTE_ID       , -1))));
-    HyperTab.setTabView(new HyperView<HDT_Base>       (queryTab,       null));
-    HyperTab.setTabView(new HyperView<HDT_Base>       (treeTab,        null));
+    HyperTab.setTabView(new HyperView<>(miscFileTab,    db.miscFiles   .getByID(db.prefs.getInt(PREF_KEY_FILE_ID       , -1))));
+    HyperTab.setTabView(new HyperView<>(noteTab,        db.notes       .getByID(db.prefs.getInt(PREF_KEY_NOTE_ID       , -1))));
+    HyperTab.setTabView(new HyperView<>(queryTab,       null));
+    HyperTab.setTabView(new HyperView<>(treeTab,        null));
 
     enableAll(db.isLoaded());
 
@@ -2073,7 +2071,7 @@ public final class MainController
       return;
     }
 
-    viewSequence.forwardToNewSlotAndView(new HyperView<HDT_Base>(treeTab, record));
+    viewSequence.forwardToNewSlotAndView(new HyperView<>(treeTab, record));
   }
 
 //---------------------------------------------------------------------------
@@ -2557,7 +2555,7 @@ public final class MainController
 
     QueriesTabController queriesTab = (QueriesTabController) HyperTab.getHyperTab(queryTab);
 
-    viewSequence.forwardToNewSlotAndView(new HyperView<HDT_Base>(queryTab, queriesTab.activeRecord(), queriesTab.getMainTextInfo()));
+    viewSequence.forwardToNewSlotAndView(new HyperView<>(queryTab, queriesTab.activeRecord(), queriesTab.getMainTextInfo()));
 
     boolean result = queriesTab.showSearch(doSearch, type, query, fav, op1, op2, caption);
     updateFavorites();
@@ -2820,10 +2818,7 @@ public final class MainController
 
   public void handleArgs(List<String> args)
   {
-    if (db.isLoaded() == false) return;
-    if (args == null) return;
-    if (args.size() < 1) return;
-    if (windows.getOutermostModality() != Modality.NONE) return;
+    if ((db.isLoaded() == false) || collEmpty(args) || (windows.getOutermostModality() != Modality.NONE)) return;
 
     FilePath filePath = new FilePath(args.get(0));
 

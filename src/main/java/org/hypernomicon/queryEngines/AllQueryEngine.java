@@ -160,7 +160,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
 
         if (searchDummy == null) return false;
 
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<>();
         record.getAllStrings(list, true);
 
         for (String str : list)

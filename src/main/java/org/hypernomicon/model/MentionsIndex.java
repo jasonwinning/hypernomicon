@@ -48,7 +48,7 @@ public class MentionsIndex
   private final List<DatabaseEvent> ndxCompleteHandlers;
   private final KeywordLinkList linkList;
   private final EnumSet<HDT_RecordType> types;
-  private final ArrayList<String> strList = new ArrayList<String>();
+  private final ArrayList<String> strList = new ArrayList<>();
 
   private RebuildThread thread = null;
   private HyperTask task = null;
@@ -128,7 +128,6 @@ public class MentionsIndex
     strList.clear();
 
     record.getAllStrings(strList, true);
-    if (strList.size() == 0) return;
 
     mentionedAnywhereToMentioners.removeReverseKey(record);
     mentionedInDescToMentioners.removeReverseKey(record);

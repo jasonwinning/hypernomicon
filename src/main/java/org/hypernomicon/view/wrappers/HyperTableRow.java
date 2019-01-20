@@ -38,7 +38,7 @@ public class HyperTableRow
 {
   private ObservableList<HyperTableCell> cells;
   private HyperTable table;
-  private HashMap<Integer, Populator> populators = new HashMap<Integer, Populator>();
+  private HashMap<Integer, Populator> populators = new HashMap<>();
 
 //---------------------------------------------------------------------------
 

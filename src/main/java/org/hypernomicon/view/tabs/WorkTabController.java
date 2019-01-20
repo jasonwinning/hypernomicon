@@ -29,7 +29,6 @@ import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
@@ -189,9 +188,9 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   private double btnOpenLinkLeftAnchor, tfLinkLeftAnchor, tfLinkRightAnchor;
   private SplitMenuButton btnFolder = null;
   private HDT_Work curWork, lastWork = null;
-  private final ObjectProperty<BibData> crossrefBD = new SimpleObjectProperty<BibData>(),
-                                        pdfBD      = new SimpleObjectProperty<BibData>(),
-                                        googleBD   = new SimpleObjectProperty<BibData>();
+  private final ObjectProperty<BibData> crossrefBD = new SimpleObjectProperty<>(),
+                                        pdfBD      = new SimpleObjectProperty<>(),
+                                        googleBD   = new SimpleObjectProperty<>();
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
 
@@ -958,6 +957,8 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     HDT_Folder folder = null;
     boolean notInSame = false;
 
+    htWorkFiles.clearKeepSortOrder();
+
     for (HDT_WorkFile file : curWork.workFiles)
     {
       if (file.getPath().getParentFolder() != null)
@@ -999,22 +1000,10 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 
   public static int populateDisplayersAndKeyMentioners(HDT_RecordWithPath record, HyperTable hyperTable)
   {
-    Set<HDT_RecordWithConnector> set = db.getKeyWorkMentioners(record);
+    Set<HDT_RecordWithConnector> set = nullSwitch(db.getKeyWorkMentioners(record), new HashSet<>());
 
     if (record.hasMainText())
-    {
-      Set<MainText> displayers = db.getDisplayers(HDT_RecordWithConnector.class.cast(record).getMainText());
-
-      for (MainText displayerText : displayers)
-      {
-        if (set == null)
-          set = new HashSet<>();
-
-        set.add(displayerText.getRecord());
-      }
-    }
-
-    if (set == null) return 0;
+      db.getDisplayers(((HDT_RecordWithConnector)record).getMainText()).forEach(displayerText -> set.add(displayerText.getRecord()));
 
     hyperTable.buildRows(set, (row, mentioner) ->
     {
@@ -1159,14 +1148,14 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     HDT_Work oldWork = curWork,
              newWork = db.createNewBlankRecord(hdtWork);
 
-    int oldNdx = curWork.workFiles.indexOf(workFile);
-
-    int startPage = getCurPageNum(curWork, workFile, true),
+    int oldNdx = curWork.workFiles.indexOf(workFile),
+        startPage = getCurPageNum(curWork, workFile, true),
         endPage = getCurPageNum(curWork, workFile, false);
 
     newWork.addWorkFile(workFile.getID(), false, false);
+    Authors authors = newWork.getAuthors();
 
-    curWork.getAuthors().forEach(author -> newWork.getAuthors().add(author));
+    curWork.getAuthors().forEach(authors::add);
 
     newWork.setStartPageNum(workFile, startPage);
     newWork.setEndPageNum(workFile, endPage);
@@ -1176,6 +1165,10 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     if (showWorkDialog(workFile)) return;
 
     db.getObjectList(rtWorkFileOfWork, oldWork, true).add(oldNdx, workFile);
+
+    oldWork.setStartPageNum(workFile, startPage);
+    oldWork.setEndPageNum(workFile, endPage);
+
     ui.deleteCurrentRecord(false);
   }
 
@@ -1210,6 +1203,11 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 
     db.getObjectList(rtWorkFileOfWork, oldWork, true).add(oldNdx, workFile);
     db.getObjectList(rtWorkFileOfWork, newWork, true).remove(workFile);
+
+    refreshFiles();
+
+    oldWork.setStartPageNum(workFile, startPage);
+    oldWork.setEndPageNum(workFile, endPage);
 
     ui.btnBackClick();
   }

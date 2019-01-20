@@ -477,10 +477,10 @@ public final class MainTextWrapper
   {
     if (editing)
     {
-      keyWorks = new ArrayList<KeyWork>();
+      keyWorks = new ArrayList<>();
       html = editCtrlr.getHtmlAndKeyWorks(keyWorks);
 
-      displayItems = new ArrayList<DisplayItem>();
+      displayItems = new ArrayList<>();
       displayItems.addAll(editCtrlr.getDisplayItems());
 
       setCompleteHtml();
@@ -873,7 +873,7 @@ public final class MainTextWrapper
 
     if (displayItems == null)
     {
-      displayItems = new ArrayList<DisplayItem>();
+      displayItems = new ArrayList<>();
       MainText.addDefaultItemsToList(record, displayItems);
     }
 
@@ -1002,7 +1002,7 @@ public final class MainTextWrapper
   {
     if ((parentLabel == null) || parentLabel.subLabels.isEmpty()) return;
 
-    ArrayList<HDT_WorkLabel> sortedLabels = new ArrayList<HDT_WorkLabel>(parentLabel.subLabels);
+    ArrayList<HDT_WorkLabel> sortedLabels = new ArrayList<>(parentLabel.subLabels);
     sortedLabels.sort((label1, label2) -> label1.name().compareToIgnoreCase(label2.name()));
 
     sortedLabels.forEach(label ->
@@ -1374,7 +1374,7 @@ public final class MainTextWrapper
 
   private static void appendKeyWorkBody(List<KeyWork> keyWorks, StringBuilder innerHtml, boolean sortByName)
   {
-    List<String> searchKeys = new ArrayList<String>();
+    List<String> searchKeys = new ArrayList<>();
 
     HashMap<String, String> linkMap = getKeyWorkLinkMap(keyWorks, searchKeys, sortByName);
 
@@ -1465,7 +1465,7 @@ public final class MainTextWrapper
 
     if (showing && editing)
     {
-      keyWorks = new ArrayList<KeyWork>();
+      keyWorks = new ArrayList<>();
       curRecord.getMainText().setHtml(editCtrlr.getHtmlAndKeyWorks(keyWorks));
       curRecord.getMainText().setKeyWorksFromList(keyWorks, true);
       curRecord.getMainText().setDisplayItemsFromList(editCtrlr.getDisplayItems());

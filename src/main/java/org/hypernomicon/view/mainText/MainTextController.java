@@ -690,7 +690,7 @@ public class MainTextController
       tpKeyWorks.setExpanded((keyWorks.size() > 0) || (record.getType() != hdtPerson));
 
       HashMap<String, String> linkMap = new HashMap<>();
-      List<String> searchKeys = new ArrayList<String>();
+      List<String> searchKeys = new ArrayList<>();
 
       keyWorks.forEach(keyWork ->
       {

@@ -45,8 +45,8 @@ public class QueryPopulator extends Populator
 
   public QueryPopulator()
   {
-    rowToChoices = new HashMap<HyperTableRow, List<HyperTableCell>>();
-    rowToQueryType = new HashMap<HyperTableRow, QueryType>();
+    rowToChoices = new HashMap<>();
+    rowToQueryType = new HashMap<>();
   }
 
 //---------------------------------------------------------------------------

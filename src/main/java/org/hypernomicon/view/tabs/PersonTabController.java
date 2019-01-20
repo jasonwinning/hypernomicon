@@ -860,7 +860,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     btnGoogle.setOnAction(event -> searchGoogle(tfFirst.getText() + " " + tfLast.getText() + " " + HyperTableCell.getCellText(cbField.getSelectionModel().getSelectedItem()), true));
     btnScholar.setOnAction(event -> btnScholarClick());
 
-    invViews = new ArrayList<InvestigationView>();
+    invViews = new ArrayList<>();
 
     ivPerson.setOnMouseClicked(event ->
     {

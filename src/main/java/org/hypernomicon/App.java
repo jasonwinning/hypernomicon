@@ -45,7 +45,6 @@ import java.io.PrintWriter;
 import java.net.ConnectException;
 import java.net.Socket;
 
-import static java.util.Objects.*;
 import static java.lang.management.ManagementFactory.*;
 
 import java.util.ArrayList;
@@ -151,10 +150,10 @@ public final class App extends Application
          BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())))
     {
       List<String> args = getParameters().getUnnamed();
-      out.println(String.valueOf(args.size()));
-      for (String arg : args) out.println(arg);
-      String line = null;
-      while (isNull(line)) line = in.readLine();
+      out.println(args.size());
+      args.forEach(out::println);
+      String line;
+      do { line = in.readLine(); } while (line == null);
       Platform.exit();
       return;
     }
@@ -270,19 +269,18 @@ public final class App extends Application
 
       if (testMainTextEditing)
       {
-        MainTextWrapper mainText = null;
+        MainTextWrapper mainText;
 
         if (record.getType() == hdtInvestigation)
           mainText = PersonTabController.class.cast(getHyperTab(personTab)).getInvMainTextWrapper(record.getID());
         else
           mainText = ui.currentTab().getMainTextWrapper();
 
-        if (nonNull(mainText))
+        if (mainText != null)
           mainText.beginEditing(false);
       }
 
-      int curPercent = (ctr * 100) / total;
-      ctr++;
+      int curPercent = (ctr++ * 100) / total;
 
       if (curPercent > lastPercent)
       {

@@ -38,18 +38,21 @@ import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
+import org.hypernomicon.util.Util;
 import org.hypernomicon.view.dialogs.ChangeParentDialogController;
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.tabs.TreeTabController;
 import org.hypernomicon.view.wrappers.DragNDropHoverHelper.DragNDropContainer;
 import org.hypernomicon.view.wrappers.HyperTable.HyperMenuItem;
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeSortMode;
+import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.TransferMode;
@@ -92,10 +95,10 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
     tcb = new TreeCB(comboBox, this);
     ddHoverHelper = new DragNDropHoverHelper<>(ttv);
 
-    debateTree = new TreeModel<TreeRow>(this, tcb);
-    noteTree = new TreeModel<TreeRow>(this, tcb);
-    termTree = new TreeModel<TreeRow>(this, tcb);
-    labelTree = new TreeModel<TreeRow>(this, tcb);
+    debateTree = new TreeModel<>(this, tcb);
+    noteTree = new TreeModel<>(this, tcb);
+    termTree = new TreeModel<>(this, tcb);
+    labelTree = new TreeModel<>(this, tcb);
 
     contextMenuItems = new ArrayList<>();
 
@@ -234,14 +237,19 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @SuppressWarnings("unchecked")
   public void sort()
   {
-    ttv.getColumns().get(0).setSortable(true);
-    ttv.getSortOrder().clear();
-    ttv.getSortOrder().add(ttv.getColumns().get(0));
-    ttv.getColumns().get(0).sortTypeProperty().set(SortType.ASCENDING);
+    TreeTableColumn<TreeRow, ?> column = ttv.getColumns().get(0);
+
+    column.setSortable(true);
+    column.sortTypeProperty().set(SortType.ASCENDING);
     ttv.setSortMode(TreeSortMode.ALL_DESCENDANTS);
-    ttv.sort();
+
+    ObservableList<TreeTableColumn<TreeRow, ?>> list = ttv.getSortOrder();
+
+    if ((list.size() != 1) || (list.get(0) != column))
+      list.setAll(column);
 
     tcb.refresh();
   }
@@ -251,8 +259,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 
   public void selectNextInstance(boolean increment)
   {
-    TreeItem<TreeRow> item = selectedItem();
-    TreeRow row = item.getValue();
+    TreeRow row = selectedItem().getValue();
 
     ArrayList<TreeRow> list = getRowsForRecord(row.getRecord());
     int ndx = list.indexOf(row);
@@ -260,8 +267,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
     ndx = ndx + (increment ? 1 : -1);
     if (ndx == list.size()) ndx = 0;
     if (ndx < 0) ndx = list.size() - 1;
-    row = list.get(ndx);
-    selectRecord(row.getRecord(), ndx, false);
+    selectRecord(list.get(ndx).getRecord(), ndx, false);
   }
 
 //---------------------------------------------------------------------------
@@ -269,44 +275,21 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 
   public void find(String text, boolean forward, boolean nameOnly)
   {
-    TreeItem<TreeRow> firstItem = selectedItem(), item = firstItem;
-    TreeRow row;
-    boolean found = false;
     text = text.toLowerCase();
     searchingDown = forward;
     searchingNameOnly = nameOnly;
 
-    if (firstItem == null)
-    {
-      firstItem = ttv.getSelectionModel().getModelItem(0);
-      item = firstItem;
-    }
+    TreeItem<TreeRow> firstItem = nullSwitch(selectedItem(), ttv.getSelectionModel().getModelItem(0)),
+                      item = firstItem;
 
     do
     {
-      if (forward)
-      {
-        item = getNext(item, false);
+      item = forward ? nullSwitch(getNext(item, false), getNext(ttv.getRoot(), false)) : getPrevious(item);
 
-        if (item == null)
-          item = getNext(ttv.getRoot(), false);
-      }
-      else
-      {
-        item = getPrevious(item);
-      }
+      TreeRow row = item.getValue();
 
-      row = item.getValue();
-
-      if (row.getName().toLowerCase().contains(text))
-        found = true;
-      else if (searchingNameOnly == false)
-      {
-        if (row.getDescString().toLowerCase().contains(text))
-          found = true;
-      }
-
-      if (found)
+      if (row.getName().toLowerCase().contains(text) ||
+          ((searchingNameOnly == false) && (row.getDescString().toLowerCase().contains(text))))
       {
         TreeTabController.class.cast(HyperTab.getHyperTab(treeTab)).textToHilite = text;
         selectRecord(row.getRecord(), getRowsForRecord(row.getRecord()).indexOf(row), true);
@@ -322,22 +305,16 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 
   public TreeItem<TreeRow> getPrevious(TreeItem<TreeRow> item)
   {
-    TreeItem<TreeRow> prev;
+    TreeItem<TreeRow> prev = item.previousSibling();
+    if (prev != null)
+      return lastDescendant(prev);
 
-    prev = item.previousSibling();
-    if (prev == null)
-    {
-      prev = item.getParent();
+    prev = item.getParent();
 
-      if ((prev == null) || (prev == ttv.getRoot()))
-      {
-        return lastDescendant(ttv.getRoot());
-      }
+    if ((prev == null) || (prev == ttv.getRoot()))
+      return lastDescendant(ttv.getRoot());
 
-      return prev;
-    }
-
-    return lastDescendant(prev);
+    return prev;
   }
 
 //---------------------------------------------------------------------------
@@ -356,14 +333,10 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 
   public TreeItem<TreeRow> getNext(TreeItem<TreeRow> item, boolean fromChild)
   {
-    if (fromChild == false)
-      if (item.getChildren().size() > 0)
-        return item.getChildren().get(0);
+    if ((fromChild == false) && (item.getChildren().size() > 0))
+      return item.getChildren().get(0);
 
-    TreeItem<TreeRow> next = item.nextSibling();
-    if (next != null) return next;
-
-    return nullSwitch(item.getParent(), null, n -> getNext(n, true));
+    return nullSwitch(item.nextSibling(), nullSwitch(item.getParent(), null, parent -> getNext(parent, true)), Util::that);
   }
 
 //---------------------------------------------------------------------------
@@ -389,21 +362,15 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
   {
     ddHoverHelper.scroll(dragEvent);
 
-    if (draggingRow == null) return false;
-    if (targetRow == null) return false;
+    HDT_Base source = nullSwitch(draggingRow, null, row -> row.getRecord()),
+             target = nullSwitch(targetRow, null, row -> row.getRecord());
 
-    HDT_Base source = draggingRow.getRecord();
-    if (source == null) return false;
+    if ((source == null) || (target == null) || (source == target) ||
+        (source.getType() == target.getType()) && (source.getID() == target.getID())) return false;
 
-    if (draggingRow.treeItem.getParent() == null) return false;
-    if (draggingRow.treeItem.getParent().getValue() == null) return false;
-    if (draggingRow.treeItem.getParent().getValue().getRecord() == null) return false;
-
-    HDT_Base target = targetRow.getRecord();
-    if (target == null) return false;
-
-    if (source == target) return false;
-    if ((source.getType() == target.getType()) && (source.getID() == target.getID())) return false;
+    if (nullSwitch(draggingRow.treeItem.getParent(), true, parent ->
+        nullSwitch(parent.getValue(), true, value -> value.getRecord() == null)))
+      return false;
 
     ddHoverHelper.expand(treeItem);
 
@@ -420,19 +387,19 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
   {
     ddHoverHelper.reset();
 
-    MutableBoolean oldForward = new MutableBoolean(true),
-                   newForward = new MutableBoolean(true);
-
     HDT_Base subjRecord, objRecord,
-               oldParent = draggingRow.treeItem.getParent().getValue().getRecord(),
-               newParent = targetRow.getRecord(),
-               child = draggingRow.getRecord();
+             oldParent = draggingRow.treeItem.getParent().getValue().getRecord(),
+             newParent = targetRow.getRecord(),
+             child = draggingRow.getRecord();
 
     if (oldParent == newParent)
     {
       messageDialog("Unable copy or move source record: It is already attached to destination record.", mtError);
       return;
     }
+
+    MutableBoolean oldForward = new MutableBoolean(true),
+                   newForward = new MutableBoolean(true);
 
     RelationType oldRelType = getParentChildRelation(oldParent.getType(), child.getType(), oldForward),
                  newRelType = getParentChildRelation(newParent.getType(), child.getType(), newForward);
@@ -498,21 +465,15 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 
   public boolean canDetach(boolean doDetach)
   {
-    if (selectedItem() == null) return false;
-    if (selectedItem().getParent() == null) return false;
+    TreeItem<TreeRow> item = selectedItem();
 
-    TreeRow parentRow = selectedItem().getParent().getValue(),
-                        childRow = selectedItem().getValue();
+    TreeRow parentRow = nullSwitch(nullSwitch(item, null, TreeItem::getParent), null, TreeItem::getValue);
 
-    if (parentRow == null) return false;
-    if (childRow == null) return false;
-
-    HDT_Base parent = parentRow.getRecord(),
-             child = childRow.getRecord(),
+    HDT_Base parent = nullSwitch(parentRow, null, TreeRow::getRecord),
+             child = nullSwitch(nullSwitch(item, null, TreeItem::getValue), null, TreeRow::getRecord),
              subjRecord, objRecord, objToAdd = null;
 
-    if (parent == null) return false;
-    if (child == null) return false;
+    if ((parent == null) || (child == null)) return false;
 
     MutableBoolean forward = new MutableBoolean();
     RelationType relType = getParentChildRelation(parent.getType(), child.getType(), forward);

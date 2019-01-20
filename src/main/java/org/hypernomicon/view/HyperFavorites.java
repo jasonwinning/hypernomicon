@@ -55,7 +55,7 @@ public class HyperFavorites
 
   public static class QueryFavorite
   {
-    public ArrayList<QueryRow> rows = new ArrayList<QueryRow>();
+    public ArrayList<QueryRow> rows = new ArrayList<>();
     public String name;
     public boolean autoexec;
 

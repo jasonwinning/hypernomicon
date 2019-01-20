@@ -18,12 +18,13 @@
 package org.hypernomicon.model.items;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_RecordState;
 import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.HyperDB.Tag;
 
 import static org.hypernomicon.model.records.HDT_RecordState.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.model.HyperDB.Tag.*;
 
 import java.util.LinkedHashMap;
 
@@ -44,8 +45,8 @@ public class HDI_OfflinePersonName extends HDI_OfflineBase
 
   @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, LinkedHashMap<Tag, HDI_OfflineBase> nestedItems)
   {
-    if (tag == Tag.tagFirstName)     firstName = ultraTrim(convertToSingleLine(nodeText));
-    else if (tag == Tag.tagLastName) lastName  = ultraTrim(convertToSingleLine(nodeText));
+    if (tag == tagFirstName)     firstName = ultraTrim(convertToSingleLine(nodeText));
+    else if (tag == tagLastName) lastName  = ultraTrim(convertToSingleLine(nodeText));
   }
 
 //---------------------------------------------------------------------------
@@ -53,8 +54,8 @@ public class HDI_OfflinePersonName extends HDI_OfflineBase
 
   @Override public void writeToXml(Tag tag, StringBuilder xml)
   {
-    if (tag == Tag.tagFirstName)     writeStringTag(xml, tag, firstName);
-    else if (tag == Tag.tagLastName) writeStringTag(xml, tag, lastName);
+    if (tag == tagFirstName)     writeStringTag(xml, tag, firstName);
+    else if (tag == tagLastName) writeStringTag(xml, tag, lastName);
   }
 
 //---------------------------------------------------------------------------

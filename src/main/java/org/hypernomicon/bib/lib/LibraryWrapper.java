@@ -61,7 +61,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
       return null;
     }
-  };
+  }
 
   //---------------------------------------------------------------------------
 

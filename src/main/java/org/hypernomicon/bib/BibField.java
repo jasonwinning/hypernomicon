@@ -35,7 +35,7 @@ public class BibField
 {
   private final BibFieldEnum bibFieldEnum;
   private final BibFieldType type;
-  private final List<String> strList = new ArrayList<String>();
+  private final List<String> strList = new ArrayList<>();
 
   private String str;
 

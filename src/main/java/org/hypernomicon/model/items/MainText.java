@@ -176,6 +176,7 @@ public class MainText
         {
           mainText.keyWorks.add(new KeyWork(kwRecord));
           mainText.runKeyWorkHandler(kwRecord, true);
+          db.updateMentioner(label);
         }
       }
       else
@@ -184,6 +185,7 @@ public class MainText
         {
           mainText.keyWorks.remove(keyWork);
           mainText.runKeyWorkHandler(kwRecord, false);
+          db.updateMentioner(label);
         }
       }
     };
@@ -285,10 +287,10 @@ public class MainText
     {
       StrongLink link = src1.connector.getLink();
 
-      if (link.getDebate() != null) src1Connectors.add(link.debateSpoke);
+      if (link.getDebate  () != null) src1Connectors.add(link.debateSpoke  );
       if (link.getPosition() != null) src1Connectors.add(link.positionSpoke);
-      if (link.getConcept() != null) src1Connectors.add(link.conceptSpoke);
-      if (link.getNote() != null) src1Connectors.add(link.noteSpoke);
+      if (link.getConcept () != null) src1Connectors.add(link.conceptSpoke );
+      if (link.getNote    () != null) src1Connectors.add(link.noteSpoke    );
     }
     else
       src1Connectors.add(src1.connector);
@@ -297,10 +299,10 @@ public class MainText
     {
       StrongLink link = src2.connector.getLink();
 
-      if (link.getDebate() != null) src2Connectors.add(link.debateSpoke);
+      if (link.getDebate  () != null) src2Connectors.add(link.debateSpoke  );
       if (link.getPosition() != null) src2Connectors.add(link.positionSpoke);
-      if (link.getConcept() != null) src2Connectors.add(link.conceptSpoke);
-      if (link.getNote() != null) src2Connectors.add(link.noteSpoke);
+      if (link.getConcept () != null) src2Connectors.add(link.conceptSpoke );
+      if (link.getNote    () != null) src2Connectors.add(link.noteSpoke    );
     }
     else
       src2Connectors.add(src2.connector);
@@ -514,24 +516,20 @@ public class MainText
 
   private void runKeyWorkHandler(HDT_RecordWithPath keyWorkRecord, boolean affirm)
   {
-    StrongLink link = null;
+    if (connector == null) return;
 
-    if (connector != null)
+    StrongLink link = connector.getLink();
+
+    if (link == null)
     {
-      link = connector.getLink();
-
-      if (link == null)
-      {
-        db.handleKeyWork(getRecord(), keyWorkRecord, affirm);
-      }
-      else
-      {
-        if (link.getDebate  () != null) db.handleKeyWork(link.getDebate  (), keyWorkRecord, affirm);
-        if (link.getPosition() != null) db.handleKeyWork(link.getPosition(), keyWorkRecord, affirm);
-        if (link.getNote    () != null) db.handleKeyWork(link.getNote    (), keyWorkRecord, affirm);
-        if (link.getConcept () != null) db.handleKeyWork(link.getConcept (), keyWorkRecord, affirm);
-      }
+      db.handleKeyWork(getRecord(), keyWorkRecord, affirm);
+      return;
     }
+
+    nullSwitch(link.getDebate  (), debate  -> db.handleKeyWork(debate , keyWorkRecord, affirm));
+    nullSwitch(link.getPosition(), pos     -> db.handleKeyWork(pos    , keyWorkRecord, affirm));
+    nullSwitch(link.getNote    (), note    -> db.handleKeyWork(note   , keyWorkRecord, affirm));
+    nullSwitch(link.getConcept (), concept -> db.handleKeyWork(concept, keyWorkRecord, affirm));
   }
 
 //---------------------------------------------------------------------------
@@ -566,19 +564,13 @@ public class MainText
       }
     }
 
-    if (modify && (connector != null))
+    if (connector == null) return;
+
+    if (modify)
       connector.modifyNow();
 
-    if (refreshSubjects == false) return;
-
-    if (connector != null)
-    {
-      StrongLink link = connector.getLink();
-
-      if (link != null)
-        if (link.getLabel() != null)
-          link.getLabel().refreshSubjects();
-    }
+    if (refreshSubjects)
+      nullSwitch(connector.getLink(), link -> nullSwitch(link.getLabel(), label -> label.refreshSubjects()));
   }
 
 //---------------------------------------------------------------------------
@@ -596,10 +588,11 @@ public class MainText
       if (displayer.getType() == hdtHub)
       {
         StrongLink link = displayer.getLink();
-        if      (link.getDebate  () != null) displayer = link.getSpoke(hdtDebate);
+
+        if      (link.getDebate  () != null) displayer = link.getSpoke(hdtDebate  );
         else if (link.getPosition() != null) displayer = link.getSpoke(hdtPosition);
-        else if (link.getConcept () != null) displayer = link.getSpoke(hdtConcept);
-        else                                 displayer = link.getSpoke(hdtNote);
+        else if (link.getConcept () != null) displayer = link.getSpoke(hdtConcept );
+        else                                 displayer = link.getSpoke(hdtNote    );
       }
 
       displayerConns.add(displayer);

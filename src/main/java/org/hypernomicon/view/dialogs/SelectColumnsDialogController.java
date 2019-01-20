@@ -43,7 +43,7 @@ public class SelectColumnsDialogController extends HyperDialog
   public static class TypeCheckBox extends CheckBox
   {
     public TypeCheckBox(String caption) { super(caption); }
-    public ArrayList<CheckBox> children = new ArrayList<CheckBox>();
+    public ArrayList<CheckBox> children = new ArrayList<>();
   }
 
 //---------------------------------------------------------------------------

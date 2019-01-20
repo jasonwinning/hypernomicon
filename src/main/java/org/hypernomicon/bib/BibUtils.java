@@ -183,10 +183,7 @@ public class BibUtils
     Pattern p = Pattern.compile("(\\A|\\D)(10\\.\\d{4,}[0-9.]*/[a-zA-Z0-9\\-._;:()/\\\\]+)(\\z|\\D)");
     Matcher m = p.matcher(str);
 
-    if (m.find())
-      return m.group(2);
-
-    return "";
+    return m.find() ? m.group(2) : "";
   }
 
 //---------------------------------------------------------------------------
@@ -210,19 +207,12 @@ public class BibUtils
     while (m.find())
     {
       String found = m.group(2).replace("-", "");
-
-      int n;
-
       int sum = 0;
 
       for (int x = 0; x < 8; x++)
       {
         char c = found.charAt(x);
-
-        if (c == 'X')
-          n = 10;
-        else
-          n = parseInt(String.valueOf(c), -1);
+        int n = c == 'X' ? 10 : parseInt(String.valueOf(c), -1);
 
         sum = sum + (n * (8 - x));
       }
@@ -270,7 +260,7 @@ public class BibUtils
     str = str.replaceAll("\\p{Pd}", "-")  // treat all dashes the same
              .replaceAll("\\u00AD", "-")  // "soft hyphen" is not included in the \p{Pd} class
 
-             .replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0');
+             .replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0').replace('°', '0');
 
     while (str.contains("--"))
       str = str.replace("--", "-");
@@ -305,28 +295,19 @@ public class BibUtils
     while (m.find())
     {
       String found = m.group(2).toUpperCase().replace("-", "");
-      int n;
-
       int sum1 = 0, sum2 = 0;
 
       for (int x = 0; x < 10; x++)
       {
         char c = found.charAt(x);
-
-        if (c == 'X')
-          n = 10;
-        else
-          n = parseInt(String.valueOf(c), -1);
+        int n = c == 'X' ? 10 : parseInt(String.valueOf(c), -1);
 
         sum1 = sum1 + (n * (10 - x));
         sum2 = sum2 + (n * (x + 1));
       }
 
-      if ((sum1 > 0) && (sum2 > 0) && ((sum1 % 11) == 0) && ((sum2 % 11) == 0))
-      {
-        if (list.contains(found) == false)
-          list.add(found);
-      }
+      if ((sum1 > 0) && (sum2 > 0) && ((sum1 % 11) == 0) && ((sum2 % 11) == 0) && (list.contains(found) == false))
+        list.add(found);
     }
   }
 
@@ -468,10 +449,10 @@ public class BibUtils
   {
     switch (gbType)
     {
-      case "BOOK" : return etBook;
+      case "BOOK"     : return etBook;
       case "MAGAZINE" : return etMagazine;
 
-      default : return etOther;
+      default         : return etOther;
     }
   }
 
@@ -482,17 +463,17 @@ public class BibUtils
   {
     switch (paType)
     {
-      case "book" : return etBook;
-      case "catalog" : return etCatalogItem;
-      case "feed" : return etFeedItem;
-      case "journal" : return etJournalArticle;
-      case "magazine" : return etMagazineArticle;
-      case "manual" : return etManual;
+      case "book"       : return etBook;
+      case "catalog"    : return etCatalogItem;
+      case "feed"       : return etFeedItem;
+      case "journal"    : return etJournalArticle;
+      case "magazine"   : return etMagazineArticle;
+      case "manual"     : return etManual;
       case "newsletter" : return etNewsletterArticle;
-      case "other" : return etOther;
-      case "pamphlet": return etPamphlet;
+      case "other"      : return etOther;
+      case "pamphlet"   : return etPamphlet;
 
-      default : return etOther;
+      default           : return etOther;
     }
   }
 

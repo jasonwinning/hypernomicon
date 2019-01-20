@@ -191,9 +191,9 @@ public final class HyperDB
   public void addMentionsNdxCompleteHandler(DatabaseEvent handler)                          { dbMentionsNdxCompleteHandlers.add(handler); }
   public void addBibChangedHandler(DatabaseEvent handler)                                   { bibChangedHandlers.add(handler); }
   public void addDeleteHandler(RecordDeleteHandler handler)                                 { recordDeleteHandlers.add(handler); }
-  public void rebuildMentions()                                                             { mentionsIndex.startRebuild(); }
+  public void rebuildMentions()                                                             { if (loaded) mentionsIndex.startRebuild(); }
   public void stopIndexingMentions()                                                        { mentionsIndex.stopRebuild(); }
-  public void updateMentioner(HDT_Record record)                                            { mentionsIndex.updateMentioner(record); }
+  public void updateMentioner(HDT_Base record)                                              { if (loaded) mentionsIndex.updateMentioner(record); }
   public boolean waitUntilRebuildIsDone()                                                   { return mentionsIndex.waitUntilRebuildIsDone(); }
 
   public boolean firstMentionsSecond(HDT_Base mentioner, HDT_Base target, boolean descOnly, MutableBoolean choseNotToWait) {
@@ -671,9 +671,9 @@ public final class HyperDB
 
     folders.getByID(ROOT_FOLDER_ID).checkExists();
 
+    loaded = true;
     rebuildMentions();
 
-    loaded = true;
     lock();
 
     return true;
@@ -1292,14 +1292,14 @@ public final class HyperDB
     hmtEchoReply,
     hmtUnlockRequest,
     hmtUnlockComplete
-  };
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public String getLockOwner()
   {
-    List<String> s = new ArrayList<String>();
+    List<String> s = new ArrayList<>();
     FilePath filePath = getLockFilePath();
     StringBuilder errorSB = new StringBuilder("");
 
@@ -1354,7 +1354,7 @@ public final class HyperDB
     cleanupRelations();
 
     initialNavList.clear();
-    filenameMap = new FilenameMap<Set<HyperPath>>();
+    filenameMap = new FilenameMap<>();
     keyWorkIndex = new HashMap<>();
     displayedAtIndex = new BidiOneToManyMainTextMap();
     bibEntryKeyToWork = new HashMap<>();
@@ -1544,7 +1544,7 @@ public final class HyperDB
 
   public Set<HDI_Schema> getSchemasByTag(Tag tag)
   {
-    Set<HDI_Schema> schemas = new HashSet<HDI_Schema>();
+    Set<HDI_Schema> schemas = new HashSet<>();
 
     datasets.values().forEach(dataset ->
     {
@@ -1614,7 +1614,7 @@ public final class HyperDB
     typeToTagStr.put(type, tagStr);
     typeToTag.put(type, tag);
 
-    HyperDataset<HDT_T> dataset = new HyperDataset<HDT_T>(type);
+    HyperDataset<HDT_T> dataset = new HyperDataset<>(type);
     HyperDataset<HDT_T>.CoreAccessor accessor = dataset.getAccessor();
     datasets.put(type, dataset);
     accessors.put(type, accessor);

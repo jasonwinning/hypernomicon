@@ -87,6 +87,8 @@ public class Authors implements Iterable<Author>
   public boolean isEmpty() { return size() == 0; }
   final void expire()      { clearNoMod(); }
 
+  public boolean containsPerson(HDT_Person person) { return objListNoMod.contains(person); }
+
   @Override public Iterator<Author> iterator() { return new AuthorIterator(); }
 
   final void resolvePointers() throws HDB_InternalError { db.resolvePointersByRelation(rtAuthorOfWork, work); }
@@ -383,8 +385,8 @@ public class Authors implements Iterable<Author>
         else
           objListNoMod.add(objListNoMod.indexOf(insertAfter) + 1, person);
 
-        work.setPersonIsEditor(person, author.getIsEditor());
-        work.setPersonIsTranslator(person, author.getIsTrans());
+        work.setPersonIsEditor    (person, author.getIsEditor  ());
+        work.setPersonIsTranslator(person, author.getIsTrans   ());
         work.setPersonIsInFileName(person, author.getInFileName());
 
         Author newAuthor = new Author(work, person);

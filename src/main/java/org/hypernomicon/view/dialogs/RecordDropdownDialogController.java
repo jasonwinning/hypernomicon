@@ -35,9 +35,9 @@ import javafx.scene.control.ComboBox;
 
 public class RecordDropdownDialogController<HDT_T extends HDT_Base> extends HyperDialog
 {
-  @FXML ComboBox<HyperTableCell> cbRecord;
-  @FXML Button btnOK;
-  @FXML Button btnCancel;
+  @FXML private ComboBox<HyperTableCell> cbRecord;
+  @FXML private Button btnOK;
+  @FXML private Button btnCancel;
 
   private HyperCB hcbRecord;
   private String typeName;

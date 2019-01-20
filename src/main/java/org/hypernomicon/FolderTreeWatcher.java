@@ -171,7 +171,7 @@ public class FolderTreeWatcher
 
         if (watchKey != null)
         {
-          eventList = new ArrayList<WatcherEvent>();
+          eventList = new ArrayList<>();
           newPathInfo = null;
         }
 
@@ -179,7 +179,7 @@ public class FolderTreeWatcher
         {
           int ndx = 0;
 
-          shortList = new ArrayList<WatcherEvent>();
+          shortList = new ArrayList<>();
 
           for (final WatchEvent<?> event : watchKey.pollEvents())
           {

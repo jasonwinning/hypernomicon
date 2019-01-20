@@ -519,8 +519,7 @@ public class PreviewWindow extends HyperDialog
     srcToWrapper.values().forEach(wrapper ->
     {
       if (FilePath.isEmpty(wrapper.getFilePath()) == false)
-        if ((wrapper.getFilePath().equals(workFile.getPath().getFilePath())) &&
-            (wrapper.getRecord() == work))
+        if ((wrapper.getFilePath().equals(workFile.getPath().getFilePath())) && (wrapper.getRecord() == work))
         {
           wrapper.setWorkPageFromContentsWindow(pageNum, isStart);
 

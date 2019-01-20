@@ -47,7 +47,7 @@ public class JsonObj implements Cloneable
   public JsonNodeType getType(String key) { return JsonObj.determineType(jObj.get(key)); }
 
   public JsonObj getObj(String key)                  { return nullSwitch(jObj.get(key), null, obj -> new JsonObj((JSONObject) obj)); }
-  public String getStr(String key)                   { return nullSwitch((String)jObj.get(key), (String)null); }
+  public String getStr(String key)                   { return (String) jObj.get(key); }
   public JsonArray getArray(String key)              { return nullSwitch((JSONArray)jObj.get(key), null, obj -> new JsonArray(obj)); }
   public long getLong(String key, long def)          { return nullSwitch((Long)jObj.get(key), def,  Long::longValue); }
   public boolean getBoolean(String key, boolean def) { return nullSwitch(jObj.get(key), def,  obj -> parseBoolean(getStr(key))); }
@@ -86,11 +86,9 @@ public class JsonObj implements Cloneable
 
   public static JsonNodeType determineType(Object object)
   {
-    if (object == null) return JsonNodeType.NONE;
-
     if (object instanceof JSONObject) return JsonNodeType.OBJECT;
-    if (object instanceof JSONArray) return JsonNodeType.ARRAY;
-    if (object instanceof String) return JsonNodeType.STRING;
+    if (object instanceof JSONArray ) return JsonNodeType.ARRAY;
+    if (object instanceof String    ) return JsonNodeType.STRING;
 
     return JsonNodeType.NONE;
   }

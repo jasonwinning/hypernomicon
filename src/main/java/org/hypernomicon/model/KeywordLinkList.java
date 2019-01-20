@@ -49,7 +49,7 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final ArrayList<KeywordLink> keys = new ArrayList<KeywordLink>();
+  private final ArrayList<KeywordLink> keys = new ArrayList<>();
 
   public List<KeywordLink> getLinks() { return Collections.unmodifiableList(keys); }
   public void generate(String text)   { generate(text, false, null); }

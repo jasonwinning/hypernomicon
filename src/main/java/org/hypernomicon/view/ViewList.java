@@ -46,7 +46,7 @@ public class ViewList
   public boolean canGoBack()                     { return curNdx >= 1; }
   public boolean canGoForward()                  { return curNdx < (viewList.size() - 1); }
   public boolean isEmpty()                       { return viewList.isEmpty(); }
-  public void clear()                            { viewList = new ArrayList<HyperView<? extends HDT_Base>>(); curNdx = -1; }
+  public void clear()                            { viewList = new ArrayList<>(); curNdx = -1; }
   public void goBack()                           { curNdx--; if (curNdx < 0) curNdx = 0; }
   public HyperView<? extends HDT_Base> getView() { return viewList.get(curNdx); }
   public void refreshAll()                       { viewList.forEach(HyperView::refresh); }

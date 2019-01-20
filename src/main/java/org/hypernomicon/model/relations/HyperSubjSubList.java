@@ -143,7 +143,7 @@ public class HyperSubjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends
 
   @Override public List<HDT_SubjType> subList(int fromIndex, int toIndex)
   {
-    return new HyperSubjSubList<HDT_SubjType, HDT_ObjType>(parentList, startNdx + fromIndex, startNdx + toIndex);
+    return new HyperSubjSubList<>(parentList, startNdx + fromIndex, startNdx + toIndex);
   }
 
 //---------------------------------------------------------------------------

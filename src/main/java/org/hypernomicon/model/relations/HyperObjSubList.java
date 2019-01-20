@@ -55,7 +55,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
 
   @Override public List<HDT_ObjType> subList(int from, int to)
   {
-    return new HyperObjSubList<HDT_SubjType, HDT_ObjType>(parentList, startNdx + from, startNdx + to);
+    return new HyperObjSubList<>(parentList, startNdx + from, startNdx + to);
   }
 
 //---------------------------------------------------------------------------

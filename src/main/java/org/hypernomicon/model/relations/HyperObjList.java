@@ -494,7 +494,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
   @Override public List<HDT_ObjType> subList(int fromIndex, int toIndex)
   {
     lastException = null;
-    return new HyperObjSubList<HDT_SubjType, HDT_ObjType>(this, fromIndex, toIndex);
+    return new HyperObjSubList<>(this, fromIndex, toIndex);
   }
 
 //---------------------------------------------------------------------------
@@ -503,7 +503,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
   @Override public Iterator<HDT_ObjType> iterator()
   {
     lastException = null;
-    return new HyperObjIterator<HDT_SubjType, HDT_ObjType>(this);
+    return new HyperObjIterator<>(this);
   }
 
 //---------------------------------------------------------------------------
@@ -512,7 +512,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
   @Override public ListIterator<HDT_ObjType> listIterator()
   {
     lastException = null;
-    return new HyperObjListIterator<HDT_SubjType, HDT_ObjType>(this, 0);
+    return new HyperObjListIterator<>(this, 0);
   }
 
 //---------------------------------------------------------------------------
@@ -521,7 +521,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
   @Override public ListIterator<HDT_ObjType> listIterator(int index)
   {
     lastException = null;
-    return new HyperObjListIterator<HDT_SubjType, HDT_ObjType>(this, index);
+    return new HyperObjListIterator<>(this, index);
   }
 
 //---------------------------------------------------------------------------

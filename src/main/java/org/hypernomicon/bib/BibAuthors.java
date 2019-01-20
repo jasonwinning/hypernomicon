@@ -132,13 +132,14 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
   public void setAllFromTable(List<ObjectGroup> authGroups)
   {
     clear();
+    ArrayList<AuthorType> authorTypes = new ArrayList<>();
 
-    for (ObjectGroup authGroup : authGroups)
+    authGroups.forEach(authGroup ->
     {
       boolean ed = authGroup.getValue(tagEditor).bool,
               tr = authGroup.getValue(tagTranslator).bool;
 
-      ArrayList<AuthorType> authorTypes = new ArrayList<>();
+      authorTypes.clear();
 
       if ((ed == false) && (tr == false))
         authorTypes.add(AuthorType.author);
@@ -148,14 +149,11 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
       HDT_Person person = authGroup.getPrimary();
 
-      for (AuthorType authorType : authorTypes)
-      {
-        if (person == null)
-          add(authorType, new PersonName(authGroup.getPrimaryStr()));
-        else
-          add(authorType, person);
-      }
-    }
+      if (person == null)
+        authorTypes.forEach(authorType -> add(authorType, new PersonName(authGroup.getPrimaryStr())));
+      else
+        authorTypes.forEach(authorType -> add(authorType, person));
+    });
   }
 
 //---------------------------------------------------------------------------

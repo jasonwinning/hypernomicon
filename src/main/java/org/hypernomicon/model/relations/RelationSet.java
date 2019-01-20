@@ -320,17 +320,15 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 
     switch (value.getCategory())
     {
-      case hdcBoolean :       isEmpty = NestedValue.isEmpty(HDI_OfflineBoolean.class.cast(value).get()); break;
-      case hdcTernary :       isEmpty = NestedValue.isEmpty(HDI_OfflineTernary.class.cast(value).get()); break;
-      case hdcString  :       isEmpty = NestedValue.isEmpty(HDI_OfflineString.class.cast(value).get()); break;
+      case hdcBoolean       : isEmpty = NestedValue.isEmpty(HDI_OfflineBoolean      .class.cast(value).get     ()); break;
+      case hdcTernary       : isEmpty = NestedValue.isEmpty(HDI_OfflineTernary      .class.cast(value).get     ()); break;
+      case hdcString        : isEmpty = NestedValue.isEmpty(HDI_OfflineString       .class.cast(value).get     ()); break;
       case hdcNestedPointer : isEmpty = NestedValue.isEmpty(HDI_OfflineNestedPointer.class.cast(value).getObjID()); break;
       default : return;
     }
 
     HDI_OnlineBase<HDI_Offline> item = getNestedItem(subj, obj, tag, isEmpty);
-    if (item == null) return;
-
-    item.setFromOfflineValue(value, tag);
+    if (item != null) item.setFromOfflineValue(value, tag);
   }
 
 //---------------------------------------------------------------------------
@@ -464,7 +462,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
     if (items == null)
     {
       if (noCreate) return null;
-      items = new LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>();
+      items = new LinkedHashMap<>();
       objectGroups.put(subj, obj, items);
     }
 
@@ -555,10 +553,10 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 
         switch (value.hdc)
         {
-          case hdcString        : setNestedString (subj, obj, tag, value.str);     break;
-          case hdcBoolean       : setNestedBoolean(subj, obj, tag, value.bool);    break;
+          case hdcString        : setNestedString (subj, obj, tag, value.str    ); break;
+          case hdcBoolean       : setNestedBoolean(subj, obj, tag, value.bool   ); break;
           case hdcTernary       : setNestedTernary(subj, obj, tag, value.ternary); break;
-          case hdcNestedPointer : setNestedPointer(subj, obj, tag, value.target);  break;
+          case hdcNestedPointer : setNestedPointer(subj, obj, tag, value.target ); break;
           default : break;
         }
       });
