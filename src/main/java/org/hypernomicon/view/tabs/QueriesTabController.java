@@ -127,17 +127,15 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
     private boolean programmaticFavNameChange = false,
                     programmaticFieldChange = false,
-                    recordMode = true;
+                    inRecordMode = true;
 
-    public boolean inRecordMode()                     { return recordMode; }
-    public HDT_Base activeRecord()                    { return curResult; }
     private void setRecord(HDT_Base record)           { curResult = record; }
     private QueryType getQueryType(HyperTableRow row) { return QueryType.codeToVal(row.getID(0)); }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    public QueryView()
+    private QueryView()
     {
       resultTypes = EnumSet.noneOf(HDT_RecordType.class);
 
@@ -284,7 +282,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
     public void refreshView()
     {
-      if (inRecordMode())
+      if (inRecordMode)
         refreshView(tvResults.getSelectionModel().getSelectedIndex());
       else
       {
@@ -545,12 +543,12 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
     private void switchToReportMode()
     {
-      if (recordMode == false) return;
+      if (inRecordMode == false) return;
 
       removeFromAnchor(tvResults);
       reportTable.setParent(apResults);
 
-      recordMode = false;
+      inRecordMode = false;
       curResult = null;
 
       webView.getEngine().loadContent("");
@@ -565,12 +563,12 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
     private void switchToRecordMode()
     {
-      if (recordMode) return;
+      if (inRecordMode) return;
 
       reportTable.removeFromParent();
       apResults.getChildren().add(tvResults);
 
-      recordMode = true;
+      inRecordMode = true;
     }
 
     //---------------------------------------------------------------------------
@@ -1195,14 +1193,14 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    public void updateCB()
+    private void updateCB()
     {
       if (cb == null) return;
 
       if (propToUnbind != null)
         cb.itemsProperty().unbindBidirectional(propToUnbind);
 
-      if (recordMode == false)
+      if (inRecordMode == false)
       {
         cb.setItems(null);
         return;
@@ -1250,12 +1248,12 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final int QUERY_WITH_NAME_CONTAINING = 1;
-  public static final int QUERY_ANY_FIELD_CONTAINS = 2;
-  public static final int QUERY_LIST_ALL = 3;
-  public static final int QUERY_WHERE_FIELD = 4;
-  public static final int QUERY_WHERE_RELATIVE = 5;
-  public static final int QUERY_FIRST_NDX = 6;
+  public static final int QUERY_WITH_NAME_CONTAINING = 1,
+                          QUERY_ANY_FIELD_CONTAINS = 2,
+                          QUERY_LIST_ALL = 3,
+                          QUERY_WHERE_FIELD = 4,
+                          QUERY_WHERE_RELATIVE = 5,
+                          QUERY_FIRST_NDX = 6;
 
   @FXML private CheckBox chkShowFields;
   @FXML private CheckBox chkShowDesc;
@@ -1298,7 +1296,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
   @Override public void setDividerPositions()       { return; }
   @Override public void getDividerPositions()       { return; }
   @Override public boolean saveToRecord(boolean sm) { return false; }
-  @Override public HDT_Base activeRecord()          { return curQV == null ? null : curQV.activeRecord(); }
+  @Override public HDT_Base activeRecord()          { return curQV == null ? null : curQV.curResult; }
   @Override public int getRecordNdx()               { return getRecordCount() > 0 ? curQV.tvResults.getSelectionModel().getSelectedIndex() : -1; }
   @Override public void findWithinDesc(String text) { if (activeRecord() != null) MainTextWrapper.hiliteText(text, webView.getEngine()); }
 
@@ -1310,9 +1308,9 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ObservableList<ResultsRow> results()
+  private ObservableList<ResultsRow> results()
   {
-    if ((curQV == null) || (curQV.inRecordMode() == false)) return FXCollections.observableArrayList();
+    if ((curQV == null) || (curQV.inRecordMode == false)) return FXCollections.observableArrayList();
 
     return curQV.resultsTable.getTV().getItems();
   }
@@ -1349,7 +1347,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
     webView.getEngine().titleProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
     {
-      if (curQV.inRecordMode() == false)
+      if (curQV.inRecordMode == false)
       {
         MainTextWrapper.handleJSEvent("", webView.getEngine(), new TextViewInfo());
         return;
@@ -1467,7 +1465,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void deleteView(Tab tab)
+  private void deleteView(Tab tab)
   {
     QueryView qV = null;
 
@@ -1484,7 +1482,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public QueryView addQueryView()
+  private QueryView addQueryView()
   {
     QueryView newQV = new QueryView();
 
@@ -1522,7 +1520,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public <HDT_T extends HDT_Base> boolean evaluate(HDT_T record, HyperTableRow row, boolean searchLinkedRecords, boolean firstCall, boolean lastCall)
+  private <HDT_T extends HDT_Base> boolean evaluate(HDT_T record, HyperTableRow row, boolean searchLinkedRecords, boolean firstCall, boolean lastCall)
   {
     switch (curQuery)
     {

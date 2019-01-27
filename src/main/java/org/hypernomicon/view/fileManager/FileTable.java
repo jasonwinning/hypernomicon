@@ -56,8 +56,8 @@ import javafx.scene.text.Text;
 
 public class FileTable implements DragNDropContainer<FileRow>
 {
-  @FunctionalInterface public interface FileRowHandler     { public abstract void handle(FileRow fileRow); }
-  @FunctionalInterface public interface CondFileRowHandler { public abstract boolean handle(FileRow fileRow); }
+  @FunctionalInterface public interface FileRowHandler     { void handle(FileRow fileRow); }
+  @FunctionalInterface public interface CondFileRowHandler { boolean handle(FileRow fileRow); }
 
 //---------------------------------------------------------------------------
 

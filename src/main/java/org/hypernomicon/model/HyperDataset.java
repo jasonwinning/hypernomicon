@@ -24,7 +24,6 @@ import static org.hypernomicon.util.Util.*;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.HDT_Record.HyperDataCategory;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.RelationSet;
 
@@ -88,7 +87,7 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    public CoreIterator(CoreAccessor coreAccessor, boolean byKey)
+    private CoreIterator(CoreAccessor coreAccessor, boolean byKey)
     {
       this.coreAccessor = coreAccessor;
       this.byKey = byKey;
@@ -113,14 +112,13 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
   private final HDT_RecordType type;
   private final ArrayList<HDT_DT> needIDs = new ArrayList<>();
   private final LinkedHashMap<Tag, HDI_Schema> tagToSchema = new LinkedHashMap<>();
-  private Tag mainTextTag = null;
   private boolean online = false;
   private HDT_Base recordToAssign = null;
   private int idToAssign = -1;
 
 //---------------------------------------------------------------------------
 
-  public HyperDataset(HDT_RecordType type)
+  HyperDataset(HDT_RecordType type)
   {
     this.type = type;
   }
@@ -135,10 +133,10 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
   Set<Tag> getTags()                               { return tagToSchema.keySet(); }
   void resolvePointers() throws HDB_InternalError  { core.resolvePointers(); }
   CoreAccessor getAccessor()                       { return new CoreAccessor(core); }
+  boolean idAvailable(int id)                      { return isUnstoredRecord(id, type) ? false : core.containsID(id) == false; }
 
   public void changeRecordID(int oldID, int newID) { core.changeRecordID(oldID, newID); }
   public String getKeyByID(int id)                 { return core.getKeyByID(id); }
-  public Tag getMainTextTag()                      { return mainTextTag; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -168,17 +166,6 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean idAvailable(int id)
-  {
-    if (isUnstoredRecord(id, type))
-      return false;
-
-    return core.containsID(id) == false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   void bringAllRecordsOnline() throws RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException, TerminateTaskException
   {
     if (online) throw new HDB_InternalError(89842);
@@ -189,7 +176,7 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
 
       db.curTaskCount++;
 
-      record.bringStoredCopyOnline();
+      record.bringStoredCopyOnline(true);
       db.addToInitialNavList(record);
 
       if ((db.curTaskCount % 10) == 0)
@@ -272,7 +259,7 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
       add(record);
 
     if (bringOnline)
-      record.bringStoredCopyOnline();
+      record.bringStoredCopyOnline(true);
 
     return record;
   }
@@ -351,9 +338,9 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
       if (db.task.isCancelled()) throw new TerminateTaskException();
     }
 
-    xml.append(System.lineSeparator());
-    xml.append(System.lineSeparator());
-    xml.append(System.lineSeparator());
+    xml.append(System.lineSeparator())
+       .append(System.lineSeparator())
+       .append(System.lineSeparator());
   }
 
 //---------------------------------------------------------------------------
@@ -368,9 +355,6 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
 
       tagToSchema.put(tag, schema);
     }
-
-    if (schema.getCategory() == HyperDataCategory.hdcConnector)
-      mainTextTag = tags[0];
   }
 
 //---------------------------------------------------------------------------

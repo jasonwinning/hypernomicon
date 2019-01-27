@@ -21,6 +21,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.tabs.HyperTab.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -37,24 +38,24 @@ public class ViewList
   private List<HyperView<? extends HDT_Base>> viewList;
   private HyperViewSequence hvs;
 
-  public ViewList(HyperViewSequence hvs)
+  ViewList(HyperViewSequence hvs)
   {
     this.hvs = hvs;
     clear();
   }
 
-  public boolean canGoBack()                     { return curNdx >= 1; }
-  public boolean canGoForward()                  { return curNdx < (viewList.size() - 1); }
-  public boolean isEmpty()                       { return viewList.isEmpty(); }
-  public void clear()                            { viewList = new ArrayList<>(); curNdx = -1; }
-  public void goBack()                           { curNdx--; if (curNdx < 0) curNdx = 0; }
-  public HyperView<? extends HDT_Base> getView() { return viewList.get(curNdx); }
-  public void refreshAll()                       { viewList.forEach(HyperView::refresh); }
+  boolean canGoBack()                     { return curNdx >= 1; }
+  boolean canGoForward()                  { return curNdx < (viewList.size() - 1); }
+  boolean isEmpty()                       { return viewList.isEmpty(); }
+  void clear()                            { viewList = new ArrayList<>(); curNdx = -1; }
+  void goBack()                           { curNdx--; if (curNdx < 0) curNdx = 0; }
+  HyperView<? extends HDT_Base> getView() { return viewList.get(curNdx); }
+  void refreshAll()                       { viewList.forEach(HyperView::refresh); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void goForward(boolean canAdd)
+  void goForward(boolean canAdd)
   {
     curNdx++;
 
@@ -70,11 +71,7 @@ public class ViewList
 
   private boolean addMenuItem(ObservableList<MenuItem> menu, int ndx)
   {
-    MenuItem item = getMenuItemForNavNdx(ndx);
-
-    if (item != null)
-      menu.add(0, item);
-
+    nullSwitch(getMenuItemForNavNdx(ndx), item -> menu.add(0, item));
     return menu.size() == 20;
   }
 
@@ -150,7 +147,7 @@ public class ViewList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setView(HyperView<? extends HDT_Base> view)
+  void setView(HyperView<? extends HDT_Base> view)
   {
     if (curNdx == -1) curNdx = 0;
 
@@ -191,7 +188,7 @@ public class ViewList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clearFollowingViews()
+  void clearFollowingViews()
   {
     while (viewList.size() > (curNdx + 1))
       viewList.remove(curNdx + 1);
@@ -200,7 +197,7 @@ public class ViewList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void removeRecord(HDT_Base record)
+  void removeRecord(HDT_Base record)
   {
     // Do not change the following code to use removeIf. The line that checks whether curNdx should be decremented will not work
     // because the ArrayList does not actually get modified until all of the removeIf checks are completed.

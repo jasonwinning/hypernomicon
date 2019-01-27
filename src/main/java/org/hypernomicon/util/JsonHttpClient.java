@@ -40,9 +40,9 @@ import org.hypernomicon.util.json.JsonObj;
 
 public class JsonHttpClient
 {
-  @FunctionalInterface public interface JsonSuccessHandler { public void handle(JsonHttpClient jsonClient); }
-  @FunctionalInterface public interface JsonObjHandler     { public void handle(JsonObj jsonObj); }
-  @FunctionalInterface public interface JsonArrayHandler   { public void handle(JsonArray jsonArray); }
+  @FunctionalInterface public interface JsonSuccessHandler { void handle(JsonHttpClient jsonClient); }
+  @FunctionalInterface public interface JsonObjHandler     { void handle(JsonObj jsonObj); }
+  @FunctionalInterface public interface JsonArrayHandler   { void handle(JsonArray jsonArray); }
 
   private Header[] headers;
   private int statusCode;

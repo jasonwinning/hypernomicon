@@ -58,9 +58,9 @@ import javafx.application.Platform;
 
 public class FolderTreeWatcher
 {
-  public static class WatcherEvent
+  static class WatcherEvent
   {
-    public static enum WatcherEventKind
+    static enum WatcherEventKind
     {
       wekRename,
       wekDelete,
@@ -71,18 +71,18 @@ public class FolderTreeWatcher
     private WatcherEventKind kind;
     private PathInfo oldPathInfo, newPathInfo;
 
-    public WatcherEventKind getKind() { return kind; }
-    public PathInfo getOldPathInfo()  { return oldPathInfo; }
-    public PathInfo getNewPathInfo()  { return newPathInfo; }
+    private WatcherEventKind getKind() { return kind; }
+    private PathInfo getOldPathInfo()  { return oldPathInfo; }
+    private PathInfo getNewPathInfo()  { return newPathInfo; }
 
-    public WatcherEvent(WatcherEventKind kind, PathInfo oldPathInfo, PathInfo newPathInfo)
+    private WatcherEvent(WatcherEventKind kind, PathInfo oldPathInfo, PathInfo newPathInfo)
     {
       this.kind = kind;
       this.oldPathInfo = oldPathInfo;
       this.newPathInfo = newPathInfo;
     }
 
-    public boolean isDirectory()
+    private boolean isDirectory()
     {
       if (oldPathInfo != null)
         if (oldPathInfo.isDirectory()) return true;
@@ -96,7 +96,7 @@ public class FolderTreeWatcher
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public class WatcherThread extends Thread
+  private class WatcherThread extends Thread
   {
     private boolean done = false;
     private WatchService watcher;
@@ -505,7 +505,7 @@ public class FolderTreeWatcher
   private WatcherThread watcherThread;
   private HashMap<WatchKey, HDT_Folder> watchKeyToDir;
   public static final int FOLDER_TREE_WATCHER_POLL_TIME_MS = 100;
-  public boolean stopRequested = false;
+  private boolean stopRequested = false;
   private boolean stopped = true;
   private boolean disabled = false;
 
@@ -608,7 +608,7 @@ public class FolderTreeWatcher
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void start()
+  private void start()
   {
     if (watcherThread == null)
     {

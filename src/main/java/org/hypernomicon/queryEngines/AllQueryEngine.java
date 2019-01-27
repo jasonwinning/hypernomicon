@@ -144,7 +144,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
 
           try
           {
-            dummySearchKeys.setSearchKey(searchDummy, getCellText(param1), true);
+            dummySearchKeys.setSearchKey(searchDummy, getCellText(param1), true, true);
           }
           catch (SearchKeyException e)
           {

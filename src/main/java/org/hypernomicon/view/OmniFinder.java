@@ -59,7 +59,7 @@ public class OmniFinder
 
   private String query = "";
   private FinderThread finderThread = null;
-  public boolean stopRequested = false;
+  private boolean stopRequested = false;
   private boolean stopped = true, showingMore = false;
 
   protected enum TierEnum
@@ -76,9 +76,9 @@ public class OmniFinder
     tierKeywordContains
   }
 
-  public static final int ROWS_TO_SHOW = 25;
+  private static final int ROWS_TO_SHOW = 25;
 
-  public OmniFinder(HyperTable htFind)
+  OmniFinder(HyperTable htFind)
   {
     LinkedHashSet<HDT_RecordType> typeSet = new LinkedHashSet<>();
 
@@ -132,7 +132,7 @@ public class OmniFinder
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public class FinderThread extends Thread
+  private class FinderThread extends Thread
   {
     private final HyperTable htFind;
     private final ArrayList<HDT_Base> buffer = new ArrayList<>();
@@ -677,7 +677,7 @@ public class OmniFinder
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setQueryAndStart(String query, boolean showingMore)
+  void setQueryAndStart(String query, boolean showingMore)
   {
     boolean newThread = false;
 
@@ -703,7 +703,7 @@ public class OmniFinder
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean isRunning()
+  private boolean isRunning()
   {
     if (stopped == true) return false;
     return finderThread == null ? false : finderThread.isAlive();
@@ -712,7 +712,7 @@ public class OmniFinder
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean stop()
+  boolean stop()
   {
     boolean wasRunning = isRunning();
 

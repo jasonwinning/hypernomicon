@@ -144,14 +144,15 @@ public final class HyperDB
   private boolean loaded = false, deletionInProgress = false, pointerResolutionInProgress = false, resolveAgain = false,
                   unableToLoad = false, initialized = false;
 
-  public boolean runningConversion = false,     // suppresses "modified date" updating
-                 viewTestingInProgress = false; // suppresses "view date" updating
+  public boolean runningConversion = false; // suppresses "view date" updating
+
+  public boolean viewTestingInProgress = false;
 
 //---------------------------------------------------------------------------
-  @FunctionalInterface public interface RelationChangeHandler { public abstract void handle(HDT_Base subject, HDT_Base object, boolean affirm); }
-  @FunctionalInterface public interface RecordDeleteHandler   { public abstract void handle(HDT_Base record); }
-  @FunctionalInterface public interface RecordAddHandler      { public abstract void handle(HDT_Base record); }
-  @FunctionalInterface public interface DatabaseEvent         { public abstract void handle(); }
+  @FunctionalInterface public interface RelationChangeHandler { void handle(HDT_Base subject, HDT_Base object, boolean affirm); }
+  @FunctionalInterface public interface RecordDeleteHandler   { void handle(HDT_Base record); }
+  @FunctionalInterface public interface RecordAddHandler      { void handle(HDT_Base record); }
+  @FunctionalInterface public interface DatabaseEvent         { void handle(); }
 //---------------------------------------------------------------------------
 
   public boolean isDeletionInProgress()                       { return deletionInProgress; }
@@ -169,7 +170,6 @@ public final class HyperDB
   public boolean relationIsMulti(RelationType relType)        { return relTypeToIsMulti.get(relType).booleanValue(); }
   public String getTagStr(Tag tag)                            { return tagToStr.get(tag); }
   public String getTagHeader(Tag tag)                         { return tagToHeader.getOrDefault(tag, ""); }
-  public Tag getMainTextTag(HDT_RecordType type)              { return datasets.get(type).getMainTextTag(); }
   public List<HDT_Base> getInitialNavList()                   { return unmodifiableList(initialNavList); }
   public String getSearchKey(HDT_Base record)                 { return searchKeys.getStringForRecord(record); }
   public SearchKeyword getKeyByKeyword(String keyword)        { return searchKeys.getKeywordObjByKeywordStr(keyword); }
@@ -180,7 +180,8 @@ public final class HyperDB
   public boolean reindexingMentioners()                       { return mentionsIndex.isRebuilding(); }
   public BibEntry getBibEntryByKey(String key)                { return bibLibrary.getEntryByKey(key); }
 
-  public void setSearchKey(HDT_Base record, String newKey, boolean noMod) throws SearchKeyException { searchKeys.setSearchKey(record, newKey, noMod); }
+  public void setSearchKey(HDT_Base record, String newKey, boolean noMod, boolean dontRebuildMentions) throws SearchKeyException
+  { searchKeys.setSearchKey(record, newKey, noMod, dontRebuildMentions); }
 
   public LibraryWrapper<? extends BibEntry, ? extends BibCollection> getBibLibrary()        { return bibLibrary; }
   public List<RecordDeleteHandler> getRecordDeleteHandlers()                                { return unmodifiableList(recordDeleteHandlers); }
@@ -192,7 +193,6 @@ public final class HyperDB
   public void addBibChangedHandler(DatabaseEvent handler)                                   { bibChangedHandlers.add(handler); }
   public void addDeleteHandler(RecordDeleteHandler handler)                                 { recordDeleteHandlers.add(handler); }
   public void rebuildMentions()                                                             { if (loaded) mentionsIndex.startRebuild(); }
-  public void stopIndexingMentions()                                                        { mentionsIndex.stopRebuild(); }
   public void updateMentioner(HDT_Base record)                                              { if (loaded) mentionsIndex.updateMentioner(record); }
   public boolean waitUntilRebuildIsDone()                                                   { return mentionsIndex.waitUntilRebuildIsDone(); }
 
@@ -200,15 +200,8 @@ public final class HyperDB
     return mentionsIndex.firstMentionsSecond(mentioner, target, descOnly, choseNotToWait); }
   public Set<HDT_Base> getMentionerSet(HDT_Base target, boolean descOnly, MutableBoolean choseNotToWait) {
     return mentionsIndex.getMentionerSet(target, descOnly, choseNotToWait); }
-  public Set<HDT_Base> getMentionedSet(HDT_Base mentioner, boolean descOnly, MutableBoolean choseNotToWait) {
-    return mentionsIndex.getMentionedSet(mentioner, descOnly, choseNotToWait); }
-
-  public boolean firstMentionsSecond(HDT_Base mentioner, HDT_Base target, boolean descOnly) {
-    return mentionsIndex.firstMentionsSecond(mentioner, target, descOnly); }
   public Set<HDT_Base> getMentionerSet(HDT_Base target, boolean descOnly) {
     return mentionsIndex.getMentionerSet(target, descOnly); }
-  public Set<HDT_Base> getMentionedSet(HDT_Base mentioner, boolean descOnly) {
-    return mentionsIndex.getMentionedSet(mentioner, descOnly); }
 
 //---------------------------------------------------------------------------
 
@@ -397,12 +390,12 @@ public final class HyperDB
 
     if (xml.length() == 0)
     {
-      xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + System.lineSeparator() + System.lineSeparator());
-      xml.append("<records version=\"" + recordsXmlVersion + "\" xmlns=\"org.hypernomicon\"");
+      xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + System.lineSeparator() + System.lineSeparator())
+         .append("<records version=\"" + recordsXmlVersion + "\" xmlns=\"org.hypernomicon\"")
 
-      //xml.append(" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"org.hypernomicon http://hypernomicon.org/records.xsd\"");
+      //   .append(" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"org.hypernomicon http://hypernomicon.org/records.xsd\"")
 
-      xml.append(">" + System.lineSeparator() + System.lineSeparator());
+         .append(">" + System.lineSeparator() + System.lineSeparator());
     }
 
     datasets.get(type).writeToXML(xml);
@@ -999,16 +992,16 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public class HDX_Element
+  private class HDX_Element
   {
-    public Tag tag;
-    public int objID;
-    public HDT_RecordType objType;
+    private Tag tag;
+    private int objID;
+    private HDT_RecordType objType;
 
   //---------------------------------------------------------------------------
 
     @SuppressWarnings("unchecked")
-    public HDX_Element(StartElement startElement, HDT_RecordState xmlRecord) throws InvalidItemException
+    private HDX_Element(StartElement startElement, HDT_RecordState xmlRecord) throws InvalidItemException
     {
       tag = tagToStr.inverse().getOrDefault(startElement.getName().getLocalPart(), tagNone);
 
@@ -1906,14 +1899,14 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unused")
-  private void addTernaryItem    (HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcTernary      , rtNone, tags); }
+  private void addTernaryItem  (HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcTernary      , rtNone, tags); }
 
-  private void addBooleanItem    (HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcBoolean      , rtNone, tags); }
-  private void addPointerMulti   (HDT_RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerMulti , rt    , tags); }
-  private void addPointerSingle  (HDT_RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerSingle, rt    , tags); }
-  private void addStringItem     (HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcString       , rtNone, tags); }
-  private void addPathItem       (HDT_RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPath         , rt    , tags); }
-  private void addConnectorItem  (HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcConnector    , rtNone, tags); }
+  private void addBooleanItem  (HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcBoolean      , rtNone, tags); }
+  private void addPointerMulti (HDT_RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerMulti , rt    , tags); }
+  private void addPointerSingle(HDT_RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerSingle, rt    , tags); }
+  private void addStringItem   (HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcString       , rtNone, tags); }
+  private void addPathItem     (HDT_RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPath         , rt    , tags); }
+  private void addConnectorItem(HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcConnector    , rtNone, tags); }
 
   private void addBibEntryKeyItem() throws HDB_InternalError { addItem(hdtWork,   hdcBibEntryKey, rtNone,         tagBibEntryKey); }
   private void addAuthorsItem    () throws HDB_InternalError { addItem(hdtWork,   hdcAuthors,     rtAuthorOfWork, tagAuthor); }
@@ -1923,23 +1916,22 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final String
+  private static final String
 
     LOCK_FILE_NAME = "dblock.dat",
     REQUEST_MSG_FILE_NAME = "request_message.dat",
-    RESPONSE_MSG_FILE_NAME = "response_message.dat",
+    RESPONSE_MSG_FILE_NAME = "response_message.dat";
 
-    BIB_FILE_NAME = "Bib.json",
-    ZOTERO_TEMPLATE_FILE_NAME = "ZoteroTemplates.json",
-    ZOTERO_CREATOR_TYPES_FILE_NAME = "ZoteroCreatorTypes.json",
-
-    DEFAULT_PICTURES_PATH = "Pictures",
-    DEFAULT_BOOKS_PATH = "Books",
-    DEFAULT_PAPERS_PATH = "Papers",
-    DEFAULT_UNENTERED_PATH = "Works not entered yet",
-    DEFAULT_MISC_FILES_PATH = "Misc",
-    DEFAULT_RESULTS_PATH = "Search results",
-    DEFAULT_TOPICAL_PATH = "Topical";
+  public static final String BIB_FILE_NAME = "Bib.json",
+                             ZOTERO_TEMPLATE_FILE_NAME = "ZoteroTemplates.json",
+                             ZOTERO_CREATOR_TYPES_FILE_NAME = "ZoteroCreatorTypes.json",
+                             DEFAULT_PICTURES_PATH = "Pictures",
+                             DEFAULT_BOOKS_PATH = "Books",
+                             DEFAULT_PAPERS_PATH = "Papers",
+                             DEFAULT_UNENTERED_PATH = "Works not entered yet",
+                             DEFAULT_MISC_FILES_PATH = "Misc",
+                             DEFAULT_RESULTS_PATH = "Search results",
+                             DEFAULT_TOPICAL_PATH = "Topical";
 
   public static final int
 

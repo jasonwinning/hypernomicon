@@ -47,7 +47,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface ButtonCellHandler { public void handle(HyperTableRow row, int colNdx); }
+  @FunctionalInterface public static interface ButtonCellHandler { void handle(HyperTableRow row, int colNdx); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -65,7 +65,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
   //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface KeyChangeHandler { public void handle(String oldKey, String newKey); }
+  @FunctionalInterface public static interface KeyChangeHandler { void handle(String oldKey, String newKey); }
 
   public static abstract class SyncTask extends HyperTask
   {

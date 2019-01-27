@@ -46,6 +46,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.queryEngines.QueryEngine.QueryType;
+import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
@@ -222,6 +223,7 @@ public final class MainController
   @FXML private void mnuAboutClick()          { AboutDialogController.create("About " + appTitle).showModal(); }
   @FXML private void mnuChangeFavOrderClick() { FavOrderDialogController.create("Change Order of Favorites").showModal(); }
   @FXML private void mnuSettingsClick()       { if (!cantSaveRecord(true)) OptionsDialogController.create(appTitle + " Settings").showModal(); }
+  @FXML private void mnuFindMentionsClick()   { if (!cantSaveRecord(true)) searchForMentions(activeRecord(), false); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1442,7 +1444,9 @@ public final class MainController
 
     if (record == null) return;
 
-    switch (record.getType())
+    HDT_RecordType type = record.getType();
+
+    switch (type)
     {
       case hdtGlossary :
 
@@ -1471,9 +1475,21 @@ public final class MainController
         break;
     }
 
-    if (confirm) if (confirmDialog("Are you sure you want to delete this record?") == false) return;
+    if (confirm)
+    {
+      String msg;
 
-    db.deleteRecord(record.getType(), record.getID());
+      if (type == hdtTerm)
+        msg = "Are you sure you want to delete this record and all associated concepts?";
+      else
+        msg = "Are you sure you want to delete this record?";
+
+      if (confirmDialog("Type: " + db.getTypeName(type) + "\n" +
+                        "Name: " + record.getCBText() + "\n" +
+                        "ID: " + record.getID() + "\n\n" + msg) == false) return;
+    }
+
+    db.deleteRecord(type, record.getID());
 
     viewSequence.activateCurrentSlot();
     fileManagerDlg.setNeedRefresh();
@@ -1658,9 +1674,9 @@ public final class MainController
   {
     public FavMenuItem(HDT_Base record)
     {
-      super(db.getTypeName(record.getType()) + ": " + record.listName());
+      super(db.getTypeName(record.getType()) + ": " + record.getCBText());
       isQuery = false;
-      favRecord = new HyperTableCell(record.getID(), record.listName(), record.getType());
+      favRecord = new HyperTableCell(record.getID(), record.getCBText(), record.getType());
       setOnAction(event -> goToRecord(record, true));
     }
 
@@ -1693,11 +1709,11 @@ public final class MainController
 
     mnuFavorites.setDisable(false);
 
-    if (viewRecord() != null)
+    if ((activeTab() != treeTab) && (activeTab() != queryTab) && viewRecord() != null)
     {
       mnuToggleFavorite.setDisable(false);
 
-      if (favorites.indexOfRecord(activeRecord()) > -1)
+      if (favorites.indexOfRecord(viewRecord()) > -1)
         mnuToggleFavorite.setText("Remove from favorites...");
     }
     else
@@ -1780,16 +1796,6 @@ public final class MainController
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void mnuFindMentionsClick()
-  {
-    if (db.isLoaded() == false) return;
-
-    searchForMentions(activeRecord(), false);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private void searchForMentions(HDT_Base record, boolean descOnly)
   {
     boolean noneFound = false, didSearch = false, backClick = activeTab() != queryTab;
@@ -1837,7 +1843,28 @@ public final class MainController
       return;
     }
 
-    HDT_Base record = activeRecord();
+    HDT_Base record = null;
+
+    if (activeTab() == termTab)
+    {
+      HDT_Term term = (HDT_Term) activeRecord();
+      record = viewRecord();
+
+      if (record == null)
+        record = term;
+      else
+      {
+        PopupDialog dlg = new PopupDialog("Which record?");
+
+        dlg.addButton("Term", mrYes);
+        dlg.addButton("Concept", mrNo);
+
+        if (dlg.showModal() == mrYes)
+          record = term;
+      }
+    }
+    else
+      record = activeRecord();
 
     if (record == null)
     {
@@ -1887,7 +1914,8 @@ public final class MainController
     HDT_Base viewRecord = viewRecord();
 
     if (revertToDiskCopy(record) && (viewRecord != null) && (viewRecord != record))
-      revertToDiskCopy(viewRecord);
+      if ((activeTab() != treeTab) && (activeTab() != queryTab))
+        revertToDiskCopy(viewRecord);
 
     update();
   }
@@ -1900,11 +1928,16 @@ public final class MainController
     boolean success = true;
     String recordStr = db.getTypeName(record.getType()) + " \"" + record.getCBText() + "\"";
 
-    HDT_RecordState backupState = record.getRecordStateBackup();
+    HDT_Hub hub = record.isUnitable() ? HDT_RecordWithConnector.class.cast(record).getHub() : null;
+    HDT_RecordState backupState = record.getRecordStateBackup(),
+                    hubState = hub == null ? null : hub.getRecordStateBackup();
 
     try
     {
-      record.bringStoredCopyOnline();
+      if (hub != null)
+        hub.bringStoredCopyOnline(false);
+
+      record.bringStoredCopyOnline(false);
     }
     catch (RelationCycleException e)
     {
@@ -1921,7 +1954,10 @@ public final class MainController
 
     try
     {
-      record.restoreTo(backupState);
+      if (hub != null)
+        hub.restoreTo(hubState, false);
+
+      record.restoreTo(backupState, false);
     }
     catch (RelationCycleException | SearchKeyException | HubChangedException e) { noOp(); }
     catch (HDB_InternalError e)

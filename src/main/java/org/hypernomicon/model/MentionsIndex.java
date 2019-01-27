@@ -41,7 +41,7 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
 
-public class MentionsIndex
+class MentionsIndex
 {
   private final BidiOneToManyRecordMap mentionedInDescToMentioners;
   private final BidiOneToManyRecordMap mentionedAnywhereToMentioners;
@@ -76,7 +76,7 @@ public class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void removeRecord(HDT_Base record)
+  void removeRecord(HDT_Base record)
   {
     if ((thread != null) && (thread.isAlive()))
     {
@@ -91,7 +91,7 @@ public class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void updateMentioner(HDT_Base record)
+  void updateMentioner(HDT_Base record)
   {
     if ((thread != null) && (thread.isAlive()))
     {
@@ -173,7 +173,7 @@ public class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean waitUntilRebuildIsDone()
+  boolean waitUntilRebuildIsDone()
   {
     if (isRebuilding() == false) return true;
 
@@ -185,7 +185,7 @@ public class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean isRebuilding()
+  boolean isRebuilding()
   {
     return nullSwitch(thread, false, Thread::isAlive);
   }
@@ -207,7 +207,7 @@ public class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean startRebuild()
+  boolean startRebuild()
   {
     stopRebuild();
 
@@ -283,7 +283,7 @@ public class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void stopRebuild()
+  void stopRebuild()
   {
     if ((thread != null) && thread.isAlive())
     {
@@ -295,12 +295,12 @@ public class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Set<HDT_Base> getMentionerSet(HDT_Base target, boolean descOnly)
+  Set<HDT_Base> getMentionerSet(HDT_Base target, boolean descOnly)
   {
     return getMentionerSet(target, descOnly, new MutableBoolean(false));
   }
 
-  public Set<HDT_Base> getMentionerSet(HDT_Base target, boolean descOnly, MutableBoolean choseNotToWait)
+  Set<HDT_Base> getMentionerSet(HDT_Base target, boolean descOnly, MutableBoolean choseNotToWait)
   {
     choseNotToWait.setValue(!waitUntilRebuildIsDone());
     if (choseNotToWait.isTrue())
@@ -315,32 +315,7 @@ public class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Set<HDT_Base> getMentionedSet(HDT_Base mentioner, boolean descOnly)
-  {
-    return getMentionedSet(mentioner, descOnly, new MutableBoolean(false));
-  }
-
-  public Set<HDT_Base> getMentionedSet(HDT_Base mentioner, boolean descOnly, MutableBoolean choseNotToWait)
-  {
-    choseNotToWait.setValue(!waitUntilRebuildIsDone());
-    if (choseNotToWait.isTrue())
-      return null;
-
-    if (descOnly)
-      return mentionedInDescToMentioners.getReverseSet(mentioner);
-
-    return mentionedAnywhereToMentioners.getReverseSet(mentioner);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean firstMentionsSecond(HDT_Base mentioner, HDT_Base target, boolean descOnly)
-  {
-    return firstMentionsSecond(mentioner, target, descOnly, new MutableBoolean(false));
-  }
-
-  public boolean firstMentionsSecond(HDT_Base mentioner, HDT_Base target, boolean descOnly, MutableBoolean choseNotToWait)
+  boolean firstMentionsSecond(HDT_Base mentioner, HDT_Base target, boolean descOnly, MutableBoolean choseNotToWait)
   {
     choseNotToWait.setValue(!waitUntilRebuildIsDone());
     if (choseNotToWait.isTrue())

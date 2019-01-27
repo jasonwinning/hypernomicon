@@ -39,10 +39,7 @@ public abstract class Populator
     cvtOperand,      cvtTagItem,      cvtRelation
   }
 
-  @FunctionalInterface public interface PopulatorFilter
-  {
-    public boolean filter(HDT_Base record);
-  }
+  @FunctionalInterface public interface PopulatorFilter { boolean filter(HDT_Base record); }
 
   public abstract HyperTableCell match(HyperTableRow row, HyperTableCell cell);
   public abstract List<HyperTableCell> populate(HyperTableRow row, boolean force);

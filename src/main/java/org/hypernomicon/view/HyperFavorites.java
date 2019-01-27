@@ -80,7 +80,7 @@ public class HyperFavorites
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperFavorites(Menu mnuFavorites, Menu mnuQueries)
+  HyperFavorites(Menu mnuFavorites, Menu mnuQueries)
   {
     mainList = mnuFavorites.getItems();
     queryList = mnuQueries.getItems();
@@ -201,7 +201,7 @@ public class HyperFavorites
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear()
+  void clear()
   {
     while (mainList.size() > FIRST_FAV_MENU_ITEM_NDX)
       mainList.remove(FIRST_FAV_MENU_ITEM_NDX);
@@ -212,7 +212,7 @@ public class HyperFavorites
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public int indexOfRecord(HDT_Base record)
+  int indexOfRecord(HDT_Base record)
   {
     for (int ndx = FIRST_FAV_MENU_ITEM_NDX; ndx < mainList.size(); ndx++)
     {
@@ -230,7 +230,7 @@ public class HyperFavorites
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void changeRecordID(HDT_RecordType changedType, int oldID, int newID)
+  void changeRecordID(HDT_RecordType changedType, int oldID, int newID)
   {
     for (int ndx = FIRST_FAV_MENU_ITEM_NDX; ndx < mainList.size(); ndx++)
     {

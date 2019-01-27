@@ -90,19 +90,19 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 
   @FunctionalInterface public interface PDFJSDoneHandler {
-    public void handle(PDFJSCommand cmd, boolean success, String errMessage);
+    void handle(PDFJSCommand cmd, boolean success, String errMessage);
   }
 
 //---------------------------------------------------------------------------
 
   @FunctionalInterface public interface PDFJSPageChangeHandler {
-    public void handle(int newPage);
+    void handle(int newPage);
   }
 
 //---------------------------------------------------------------------------
 
   @FunctionalInterface public interface PDFJSRetrievedDataHandler {
-    public void handle(Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel, List<Integer> hilitePages);
+    void handle(Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel, List<Integer> hilitePages);
   }
 
 //---------------------------------------------------------------------------

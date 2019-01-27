@@ -45,7 +45,7 @@ public class HDT_Hub extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public final void setSearchKey(String newKey, boolean noMod) throws SearchKeyException
+  @Override public final void setSearchKey(String newKey, boolean noMod, boolean dontRebuildMentions) throws SearchKeyException
   {
     if (newKey.length() > 0)
       messageDialog("Internal error #72950", mtError);

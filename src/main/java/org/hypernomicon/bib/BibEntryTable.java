@@ -48,8 +48,8 @@ import static org.hypernomicon.util.Util.*;
 
 public class BibEntryTable
 {
-  @FunctionalInterface public interface BibEntryRowHandler     { public abstract void handle(BibEntryRow row); }
-  @FunctionalInterface public interface CondBibEntryRowHandler { public abstract boolean handle(BibEntryRow row); }
+  @FunctionalInterface public interface BibEntryRowHandler     { void handle(BibEntryRow row); }
+  @FunctionalInterface public interface CondBibEntryRowHandler { boolean handle(BibEntryRow row); }
 
 //---------------------------------------------------------------------------
 

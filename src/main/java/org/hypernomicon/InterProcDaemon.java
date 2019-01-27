@@ -25,11 +25,11 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
-public class InterProcDaemon extends Thread
+class InterProcDaemon extends Thread
 {
-  public static final int PORT = 59346;
+  static final int PORT = 59346;
 
-  public InterProcDaemon()
+  InterProcDaemon()
   {
     super();
     setDaemon(true);

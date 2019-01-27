@@ -143,7 +143,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
     return s.substring(s.indexOf('|') + 1);
   }
 
-  public String getFirstNameEngChar()
+  private String getFirstNameEngChar()
   {
     String s = getNameEngChar();
     return s.substring(s.indexOf('|') + 1);
@@ -223,19 +223,19 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
     private ArrayList<Boolean> useForDupCheck = new ArrayList<>();
     private boolean lowerCase;
 
-    public PotentialKeySet(boolean lowerCase)
+    private PotentialKeySet(boolean lowerCase)
     {
       this.lowerCase = lowerCase;
     }
 
-    public int size()                         { return keys.size(); }
-    public String getKey(int ndx)             { return keys.get(ndx); }
-    public boolean getUseForDupCheck(int ndx) { return useForDupCheck.get(ndx); }
-    public boolean containsKey(String key)    { return keys.contains(key); }
+    private int size()                         { return keys.size(); }
+    private String getKey(int ndx)             { return keys.get(ndx); }
+    private boolean getUseForDupCheck(int ndx) { return useForDupCheck.get(ndx); }
+    private boolean containsKey(String key)    { return keys.contains(key); }
 
   //---------------------------------------------------------------------------
 
-    public void add(String newKey, boolean newUseForDupCheck)
+    private void add(String newKey, boolean newUseForDupCheck)
     {
       if (newKey.length() == 0) return;
 
@@ -301,7 +301,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 
   // Returns last name, prepared for search key
 
-  public static String getSearchKeyComponents(String first, String last, ArrayList<String> nameList, ArrayList<String> initialList, StringBuilder nickNames)
+  private static String getSearchKeyComponents(String first, String last, ArrayList<String> nameList, ArrayList<String> initialList, StringBuilder nickNames)
   {
     String name;
 

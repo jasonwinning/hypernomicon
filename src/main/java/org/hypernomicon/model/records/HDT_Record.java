@@ -45,6 +45,7 @@ import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.model.records.HDT_Record.HyperDataCategory.*;
 
 //---------------------------------------------------------------------------
 
@@ -104,11 +105,11 @@ public abstract class HDT_Record implements HDT_Base
   @Override public final void updateSortKey()           { if (dataset != null) dataset.updateSortKey(makeSortKey(), id); }
   @Override public final HDI_Schema getSchema(Tag tag)  { return nullSwitch(items.get(tag), null, HDI_Base::getSchema); }
 
-  protected final Tag getMainTextTag()                  { return dataset.getMainTextTag(); }
+  @Override public final void writeStoredStateToXML(StringBuilder xml)        { xmlState.writeToXML(xml); }
+  @Override public void setSearchKey(String newKey) throws SearchKeyException { setSearchKey(newKey, false, false); }
 
-  @Override public void setSearchKey(String newKey) throws SearchKeyException                { setSearchKey(newKey, false); }
-  @Override public void setSearchKey(String newKey, boolean noMod) throws SearchKeyException { db.setSearchKey(this, newKey, noMod); }
-  @Override public final void writeStoredStateToXML(StringBuilder xml)                       { xmlState.writeToXML(xml); }
+  @Override public void setSearchKey(String newKey, boolean noMod, boolean dontRebuildMentions) throws SearchKeyException
+  { db.setSearchKey(this, newKey, noMod, dontRebuildMentions); }
 
   @SuppressWarnings("unchecked")
   protected final <HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> HyperObjList<HDT_SubjType, HDT_ObjType> getObjList(RelationType relType)
@@ -255,16 +256,16 @@ public abstract class HDT_Record implements HDT_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void bringStoredCopyOnline() throws RelationCycleException, SearchKeyException, HubChangedException
+  @Override public void bringStoredCopyOnline(boolean dontRebuildMentions) throws RelationCycleException, SearchKeyException, HubChangedException
   {
-    restoreTo(xmlState);
+    restoreTo(xmlState, dontRebuildMentions);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override @SuppressWarnings({ "unchecked", "rawtypes" })
-  public final void restoreTo(HDT_RecordState backupState) throws RelationCycleException, SearchKeyException, HubChangedException
+  public final void restoreTo(HDT_RecordState backupState, boolean dontRebuildMentions) throws RelationCycleException, SearchKeyException, HubChangedException
   {
     dummyFlag = backupState.dummyFlag;
 
@@ -295,12 +296,22 @@ public abstract class HDT_Record implements HDT_Base
     if (this instanceof HDT_SimpleRecord)
       setNameInternal(backupState.simpleName, false);
 
+    int hubID = -1;
+
+    if (backupState.items.containsKey(tagHub))
+      hubID = HDI_OfflineConnector.class.cast(backupState.items.get(tagHub)).getHubID();
+
     for (Entry<Tag, HDI_OfflineBase> backupEntry : backupState.items.entrySet())
     {
       Tag tag = backupEntry.getKey();
 
-      HDI_OfflineBase backupValue = backupEntry.getValue();
+      if (tag == tagHub) continue; // handle hub after loop ends
+
       HDI_OnlineBase liveValue = items.get(tag);
+      if ((liveValue.getCategory() == hdcConnector) && (hubID > 0)) // Correct data will be in hub's record state,
+        continue;                                                   // not this one's
+
+      HDI_OfflineBase backupValue = backupEntry.getValue();
 
       if (tag == tagFirstName)
         HDT_Person.class.cast(this).setFirstNameInternal(HDI_OfflinePersonName.class.cast(backupValue).getFirstName(), false);
@@ -308,21 +319,15 @@ public abstract class HDT_Record implements HDT_Base
         HDT_Person.class.cast(this).setLastNameInternal(HDI_OfflinePersonName.class.cast(backupValue).getLastName(), false);
       else if (tag == nameTag)
         setNameInternal(HDI_OfflineString.class.cast(backupValue).get(), false);
-      else if (tag == tagHub)
-        noOp(); // Don't handle hubs yet
       else
         liveValue.setFromOfflineValue(backupValue, tag);
     }
 
-    if (backupState.items.containsKey(tagHub))  // this is being done last so it can overwrite an existing hypernomicon.view.mainText item
-                                                // See HDI_OnlineConnector constructor
-    {
-      int hubID = HDI_OfflineConnector.class.cast(backupState.items.get(tagHub)).getHubID();
-      if (hubID > 0)
-        HDT_RecordWithConnector.class.cast(this).connector.initFromHub(db.hubs.getByID(hubID));
-    }
+    if (hubID > 0)  // this is being done last so it can overwrite an existing hypernomicon.view.mainText item
+                    // See HDI_OnlineConnector constructor
+      ((HDT_RecordWithConnector)this).connector.initFromHub(db.hubs.getByID(hubID));
 
-    setSearchKey(backupState.searchKey, true);
+    setSearchKey(backupState.searchKey, true, dontRebuildMentions);
   }
 
 //---------------------------------------------------------------------------

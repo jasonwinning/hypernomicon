@@ -345,7 +345,7 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
     {
       concept = db.createNewBlankRecord(hdtConcept);
 
-      term.setTerm(source.listName());
+      term.setName(source.listName());
       term.concepts.add(concept);
 
       concept.glossary.set(db.glossaries.getByID(1));

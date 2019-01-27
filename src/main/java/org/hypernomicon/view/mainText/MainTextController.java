@@ -115,10 +115,10 @@ public class MainTextController
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public List<DisplayItem> getDisplayItems() { return lvRecords.getItems(); }
-  public boolean isEmpty()                   { return getHtmlAndKeyWorks(new ArrayList<KeyWork>()).trim().length() == 0; }
+  List<DisplayItem> getDisplayItems() { return lvRecords.getItems(); }
+  boolean isEmpty()                   { return getHtmlAndKeyWorks(new ArrayList<KeyWork>()).trim().length() == 0; }
 
-  public int getScrollPos()    { return nullSwitch(getWebView(), 0, webView -> MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
+  int getScrollPos()    { return nullSwitch(getWebView(), 0, webView -> MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
 
   private void clearText()     { he.setHtmlText(disableLinks(getHtmlEditorText(""))); }
   private WebView getWebView() { return (WebView) he.lookup("WebView"); }
@@ -126,7 +126,7 @@ public class MainTextController
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear()
+  void clear()
   {
     taKeyWorks.clear();
     clearDisplayItems();
@@ -136,7 +136,7 @@ public class MainTextController
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void focus()
+  void focus()
   {
     runDelayedInFXThread(5, 100, event ->
     {
@@ -153,8 +153,7 @@ public class MainTextController
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("restriction")
-  public void init()
+  @SuppressWarnings("restriction") void init()
   {
     final WebView webview = getWebView();
     GridPane.setHgrow(webview, Priority.ALWAYS);
@@ -241,7 +240,7 @@ public class MainTextController
 
     lvRecords.setCellFactory(listView -> new ListCell<DisplayItem>()
     {
-      @Override public void updateItem(DisplayItem item, boolean empty)
+      @Override protected void updateItem(DisplayItem item, boolean empty)
       {
         super.updateItem(item, empty);
 
@@ -642,7 +641,7 @@ public class MainTextController
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getHtmlAndKeyWorks(List<KeyWork> keyWorksArg)
+  String getHtmlAndKeyWorks(List<KeyWork> keyWorksArg)
   {
     getKeyWorks(keyWorksArg);
     return getHtmlFromEditor(he.getHtmlText());
@@ -651,7 +650,7 @@ public class MainTextController
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setFromMainText(MainText mainText)
+  void setFromMainText(MainText mainText)
   {
     if (mainText != null)
       set(mainText.getRecord(), mainText.getHtml(), mainText.getDisplayItemsCopy(), mainText.getKeyWorks());
@@ -674,7 +673,7 @@ public class MainTextController
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void set(HDT_RecordWithConnector record, String html, List<DisplayItem> displayItems, List<KeyWork> keyWorks)
+  void set(HDT_RecordWithConnector record, String html, List<DisplayItem> displayItems, List<KeyWork> keyWorks)
   {
     String keyWorksText = "";
     curRecord = record;

@@ -22,7 +22,7 @@ import javafx.scene.control.ComboBox;
 
 @FunctionalInterface public interface CommitableWrapper
 {
-  public void commit();
+  void commit();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

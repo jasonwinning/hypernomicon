@@ -19,11 +19,8 @@ package org.hypernomicon.bib.lib;
 
 public interface BibCollection
 {
-  public String getCollectionKey();
-
-  public boolean isSynced();
-
-  public String getName();
-
-  public String getParentKey();
+  String getCollectionKey();
+  boolean isSynced();
+  String getName();
+  String getParentKey();
 }

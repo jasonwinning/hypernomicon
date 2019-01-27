@@ -187,9 +187,9 @@ public class HDT_RecordState
     if (sortKeyAttr.length() > 0)
       sortKeyAttrXML = " sort_key=" + QUOTE + xmlAttributeEscaper.escape(sortKeyAttr) + QUOTE;
 
-    xml.append("<record type=" + QUOTE + db.getTypeTagStr(type) + QUOTE + " id=" + QUOTE + id + QUOTE +
-                      sortKeyAttrXML + searchKeyAttr + listNameAttr + ">" + xmlContentEscaper.escape(nameToUse) + "</record>");
-    xml.append(System.lineSeparator());
+    xml.append("<record type=" + QUOTE + db.getTypeTagStr(type) + QUOTE + " id=" + QUOTE + id + QUOTE)
+       .append(sortKeyAttrXML + searchKeyAttr + listNameAttr + ">" + xmlContentEscaper.escape(nameToUse) + "</record>")
+       .append(System.lineSeparator());
   }
 
 //---------------------------------------------------------------------------
@@ -210,15 +210,15 @@ public class HDT_RecordState
     if (sortKeyAttrXML.length() > 0)
       sortKeyAttrXML = " sort_key=" + QUOTE + xmlAttributeEscaper.escape(sortKeyAttrXML) + QUOTE;
 
-    xml.append("<record type=" + QUOTE + typeName + QUOTE +
-               " id=" + QUOTE + id + QUOTE + sortKeyAttrXML + searchKeyAttr + ">");
-    xml.append(System.lineSeparator());
+    xml.append("<record type=" + QUOTE + typeName + QUOTE)
+       .append(" id=" + QUOTE + id + QUOTE + sortKeyAttrXML + searchKeyAttr + ">")
+       .append(System.lineSeparator());
 
     if (creationDate == null) return;
 
-    xml.append("  <creation_date>" + dateTimeToIso8601offset(creationDate) + "</creation_date>"); xml.append(System.lineSeparator());
-    xml.append("  <modified_date>" + dateTimeToIso8601offset(modifiedDate) + "</modified_date>"); xml.append(System.lineSeparator());
-    xml.append("  <view_date>" + dateTimeToIso8601offset(viewDate) + "</view_date>"); xml.append(System.lineSeparator());
+    xml.append("  <creation_date>" + dateTimeToIso8601offset(creationDate) + "</creation_date>"); xml.append(System.lineSeparator())
+       .append("  <modified_date>" + dateTimeToIso8601offset(modifiedDate) + "</modified_date>"); xml.append(System.lineSeparator())
+       .append("  <view_date>" + dateTimeToIso8601offset(viewDate) + "</view_date>"); xml.append(System.lineSeparator());
   }
 
 //---------------------------------------------------------------------------
@@ -251,8 +251,8 @@ public class HDT_RecordState
     if (objID > 0)
       idStr = " id=" + QUOTE + objID + QUOTE;
 
-    xml.append("  <" + db.getTagStr(tag) + idStr + ">" + xmlContentEscaper.escape(value));
-    xml.append(System.lineSeparator());
+    xml.append("  <" + db.getTagStr(tag) + idStr + ">" + xmlContentEscaper.escape(value))
+       .append(System.lineSeparator());
 
     map.forEach((nestedTag, nestedItem) ->
     {
@@ -280,8 +280,8 @@ public class HDT_RecordState
     if (objID > 0)          idStr   = " id="   + QUOTE + objID                     + QUOTE;
     if (objType != hdtNone) typeStr = " type=" + QUOTE + db.getTypeTagStr(objType) + QUOTE;
 
-    xml.append("  <" + db.getTagStr(tag) + typeStr + idStr + ">" + xmlContentEscaper.escape(value) + "</" + db.getTagStr(tag) + ">");
-    xml.append(System.lineSeparator());
+    xml.append("  <" + db.getTagStr(tag) + typeStr + idStr + ">" + xmlContentEscaper.escape(value) + "</" + db.getTagStr(tag) + ">")
+       .append(System.lineSeparator());
   }
 
 //---------------------------------------------------------------------------

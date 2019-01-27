@@ -42,15 +42,15 @@ public final class WindowStack
 
   static interface WindowWrapper
   {
-    public Modality getModality();
-    public boolean isStage();
+    Modality getModality();
+    boolean isStage();
   }
 
   private static final class AlertWrapper implements WindowWrapper
   {
     private final Alert dlg;
 
-    public AlertWrapper(Alert dlg) { this.dlg = dlg; }
+    private AlertWrapper(Alert dlg) { this.dlg = dlg; }
 
     @Override public Modality getModality() { return dlg.getModality(); }
     @Override public boolean isStage()      { return false; }
@@ -60,9 +60,7 @@ public final class WindowStack
   {
     private final Stage stage;
 
-    public StageWrapper(Stage stage) { this.stage = stage; }
-
-    public Stage getStage() { return stage; }
+    private StageWrapper(Stage stage) { this.stage = stage; }
 
     @Override public Modality getModality() { return stage.getModality(); }
     @Override public boolean isStage()      { return true; }
@@ -119,7 +117,7 @@ public final class WindowStack
 
     windows.descendingIterator().forEachRemaining(window ->
     {
-      Stage curStage = StageWrapper.class.cast(window).getStage();
+      Stage curStage = StageWrapper.class.cast(window).stage;
       if (stage != curStage)
         curStage.toFront();
     });
@@ -170,7 +168,7 @@ public final class WindowStack
   {
     for (WindowWrapper window : windows)
       if (window.isStage())
-        return StageWrapper.class.cast(window).getStage();
+        return StageWrapper.class.cast(window).stage;
 
     return null;
   }
@@ -190,7 +188,7 @@ public final class WindowStack
 
     if (focusingWindow.isStage() == false) return;
 
-    Stage stage = StageWrapper.class.cast(focusingWindow).getStage();
+    Stage stage = StageWrapper.class.cast(focusingWindow).stage;
 
     if (SystemUtils.IS_OS_LINUX && (stage == app.getPrimaryStage()))
     {

@@ -96,7 +96,6 @@ public class HyperTable implements RecordListView
   Runnable onShowMore = null;
   public boolean disableRefreshAfterCellUpdate = false,
                  autoCommitListSelections = false;
-  ComboBoxCell cellBeingEdited = null;
 
   private static HashMap<TableView<?>, Double> rowHeight = new HashMap<>();
   private static HashBasedTable<TableView<?>, Orientation, ScrollBar> sbMap = HashBasedTable.create();
@@ -114,12 +113,11 @@ public class HyperTable implements RecordListView
   public void setFilter(Predicate<HyperTableRow> filter)           { filteredRows.setPredicate(filter); }
   public HDT_RecordType getTypeByCol(int colNdx)                   { return cols.get(colNdx).getObjType(); }
   public List<HyperTableCell> getSelByCol(int colNdx)              { return cols.get(colNdx).getSelectedItems(); }
-  public boolean getCanAddRows()                                   { return canAddRows; }
+  boolean getCanAddRows()                                          { return canAddRows; }
   public void setCanAddRows(boolean value)                         { canAddRows = value; tv.setEditable(value); }
   public void setOnShowMore(Runnable onShowMore)                   { this.onShowMore = onShowMore; }
-  public int getMainColNdx()                                       { return mainCol; }
+  int getMainColNdx()                                              { return mainCol; }
   public void setTooltip(int colNdx, ButtonAction ba, String text) { cols.get(colNdx).setTooltip(ba, text); }
-  public ComboBoxCell getCellBeingEdited()                         { return cellBeingEdited; }
   public void removeRow(HyperTableRow row)                         { rows.remove(row); }
   public Iterable<HyperTableRow> getDataRows()                     { return new DataRowIterator(); }
   public int getDataRowCount()                                     { return canAddRows ? Math.max(rows.size() - 1, 0) : rows.size(); }
@@ -130,7 +128,7 @@ public class HyperTable implements RecordListView
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public class DataRowIterator implements Iterable<HyperTableRow>, Iterator<HyperTableRow>
+  private class DataRowIterator implements Iterable<HyperTableRow>, Iterator<HyperTableRow>
   {
     private int nextNdx = 0, dataRowCnt = getDataRowCount();
     private Iterator<HyperTableRow> rowIt = rows.iterator();
@@ -149,7 +147,7 @@ public class HyperTable implements RecordListView
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface RowBuilder<T> { public void buildRow(HyperTableRow row, T object); }
+  @FunctionalInterface public static interface RowBuilder<T> { void buildRow(HyperTableRow row, T object); }
 
   public <T> void buildRows(Iterable<T> objs, RowBuilder<T> bldr) { objs.forEach(obj -> bldr.buildRow(newDataRow(), obj)); }
 
@@ -434,26 +432,26 @@ public class HyperTable implements RecordListView
 //---------------------------------------------------------------------------
 
   @FunctionalInterface
-  public interface CellUpdateHandler { public void handle(HyperTableRow row, HyperTableCell cellVal, int nextColNdx, Populator nextPopulator); }
+  public interface CellUpdateHandler { void handle(HyperTableRow row, HyperTableCell cellVal, int nextColNdx, Populator nextPopulator); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public interface RowHandler     { public void handle(HyperTableRow row); }
-  @FunctionalInterface public interface CondRowHandler { public boolean handle(HyperTableRow row); }
+  @FunctionalInterface public interface RowHandler     { void handle(HyperTableRow row); }
+  @FunctionalInterface public interface CondRowHandler { boolean handle(HyperTableRow row); }
 
   public static class HyperMenuItem<HDT_T extends HDT_Base>
   {
-    public HDT_RecordType recordType = hdtNone;
-    public RecordHandler<HDT_T> recordHandler;
-    public CondRecordHandler<HDT_T> condRecordHandler;
-    public RowHandler rowHandler;
-    public CondRowHandler condRowHandler;
+    HDT_RecordType recordType = hdtNone;
+    RecordHandler<HDT_T> recordHandler;
+    CondRecordHandler<HDT_T> condRecordHandler;
+    private RowHandler rowHandler;
+    private CondRowHandler condRowHandler;
 
-    public String caption;
-    public boolean okayIfBlank = false;
+    String caption;
+    private boolean okayIfBlank = false;
 
-    public HyperMenuItem(String caption) { this.caption = caption; }
+    HyperMenuItem(String caption) { this.caption = caption; }
   }
 
 //---------------------------------------------------------------------------
@@ -705,7 +703,7 @@ public class HyperTable implements RecordListView
 
   public HyperTableRow newDataRow() { return newRow(true); }
 
-  public HyperTableRow newRow(boolean dataRow)
+  HyperTableRow newRow(boolean dataRow)
   {
     HyperTableRow row = new HyperTableRow(cols.size(), this);
 
@@ -773,20 +771,6 @@ public class HyperTable implements RecordListView
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public int getColNdxByObjType(HDT_RecordType objType)
-  {
-    for (HyperTableColumn col : cols)
-    {
-      if (col.getObjType().equals(objType))
-        return col.getColNdx();
-    }
-
-    return -1;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public boolean containsRecord(HDT_Base record)
   {
     return getRowByRecord(record) != null;
@@ -809,7 +793,7 @@ public class HyperTable implements RecordListView
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void browseClick(HyperTableRow row, int colNdx)
+  void browseClick(HyperTableRow row, int colNdx)
   {
     Populator pop = null;
     RecordTypePopulator rtp = null;
@@ -873,7 +857,7 @@ public class HyperTable implements RecordListView
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void refreshCol(int colNdx)
+  void refreshCol(int colNdx)
   {
     tv.getColumns().get(colNdx).setVisible(false);  // Necessary workaround; tableview does not automatically refresh
     tv.getColumns().get(colNdx).setVisible(true);   // when you change values in the cell objects, just the row objects

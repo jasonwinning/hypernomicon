@@ -57,7 +57,7 @@ import javafx.util.StringConverter;
 
 public class HyperCB implements CommitableWrapper
 {
-  @FunctionalInterface public interface CellTextHandler { public String getText(HyperTableRow row); }
+  @FunctionalInterface public interface CellTextHandler { String getText(HyperTableRow row); }
 
   private final ComboBox<HyperTableCell> cb;
   private final Populator populator;
@@ -498,7 +498,7 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static interface RecordString { public String get(HDT_Base record); }
+  @FunctionalInterface public static interface RecordString { String get(HDT_Base record); }
 
   public void addBlankEntry() { addEntry(-1, "", false); }
 

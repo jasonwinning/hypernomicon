@@ -31,11 +31,8 @@ public interface QuerySource
     QST_combinedUnfilteredRecords
   }
 
-  public int count();
-
-  public QuerySourceType sourceType();
-
-  public boolean containsRecord(HDT_Base record);
-
-  public HDT_Base getRecord(int ndx);
+  int count();
+  QuerySourceType sourceType();
+  boolean containsRecord(HDT_Base record);
+  HDT_Base getRecord(int ndx);
 }

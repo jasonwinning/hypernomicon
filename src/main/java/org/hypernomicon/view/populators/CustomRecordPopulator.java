@@ -33,7 +33,7 @@ public class CustomRecordPopulator extends Populator
 //---------------------------------------------------------------------------
 
   @FunctionalInterface
-  public static interface PopulateHandler { public List<HDT_Base> handle(HyperTableRow row, boolean force); }
+  public static interface PopulateHandler { List<HDT_Base> handle(HyperTableRow row, boolean force); }
 
 //---------------------------------------------------------------------------
 

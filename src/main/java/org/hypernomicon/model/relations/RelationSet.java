@@ -105,7 +105,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public RelationSet(RelationType newType) throws HDB_InternalError
+  private RelationSet(RelationType newType) throws HDB_InternalError
   {
     type = newType;
 

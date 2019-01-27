@@ -26,13 +26,13 @@ import org.hypernomicon.view.wrappers.HyperTable.HyperMenuItem;
 
 public interface RecordListView
 {
-  @FunctionalInterface interface RecordHandler<HDT_T extends HDT_Base>     { public void handle(HDT_T record); }
-  @FunctionalInterface interface CondRecordHandler<HDT_T extends HDT_Base> { public boolean handle(HDT_T record); }
+  @FunctionalInterface interface RecordHandler<HDT_T extends HDT_Base>     { void handle(HDT_T record); }
+  @FunctionalInterface interface CondRecordHandler<HDT_T extends HDT_Base> { boolean handle(HDT_T record); }
 
-  public <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addContextMenuItem    (String caption, Class<HDT_T> klass, RecordHandler<HDT_T> handler);
+  <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addContextMenuItem    (String caption, Class<HDT_T> klass, RecordHandler<HDT_T> handler);
 
-  public <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addCondContextMenuItem(String caption, Class<HDT_T> klass,
-                                                                              CondRecordHandler<HDT_T> condHandler, RecordHandler<HDT_T> handler);
+  <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addCondContextMenuItem(String caption, Class<HDT_T> klass,
+                                                                       CondRecordHandler<HDT_T> condHandler, RecordHandler<HDT_T> handler);
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

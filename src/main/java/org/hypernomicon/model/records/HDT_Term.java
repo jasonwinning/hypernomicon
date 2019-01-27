@@ -48,8 +48,6 @@ public class HDT_Term extends HDT_Record implements HDT_RecordWithDescription
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setTerm(String newTerm) { setNameInternal(newTerm, true); }
-
   @Override public String listName()        { return name(); }
   @Override public HDT_RecordType getType() { return hdtTerm; }
   @Override public MainText getDesc()       { return concepts.get(0).getMainText(); }

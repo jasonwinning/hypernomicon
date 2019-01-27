@@ -32,12 +32,12 @@ public interface ZoteroEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ZoteroEntityType getType();
-  public void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge);
-  public void saveToDisk(JsonArray jArr);
-  public boolean isSynced();
-  public long getVersion();
-  public String getKey();
+  ZoteroEntityType getType();
+  void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge);
+  void saveToDisk(JsonArray jArr);
+  boolean isSynced();
+  long getVersion();
+  String getKey();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

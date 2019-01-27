@@ -202,11 +202,6 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setLargerWork(int newID)
-  {
-    setLargerWork(newID, false);
-  }
-
   public void setLargerWork(int newID, boolean noIsbnUpdate)
   {
     boolean ask = false;

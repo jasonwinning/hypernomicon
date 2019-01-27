@@ -45,7 +45,7 @@ public class FileDownloadUtility
 {
   private static final int BUFFER_SIZE = 4096;
 
-  @FunctionalInterface public interface BufferHandler { public void handle(Buffer buffer); }
+  @FunctionalInterface public interface BufferHandler { void handle(Buffer buffer); }
 
   public static class Buffer extends InputStream
   {

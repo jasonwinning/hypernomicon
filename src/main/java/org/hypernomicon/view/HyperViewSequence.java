@@ -51,7 +51,7 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperViewSequence(TabPane tabPane, ClickHoldButton chbForward, ClickHoldButton chbBack)
+  HyperViewSequence(TabPane tabPane, ClickHoldButton chbForward, ClickHoldButton chbBack)
   {
     this.tabPane = tabPane;
     this.chbForward = chbForward;
@@ -87,20 +87,20 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperTab<? extends HDT_Base, ? extends HDT_Base> curHyperTab() { return getHyperTab(curTabEnum()); }
-  public HyperView<? extends HDT_Base> curHyperView()                   { return viewList.getView(); }
-  public boolean isEmpty()                                              { return viewList.isEmpty(); }
-  public HyperTab.TabEnum curTabEnum()                                  { return curHyperView().getTabEnum();  }
-  public void updateCurrentView(HyperView<? extends HDT_Base> view)     { viewList.setView(view); setTabView(view); }
-  public void stepForward()                                             { saveViewToSequence(false); viewList.goForward(false); update(); }
-  public void stepBack()                                                { saveViewToSequence(false); viewList.goBack(); update(); }
-  public void removeRecord(HDT_Base record)                             { viewList.removeRecord(record); }
-  public void refresh()                                                 { viewList.refreshAll(); }
+  HyperTab<? extends HDT_Base, ? extends HDT_Base> curHyperTab()    { return getHyperTab(curTabEnum()); }
+  HyperView<? extends HDT_Base> curHyperView()                      { return viewList.getView(); }
+  boolean isEmpty()                                                 { return viewList.isEmpty(); }
+  HyperTab.TabEnum curTabEnum()                                     { return curHyperView().getTabEnum();  }
+  public void updateCurrentView(HyperView<? extends HDT_Base> view) { viewList.setView(view); setTabView(view); }
+  void stepForward()                                                { saveViewToSequence(false); viewList.goForward(false); update(); }
+  void stepBack()                                                   { saveViewToSequence(false); viewList.goBack(); update(); }
+  void removeRecord(HDT_Base record)                                { viewList.removeRecord(record); }
+  void refresh()                                                    { viewList.refreshAll(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void activateCurrentSlot()
+  void activateCurrentSlot()
   {
     if (viewList.isEmpty())
     {
@@ -115,7 +115,7 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void forwardToNewSlot(TabEnum tabEnum)
+  void forwardToNewSlot(TabEnum tabEnum)
   {
     forwardToNewSlotAndView(getHyperTab(tabEnum).getView());
   }
@@ -123,27 +123,24 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void forwardToNewSlotAndView(HyperView<? extends HDT_Base> hyperView)
+  void forwardToNewSlotAndView(HyperView<? extends HDT_Base> hyperView)
   {
     saveViewToSequence(false);
     HyperTab.setTabView(hyperView);
 
-    boolean dontAdvance = false;
+    boolean advance = true;
 
     if (viewList.isEmpty() == false)
     {
       HyperView<? extends HDT_Base> view = viewList.getView();
 
-      if ((view.getTabEnum() != queryTab) && (view.getTabEnum() != treeTab))
-      {
-        if (view.getViewRecord() == null)
-          dontAdvance = true;
-      }
+      if ((view.getTabEnum() != queryTab) && (view.getTabEnum() != treeTab) && (view.getViewRecord() == null))
+        advance = false;
     }
 
     viewList.clearFollowingViews();
 
-    if (dontAdvance == false)
+    if (advance)
       viewList.goForward(true);
 
     viewList.setView(getHyperTab(hyperView.getTabEnum()).getView());
@@ -222,7 +219,7 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void init()
+  void init()
   {
     List<HDT_Base> initialNavList = db.getInitialNavList();
     int listSize = initialNavList.size();
@@ -259,12 +256,12 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <HDT_RT extends HDT_Base> HyperView<HDT_RT> createViewForRecord(HDT_RT record)
+  static <HDT_RT extends HDT_Base> HyperView<HDT_RT> createViewForRecord(HDT_RT record)
   {
     return createViewForRecord(getTabEnumByRecordType(record.getType()), record);
   }
 
-  public static <HDT_RT extends HDT_Base> HyperView<HDT_RT> createViewForRecord(TabEnum tabEnum, HDT_RT record)
+  static <HDT_RT extends HDT_Base> HyperView<HDT_RT> createViewForRecord(TabEnum tabEnum, HDT_RT record)
   {
     return new HyperView<>(tabEnum, record);
   }

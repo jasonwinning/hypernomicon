@@ -248,7 +248,7 @@ public class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String convertPlainMainTextToHtml(String input)
+  private static String convertPlainMainTextToHtml(String input)
   {
     String output = "<html dir=\"ltr\"><head>" + mainTextHeadStyleTag() + "</head><body contenteditable=\"true\"><p><font face=\"Arial\" size=\"2\">";
 
@@ -691,7 +691,7 @@ public class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static Optional<ButtonType> showAndWait(Alert dlg)
+  static Optional<ButtonType> showAndWait(Alert dlg)
   {
     WindowStack windowStack = ui == null ? null : ui.windows;
 
@@ -1161,7 +1161,7 @@ public class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static CloseableHttpClient getHTTPClient()
+  static CloseableHttpClient getHTTPClient()
   {
     SSLContext sc = null;
 
@@ -1749,10 +1749,10 @@ public class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface VoidFunction<T1>      { public void    evaluate(T1 obj); }
-  @FunctionalInterface public static interface BoolExpression        { public boolean evaluate(); }
-  @FunctionalInterface public static interface ObjExpression<T1>     { public T1      evaluate(); }
-  @FunctionalInterface public static interface ObjFunction<T1, T2>   { public T1      evaluate(T2 obj); }
+  @FunctionalInterface public static interface VoidFunction<T1>      { void    evaluate(T1 obj); }
+  @FunctionalInterface public static interface BoolExpression        { boolean evaluate(); }
+  @FunctionalInterface public static interface ObjExpression<T1>     { T1      evaluate(); }
+  @FunctionalInterface public static interface ObjFunction<T1, T2>   { T1      evaluate(T2 obj); }
 
   public static <T>      void    nullSwitch(T  obj,              VoidFunction<T>     ex) { if (obj != null)           ex.evaluate(obj); }
   public static <T>      boolean nullSwitch(T  obj, boolean def, BoolExpression      ex) { return obj == null ? def : ex.evaluate()   ; }

@@ -229,15 +229,15 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final int JS_EVENT_OPEN_RECORD = 1,
-                          JS_EVENT_OPEN_PREVIEW = 2,
-                          JS_EVENT_OPEN_URL = 3,
-                          JS_EVENT_LAUNCH_FILE = 4,
-                          JS_EVENT_OPEN_FILE = 5,             // May launch or open preview depending on user setting
-                          JS_EVENT_SET_SORT_KEY_METHOD = 6,
-                          JS_EVENT_DETAILED_KEY_WORKS = 7;
+  private static final int JS_EVENT_OPEN_RECORD = 1,
+                           JS_EVENT_OPEN_PREVIEW = 2,
+                           JS_EVENT_OPEN_URL = 3,
+                           JS_EVENT_LAUNCH_FILE = 4,
+                           JS_EVENT_OPEN_FILE = 5,             // May launch or open preview depending on user setting
+                           JS_EVENT_SET_SORT_KEY_METHOD = 6,
+                           JS_EVENT_DETAILED_KEY_WORKS = 7;
 
-  public static double lastEventID = -1;
+  private static double lastEventID = -1;
 
   public static void handleJSEvent(String htmlToUse, WebEngine weToUse, TextViewInfo viewInfo)
   {
@@ -399,8 +399,8 @@ public final class MainTextWrapper
         innerHtml.append("<br>");
       firstOne.setFalse();
 
-      innerHtml.append("<a hypncon=\"true\" href=\"\" title=\"Show in Preview Window\" onclick=\"javascript:openPreview(" + getOpenRecordParms(key.getRecord()) + "); return false;\">");
-      innerHtml.append("<img border=0 width=16 height=16 src=\"" + getImageDataURI(ui.getGraphicRelativePath(key.getRecord())) + "\"></img></a>");
+      innerHtml.append("<a hypncon=\"true\" href=\"\" title=\"Show in Preview Window\" onclick=\"javascript:openPreview(" + getOpenRecordParms(key.getRecord()) + "); return false;\">")
+               .append("<img border=0 width=16 height=16 src=\"" + getImageDataURI(ui.getGraphicRelativePath(key.getRecord())) + "\"></img></a>");
       String authorBibStr;
 
       switch (key.getRecord().getType())
@@ -428,8 +428,8 @@ public final class MainTextWrapper
           if (authorBibStr.length() > 0)
             innerHtml.append("&nbsp;<span hypncon-no-links=true>" + authorBibStr + "</span>");
 
-          innerHtml.append("&nbsp;" + getGoToRecordAnchor(miscFile, "", miscFile.name()) + "&nbsp;");
-          innerHtml.append("<a hypncon=\"true\" href=\"\" title=\"Jump to this record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(miscFile) + "); return false;\">" + "<img border=0 width=16 height=16 src=\"" + getImageDataURI("resources/images/view-form.png") + "\"></img></a>");
+          innerHtml.append("&nbsp;" + getGoToRecordAnchor(miscFile, "", miscFile.name()) + "&nbsp;")
+                   .append("<a hypncon=\"true\" href=\"\" title=\"Jump to this record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(miscFile) + "); return false;\">" + "<img border=0 width=16 height=16 src=\"" + getImageDataURI("resources/images/view-form.png") + "\"></img></a>");
 
           break;
 
@@ -565,7 +565,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static enum LinkKind { none, web, keyword }
+  private static enum LinkKind { none, web, keyword }
 
   private static void addLinks(Element element, HDT_Base recordToHilite)
   {
@@ -688,7 +688,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String getOpenRecordParms(HDT_Base record)
+  private static String getOpenRecordParms(HDT_Base record)
   {
     return String.valueOf(record.getType().ordinal()) + "," + record.getID();
   }
@@ -696,7 +696,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String getGoToRecordAnchor(HDT_Base record, String style, String content)
+  private static String getGoToRecordAnchor(HDT_Base record, String style, String content)
   {
     String parms = getOpenRecordParms(record);
 
@@ -712,7 +712,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String recordTooltip(HDT_Base record)
+  private static String recordTooltip(HDT_Base record)
   {
     String typeName = db.getTypeName(record.getType());
 
@@ -903,12 +903,12 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void appendImgTagsForLabel(HDT_WorkLabel label, StringBuilder innerHtml, boolean addSpace)
+  private static void appendImgTagsForLabel(HDT_WorkLabel label, StringBuilder innerHtml, boolean addSpace)
   {
-    innerHtml.append("<span style=\"display:inline-block; font-size:12pt; width:16px; height:16px; padding:0px; border:0px; margin:0px;\">");
-    innerHtml.append(getGoToRecordAnchor(label, " style=\"width:16px; height:16px; padding:0px; border:0px; margin:0px; background-repeat: no-repeat; background-image:url('" + getImageDataURI(ui.getGraphicRelativePathByType(hdtWorkLabel)) + "'); text-decoration: none;\"",
-        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
-    innerHtml.append("</span>");
+    innerHtml.append("<span style=\"display:inline-block; font-size:12pt; width:16px; height:16px; padding:0px; border:0px; margin:0px;\">")
+             .append(getGoToRecordAnchor(label, " style=\"width:16px; height:16px; padding:0px; border:0px; margin:0px; background-repeat: no-repeat; background-image:url('" + getImageDataURI(ui.getGraphicRelativePathByType(hdtWorkLabel)) + "'); text-decoration: none;\"",
+                                         "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"))
+             .append("</span>");
 
     if (addSpace) innerHtml.append("&nbsp;"); // Seems to be an inconsistency in how img tags (and spans with images)
                                               // are handled by the rendering engine; in a <summary> tag, there is no space after images
@@ -921,10 +921,10 @@ public final class MainTextWrapper
     {
       if (spoke.getType() != hdtWorkLabel)
       {
-        innerHtml.append("<span style=\"display:inline-block; font-size:12pt; width:16px; height:16px; padding:0px; border:0px; margin:0px;\">");
-        innerHtml.append(getGoToRecordAnchor(spoke.getSpoke(), " style=\"width:16px; height:16px; padding:0px; border:0px; margin:0px; background-repeat: no-repeat;background-image:url('" + getImageDataURI(ui.getGraphicRelativePathByType(spoke.getType())) + "'); text-decoration: none;\"",
-            "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
-        innerHtml.append("</span>");
+        innerHtml.append("<span style=\"display:inline-block; font-size:12pt; width:16px; height:16px; padding:0px; border:0px; margin:0px;\">")
+                 .append(getGoToRecordAnchor(spoke.getSpoke(), " style=\"width:16px; height:16px; padding:0px; border:0px; margin:0px; background-repeat: no-repeat;background-image:url('" + getImageDataURI(ui.getGraphicRelativePathByType(spoke.getType())) + "'); text-decoration: none;\"",
+                                             "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"))
+                 .append("</span>");
 
         if (addSpace) innerHtml.append("&nbsp;"); // Seems to be an inconsistency in how img tags (and spans with images)
       }                                           // are handled by the rendering engine; in a <summary> tag, there is no space after images
@@ -934,7 +934,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String getAnchorForUnitable(HDT_RecordWithConnector uRecord)
+  private static String getAnchorForUnitable(HDT_RecordWithConnector uRecord)
   {
     StrongLink link = uRecord.getLink();
     String recordName;
@@ -998,7 +998,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void appendSubLabelsKeyWorkBody(HDT_WorkLabel parentLabel, StringBuilder innerHtml, boolean sortByName, MutableInt tagNdx, TextViewInfo viewInfo, String parentDivitID)
+  private static void appendSubLabelsKeyWorkBody(HDT_WorkLabel parentLabel, StringBuilder innerHtml, boolean sortByName, MutableInt tagNdx, TextViewInfo viewInfo, String parentDivitID)
   {
     if ((parentLabel == null) || parentLabel.subLabels.isEmpty()) return;
 
@@ -1213,11 +1213,11 @@ public final class MainTextWrapper
             if (innerHtml.length() > 0)
               innerHtml.append("<br>");
 
-            innerHtml.append(detailsTag(KEYWORKS_DIVIT_ID, viewInfo, true) + "<summary><b>Key Works</b>&nbsp;");
-            innerHtml.append("<a hypncon=\"true\" href=\"\" title=\"Turn key work details on/off\" onclick=\"javascript:callToJava(" + String.valueOf(JS_EVENT_DETAILED_KEY_WORKS) + "); return false;\"><img border=0 width=16 height=16 src=\"" + getImageDataURI("resources/images/key-work-details.png") + "\"></img></a>");
-            innerHtml.append("<span style=\"display: " + (sortByName ? "inline" : "none") + ";\" class=\"" + ALPHA_SORTED_OUTER_CLASS + "\"><a hypncon=\"true\" title=\"Sort by year\" href=\"\" onclick=\"javascript:switchTo19(); return false;\"><img border=0 width=16 height=16 src=\"" + getImageDataURI("resources/images/sort_19.png") + "\"></img></a></span>");
-            innerHtml.append("<span style=\"display: " + (sortByName ? "none" : "inline") + ";\" class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\"><a hypncon=\"true\" title=\"Sort alphabetically\" href=\"\" onclick=\"javascript:switchToAZ(); return false;\"><img border=0 width=16 height=16 src=\"" + getImageDataURI("resources/images/sort_az.png") + "\"></img></a></span>");
-            innerHtml.append("</summary><br><div class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\" style=\"margin-left: 3.5em; display: " + (sortByName ? "none" : "block") + ";\">");
+            innerHtml.append(detailsTag(KEYWORKS_DIVIT_ID, viewInfo, true) + "<summary><b>Key Works</b>&nbsp;")
+                     .append("<a hypncon=\"true\" href=\"\" title=\"Turn key work details on/off\" onclick=\"javascript:callToJava(" + String.valueOf(JS_EVENT_DETAILED_KEY_WORKS) + "); return false;\"><img border=0 width=16 height=16 src=\"" + getImageDataURI("resources/images/key-work-details.png") + "\"></img></a>")
+                     .append("<span style=\"display: " + (sortByName ? "inline" : "none") + ";\" class=\"" + ALPHA_SORTED_OUTER_CLASS + "\"><a hypncon=\"true\" title=\"Sort by year\" href=\"\" onclick=\"javascript:switchTo19(); return false;\"><img border=0 width=16 height=16 src=\"" + getImageDataURI("resources/images/sort_19.png") + "\"></img></a></span>")
+                     .append("<span style=\"display: " + (sortByName ? "none" : "inline") + ";\" class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\"><a hypncon=\"true\" title=\"Sort alphabetically\" href=\"\" onclick=\"javascript:switchToAZ(); return false;\"><img border=0 width=16 height=16 src=\"" + getImageDataURI("resources/images/sort_az.png") + "\"></img></a></span>")
+                     .append("</summary><br><div class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\" style=\"margin-left: 3.5em; display: " + (sortByName ? "none" : "block") + ";\">");
             appendKeyWorkSpanAndBody(curRecord, innerHtml, false, tagNdx, true, viewInfo);
 
             if (curLabel != null)
@@ -1270,8 +1270,7 @@ public final class MainTextWrapper
 
           String secondaryHtml = getSecondaryDisplayHtml(item.record, tagNdx, viewInfo);
 
-          innerHtml.append(secondaryHtml);
-          innerHtml.append("</div></details>");
+          innerHtml.append(secondaryHtml).append("</div></details>");
           break;
 
         default:
@@ -1330,7 +1329,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HashMap<String, String> getKeyWorkLinkMap(List<KeyWork> keyWorks, List<String> sortedKeys, boolean sortByName)
+  private static HashMap<String, String> getKeyWorkLinkMap(List<KeyWork> keyWorks, List<String> sortedKeys, boolean sortByName)
   {
     HashMap<String, String> linkMap = new HashMap<>();
     HashMap<String, KeyWork> keyToKeyWork = new HashMap<>();
@@ -1355,7 +1354,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void appendKeyWorkSpanAndBody(HDT_RecordWithConnector recordWMT, StringBuilder innerHtml, boolean sortByName, MutableInt tagNdx, boolean topmost, TextViewInfo viewInfo)
+  private static void appendKeyWorkSpanAndBody(HDT_RecordWithConnector recordWMT, StringBuilder innerHtml, boolean sortByName, MutableInt tagNdx, boolean topmost, TextViewInfo viewInfo)
   {
     innerHtml.append(getKeyWorkSpanElement(recordWMT, tagNdx, sortByName, topmost));
 
@@ -1396,7 +1395,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String getSecondaryDisplayHtml(HDT_RecordWithConnector recordWMT, MutableInt tagNdx, TextViewInfo viewInfo)
+  private static String getSecondaryDisplayHtml(HDT_RecordWithConnector recordWMT, MutableInt tagNdx, TextViewInfo viewInfo)
   {
     MainText mainText = recordWMT.getMainText();
     List<KeyWork> keyWorks = mainText.getKeyWorks();

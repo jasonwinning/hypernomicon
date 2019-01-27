@@ -138,7 +138,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   @FXML private MenuItem mnuStoreMetadata;
   @FXML public TextField tfYear;
   @FXML private TextField tfTitle;
-  @FXML public TextField tfDOI;
+  @FXML private TextField tfDOI;
   @FXML private TextField tfSearchKey;
   @FXML private TextField tfLink;
   @FXML private TabPane tpBib;
@@ -207,7 +207,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   @Override public void focusOnSearchKey()              { safeFocus(tfSearchKey); }
   @Override public MainTextWrapper getMainTextWrapper() { return mainText; }
 
-  public List<Author> getAuthorsFromUI()       { return Authors.getListFromObjectGroups(getAuthorGroups(), curWork); }
+  private List<Author> getAuthorsFromUI()      { return Authors.getListFromObjectGroups(getAuthorGroups(), curWork); }
   public String getShortAuthorsStr()           { return Authors.getShortAuthorsStr(getAuthorsFromUI(), false, true); }
   private List<ObjectGroup> getAuthorGroups()  { return htAuthors.getAuthorGroups(curWork, 1, -1, 2, 3); }
   private void lblSearchKeyClick()             { tfSearchKey.setText(makeWorkSearchKey(getAuthorsFromUI(), tfYear.getText(), curWork)); }
@@ -691,7 +691,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getFirstAuthorSingleName()
+  private String getFirstAuthorSingleName()
   {
     List<Author> authList = getAuthorsFromUI();
     Author firstAuth = null;
@@ -998,7 +998,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static int populateDisplayersAndKeyMentioners(HDT_RecordWithPath record, HyperTable hyperTable)
+  static int populateDisplayersAndKeyMentioners(HDT_RecordWithPath record, HyperTable hyperTable)
   {
     Set<HDT_RecordWithConnector> set = nullSwitch(db.getKeyWorkMentioners(record), new HashSet<>());
 
@@ -1124,7 +1124,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void initArgContextMenu()
+  private void initArgContextMenu()
   {
     htArguments.addContextMenuItem("Argument Record...", HDT_Argument.class,
       arg -> ui.goToRecord(arg, true));
@@ -1628,7 +1628,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String makeWorkSearchKey(Author author, String year, HDT_Work work)
+  private static String makeWorkSearchKey(Author author, String year, HDT_Work work)
   {
     return makeWorkSearchKey(author.getName().getSingle(), year, work);
   }
@@ -1636,7 +1636,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String makeWorkSearchKey(String name, String year, HDT_Work work)
+  private static String makeWorkSearchKey(String name, String year, HDT_Work work)
   {
     if ((name.length() == 0) || (year.length() == 0))
       return "";
@@ -1647,7 +1647,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String makeWorkSearchKey(String searchKey, HDT_Work work)
+  private static String makeWorkSearchKey(String searchKey, HDT_Work work)
   {
     char keyLetter = ' ';
     boolean keyTaken;
@@ -1837,7 +1837,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void useDOIClick()
+  private void useDOIClick()
   {
     tfDOI.setText(getDoiFromBibTab());
   }
@@ -1891,7 +1891,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void useISBNClick()
+  private void useISBNClick()
   {
     getIsbnsFromBibTab().forEach(isbn -> htISBN.newDataRow().setCellValue(0, -1, isbn, hdtNone));
   }

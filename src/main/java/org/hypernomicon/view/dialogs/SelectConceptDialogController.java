@@ -145,7 +145,7 @@ public class SelectConceptDialogController extends HyperDialog
 
     try
     {
-      term.setSearchKey(tfSearchKey.getText(), true);
+      term.setSearchKey(tfSearchKey.getText(), true, false);
     }
     catch (SearchKeyException e)
     {

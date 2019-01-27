@@ -32,52 +32,52 @@ import org.hypernomicon.model.SearchKeys.SearchKeyword;
 
 public interface HDT_Base
 {
-  public int getID();
-  public HDT_RecordType getType();
-  public void assignID() throws HDB_InternalError;
+  int getID();
+  HDT_RecordType getType();
+  void assignID() throws HDB_InternalError;
 
-  public void bringStoredCopyOnline() throws RelationCycleException, SearchKeyException, HubChangedException;
-  public boolean hasStoredState();
-  public HDT_RecordState getRecordStateBackup();
-  public void restoreTo(HDT_RecordState backupState) throws RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException;
-  public void saveToStoredState() throws HDB_InternalError;
-  public void writeStoredStateToXML(StringBuilder xml);
+  void bringStoredCopyOnline(boolean dontRebuildMentions) throws RelationCycleException, SearchKeyException, HubChangedException;
+  boolean hasStoredState();
+  HDT_RecordState getRecordStateBackup();
+  void restoreTo(HDT_RecordState backupState, boolean dontRebuildMentions) throws RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException;
+  void saveToStoredState() throws HDB_InternalError;
+  void writeStoredStateToXML(StringBuilder xml);
 
-  public void modifyNow();
-  public void viewNow();
-  public Instant getModifiedDate();
-  public Instant getViewDate();
-  public Instant getCreationDate();
+  void modifyNow();
+  void viewNow();
+  Instant getModifiedDate();
+  Instant getViewDate();
+  Instant getCreationDate();
 
-  public HDI_Schema getSchema(Tag tag);
-  public String getResultTextForTag(Tag tag);
-  public boolean getTagBoolean(Tag tag);
-  public Set<Tag> getAllTags();
-  public boolean isUnitable();
-  public boolean hasDesc();     // this means the record has a description, but not necessarily that it is connected directly to a MainText object (true for HDT_Term)
-  public boolean hasMainText(); // this means the record is directly connected to a MainText object (false for HDT_Term)
-  public void expire();
-  public boolean isExpired();
-  public boolean isDummy();
-  public boolean changeID(int newID);
+  HDI_Schema getSchema(Tag tag);
+  String getResultTextForTag(Tag tag);
+  boolean getTagBoolean(Tag tag);
+  Set<Tag> getAllTags();
+  boolean isUnitable();
+  boolean hasDesc();     // this means the record has a description, but not necessarily that it is connected directly to a MainText object (true for HDT_Term)
+  boolean hasMainText(); // this means the record is directly connected to a MainText object (false for HDT_Term)
+  void expire();
+  boolean isExpired();
+  boolean isDummy();
+  boolean changeID(int newID);
 
-  public void getAllStrings(ArrayList<String> list, boolean searchLinkedRecords);
-  public String name();
-  public Tag getNameTag();
-  public void setName(String str);
-  public String listName();
-  public String getNameEngChar();
-  public String getCBText();
-  public String getXMLObjectName();
-  public String getSortKey();
-  public String makeSortKey();
-  public String getSortKeyAttr();
-  public String getSearchKey();
-  public String getFirstActiveKeyWord();
-  public void setSearchKey(String newKey) throws SearchKeyException;
-  public void setSearchKey(String newKey, boolean noMod) throws SearchKeyException;
+  void getAllStrings(ArrayList<String> list, boolean searchLinkedRecords);
+  String name();
+  Tag getNameTag();
+  void setName(String str);
+  String listName();
+  String getNameEngChar();
+  String getCBText();
+  String getXMLObjectName();
+  String getSortKey();
+  String makeSortKey();
+  String getSortKeyAttr();
+  String getSearchKey();
+  String getFirstActiveKeyWord();
+  void setSearchKey(String newKey) throws SearchKeyException;
+  void setSearchKey(String newKey, boolean noMod, boolean dontRebuildMentions) throws SearchKeyException;
 
-  public void resolvePointers() throws HDB_InternalError;
-  public void updateSortKey();
-  public List<SearchKeyword> getSearchKeys();
+  void resolvePointers() throws HDB_InternalError;
+  void updateSortKey();
+  List<SearchKeyword> getSearchKeys();
 }

@@ -37,7 +37,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
   protected final boolean modTracking;
   private final List<HDT_ObjType> before = new ArrayList<>();
 
-  public Exception getLastException() { return lastException; }
+  Exception getLastException() { return lastException; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -546,8 +546,8 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
 
   public void throwLastException() throws RelationCycleException
   {
-    if (getLastException() instanceof RelationCycleException)
-      throw (RelationCycleException) getLastException();
+    if (lastException instanceof RelationCycleException)
+      throw (RelationCycleException) lastException;
   }
 
 //---------------------------------------------------------------------------

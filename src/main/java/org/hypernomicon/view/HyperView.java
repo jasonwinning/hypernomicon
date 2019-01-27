@@ -48,16 +48,16 @@ public class HyperView<HDT_CT extends HDT_Base>
   private final HyperTab.TabEnum tabEnum;
   private final TextViewInfo textInfo;
 
-  public int getTabRecordKeyNdx()          { return tabRecordKeyNdx; }
-  public TextViewInfo getTextInfo()        { return textInfo; }
-  public HDT_RecordType getTabRecordType() { return tabRecordType; }
-  public TabEnum getTabEnum()              { return tabEnum; }
-  public HDT_CT getViewRecord()            { return viewRecord; }
+  int getTabRecordKeyNdx()          { return tabRecordKeyNdx; }
+  public TextViewInfo getTextInfo() { return textInfo; }
+  HDT_RecordType getTabRecordType() { return tabRecordType; }
+  public TabEnum getTabEnum()       { return tabEnum; }
+  public HDT_CT getViewRecord()     { return viewRecord; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperView(HyperTab.TabEnum tabEnum, HDT_CT record)
+  HyperView(HyperTab.TabEnum tabEnum, HDT_CT record)
   {
     this(tabEnum, record, new TextViewInfo());
   }
@@ -84,8 +84,7 @@ public class HyperView<HDT_CT extends HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked")
-  public void refresh()
+  @SuppressWarnings("unchecked") void refresh()
   {
     if (viewRecord == null) return;
 

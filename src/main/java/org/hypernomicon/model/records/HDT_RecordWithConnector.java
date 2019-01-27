@@ -58,7 +58,6 @@ public abstract class HDT_RecordWithConnector extends HDT_Record implements HDT_
   public boolean isLinked()       { return connector.isLinked(); }
   public Connector getConnector() { return connector; }
 
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

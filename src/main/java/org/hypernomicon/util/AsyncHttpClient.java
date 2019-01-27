@@ -29,7 +29,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 
 public class AsyncHttpClient
 {
-  @FunctionalInterface public interface ExHandler     { public void handle(Exception e); }
+  @FunctionalInterface public interface ExHandler     { void handle(Exception e); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

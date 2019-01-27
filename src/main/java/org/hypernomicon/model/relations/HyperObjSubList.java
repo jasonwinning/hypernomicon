@@ -29,7 +29,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   private int startNdx;
   private int endNdx;
 
-  @Override public Exception getLastException() { return parentList.getLastException(); }
+  @Override Exception getLastException() { return parentList.getLastException(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

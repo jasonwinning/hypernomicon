@@ -99,10 +99,10 @@ public class HDT_Concept extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setSearchKey(String newKey, boolean noMod) throws SearchKeyException
+  @Override public void setSearchKey(String newKey, boolean noMod, boolean dontRebuildMentions) throws SearchKeyException
   {
     if (term.isNotNull())
-      term.get().setSearchKey(newKey, noMod);
+      term.get().setSearchKey(newKey, noMod, dontRebuildMentions);
   }
 
 //---------------------------------------------------------------------------

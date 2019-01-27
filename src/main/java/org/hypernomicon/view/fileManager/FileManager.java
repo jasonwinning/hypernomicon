@@ -89,13 +89,13 @@ public class FileManager extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class HistoryItem
+  private static class HistoryItem
   {
-    public HDT_Folder folder;
-    public FilePath fileName;
-    public HDT_Base record;
+    private HDT_Folder folder;
+    private FilePath fileName;
+    private HDT_Base record;
 
-    public HistoryItem(FileRow folderRow, FileRow fileRow, HDT_Base record)
+    private HistoryItem(FileRow folderRow, FileRow fileRow, HDT_Base record)
     {
       folder = (HDT_Folder) folderRow.getRecord();
 
@@ -108,21 +108,21 @@ public class FileManager extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class FolderHistory
+  private static class FolderHistory
   {
     private List<HistoryItem> history = new ArrayList<>();
     private int ndx = -1;
     private Button btnForward;
     private Button btnBack;
-    public boolean doAdd = true;
+    private boolean doAdd = true;
 
-    public FolderHistory(Button btnForward, Button btnBack)
+    private FolderHistory(Button btnForward, Button btnBack)
     {
       this.btnForward = btnForward;
       this.btnBack = btnBack;
     }
 
-    public void add(HistoryItem newItem)
+    private void add(HistoryItem newItem)
     {
       if (doAdd == false) return;
 
@@ -134,32 +134,27 @@ public class FileManager extends HyperDialog
       updateButtons();
     }
 
-    public HistoryItem getCurrent()
-    {
-      return history.get(ndx);
-    }
-
     private void updateButtons()
     {
       btnBack.setDisable(ndx == 0);
       btnForward.setDisable(ndx == (history.size() - 1));
     }
 
-    public HistoryItem back()
+    private HistoryItem back()
     {
       ndx--;
       updateButtons();
       return history.get(ndx);
     }
 
-    public HistoryItem forward()
+    private HistoryItem forward()
     {
       ndx++;
       updateButtons();
       return history.get(ndx);
     }
 
-    public void updateCurrent(HistoryItem newItem)
+    private void updateCurrent(HistoryItem newItem)
     {
       history.set(ndx, newItem);
     }
@@ -188,7 +183,7 @@ public class FileManager extends HyperDialog
   @FXML private SplitPane spFiles;
   @FXML private SplitPane spRecords;
 
-  public static final String dialogTitle = "File Manager";
+  private static final String dialogTitle = "File Manager";
 
   private List<MarkedRowInfo> markedRows = null, dragRows = null;
   private FilePath srcPathToHilite = null;
@@ -197,11 +192,11 @@ public class FileManager extends HyperDialog
   private HDT_Folder curFolder;
 
   public FolderTreeWrapper folderTree;
-  public FileTable fileTable;
-  public HyperTable recordTable;
-  public FolderHistory history;
-  public static HyperTask task;
-  public static long totalTaskCount, curTaskCount;
+  private FileTable fileTable;
+  private HyperTable recordTable;
+  private FolderHistory history;
+  private static HyperTask task;
+  private static long totalTaskCount, curTaskCount;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -249,12 +244,12 @@ public class FileManager extends HyperDialog
     return markedRows;
   }
 
-  public void cutCopy(FileRow srcRow, boolean copying)
+  private void cutCopy(FileRow srcRow, boolean copying)
   {
     moveCopy(getMarkedRows(srcRow), copying, false);
   }
 
-  public boolean moveCopy(List<MarkedRowInfo> rows, boolean copying, boolean dragging)
+  boolean moveCopy(List<MarkedRowInfo> rows, boolean copying, boolean dragging)
   {
     //---------------------------------------------------------------------------
     // Determine what is to be moved/copied
@@ -290,7 +285,7 @@ public class FileManager extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static enum PasteAnswer
+  private static enum PasteAnswer
   {
     check,
     overwriteNone,
@@ -541,7 +536,7 @@ public class FileManager extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FileRow getFolderRow()
+  FileRow getFolderRow()
   {
     if (curFolder != null)
       return folderTree.getRowsForRecord(curFolder).get(0);
@@ -552,7 +547,7 @@ public class FileManager extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void paste(FileRow destRow, boolean copying, boolean dragging)
+  void paste(FileRow destRow, boolean copying, boolean dragging)
   {
     FilePath pathToHilite = null;
     Map<FilePath, FilePath> srcToDest = new HashMap<>();
@@ -842,16 +837,16 @@ public class FileManager extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class MarkedRowInfo
+  static class MarkedRowInfo
   {
-    public MarkedRowInfo(FileRow row, boolean related)
+    MarkedRowInfo(FileRow row, boolean related)
     {
       this.row = row;
       this.related = related;
     }
 
-    public FileRow row;
-    public boolean related;
+    FileRow row;
+    private boolean related;
   }
 
   List<MarkedRowInfo> getMarkedRows(FileRow srcRow)
@@ -1072,7 +1067,7 @@ public class FileManager extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void newFolder()
+  private void newFolder()
   {
     if (curFolder == null) return;
 
@@ -1107,7 +1102,7 @@ public class FileManager extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void rename(FileRow fileRow)
+  private void rename(FileRow fileRow)
   {
     HDT_RecordWithPath fileRecord = null;
     boolean isDir = true, cantRename = false;
@@ -1482,7 +1477,7 @@ public class FileManager extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setPreviewFromRecordTable()
+  private void setPreviewFromRecordTable()
   {
     FilePath filePath = null;
     HDT_Base record = recordTable.selectedRecord();
@@ -1535,7 +1530,7 @@ public class FileManager extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setCurrentFileRow(FileRow fileRow, boolean showingMore)
+  private void setCurrentFileRow(FileRow fileRow, boolean showingMore)
   {
     HDT_Folder folderRecord = null;
     Set<HDT_Base> relatives = new LinkedHashSet<>();

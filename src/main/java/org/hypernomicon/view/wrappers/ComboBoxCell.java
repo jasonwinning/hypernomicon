@@ -74,7 +74,6 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     {
       super.startEdit();
       createComboBox();
-      table.cellBeingEdited = this;
 
       hCB.populate(false);
 
@@ -89,15 +88,6 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
       AutoCompleteCB.scrollToValue(cB);
       cB.show();
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void cancelEdit()
-  {
-    table.cellBeingEdited = null;
-    return;
   }
 
 //---------------------------------------------------------------------------
@@ -155,7 +145,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 
   private void createComboBox()
   {
-    cB = new ComboBox<HyperTableCell>();
+    cB = new ComboBox<>();
     cB.setPrefWidth(this.getWidth() - this.getGraphicTextGap() * 2);
     cB.setMinHeight(18.0 * displayScale);
     cB.setPrefHeight(18.0 * displayScale);

@@ -21,6 +21,7 @@ import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
@@ -80,17 +81,26 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
       selectClosestResultBasedOnTextFieldValue(true, true);
     });
 
+    cb.addEventFilter(KeyEvent.KEY_PRESSED, event ->
+    {
+      if (event.getCode() == KeyCode.ENTER)
+        if (hcb.somethingWasTyped == false)
+          hcb.getOnAction().handle(new ActionEvent(null, cb));
+    });
+
     cb.setOnAction(event ->
     {
-      if ((hcb.somethingWasTyped) && (hcb.listenForActionEvents))
-      {
-        hcb.listenForActionEvents = false;
+      if (hcb.listenForActionEvents == false) return;
 
+      hcb.listenForActionEvents = false;
+
+      if (hcb.somethingWasTyped)
+      {
         hcb.getOnAction().handle(event);
         hcb.somethingWasTyped = false;
-
-        hcb.listenForActionEvents = true;
       }
+
+      hcb.listenForActionEvents = true;
     });
   }
 

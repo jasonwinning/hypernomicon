@@ -120,7 +120,7 @@ public final class App extends Application
 
   public static boolean jxBrowserDisabled = false;
   public static boolean browserCoreInitialized = false;
-  public static String jxBrowserErrMsg = "";
+  private static String jxBrowserErrMsg = "";
 
   public Stage getPrimaryStage() { return primaryStage; }
   public boolean debugging()     { return isDebugging; }
@@ -175,7 +175,7 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void initJXBrowser()
+  private static void initJXBrowser()
   {
     try
     {
@@ -292,7 +292,7 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean initRootLayout()
+  private boolean initRootLayout()
   {
     Application.setUserAgentStylesheet(STYLESHEET_MODENA);
 
@@ -495,13 +495,13 @@ public final class App extends Application
     if (fontSize > 0)
       text.setFont(new Font(fontSize));
 
-    displayScale = (text.getLayoutBounds().getWidth()) / baseDisplayScale;
+    displayScale = text.getLayoutBounds().getWidth() / baseDisplayScale;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void rescale()
+  private void rescale()
   {
     scaleNodeForDPI(primaryStage.getScene().getRoot());
 

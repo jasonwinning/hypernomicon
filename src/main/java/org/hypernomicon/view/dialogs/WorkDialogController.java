@@ -107,12 +107,12 @@ public class WorkDialogController extends HyperDialog
   @FXML private MenuItem mnuPopulateFromPDF;
   @FXML public Button btnCancel;
   @FXML private TextField tfOrigFile;
-  @FXML public TextField tfTitle;
+  @FXML private TextField tfTitle;
   @FXML private TextField tfFileTitle;
   @FXML private TextField tfNewFile;
-  @FXML public TextField tfYear;
-  @FXML public TextField tfDOI;
-  @FXML public TextArea taMisc;
+  @FXML private TextField tfYear;
+  @FXML private TextField tfDOI;
+  @FXML private TextArea taMisc;
   @FXML private Button btnBrowse;
   @FXML private Button btnLaunch;
   @FXML private Button btnStop;
@@ -125,12 +125,12 @@ public class WorkDialogController extends HyperDialog
   @FXML private RadioButton rbCurrent;
   @FXML private CheckBox chkKeepFilenameUnchanged;
   @FXML private ProgressBar progressBar;
-  @FXML public CheckBox chkCreateBibEntry;
-  @FXML public ComboBox<EntryType> cbEntryType;
+  @FXML private CheckBox chkCreateBibEntry;
+  @FXML private ComboBox<EntryType> cbEntryType;
 
-  public HyperCB hcbType;
-  public HyperTable htAuthors, htISBN;
-  public HDT_WorkFile oldWorkFile = null, newWorkFile = null;
+  private HyperCB hcbType;
+  private HyperTable htAuthors, htISBN;
+  private HDT_WorkFile oldWorkFile = null, newWorkFile = null;
 
   private FilePath origFilePath = null;
   private BibData pdfBD = null, curBD = null;
@@ -140,6 +140,7 @@ public class WorkDialogController extends HyperDialog
   public static final AsyncHttpClient httpClient = new AsyncHttpClient();
 
   public List<ObjectGroup> getAuthorGroups() { return htAuthors.getAuthorGroups(curWork, 0, 2, 3, 4); }
+  public boolean getCreateEntry()            { return chkCreateBibEntry.isVisible() && chkCreateBibEntry.isSelected(); }
 
 //---------------------------------------------------------------------------
 
@@ -323,7 +324,7 @@ public class WorkDialogController extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface WorkSource { public HDT_Work getWork(); }
+  @FunctionalInterface public static interface WorkSource { HDT_Work getWork(); }
 
   public static CellUpdateHandler createAuthorRecordHandler(HyperTable htAuthors, WorkSource workSource)
   {
@@ -865,7 +866,7 @@ public class WorkDialogController extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void btnDOIClick()
+  private void btnDOIClick()
   {
     String doi = BibUtils.matchDOI(tfDOI.getText());
     if (doi.length() == 0) return;
@@ -913,7 +914,7 @@ public class WorkDialogController extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void mnuISBNClick(String isbn)
+  private void mnuISBNClick(String isbn)
   {
     lblAutoPopulated.setText("");
     btnStop.setVisible(true);
@@ -1051,7 +1052,7 @@ public class WorkDialogController extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void populateFieldsFromBibData(BibData bd, boolean populateAuthors)
+  private void populateFieldsFromBibData(BibData bd, boolean populateAuthors)
   {
     if (bd != curBD)
       curBD.copyAllFieldsFrom(bd, populateAuthors, true);
@@ -1274,14 +1275,6 @@ public class WorkDialogController extends HyperDialog
         db.getObjectList(rtWorkFileOfWork, curWork, true).remove(oldWorkFile);
 
     return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean getCreateEntry()
-  {
-    return chkCreateBibEntry.isVisible() && chkCreateBibEntry.isSelected();
   }
 
 //---------------------------------------------------------------------------

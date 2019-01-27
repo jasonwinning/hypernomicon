@@ -202,6 +202,8 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
       htDisplayers.clear();
       populateDisplayers();
+
+      ui.updateFavorites();
     });
 
     ctrlr.tvRightChildren.getColumns().get(0).setText("Type");

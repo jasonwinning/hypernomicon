@@ -106,10 +106,7 @@ public class ResultsTable implements RecordListView
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface StringToComparable<Comp_T>
-  {
-    public Comp_T get(String str);
-  }
+  @FunctionalInterface public static interface StringToComparable<Comp_T> { Comp_T get(String str); }
 
   public static class ResultCellValue<Comp_T extends Comparable<Comp_T>> implements Comparable<ResultCellValue<Comp_T>>
   {

@@ -928,7 +928,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void lblSearchKeyClick()
+  private void lblSearchKeyClick()
   {
     updateSearchKey(new PersonName(tfFirst.getText(), tfLast.getText()), true);
   }
@@ -949,7 +949,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void initArgContextMenu()
+  private void initArgContextMenu()
   {
     for (HDT_RecordType type : new HDT_RecordType[] { hdtArgument, hdtPosition,      hdtDebate,
                                                       hdtTerm,     hdtNote,          hdtWork,
@@ -962,7 +962,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void initWorkContextMenu()
+  private void initWorkContextMenu()
   {
     RecordListView.addDefaultMenuItems(htWorks);
 
@@ -1020,17 +1020,17 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
   class InvestigationView
   {
-    public int id;
-    public TextField tfName;
-    public TextField tfSearchKey;
-    public MainTextWrapper textWrapper;
-    public Tab tab;
+    private int id;
+    private TextField tfName;
+    private TextField tfSearchKey;
+    private MainTextWrapper textWrapper;
+    private Tab tab;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void deleteInvestigation(Event event)
+  private void deleteInvestigation(Event event)
   {
     InvestigationView view = null;
     Tab tab;
@@ -1086,7 +1086,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public InvestigationView addInvView(HDT_Investigation inv)
+  private InvestigationView addInvView(HDT_Investigation inv)
   {
     String newName = "", newSearchKey = "";
     InvestigationView iV = new InvestigationView();
@@ -1143,7 +1143,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void tpPersonChange(Tab oldValue, Tab newValue)
+  private void tpPersonChange(Tab oldValue, Tab newValue)
   {
     InvestigationView iV = null;
 

@@ -43,7 +43,7 @@ public abstract class HyperTask extends Task<Boolean>
   @Override public void updateProgress(double cur, double total) { super.updateProgress(cur, total); }                 // to public for both of these functions
 
   public void setThread(Thread thread) { this.thread = thread; }
-  public Thread getThread()            { return thread; }
+  protected Thread getThread()         { return thread; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

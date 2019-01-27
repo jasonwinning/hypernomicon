@@ -56,8 +56,6 @@ public class HDT_WorkLabel extends HDT_RecordWithConnector
   @Override public String getCBText()          { return getExtendedText(); }
   @Override public boolean isUnitable()        { return true; }
 
-  public void setText(String newStr)           { setNameInternal(newStr, true); }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

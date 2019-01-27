@@ -139,7 +139,7 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setSearchKey(HDT_Base record, String newKey, boolean noMod) throws SearchKeyException
+  public void setSearchKey(HDT_Base record, String newKey, boolean noMod, boolean dontRebuildMentions) throws SearchKeyException
   {
     newKey = prepSearchKey(newKey);
 
@@ -190,10 +190,11 @@ public final class SearchKeys
   // -----------------------------------------
     purgeExpired(record);
 
-    if (noMod) return;
+    if (noMod == false)
+      record.modifyNow();
 
-    record.modifyNow();
-    db.rebuildMentions();
+    if (dontRebuildMentions == false)
+      db.rebuildMentions();
   }
 
 //---------------------------------------------------------------------------

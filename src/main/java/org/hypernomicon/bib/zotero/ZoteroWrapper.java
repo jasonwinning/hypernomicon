@@ -67,7 +67,6 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.JsonHttpClient;
 
 import static org.hypernomicon.bib.BibData.EntryType.*;
-import static org.hypernomicon.bib.zotero.ZoteroWrapper.ZoteroCommand.*;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -86,28 +85,28 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   @Override public LibraryType type() { return LibraryType.ltZotero; }
 
-  public static enum ZoteroCommand
+  private static enum ZoteroCmd
   {
-    zoteroReadItems,
-    zoteroReadTopItems,
-    zoteroReadTrash,
-    zoteroReadItem,
-    zoteroReadItemChildren,
-    zoteroReadItemTags,
-    zoteroReadTags,
-    zoteroReadCollections,
-    zoteroReadTopCollections,
-    zoteroReadCollection,
-    zoteroReadCollectionItems,
-    zoteroReadCollectionTopItems,
-    zoteroReadCollectionTags,
+    readItems,
+    readTopItems,
+    readTrash,
+    readItem,
+    readItemChildren,
+    readItemTags,
+    readTags,
+    readCollections,
+    readTopCollections,
+    readCollection,
+    readCollectionItems,
+    readCollectionTopItems,
+    readCollectionTags,
 
-    zoteroReadChangedItemVersions,
-    zoteroReadChangedCollVersions,
-    zoteroReadTrashVersions,
-    zoteroReadDeletions,
+    readChangedItemVersions,
+    readChangedCollVersions,
+    readTrashVersions,
+    readDeletions,
 
-    zoteroWriteItems
+    writeItems
   }
 
 //---------------------------------------------------------------------------
@@ -120,20 +119,20 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     jsonClient = new JsonHttpClient();
   }
 
-  public JsonObj getTemplate(BibData.EntryType type) { return templates.get(type); }
+  JsonObj getTemplate(BibData.EntryType type) { return templates.get(type); }
 
   @Override public EnumHashBiMap<EntryType, String> getEntryTypeMap() { return entryTypeMap; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private JsonArray doWriteCommand(ZoteroCommand command, String jsonPostData) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
+  private JsonArray doWriteCommand(ZoteroCmd command, String jsonPostData) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
   {
     String url = "https://api.zotero.org/users/" + userID + "/";
 
     switch (command)
     {
-      case zoteroWriteItems:
+      case writeItems:
         url += "items";
         break;
 
@@ -158,29 +157,29 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private JsonArray doReadCommand(ZoteroCommand command, String itemKey, String collectionKey) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
+  private JsonArray doReadCommand(ZoteroCmd command, String itemKey, String collectionKey) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
   {
     String url = "https://api.zotero.org/users/" + userID + "/";
 
     switch (command)
     {
-      case zoteroReadCollection:
+      case readCollection:
         url += "collections/" + collectionKey;
         break;
 
-      case zoteroReadCollectionItems:
+      case readCollectionItems:
         url += "collections/" + collectionKey + "/items";
         break;
 
-      case zoteroReadCollectionTags:
+      case readCollectionTags:
         url += "collections/" + collectionKey + "/tags";
         break;
 
-      case zoteroReadCollectionTopItems:
+      case readCollectionTopItems:
         url += "collections/" + collectionKey + "/items/top";
         break;
 
-      case zoteroReadCollections:
+      case readCollections:
 
         if (collectionKey.length() > 0)
           url += "collections?collectionKey=" + collectionKey;
@@ -188,19 +187,19 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
           url += "collections";
         break;
 
-      case zoteroReadItem:
+      case readItem:
         url += "items/" + itemKey;
         break;
 
-      case zoteroReadItemChildren:
+      case readItemChildren:
         url += "items/" + itemKey + "/children";
         break;
 
-      case zoteroReadItemTags:
+      case readItemTags:
         url += "items/" + itemKey + "/tags";
         break;
 
-      case zoteroReadItems:
+      case readItems:
 
         if (itemKey.length() > 0)
           url += "items?itemKey=" + itemKey;
@@ -208,35 +207,35 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
           url += "items";
         break;
 
-      case zoteroReadDeletions:
+      case readDeletions:
         url += "deleted?since=" + offlineLibVersion;
         break;
 
-      case zoteroReadChangedItemVersions:
+      case readChangedItemVersions:
         url += "items?since=" + offlineLibVersion + "&format=versions";
         break;
 
-      case zoteroReadChangedCollVersions:
+      case readChangedCollVersions:
         url += "collections?since=" + offlineLibVersion + "&format=versions";
         break;
 
-      case zoteroReadTrashVersions:
+      case readTrashVersions:
         url += "items/trash?format=versions";
         break;
 
-      case zoteroReadTags:
+      case readTags:
         url += "tags";
         break;
 
-      case zoteroReadTopCollections:
+      case readTopCollections:
         url += "collections/top";
         break;
 
-      case zoteroReadTopItems:
+      case readTopItems:
         url += "items/top";
         break;
 
-      case zoteroReadTrash:
+      case readTrash:
         if (itemKey.length() > 0)
           url += "items/trash?itemKey=" + itemKey;
         else
@@ -440,7 +439,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       for (int ndx = 0; ndx < uploadCount; ndx++)
         jArr.add(uploadQueue.get(ndx).exportJsonObjForUploadToServer(false));
 
-      jArr = doWriteCommand(ZoteroCommand.zoteroWriteItems, jArr.toString());
+      jArr = doWriteCommand(ZoteroCmd.writeItems, jArr.toString());
 
       if (syncTask.isCancelled()) throw new TerminateTaskException();
 
@@ -522,7 +521,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private <ZEntity extends ZoteroEntity> boolean getRemoteUpdates(ZoteroCommand versionsCmd, ZoteroCommand readCmd, Map<String, ZEntity> keyToEntity) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
+  private <ZEntity extends ZoteroEntity> boolean getRemoteUpdates(ZoteroCmd versionsCmd, ZoteroCmd readCmd, Map<String, ZEntity> keyToEntity) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
   {
     ArrayList<String> downloadQueue = new ArrayList<>();
 
@@ -552,7 +551,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         }
       }
 
-      if (versionsCmd == zoteroReadTrashVersions) // This if block is necessary to determine if an item in the trash was remotely restored
+      if (versionsCmd == ZoteroCmd.readTrashVersions) // This if block is necessary to determine if an item in the trash was remotely restored
         keyToTrashEntry.entrySet().removeIf(entry -> jObj.containsKey(entry.getKey()) == false);
     }
 
@@ -563,8 +562,8 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       for (int ndx = 0; ndx < downloadCount; ndx++)
         keys = keys + (keys.length() == 0 ? downloadQueue.get(ndx) : "," + downloadQueue.get(ndx));
 
-      if (readCmd == ZoteroCommand.zoteroReadCollections)
-        jArr = doReadCommand(ZoteroCommand.zoteroReadCollections, "", keys);
+      if (readCmd == ZoteroCmd.readCollections)
+        jArr = doReadCommand(ZoteroCmd.readCollections, "", keys);
       else
         jArr = doReadCommand(readCmd, keys, "");
 
@@ -595,7 +594,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
             }
             else
             {
-              if (readCmd == ZoteroCommand.zoteroReadItems)
+              if (readCmd == ZoteroCmd.readItems)
                 doMerge((ZoteroItem)entity, jObj);
               else
                 entity.update(jObj, true, false);     // Conflict resolution is only implemented for items, not collections
@@ -613,7 +612,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public Boolean fxThreadReturnValue = null;
+  private Boolean fxThreadReturnValue = null;
 
   boolean doMerge(ZoteroItem item, JsonObj jObj)
   {
@@ -684,21 +683,21 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
       while (statusCode == HttpStatus.SC_PRECONDITION_FAILED)
       {
-        if (!getRemoteUpdates(zoteroReadChangedCollVersions, zoteroReadCollections, keyToColl)) return false;
+        if (!getRemoteUpdates(ZoteroCmd.readChangedCollVersions, ZoteroCmd.readCollections, keyToColl)) return false;
 
         if (onlineLibVersion <= offlineLibVersion)
           return true;
         else
           changed = true;
 
-        if (!getRemoteUpdates(zoteroReadChangedItemVersions, zoteroReadItems, keyToAllEntry  )) return false;
-        if (!getRemoteUpdates(zoteroReadTrashVersions,       zoteroReadTrash, keyToTrashEntry)) return false;
+        if (!getRemoteUpdates(ZoteroCmd.readChangedItemVersions, ZoteroCmd.readItems, keyToAllEntry  )) return false;
+        if (!getRemoteUpdates(ZoteroCmd.readTrashVersions,       ZoteroCmd.readTrash, keyToTrashEntry)) return false;
 
         /*********************************************/
         /*       Retrieve remote deletions           */
         /*********************************************/
 
-        JsonArray jArr = doReadCommand(ZoteroCommand.zoteroReadDeletions, "", "");
+        JsonArray jArr = doReadCommand(ZoteroCmd.readDeletions, "", "");
 
         if (syncTask.isCancelled()) throw new TerminateTaskException();
         if (jsonClient.getStatusCode() != HttpStatus.SC_OK) return false;
