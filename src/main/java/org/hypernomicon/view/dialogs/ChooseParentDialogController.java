@@ -51,11 +51,13 @@ public class ChooseParentDialogController extends HyperDialog
   @FXML private TreeTableColumn<TreeRow, String> tcType;
   @FXML private TreeTableColumn<TreeRow, String> tcDesc;
 
-  public TreeWrapper popupTree;
-  public static String title;
-  public EnumSet<HDT_RecordType> types;
-  public HDT_Base parent;
+  private TreeWrapper popupTree;
+  private static String title;
+  private EnumSet<HDT_RecordType> types;
+  private HDT_Base parent;
   private HDT_Base child;
+
+  public HDT_Base getParent() { return parent; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

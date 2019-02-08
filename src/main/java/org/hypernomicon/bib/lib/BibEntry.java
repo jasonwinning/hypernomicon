@@ -35,9 +35,9 @@ public abstract class BibEntry extends BibData
   protected final boolean thisIsBackup;
 
   public abstract String getEntryKey();
-  public abstract List<String> getCollKeys(boolean deletedOK);
-  public abstract boolean isSynced();
-  public abstract boolean isNewEntry();
+  protected abstract List<String> getCollKeys(boolean deletedOK);
+  protected abstract boolean isSynced();
+  protected abstract boolean isNewEntry();
   public abstract String getEntryURL();
 
   public BibEntry(boolean thisIsBackup) { this.thisIsBackup = thisIsBackup; }
@@ -76,7 +76,7 @@ public abstract class BibEntry extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean linkedToWork()
+  @Override protected boolean linkedToWork()
   {
     if (thisIsBackup) return false;
 

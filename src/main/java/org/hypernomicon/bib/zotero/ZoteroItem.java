@@ -45,7 +45,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
   private JsonObj jObj, jData;
   private ZoteroItem backupItem = null;
 
-  public ZoteroItem(ZoteroWrapper zWrapper, JsonObj jObj, boolean thisIsBackup)
+  ZoteroItem(ZoteroWrapper zWrapper, JsonObj jObj, boolean thisIsBackup)
   {
     super(thisIsBackup);
 
@@ -56,7 +56,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ZoteroItem(ZoteroWrapper zWrapper, EntryType newType)
+  ZoteroItem(ZoteroWrapper zWrapper, EntryType newType)
   {
     super(false);
 
@@ -77,7 +77,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
   @Override public String toString()          { return jObj.toString(); }
   @Override public String getKey()            { return jObj.getStr("key"); }
   @Override public long getVersion()          { return jObj.getLong("version", 0); }
-  @Override public boolean isNewEntry()       { return jObj.containsKey("version") == false; }
+  @Override protected boolean isNewEntry()    { return jObj.containsKey("version") == false; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -164,7 +164,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public List<String> getCollKeys(boolean deletedOK)
+  @Override protected List<String> getCollKeys(boolean deletedOK)
   {
     List<String> list = new ArrayList<>();
 
@@ -180,7 +180,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static EntryType parseZoteroType(String zType)
+  static EntryType parseZoteroType(String zType)
   {
     return ZoteroWrapper.entryTypeMap.inverse().getOrDefault(zType, etOther);
   }
@@ -196,7 +196,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setEntryType(EntryType entryType)
+  @Override protected void setEntryType(EntryType entryType)
   {
     if (entryType == getEntryType()) return;
 
@@ -263,7 +263,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getFieldKey(BibFieldEnum bibFieldEnum)
+  private String getFieldKey(BibFieldEnum bibFieldEnum)
   {
     switch (bibFieldEnum)
     {
@@ -308,7 +308,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean thisTypeHasFieldKey(BibFieldEnum bibFieldEnum)
+  private boolean thisTypeHasFieldKey(BibFieldEnum bibFieldEnum)
   {
     JsonObj template = zWrapper.getTemplate(getEntryType());
     if (template == null) return false;
@@ -512,7 +512,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean authorsChanged()
+  private boolean authorsChanged()
   {
     ArrayList<BibAuthor> authorList1     = new ArrayList<>(), authorList2     = new ArrayList<>(),
                          editorList1     = new ArrayList<>(), editorList2     = new ArrayList<>(),
@@ -563,7 +563,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public JsonObj exportJsonObjForUploadToServer(boolean missingKeysOK)
+  JsonObj exportJsonObjForUploadToServer(boolean missingKeysOK)
   {
     JsonObj jServerObj = jObj.clone();
 

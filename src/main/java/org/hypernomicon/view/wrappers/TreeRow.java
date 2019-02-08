@@ -41,7 +41,7 @@ public class TreeRow extends AbstractTreeRow<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TreeRow(HDT_Base record, TreeModel<TreeRow> treeModel)
+  TreeRow(HDT_Base record, TreeModel<TreeRow> treeModel)
   {
     this.record = record;
     this.treeModel = treeModel;
@@ -55,7 +55,7 @@ public class TreeRow extends AbstractTreeRow<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TreeRow(String text)
+  TreeRow(String text)
   {
     this.text = text;
     record = null;
@@ -66,7 +66,7 @@ public class TreeRow extends AbstractTreeRow<TreeRow>
 //---------------------------------------------------------------------------
 
   public HyperTreeCellValue getNameCell() { return new HyperTreeCellValue(this); }
-  public String getCBText()               { return record == null ? text : "(" + db.getTypeName(getRecordType()) + ") " + getName(); }
+  String getCBText()                      { return record == null ? text : "(" + db.getTypeName(getRecordType()) + ") " + getName(); }
   public String getName()                 { return nullSwitch(record, text, () -> record.getType() == hdtWork ? record.getCBText() : record.listName()); }
 
   public String getDescString()

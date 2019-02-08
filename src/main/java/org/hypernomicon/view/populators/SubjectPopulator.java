@@ -71,7 +71,7 @@ public class SubjectPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Base getObj(HyperTableRow row)
+  HDT_Base getObj(HyperTableRow row)
   {
     if (trackObjByRow)
       return rowToObj.get(nullSwitch(row, dummyRow));

@@ -198,6 +198,26 @@ public class WorkDialogController extends HyperDialog
 
       if (htAuthors.getDataRowCount() == 1)
         row.setCheckboxValue(2, true);
+      else if (HyperTableCell.getCellID(cellVal) > 0)
+      {
+        boolean useInFilename = true, keepGoing = true;
+        Iterator<HyperTableRow> it = htAuthors.getDataRows().iterator();
+
+        while (it.hasNext() && keepGoing && useInFilename)
+        {
+          HyperTableRow loopRow = it.next();
+          if (loopRow == row)
+            keepGoing = false;
+          else if (loopRow.getID(0) > 0)
+            useInFilename = false;
+        }
+
+        if (useInFilename)
+        {
+          htAuthors.getDataRows().forEach(loopRow -> loopRow.setCheckboxValue(2, false));
+          row.setCheckboxValue(2, true);
+        }
+      }
 
       dontRegenerateFilename = false;
 
@@ -1270,9 +1290,8 @@ public class WorkDialogController extends HyperDialog
     if (success == false)
       return falseWithErrorMessage("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + "/rename the file.");
 
-    if (oldWorkFile != null)
-      if (newWorkFile.getID() != oldWorkFile.getID())
-        db.getObjectList(rtWorkFileOfWork, curWork, true).remove(oldWorkFile);
+    if ((oldWorkFile != null) && (newWorkFile.getID() != oldWorkFile.getID()))
+      db.getObjectList(rtWorkFileOfWork, curWork, true).remove(oldWorkFile);
 
     return true;
   }

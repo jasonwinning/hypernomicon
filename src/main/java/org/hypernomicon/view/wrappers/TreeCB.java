@@ -31,7 +31,7 @@ import javafx.util.StringConverter;
 
 //---------------------------------------------------------------------------
 
-public class TreeCB
+class TreeCB
 {
   private ComboBox<TreeRow> cb;
   private HashMap<HDT_Base, TreeRow> recordToRow;
@@ -41,7 +41,7 @@ public class TreeCB
 
 //---------------------------------------------------------------------------
 
-  public TreeCB(ComboBox<TreeRow> comboBox, TreeWrapper tree)
+  TreeCB(ComboBox<TreeRow> comboBox, TreeWrapper tree)
   {
     this.cb = comboBox;
     this.tree = tree;
@@ -109,7 +109,7 @@ public class TreeCB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear()
+  void clear()
   {
     rows = FXCollections.observableArrayList();
 
@@ -120,7 +120,7 @@ public class TreeCB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void add(HDT_Base record)
+  void add(HDT_Base record)
   {
     if (recordToRow.containsKey(record)) return;
 
@@ -132,7 +132,7 @@ public class TreeCB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void checkIfShouldBeRemoved(HDT_Base record)
+  void checkIfShouldBeRemoved(HDT_Base record)
   {
     if (tree.getRowsForRecord(record).isEmpty() == false) return;
 
@@ -144,7 +144,7 @@ public class TreeCB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clearSelection()
+  void clearSelection()
   {
     cb.getSelectionModel().clearSelection();
   }
@@ -152,7 +152,7 @@ public class TreeCB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void refresh()
+  void refresh()
   {
     sorted = false;
 
@@ -162,7 +162,7 @@ public class TreeCB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void select(HDT_Base record)
+  void select(HDT_Base record)
   {
     clearSelection();
 

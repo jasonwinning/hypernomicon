@@ -25,6 +25,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.model.records.HDT_Argument;
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Position;
@@ -48,39 +49,40 @@ import javafx.scene.web.WebView;
 
 public class NewArgDialogController extends HyperDialog
 {
-  @FXML TextField tfPosition;
-  @FXML WebView view;
-  @FXML public TextField tfArgName1;
-  @FXML public TextField tfArgName2;
-  @FXML public TextField tfArgName3;
-  @FXML public TextField tfArgName4;
-  @FXML public TextField tfArgName5;
-  @FXML public TextField tfArgName6;
-  @FXML public TextField tfArgName7;
-  @FXML public TextField tfArgName8;
-  @FXML ComboBox<HyperTableCell> cbPerson;
-  @FXML ComboBox<HyperTableCell> cbPositionVerdict;
-  @FXML public RadioButton rbNew;
+  @FXML private TextField tfPosition;
+  @FXML private WebView view;
+  @FXML private TextField tfArgName1;
+  @FXML private TextField tfArgName2;
+  @FXML private TextField tfArgName3;
+  @FXML private TextField tfArgName4;
+  @FXML private TextField tfArgName5;
+  @FXML private TextField tfArgName6;
+  @FXML private TextField tfArgName7;
+  @FXML private TextField tfArgName8;
+  @FXML private ComboBox<HyperTableCell> cbPerson;
+  @FXML private ComboBox<HyperTableCell> cbPositionVerdict;
+  @FXML private RadioButton rbNew;
   @FXML private RadioButton rbExisting;
-  @FXML public RadioButton rbArgName1;
-  @FXML public RadioButton rbArgName2;
-  @FXML public RadioButton rbArgName3;
-  @FXML public RadioButton rbArgName4;
-  @FXML public RadioButton rbArgName5;
-  @FXML public RadioButton rbArgName6;
-  @FXML public RadioButton rbArgName7;
-  @FXML public RadioButton rbArgName8;
+  @FXML private RadioButton rbArgName1;
+  @FXML private RadioButton rbArgName2;
+  @FXML private RadioButton rbArgName3;
+  @FXML private RadioButton rbArgName4;
+  @FXML private RadioButton rbArgName5;
+  @FXML private RadioButton rbArgName6;
+  @FXML private RadioButton rbArgName7;
+  @FXML private RadioButton rbArgName8;
   @FXML private CheckBox cbIncludeAuth;
-  @FXML public TextField tfTitle;
-  @FXML ComboBox<HyperTableCell> cbWork;
-  @FXML Button btnOK;
-  @FXML Button btnCancel;
+  @FXML private TextField tfTitle;
+  @FXML private ComboBox<HyperTableCell> cbWork;
+  @FXML private Button btnOK;
+  @FXML private Button btnCancel;
 
   private HDT_Position curPosition;
-  public HyperCB hcbPerson, hcbPositionVerdict, hcbWork;
+  private HDT_Argument argument;
+  private HyperCB hcbPerson, hcbPositionVerdict, hcbWork;
   private boolean revising = false;
 
-  @Override protected boolean isValid() { return true; }
+  public HDT_Argument getArgument() { return argument; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -240,6 +242,43 @@ public class NewArgDialogController extends HyperDialog
     tfArgName8.setText(part1 + part2 + "against the view that " + curPosition.name());
 
     revising = false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected boolean isValid()
+  {
+    argument = db.createNewBlankRecord(hdtArgument);
+    argument.addPosition(curPosition, hcbPositionVerdict.selectedRecord());
+
+    if      (rbArgName1.isSelected()) argument.setName(tfArgName1.getText());
+    else if (rbArgName2.isSelected()) argument.setName(tfArgName2.getText());
+    else if (rbArgName3.isSelected()) argument.setName(tfArgName3.getText());
+    else if (rbArgName4.isSelected()) argument.setName(tfArgName4.getText());
+    else if (rbArgName5.isSelected()) argument.setName(tfArgName5.getText());
+    else if (rbArgName6.isSelected()) argument.setName(tfArgName6.getText());
+    else if (rbArgName7.isSelected()) argument.setName(tfArgName7.getText());
+    else                              argument.setName(tfArgName8.getText());
+
+    HDT_Work work;
+
+    if (rbNew.isSelected())
+    {
+      work = db.createNewBlankRecord(hdtWork);
+
+      work.setName(tfTitle.getText());
+      HDT_Person person = hcbPerson.selectedRecord();
+      if (person != null)
+        work.getAuthors().add(person);
+    }
+    else
+      work = hcbWork.selectedRecord();
+
+    if (work != null)
+      argument.works.add(work);
+
+    return true;
   }
 
 //---------------------------------------------------------------------------

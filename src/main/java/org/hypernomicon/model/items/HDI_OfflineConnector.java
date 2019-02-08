@@ -29,11 +29,9 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Set;
 
 public class HDI_OfflineConnector extends HDI_OfflineBase
@@ -42,22 +40,22 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class DisplayItem
+  static class DisplayItem
   {
-    public DisplayItem(int recordID, HDT_RecordType recordType)
+    DisplayItem(int recordID, HDT_RecordType recordType)
     {
       this.recordID = recordID;
       this.recordType = recordType;
     }
 
-    public DisplayItem(DisplayItemType type)
+    DisplayItem(DisplayItemType type)
     {
       this.type = type;
     }
 
-    public DisplayItemType type = diRecord;
-    public int recordID = -1;
-    public HDT_RecordType recordType = hdtNone;
+    DisplayItemType type = diRecord;
+    int recordID = -1;
+    HDT_RecordType recordType = hdtNone;
   }
 
 //---------------------------------------------------------------------------
@@ -65,9 +63,9 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 
   int hubID;
   String htmlText;
-  ArrayList<DisplayItem> displayItems;
-  ArrayList<KeyWork> keyWorks;
-  HashMap<HDT_RecordType, Set<Integer>> usedKeyWorks;
+  final ArrayList<DisplayItem> displayItems;
+  final ArrayList<KeyWork> keyWorks;
+  final HashMap<HDT_RecordType, Set<Integer>> usedKeyWorks;
 
   private static HashMap<String, DisplayItemType> strToItemType = null;
 
@@ -88,7 +86,6 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public List<KeyWork> getKeyWorks() { return Collections.unmodifiableList(keyWorks); }
   public int getHubID()              { return hubID; }
 
 //---------------------------------------------------------------------------

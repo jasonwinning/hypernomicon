@@ -61,14 +61,14 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
 
     //---------------------------------------------------------------------------
 
-    public MappingFromRecordToRows(TreeCB tcb)            { this.tcb = tcb; }
-    public Set<RowType> getRowsForRecord(HDT_Base record) { return recordToRows.get(record); }
-    public void clear()                                   { recordToRows.clear(); }
+    private MappingFromRecordToRows(TreeCB tcb)            { this.tcb = tcb; }
+    private Set<RowType> getRowsForRecord(HDT_Base record) { return recordToRows.get(record); }
+    private void clear()                                   { recordToRows.clear(); }
 
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    public void addRow(RowType row)
+    private void addRow(RowType row)
     {
       HDT_Base record = row.getRecord();
 
@@ -81,7 +81,7 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    public void removeRow(RowType row)
+    private void removeRow(RowType row)
     {
       HDT_Base record = row.getRecord();
 
@@ -149,7 +149,7 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void unassignParent(HDT_Base child, HDT_Base parent)
+  private void unassignParent(HDT_Base child, HDT_Base parent)
   {
     if (parentToChildren.getForwardSet(parent).contains(child) == false) return;
 
@@ -187,7 +187,7 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void assignParent(HDT_Base child, HDT_Base parent)
+  private void assignParent(HDT_Base child, HDT_Base parent)
   {
     if (parentToChildren.getForwardSet(parent).contains(child)) return;
 
@@ -243,7 +243,7 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean hasParentChildRelation(HDT_RecordType parentType, HDT_RecordType childType)
+  boolean hasParentChildRelation(HDT_RecordType parentType, HDT_RecordType childType)
   {
     return nullSwitch(parentChildRelations.get(parentType), false, rels -> rels.contains(childType));
   }

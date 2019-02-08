@@ -139,7 +139,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public HyperTable prepTable(TableView<HyperTableRow> tv)
+  @Override HyperTable prepTable(TableView<HyperTableRow> tv)
   {
     this.tv = tv;
 

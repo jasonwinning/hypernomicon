@@ -139,9 +139,9 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
   private HDT_Person curPerson;
   private boolean alreadyChangingName = false;
 
-  @Override public HDT_RecordType getType()             { return hdtPerson; }
+  @Override HDT_RecordType getType()                    { return hdtPerson; }
   @Override public void enable(boolean enabled)         { ui.tabPersons.getContent().setDisable(enabled == false); }
-  @Override public void focusOnSearchKey()              { safeFocus(tfSearchKey); }
+  @Override void focusOnSearchKey()                     { safeFocus(tfSearchKey); }
   @Override public void setRecord(HDT_Person person)    { curPerson = person; }
   @Override public MainTextWrapper getMainTextWrapper() { return mainText; }
 
@@ -730,7 +730,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void init(TabEnum tabEnum)
+  @Override void init(TabEnum tabEnum)
   {
     this.tabEnum = tabEnum;
     mainText = new MainTextWrapper(apOverview);

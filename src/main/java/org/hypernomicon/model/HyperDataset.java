@@ -196,8 +196,7 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
 
     for (HDT_DT record : needIDs)
     {
-      while (idAvailable(nextID) == false)
-        nextID++;
+      for (; idAvailable(nextID) == false; nextID++);
 
       idToAssign = nextID++;
       recordToAssign = record;

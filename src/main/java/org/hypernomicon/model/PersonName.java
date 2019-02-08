@@ -174,9 +174,8 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
     if (this == obj) return true;
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
-    PersonName other = (PersonName) obj;
 
-    return compareTo(other) == 0;
+    return compareTo((PersonName) obj) == 0;
   }
 
 //---------------------------------------------------------------------------

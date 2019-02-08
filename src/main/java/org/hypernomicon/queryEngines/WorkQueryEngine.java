@@ -46,11 +46,11 @@ import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 
 public class WorkQueryEngine extends QueryEngine<HDT_Work>
 {
-  public static final int QUERY_LIKELY_EDITED_VOLS            = QUERY_FIRST_NDX + 1;
-  public static final int QUERY_4_OR_MORE_AUTHORS             = QUERY_FIRST_NDX + 2;
-  public static final int QUERY_ANALYZE_METADATA              = QUERY_FIRST_NDX + 3;
+  private static final int QUERY_LIKELY_EDITED_VOLS            = QUERY_FIRST_NDX + 1;
+  private static final int QUERY_4_OR_MORE_AUTHORS             = QUERY_FIRST_NDX + 2;
+  private static final int QUERY_ANALYZE_METADATA              = QUERY_FIRST_NDX + 3;
 
-  public static ArrayList<String> csvFile;
+  private static ArrayList<String> csvFile;
 
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
   {

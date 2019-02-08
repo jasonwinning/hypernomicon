@@ -85,12 +85,12 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   public FileDialogController fdc = null;
   private HDT_MiscFile curMiscFile;
 
-  @Override public HDT_RecordType getType()                                 { return hdtMiscFile; }
+  @Override HDT_RecordType getType()                                        { return hdtMiscFile; }
   @Override public void enable(boolean enabled)                             { ui.tabFiles.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text)                         { mainText.hilite(text); }
   @Override public TextViewInfo getMainTextInfo()                           { return mainText.getViewInfo(); }
   @Override public MainTextWrapper getMainTextWrapper()                     { return mainText; }
-  @Override public void focusOnSearchKey()                                  { safeFocus(tfSearchKey); }
+  @Override void focusOnSearchKey()                                         { safeFocus(tfSearchKey); }
   @Override public void newClick(HDT_RecordType objType, HyperTableRow row) { return; }
   @Override public void setRecord(HDT_MiscFile activeRecord)                { curMiscFile = activeRecord; }
 
@@ -152,7 +152,7 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void cbWorkChange()
+  private void cbWorkChange()
   {
     int workID = hcbWork.selectedID();
 

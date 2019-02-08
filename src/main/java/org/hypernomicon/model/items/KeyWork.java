@@ -39,11 +39,11 @@ public class KeyWork implements Comparable<KeyWork>
 
   private abstract class RecordPointer
   {
-    abstract public int getID();
-    abstract public HDT_RecordType getType();
-    abstract public HDT_Base getRecord();
+    abstract int getID();
+    abstract HDT_RecordType getType();
+    abstract HDT_Base getRecord();
 
-    public boolean isExpired() { return false; }
+    boolean isExpired() { return false; }
 
     //---------------------------------------------------------------------------
 
@@ -83,15 +83,15 @@ public class KeyWork implements Comparable<KeyWork>
 
     //---------------------------------------------------------------------------
 
-    public OfflineRecordPointer(HDT_RecordType type, int id)
+    private OfflineRecordPointer(HDT_RecordType type, int id)
     {
       this.type = type;
       this.id = id;
     }
 
-    @Override public int getID()              { return id; }
-    @Override public HDT_RecordType getType() { return type; }
-    @Override public HDT_Base getRecord()     { return db.records(getType()).getByID(getID()); }
+    @Override int getID()              { return id; }
+    @Override HDT_RecordType getType() { return type; }
+    @Override HDT_Base getRecord()     { return db.records(getType()).getByID(getID()); }
 
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
@@ -102,16 +102,16 @@ public class KeyWork implements Comparable<KeyWork>
   {
     private final HDT_Base record;
 
-    public OnlineRecordPointer(HDT_Base record)
+    private OnlineRecordPointer(HDT_Base record)
     {
       this.record = record;
     }
 
-    @Override public int getID()              { return record.getID(); }
-    @Override public HDT_RecordType getType() { return record.getType(); }
-    @Override public HDT_Base getRecord()     { return record; }
+    @Override int getID()              { return record.getID(); }
+    @Override HDT_RecordType getType() { return record.getType(); }
+    @Override HDT_Base getRecord()     { return record; }
 
-    @Override public boolean isExpired()      { return HDT_Record.isEmpty(record); }
+    @Override boolean isExpired()      { return HDT_Record.isEmpty(record); }
   }
 
   //---------------------------------------------------------------------------
@@ -149,9 +149,9 @@ public class KeyWork implements Comparable<KeyWork>
   public HDT_RecordType getRecordType() { return record.getType(); }
   public int getRecordID()              { return record.getID(); }
   public HDT_RecordWithPath getRecord() { return (HDT_RecordWithPath) record.getRecord(); }
-  public boolean isExpired()            { return record == null ? true : record.isExpired(); }
-  public KeyWork getOnlineCopy()        { return new KeyWork(getRecordType(), getRecordID(), getSearchKey(), true); }
-  public KeyWork getOfflineCopy()       { return new KeyWork(getRecordType(), getRecordID(), getSearchKey(), false); }
+  boolean isExpired()                   { return record == null ? true : record.isExpired(); }
+  KeyWork getOnlineCopy()               { return new KeyWork(getRecordType(), getRecordID(), getSearchKey(), true); }
+  KeyWork getOfflineCopy()              { return new KeyWork(getRecordType(), getRecordID(), getSearchKey(), false); }
 
   @Override public int hashCode()       { return record.hashCode(); }
 

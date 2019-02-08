@@ -41,7 +41,7 @@ public class ZoteroAuthors extends BibAuthors
   private final JsonArray creatorsArr;
   private final EntryType entryType;
 
-  public ZoteroAuthors(JsonArray creatorsArr, EntryType entryType)
+  ZoteroAuthors(JsonArray creatorsArr, EntryType entryType)
   {
     this.creatorsArr = creatorsArr;
     this.entryType = entryType;
@@ -149,7 +149,7 @@ public class ZoteroAuthors extends BibAuthors
     return getCreatorTypeStr(entryType, authorType);
   }
 
-  public static String getCreatorTypeStr(EntryType entryType, AuthorType authorType)
+  static String getCreatorTypeStr(EntryType entryType, AuthorType authorType)
   {
     if (authorType == null) return "";
 

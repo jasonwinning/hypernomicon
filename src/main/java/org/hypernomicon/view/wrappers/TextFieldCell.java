@@ -30,7 +30,7 @@ import javafx.scene.control.TextFormatter;
 import javafx.scene.input.KeyCode;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
-public class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements CommitableWrapper
+class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements CommitableWrapper
 {
   private TextField textField;
   private MutableBoolean canEditIfEmpty, isNumeric;
@@ -42,7 +42,7 @@ public class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> impl
 
 //---------------------------------------------------------------------------
 
-  public TextFieldCell(HyperTable table, MutableBoolean canEditIfEmpty, MutableBoolean isNumeric)
+  TextFieldCell(HyperTable table, MutableBoolean canEditIfEmpty, MutableBoolean isNumeric)
   {
     this.table = table;
 

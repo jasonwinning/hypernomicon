@@ -19,12 +19,12 @@ package org.hypernomicon.view.wrappers;
 
 public class HyperTreeCellValue implements Comparable <HyperTreeCellValue>
 {
-  private TreeRow row;
-  private String key;
+  final private TreeRow row;
+  final private String key;
 
 //---------------------------------------------------------------------------
 
-  public HyperTreeCellValue(TreeRow treeRow)
+  HyperTreeCellValue(TreeRow treeRow)
   {
     this.row = treeRow;
     key = makeKey();
@@ -38,7 +38,7 @@ public class HyperTreeCellValue implements Comparable <HyperTreeCellValue>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String makeKey()
+  private String makeKey()
   {
     String prefix = "ZM.";
 

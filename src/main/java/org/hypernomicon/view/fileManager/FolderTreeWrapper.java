@@ -53,7 +53,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TreeModel<FileRow> getTreeModel()                               { return treeModel; }
+  TreeModel<FileRow> getTreeModel()                                      { return treeModel; }
 
   @Override public TreeItem<FileRow> getRoot()                           { return tv.getRoot(); }
   @Override public void expandMainBranches()                             { treeModel.expandMainBranch(); }
@@ -66,7 +66,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FolderTreeWrapper(TreeView<FileRow> tv, FileTable fileTable)
+  FolderTreeWrapper(TreeView<FileRow> tv, FileTable fileTable)
   {
     this.tv = tv;
     this.fileTable = fileTable;
@@ -170,7 +170,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void prune()
+  void prune()
   {
     treeModel.pruningOperationInProgress = true; // prevent ConcurrentModificationException
 

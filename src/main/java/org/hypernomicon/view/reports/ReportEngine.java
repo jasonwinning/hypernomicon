@@ -32,15 +32,16 @@ import javafx.scene.control.TableView;
 
 public abstract class ReportEngine
 {
-  public static final int QUERY_DUPLICATE_AUTHORS  = QUERY_FIRST_NDX + 1,
-                          QUERY_LICENSE_AND_NOTICE = QUERY_FIRST_NDX + 2;
+  private static final int QUERY_DUPLICATE_AUTHORS  = QUERY_FIRST_NDX + 1;
+
+  public static final int QUERY_LICENSE_AND_NOTICE = QUERY_FIRST_NDX + 2;
 
   protected TableView<HyperTableRow> tv;
 
   public abstract void generate(HyperTask task, HyperTableCell param1, HyperTableCell param2, HyperTableCell param3) throws TerminateTaskException;
   public abstract List<HyperTableRow> getRows();
-  public abstract HyperTable prepTable(TableView<HyperTableRow> tv);
-  public abstract String getHtml(HyperTableRow row);
+  abstract HyperTable prepTable(TableView<HyperTableRow> tv);
+  abstract String getHtml(HyperTableRow row);
   public abstract boolean alwaysShowDescription();
 
 //---------------------------------------------------------------------------

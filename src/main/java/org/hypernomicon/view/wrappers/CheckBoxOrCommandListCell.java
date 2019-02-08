@@ -43,14 +43,19 @@ public class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
 
   public static class CheckBoxOrCommand
   {
-    public CheckBoxOrCommand(String text, ObservableValue<Boolean> booleanProperty) { this.text = text; this.booleanProperty = booleanProperty; }
-    public CheckBoxOrCommand(String text, Runnable hndlr)                           { this.text = text; this.hndlr = hndlr; }
+    public CheckBoxOrCommand(String text, ObservableValue<Boolean> booleanProperty) { this(text, booleanProperty, null); }
+    public CheckBoxOrCommand(String text, Runnable hndlr)                           { this(text, null, hndlr); }
 
-    private ObservableValue<Boolean> booleanProperty = null;
-    private String text;
-    private Runnable hndlr = null;
+    private CheckBoxOrCommand(String text, ObservableValue<Boolean> booleanProperty, Runnable hndlr)
+    {
+      this.text = text;
+      this.booleanProperty = booleanProperty;
+      this.hndlr = hndlr;
+    }
 
-    public String getText() { return text; }
+    private final ObservableValue<Boolean> booleanProperty;
+    private final String text;
+    private final Runnable hndlr;
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -79,7 +84,7 @@ public class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
 
       cb.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
       {
-        if (newValue.getText().length() == 0) return;
+        if (newValue.text.length() == 0) return;
 
         Platform.runLater(() -> cb.getSelectionModel().select(new CheckBoxOrCommand("", Util::noOp)));
       });
@@ -99,7 +104,7 @@ public class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public CheckBoxOrCommandListCell()
+  private CheckBoxOrCommandListCell()
   {
     checkBox = new CheckBox();
 

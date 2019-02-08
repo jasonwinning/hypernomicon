@@ -199,12 +199,12 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   public HyperTable htAuthors;
   public HyperCB hcbType;
 
-  @Override public HDT_RecordType getType()             { return hdtWork; }
+  @Override HDT_RecordType getType()                    { return hdtWork; }
   @Override public void enable(boolean enabled)         { ui.tabWorks.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text)     { mainText.hilite(text); }
   @Override public TextViewInfo getMainTextInfo()       { return mainText.getViewInfo(); }
   @Override public void setRecord(HDT_Work work)        { curWork = work; }
-  @Override public void focusOnSearchKey()              { safeFocus(tfSearchKey); }
+  @Override void focusOnSearchKey()                     { safeFocus(tfSearchKey); }
   @Override public MainTextWrapper getMainTextWrapper() { return mainText; }
 
   private List<Author> getAuthorsFromUI()      { return Authors.getListFromObjectGroups(getAuthorGroups(), curWork); }
@@ -217,7 +217,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void init(TabEnum tabEnum)
+  @Override void init(TabEnum tabEnum)
   {
     this.tabEnum = tabEnum;
     mainText = new MainTextWrapper(apDescription);
@@ -664,13 +664,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 
   private void updateMergeButton()
   {
-    boolean disabled = true;
-
-    if (crossrefBD.get() != null) disabled = false;
-    if (pdfBD     .get() != null) disabled = false;
-    if (googleBD  .get() != null) disabled = false;
-
-    btnMergeBib.setDisable(disabled);
+    btnMergeBib.setDisable((crossrefBD.get() == null) && (pdfBD.get() == null) && (googleBD.get() == null));
   }
 
 //---------------------------------------------------------------------------
@@ -694,17 +688,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   private String getFirstAuthorSingleName()
   {
     List<Author> authList = getAuthorsFromUI();
-    Author firstAuth = null;
-
-    for (Author auth : authList)
-    {
-      if (auth.getPerson() != null)
-        return auth.singleName();
-
-      if (firstAuth == null) firstAuth = auth;
-    }
-
-    return firstAuth == null ? "" : firstAuth.singleName();
+    return collEmpty(authList) ? "" : authList.get(0).singleName();
   }
 
 //---------------------------------------------------------------------------
@@ -720,10 +704,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     for (HyperTableRow row : htWorkFiles.getDataRows())
     {
       if (workFile == row.getRecord())
-      {
-        int pageNum = parseInt(row.getText(isStart ? 3 : 4), -1);
-        return pageNum < 0 ? -1 : pageNum;
-      }
+        return Math.max(-1, parseInt(row.getText(isStart ? 3 : 4), -1));
     }
 
     return -1;

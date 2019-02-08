@@ -54,13 +54,13 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
   public boolean isEmpty()          { return iterator().hasNext() == false; }
 
-  public final void add(AuthorType authorType, HDT_Person person) { add(new BibAuthor(authorType, person)); }
-  public final void add(AuthorType authorType, PersonName name)   { add(new BibAuthor(authorType, name)); }
+  private final void add(AuthorType authorType, HDT_Person person) { add(new BibAuthor(authorType, person)); }
+  final void add(AuthorType authorType, PersonName name)           { add(new BibAuthor(authorType, name)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setFromCrossRefJson(JsonArray jsonArr, AuthorType aType)
+  void setFromCrossRefJson(JsonArray jsonArr, AuthorType aType)
   {
     if (jsonArr == null) return;
 
@@ -70,7 +70,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getStr()
+  protected String getStr()
   {
     StringBuilder auths = new StringBuilder();
 

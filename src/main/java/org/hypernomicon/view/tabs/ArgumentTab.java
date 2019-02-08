@@ -55,12 +55,12 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
   private RecordByTypePopulator verdictPopulator;
   private HDT_Argument curArgument;
 
-  @Override public HDT_RecordType getType()         { return hdtArgument; }
+  @Override HDT_RecordType getType()                { return hdtArgument; }
   @Override public void enable(boolean enabled)     { ui.tabArguments.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
   @Override public void setRecord(HDT_Argument arg) { this.curArgument = arg; }
-  @Override public void focusOnSearchKey()          { ctrlr.focusOnSearchKey(); }
+  @Override void focusOnSearchKey()                 { ctrlr.focusOnSearchKey(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -159,7 +159,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void init(TabEnum tabEnum)
+  @Override void init(TabEnum tabEnum)
   {
     this.tabEnum = tabEnum;
     ctrlr.init(hdtArgument, this);
@@ -273,7 +273,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void initContextMenus()
+  private void initContextMenus()
   {
     RecordListView.addDefaultMenuItems(htWhereMade);
 

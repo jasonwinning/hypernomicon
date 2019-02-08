@@ -215,7 +215,7 @@ public final class MainController
 
   private ObservableList<ResultsRow> results() { return curQV.resultsTable.getTV().getItems(); }
   MenuBar getMenuBar()                         { return menuBar; }
-  public TreeWrapper getTree()                 { return TreeTabController.class.cast(getHyperTab(treeTab)).tree; }
+  public TreeWrapper getTree()                 { return TreeTabController.class.cast(getHyperTab(treeTab)).getTree(); }
   private Stage primaryStage()                 { return app.getPrimaryStage(); }
 
   @FXML private void mnuExitClick()           { shutDown(true, true, true); }

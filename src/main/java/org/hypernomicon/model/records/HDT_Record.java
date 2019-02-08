@@ -130,7 +130,7 @@ public abstract class HDT_Record implements HDT_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Record(HDT_RecordState xmlState, HyperDataset<? extends HDT_Base> dataset, Tag nameTag)
+  HDT_Record(HDT_RecordState xmlState, HyperDataset<? extends HDT_Base> dataset, Tag nameTag)
   {
     name = new NameItem();
 
@@ -280,7 +280,7 @@ public abstract class HDT_Record implements HDT_Base
           curHubID = uRecord.getHub().getID();
 
         if (curHubID != HDI_OfflineConnector.class.cast(backupState.items.get(tagHub)).getHubID())
-          throw new HubChangedException(id, getType(), curHubID >= 1);
+          throw new HubChangedException(curHubID >= 1);
       }
     }
 

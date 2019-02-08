@@ -847,7 +847,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
         resultTags.addAll(tags);
 
-        colGroups.add(new ColumnGroup(recordType, db.getTypeName(recordType), tags));
+        colGroups.add(new ColumnGroup(db.getTypeName(recordType), tags));
 
         if (addToObsList)
         {
@@ -1287,9 +1287,9 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
   private void updateCB()                           { if (curQV != null) curQV.updateCB(); }
   public void btnExecuteClick()                     { curQV.btnExecuteClick(true); }   // if any of the queries are unfiltered, they
                                                                                        // will all be treated as unfiltered
-  @Override public HDT_RecordType getType()         { return hdtNone; }
+  @Override HDT_RecordType getType()                { return hdtNone; }
   @Override public boolean update()                 { return true; }
-  @Override public void focusOnSearchKey()          { return; }
+  @Override void focusOnSearchKey()                 { return; }
   @Override public void setRecord(HDT_Base rec)     { if (curQV != null) curQV.setRecord(rec); }
   @Override public int getRecordCount()             { return results().size(); }
   @Override public TextViewInfo getMainTextInfo()   { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
@@ -1318,7 +1318,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void init(TabEnum tabEnum)
+  @Override void init(TabEnum tabEnum)
   {
     this.tabEnum = tabEnum;
     queryViews = new ArrayList<>();

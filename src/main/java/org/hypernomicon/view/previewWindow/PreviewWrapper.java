@@ -52,12 +52,12 @@ import javafx.scene.layout.AnchorPane;
 
 public class PreviewWrapper
 {
-  public class PreviewFile
+  private class PreviewFile
   {
-    public FilePath filePath;
-    public HDT_RecordWithPath record;
-    public List<Integer> navList;
-    public int navNdx;
+    private FilePath filePath;
+    private HDT_RecordWithPath record;
+    private List<Integer> navList;
+    private int navNdx;
   }
 
   private FilePath filePathShowing = null;
@@ -70,28 +70,27 @@ public class PreviewWrapper
   private Map<String, Integer> labelToPage;
   private Map<Integer, String> pageToLabel;
   private List<Integer> hilitePages;
-  private List<PreviewFile> fileList;
+  private final List<PreviewFile> fileList;
   private PreviewFile curPrevFile;
   private ToggleButton btn;
   private AnchorPane ap;
 
-  public PreviewSource getSource()      { return src; }
-  public int getPageNum()               { return pageNum; }
-  public int getNumPages()              { return numPages; }
-  public Tab getTab()                   { return tab; }
-  public FilePath getFilePath()         { return curPrevFile == null ? null : curPrevFile.filePath; }
-  public boolean needsRefresh()         { return needsRefresh; }
-  public void setNeedsRefresh()         { needsRefresh = true; }
-  public int getWorkStartPageNum()      { return workStartPageNum; }
-  public int getWorkEndPageNum()        { return workEndPageNum; }
-  public HDT_RecordWithPath getRecord() { return curPrevFile == null ? null : curPrevFile.record; }
-  public ToggleButton getToggleButton() { return btn; }
-  FilePath getFilePathShowing()         { return filePathShowing; }
+  PreviewSource getSource()      { return src; }
+  int getPageNum()               { return pageNum; }
+  int getNumPages()              { return numPages; }
+  Tab getTab()                   { return tab; }
+  FilePath getFilePath()         { return curPrevFile == null ? null : curPrevFile.filePath; }
+  boolean needsRefresh()         { return needsRefresh; }
+  int getWorkStartPageNum()      { return workStartPageNum; }
+  int getWorkEndPageNum()        { return workEndPageNum; }
+  HDT_RecordWithPath getRecord() { return curPrevFile == null ? null : curPrevFile.record; }
+  ToggleButton getToggleButton() { return btn; }
+  FilePath getFilePathShowing()  { return filePathShowing; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public PreviewWrapper(PreviewSource src, AnchorPane ap, Tab tab, ToggleButton btn, PreviewWindow window)
+  PreviewWrapper(PreviewSource src, AnchorPane ap, Tab tab, ToggleButton btn, PreviewWindow window)
   {
     this.src = src;
     this.tab = tab;
@@ -193,7 +192,7 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setWorkPageNums(int start, int end)
+  void setWorkPageNums(int start, int end)
   {
     workStartPageNum = start;
     workEndPageNum = end;
@@ -202,7 +201,7 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void go()
+  void go()
   {
     if (curPrevFile == null) return;
 
@@ -215,7 +214,7 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean enableNavButton(boolean isForward)
+  boolean enableNavButton(boolean isForward)
   {
     if (curPrevFile == null) return false;
 
@@ -228,12 +227,49 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean enableFileNavButton(boolean isForward)
+  boolean enableFileNavButton(boolean isForward)
   {
-    if (isForward)
-      return (fileNdx + 1) < fileList.size();
+    return (isForward ? getNextFileNdx() : getPreviousFileNdx()) != -1;
+  }
 
-    return fileNdx >= 1;
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private int getPreviousFileNdx()
+  {
+    for (int ndx = fileNdx - 1; ndx >= 0; ndx--)
+      if (useFileNavNdx(ndx)) return ndx;
+
+    return -1;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private boolean useFileNavNdx(int ndx)
+  {
+    PreviewFile file = fileList.get(ndx);
+    if ((file != null) && (FilePath.isEmpty(file.filePath) == false))
+    {
+      if ((curPrevFile == null) || FilePath.isEmpty(curPrevFile.filePath))
+        return true;
+
+      if (curPrevFile.filePath.equals(file.filePath) == false)
+        return true;
+    }
+
+    return false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private int getNextFileNdx()
+  {
+    for (int ndx = fileNdx + 1; ndx < fileList.size(); ndx++)
+      if (useFileNavNdx(ndx)) return ndx;
+
+    return -1;
   }
 
 //---------------------------------------------------------------------------
@@ -249,7 +285,7 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void refreshNavMenu(ObservableList<MenuItem> menu, boolean isForward)
+  void refreshNavMenu(ObservableList<MenuItem> menu, boolean isForward)
   {
     menu.clear();
     if (curPrevFile == null) return;
@@ -292,14 +328,11 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void navClick(boolean isForward)
+  void navClick(boolean isForward)
   {
     if (enableNavButton(isForward) == false) return;
 
-    if (isForward)
-      curPrevFile.navNdx++;
-    else
-      curPrevFile.navNdx--;
+    curPrevFile.navNdx += (isForward ? 1 : -1);
 
     setPreview(curPrevFile.navList.get(curPrevFile.navNdx), false);
   }
@@ -307,12 +340,9 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void fileNavClick(boolean isForward)
+  void fileNavClick(boolean isForward)
   {
-    if (isForward)
-      fileNdx++;
-    else
-      fileNdx--;
+    fileNdx = isForward ? getNextFileNdx() : getPreviousFileNdx();
 
     PreviewFile prevFile = fileList.get(fileNdx);
 
@@ -324,7 +354,17 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clearPreview()
+  void reset()
+  {
+    clearPreview();
+    fileList.clear();
+    fileNdx = -1;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void clearPreview()
   {
     filePathShowing = null;
     pageNum = -1;
@@ -332,15 +372,13 @@ public class PreviewWrapper
     workStartPageNum = -1;
     workEndPageNum = -1;
     curPrevFile = null;
-    fileNdx = -1;
 
     if (window.curSource() == src) window.clearControls();
 
     if (initialized == false) return;
 
-    if (initialized)
-      if (viewerClear == false)
-        jsWrapper.close();
+    if (viewerClear == false)
+      jsWrapper.close();
 
     if (window.curSource() == src)
       needsRefresh = false;
@@ -349,9 +387,14 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setPreview(FilePath filePath, int pageNum, HDT_Base record)
+  void setPreview(FilePath filePath, int pageNum, HDT_Base record)
   {
     setPreview(filePath, pageNum, record, true, null);
+  }
+
+  void setPreview(int pageNum, boolean incrementNav)
+  {
+    setPreview(getFilePath(), pageNum, getRecord(), incrementNav, null);
   }
 
   private void setPreview(FilePath filePath, int pageNum, HDT_Base record, boolean incrementNav, PreviewFile prevFile)
@@ -408,18 +451,10 @@ public class PreviewWrapper
     }
   }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  public void setPreview(int pageNum, boolean incrementNav)
-  {
-    setPreview(getFilePath(), pageNum, getRecord(), incrementNav, null);
-  }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void refreshControls()
+  void refreshControls()
   {
     FilePath filePath = getFilePath();
 
@@ -519,7 +554,7 @@ public class PreviewWrapper
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public void refreshPreview(boolean forceReload, boolean incrementNav)
+  void refreshPreview(boolean forceReload, boolean incrementNav)
   {
     if (initialized == false)
       initJS();
@@ -572,7 +607,7 @@ public class PreviewWrapper
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public int getPageByLabel(String label)
+  int getPageByLabel(String label)
   {
     if ((labelToPage == null) || labelToPage.isEmpty())
       return parseInt(label, -1);
@@ -583,7 +618,7 @@ public class PreviewWrapper
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public String getLabelByPage(int page)
+  String getLabelByPage(int page)
   {
     if ((pageToLabel == null) || pageToLabel.isEmpty())
       return String.valueOf(page);
@@ -594,7 +629,7 @@ public class PreviewWrapper
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public void updatePage(int newPageNum)
+  void updatePage(int newPageNum)
   {
     if (newPageNum < 1) return;
     if (pageNum < 1) return;
@@ -608,7 +643,7 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setWorkPageFromContentsWindow(int pageNum, boolean isStart)
+  void setWorkPageFromContentsWindow(int pageNum, boolean isStart)
   {
     if (isStart)
       workStartPageNum = pageNum;
@@ -619,7 +654,7 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean setCurPageAsWorkPage(boolean isStart)
+  boolean setCurPageAsWorkPage(boolean isStart)
   {
     if ((curPrevFile == null) || (curPrevFile.record == null) || (curPrevFile.record.getType() != hdtWork))
       return false;
@@ -649,7 +684,7 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public int lowestHilitePage()
+  int lowestHilitePage()
   {
     return collEmpty(hilitePages) ? -1 : hilitePages.get(0);
   }
@@ -657,7 +692,7 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public int highestHilitePage()
+  int highestHilitePage()
   {
     return collEmpty(hilitePages) ? -1 : hilitePages.get(hilitePages.size() - 1);
   }
@@ -665,7 +700,7 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public int getPrevHilite(int curPage)
+  int getPrevHilite(int curPage)
   {
     if (collEmpty(hilitePages)) return -1;
 
@@ -682,7 +717,7 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public int getNextHilite(int curPage)
+  int getNextHilite(int curPage)
   {
     if (collEmpty(hilitePages)) return -1;
 

@@ -79,15 +79,15 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
 
 //---------------------------------------------------------------------------
 
-  public void focusOnSearchKey()              { safeFocus(tfSearchKey); }
-  public void hilite(String text)             { mainText.hilite(text); }
-  public TextViewInfo getMainTextInfo()       { return mainText.getViewInfo(); }
-  public MainTextWrapper getMainTextWrapper() { return mainText; }
+  void focusOnSearchKey()              { safeFocus(tfSearchKey); }
+  void hilite(String text)             { mainText.hilite(text); }
+  TextViewInfo getMainTextInfo()       { return mainText.getViewInfo(); }
+  MainTextWrapper getMainTextWrapper() { return mainText; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void init(HDT_RecordType recordType, HyperNodeTab<HDT_RT, HDT_CT> hyperTab)
+  void init(HDT_RecordType recordType, HyperNodeTab<HDT_RT, HDT_CT> hyperTab)
   {
     this.recordType = recordType;
     this.hyperTab = hyperTab;
@@ -152,7 +152,7 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public MenuItem makeMenuItem(HDT_RecordWithConnector record)
+  private MenuItem makeMenuItem(HDT_RecordWithConnector record)
   {
     MenuItem miUnlink = new MenuItem();
     miUnlink.setText("Unlink");
@@ -169,7 +169,7 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public MenuItem makeMoveConceptItem()
+  private MenuItem makeMoveConceptItem()
   {
     MenuItem miMove = new MenuItem();
     miMove.setText("Move this definition to a different term");
@@ -341,7 +341,7 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
     HDT_Term term = frmSelectConcept.getTerm();
     HDT_Concept concept;
 
-    if (frmSelectConcept.createNew)
+    if (frmSelectConcept.getCreateNew())
     {
       concept = db.createNewBlankRecord(hdtConcept);
 
@@ -387,7 +387,7 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setGoToEvent(Label label, HDT_RecordWithConnector record)
+  private void setGoToEvent(Label label, HDT_RecordWithConnector record)
   {
     label.setOnMouseClicked(mouseEvent ->
     {
@@ -399,7 +399,7 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear()
+  void clear()
   {
     tfName.clear();
     tfSearchKey.clear();
@@ -413,7 +413,7 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean save(HDT_CT record, boolean showMessage, HyperNodeTab<HDT_RT, HDT_CT> hyperTab)
+  boolean save(HDT_CT record, boolean showMessage, HyperNodeTab<HDT_RT, HDT_CT> hyperTab)
   {
     if (record.getType() == hdtConcept)
     {
@@ -444,7 +444,7 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void update(HDT_CT record)
+  void update(HDT_CT record)
   {
     tfName.setText(record.name());
     tfSearchKey.setText(record.getSearchKey());

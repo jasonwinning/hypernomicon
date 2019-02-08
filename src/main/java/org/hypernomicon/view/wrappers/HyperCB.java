@@ -69,7 +69,7 @@ public class HyperCB implements CommitableWrapper
   private boolean adjusting = false;
   public boolean somethingWasTyped, listenForActionEvents = true, dontCreateNewRecord = false;
 
-  public static final HashMap<ComboBox<HyperTableCell>, HyperCB> cbRegistry = new HashMap<>();
+  static final HashMap<ComboBox<HyperTableCell>, HyperCB> cbRegistry = new HashMap<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -115,7 +115,7 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setOnAction(EventHandler<ActionEvent> onAction)
+  void setOnAction(EventHandler<ActionEvent> onAction)
   {
     if (onAction == null) return;
 
@@ -141,7 +141,7 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperCB(ComboBox<HyperTableCell> cb, HyperCtrlType ctrlType, Populator newPopulator, HyperTableRow row, boolean addToRegistry, HyperTable table)
+  HyperCB(ComboBox<HyperTableCell> cb, HyperCtrlType ctrlType, Populator newPopulator, HyperTableRow row, boolean addToRegistry, HyperTable table)
   {
     this.cb = cb;
     populator = newPopulator;
@@ -246,7 +246,7 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void endEditModeIfInTable()
+  private void endEditModeIfInTable()
   {
     if (isInTable())
       ComboBoxCell.class.cast(cb.getParent()).commit();

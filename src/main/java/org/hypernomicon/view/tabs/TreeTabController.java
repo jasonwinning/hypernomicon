@@ -80,20 +80,22 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
   private String lastTextHilited = "";
 
   public String textToHilite = "";
-  public TreeWrapper tree;
+  private TreeWrapper tree;
 
-  @Override public HDT_RecordType getType()                  { return hdtNone; }
-  @Override public void enable(boolean enabled)              { ui.tabTree.getContent().setDisable(enabled == false); }
-  @Override public void clear()                              { tree.clear(); }
-  @Override public boolean saveToRecord(boolean showMessage) { return true; }
-  @Override public void focusOnSearchKey()                   { return; }
-  @Override public void setRecord(HDT_Base activeRecord)     { return; }
-  @Override public HDT_Base activeRecord()                   { return tree.selectedRecord(); }
-  @Override public TextViewInfo getMainTextInfo()            { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
-  @Override public void setDividerPositions()                { return; }
-  @Override public void getDividerPositions()                { return; }
+  @Override HDT_RecordType getType()                { return hdtNone; }
+  @Override public void enable(boolean enabled)     { ui.tabTree.getContent().setDisable(enabled == false); }
+  @Override public void clear()                     { tree.clear(); }
+  @Override public boolean saveToRecord(boolean sm) { return true; }
+  @Override void focusOnSearchKey()                 { return; }
+  @Override public void setRecord(HDT_Base ar)      { return; }
+  @Override public HDT_Base activeRecord()          { return tree.selectedRecord(); }
+  @Override public TextViewInfo getMainTextInfo()   { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
+  @Override public void setDividerPositions()       { return; }
+  @Override public void getDividerPositions()       { return; }
 
   @Override public void newClick(HDT_RecordType objType, HyperTableRow row) { return; }
+
+  public TreeWrapper getTree() { return tree; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -119,7 +121,7 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void init(TabEnum tabEnum)
+  @Override void init(TabEnum tabEnum)
   {
     this.tabEnum = tabEnum;
     tree = new TreeWrapper(ttv, true, ui.cbTreeGoTo);
@@ -467,7 +469,7 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
 
     if (dlg.showModal() == false) return;
 
-    HDT_Base parent = dlg.parent;
+    HDT_Base parent = dlg.getParent();
 
     switch (child.getType())
     {

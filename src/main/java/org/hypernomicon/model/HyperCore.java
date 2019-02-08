@@ -90,6 +90,8 @@ final class HyperCore<HDT_DT extends HDT_Base>
   int getIDbyKeyNdx(int ndx)   { return sortedKeys.get(ndx).getID(); }
   boolean containsID(int id)   { return sortedIDs.contains(id); }
   HDT_DT getRecordByID(int id) { return idToRecord.get(id); }
+  int getIDNdxByID(int id)     { return Math.max(-1, binarySearch(sortedIDs, id)); }
+  int getKeyNdxByID(int id)    { return Math.max(-1, binarySearch(sortedKeys, new KeyIDpair(id, idToKey.get(id)))); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -196,24 +198,6 @@ final class HyperCore<HDT_DT extends HDT_Base>
     KeyIDpair pair = new KeyIDpair(id, newKey);
 
     sortedKeys.add((binarySearch(sortedKeys, pair) + 1) * -1, pair);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  int getIDNdxByID(int id)
-  {
-    int ndx = binarySearch(sortedIDs, id);
-    return ndx >= 0 ? ndx : -1;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  int getKeyNdxByID(int id)
-  {
-    int ndx = binarySearch(sortedKeys, new KeyIDpair(id, idToKey.get(id)));
-    return ndx >= 0 ? ndx : -1;
   }
 
 //---------------------------------------------------------------------------

@@ -63,7 +63,7 @@ public class FileDialogController extends HyperDialog
   @FXML private Button btnOk;
   @FXML public Button btnCancel;
 
-  public FilePath srcFilePath;
+  private FilePath srcFilePath;
   private HDT_RecordWithPath curFileRecord;
   private HDT_RecordType recordType;
   private HDT_Work curWork;

@@ -56,7 +56,7 @@ public class FileDownloadUtility
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    public Buffer(InputStream inputStream) throws IOException
+    private Buffer(InputStream inputStream) throws IOException
     {
       int bytesRead = -1;
       byte[] buffer = new byte[BUFFER_SIZE];
@@ -71,7 +71,7 @@ public class FileDownloadUtility
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    public int length()
+    private int length()
     {
       int total = 0;
       for (Integer length : lengths)

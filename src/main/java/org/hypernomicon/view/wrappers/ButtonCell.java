@@ -52,7 +52,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ButtonCell(HyperCtrlType ctrlType, HyperTable newHT, HyperTableColumn col, int colNdxOfTarget, ButtonCellHandler handler, String btnCaption)
+  ButtonCell(HyperCtrlType ctrlType, HyperTable newHT, HyperTableColumn col, int colNdxOfTarget, ButtonCellHandler handler, String btnCaption)
   {
     ht = newHT;
     this.colNdxOfTarget = colNdxOfTarget;

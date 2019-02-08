@@ -176,7 +176,7 @@ public class ImportBibEntryDialogController extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void btnBrowseClick()
+  private void btnBrowseClick()
   {
     FileChooser fileChooser = new FileChooser();
 

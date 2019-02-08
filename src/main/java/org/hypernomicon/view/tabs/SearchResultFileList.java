@@ -49,7 +49,7 @@ import org.hypernomicon.util.filePath.FilePath;
 
 public class SearchResultFileList
 {
-  public static class SearchResultFile
+  private static class SearchResultFile
   {
     private final FilePath filePath;
     private int startPage, endPage;
@@ -57,7 +57,7 @@ public class SearchResultFileList
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    public SearchResultFile(FilePath filePath, int startPage, int endPage)
+    private SearchResultFile(FilePath filePath, int startPage, int endPage)
     {
       this.filePath = filePath;
 
@@ -78,7 +78,7 @@ public class SearchResultFileList
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    public boolean overlaps(SearchResultFile other)
+    private boolean overlaps(SearchResultFile other)
     {
       if (filePath.equals(other.filePath) == false)
         return false;
@@ -91,7 +91,7 @@ public class SearchResultFileList
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    public boolean contains(SearchResultFile other)
+    private boolean contains(SearchResultFile other)
     {
       if (filePath.equals(other.filePath) == false)
         return false;
@@ -104,7 +104,7 @@ public class SearchResultFileList
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    public SearchResultFile createCombined(SearchResultFile other)
+    private SearchResultFile createCombined(SearchResultFile other)
     {
       int newStartPage, newEndPage;
 
@@ -165,7 +165,7 @@ public class SearchResultFileList
     //---------------------------------------------------------------------------
 
     @SuppressWarnings("resource")
-    public void copyToResultsFolder(boolean excludeAnnots, ArrayList<String> errList)
+    private void copyToResultsFolder(boolean excludeAnnots, ArrayList<String> errList)
     {
       PDDocument srcPdf = null, destPdf = null;
       PDFCloneUtility cloneUtil = null;
@@ -267,7 +267,7 @@ public class SearchResultFileList
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public SearchResultFileList()
+  SearchResultFileList()
   {
     list = new ArrayList<>();
     errList = new ArrayList<>();
@@ -276,7 +276,7 @@ public class SearchResultFileList
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public void addRecord(HDT_RecordWithPath record, boolean includeEdited)
+  void addRecord(HDT_RecordWithPath record, boolean includeEdited)
   {
     switch (record.getType())
     {
@@ -321,7 +321,7 @@ public class SearchResultFileList
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public void addFile(FilePath filePath, int startPage, int endPage)
+  private void addFile(FilePath filePath, int startPage, int endPage)
   {
     if (filePath.exists() == false) return;
 
@@ -346,15 +346,7 @@ public class SearchResultFileList
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public static boolean fileIsPdf(FilePath filePath)
-  {
-    return getMediaType(filePath).toString().contains("pdf");
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  public void showErrors()
+  void showErrors()
   {
     String errors = strListToStr(errList, false);
 
@@ -365,7 +357,7 @@ public class SearchResultFileList
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public void copyAll(boolean excludeAnnots, HyperTask task) throws TerminateTaskException
+  void copyAll(boolean excludeAnnots, HyperTask task) throws TerminateTaskException
   {
     int ndx = 0; for (SearchResultFile resultFile : list)
     {

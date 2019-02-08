@@ -38,7 +38,7 @@ import org.hypernomicon.util.filePath.FilePath;
 public class DesktopApi
 {
   @SuppressWarnings("unused")
-  public static boolean browse(String url)
+  static boolean browse(String url)
   {
     if ((SystemUtils.IS_OS_WINDOWS) || (SystemUtils.IS_OS_MAC))
       return browseDESKTOP(url);
@@ -58,7 +58,7 @@ public class DesktopApi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean open(FilePath filePath)
+  static boolean open(FilePath filePath)
   {
     if (FilePath.isEmpty(filePath)) return true;
 
@@ -181,7 +181,7 @@ public class DesktopApi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean runCommand(String command, String args, String pathStr)
+  static boolean runCommand(String command, String args, String pathStr)
   {
     String[] parts = prepareCommand(command, args, pathStr);
 

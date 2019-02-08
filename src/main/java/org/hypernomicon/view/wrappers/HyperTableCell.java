@@ -36,8 +36,8 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
     hsmStandard, hsmTextSimple, hsmNumeric, hsmLast, hsmWork
   }
 
-  public static final HyperTableCell trueCell = new HyperTableCell(1, "", hdtNone);
-  public static final HyperTableCell falseCell = new HyperTableCell(0, "", hdtNone);
+  public static final HyperTableCell trueCell  = new HyperTableCell(1, "", hdtNone),
+                                     falseCell = new HyperTableCell(0, "", hdtNone);
 
   private int id;
   private String text;
@@ -48,7 +48,7 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
   public String getText()         { return text; }
   public HDT_RecordType getType() { return type; }
 
-  public static HyperTableCell fromBoolean(boolean boolVal)     { return boolVal ? trueCell : falseCell; }
+  static HyperTableCell fromBoolean(boolean boolVal)            { return boolVal ? trueCell : falseCell; }
   public static int getCellID(HyperTableCell cell)              { return cell == null ? -1 : cell.id; }
   public static String getCellText(HyperTableCell cell)         { return cell == null ? "" : safeStr(cell.text); }
   public static HDT_RecordType getCellType(HyperTableCell cell) { return ((cell == null) || (cell.type == null)) ? hdtNone : cell.type; }
@@ -60,9 +60,8 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
 
   public HyperTableCell(int newID, String newText, HDT_RecordType newType) { this(newID, newText, newType, hsmStandard); }
   public HyperTableCell(HDT_Base record, String newText)                   { this(record.getID(), newText, record.getType(), hsmStandard); }
-  public HyperTableCell(HDT_Base record)                                   { this(record.getID(), "", record.getType(), hsmStandard); }
 
-  public HyperTableCell(HDT_Base record, String newText, HyperCellSortMethod sm) { this(record.getID(), newText, record.getType(), sm); }
+  HyperTableCell(HDT_Base record, String newText, HyperCellSortMethod sm)  { this(record.getID(), newText, record.getType(), sm); }
 
   public HyperTableCell(int newID, String newText, HDT_RecordType newType, HyperCellSortMethod newSortMethod)
   {
@@ -124,7 +123,7 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HyperTableCell simpleSortValue(HyperTableCell cell)
+  static HyperTableCell simpleSortValue(HyperTableCell cell)
   {
     HyperTableCell newCell = cell.clone();
     newCell.sortMethod = hsmTextSimple;

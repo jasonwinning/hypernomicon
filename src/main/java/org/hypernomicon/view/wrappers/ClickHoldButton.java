@@ -39,8 +39,8 @@ public class ClickHoldButton
 {
   private boolean mouseDown = false, adjusting = false;
   private EventHandler<ActionEvent> hndlr = null;
-  private MenuButton btnMenu;
-  private Button btn;
+  private final MenuButton btnMenu;
+  private final Button btn;
   private int mouseDownCtr = 0;
 
 //---------------------------------------------------------------------------

@@ -54,11 +54,11 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 
 public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 {
-  public static class ConceptTab extends Tab
+  private static class ConceptTab extends Tab
   {
-    public HDT_Concept concept;
+    private HDT_Concept concept;
 
-    public ConceptTab(HDT_Concept concept)
+    private ConceptTab(HDT_Concept concept)
     {
       super(concept.glossary.get().name());
 
@@ -66,13 +66,13 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
       setClosable(false);
     }
 
-    public ConceptTab(String text, Node content)
+    private ConceptTab(String text, Node content)
     {
       super(text, content);
       setClosable(false);
     }
 
-    public void setConcept(HDT_Concept concept)
+    private void setConcept(HDT_Concept concept)
     {
       this.concept = concept;
       setText(concept.glossary.get().name());
@@ -88,9 +88,9 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   private TabPane tpConcepts;
   private boolean alreadyChangingTab = false, updatingGlossaries = false;
 
-  @Override public HDT_RecordType getType()                  { return hdtTerm; }
+  @Override HDT_RecordType getType()                         { return hdtTerm; }
   @Override public void enable(boolean enabled)              { ui.tabTerms.getContent().setDisable(enabled == false); }
-  @Override public void focusOnSearchKey()                   { ctrlr.focusOnSearchKey(); }
+  @Override void focusOnSearchKey()                          { ctrlr.focusOnSearchKey(); }
   @Override public void findWithinDesc(String text)          { ctrlr.hilite(text); }
   @Override public TextViewInfo getMainTextInfo()            { return ctrlr.getMainTextInfo(); }
   @Override public void setRecord(HDT_Concept concept)       { curConcept = concept; curTerm = curConcept == null ? null : curConcept.term.get(); }
@@ -98,7 +98,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   @Override public void newClick(HDT_RecordType objType, HyperTableRow row) { return; }
 
-  public ConceptTab curTab()      { return (ConceptTab) tpConcepts.getSelectionModel().getSelectedItem(); }
+  private ConceptTab curTab()      { return (ConceptTab) tpConcepts.getSelectionModel().getSelectedItem(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -163,7 +163,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void init(TabEnum tabEnum)
+  @Override void init(TabEnum tabEnum)
   {
     this.tabEnum = tabEnum;
     ctrlr.init(hdtConcept, this);
@@ -294,7 +294,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void merge()
+  void merge()
   {
     if (ui.cantSaveRecord(true)) return;
 
@@ -357,7 +357,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void moveConcept()
+  void moveConcept()
   {
     if (curTerm.concepts.size() < 2)
     {

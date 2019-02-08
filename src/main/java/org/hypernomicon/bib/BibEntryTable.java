@@ -48,33 +48,33 @@ import static org.hypernomicon.util.Util.*;
 
 public class BibEntryTable
 {
-  @FunctionalInterface public interface BibEntryRowHandler     { void handle(BibEntryRow row); }
-  @FunctionalInterface public interface CondBibEntryRowHandler { boolean handle(BibEntryRow row); }
+  @FunctionalInterface interface BibEntryRowHandler     { void handle(BibEntryRow row); }
+  @FunctionalInterface interface CondBibEntryRowHandler { boolean handle(BibEntryRow row); }
 
 //---------------------------------------------------------------------------
 
-  public static class BibEntryRowMenuItemSchema
+  static class BibEntryRowMenuItemSchema
   {
-    public CondBibEntryRowHandler condHandler;
-    public BibEntryRowHandler handler;
-    public String caption;
-    public boolean visible = true;
-    public boolean disabled = false;
+    CondBibEntryRowHandler condHandler;
+    BibEntryRowHandler handler;
+    String caption;
+    boolean visible = true;
+    boolean disabled = false;
 
-    public BibEntryRowMenuItemSchema(String caption) { this.caption = caption; }
+    BibEntryRowMenuItemSchema(String caption) { this.caption = caption; }
   }
 
 //---------------------------------------------------------------------------
 
-  public static class BibEntryRowMenuItem extends MenuItem
+  static class BibEntryRowMenuItem extends MenuItem
   {
-    public BibEntryRowMenuItem(String caption, BibEntryRowMenuItemSchema schema)
+    BibEntryRowMenuItem(String caption, BibEntryRowMenuItemSchema schema)
     {
       super(caption);
       this.schema = schema;
     }
 
-    public BibEntryRowMenuItemSchema schema;
+    BibEntryRowMenuItemSchema schema;
   }
 
 //---------------------------------------------------------------------------
@@ -84,15 +84,14 @@ public class BibEntryTable
   private final TableView<BibEntryRow> tv;
   final List<BibEntryRowMenuItemSchema> contextMenuSchemata;
 
-  public void updateKey(String oldKey, String newKey) { keyToRow.put(newKey, keyToRow.remove(oldKey)); }
-  public boolean containsKey(String bibEntryKey)      { return keyToRow.containsKey(bibEntryKey); }
-  public void clear()                                 { rows.clear(); keyToRow.clear(); }
+  void updateKey(String oldKey, String newKey) { keyToRow.put(newKey, keyToRow.remove(oldKey)); }
+  boolean containsKey(String bibEntryKey)      { return keyToRow.containsKey(bibEntryKey); }
+  void clear()                                 { rows.clear(); keyToRow.clear(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked")
-  public BibEntryTable(TableView<BibEntryRow> tv, String prefID)
+  @SuppressWarnings("unchecked") BibEntryTable(TableView<BibEntryRow> tv, String prefID)
   {
     this.tv = tv;
     rows = FXCollections.observableArrayList();
@@ -156,7 +155,7 @@ public class BibEntryTable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void refresh(Set<? extends BibEntry> entries)
+  void refresh(Set<? extends BibEntry> entries)
   {
     entries.forEach(entry ->
     {
@@ -184,7 +183,7 @@ public class BibEntryTable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void update(Set<? extends BibEntry> entries)
+  void update(Set<? extends BibEntry> entries)
   {
     clear();
 
@@ -202,7 +201,7 @@ public class BibEntryTable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void selectKey(String bibEntryKey)
+  void selectKey(String bibEntryKey)
   {
     BibEntryRow row = keyToRow.get(bibEntryKey);
 
@@ -213,7 +212,7 @@ public class BibEntryTable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public BibEntryRowMenuItemSchema addContextMenuItem(String caption, BibEntryRowHandler handler)
+  BibEntryRowMenuItemSchema addContextMenuItem(String caption, BibEntryRowHandler handler)
   {
     return BibEntryRow.addCondContextMenuItem(caption, row -> true, handler, contextMenuSchemata);
   }
@@ -221,7 +220,7 @@ public class BibEntryTable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public BibEntryRowMenuItemSchema addCondContextMenuItem(String caption, CondBibEntryRowHandler condHandler, BibEntryRowHandler handler)
+  BibEntryRowMenuItemSchema addCondContextMenuItem(String caption, CondBibEntryRowHandler condHandler, BibEntryRowHandler handler)
   {
     return BibEntryRow.addCondContextMenuItem(caption, condHandler, handler, contextMenuSchemata);
   }

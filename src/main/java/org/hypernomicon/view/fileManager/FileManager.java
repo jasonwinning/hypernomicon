@@ -821,16 +821,16 @@ public class FileManager extends HyperDialog
 
     RecordListView.addDefaultMenuItems(recordTable);
 
-    btnBack.setTooltip(new Tooltip("Previous folder in history"));
-    btnForward.setTooltip(new Tooltip("Next folder in history"));
-    btnCut.setTooltip(new Tooltip("Cut"));
-    btnCopy.setTooltip(new Tooltip("Copy"));
-    btnPaste.setTooltip(new Tooltip("Paste"));
-    btnDelete.setTooltip(new Tooltip("Delete"));
-    btnNewFolder.setTooltip(new Tooltip("Create new folder"));
-    btnRename.setTooltip(new Tooltip("Rename selected file or folder"));
-    btnRefresh.setTooltip(new Tooltip("Refresh"));
-    btnMainWindow.setTooltip(new Tooltip("Return to main application window"));
+    btnBack         .setTooltip(new Tooltip("Previous folder in history"));
+    btnForward      .setTooltip(new Tooltip("Next folder in history"));
+    btnCut          .setTooltip(new Tooltip("Cut"));
+    btnCopy         .setTooltip(new Tooltip("Copy"));
+    btnPaste        .setTooltip(new Tooltip("Paste"));
+    btnDelete       .setTooltip(new Tooltip("Delete"));
+    btnNewFolder    .setTooltip(new Tooltip("Create new folder"));
+    btnRename       .setTooltip(new Tooltip("Rename selected file or folder"));
+    btnRefresh      .setTooltip(new Tooltip("Refresh"));
+    btnMainWindow   .setTooltip(new Tooltip("Return to main application window"));
     btnPreviewWindow.setTooltip(new Tooltip("Show preview window"));
   }
 

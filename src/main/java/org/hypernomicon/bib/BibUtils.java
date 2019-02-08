@@ -58,7 +58,7 @@ public class BibUtils
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    public void setDocInfo(PDDocumentInformation docInfo)
+    private void setDocInfo(PDDocumentInformation docInfo)
     {
       this.docInfo = docInfo;
       if (docInfo == null) return;
@@ -79,7 +79,7 @@ public class BibUtils
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    public void setXmpRoot(XMPNode xmpRoot)
+    private void setXmpRoot(XMPNode xmpRoot)
     {
       this.xmpRoot = xmpRoot;
 
@@ -194,7 +194,7 @@ public class BibUtils
     return matchISSN(str, null);
   }
 
-  public static List<String> matchISSN(String str, List<String> list)
+  static List<String> matchISSN(String str, List<String> list)
   {
     if (list == null) list = new ArrayList<>();
     if (safeStr(str).length() == 0) return list;
@@ -445,7 +445,7 @@ public class BibUtils
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static EntryType parseGoogleBooksType(String gbType)
+  static EntryType parseGoogleBooksType(String gbType)
   {
     switch (gbType)
     {
@@ -459,7 +459,7 @@ public class BibUtils
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static EntryType parsePrismAggregationType(String paType)
+  static EntryType parsePrismAggregationType(String paType)
   {
     switch (paType)
     {
@@ -480,7 +480,7 @@ public class BibUtils
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static EntryType parseCrossrefType(String crType)
+  static EntryType parseCrossrefType(String crType)
   {
     switch (crType)
     {
@@ -518,7 +518,7 @@ public class BibUtils
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static EntryType parseRISType(String risType)
+  static EntryType parseRISType(String risType)
   {
     switch (risType)
     {
@@ -585,7 +585,7 @@ public class BibUtils
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static EntryType parseBibTexType(String btType)
+  static EntryType parseBibTexType(String btType)
   {
     switch (btType.toLowerCase())
     {
@@ -737,7 +737,7 @@ public class BibUtils
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static EntryType parseEntryType(String et)
+  static EntryType parseEntryType(String et)
   {
     return entryTypeMap.inverse().getOrDefault(et, null);
   }

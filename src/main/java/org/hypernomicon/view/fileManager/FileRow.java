@@ -53,7 +53,7 @@ public class FileRow extends AbstractTreeRow<FileRow>
 
 //---------------------------------------------------------------------------
 
-  public FileRow(HyperPath hyperPath, TreeModel<FileRow> treeModel)
+  FileRow(HyperPath hyperPath, TreeModel<FileRow> treeModel)
   {
     this.hyperPath = hyperPath;
     this.treeModel = treeModel;
@@ -64,20 +64,20 @@ public class FileRow extends AbstractTreeRow<FileRow>
 
 //---------------------------------------------------------------------------
 
-  public FilePath getFilePath()   { return hyperPath.getFilePath(); }
-  public boolean isDirectory()    { return hyperPath.getFilePath().isDirectory(); }
-  public HDT_Folder getFolder()   { return hyperPath.getParentFolder(); }
-  public String getFileName()     { return hyperPath.getNameStr(); }
-  public HyperPath getHyperPath() { return hyperPath; }
+  FilePath getFilePath()   { return hyperPath.getFilePath(); }
+  boolean isDirectory()    { return hyperPath.getFilePath().isDirectory(); }
+  HDT_Folder getFolder()   { return hyperPath.getParentFolder(); }
+  String getFileName()     { return hyperPath.getNameStr(); }
+  HyperPath getHyperPath() { return hyperPath; }
   private void determineType()    { if (mimetype == null) mimetype = getMediaType(hyperPath.getFilePath()); }
 
-  public void setFolderTreeItem(TreeItem<FileRow> treeItem) { this.treeItem  = treeItem; }
+  void setFolderTreeItem(TreeItem<FileRow> treeItem) { this.treeItem  = treeItem; }
 
   @Override public HDT_RecordWithPath getRecord() { return hyperPath.getRecord(); }
   @Override public HDT_RecordType getRecordType() { return hyperPath.getRecordType(); }
   @Override public int getRecordID()              { return hyperPath.getRecordID(); }
 
-  public static FileRowMenuItemSchema addContextMenuItem(String caption, FileRowHandler handler, List<FileRowMenuItemSchema> contextMenuSchemata)
+  static FileRowMenuItemSchema addContextMenuItem(String caption, FileRowHandler handler, List<FileRowMenuItemSchema> contextMenuSchemata)
   {
     return addCondContextMenuItem(caption, fileRow -> true, handler, contextMenuSchemata);
   }
@@ -85,7 +85,7 @@ public class FileRow extends AbstractTreeRow<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FileCellValue<Instant> getModifiedDateCellValue()
+  FileCellValue<Instant> getModifiedDateCellValue()
   {
     Instant i = hyperPath.getFilePath().lastModified();
 
@@ -95,7 +95,7 @@ public class FileRow extends AbstractTreeRow<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FileCellValue<Long> getSizeCellValue()
+  FileCellValue<Long> getSizeCellValue()
   {
     long size;
 
@@ -111,7 +111,7 @@ public class FileRow extends AbstractTreeRow<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getTypeString()
+  String getTypeString()
   {
     if (isDirectory()) return "File folder";
 
@@ -142,7 +142,7 @@ public class FileRow extends AbstractTreeRow<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static FileRowMenuItemSchema addCondContextMenuItem(String caption, CondFileRowHandler condHandler, FileRowHandler handler, List<FileRowMenuItemSchema> contextMenuSchemata)
+  static FileRowMenuItemSchema addCondContextMenuItem(String caption, CondFileRowHandler condHandler, FileRowHandler handler, List<FileRowMenuItemSchema> contextMenuSchemata)
   {
     FileRowMenuItemSchema mnu;
 
@@ -157,7 +157,7 @@ public class FileRow extends AbstractTreeRow<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ContextMenu createContextMenu(FileRow fileRow, List<FileRowMenuItemSchema> contextMenuSchemata)
+  static ContextMenu createContextMenu(FileRow fileRow, List<FileRowMenuItemSchema> contextMenuSchemata)
   {
     boolean noneVisible = true;
     ContextMenu rowMenu = new ContextMenu();
@@ -196,7 +196,7 @@ public class FileRow extends AbstractTreeRow<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean rename(String newName)
+  boolean rename(String newName)
   {
     if (isDirectory())
     {

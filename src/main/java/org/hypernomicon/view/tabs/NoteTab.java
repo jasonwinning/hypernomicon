@@ -69,9 +69,9 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
   private FilePath folderPath;
   private HDT_Note curNote;
 
-  @Override public HDT_RecordType getType()         { return hdtNote; }
+  @Override HDT_RecordType getType()                { return hdtNote; }
   @Override public void enable(boolean enabled)     { ui.tabNotes.getContent().setDisable(enabled == false); }
-  @Override public void focusOnSearchKey()          { ctrlr.focusOnSearchKey(); }
+  @Override void focusOnSearchKey()                 { ctrlr.focusOnSearchKey(); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
   @Override public void setRecord(HDT_Note note)    { curNote = note; }
@@ -184,7 +184,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void init(TabEnum tabEnum)
+  @Override void init(TabEnum tabEnum)
   {
     this.tabEnum = tabEnum;
     ctrlr.init(hdtNote, this);

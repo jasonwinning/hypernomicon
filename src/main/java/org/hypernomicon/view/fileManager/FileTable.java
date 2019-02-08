@@ -56,43 +56,43 @@ import javafx.scene.text.Text;
 
 public class FileTable implements DragNDropContainer<FileRow>
 {
-  @FunctionalInterface public interface FileRowHandler     { void handle(FileRow fileRow); }
-  @FunctionalInterface public interface CondFileRowHandler { boolean handle(FileRow fileRow); }
+  @FunctionalInterface interface FileRowHandler     { void handle(FileRow fileRow); }
+  @FunctionalInterface interface CondFileRowHandler { boolean handle(FileRow fileRow); }
 
 //---------------------------------------------------------------------------
 
-  public static class FileRowMenuItemSchema
+  static class FileRowMenuItemSchema
   {
-    public CondFileRowHandler condHandler;
-    public FileRowHandler handler;
-    public String caption;
-    public boolean visible = true;
-    public boolean disabled = false;
+    CondFileRowHandler condHandler;
+    FileRowHandler handler;
+    String caption;
+    boolean visible = true;
+    boolean disabled = false;
 
-    public FileRowMenuItemSchema(String caption) { this.caption = caption; }
+    FileRowMenuItemSchema(String caption) { this.caption = caption; }
   }
 
 //---------------------------------------------------------------------------
 
-  public static class FileRowMenuItem extends MenuItem
+  static class FileRowMenuItem extends MenuItem
   {
-    public FileRowMenuItem(String caption, FileRowMenuItemSchema schema)
+    FileRowMenuItem(String caption, FileRowMenuItemSchema schema)
     {
       super(caption);
       this.schema = schema;
     }
 
-    public FileRowMenuItemSchema schema;
+    FileRowMenuItemSchema schema;
   }
 
 //---------------------------------------------------------------------------
 
-  public static class FileCellValue<Comp_T extends Comparable<Comp_T>> implements Comparable<FileCellValue<Comp_T>>
+  static class FileCellValue<Comp_T extends Comparable<Comp_T>> implements Comparable<FileCellValue<Comp_T>>
   {
-    public String text;
-    public Comparable<Comp_T> sortVal;
+    private String text;
+    private Comparable<Comp_T> sortVal;
 
-    public FileCellValue(String text, Comparable<Comp_T> sortVal)
+    FileCellValue(String text, Comparable<Comp_T> sortVal)
     {
       this.text = text;
       this.sortVal = sortVal;
@@ -118,8 +118,7 @@ public class FileTable implements DragNDropContainer<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked")
-  public FileTable(TableView<FileRow> fileTV, String prefID)
+  @SuppressWarnings("unchecked") FileTable(TableView<FileRow> fileTV, String prefID)
   {
     this.fileTV = fileTV;
     rows = FXCollections.observableArrayList();
@@ -187,7 +186,7 @@ public class FileTable implements DragNDropContainer<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear()
+  void clear()
   {
     rows.clear();
   }
@@ -195,7 +194,7 @@ public class FileTable implements DragNDropContainer<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void update(HDT_Folder folder, TreeItem<FileRow> parentTreeItem)
+  void update(HDT_Folder folder, TreeItem<FileRow> parentTreeItem)
   {
     clear();
     int nextDirNdx = 0;
@@ -274,7 +273,7 @@ public class FileTable implements DragNDropContainer<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FileRowMenuItemSchema addContextMenuItem(String caption, FileRowHandler handler)
+  FileRowMenuItemSchema addContextMenuItem(String caption, FileRowHandler handler)
   {
     return FileRow.addCondContextMenuItem(caption, fileRow -> true, handler, contextMenuSchemata);
   }
@@ -282,7 +281,7 @@ public class FileTable implements DragNDropContainer<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FileRowMenuItemSchema addCondContextMenuItem(String caption, CondFileRowHandler condHandler, FileRowHandler handler)
+  FileRowMenuItemSchema addCondContextMenuItem(String caption, CondFileRowHandler condHandler, FileRowHandler handler)
   {
     return FileRow.addCondContextMenuItem(caption, condHandler, handler, contextMenuSchemata);
   }
@@ -290,7 +289,7 @@ public class FileTable implements DragNDropContainer<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void selectByFileName(FilePath fileName)
+  void selectByFileName(FilePath fileName)
   {
     FilePath nameOnly = fileName.getNameOnly();
 
@@ -316,7 +315,7 @@ public class FileTable implements DragNDropContainer<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void startDragFromFolderTree(FileRow fileRow)
+  void startDragFromFolderTree(FileRow fileRow)
   {
     draggingRows = new ArrayList<>();
     draggingRows.add(new MarkedRowInfo(fileRow, false));

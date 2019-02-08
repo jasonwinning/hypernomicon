@@ -40,16 +40,16 @@ public abstract class HyperDialog
   protected boolean okClicked = false;
   protected Stage dialogStage;
   protected AnchorPane mainPane;
-  public Runnable onShown = null;
+  protected Runnable onShown = null;
   private double initHeight = -1, initWidth = -1;
   private boolean shownAlready = false;
 
 //---------------------------------------------------------------------------
 
-  public final Stage getStage()         { return dialogStage; }
-  public final boolean isOkClicked()    { return okClicked; }
-  public final AnchorPane getMainPane() { return mainPane; }
-  public final boolean shownAlready()   { return shownAlready; }
+  public final Stage getStage()            { return dialogStage; }
+  protected final boolean isOkClicked()    { return okClicked; }
+  protected final AnchorPane getMainPane() { return mainPane; }
+  public final boolean shownAlready()      { return shownAlready; }
   protected abstract boolean isValid();
 
 //---------------------------------------------------------------------------
@@ -148,7 +148,7 @@ public abstract class HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final void rescale()
+  protected final void rescale()
   {
     if (shownAlready == false)
     {

@@ -67,20 +67,20 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
 
 //---------------------------------------------------------------------------
 
-  protected abstract void init(TabEnum tabEnum);
+  abstract void init(TabEnum tabEnum);
+  abstract void focusOnSearchKey();
+  abstract HDT_RecordType getType();
 
   public abstract boolean update();
   public abstract void clear();
   public abstract boolean saveToRecord(boolean showMessage);
-  public abstract HDT_RecordType getType();
   public abstract void enable(boolean enabled);
-  public abstract void focusOnSearchKey();
   public abstract void newClick(HDT_RecordType objType, HyperTableRow row);
   public abstract void setDividerPositions();
   public abstract void getDividerPositions();
   public abstract void setRecord(HDT_CT record);
+  public abstract void findWithinDesc(String text);
 
-  public void findWithinDesc(String text)     { messageDialog("Internal error #52009", mtError); }
   public TextViewInfo getMainTextInfo()       { return new TextViewInfo(); }
   public MainTextWrapper getMainTextWrapper() { return null; }
   public void rescale()                       { return; }
@@ -129,7 +129,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final boolean saveSearchKey(HDT_Base record, TextField tfSearchKey, boolean showMessage)
+  protected final boolean saveSearchKey(HDT_Base record, TextField tfSearchKey, boolean showMessage)
   {
     try
     {

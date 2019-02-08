@@ -38,7 +38,7 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ReadOnlyCell(HyperTable table, HyperTableColumn col, boolean incremental)
+  ReadOnlyCell(HyperTable table, HyperTableColumn col, boolean incremental)
   {
     super();
 

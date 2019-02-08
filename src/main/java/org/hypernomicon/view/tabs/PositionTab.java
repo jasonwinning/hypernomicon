@@ -49,9 +49,9 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
   private HyperTable htParents, htArguments, htSubpositions;
   private HDT_Position curPosition;
 
-  @Override public HDT_RecordType getType()         { return hdtPosition; }
+  @Override HDT_RecordType getType()                { return hdtPosition; }
   @Override public void enable(boolean enabled)     { ui.tabPositions.getContent().setDisable(enabled == false); }
-  @Override public void focusOnSearchKey()          { ctrlr.focusOnSearchKey(); }
+  @Override void focusOnSearchKey()                 { ctrlr.focusOnSearchKey(); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
   @Override public void setRecord(HDT_Position pos) { curPosition = pos; }
@@ -131,7 +131,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void init(TabEnum tabEnum)
+  @Override void init(TabEnum tabEnum)
   {
     this.tabEnum = tabEnum;
     ObservableList<TableColumn<HyperTableRow, ?>> cols;
@@ -202,7 +202,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void initArgContextMenu()
+  private void initArgContextMenu()
   {
     RecordListView.addDefaultMenuItems(htArguments);
 
@@ -272,42 +272,12 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void newArgumentClick()
+  private void newArgumentClick()
   {
     NewArgDialogController newArgDialog = NewArgDialogController.create("New Argument", curPosition);
 
-    if (newArgDialog.showModal() == false) return;
-
-    HDT_Argument argument = db.createNewBlankRecord(hdtArgument);
-    argument.addPosition(curPosition, newArgDialog.hcbPositionVerdict.selectedRecord());
-
-    if      (newArgDialog.rbArgName1.isSelected()) argument.setName(newArgDialog.tfArgName1.getText());
-    else if (newArgDialog.rbArgName2.isSelected()) argument.setName(newArgDialog.tfArgName2.getText());
-    else if (newArgDialog.rbArgName3.isSelected()) argument.setName(newArgDialog.tfArgName3.getText());
-    else if (newArgDialog.rbArgName4.isSelected()) argument.setName(newArgDialog.tfArgName4.getText());
-    else if (newArgDialog.rbArgName5.isSelected()) argument.setName(newArgDialog.tfArgName5.getText());
-    else if (newArgDialog.rbArgName6.isSelected()) argument.setName(newArgDialog.tfArgName6.getText());
-    else if (newArgDialog.rbArgName7.isSelected()) argument.setName(newArgDialog.tfArgName7.getText());
-    else                                           argument.setName(newArgDialog.tfArgName8.getText());
-
-    HDT_Work work;
-
-    if (newArgDialog.rbNew.isSelected())
-    {
-      work = db.createNewBlankRecord(hdtWork);
-
-      work.setName(newArgDialog.tfTitle.getText());
-      HDT_Person person = newArgDialog.hcbPerson.selectedRecord();
-      if (person != null)
-        work.getAuthors().add(person);
-    }
-    else
-      work = newArgDialog.hcbWork.selectedRecord();
-
-    if (work != null)
-      argument.works.add(work);
-
-    ui.goToRecord(argument, false);
+    if (newArgDialog.showModal())
+      ui.goToRecord(newArgDialog.getArgument(), false);
   }
 
 //---------------------------------------------------------------------------

@@ -53,18 +53,18 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class AllQueryEngine extends QueryEngine<HDT_Base>
 {
-  public static final int QUERY_RECORD_TYPE            = QUERY_FIRST_NDX + 1;
-  public static final int QUERY_RECORD_EQUALS          = QUERY_FIRST_NDX + 2;
-  public static final int QUERY_ASSOCIATED_WITH_PHRASE = QUERY_FIRST_NDX + 3;
-  public static final int QUERY_LINKING_TO_RECORD      = QUERY_FIRST_NDX + 4;
-  public static final int QUERY_MATCHING_RECORD        = QUERY_FIRST_NDX + 5;
-  public static final int QUERY_MATCHING_STRING        = QUERY_FIRST_NDX + 6;
-  public static final int QUERY_MENTIONED_BY           = QUERY_FIRST_NDX + 7;
-  public static final int QUERY_DUPLICATE_FOLDERS      = QUERY_FIRST_NDX + 8;
+  private static final int QUERY_RECORD_TYPE            = QUERY_FIRST_NDX + 1;
+  private static final int QUERY_RECORD_EQUALS          = QUERY_FIRST_NDX + 2;
+  private static final int QUERY_ASSOCIATED_WITH_PHRASE = QUERY_FIRST_NDX + 3;
+  public static final int QUERY_LINKING_TO_RECORD       = QUERY_FIRST_NDX + 4;
+  public static final int QUERY_MATCHING_RECORD         = QUERY_FIRST_NDX + 5;
+  public static final int QUERY_MATCHING_STRING         = QUERY_FIRST_NDX + 6;
+  private static final int QUERY_MENTIONED_BY           = QUERY_FIRST_NDX + 7;
+  private static final int QUERY_DUPLICATE_FOLDERS      = QUERY_FIRST_NDX + 8;
 
   public static final KeywordLinkList linkList = new KeywordLinkList();
-  public static final SearchKeys dummySearchKeys = new SearchKeys();
-  public static HDT_Base searchDummy;
+  private static final SearchKeys dummySearchKeys = new SearchKeys();
+  private static HDT_Base searchDummy;
   private static final MutableBoolean choseNotToWait = new MutableBoolean();
 
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)

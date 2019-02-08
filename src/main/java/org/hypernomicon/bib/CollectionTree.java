@@ -32,7 +32,7 @@ import static org.hypernomicon.bib.CollectionTree.BibCollectionType.*;
 
 public class CollectionTree
 {
-  public static enum BibCollectionType { bctAll, bctUnsorted, bctTrash, bctUser }
+  static enum BibCollectionType { bctAll, bctUnsorted, bctTrash, bctUser }
 
   private final TreeView<BibCollectionRow> treeView;
   private final HashMap<String, BibCollectionRow> keyToRow;
@@ -42,14 +42,13 @@ public class CollectionTree
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void selectAllEntries()    { treeView.getSelectionModel().select(treeRowAllEntries.getTreeItem()); }
-  public void selectTrash()         { treeView.getSelectionModel().select(treeRowTrash.getTreeItem()); }
-  public void selectKey(String key) { treeView.getSelectionModel().select(keyToRow.get(key).getTreeItem()); }
+  void selectAllEntries()    { treeView.getSelectionModel().select(treeRowAllEntries.getTreeItem()); }
+  void selectTrash()         { treeView.getSelectionModel().select(treeRowTrash.getTreeItem()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public CollectionTree(TreeView<BibCollectionRow> treeView)
+  CollectionTree(TreeView<BibCollectionRow> treeView)
   {
     this.treeView = treeView;
     keyToRow = new HashMap<>();
@@ -79,7 +78,7 @@ public class CollectionTree
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear()
+  void clear()
   {
     if (treeView.getRoot() != null)
     {
@@ -104,7 +103,7 @@ public class CollectionTree
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void refresh(Map<String, BibCollection> keyToColl)
+  void refresh(Map<String, BibCollection> keyToColl)
   {
     pruneNode(treeView.getRoot(), keyToColl);
 
@@ -171,7 +170,7 @@ public class CollectionTree
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void rebuild(Map<String, BibCollection> keyToColl)
+  void rebuild(Map<String, BibCollection> keyToColl)
   {
     clear();
 

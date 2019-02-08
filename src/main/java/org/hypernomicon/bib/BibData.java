@@ -107,7 +107,7 @@ public abstract class BibData
 
   private static HashMap<String, YearType> descToYearType = new HashMap<>();
 
-  public static enum YearType
+  static enum YearType
   {
     ytUnknown(""),
     ytCreated("created"),
@@ -120,15 +120,13 @@ public abstract class BibData
     ytCoverDate("coverDate"),
     ytCoverDisplayDate("coverDisplayDate");
 
-    private String desc;
+    private final String desc;
 
     private YearType(String desc) { this.desc = desc; descToYearType.put(desc, this); }
 
-    public String getDesc() { return desc; }
+    static YearType getByDesc(String desc) { return descToYearType.getOrDefault(desc, ytUnknown); }
 
-    public static YearType getByDesc(String desc) { return descToYearType.getOrDefault(desc, ytUnknown); }
-
-    public static YearType highestPriority()
+    static YearType highestPriority()
     {
       int ordinal = Integer.MIN_VALUE;
       YearType highestYT = null;
@@ -194,18 +192,18 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 
   public static String getFieldName(BibFieldEnum bibFieldEnum)         { return bibFieldEnumToName.get(bibFieldEnum); }
-  public static BibFieldType getFieldType(BibFieldEnum bibFieldEnum)   { return bibFieldEnumToType.get(bibFieldEnum); }
+  static BibFieldType getFieldType(BibFieldEnum bibFieldEnum)          { return bibFieldEnumToType.get(bibFieldEnum); }
   public static boolean bibFieldIsMultiLine(BibFieldEnum bibFieldEnum) { return bibFieldEnumToType.get(bibFieldEnum) == bftMultiString; }
 
   public abstract EntryType getEntryType();
   public abstract void setMultiStr(BibFieldEnum bibFieldEnum, List<String> list);
-  public abstract void setEntryType(EntryType entryType);
+  protected abstract void setEntryType(EntryType entryType);
   public abstract void setStr(BibFieldEnum bibFieldEnum, String newStr);
   public abstract List<String> getMultiStr(BibFieldEnum bibFieldEnum);
   public abstract String getStr(BibFieldEnum bibFieldEnum);
   public abstract BibAuthors getAuthors();
   public abstract HDT_Work getWork();
-  public abstract boolean linkedToWork();
+  protected abstract boolean linkedToWork();
   public abstract HDT_WorkType getWorkType();
   public abstract void setWorkType(HDT_WorkType workType);
 
@@ -221,7 +219,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String getMultiStrSpaceDelimited(List<String> list)
+  protected static String getMultiStrSpaceDelimited(List<String> list)
   {
     String all = "";
 
@@ -245,7 +243,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HDT_WorkType convertEntryTypeToWorkType(EntryType et)
+  protected static HDT_WorkType convertEntryTypeToWorkType(EntryType et)
   {
     switch (et)
     {
@@ -270,7 +268,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static EntryType convertWorkTypeToEntryType(WorkTypeEnum workTypeEnum)
+  protected static EntryType convertWorkTypeToEntryType(WorkTypeEnum workTypeEnum)
   {
     switch (workTypeEnum)
     {
@@ -297,7 +295,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addStr(BibFieldEnum bibFieldEnum, String newStr)
+  protected void addStr(BibFieldEnum bibFieldEnum, String newStr)
   {
     List<String> list = getMultiStr(bibFieldEnum);
     list.add(newStr);
@@ -317,7 +315,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setDOI(String newStr)
+  protected void setDOI(String newStr)
   {
     if (safeStr(newStr).length() == 0) return;
     String doi = matchDOI(newStr);
@@ -328,7 +326,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addISBN(String newStr)
+  protected void addISBN(String newStr)
   {
     matchISBN(newStr).forEach(isbn -> addStr(bfISBNs, isbn));
   }
@@ -336,7 +334,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addISSN(String newStr)
+  void addISSN(String newStr)
   {
     matchISSN(newStr).forEach(issn -> addStr(bfISSNs, issn));
   }
@@ -411,7 +409,7 @@ public abstract class BibData
     bd.setStr(bfPublisher, jsonObj.getStrSafe("publisher"));
     bd.setEntryType(parseGoogleBooksType(jsonObj.getStrSafe("printType"))); // supposedly this will either be "BOOK" or "MAGAZINE", nothing else
 
-    String publishedDate = jsonObj.getStrSafe(ytPublishedDate.getDesc());
+    String publishedDate = jsonObj.getStrSafe(ytPublishedDate.desc);
     if (publishedDate.length() > 0)
     {
       bd.setYear(publishedDate.substring(0, 4), ytPublishedDate);
@@ -650,19 +648,19 @@ public abstract class BibData
     bd.setStr(bfPages, jsonObj.getStrSafe("page"));
     bd.setStr(bfPublisher, jsonObj.getStrSafe("publisher"));
 
-    if (jsonObj.containsKey(ytPublishedPrint.getDesc()))
+    if (jsonObj.containsKey(ytPublishedPrint.desc))
     {
-      bd.setStr(bfYear, jsonObj.getObj(ytPublishedPrint.getDesc()).getArray("date-parts").getArray(0).getLongAsStrSafe(0));
+      bd.setStr(bfYear, jsonObj.getObj(ytPublishedPrint.desc).getArray("date-parts").getArray(0).getLongAsStrSafe(0));
       bd.yearType = ytPublishedPrint;
     }
-    else if (jsonObj.containsKey(ytIssued.getDesc()))
+    else if (jsonObj.containsKey(ytIssued.desc))
     {
-      bd.setStr(bfYear, jsonObj.getObj(ytIssued.getDesc()).getArray("date-parts").getArray(0).getLongAsStrSafe(0));
+      bd.setStr(bfYear, jsonObj.getObj(ytIssued.desc).getArray("date-parts").getArray(0).getLongAsStrSafe(0));
       bd.yearType = ytIssued;
     }
-    else if (jsonObj.containsKey(ytCreated.getDesc()))
+    else if (jsonObj.containsKey(ytCreated.desc))
     {
-      bd.setStr(bfYear, jsonObj.getObj(ytCreated.getDesc()).getArray("date-parts").getArray(0).getLongAsStrSafe(0));
+      bd.setStr(bfYear, jsonObj.getObj(ytCreated.desc).getArray("date-parts").getArray(0).getLongAsStrSafe(0));
       bd.yearType = ytCreated;
     }
 
@@ -695,7 +693,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String extractYear(String text)
+  protected static String extractYear(String text)
   {
     Pattern p = Pattern.compile("(\\A|\\D)([12]\\d\\d\\d)(\\z|\\D)");
     Matcher m = p.matcher(text);

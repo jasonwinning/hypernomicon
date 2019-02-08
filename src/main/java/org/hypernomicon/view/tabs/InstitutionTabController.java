@@ -72,13 +72,14 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
   @FXML private Hyperlink hlGoogleMaps;
   @FXML private SplitPane spHoriz;
 
-  @Override public HDT_RecordType getType()                         { return hdtInstitution; }
+  @Override HDT_RecordType getType()                                { return hdtInstitution; }
   @Override public void enable(boolean enabled)                     { ui.tabInstitutions.getContent().setDisable(enabled == false); }
-  @Override public void focusOnSearchKey()                          { return; }
+  @Override void focusOnSearchKey()                                 { return; }
   @Override public void newClick(HDT_RecordType t, HyperTableRow r) { return; }
   @Override public void setRecord(HDT_Institution activeRecord)     { curInstitution = activeRecord; }
   @Override public void setDividerPositions()                       { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
   @Override public void getDividerPositions()                       { getDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
+  @Override public void findWithinDesc(String text)                 { messageDialog("Internal error #52009", mtError); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -189,7 +190,7 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void init(TabEnum tabEnum)
+  @Override void init(TabEnum tabEnum)
   {
     this.tabEnum = tabEnum;
     alreadyChangingLocation = false;

@@ -45,12 +45,12 @@ import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.PersonName;
 
-public class Authors implements Iterable<Author>
+public final class Authors implements Iterable<Author>
 {
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private class AuthorIterator implements Iterator<Author>
+  private final class AuthorIterator implements Iterator<Author>
   {
     private int nextNdx = 0;
 
@@ -261,7 +261,7 @@ public class Authors implements Iterable<Author>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public static void setListFromObjectGroups(List<Author> authorList, List<ObjectGroup> objGroups, HDT_Work work)
+  private static void setListFromObjectGroups(List<Author> authorList, List<ObjectGroup> objGroups, HDT_Work work)
   {
     authorList.clear();
 

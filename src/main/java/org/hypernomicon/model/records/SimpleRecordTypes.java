@@ -42,7 +42,7 @@ public class SimpleRecordTypes
   public interface HDT_RecordWithDescription extends HDT_Base { MainText getDesc(); }
   public interface HDT_RecordWithPath extends HDT_Base        { HyperPath getPath(); }
 
-  public static abstract class HDT_SimpleRecord extends HDT_Record
+  static abstract class HDT_SimpleRecord extends HDT_Record
   {
     HDT_SimpleRecord(HDT_RecordState xmlState, HyperDataset<? extends HDT_SimpleRecord> dataset)
     {
@@ -55,9 +55,9 @@ public class SimpleRecordTypes
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static abstract class HDT_Verdict extends HDT_SimpleRecord
+  private static abstract class HDT_Verdict extends HDT_SimpleRecord
   {
-    public HDT_Verdict(HDT_RecordState xmlState, HyperDataset<? extends HDT_Verdict> dataset)       { super(xmlState, dataset); }
+    private HDT_Verdict(HDT_RecordState xmlState, HyperDataset<? extends HDT_Verdict> dataset)      { super(xmlState, dataset); }
 
     @Override public String getCBText() { return name(); }
     @Override public String listName()  { return getTagString(tagListName); }
@@ -96,8 +96,8 @@ public class SimpleRecordTypes
 
   public static final class HDT_InstitutionType extends HDT_SimpleRecord
   {
-    public static final int FACULTY_INST_TYPE_ID = 9;
-    public static final int DEPARTMENT_INST_TYPE_ID = 10;
+    public static final int FACULTY_INST_TYPE_ID = 9,
+                            DEPARTMENT_INST_TYPE_ID = 10;
 
     public HDT_InstitutionType(HDT_RecordState xmlState, HyperDataset<HDT_InstitutionType> dataset) { super(xmlState, dataset);  }
     @Override public HDT_RecordType getType()                                                       { return hdtInstitutionType; } }

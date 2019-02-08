@@ -37,7 +37,7 @@ public class StrongLink
 
 //---------------------------------------------------------------------------
 
-  public StrongLink(HDT_Hub hub)
+  StrongLink(HDT_Hub hub)
   {
     this.hub = hub;
   }
@@ -54,7 +54,7 @@ public class StrongLink
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void modifyNow()
+  void modifyNow()
   {
     if (db.runningConversion || alreadyModifying) return;
 

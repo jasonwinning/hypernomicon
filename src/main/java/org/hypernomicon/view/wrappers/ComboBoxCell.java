@@ -53,8 +53,8 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ComboBoxCell(HyperTable table, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction,
-                      MutableBoolean dontCreateNewRecord, CellTextHandler textHndlr)
+  ComboBoxCell(HyperTable table, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction,
+               MutableBoolean dontCreateNewRecord, CellTextHandler textHndlr)
   {
     super();
     this.table = table;

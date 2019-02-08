@@ -52,7 +52,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 
-public class ResultsTable implements RecordListView
+public final class ResultsTable implements RecordListView
 {
   private TableView<ResultsRow> tv;
   private boolean datesAdded = false;
@@ -64,26 +64,25 @@ public class ResultsTable implements RecordListView
 
 //---------------------------------------------------------------------------
 
-  public static class ColumnGroupItem
+  public static final class ColumnGroupItem
   {
-    public ColumnGroupItem(Tag tag, String caption)
+    private ColumnGroupItem(Tag tag, String caption)
     {
       this.tag = tag;
       this.caption = caption;
     }
 
-    public Tag tag;
-    public String caption;
+    private final Tag tag;
+    public final String caption;
     public TableColumn<ResultsRow, ? extends ResultCellValue<? extends Comparable<?>>> col;
   }
 
 //---------------------------------------------------------------------------
 
-  public static class ColumnGroup
+  public static final class ColumnGroup
   {
-    public ColumnGroup(HDT_RecordType type, String caption, Set<Tag> tags)
+    public ColumnGroup(String caption, Set<Tag> tags)
     {
-      this.type = type;
       this.caption = caption;
 
       for (Tag tag : tags)
@@ -97,7 +96,6 @@ public class ResultsTable implements RecordListView
           item.col = col;
     }
 
-    public HDT_RecordType type;
     public String caption;
     public ArrayList<ColumnGroupItem> items = new ArrayList<>();
     public TypeCheckBox checkBox;
@@ -106,27 +104,29 @@ public class ResultsTable implements RecordListView
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface StringToComparable<Comp_T> { Comp_T get(String str); }
+  @FunctionalInterface private static interface StringToComparable<Comp_T> { Comp_T get(String str); }
 
-  public static class ResultCellValue<Comp_T extends Comparable<Comp_T>> implements Comparable<ResultCellValue<Comp_T>>
+  public static final class ResultCellValue<Comp_T extends Comparable<Comp_T>> implements Comparable<ResultCellValue<Comp_T>>
   {
-    private String text;
-    private Comparable<Comp_T> sortVal = null;
-    private StringToComparable<Comp_T> strToComp = null;
+    private final String text;
+    private final Comparable<Comp_T> sortVal;
+    private final StringToComparable<Comp_T> strToComp;
 
-    public ResultCellValue(String text, Comparable<Comp_T> sortVal)
+    ResultCellValue(String text, Comparable<Comp_T> sortVal)
     {
       this.text = text;
       this.sortVal = sortVal;
+      strToComp = null;
     }
 
-    public ResultCellValue(String text, StringToComparable<Comp_T> strToComp)
+    ResultCellValue(String text, StringToComparable<Comp_T> strToComp)
     {
       this.text = text;
       this.strToComp = strToComp;
+      sortVal = null;
     }
 
-    public ObservableValue<ResultCellValue<Comp_T>> getObservable() { return new SimpleObjectProperty<>(this); }
+    private ObservableValue<ResultCellValue<Comp_T>> getObservable() { return new SimpleObjectProperty<>(this); }
 
     @Override public String toString() { return text; }
 
@@ -256,12 +256,12 @@ public class ResultsTable implements RecordListView
     return new ResultCellValue<>(str, strToComp).getObservable();
   }
 
-  public static final double RESULT_COL_MAX_WIDTH = 400.0;
+  private static final double RESULT_COL_MAX_WIDTH = 400.0;
 
-  public void initColumns()
+  private void initColumns()
   {
     datesAdded = false;
-    generalGroup = new ColumnGroup(hdtNone, "General", EnumSet.noneOf(Tag.class));
+    generalGroup = new ColumnGroup("General", EnumSet.noneOf(Tag.class));
     ColumnGroupItem item;
 
     colGroups.add(generalGroup);

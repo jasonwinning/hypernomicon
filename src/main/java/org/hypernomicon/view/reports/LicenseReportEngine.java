@@ -105,7 +105,7 @@ public class LicenseReportEngine extends ReportEngine
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public HyperTable prepTable(TableView<HyperTableRow> tv)
+  @Override HyperTable prepTable(TableView<HyperTableRow> tv)
   {
     this.tv = tv;
 
@@ -121,7 +121,7 @@ public class LicenseReportEngine extends ReportEngine
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String getHtml(HyperTableRow row)
+  @Override String getHtml(HyperTableRow row)
   {
     if (row == null) return "";
 

@@ -64,7 +64,7 @@ public class PDFJSWrapper
   private PDFJSDoneHandler doneHndlr;
   private PDFJSPageChangeHandler pageChangeHndlr;
   private PDFJSRetrievedDataHandler retrievedDataHndlr;
-  private int numPages = -1, curPage = -1;
+  private int numPages = -1;
   private JavascriptToJava javascriptToJava;
   private Browser browser = null, oldBrowser = null;
   private BrowserView browserView = null;
@@ -75,12 +75,11 @@ public class PDFJSWrapper
 
   private final boolean showJavascriptConsoleMessagesInJavaConsole = true;
 
-  public int getNumPages() { return numPages; }
-  public int getCurPage()  { return curPage; }
+  int getNumPages() { return numPages; }
 
 //---------------------------------------------------------------------------
 
-  public static enum PDFJSCommand
+  static enum PDFJSCommand
   {
     pjsOpen,
     pjsClose,
@@ -89,28 +88,26 @@ public class PDFJSWrapper
 
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public interface PDFJSDoneHandler {
+  @FunctionalInterface interface PDFJSDoneHandler {
     void handle(PDFJSCommand cmd, boolean success, String errMessage);
   }
 
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public interface PDFJSPageChangeHandler {
+  @FunctionalInterface interface PDFJSPageChangeHandler {
     void handle(int newPage);
   }
 
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public interface PDFJSRetrievedDataHandler {
+  @FunctionalInterface interface PDFJSRetrievedDataHandler {
     void handle(Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel, List<Integer> hilitePages);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public PDFJSWrapper(AnchorPane apBrowser, PDFJSDoneHandler doneHndlr,
-                                            PDFJSPageChangeHandler pageChangeHndlr,
-                                            PDFJSRetrievedDataHandler retrievedDataHndlr)
+  PDFJSWrapper(AnchorPane apBrowser, PDFJSDoneHandler doneHndlr, PDFJSPageChangeHandler pageChangeHndlr, PDFJSRetrievedDataHandler retrievedDataHndlr)
   {
     this.doneHndlr = doneHndlr;
     this.pageChangeHndlr = pageChangeHndlr;
@@ -126,7 +123,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean reloadBrowser(Runnable stuffToDoAfterLoadingViewerHtml)
+  boolean reloadBrowser(Runnable stuffToDoAfterLoadingViewerHtml)
   {
     if (browser != null)
     {
@@ -394,7 +391,6 @@ public class PDFJSWrapper
   {
     public void pageChange(int newPage)
     {
-      curPage = newPage;
       pageChangeHndlr.handle(newPage);
     }
 
@@ -481,7 +477,6 @@ public class PDFJSWrapper
       if (success)
       {
         opened = false;
-        curPage = -1;
         numPages = -1;
       }
       else
@@ -496,7 +491,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void close()
+  void close()
   {
     if (!opened)
     {
@@ -510,7 +505,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void loadHtml(String html)
+  void loadHtml(String html)
   {
     clearHtml();
 
@@ -520,7 +515,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void loadFile(FilePath file)
+  void loadFile(FilePath file)
   {
     clearHtml();
 
@@ -535,7 +530,7 @@ public class PDFJSWrapper
                           SidebarView_OUTLINE = 2,
                           SidebarView_ATTACHMENTS = 3;
 
-  public void loadPdf(FilePath file, int initialPage)
+  void loadPdf(FilePath file, int initialPage)
   {
     Runnable runnable = () ->
     {
@@ -569,7 +564,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void goToPage(int pageNum)
+  void goToPage(int pageNum)
   {
     if (!ready) return;
 
@@ -579,7 +574,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void cleanup(Runnable disposeHndlr)
+  void cleanup(Runnable disposeHndlr)
   {
     clearHtml();
 

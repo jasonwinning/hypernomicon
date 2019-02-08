@@ -50,7 +50,7 @@ public class MainText
 
   public static class DisplayItem
   {
-    public DisplayItem(DisplayItemType type)           { this.type = type; this.record = null; }
+    DisplayItem(DisplayItemType type)                  { this.type = type; this.record = null; }
     public DisplayItem(HDT_RecordWithConnector record) { this.type = diRecord; this.record = record; }
 
     public final DisplayItemType type;
@@ -100,12 +100,11 @@ public class MainText
 
   public String getHtml()                    { return htmlText; }
   public HDT_RecordWithConnector getRecord() { return connector.getSpoke(); }
-  public Connector getConnector()            { return connector; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getDisplayItemsString()
+  String getDisplayItemsString()
   {
     String str = "";
 
@@ -145,7 +144,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getKeyWorksString()
+  String getKeyWorksString()
   {
     if (collEmpty(keyWorks)) return "";
 
@@ -211,7 +210,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean hasKeyWork(HDT_Base keyWorkRecord)
+  private boolean hasKeyWork(HDT_Base keyWorkRecord)
   {
     return getKeyWork(keyWorkRecord) != null;
   }
@@ -219,7 +218,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public MainText(Connector connector)  // called by Connector constructor
+  MainText(Connector connector)  // called by Connector constructor
   {
     this.connector = connector;
 
@@ -233,7 +232,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public MainText(MainText mainText, Connector connector)  // called by StrongLink.disconnectRecords
+  MainText(MainText mainText, Connector connector)  // called by StrongLink.disconnectRecords
   {
     this.connector = connector;
 
@@ -269,7 +268,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public MainText(MainText src1, MainText src2, Connector hubConnector, String newHtml)  // called by StrongLink.connectRecords
+  MainText(MainText src1, MainText src2, Connector hubConnector, String newHtml)  // called by StrongLink.connectRecords
   {
     connector = hubConnector;
 
@@ -458,7 +457,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addDefaultItems()
+  void addDefaultItems()
   {
     addDefaultItemsToList(getRecord(), displayItems);
   }
@@ -583,7 +582,7 @@ public class MainText
 
     for (MainText displayerText : displayers)
     {
-      Connector displayer = displayerText.getConnector();
+      Connector displayer = displayerText.connector;
 
       if (displayer.getType() == hdtHub)
       {

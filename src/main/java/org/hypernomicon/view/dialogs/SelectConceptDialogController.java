@@ -47,8 +47,8 @@ public class SelectConceptDialogController extends HyperDialog
   @FXML private Button btnCreate;
   @FXML private TextField tfSearchKey;
 
-  public HyperCB hcbTerm, hcbGlossary;
-  public boolean createNew, alreadyChanging = false;
+  private HyperCB hcbTerm, hcbGlossary;
+  private boolean createNew, alreadyChanging = false;
   private HDT_Term term;
 
 //---------------------------------------------------------------------------
@@ -126,8 +126,9 @@ public class SelectConceptDialogController extends HyperDialog
     createNew = false;
   }
 
-  public HDT_Term     getTerm()     { return term; }
-  public HDT_Glossary getGlossary() { return hcbGlossary.selectedRecord(); }
+  public HDT_Term     getTerm()      { return term; }
+  public boolean      getCreateNew() { return createNew; }
+  public HDT_Glossary getGlossary()  { return hcbGlossary.selectedRecord(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

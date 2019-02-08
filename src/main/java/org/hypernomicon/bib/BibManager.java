@@ -92,7 +92,7 @@ public class BibManager extends HyperDialog
   @FXML private SplitPane spMain;
   @FXML private ToolBar toolBar;
 
-  public static final String dialogTitle = "Bibliographic Entry Manager";
+  private static final String dialogTitle = "Bibliographic Entry Manager";
 
   private BibEntryTable entryTable;
   private CollectionTree collTree;
@@ -140,7 +140,7 @@ public class BibManager extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void sync()
+  private void sync()
   {
     if (ui.cantSaveRecord(true)) return;
 

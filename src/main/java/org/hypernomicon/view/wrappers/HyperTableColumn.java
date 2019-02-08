@@ -68,45 +68,44 @@ public class HyperTableColumn
   private int colNdx;
   private HDT_RecordType objType;
   private HyperCtrlType ctrlType;
-  private MutableBoolean canEditIfEmpty = new MutableBoolean(true);
-  private MutableBoolean isNumeric = new MutableBoolean(false);
-  private MutableBoolean dontCreateNewRecord = new MutableBoolean(false);
-  public EnumMap<ButtonAction, String> tooltips = new EnumMap<>(ButtonAction.class);
-  public CellUpdateHandler updateHandler;
+  final EnumMap<ButtonAction, String> tooltips = new EnumMap<>(ButtonAction.class);
+  CellUpdateHandler updateHandler;
   public CellTextHandler textHndlr = null;
   private boolean moreButtonClicked = false;
+  final private MutableBoolean canEditIfEmpty = new MutableBoolean(true),
+                               isNumeric = new MutableBoolean(false),
+                               dontCreateNewRecord = new MutableBoolean(false);
 
 //---------------------------------------------------------------------------
 
-  public boolean wasMoreButtonClicked()                         { return moreButtonClicked; }
-  public HyperCtrlType getCtrlType()                            { return ctrlType; }
-  public int getColNdx()                                        { return colNdx; }
-  public String getHeader()                                     { return tc.getText(); }
-  public HDT_RecordType getObjType()                            { return objType; }
-  void setCanEditIfEmpty(boolean newVal)                        { this.canEditIfEmpty.setValue(newVal); }
-  void setNumeric(boolean newVal)                               { this.isNumeric.setValue(newVal); }
-  public void setDontCreateNewRecord(boolean newVal)            { this.dontCreateNewRecord.setValue(newVal); }
-  public void setTooltip(ButtonAction buttonState, String text) { tooltips.put(buttonState, text); }
+  boolean wasMoreButtonClicked()                     { return moreButtonClicked; }
+  public HyperCtrlType getCtrlType()                 { return ctrlType; }
+  public int getColNdx()                             { return colNdx; }
+  public String getHeader()                          { return tc.getText(); }
+  HDT_RecordType getObjType()                        { return objType; }
+  void setCanEditIfEmpty(boolean newVal)             { this.canEditIfEmpty.setValue(newVal); }
+  void setNumeric(boolean newVal)                    { this.isNumeric.setValue(newVal); }
+  public void setDontCreateNewRecord(boolean newVal) { this.dontCreateNewRecord.setValue(newVal); }
+  void setTooltip(ButtonAction ba, String text)      { tooltips.put(ba, text); }
 
-  @SuppressWarnings("unchecked")
-  public <PopType extends Populator> PopType getPopulator()     { return (PopType) populator; }
+  @SuppressWarnings("unchecked") <PopType extends Populator> PopType getPopulator()     { return (PopType) populator; }
 
 //---------------------------------------------------------------------------
 
-  public HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol) {
+  HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol) {
     init(table, objType, ctrlType, populator, targetCol, null, null, null, null); }
 
-  public HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, EventHandler<ActionEvent> onAction) {
+  HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, EventHandler<ActionEvent> onAction) {
     init(table, objType, ctrlType, populator, targetCol, null, onAction, null, null); }
 
-  public HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, CellUpdateHandler updateHandler) {
+  HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, CellUpdateHandler updateHandler) {
     init(table, objType, ctrlType, populator, targetCol, null, null, updateHandler, null); }
 
-  public HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol,
+  HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol,
                           EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler) {
     init(table, objType, ctrlType, populator, targetCol, null, onAction, updateHandler, null); }
 
-  public HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, ButtonCellHandler btnHandler, String btnCaption) {
+  HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, ButtonCellHandler btnHandler, String btnCaption) {
     init(table, objType, ctrlType, populator, targetCol, btnHandler, null, null, btnCaption); }
 
 //---------------------------------------------------------------------------
@@ -253,7 +252,7 @@ public class HyperTableColumn
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear()
+  void clear()
   {
     if (populator != null)
       populator.clear();
@@ -264,7 +263,7 @@ public class HyperTableColumn
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public List<HyperTableCell> getSelectedItems()
+  List<HyperTableCell> getSelectedItems()
   {
     int recordID;
     List<HyperTableCell> choices = new ArrayList<>();
@@ -283,7 +282,7 @@ public class HyperTableColumn
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static Button makeButton(TableCell<HyperTableRow, HyperTableCell> tableCell)
+  static Button makeButton(TableCell<HyperTableRow, HyperTableCell> tableCell)
   {
     Button cellButton = new Button();
 

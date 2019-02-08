@@ -20,7 +20,7 @@ package org.hypernomicon.view.wrappers;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableCell;
 
-public class CheckboxCell extends TableCell<HyperTableRow, Boolean>
+class CheckboxCell extends TableCell<HyperTableRow, Boolean>
 {
   private HyperTable table;
   private CheckBox chk;
@@ -28,7 +28,7 @@ public class CheckboxCell extends TableCell<HyperTableRow, Boolean>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public CheckboxCell(HyperTable table)
+  CheckboxCell(HyperTable table)
   {
     super();
 

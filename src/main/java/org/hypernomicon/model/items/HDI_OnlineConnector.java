@@ -59,8 +59,6 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private MainText getMainText()          { return connector.getMainText(); }
-  public Connector getConnector()         { return connector; }
   @Override public void expire()          { connector.expire(); }
 
   @Override public void resolvePointers() throws HDB_InternalError { connector.resolvePointers(); }
@@ -70,7 +68,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 
   @Override public void setFromOfflineValue(HDI_OfflineConnector val, Tag tag) throws RelationCycleException
   {
-    MainText mainText = getMainText();
+    MainText mainText = connector.getMainText();
 
     switch (tag)
     {
@@ -153,7 +151,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 
   @Override public void getToOfflineValue(HDI_OfflineConnector val, Tag tag)
   {
-    MainText mainText = getMainText();
+    MainText mainText = connector.getMainText();
 
     switch (tag)
     {
@@ -214,7 +212,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 
   @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
   {
-    list.add(getMainText().getPlainForDisplay());  // Important: this needs to call the function, not access the member directly
+    list.add(connector.getMainText().getPlainForDisplay());  // Important: this needs to call the function, not access the member directly
   }
 
 //---------------------------------------------------------------------------
@@ -225,16 +223,16 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
     switch (tag)
     {
       case tagDisplayRecord :
-        return getMainText().getDisplayItemsString();
+        return connector.getMainText().getDisplayItemsString();
 
       case tagKeyWork :
-        return getMainText().getKeyWorksString();
+        return connector.getMainText().getKeyWorksString();
 
       case tagHub :
         return "";
 
       default :
-        return getMainText().getPlain();
+        return connector.getMainText().getPlain();
     }
   }
 

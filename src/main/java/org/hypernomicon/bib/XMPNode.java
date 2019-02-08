@@ -86,8 +86,7 @@ public class XMPNode
 
     public PathParts(String str)
     {
-      if (str == null) return;
-      if (str.length() == 0) return;
+      if ((str == null) || (str.length() == 0)) return;
 
       if (str.startsWith("["))
       {

@@ -61,7 +61,7 @@ import javafx.stage.StageStyle;
 
 public class PreviewWindow extends HyperDialog
 {
-  public static final String TEXT_TO_SHOW_IF_NONE = "(none)";
+  private static final String TEXT_TO_SHOW_IF_NONE = "(none)";
 
   public static enum PreviewSource
   {
@@ -120,23 +120,42 @@ public class PreviewWindow extends HyperDialog
   @FXML private Pane paneType;
   @FXML private Button btnContents;
 
-  public static final String dialogTitle = "Work Viewer";
+  private static final String dialogTitle = "Work Viewer";
 
   public boolean disablePreviewUpdating = false;
 
-  private HashMap<PreviewSource, PreviewWrapper> srcToWrapper = new HashMap<>();
-  private static HashMap<Tab, PreviewWrapper> tabToWrapper = new HashMap<>();
+  private final HashMap<PreviewSource, PreviewWrapper> srcToWrapper = new HashMap<>();
+  private final HashMap<PreviewSource, PreviewSetting> srcToSetting = new HashMap<>();
+  private static final HashMap<Tab, PreviewWrapper> tabToWrapper = new HashMap<>();
   private ClickHoldButton chbBack, chbForward;
 
-  public int curPage()                           { return (int) sldPreview.getValue(); }
-  public int getMax()                            { return (int) sldPreview.getMax(); }
-  public void clearAll()                         { tabToWrapper.values().forEach(PreviewWrapper::clearPreview); }
+  public void clearAll()                         { tabToWrapper.values().forEach(PreviewWrapper::reset); }
   public void clearPreview(PreviewSource src)    { srcToWrapper.get(src).clearPreview(); }
-  private PreviewWrapper curWrapper()            { return tabToWrapper.get(tpPreview.getSelectionModel().getSelectedItem()); }
-  public PreviewSource curSource()               { return curWrapper().getSource(); }
   public FilePath getFilePath(PreviewSource src) { return srcToWrapper.get(src).getFilePath(); }
+  private PreviewWrapper curWrapper()            { return tabToWrapper.get(tpPreview.getSelectionModel().getSelectedItem()); }
+  PreviewSource curSource()                      { return curWrapper().getSource(); }
+  int curPage()                                  { return (int) sldPreview.getValue(); }
+  int getMax()                                   { return (int) sldPreview.getMax(); }
 
   @Override protected boolean isValid()          { return true; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static class PreviewSetting
+  {
+    public PreviewSetting(FilePath filePath, int startPageNum, int endPageNum, HDT_Base record)
+    {
+      this.filePath = filePath;
+      this.startPageNum = startPageNum;
+      this.endPageNum = endPageNum;
+      this.record = record;
+    }
+
+    public final FilePath filePath;
+    public final int startPageNum, endPageNum;
+    public final HDT_Base record;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -249,7 +268,11 @@ public class PreviewWindow extends HyperDialog
       if (newValue)
         btnLock.setGraphic(getImageViewForRelativePath("resources/images/lock.png"));
       else
+      {
         btnLock.setGraphic(getImageViewForRelativePath("resources/images/lock_open.png"));
+        srcToSetting.forEach((src, setting) -> setPreview(src, setting.filePath, setting.startPageNum, setting.endPageNum, setting.record));
+        srcToSetting.clear();
+      }
     });
 
     sldPreview.valueProperty().addListener((observable, oldValue, newValue) ->
@@ -481,7 +504,10 @@ public class PreviewWindow extends HyperDialog
     if (btnLock.isSelected())
       if (curSource() == src)
         if (curWrapper().getFilePathShowing() != null)
+        {
+          srcToSetting.put(src, new PreviewSetting(filePath, startPageNum, endPageNum, record));
           return;
+        }
 
     for (PreviewWrapper wrapper : srcToWrapper.values())
     {
@@ -556,6 +582,7 @@ public class PreviewWindow extends HyperDialog
     lblRecord.setText("");
     lblRecord.setTooltip(null);
     resetNavBtns();
+    updateFileNavButtons();
 
     tfPreviewPage.setText("");
     tfPreviewPage.setDisable(true);
@@ -565,13 +592,20 @@ public class PreviewWindow extends HyperDialog
     btnHiliteNext.setDisable(true);
     btnPreviewBack.setDisable(true);
     btnPreviewForward.setDisable(true);
-    btnFileBack.setDisable(true);
-    btnFileForward.setDisable(true);
     sldPreview.setValue(1);
     lblPreviewPages.setText("/ 0");
 
     if (contentsWindow != null)
       contentsWindow.clear();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateFileNavButtons()
+  {
+    btnFileBack.setDisable(curWrapper().enableFileNavButton(false) == false);
+    btnFileForward.setDisable(curWrapper().enableFileNavButton(true) == false);
   }
 
 //---------------------------------------------------------------------------
@@ -656,8 +690,7 @@ public class PreviewWindow extends HyperDialog
     btnPreviewBack.setDisable(curWrapper().enableNavButton(false) == false);
     btnPreviewForward.setDisable(curWrapper().enableNavButton(true) == false);
 
-    btnFileBack.setDisable(curWrapper().enableFileNavButton(false) == false);
-    btnFileForward.setDisable(curWrapper().enableFileNavButton(true) == false);
+    updateFileNavButtons();
 
     curWrapper().refreshNavMenu(chbBack.getMenu(), false);
     curWrapper().refreshNavMenu(chbForward.getMenu(), true);
@@ -692,7 +725,7 @@ public class PreviewWindow extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void openContentsWindow()
+  private void openContentsWindow()
   {
     if (contentsWindow.getStage().isShowing())
       ui.windows.focusStage(contentsWindow.getStage());

@@ -42,7 +42,6 @@ public class HyperTableRow
 
 //---------------------------------------------------------------------------
 
-  public int getCount()                       { return cells.size(); }
   public HyperTableCell getCell(int ndx)      { return cells.get(ndx); }
   public int getID(int ndx)                   { return cells.size() > ndx ? HyperTableCell.getCellID(cells.get(ndx)) : -1; }
   public String getText(int ndx)              { return cells.size() > ndx ? HyperTableCell.getCellText(cells.get(ndx)) : ""; }
@@ -54,7 +53,7 @@ public class HyperTableRow
 
 //---------------------------------------------------------------------------
 
-  public HyperTableRow(int colCount, HyperTable table)
+  HyperTableRow(int colCount, HyperTable table)
   {
     this.table = table;
     cells = FXCollections.observableArrayList();
@@ -83,7 +82,7 @@ public class HyperTableRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public <HDT_T extends HDT_Base> HDT_T getRecordByType(HDT_RecordType type)
+  <HDT_T extends HDT_Base> HDT_T getRecordByType(HDT_RecordType type)
   {
     if (type == hdtNone)
       return getRecord();

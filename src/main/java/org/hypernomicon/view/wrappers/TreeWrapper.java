@@ -303,7 +303,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TreeItem<TreeRow> getPrevious(TreeItem<TreeRow> item)
+  private TreeItem<TreeRow> getPrevious(TreeItem<TreeRow> item)
   {
     TreeItem<TreeRow> prev = item.previousSibling();
     if (prev != null)
@@ -331,7 +331,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TreeItem<TreeRow> getNext(TreeItem<TreeRow> item, boolean fromChild)
+  private TreeItem<TreeRow> getNext(TreeItem<TreeRow> item, boolean fromChild)
   {
     if ((fromChild == false) && (item.getChildren().size() > 0))
       return item.getChildren().get(0);
