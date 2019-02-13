@@ -42,8 +42,7 @@ import javafx.scene.control.TextField;
 
 public class SelectConceptDialogController extends HyperDialog
 {
-  @FXML private ComboBox<HyperTableCell> cbTerm;
-  @FXML private ComboBox<HyperTableCell> cbGlossary;
+  @FXML private ComboBox<HyperTableCell> cbTerm, cbGlossary;
   @FXML private Button btnCreate;
   @FXML private TextField tfSearchKey;
 

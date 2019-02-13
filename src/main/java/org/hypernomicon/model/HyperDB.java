@@ -27,7 +27,6 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 
-import static java.util.Objects.*;
 import static java.util.Collections.*;
 
 import java.io.FileInputStream;
@@ -76,6 +75,9 @@ import org.json.simple.parser.ParseException;
 import com.google.common.collect.EnumBiMap;
 import com.google.common.collect.EnumHashBiMap;
 import com.google.common.collect.Sets;
+
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
 import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.HyperTask;
@@ -163,7 +165,7 @@ public final class HyperDB
   public String getTypeTagStr(HDT_RecordType type)            { return typeToTagStr.get(type); }
   public HDT_RecordType parseTypeTagStr(String tag)           { return typeToTagStr.inverse().getOrDefault(tag, hdtNone); }
   public boolean isLoaded()                                   { return loaded; }
-  public boolean bibLibraryIsLinked()                         { return nonNull(bibLibrary); }
+  public boolean bibLibraryIsLinked()                         { return bibLibrary != null; }
   public Instant getCreationDate()                            { return dbCreationDate; }
   public HDT_RecordType getSubjType(RelationType relType)     { return relationSets.get(relType).getSubjType(); }
   public HDT_RecordType getObjType(RelationType relType)      { return relationSets.get(relType).getObjType(); }
@@ -511,7 +513,7 @@ public final class HyperDB
     if ((initialized == false) || unableToLoad)
       return false;
 
-    if (nonNull(getLockOwner()))
+    if (getLockOwner() != null)
       return false;
 
     FilePath newRootFilePath = new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, System.getProperty("user.dir")));
@@ -994,7 +996,7 @@ public final class HyperDB
 
   private class HDX_Element
   {
-    private Tag tag;
+    private final Tag tag;
     private int objID;
     private HDT_RecordType objType;
 
@@ -1043,7 +1045,7 @@ public final class HyperDB
       XMLEventReader eventReader = XMLInputFactory.newInstance().createXMLEventReader(in);
       HDT_RecordState xmlRecord = getNextRecordFromXML(eventReader);
 
-      while (nonNull(xmlRecord))
+      while (xmlRecord != null)
       {
         boolean notDoneReadingRecord = eventReader.hasNext(), noInnerTags = true, wasAlreadyInStartTag = false;
         LinkedHashMap<Tag, HDI_OfflineBase> nestedItems = null;
@@ -1131,7 +1133,7 @@ public final class HyperDB
         }
         catch (RelationCycleException | HDB_InternalError | SearchKeyException e) { noOp(); }
 
-        if (nonNull(event))
+        if (event != null)
           task.updateProgress(curTaskCount + event.getLocation().getCharacterOffset(), totalTaskCount);
 
         xmlRecord = getNextRecordFromXML(eventReader);
@@ -1162,28 +1164,26 @@ public final class HyperDB
 
   private void initNestedItems(HDT_RecordState xmlRecord, LinkedHashMap<Tag, HDI_OfflineBase> nestedItems, RelationType relation)
   {
-    HDI_OfflineBase item = null;
-
     Collection<HDI_Schema> schemas = relationSets.get(relation).getSchemas();
-
     if (schemas == null) return;
+
+    ObjectProperty<HDI_OfflineBase> item = new SimpleObjectProperty<>();
 
     for (HDI_Schema schema : schemas)
     {
       switch (schema.getCategory())
       {
-        case hdcBoolean:       item = new HDI_OfflineBoolean(schema, xmlRecord); break;
-        case hdcTernary:       item = new HDI_OfflineTernary(schema, xmlRecord); break;
-        case hdcString:        item = new HDI_OfflineString(schema, xmlRecord); break;
-        case hdcNestedPointer: item = new HDI_OfflineNestedPointer(schema, xmlRecord); break;
+        case hdcBoolean:       item.set(new HDI_OfflineBoolean(schema, xmlRecord)); break;
+        case hdcTernary:       item.set(new HDI_OfflineTernary(schema, xmlRecord)); break;
+        case hdcString:        item.set(new HDI_OfflineString(schema, xmlRecord)); break;
+        case hdcNestedPointer: item.set(new HDI_OfflineNestedPointer(schema, xmlRecord)); break;
 
         default :
           messageDialog("Internal error #78936", mtError);
           return;
       }
 
-      for (Tag tag : schema.getTags())
-        nestedItems.put(tag, item);
+      schema.getTags().forEach(tag -> nestedItems.put(tag, item.get()));
     }
   }
 
@@ -1255,12 +1255,7 @@ public final class HyperDB
         return;
     }
 
-    int ndx = binarySearch(initialNavList, record, (record1, record2) -> record1.getViewDate().compareTo(record2.getViewDate()));
-
-    if (ndx >= 0) ndx++;
-    else          ndx = (ndx + 1) * -1;
-
-    initialNavList.add(ndx, record);
+    addToSortedList(initialNavList, record, (record1, record2) -> record1.getViewDate().compareTo(record2.getViewDate()));
   }
 
 //---------------------------------------------------------------------------
@@ -1331,7 +1326,7 @@ public final class HyperDB
 
   public void close(EnumSet<HDT_RecordType> datasetsToKeep) throws HDB_InternalError
   {
-    boolean bringOnline = nonNull(datasetsToKeep); // Datasets remain online through process of creating a new database
+    boolean bringOnline = (datasetsToKeep != null); // Datasets remain online through process of creating a new database
 
     folderTreeWatcher.stop();
 
@@ -1403,7 +1398,7 @@ public final class HyperDB
   {
     boolean leaveOnline = false;
 
-    if (nonNull(datasetsToKeep)) // It should only be non-null when a new database is being created
+    if (datasetsToKeep != null) // It should only be non-null when a new database is being created
     {
       datasetsToKeep.add(hdtWorkType);
       datasetsToKeep.add(hdtPositionVerdict);
@@ -1538,15 +1533,7 @@ public final class HyperDB
   public Set<HDI_Schema> getSchemasByTag(Tag tag)
   {
     Set<HDI_Schema> schemas = new HashSet<>();
-
-    datasets.values().forEach(dataset ->
-    {
-      HDI_Schema schema = dataset.getSchema(tag);
-
-      if (nonNull(schema))
-        schemas.add(schema);
-    });
-
+    datasets.values().forEach(dataset -> nullSwitch(dataset.getSchema(tag), schemas::add));
     return schemas;
   }
 
@@ -1908,30 +1895,13 @@ public final class HyperDB
   private void addPathItem     (HDT_RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPath         , rt    , tags); }
   private void addConnectorItem(HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcConnector    , rtNone, tags); }
 
-  private void addBibEntryKeyItem() throws HDB_InternalError { addItem(hdtWork,   hdcBibEntryKey, rtNone,         tagBibEntryKey); }
-  private void addAuthorsItem    () throws HDB_InternalError { addItem(hdtWork,   hdcAuthors,     rtAuthorOfWork, tagAuthor); }
+  private void addBibEntryKeyItem() throws HDB_InternalError { addItem(hdtWork,   hdcBibEntryKey, rtNone,         tagBibEntryKey           ); }
+  private void addAuthorsItem    () throws HDB_InternalError { addItem(hdtWork,   hdcAuthors,     rtAuthorOfWork, tagAuthor                ); }
   private void addPersonNameItem () throws HDB_InternalError { addItem(hdtPerson, hdcPersonName,  rtNone,         tagFirstName, tagLastName); }
-  private void addHubSpokesItem  () throws HDB_InternalError { addItem(hdtHub,    hdcHubSpokes,   rtNone,         tagLinkedRecord); }
+  private void addHubSpokesItem  () throws HDB_InternalError { addItem(hdtHub,    hdcHubSpokes,   rtNone,         tagLinkedRecord          ); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-
-  private static final String
-
-    LOCK_FILE_NAME = "dblock.dat",
-    REQUEST_MSG_FILE_NAME = "request_message.dat",
-    RESPONSE_MSG_FILE_NAME = "response_message.dat";
-
-  public static final String BIB_FILE_NAME = "Bib.json",
-                             ZOTERO_TEMPLATE_FILE_NAME = "ZoteroTemplates.json",
-                             ZOTERO_CREATOR_TYPES_FILE_NAME = "ZoteroCreatorTypes.json",
-                             DEFAULT_PICTURES_PATH = "Pictures",
-                             DEFAULT_BOOKS_PATH = "Books",
-                             DEFAULT_PAPERS_PATH = "Papers",
-                             DEFAULT_UNENTERED_PATH = "Works not entered yet",
-                             DEFAULT_MISC_FILES_PATH = "Misc",
-                             DEFAULT_RESULTS_PATH = "Search results",
-                             DEFAULT_TOPICAL_PATH = "Topical";
 
   public static final int
 
@@ -1945,8 +1915,24 @@ public final class HyperDB
     RESULTS_FOLDER_ID = 8,
     FIRST_USER_FOLDER_ID = 9;
 
+  public static final String
+
+    BIB_FILE_NAME = "Bib.json",
+    ZOTERO_TEMPLATE_FILE_NAME = "ZoteroTemplates.json",
+    ZOTERO_CREATOR_TYPES_FILE_NAME = "ZoteroCreatorTypes.json",
+    DEFAULT_PICTURES_PATH = "Pictures",
+    DEFAULT_BOOKS_PATH = "Books",
+    DEFAULT_PAPERS_PATH = "Papers",
+    DEFAULT_UNENTERED_PATH = "Works not entered yet",
+    DEFAULT_MISC_FILES_PATH = "Misc",
+    DEFAULT_RESULTS_PATH = "Search results",
+    DEFAULT_TOPICAL_PATH = "Topical";
+
   private static final String
 
+    LOCK_FILE_NAME = "dblock.dat",
+    REQUEST_MSG_FILE_NAME = "request_message.dat",
+    RESPONSE_MSG_FILE_NAME = "response_message.dat",
     OTHER_FILE_NAME = "Other.xml",
     PERSON_FILE_NAME = "People.xml",
     INSTITUTION_FILE_NAME = "Institutions.xml",
@@ -1985,7 +1971,7 @@ public final class HyperDB
   public String getTypeName(HDT_RecordType type)
   {
     Tag tag = typeToTag.get(type);
-    if (nonNull(tag))
+    if (tag != null)
       return tagToHeader.get(tag);
 
     switch (type)
@@ -2005,7 +1991,7 @@ public final class HyperDB
 
     HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, false);
 
-    if (nonNull(folder))
+    if (folder != null)
       if (folder.getPath().getFilePath().equals(filePath))
         if (isProtectedRecord(folder.getID(), folder.getType()))
           return true;
@@ -2106,7 +2092,7 @@ public final class HyperDB
 
       if (affirm)
       {
-        if (isNull(set))
+        if (set == null)
         {
           set = new HashSet<>();
           keyWorkIndex.put(keyWorkRecord, set);
@@ -2114,7 +2100,7 @@ public final class HyperDB
 
         set.add(record);
       }
-      else if (nonNull(set))
+      else if (set != null)
         set.remove(record);
     }
 

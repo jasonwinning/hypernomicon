@@ -337,8 +337,6 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
       }
     }
 
-    List<String> strList;
-    String allStr = "";
     String fieldKey = getFieldKey(bibFieldEnum);
 
     switch (bibFieldEnum)
@@ -359,33 +357,14 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
       case bfContainerTitle: case bfTitle:
 
-        strList = getMultiStr(bibFieldEnum);
-
-        for (String titleStr : strList)
-          allStr = BibField.addTitleComponent(allStr, titleStr);
-
-        return allStr;
+        return BibField.buildTitle(getMultiStr(bibFieldEnum));
 
       case bfMisc:
 
-        strList = getMultiStr(bibFieldEnum);
-
-        for (String miscStr : strList)
-        {
-          if (miscStr.length() > 0)
-          {
-            if (allStr.length() > 0)
-              allStr = allStr + System.lineSeparator();
-
-            allStr = allStr + miscStr;
-          }
-        }
-
-        return allStr;
+        return strListToStr(getMultiStr(bibFieldEnum), false, true);
 
       default:
         break;
-
     }
 
     return "";
@@ -400,21 +379,11 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     {
       switch (bibFieldEnum)
       {
-        case bfTitle :
+        case bfTitle : getWork().setName(BibField.buildTitle(list));   return;
+        case bfISBNs : getWork().setISBNs(list);                       return;
+        case bfMisc  : getWork().setMiscBib(strListToStr(list, true)); return;
 
-          String allStr = "";
-
-          for (String titleStr : list)
-            allStr = BibField.addTitleComponent(allStr, titleStr);
-
-          getWork().setName(allStr);
-          return;
-
-        case bfISBNs : getWork().setISBNs(list); return;
-
-        case bfMisc  : getWork().setMiscBib(strListToStr(list, true));
-
-        default     : break;
+        default      : break;
       }
     }
 

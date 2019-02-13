@@ -34,21 +34,9 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 public class NewDatabaseDialogController extends HyperDialog
 {
-  @FXML private Button btnOK;
-  @FXML private Button btnCancel;
-  @FXML private CheckBox cbInst;
-  @FXML private CheckBox cbFields;
-  @FXML private CheckBox cbRanks;
-  @FXML private CheckBox cbStatus;
-  @FXML private CheckBox cbStates;
-  @FXML private CheckBox cbCountries;
-  @FXML private TextField tfPapers;
-  @FXML private TextField tfBooks;
-  @FXML private TextField tfUnentered;
-  @FXML private TextField tfPictures;
-  @FXML private TextField tfTopicFolders;
-  @FXML private TextField tfMiscFiles;
-  @FXML private TextField tfResults;
+  @FXML private Button btnOK, btnCancel;
+  @FXML private CheckBox cbInst, cbFields, cbRanks, cbStatus, cbStates, cbCountries;
+  @FXML private TextField tfPapers, tfBooks, tfUnentered, tfPictures, tfTopicFolders, tfMiscFiles, tfResults;
 
   private String newPath;
 

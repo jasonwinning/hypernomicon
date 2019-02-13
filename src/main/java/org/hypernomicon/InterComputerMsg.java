@@ -36,8 +36,7 @@ public class InterComputerMsg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final String source;
-  private final String dest;
+  private final String source, dest;
   private final HDB_MessageType type;
   private final long sentTime;
 
@@ -59,18 +58,17 @@ public class InterComputerMsg
 
   public boolean writeToDisk()
   {
-    List<String> s;
+    List<String> s = new ArrayList<>();
     FilePath filePath;
 
-    s = new ArrayList<>();
     s.add(source);
     s.add(dest);
 
     switch (type)
     {
-      case hmtEchoRequest    : s.add("echo request");    filePath = db.getRequestMessageFilePath();  break;
-      case hmtEchoReply      : s.add("echo reply");      filePath = db.getResponseMessageFilePath(); break;
-      case hmtUnlockRequest  : s.add("unlock request");  filePath = db.getRequestMessageFilePath();  break;
+      case hmtEchoRequest    : s.add("echo request"   ); filePath = db.getRequestMessageFilePath ();  break;
+      case hmtEchoReply      : s.add("echo reply"     ); filePath = db.getResponseMessageFilePath(); break;
+      case hmtUnlockRequest  : s.add("unlock request" ); filePath = db.getRequestMessageFilePath ();  break;
       case hmtUnlockComplete : s.add("unlock complete"); filePath = db.getResponseMessageFilePath(); break;
       default : return false;
     }
@@ -85,36 +83,28 @@ public class InterComputerMsg
 
   public static InterComputerMsg checkForMessage(FilePath filePath)
   {
+    if (filePath.exists() == false) return null;
+
     List<String> s;
-    String source, dest;
+
+    try { s = FileUtils.readLines(filePath.toFile(), "UTF-8"); }
+    catch (IOException e) { return null; }
+
+    if ((s.size() != 3) || s.get(0).equals(getComputerName()))
+      return null;
+
     HDB_MessageType type;
 
-    if (filePath.exists())
+    switch (s.get(2))
     {
-      try { s = FileUtils.readLines(filePath.toFile(), "UTF-8"); }
-      catch (IOException e) { return null; }
-
-      if (s.size() != 3) return null;
-
-      if (s.get(0).equals(getComputerName()))
-        return null;
-
-      source = s.get(0);
-      dest = s.get(1);
-
-      switch (s.get(2))
-      {
-        case "echo request"    : type = hmtEchoRequest;    break;
-        case "echo reply"      : type = hmtEchoReply;      break;
-        case "unlock request"  : type = hmtUnlockRequest;  break;
-        case "unlock complete" : type = hmtUnlockComplete; break;
-        default : type = hmtNone;
-      }
-
-      return new InterComputerMsg(source, dest, type);
+      case "echo request"    : type = hmtEchoRequest;    break;
+      case "echo reply"      : type = hmtEchoReply;      break;
+      case "unlock request"  : type = hmtUnlockRequest;  break;
+      case "unlock complete" : type = hmtUnlockComplete; break;
+      default                : type = hmtNone;
     }
 
-    return null;
+    return new InterComputerMsg(s.get(0), s.get(1), type);
   }
 
 //---------------------------------------------------------------------------

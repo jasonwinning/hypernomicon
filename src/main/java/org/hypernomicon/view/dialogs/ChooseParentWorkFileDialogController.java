@@ -35,8 +35,7 @@ import javafx.scene.control.TableView;
 public class ChooseParentWorkFileDialogController extends HyperDialog
 {
   @FXML private TableView<HyperTableRow> tvFiles;
-  @FXML private Button btnOk;
-  @FXML private Button btnCancel;
+  @FXML private Button btnOk, btnCancel;
 
   private HyperTable htFiles;
 

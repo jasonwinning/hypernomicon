@@ -30,11 +30,8 @@ import javafx.scene.web.WebView;
 
 public class MergeSpokeDialogController extends HyperDialog
 {
-  @FXML private RadioButton rbDesc1;
-  @FXML private RadioButton rbDesc2;
-  @FXML private RadioButton rbDesc3;
-  @FXML private WebView view1;
-  @FXML private WebView view2;
+  @FXML private RadioButton rbDesc1, rbDesc2, rbDesc3;
+  @FXML private WebView view1, view2;
   @FXML private HTMLEditor he3;
 
   private String mainText1, mainText2;

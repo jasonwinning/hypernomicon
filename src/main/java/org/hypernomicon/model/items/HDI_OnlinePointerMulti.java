@@ -18,6 +18,7 @@
 package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
@@ -38,7 +39,7 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 
 public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMulti>
 {
-  private RelationType relType;
+  private final RelationType relType;
 
   public HDI_OnlinePointerMulti(HDI_Schema newSchema, HDT_Base newRecord)
   {
@@ -73,12 +74,7 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 
     HDT_RecordType objType = db.getObjType(relType);
 
-    val.objIDs.forEach(objID ->
-    {
-      HDT_Base obj = db.records(objType).getByID(objID.intValue());
-      if (obj != null)
-        newList.add(obj);
-    });
+    val.objIDs.forEach(objID -> nullSwitch((HDT_Base)db.records(objType).getByID(objID.intValue()), newList::add));
 
     for (HDT_Base obj : newList)
     {
@@ -110,12 +106,8 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 
   @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
   {
-    if (!searchLinkedRecords) return;
-
-    HyperObjList<HDT_Base, HDT_Base> objList = db.getObjectList(relType, record, false);
-
-    for (HDT_Base objRecord : objList)
-      list.add(objRecord.listName());
+    if (searchLinkedRecords)
+      db.getObjectList(relType, record, false).forEach(objRecord -> list.add(objRecord.listName()));
   }
 
 //---------------------------------------------------------------------------
@@ -123,18 +115,18 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 
   @Override public String getResultTextForTag(Tag tag)
   {
-    String allStr = "", oneStr;
+    StringBuilder allStr = new StringBuilder();
 
-    HyperObjList<HDT_Base, HDT_Base> objList = db.getObjectList(relType, record, false);
-
-    for (HDT_Base objRecord : objList)
+    db.getObjectList(relType, record, false).forEach(objRecord ->
     {
-      oneStr = objRecord.listName();
-      if (oneStr.length() > 0)
-        allStr = allStr.length() == 0 ? oneStr : (allStr + "; " + oneStr);
-    }
+      String oneStr = objRecord.listName();
+      if (oneStr.length() == 0) return;
 
-    return allStr;
+      if (allStr.length() > 0) allStr.append("; ");
+      allStr.append(oneStr);
+    });
+
+    return allStr.toString();
   }
 
 //---------------------------------------------------------------------------
@@ -142,11 +134,9 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 
   @Override public void getToOfflineValue(HDI_OfflinePointerMulti val, Tag tag)
   {
-    HyperObjList<HDT_Base, HDT_Base> objList = db.getObjectList(relType, record, false);
-
     val.objIDs.clear();
 
-    for (HDT_Base objRecord : objList)
+    db.getObjectList(relType, record, false).forEach(objRecord ->
     {
       val.objIDs.add(objRecord.getID());
 
@@ -161,7 +151,7 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 
         db.saveNestedValuesToOfflineMap(record, objRecord, tagToNestedItem, val.recordState);
       }
-    }
+    });
   }
 
 //---------------------------------------------------------------------------

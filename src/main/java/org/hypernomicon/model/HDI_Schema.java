@@ -18,8 +18,6 @@
 package org.hypernomicon.model;
 
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,37 +34,23 @@ public final class HDI_Schema
 
 //---------------------------------------------------------------------------
 
-  public final Tag getTag()                    { return tags.get(0); }
-  public final List<Tag> getTags()             { return tags; }
-  public final HyperDataCategory getCategory() { return category; }
-  public final RelationType getRelType()       { return relType; }
+  public Tag getTag()                    { return tags.get(0); }
+  public List<Tag> getTags()             { return tags; }
+  public HyperDataCategory getCategory() { return category; }
+  public RelationType getRelType()       { return relType; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDI_Schema(HyperDataCategory category, Tag... tags)
+  public HDI_Schema(HyperDataCategory category, Tag... tags) { this(category, rtNone, tags); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HDI_Schema(HyperDataCategory category, RelationType relType, Tag... tags)
   {
     this.tags = Arrays.asList(tags);
     this.category = category;
-    relType = rtNone;
-
-    switch (category)
-    {
-      case hdcPointerMulti : case hdcPointerSingle : case hdcPath : case hdcAuthors :
-        messageDialog("Internal error #42009", mtError);
-        break;
-
-      default : break;
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HDI_Schema(HyperDataCategory dataCat, RelationType relType, Tag... tags)
-  {
-    this.tags = Arrays.asList(tags);
-    this.category = dataCat;
     this.relType = relType;
   }
 

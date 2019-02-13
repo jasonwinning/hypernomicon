@@ -26,10 +26,8 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 public class NewLinkDialogController extends HyperDialog
 {
-  @FXML public TextField tfDisplayText;
-  @FXML public TextField tfURL;
-  @FXML private Button btnOk;
-  @FXML private Button btnCancel;
+  @FXML public TextField tfDisplayText, tfURL;
+  @FXML private Button btnOk, btnCancel;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

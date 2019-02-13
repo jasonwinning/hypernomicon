@@ -19,7 +19,7 @@ package org.hypernomicon.bib;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.hdtWork;
+import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -77,20 +77,14 @@ import javafx.util.StringConverter;
 
 public class BibManager extends HyperDialog
 {
-  @FXML private TreeView<BibCollectionRow> treeView;
-  @FXML private TableView<BibEntryRow> tableView;
-  @FXML private WebView webView;
-  @FXML private Button btnDelete;
-  @FXML private Button btnSync;
-  @FXML private Button btnStop;
-  @FXML private Button btnMainWindow;
-  @FXML private Button btnPreviewWindow;
-  @FXML private Button btnSelect;
-  @FXML private Button btnCreateNew;
+  @FXML private Button btnCreateNew, btnDelete, btnMainWindow, btnPreviewWindow, btnSelect, btnStop, btnSync;
   @FXML private ComboBox<EntryType> cbNewType;
   @FXML private Label lblSelect;
   @FXML private SplitPane spMain;
+  @FXML private TableView<BibEntryRow> tableView;
   @FXML private ToolBar toolBar;
+  @FXML private TreeView<BibCollectionRow> treeView;
+  @FXML private WebView webView;
 
   private static final String dialogTitle = "Bibliographic Entry Manager";
 
@@ -99,7 +93,7 @@ public class BibManager extends HyperDialog
   private LibraryWrapper<? extends BibEntry, ? extends BibCollection> libraryWrapper = null;
   private SyncTask syncTask = null;
 
-  public ObjectProperty<HDT_Work> workRecordToAssign;
+  public final ObjectProperty<HDT_Work> workRecordToAssign = new SimpleObjectProperty<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -238,8 +232,6 @@ public class BibManager extends HyperDialog
       libraryWrapper.stop();
     });
 
-    workRecordToAssign = new SimpleObjectProperty<>();
-
     workRecordToAssign.addListener((prop, oldValue, newValue) ->
     {
       if (newValue != oldValue)
@@ -250,26 +242,25 @@ public class BibManager extends HyperDialog
         {
           switch (newValue.getWorkTypeValue())
           {
-            case wtBook:         cbNewType.getSelectionModel().select(EntryType.etBook); break;
-            case wtChapter:      cbNewType.getSelectionModel().select(EntryType.etBookChapter); break;
-            case wtPaper:        cbNewType.getSelectionModel().select(EntryType.etJournalArticle); break;
-            case wtWebPage:      cbNewType.getSelectionModel().select(EntryType.etWebPage); break;
+            case wtBook    : cbNewType.getSelectionModel().select(EntryType.etBook          ); break;
+            case wtChapter : cbNewType.getSelectionModel().select(EntryType.etBookChapter   ); break;
+            case wtPaper   : cbNewType.getSelectionModel().select(EntryType.etJournalArticle); break;
+            case wtWebPage : cbNewType.getSelectionModel().select(EntryType.etWebPage       ); break;
 
-            default:             break;
+            default        : break;
           }
         }
       }
 
-      if (newValue != null)
-        if (newValue.getBibEntryKey().length() == 0)
-        {
-          lblSelect.setText("Assigning to work record: " + newValue.getCBText());
-          lblSelect.setVisible(true);
-          btnSelect.setVisible(true);
-          btnCreateNew.setVisible(true);
-          cbNewType.setVisible(true);
-          return;
-        }
+      if ((newValue != null) && (newValue.getBibEntryKey().length() == 0))
+      {
+        lblSelect.setText("Assigning to work record: " + newValue.getCBText());
+        lblSelect.setVisible(true);
+        btnSelect.setVisible(true);
+        btnCreateNew.setVisible(true);
+        cbNewType.setVisible(true);
+        return;
+      }
 
       hideBottomControls();
     });
@@ -501,7 +492,6 @@ public class BibManager extends HyperDialog
     refresh();
 
     ui.update();
-
   }
 
 //---------------------------------------------------------------------------
@@ -519,12 +509,12 @@ public class BibManager extends HyperDialog
 
     switch (row.getType())
     {
-      case bctAll:      return libraryWrapper.getNonTrashEntries();
-      case bctTrash:    return libraryWrapper.getTrash();
-      case bctUser:     return libraryWrapper.getCollectionEntries(row.getKey());
-      case bctUnsorted: return libraryWrapper.getUnsorted();
+      case bctAll      : return libraryWrapper.getNonTrashEntries();
+      case bctTrash    : return libraryWrapper.getTrash();
+      case bctUser     : return libraryWrapper.getCollectionEntries(row.getKey());
+      case bctUnsorted : return libraryWrapper.getUnsorted();
 
-      default:          return Collections   .emptySet();
+      default          : return Collections   .emptySet();
     }
   }
 
@@ -573,8 +563,6 @@ public class BibManager extends HyperDialog
 
   public void saveToDisk()
   {
-    if (shownAlready() == false) return;
-
     libraryWrapper.saveToDisk(db.getRootFilePath().resolve(new FilePath(HyperDB.BIB_FILE_NAME)));
   }
 

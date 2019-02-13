@@ -17,13 +17,8 @@
 
 package org.hypernomicon.bib.lib;
 
-import static org.hypernomicon.bib.BibData.BibFieldEnum.bfDOI;
-import static org.hypernomicon.bib.BibData.BibFieldEnum.bfISBNs;
-import static org.hypernomicon.bib.BibData.BibFieldEnum.bfTitle;
-import static org.hypernomicon.bib.BibData.BibFieldEnum.bfURL;
-import static org.hypernomicon.bib.BibData.BibFieldEnum.bfYear;
+import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static java.util.Objects.*;
 
 import java.util.List;
 
@@ -80,7 +75,7 @@ public abstract class BibEntry extends BibData
   {
     if (thisIsBackup) return false;
 
-    return nonNull(getWork());
+    return getWork() != null;
   }
 
 //---------------------------------------------------------------------------

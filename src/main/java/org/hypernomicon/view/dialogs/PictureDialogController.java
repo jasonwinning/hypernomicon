@@ -70,22 +70,11 @@ public class PictureDialogController extends HyperDialog
   private FileDownloadUtility.Buffer imageBuffer;
   private String bufferFileName = "";
 
-  @FXML private RadioButton rbNone;
-  @FXML private RadioButton rbFile;
-  @FXML private RadioButton rbWeb;
-  @FXML private RadioButton rbCurrent;
-  @FXML private TextField tfCurrent;
-  @FXML private TextField tfFile;
-  @FXML private TextField tfWeb;
+  @FXML private RadioButton rbNone, rbFile, rbWeb, rbCurrent;
+  @FXML private TextField tfCurrent, tfFile, tfWeb;
   @FXML private Button btnBrowse;
   @FXML private TextField tfName;
-  @FXML private Button btnRefresh;
-  @FXML private Button btnDelete;
-  @FXML private Button btnShow;
-  @FXML private Button btnEdit;
-  @FXML private Button btnOK;
-  @FXML private Button btnCancel;
-  @FXML private Button btnGoogle;
+  @FXML private Button btnRefresh, btnDelete, btnShow, btnEdit, btnOK, btnCancel, btnGoogle;
   @FXML private AnchorPane apPicture;
   @FXML private ImageView ivPicture;
   @FXML private Label lblChangeName;

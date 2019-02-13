@@ -25,8 +25,8 @@ import org.hypernomicon.model.records.HDT_Record.HyperDataCategory;
 
 public class HDI_Base
 {
-  protected HDI_Schema schema;
-  protected Tag mainTag;
+  protected final HDI_Schema schema;
+  protected final Tag mainTag;
 
   public HDI_Base(HDI_Schema newSchema)
   {

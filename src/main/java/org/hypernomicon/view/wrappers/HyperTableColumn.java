@@ -274,7 +274,7 @@ public class HyperTableColumn
       if (recordID > 0)
         choices.add(new HyperTableCell(recordID, db.records(row.getType(colNdx)).getByID(recordID).getCBText(), row.getType(colNdx)));
     }
-    choices.add(new HyperTableCell(-1, "", hdtNone));
+    choices.add(HyperTableCell.blankCell);
 
     return choices;
   }

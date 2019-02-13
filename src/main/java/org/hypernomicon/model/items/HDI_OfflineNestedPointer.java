@@ -33,7 +33,7 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 public class HDI_OfflineNestedPointer extends HDI_OfflineBase
 {
   int objID = -1;
-  private RelationType relType;
+  private final RelationType relType;
 
   public HDI_OfflineNestedPointer(HDI_Schema newSchema, HDT_RecordState recordState)
   {

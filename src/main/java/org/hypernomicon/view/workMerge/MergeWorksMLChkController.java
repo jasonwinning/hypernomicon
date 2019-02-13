@@ -33,18 +33,9 @@ import javafx.scene.layout.GridPane;
 
 public class MergeWorksMLChkController extends BibFieldRow
 {
-  @FXML private CheckBox chk1;
-  @FXML private CheckBox chk2;
-  @FXML private CheckBox chk3;
-  @FXML private CheckBox chk4;
-
-  @FXML private TextArea ta1;
-  @FXML private TextArea ta2;
-  @FXML private TextArea ta3;
-  @FXML private TextArea ta4;
-
+  @FXML private CheckBox chk1, chk2, chk3, chk4;
+  @FXML private TextArea ta1, ta2, ta3, ta4;
   @FXML private GridPane gp;
-
   @FXML private Label lbl;
 
 //---------------------------------------------------------------------------

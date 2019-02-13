@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.util.Util;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -62,25 +63,13 @@ public class TagItemPopulator extends Populator
 
     choices.clear();
 
-    tags.forEach(tag -> choices.add(new HyperTableCell(tag.getNum(), db.getTagHeader(tag), recordType)));
-
-    choices.sort((c1, c2) -> c1.getText().compareTo(c2.getText()));
+    tags.forEach(tag ->
+    {
+      HyperTableCell cell = new HyperTableCell(tag.getNum(), db.getTagHeader(tag), recordType);
+      Util.addToSortedList(choices, cell, (c1, c2) -> c1.getText().compareTo(c2.getText()));
+    });
 
     return choices;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
-  {
-    if (choices.isEmpty()) populate(row, false);
-
-    for (HyperTableCell choice : choices)
-      if (HyperTableCell.getCellID(choice) == HyperTableCell.getCellID(cell))
-        return choice;
-
-    return null;
   }
 
 //---------------------------------------------------------------------------

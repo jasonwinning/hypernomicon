@@ -18,7 +18,6 @@
 package org.hypernomicon.view.populators;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.QueriesTabController.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
@@ -63,35 +62,23 @@ public class QueryPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
-  {
-    for (HyperTableCell choice : populate(nullSwitch(row, dummyRow), false))
-      if (HyperTableCell.getCellID(choice) == HyperTableCell.getCellID(cell))
-        return choice;
-
-    return null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public HDT_RecordType getRecordType(HyperTableRow row)
   {
     switch (rowToQueryType.getOrDefault(row, QueryType.qtNone))
     {
-      case qtAllRecords :    return hdtNone;
-      case qtArguments:      return hdtArgument;
-      case qtDebates:        return hdtDebate;
-      case qtFiles:          return hdtMiscFile;
-      case qtInstitutions:   return hdtInstitution;
-      case qtInvestigations: return hdtInvestigation;
-      case qtNotes:          return hdtNote;
-      case qtPersons:        return hdtPerson;
-      case qtPositions:      return hdtPosition;
-      case qtConcepts:       return hdtConcept;
-      case qtWorks:          return hdtWork;
+      case qtAllRecords     : return hdtNone;
+      case qtArguments      : return hdtArgument;
+      case qtDebates        : return hdtDebate;
+      case qtFiles          : return hdtMiscFile;
+      case qtInstitutions   : return hdtInstitution;
+      case qtInvestigations : return hdtInvestigation;
+      case qtNotes          : return hdtNote;
+      case qtPersons        : return hdtPerson;
+      case qtPositions      : return hdtPosition;
+      case qtConcepts       : return hdtConcept;
+      case qtWorks          : return hdtWork;
 
-      default: break;
+      default               : break;
     }
 
     return hdtNone;

@@ -61,66 +61,24 @@ import javafx.stage.StageStyle;
 
 public class PreviewWindow extends HyperDialog
 {
-  private static final String TEXT_TO_SHOW_IF_NONE = "(none)";
-
-  public static enum PreviewSource
-  {
-    pvsPersonTab,
-    pvsWorkTab,
-    pvsQueryTab,
-    pvsManager,
-    pvsTreeTab,
-    pvsOther
-  }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private AnchorPane apPerson;
-  @FXML private AnchorPane apWork;
-  @FXML private AnchorPane apQuery;
-  @FXML private AnchorPane apManager;
-  @FXML private AnchorPane apOther;
-  @FXML private AnchorPane apTree;
   @FXML TabPane tpPreview;
-  @FXML private Tab tabPerson;
-  @FXML private Tab tabWork;
-  @FXML private Tab tabQuery;
-  @FXML private Tab tabManager;
-  @FXML private Tab tabOther;
-  @FXML private Tab tabTree;
-  @FXML private Button btnPreviewPrev;
-  @FXML private Button btnPreviewNext;
-  @FXML private Button btnPreviewBack;
-  @FXML private Button btnPreviewForward;
-  @FXML private Button btnHilitePrev;
-  @FXML private Button btnHiliteNext;
-  @FXML private Button btnRefresh;
-  @FXML private Button btnLaunch;
-  @FXML private Button btnGoToMain;
-  @FXML private Button btnGoToManager;
-  @FXML private Button btnFileBack;
-  @FXML private Button btnFileForward;
-  @FXML private ToggleButton btnPerson;
-  @FXML private ToggleButton btnWorks;
-  @FXML private ToggleButton btnQueries;
-  @FXML private ToggleButton btnManager;
-  @FXML private ToggleButton btnOther;
-  @FXML private ToggleButton btnTree;
-  @FXML private ToggleButton btnLock;
-  @FXML private TextField tfPreviewPage;
-  @FXML private Slider sldPreview;
-  @FXML private Label lblPreviewPages;
-  @FXML private TextField tfPath;
-  @FXML private Label lblRecord;
-  @FXML private Button btnStartPage;
-  @FXML private Button btnEndPage;
-  @FXML private Button btnSetStart;
-  @FXML private Button btnSetEnd;
+  @FXML private AnchorPane apManager, apOther, apPerson, apQuery, apTree, apWork;
+  @FXML private Button btnContents, btnEndPage, btnFileBack, btnFileForward, btnGoToMain, btnGoToManager, btnHiliteNext, btnHilitePrev,
+                       btnLaunch, btnPreviewBack, btnPreviewForward, btnPreviewNext, btnPreviewPrev, btnRefresh, btnSetEnd, btnSetStart, btnStartPage;
+  @FXML private Label lblPreviewPages, lblRecord;
   @FXML private Pane paneType;
-  @FXML private Button btnContents;
+  @FXML private Slider sldPreview;
+  @FXML private Tab tabManager, tabOther, tabPerson, tabQuery, tabTree, tabWork;
+  @FXML private TextField tfPath, tfPreviewPage;
+  @FXML private ToggleButton btnLock, btnManager, btnOther, btnPerson, btnQueries, btnTree, btnWorks;
 
-  private static final String dialogTitle = "Work Viewer";
+  public static enum PreviewSource { pvsPersonTab, pvsWorkTab, pvsQueryTab, pvsManager, pvsTreeTab, pvsOther }
+
+  private static final String dialogTitle = "Work Viewer",
+                              TEXT_TO_SHOW_IF_NONE = "(none)";
 
   public boolean disablePreviewUpdating = false;
 
@@ -208,11 +166,12 @@ public class PreviewWindow extends HyperDialog
     updateStartBtn(-1);
     updateEndBtn(-1);
 
-    btnSetStart.setDisable(true);
+    btnSetStart .setDisable(true);
     btnStartPage.setDisable(true);
-    btnSetEnd.setDisable(true);
-    btnEndPage.setDisable(true);
-    btnContents.setDisable(true);
+    btnSetEnd   .setDisable(true);
+    btnEndPage  .setDisable(true);
+    btnContents .setDisable(true);
+
     btnContents.setText("No other records...");
   }
 
@@ -231,12 +190,12 @@ public class PreviewWindow extends HyperDialog
 
   private void init()
   {
-    addWrapper(pvsPersonTab, apPerson, tabPerson, btnPerson);
-    addWrapper(pvsWorkTab, apWork, tabWork, btnWorks);
-    addWrapper(pvsQueryTab, apQuery, tabQuery, btnQueries);
-    addWrapper(pvsManager, apManager, tabManager, btnManager);
-    addWrapper(pvsOther, apOther, tabOther, btnOther);
-    addWrapper(pvsTreeTab, apTree, tabTree, btnTree);
+    addWrapper(pvsPersonTab, apPerson , tabPerson , btnPerson );
+    addWrapper(pvsWorkTab  , apWork   , tabWork   , btnWorks  );
+    addWrapper(pvsQueryTab , apQuery  , tabQuery  , btnQueries);
+    addWrapper(pvsManager  , apManager, tabManager, btnManager);
+    addWrapper(pvsOther    , apOther  , tabOther  , btnOther  );
+    addWrapper(pvsTreeTab  , apTree   , tabTree   , btnTree   );
 
     tabToWrapper.values().forEach(PreviewWrapper::clearPreview);
 
@@ -290,15 +249,13 @@ public class PreviewWindow extends HyperDialog
 
     sldPreview.valueChangingProperty().addListener((observable, oldValue, newValue) ->
     {
-      if (oldValue == null) return;
-      if (newValue == null) return;
+      if ((oldValue == null) || (newValue == null)) return;
 
-      if (oldValue)
-        if (newValue == false)
-        {
-          if (tfPreviewPage.isDisabled() == false)
-            curWrapper().setPreview((int) sldPreview.getValue(), true);
-        }
+      if (oldValue && (newValue == false))
+      {
+        if (tfPreviewPage.isDisabled() == false)
+          curWrapper().setPreview((int) sldPreview.getValue(), true);
+      }
     });
 
     btnHilitePrev.setOnAction(event ->
@@ -445,11 +402,8 @@ public class PreviewWindow extends HyperDialog
     {
       Stage stage = getStage();
 
-      if (stage.getX() < 5)
-        stage.setX(5);
-
-      if (stage.getY() < 5)
-        stage.setY(5);
+      if (stage.getX() < 5) stage.setX(5);
+      if (stage.getY() < 5) stage.setY(5);
 
       Rectangle2D bounds = Screen.getPrimary().getBounds();
 
@@ -469,9 +423,7 @@ public class PreviewWindow extends HyperDialog
 
     dialogStage.focusedProperty().addListener((observable, oldValue, newValue) ->
     {
-      if (ui.windows.getCyclingFocus()) return;
-
-      if ((newValue == null) || (newValue == false)) return;
+      if (ui.windows.getCyclingFocus() || (newValue != true)) return;
 
       ui.windows.push(dialogStage);
     });
@@ -479,7 +431,6 @@ public class PreviewWindow extends HyperDialog
     dialogStage.setOnHiding(event ->
     {
       srcToWrapper.values().forEach(PreviewWrapper::prepareToHide);
-
       ui.windows.focusStage(app.getPrimaryStage());
     });
 
@@ -497,33 +448,30 @@ public class PreviewWindow extends HyperDialog
 
     boolean previewAlreadySet = false;
 
-    if (record != null)
-      if ((record.getType() != hdtWork) && (record.getType() != hdtMiscFile))
-        record = null;
+    if ((record != null) && ((record.getType() != hdtWork) && (record.getType() != hdtMiscFile)))
+      record = null;
 
-    if (btnLock.isSelected())
-      if (curSource() == src)
-        if (curWrapper().getFilePathShowing() != null)
-        {
-          srcToSetting.put(src, new PreviewSetting(filePath, startPageNum, endPageNum, record));
-          return;
-        }
+    if (btnLock.isSelected() && (curSource() == src) && (curWrapper().getFilePathShowing() != null))
+    {
+      srcToSetting.put(src, new PreviewSetting(filePath, startPageNum, endPageNum, record));
+      return;
+    }
 
     for (PreviewWrapper wrapper : srcToWrapper.values())
     {
-      if (FilePath.isEmpty(wrapper.getFilePath()) == false)
-        if (FilePath.isEmpty(filePath) == false)
-          if (wrapper.getFilePath().equals(filePath))
-            if (wrapper.getRecord() == record)
-            {
-              wrapper.setWorkPageNums(startPageNum, endPageNum);
+      if (FilePath.isEmpty(wrapper.getFilePath())           ||
+          FilePath.isEmpty(filePath)                        ||
+          (wrapper.getFilePath().equals(filePath) == false) ||
+          (wrapper.getRecord() != record))
+        continue;
 
-              if ((wrapper == curWrapper()) && (src == curSource()))
-              {
-                wrapper.refreshControls();
-                previewAlreadySet = true;
-              }
-            }
+      wrapper.setWorkPageNums(startPageNum, endPageNum);
+
+      if ((wrapper == curWrapper()) && (src == curSource()))
+      {
+        wrapper.refreshControls();
+        previewAlreadySet = true;
+      }
     }
 
     if (previewAlreadySet) return;

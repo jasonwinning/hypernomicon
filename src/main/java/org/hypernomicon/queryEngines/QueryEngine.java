@@ -17,6 +17,8 @@
 
 package org.hypernomicon.queryEngines;
 
+import java.util.HashMap;
+
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.querySources.QuerySource;
@@ -28,6 +30,9 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 @SuppressWarnings("unused")
 public abstract class QueryEngine<HDT_T extends HDT_Base>
 {
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static enum QueryType
   {
     qtAllRecords(1),
@@ -44,19 +49,26 @@ public abstract class QueryEngine<HDT_T extends HDT_Base>
     qtReport(12),
     qtNone(13);
 
+    //---------------------------------------------------------------------------
+
     private final int code;
+    private static final HashMap<Integer, QueryType> codeToValMap = new HashMap<>();
 
     private QueryType(int code) { this.code = code; }
+    public int getCode()        { return code; }
 
-    public int getCode() { return code; }
+    //---------------------------------------------------------------------------
 
     public static QueryType codeToVal(int num)
     {
-      for (QueryType val : QueryType.values())
-        if (val.getCode() == num) return val;
+      if (codeToValMap.isEmpty())
+        for (QueryType val : QueryType.values())
+          codeToValMap.put(val.code, val);
 
-      return null;
+      return codeToValMap.get(num);
     }
+
+  //---------------------------------------------------------------------------
 
     public static QueryType fromRecordType(HDT_RecordType recordType)
     {
@@ -64,20 +76,23 @@ public abstract class QueryEngine<HDT_T extends HDT_Base>
 
       switch (recordType)
       {
-        case hdtArgument:       return qtArguments;
-        case hdtDebate:         return qtDebates;
-        case hdtMiscFile:       return qtFiles;
-        case hdtInstitution:    return qtInstitutions;
-        case hdtInvestigation:  return qtInvestigations;
-        case hdtNote:           return qtNotes;
-        case hdtPerson:         return qtPersons;
-        case hdtPosition:       return qtPositions;
-        case hdtConcept:        return qtConcepts;
-        case hdtWork:           return qtWorks;
-        default:                return qtAllRecords;
+        case hdtArgument      : return qtArguments;
+        case hdtDebate        : return qtDebates;
+        case hdtMiscFile      : return qtFiles;
+        case hdtInstitution   : return qtInstitutions;
+        case hdtInvestigation : return qtInvestigations;
+        case hdtNote          : return qtNotes;
+        case hdtPerson        : return qtPersons;
+        case hdtPosition      : return qtPositions;
+        case hdtConcept       : return qtConcepts;
+        case hdtWork          : return qtWorks;
+        default               : return qtAllRecords;
       }
     }
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public abstract QueryType getQueryType();
 
@@ -87,6 +102,8 @@ public abstract class QueryEngine<HDT_T extends HDT_Base>
 
   public abstract boolean evaluate(HDT_T record, boolean firstCall, boolean lastCall);
 
+  public void cancelled() { }
+
   public void op1Change(int query, HyperTableCell op1, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3) { }
 
   public void op2Change(int query, HyperTableCell op1, HyperTableCell op2, HyperTableRow row, VariablePopulator vp1, VariablePopulator vp2, VariablePopulator vp3) { }
@@ -94,4 +111,8 @@ public abstract class QueryEngine<HDT_T extends HDT_Base>
   public abstract QuerySource getSource(int query, HyperTableCell op1, HyperTableCell op2, HyperTableCell op3);
 
   public abstract boolean needsMentionsIndex(int query);
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

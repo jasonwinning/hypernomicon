@@ -49,33 +49,12 @@ import javafx.scene.web.WebView;
 
 public class NewArgDialogController extends HyperDialog
 {
-  @FXML private TextField tfPosition;
-  @FXML private WebView view;
-  @FXML private TextField tfArgName1;
-  @FXML private TextField tfArgName2;
-  @FXML private TextField tfArgName3;
-  @FXML private TextField tfArgName4;
-  @FXML private TextField tfArgName5;
-  @FXML private TextField tfArgName6;
-  @FXML private TextField tfArgName7;
-  @FXML private TextField tfArgName8;
-  @FXML private ComboBox<HyperTableCell> cbPerson;
-  @FXML private ComboBox<HyperTableCell> cbPositionVerdict;
-  @FXML private RadioButton rbNew;
-  @FXML private RadioButton rbExisting;
-  @FXML private RadioButton rbArgName1;
-  @FXML private RadioButton rbArgName2;
-  @FXML private RadioButton rbArgName3;
-  @FXML private RadioButton rbArgName4;
-  @FXML private RadioButton rbArgName5;
-  @FXML private RadioButton rbArgName6;
-  @FXML private RadioButton rbArgName7;
-  @FXML private RadioButton rbArgName8;
+  @FXML private Button btnCancel, btnOK;
   @FXML private CheckBox cbIncludeAuth;
-  @FXML private TextField tfTitle;
-  @FXML private ComboBox<HyperTableCell> cbWork;
-  @FXML private Button btnOK;
-  @FXML private Button btnCancel;
+  @FXML private ComboBox<HyperTableCell> cbPerson, cbPositionVerdict, cbWork;
+  @FXML private RadioButton rbArgName1, rbArgName2, rbArgName3, rbArgName4, rbArgName5, rbArgName6, rbArgName7, rbArgName8, rbExisting, rbNew;
+  @FXML private TextField tfArgName1, tfArgName2, tfArgName3, tfArgName4, tfArgName5, tfArgName6, tfArgName7, tfArgName8, tfPosition, tfTitle;
+  @FXML private WebView view;
 
   private HDT_Position curPosition;
   private HDT_Argument argument;

@@ -31,7 +31,6 @@ import org.hypernomicon.view.dialogs.RenameDialogController;
 import org.hypernomicon.view.dialogs.VerdictDialogController;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.wrappers.DragNDropHoverHelper;
-import org.hypernomicon.view.wrappers.HyperTableRow;
 import org.hypernomicon.view.wrappers.HyperTreeCellValue;
 import org.hypernomicon.view.wrappers.TreeModel;
 import org.hypernomicon.view.wrappers.TreeRow;
@@ -68,14 +67,12 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
   @FXML private TreeTableView<TreeRow> ttv;
   @FXML private TextField tfPath;
   @FXML private TreeTableColumn<TreeRow, HyperTreeCellValue> tcName;
-  @FXML private TreeTableColumn<TreeRow, String> tcType;
-  @FXML private TreeTableColumn<TreeRow, String> tcDesc;
+  @FXML private TreeTableColumn<TreeRow, String> tcType, tcDesc;
   @FXML private MasterDetailPane spMain;
   @FXML private CheckBox chkShowDesc;
   @FXML private WebView webView;
 
-  private TreeModel<TreeRow> debateTree, termTree;
-  private TreeModel<TreeRow> labelTree, noteTree;
+  private TreeModel<TreeRow> debateTree, termTree, labelTree, noteTree;
   private boolean useViewInfo = false;
   private String lastTextHilited = "";
 
@@ -92,8 +89,6 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
   @Override public TextViewInfo getMainTextInfo()   { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
   @Override public void setDividerPositions()       { return; }
   @Override public void getDividerPositions()       { return; }
-
-  @Override public void newClick(HDT_RecordType objType, HyperTableRow row) { return; }
 
   public TreeWrapper getTree() { return tree; }
 

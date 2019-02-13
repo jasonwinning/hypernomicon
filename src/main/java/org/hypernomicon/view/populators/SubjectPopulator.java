@@ -22,7 +22,6 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -65,8 +64,10 @@ public class SubjectPopulator extends Populator
 
 //---------------------------------------------------------------------------
 
-  @Override public CellValueType getValueType()                    { return cvtRecord; }
-  @Override public HDT_RecordType getRecordType(HyperTableRow row) { return db.getSubjType(relType); }
+  @Override public CellValueType getValueType()                                 { return cvtRecord; }
+  @Override public HDT_RecordType getRecordType(HyperTableRow row)              { return db.getSubjType(relType); }
+  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return equalMatch(row, cell); }
+  @Override public void setChanged(HyperTableRow row)                           { rowToChanged.put(nullSwitch(row, dummyRow), true); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -116,7 +117,7 @@ public class SubjectPopulator extends Populator
       return choices;
 
     choices.clear();
-    choices.add(new HyperTableCell(-1, "", hdtNone));
+    choices.add(HyperTableCell.blankCell);
 
     HDT_Base curObj;
 
@@ -147,27 +148,14 @@ public class SubjectPopulator extends Populator
       else
         choice = new HyperTableCell(subj.getID(), subj.getCBText(), subj.getType());
 
-      int ndx = Collections.binarySearch(choices, choice);
-
-      if (ndx < 0)
-        ndx = (ndx + 1) * -1;
-
-      choices.add(ndx, choice);
+      addToSortedList(choices, choice);
     }
 
     if (noneYet) choices.clear();
-    choices.add(new HyperTableCell(-1, "", hdtNone));
+    choices.add(HyperTableCell.blankCell);
 
     rowToChanged.put(row, false);
     return choices;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
-  {
-    return populate(nullSwitch(row, dummyRow), false).contains(cell) ? cell.clone() : null;
   }
 
 //---------------------------------------------------------------------------
@@ -179,14 +167,6 @@ public class SubjectPopulator extends Populator
 
     rowToChanged.putIfAbsent(row, true);
     return rowToChanged.get(row);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void setChanged(HyperTableRow row)
-  {
-    rowToChanged.put(nullSwitch(row, dummyRow), true);
   }
 
 //---------------------------------------------------------------------------

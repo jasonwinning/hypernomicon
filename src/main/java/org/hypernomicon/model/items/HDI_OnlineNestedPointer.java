@@ -32,7 +32,7 @@ import static org.hypernomicon.util.Util.*;
 
 public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPointer>
 {
-  private RelationType relType;
+  private final RelationType relType;
   private HDT_Base target;
 
   public HDI_OnlineNestedPointer(HDI_Schema newSchema, HDT_Base newRecord)

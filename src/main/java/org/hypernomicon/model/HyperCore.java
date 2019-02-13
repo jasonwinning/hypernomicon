@@ -19,6 +19,8 @@ package org.hypernomicon.model;
 
 import static java.util.Collections.*;
 
+import static org.hypernomicon.util.Util.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,7 +41,7 @@ final class HyperCore<HDT_DT extends HDT_Base>
     private final String key;
 
     private KeyIDpair(int id, String key) { this.id = id; this.key = key; }
-    private final int getID()             { return id; }
+    private int getID()                   { return id; }
 
 //---------------------------------------------------------------------------
 
@@ -164,7 +166,7 @@ final class HyperCore<HDT_DT extends HDT_Base>
 
   void add(int id, String key, HDT_DT record)
   {
-    sortedIDs.add((binarySearch(sortedIDs, id) + 1)  * -1, id);
+    addToSortedList(sortedIDs, id);
     setKey(id, key);
     idToRecord.put(id, record);
   }
@@ -197,7 +199,7 @@ final class HyperCore<HDT_DT extends HDT_Base>
     idToKey.put(id, newKey);
     KeyIDpair pair = new KeyIDpair(id, newKey);
 
-    sortedKeys.add((binarySearch(sortedKeys, pair) + 1) * -1, pair);
+    addToSortedList(sortedKeys, pair);
   }
 
 //---------------------------------------------------------------------------

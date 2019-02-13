@@ -38,8 +38,7 @@ public class ProgressDialogController extends HyperDialog
 
   @FXML private ProgressBar progressBar;
   @FXML private Button btnCancel;
-  @FXML private Label lblTask;
-  @FXML private Label lblPercent;
+  @FXML private Label lblTask, lblPercent;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

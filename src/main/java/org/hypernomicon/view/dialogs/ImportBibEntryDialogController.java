@@ -48,15 +48,11 @@ import javafx.stage.FileChooser;
 
 public class ImportBibEntryDialogController extends HyperDialog
 {
-  @FXML private TextField tfFile;
-  @FXML private Button btnBrowse;
-  @FXML private TextArea taContents;
-  @FXML private Button btnCreateNew;
-  @FXML private Button btnExisting;
-  @FXML private CheckBox chkNewEntry;
-  @FXML private CheckBox chkDeleteFile;
+  @FXML private Button btnBrowse, btnCancel, btnCreateNew, btnExisting;
+  @FXML private CheckBox chkDeleteFile, chkNewEntry;
   @FXML private ComboBox<HyperTableCell> cbWork;
-  @FXML private Button btnCancel;
+  @FXML private TextArea taContents;
+  @FXML private TextField tfFile;
 
   private HyperCB hcbWork;
   private boolean createNewWork;

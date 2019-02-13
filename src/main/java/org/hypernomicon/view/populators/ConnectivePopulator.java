@@ -29,10 +29,10 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 public class ConnectivePopulator extends Populator
 {
   public static final int AND_CONNECITVE_ID = 1,
-                          OR_CONNECTIVE_ID = 2;
+                          OR_CONNECTIVE_ID  = 2;
 
   private static final HyperTableCell andCell = new HyperTableCell(AND_CONNECITVE_ID, "and", hdtNone),
-                                      orCell  = new HyperTableCell(OR_CONNECTIVE_ID, "or", hdtNone);
+                                      orCell  = new HyperTableCell(OR_CONNECTIVE_ID , "or" , hdtNone);
 
   @Override public CellValueType getValueType() { return cvtConnective; }
 
@@ -42,19 +42,6 @@ public class ConnectivePopulator extends Populator
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
     return Arrays.asList(andCell, orCell);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
-  {
-    switch (HyperTableCell.getCellID(cell))
-    {
-      case AND_CONNECITVE_ID  : return andCell;
-      case OR_CONNECTIVE_ID   : return orCell;
-      default :                 return null;
-    }
   }
 
 //---------------------------------------------------------------------------

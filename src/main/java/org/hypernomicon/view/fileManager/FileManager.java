@@ -168,20 +168,9 @@ public class FileManager extends HyperDialog
   @FXML private TableView<HyperTableRow> recordTV;
   @FXML private WebView webView;
   @FXML private TextField tfSlated;
-  @FXML private Button btnForward;
-  @FXML private Button btnBack;
-  @FXML private Button btnCut;
-  @FXML private Button btnCopy;
-  @FXML private Button btnPaste;
-  @FXML private Button btnDelete;
-  @FXML private Button btnRename;
-  @FXML private Button btnRefresh;
-  @FXML private Button btnMainWindow;
-  @FXML private Button btnPreviewWindow;
-  @FXML private Button btnNewFolder;
-  @FXML private SplitPane spMain;
-  @FXML private SplitPane spFiles;
-  @FXML private SplitPane spRecords;
+  @FXML private Button btnForward, btnBack, btnCut, btnCopy, btnPaste, btnDelete, btnRename, btnRefresh,
+                       btnMainWindow, btnPreviewWindow, btnNewFolder;
+  @FXML private SplitPane spMain, spFiles, spRecords;
 
   private static final String dialogTitle = "File Manager";
 

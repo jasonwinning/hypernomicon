@@ -35,11 +35,9 @@ import javafx.scene.control.Label;
 
 public class VerdictDialogController extends HyperDialog
 {
-  @FXML private Label lblParentType;
-  @FXML private Label lblParentName;
+  @FXML private Label lblParentType, lblParentName;
   @FXML private ComboBox<HyperTableCell> cbVerdict;
-  @FXML private Button btnOk;
-  @FXML private Button btnCancel;
+  @FXML private Button btnOk, btnCancel;
 
   public HyperCB hcbVerdict;
 

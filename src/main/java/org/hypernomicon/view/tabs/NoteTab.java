@@ -332,8 +332,8 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     tabMentioners.setText(mentionersTabTitle);
   }
 
-  private static final String subnotesTabTitle = "Sub-Notes";
-  private static final String mentionersTabTitle = "Records linking to here";
+  private static final String subnotesTabTitle   = "Sub-Notes",
+                              mentionersTabTitle = "Records linking to here";
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -361,11 +361,8 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
       case hdtNote :
 
         HDT_Note subNote = db.createNewBlankRecord(hdtNote);
-
         subNote.parentNotes.add(curNote);
-
         ui.goToRecord(subNote, false);
-
         break;
 
       default:

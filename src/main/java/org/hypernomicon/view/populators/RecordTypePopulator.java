@@ -25,6 +25,7 @@ import java.util.Set;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -48,8 +49,6 @@ public class RecordTypePopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    boolean added;
-
     if ((force == false) && (changed == false)) return choices;
 
     choices.clear();
@@ -64,18 +63,11 @@ public class RecordTypePopulator extends Populator
           types.add(type);
     }
 
-    for (HDT_RecordType type : types)
+    types.forEach(type ->
     {
       HyperTableCell cell = new HyperTableCell(-1, db.getTypeName(type), type);
-      added = false;
-
-      for (int ndx = 0; (ndx <= choices.size()) && (added == false); ndx++)
-        if ((ndx == choices.size()) || (HyperTableCell.getCellText(cell).compareTo(HyperTableCell.getCellText(choices.get(ndx))) < 0))
-        {
-          choices.add(ndx, cell);
-          added = true;
-        }
-    }
+      addToSortedList(choices, cell, (c1, c2) -> c1.getText().compareTo(c2.getText()));
+    });
 
     changed = false;
     return choices;

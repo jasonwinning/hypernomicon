@@ -42,11 +42,7 @@ public class LockedDialogController extends HyperDialog
   private String otherCompName;
   private long sentTime;
 
-  @FXML private Button btnTryComm;
-  @FXML private Button btnTryTerminate;
-  @FXML private Button btnStop;
-  @FXML private Button btnOverride;
-  @FXML private Button btnCancel;
+  @FXML private Button btnTryComm, btnTryTerminate, btnStop, btnOverride, btnCancel;
   @FXML private Label lblSeconds;
   @FXML private TextArea taOutput;
 

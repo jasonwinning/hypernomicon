@@ -68,15 +68,18 @@ public abstract class HDT_Record implements HDT_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HyperDataset<? extends HDT_Base> dataset;
+  private final HyperDataset<? extends HDT_Base> dataset;
+  protected final Tag nameTag;
+  private final NameItem name;
+  private final LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items;
+  private final boolean dummyFlag;
+  private final String sortKeyAttr;
+
   private int id;
   private Instant creationDate, modifiedDate, viewDate;
-  private LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items;
   private HDT_RecordState xmlState;
-  protected final Tag nameTag;
-  private boolean online = false, expired = false, dummyFlag = false;
-  private NameItem name;
-  private String sortKeyAttr = "";
+
+  private boolean online = false, expired = false;
 
   @Override public final Instant getModifiedDate()      { return getType().getDisregardDates() ? null : modifiedDate; }
   @Override public final Instant getViewDate()          { return getType().getDisregardDates() ? null : viewDate; }
@@ -136,9 +139,12 @@ public abstract class HDT_Record implements HDT_Base
 
     this.xmlState = xmlState;
     this.id = xmlState.id;
+    dummyFlag = xmlState.dummyFlag;
     this.dataset = dataset;
     this.nameTag = nameTag;
     this.sortKeyAttr = safeStr(xmlState.sortKeyAttr);
+
+    items = new LinkedHashMap<>();
 
     initItems();
   }
@@ -160,8 +166,6 @@ public abstract class HDT_Record implements HDT_Base
 
   private final void initItems()
   {
-    items = new LinkedHashMap<>();
-
     Collection<HDI_Schema> schemas = db.getSchemasByRecordType(getType());
     if (schemas == null) return;
 
@@ -267,8 +271,6 @@ public abstract class HDT_Record implements HDT_Base
   @Override @SuppressWarnings({ "unchecked", "rawtypes" })
   public final void restoreTo(HDT_RecordState backupState, boolean dontRebuildMentions) throws RelationCycleException, SearchKeyException, HubChangedException
   {
-    dummyFlag = backupState.dummyFlag;
-
     if (online)
     {
       if (isUnitable())

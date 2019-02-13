@@ -30,18 +30,9 @@ import javafx.scene.layout.GridPane;
 
 public class MergeWorksMLController extends BibFieldRow
 {
-  @FXML private RadioButton rb1;
-  @FXML private RadioButton rb2;
-  @FXML private RadioButton rb3;
-  @FXML private RadioButton rb4;
-
-  @FXML private TextArea ta1;
-  @FXML private TextArea ta2;
-  @FXML private TextArea ta3;
-  @FXML private TextArea ta4;
-
+  @FXML private RadioButton rb1, rb2, rb3, rb4;
+  @FXML private TextArea ta1, ta2, ta3, ta4;
   @FXML private GridPane gp;
-
   @FXML private Label lbl;
 
 //---------------------------------------------------------------------------

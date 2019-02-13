@@ -221,7 +221,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
           if ((HyperTableCell.getCellID(cellVal) >= 0) && (VariablePopulator.class.cast(nextPopulator).getPopulator(row) instanceof GenericOperandPopulator))
           {
             GenericOperandPopulator gop = VariablePopulator.class.cast(nextPopulator).getPopulator(row);
-            row.setCellValue(nextColNdx, gop.getChoice(EQUAL_TO_OPERAND_ID));
+            row.setCellValue(nextColNdx, gop.getChoiceByID(null, EQUAL_TO_OPERAND_ID));
             if (tempPFC == false)
               htFields.edit(row, 4);
           }
@@ -762,7 +762,10 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
         for (int recordNdx = 0; recordNdx < total; recordNdx++)
         {
           if (isCancelled())
+          {
+            sources.keySet().forEach(row -> typeToEngine.get(curQV.getQueryType(row)).cancelled());
             throw new TerminateTaskException();
+          }
 
           if ((recordNdx % 50) == 0)
             updateProgress(recordNdx, total);
@@ -1255,12 +1258,9 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
                           QUERY_WHERE_RELATIVE = 5,
                           QUERY_FIRST_NDX = 6;
 
-  @FXML private CheckBox chkShowFields;
-  @FXML private CheckBox chkShowDesc;
-  @FXML private Button btnToggleFavorite;
+  @FXML private CheckBox chkShowFields, chkShowDesc;
+  @FXML private Button btnToggleFavorite, btnClear, btnExecute;
   @FXML private TextField tfName;
-  @FXML private Button btnClear;
-  @FXML private Button btnExecute;
   @FXML private TabPane tabPane;
   @FXML private Tab tabNew;
   @FXML private AnchorPane apDescription;
@@ -1299,8 +1299,6 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
   @Override public HDT_Base activeRecord()          { return curQV == null ? null : curQV.curResult; }
   @Override public int getRecordNdx()               { return getRecordCount() > 0 ? curQV.tvResults.getSelectionModel().getSelectedIndex() : -1; }
   @Override public void findWithinDesc(String text) { if (activeRecord() != null) MainTextWrapper.hiliteText(text, webView.getEngine()); }
-
-  @Override public void newClick(HDT_RecordType objType, HyperTableRow row) { return; }
 
   @FXML private void mnuCopyToFolderClick()         { copyFilesToFolder(true); }
   @FXML private void mnuShowSearchFolderClick()     { if (db.isLoaded()) launchFile(db.getPath(PREF_KEY_RESULTS_PATH, null)); }
@@ -1810,9 +1808,8 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
   {
     AnchorPane.class.cast(ui.tabQueries.getContent()).getChildren().forEach(node ->
     {
-      if (node == tabPane) return;
-
-      node.setDisable(enabled == false);
+      if (node != tabPane)
+        node.setDisable(enabled == false);
     });
   }
 

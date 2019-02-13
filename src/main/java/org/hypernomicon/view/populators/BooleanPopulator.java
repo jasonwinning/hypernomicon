@@ -28,10 +28,10 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class BooleanPopulator extends Populator
 {
-  public static final int TRUE_BOOLEAN_ID = 1,
+  public static final int TRUE_BOOLEAN_ID  = 1,
                           FALSE_BOOLEAN_ID = 2;
 
-  private static final HyperTableCell trueCell  = new HyperTableCell(TRUE_BOOLEAN_ID, "True", hdtNone),
+  private static final HyperTableCell trueCell  = new HyperTableCell(TRUE_BOOLEAN_ID , "True" , hdtNone),
                                       falseCell = new HyperTableCell(FALSE_BOOLEAN_ID, "False", hdtNone);
 
   @Override public CellValueType getValueType() { return cvtBoolean; }
@@ -42,19 +42,6 @@ public class BooleanPopulator extends Populator
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
     return Arrays.asList(trueCell, falseCell);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
-  {
-    switch (HyperTableCell.getCellID(cell))
-    {
-      case TRUE_BOOLEAN_ID  : return trueCell;
-      case FALSE_BOOLEAN_ID : return falseCell;
-      default :               return null;
-    }
   }
 
 //---------------------------------------------------------------------------

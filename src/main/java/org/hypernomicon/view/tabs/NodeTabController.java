@@ -50,27 +50,16 @@ import javafx.scene.text.Font;
 
 public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_RecordWithConnector>
 {
-  @FXML AnchorPane apDescription;
-  @FXML private TextField tfName;
-  @FXML private TextField tfSearchKey;
-  @FXML TableView<HyperTableRow> tvLeftChildren;
-  @FXML TableView<HyperTableRow> tvRightChildren;
-  @FXML TableView<HyperTableRow> tvParents;
-  @FXML private Button btnGoogle;
-  @FXML private Button btnIEP;
-  @FXML private Button btnSEP;
-  @FXML private Button btnWikipedia;
-  @FXML private Button btnTree;
-  @FXML private Label lblGoTo1;
-  @FXML private Label lblGoTo2;
-  @FXML private Label lblGoTo3;
-  @FXML private Label lblMergeTerms;
-  @FXML Label lblParentCaption;
+  @FXML AnchorPane apDescription, apLowerPane;
   @FXML GridPane gpToolBar;
-  @FXML AnchorPane apLowerPane;
-  @FXML SplitPane spMain;
-  @FXML SplitPane spChildren;
+  @FXML Label lblParentCaption;
+  @FXML SplitPane spChildren, spMain;
+  @FXML TableView<HyperTableRow> tvLeftChildren, tvParents, tvRightChildren;
   @FXML ToolBar tbLinks;
+  @FXML private Button btnGoogle, btnIEP, btnSEP, btnTree, btnWikipedia;
+  @FXML private Label lblGoTo1, lblGoTo2, lblGoTo3;
+  @FXML private Label lblMergeTerms;
+  @FXML private TextField tfName, tfSearchKey;
 
   private Label debateLink, noteLink, labelLink, conceptLink;
   private HDT_RecordType recordType;

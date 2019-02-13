@@ -68,6 +68,14 @@ public class VariablePopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override public HyperTableCell getChoiceByID(HyperTableRow row, int id)
+  {
+    return nullSwitch(rowToPop.get(row), null, pop -> pop.getChoiceByID(row, id));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public boolean hasChanged(HyperTableRow row)
   {
     return nullSwitch(rowToPop.get(row), true, pop -> pop.hasChanged(row));

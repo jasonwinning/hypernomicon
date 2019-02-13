@@ -74,20 +74,9 @@ public class WorkBibData extends BibData
   {
     switch (bibFieldEnum)
     {
-      case bfTitle :
-
-        String allStr = "";
-
-        for (String titleStr : list)
-          allStr = BibField.addTitleComponent(allStr, titleStr);
-
-        work.setName(allStr);
-        return;
-
+      case bfTitle : work.setName(BibField.buildTitle(list));   return;
       case bfMisc  : work.setMiscBib(strListToStr(list, true)); return;
-
-      case bfISBNs : work.setISBNs(list); return;
-
+      case bfISBNs : work.setISBNs(list);                       return;
       default      : break;
     }
 

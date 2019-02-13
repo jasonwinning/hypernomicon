@@ -38,10 +38,8 @@ public class InternetCheckDialogController extends HyperDialog
   private HyperTask task;
 
   @FXML private ProgressBar progressBar;
-  @FXML private Button btnCancel;
-  @FXML private Button btnSkip;
-  @FXML private Label lblTask;
-  @FXML private Label lblPercent;
+  @FXML private Button btnCancel, btnSkip;
+  @FXML private Label lblTask, lblPercent;
 
   @Override protected boolean isValid() { return false; }
 

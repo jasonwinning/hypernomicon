@@ -38,7 +38,7 @@ import org.hypernomicon.util.filePath.FilePath;
 public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 {
   private HyperPath hyperPath;
-  private RelationType relType = rtNone;
+  private final RelationType relType;
 
 //---------------------------------------------------------------------------
 
@@ -57,15 +57,13 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
   {
     hyperPath = HDT_RecordWithPath.class.cast(record).getPath();
 
-    if (hyperPath != null)
-      if (record.getType() == hdtPerson)
-      {
-        HDT_Folder folder = db.folders.getByID(PICTURES_FOLDER_ID);
-        FilePath fileName = hyperPath.getFileName();
-        hyperPath.assignInternal(folder, fileName); // It is okay if the hyperPath.fileName is null. Then this line just assigns the hyperPath to
-                                                    // point to the pictures folder. That is necessary when the database is first being brought "online".
-      }
-  }
+    if ((hyperPath == null) || (record.getType() != hdtPerson))
+      return;
+
+    HDT_Folder folder = db.folders.getByID(PICTURES_FOLDER_ID);
+    FilePath fileName = hyperPath.getFileName();
+    hyperPath.assignInternal(folder, fileName); // It is okay if the hyperPath.fileName is null. Then this line just assigns the hyperPath to
+  }                                             // point to the pictures folder. That is necessary when the database is first being brought "online".
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

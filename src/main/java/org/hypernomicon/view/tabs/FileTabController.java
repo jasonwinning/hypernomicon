@@ -61,23 +61,13 @@ import javafx.scene.layout.AnchorPane;
 public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 {
   @FXML private AnchorPane apDescription;
-  @FXML private Button btnTree;
-  @FXML private Button btnWork;
-  @FXML private Button btnManage;
-  @FXML private SplitMenuButton btnShow;
-  @FXML private Button btnLaunch;
-  @FXML private TextField tfName;
-  @FXML private TextField tfFileName;
-  @FXML private TextField tfSearchKey;
-  @FXML private TableView<HyperTableRow> tvLabels;
-  @FXML private TableView<HyperTableRow> tvAuthors;
+  @FXML private Button btnLaunch, btnManage, btnTree, btnWork;
   @FXML private CheckBox checkAnnotated;
-  @FXML private ComboBox<HyperTableCell> cbFileType;
-  @FXML private ComboBox<HyperTableCell> cbWork;
-  @FXML private TableView<HyperTableRow> tvKeyMentions;
-  @FXML private SplitPane spBottomVert;
-  @FXML private SplitPane spRightHoriz;
-  @FXML private SplitPane spRightVert;
+  @FXML private ComboBox<HyperTableCell> cbFileType, cbWork;
+  @FXML private SplitMenuButton btnShow;
+  @FXML private SplitPane spBottomVert, spRightHoriz, spRightVert;
+  @FXML private TableView<HyperTableRow> tvAuthors, tvKeyMentions, tvLabels;
+  @FXML private TextField tfFileName, tfName, tfSearchKey;
 
   private MainTextWrapper mainText;
   private HyperTable htLabels, htAuthors, htKeyMentioners;
@@ -85,16 +75,15 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   public FileDialogController fdc = null;
   private HDT_MiscFile curMiscFile;
 
-  @Override HDT_RecordType getType()                                        { return hdtMiscFile; }
-  @Override public void enable(boolean enabled)                             { ui.tabFiles.getContent().setDisable(enabled == false); }
-  @Override public void findWithinDesc(String text)                         { mainText.hilite(text); }
-  @Override public TextViewInfo getMainTextInfo()                           { return mainText.getViewInfo(); }
-  @Override public MainTextWrapper getMainTextWrapper()                     { return mainText; }
-  @Override void focusOnSearchKey()                                         { safeFocus(tfSearchKey); }
-  @Override public void newClick(HDT_RecordType objType, HyperTableRow row) { return; }
-  @Override public void setRecord(HDT_MiscFile activeRecord)                { curMiscFile = activeRecord; }
+  @Override HDT_RecordType getType()                         { return hdtMiscFile; }
+  @Override public void enable(boolean enabled)              { ui.tabFiles.getContent().setDisable(enabled == false); }
+  @Override public void findWithinDesc(String text)          { mainText.hilite(text); }
+  @Override public TextViewInfo getMainTextInfo()            { return mainText.getViewInfo(); }
+  @Override public MainTextWrapper getMainTextWrapper()      { return mainText; }
+  @Override void focusOnSearchKey()                          { safeFocus(tfSearchKey); }
+  @Override public void setRecord(HDT_MiscFile activeRecord) { curMiscFile = activeRecord; }
 
-  @FXML public boolean btnManageClick()                                     { return showFileDialog(); }
+  @FXML public boolean btnManageClick()                      { return showFileDialog(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

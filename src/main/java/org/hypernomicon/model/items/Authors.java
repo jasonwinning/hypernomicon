@@ -83,15 +83,15 @@ public final class Authors implements Iterable<Author>
     objListNoMod = db.getObjectList(rtAuthorOfWork, work, false);
   }
 
-  public final int size()  { return allRecords ? objList.size() : authorList.size(); }
+  public int size()        { return allRecords ? objList.size() : authorList.size(); }
   public boolean isEmpty() { return size() == 0; }
-  final void expire()      { clearNoMod(); }
+  void expire()            { clearNoMod(); }
 
   public boolean containsPerson(HDT_Person person) { return objListNoMod.contains(person); }
 
-  @Override public Iterator<Author> iterator() { return new AuthorIterator(); }
+  @Override public Iterator<Author> iterator()     { return new AuthorIterator(); }
 
-  final void resolvePointers() throws HDB_InternalError { db.resolvePointersByRelation(rtAuthorOfWork, work); }
+  void resolvePointers() throws HDB_InternalError  { db.resolvePointersByRelation(rtAuthorOfWork, work); }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------

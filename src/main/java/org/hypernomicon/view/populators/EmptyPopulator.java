@@ -32,7 +32,7 @@ public class EmptyPopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force) { return null; }
   @Override public CellValueType getValueType()                                    { return cvtRecord; }
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell newCell) { return null; }
+  @Override public HyperTableCell getChoiceByID(HyperTableRow row, int id)         { return null; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -45,8 +45,8 @@ public class HDI_OfflinePersonName extends HDI_OfflineBase
 
   @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, LinkedHashMap<Tag, HDI_OfflineBase> nestedItems)
   {
-    if (tag == tagFirstName)     firstName = ultraTrim(convertToSingleLine(nodeText));
-    else if (tag == tagLastName) lastName  = ultraTrim(convertToSingleLine(nodeText));
+    if      (tag == tagFirstName) firstName = ultraTrim(convertToSingleLine(nodeText));
+    else if (tag == tagLastName)  lastName  = ultraTrim(convertToSingleLine(nodeText));
   }
 
 //---------------------------------------------------------------------------
@@ -54,8 +54,8 @@ public class HDI_OfflinePersonName extends HDI_OfflineBase
 
   @Override public void writeToXml(Tag tag, StringBuilder xml)
   {
-    if (tag == tagFirstName)     writeStringTag(xml, tag, firstName);
-    else if (tag == tagLastName) writeStringTag(xml, tag, lastName);
+    if      (tag == tagFirstName) writeStringTag(xml, tag, firstName);
+    else if (tag == tagLastName)  writeStringTag(xml, tag, lastName);
   }
 
 //---------------------------------------------------------------------------

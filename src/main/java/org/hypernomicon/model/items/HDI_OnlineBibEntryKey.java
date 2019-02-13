@@ -30,7 +30,7 @@ import static org.hypernomicon.util.Util.*;
 public class HDI_OnlineBibEntryKey extends HDI_OnlineBase<HDI_OfflineString>
 {
   private String keyStr = "";
-  private HDT_Work work;
+  private final HDT_Work work;
 
   public HDI_OnlineBibEntryKey(HDI_Schema newSchema, HDT_Work newRecord)
   {

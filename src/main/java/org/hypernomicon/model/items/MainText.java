@@ -39,12 +39,7 @@ public class MainText
 {
 //---------------------------------------------------------------------------
 
-  public static enum DisplayItemType
-  {
-    diKeyWorks,
-    diDescription,
-    diRecord
-  }
+  public static enum DisplayItemType { diKeyWorks, diDescription, diRecord }
 
 //---------------------------------------------------------------------------
 
@@ -63,7 +58,7 @@ public class MainText
     {
       final int prime = 31;
       int result = 1;
-      result = prime * result + ((type != diRecord) || (record == null) ? 0 : record.hashCode());
+      result = prime * result + (((type != diRecord) || (record == null)) ? 0 : record.hashCode());
       result = prime * result + (type == null ? 0 : type.hashCode());
       return result;
     }

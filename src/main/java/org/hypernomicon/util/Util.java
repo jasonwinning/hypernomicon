@@ -32,8 +32,6 @@ import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static javax.xml.bind.DatatypeConverter.printBase64Binary;
 
-import static java.util.Objects.*;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -44,6 +42,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 
 import static java.nio.charset.StandardCharsets.*;
+import static java.util.Collections.binarySearch;
 
 import java.net.InetAddress;
 import java.net.URL;
@@ -60,6 +59,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -138,7 +138,7 @@ import com.teamdev.jxbrowser.chromium.internal.Environment;
 //---------------------------------------------------------------------------
 
 @SuppressWarnings("restriction")
-public class Util
+public final class Util
 {
   static final JSONParser jsonParser = new JSONParser();
 
@@ -290,8 +290,8 @@ public class Util
 
   public static boolean strListsEqual(List<String> list1, List<String> list2, boolean ignoreCase)
   {
-    if (isNull(list1) != isNull(list2)) return false;
-    if (isNull(list1) && isNull(list2)) return true;
+    if ((list1 == null) != (list2 == null)) return false;
+    if ((list1 == null) && (list2 == null)) return true;
     if (list1.size() != list2.size())   return false;
 
     for (int ndx = 0; ndx < list1.size(); ndx++)
@@ -736,11 +736,13 @@ public class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final DateTimeFormatter userReadableDateTimeFormatter = DateTimeFormatter.ofPattern("M/d/yyyy h:mm:ss a").withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault());
-  private static final DateTimeFormatter userReadableTimeFormatter = DateTimeFormatter.ofPattern("h:mm:ss a").withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault());
+  private static final DateTimeFormatter
 
-  private static final DateTimeFormatter iso8601Format = DateTimeFormatter.ISO_INSTANT.withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault());
-  private static final DateTimeFormatter iso8601FormatOffset = DateTimeFormatter.ISO_OFFSET_DATE_TIME.withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault());
+   userReadableDateTimeFormatter = DateTimeFormatter.ofPattern("M/d/yyyy h:mm:ss a").withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
+   userReadableTimeFormatter = DateTimeFormatter.ofPattern("h:mm:ss a").withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
+
+   iso8601Format = DateTimeFormatter.ISO_INSTANT.withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
+   iso8601FormatOffset = DateTimeFormatter.ISO_OFFSET_DATE_TIME.withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault());
 
   public static final NumberFormat numberFormat = NumberFormat.getInstance();
 
@@ -1009,7 +1011,7 @@ public class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final String abbreviate(String text)
+  public static String abbreviate(String text)
   {
     text = safeStr(text);
 
@@ -1315,9 +1317,8 @@ public class Util
         charMap.put(c, s);
       }
 
-      if (s.equals("-"))
-        if (c == '\u2014')
-          output = replaceChar(output, outPos, c);
+      if (s.equals("-") && (c == '\u2014'))
+        output = replaceChar(output, outPos, c);
 
       for (int ndx = 0; ndx < s.length(); ndx++)
       {
@@ -1888,6 +1889,24 @@ public class Util
     }
 
     return new String(out);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static <T> void addToSortedList(List<T> list, T item, Comparator<? super T> comp)
+  {
+    int ndx = binarySearch(list, item, comp);
+    list.add(ndx >= 0 ? ndx + 1 : ~ndx, item);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static <T extends Comparable<? super T>> void addToSortedList(List<T> list, T item)
+  {
+    int ndx = binarySearch(list, item);
+    list.add(ndx >= 0 ? ndx + 1 : ~ndx, item);
   }
 
 //---------------------------------------------------------------------------

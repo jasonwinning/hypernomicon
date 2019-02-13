@@ -42,20 +42,19 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 
   static class DisplayItem
   {
-    DisplayItem(int recordID, HDT_RecordType recordType)
+    DisplayItem(int recordID, HDT_RecordType recordType) { this(recordID, recordType, diRecord); }
+    DisplayItem(DisplayItemType type)                    { this(-1, hdtNone, type);              }
+
+    private DisplayItem(int recordID, HDT_RecordType recordType, DisplayItemType type)
     {
       this.recordID = recordID;
       this.recordType = recordType;
-    }
-
-    DisplayItem(DisplayItemType type)
-    {
       this.type = type;
     }
 
-    DisplayItemType type = diRecord;
-    int recordID = -1;
-    HDT_RecordType recordType = hdtNone;
+    final DisplayItemType type;
+    final int recordID;
+    final HDT_RecordType recordType;
   }
 
 //---------------------------------------------------------------------------
@@ -153,9 +152,9 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final String DI_TYPE_DESC = "description";
-  private static final String DI_TYPE_RECORD = "record";
-  private static final String DI_TYPE_KEY_WORKS = "key_works";
+  private static final String DI_TYPE_DESC = "description",
+                              DI_TYPE_RECORD = "record",
+                              DI_TYPE_KEY_WORKS = "key_works";
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -27,18 +27,8 @@ import javafx.scene.control.TextField;
 
 public class MergeTermDialogController extends HyperDialog
 {
-  @FXML public RadioButton rbName1;
-  @FXML public RadioButton rbName2;
-  @FXML public RadioButton rbName3;
-  @FXML public RadioButton rbKey1;
-  @FXML public RadioButton rbKey2;
-  @FXML public RadioButton rbKey3;
-  @FXML public TextField tfName1;
-  @FXML public TextField tfName2;
-  @FXML public TextField tfName3;
-  @FXML public TextField tfKey1;
-  @FXML public TextField tfKey2;
-  @FXML public TextField tfKey3;
+  @FXML private RadioButton rbName1, rbName2, rbName3, rbKey1, rbKey2, rbKey3;
+  @FXML private TextField tfName1, tfName2, tfName3, tfKey1, tfKey2, tfKey3;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

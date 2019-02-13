@@ -100,32 +100,18 @@ import javafx.scene.layout.Priority;
 
 public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 {
-  @FXML private Label lblPicture;
-  @FXML private Label lblSearchKey;
-  @FXML public TextField tfFirst;
-  @FXML public TextField tfLast;
-  @FXML private TextField tfSearchKey;
-  @FXML private TextField tfPersonLink;
-  @FXML private TextField tfORCID;
-  @FXML private Label lblORCID;
-  @FXML private Button btnGoogle;
-  @FXML private Button btnScholar;
-  @FXML private Button btnNewWork;
-  @FXML private Label lblPersonLink;
-  @FXML private TableView<HyperTableRow> tvWorks;
-  @FXML private TableView<HyperTableRow> tvArguments;
-  @FXML private TableView<HyperTableRow> tvPersonDept;
-  @FXML private ComboBox<HyperTableCell> cbRank;
-  @FXML private ComboBox<HyperTableCell> cbStatus;
-  @FXML public ComboBox<HyperTableCell> cbField;
-  @FXML private ComboBox<HyperTableCell> cbSubfield;
-  @FXML private ImageView ivPerson;
-  @FXML private TabPane tpPerson;
-  @FXML private Tab tabOverview;
-  @FXML private Tab tabNew;
   @FXML private AnchorPane apOverview;
-  @FXML private SplitPane spTopHoriz;
-  @FXML private SplitPane spVert;
+  @FXML private Button btnGoogle, btnNewWork, btnScholar;
+  @FXML private ComboBox<HyperTableCell> cbRank, cbStatus, cbSubfield;
+  @FXML private ImageView ivPerson;
+  @FXML private Label lblORCID, lblPersonLink, lblPicture, lblSearchKey;
+  @FXML private SplitPane spTopHoriz, spVert;
+  @FXML private Tab tabNew, tabOverview;
+  @FXML private TabPane tpPerson;
+  @FXML private TableView<HyperTableRow> tvArguments, tvPersonDept, tvWorks;
+  @FXML private TextField tfORCID, tfPersonLink, tfSearchKey;
+  @FXML public ComboBox<HyperTableCell> cbField;
+  @FXML public TextField tfFirst, tfLast;
 
   private HyperTable htPersonInst, htWorks, htArguments;
   private ArrayList<InvestigationView> invViews;

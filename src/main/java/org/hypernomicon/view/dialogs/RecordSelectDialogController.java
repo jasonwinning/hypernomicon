@@ -34,8 +34,7 @@ import javafx.util.StringConverter;
 
 public class RecordSelectDialogController extends HyperDialog
 {
-  @FXML private Button btnOK;
-  @FXML private Button btnCancel;
+  @FXML private Button btnOK, btnCancel;
   @FXML public ListView<HyperTableCell> listView;
 
 //---------------------------------------------------------------------------

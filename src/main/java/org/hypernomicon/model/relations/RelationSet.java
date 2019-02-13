@@ -32,8 +32,6 @@ import org.hypernomicon.util.EnumBasedTable;
 
 import com.google.common.collect.ArrayListMultimap;
 
-import static java.util.Objects.*;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -738,7 +736,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
       else if (hasNestedItems)
       {
         LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> nestedItemMap = objectGroups.get(subj, obj);
-        if (nonNull(nestedItemMap))
+        if (nestedItemMap != null)
         {
           for (HDI_OnlineBase<? extends HDI_OfflineBase> nestedItem : nestedItemMap.values())
             nestedItem.resolvePointers();

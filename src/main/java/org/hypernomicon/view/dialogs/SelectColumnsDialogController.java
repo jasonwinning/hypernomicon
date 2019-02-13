@@ -29,11 +29,7 @@ import static org.hypernomicon.view.wrappers.ResultsTable.*;
 
 public class SelectColumnsDialogController extends HyperDialog
 {
-  @FXML private CheckBox chkSelectAll;
-  @FXML private CheckBox chkSelectNone;
-  @FXML private CheckBox chkFirstType;
-  @FXML private CheckBox chkFirstField;
-  @FXML private CheckBox chkSecondType;
+  @FXML private CheckBox chkSelectAll, chkSelectNone, chkFirstType, chkFirstField, chkSecondType;
   @FXML private Button btnOk;
   @FXML private AnchorPane innerPane;
   @FXML private ScrollPane scrollPane;

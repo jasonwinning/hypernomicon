@@ -27,7 +27,7 @@ import org.hypernomicon.model.records.HDT_Base;
 
 public abstract class HDI_OnlineBase<HDI_Derived extends HDI_OfflineBase> extends HDI_Base
 {
-  protected HDT_Base record;
+  protected final HDT_Base record;
 
   public HDI_OnlineBase(HDI_Schema newSchema, HDT_Base newRecord)
   {

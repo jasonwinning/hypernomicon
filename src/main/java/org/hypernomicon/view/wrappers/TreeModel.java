@@ -18,7 +18,6 @@
 package org.hypernomicon.view.wrappers;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -208,14 +207,7 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
 
   private void insertTreeItem(ObservableList<TreeItem<RowType>> list, RowType newRow)
   {
-    TreeItem<RowType> newItem = treeWrapper.getTreeItem(newRow);
-
-    int ndx = Collections.binarySearch(list, newItem, (item1, item2) -> item1.getValue().compareTo(item2.getValue()));
-
-    if (ndx < 0)
-      ndx = (ndx + 1) * -1;
-
-    list.add(ndx, newItem);
+    addToSortedList(list, treeWrapper.getTreeItem(newRow), (item1, item2) -> item1.getValue().compareTo(item2.getValue()));
   }
 
 //---------------------------------------------------------------------------

@@ -99,7 +99,7 @@ public class DupAuthorsReportEngine extends ReportEngine
     {
       ObservableList<HyperTableCell> cells = FXCollections.observableArrayList();
 
-      cells.add(new HyperTableCell(-1, "", hdtNone));
+      cells.add(HyperTableCell.blankCell);
 
       if (author.getPerson() == null)
         cells.add(new HyperTableCell(-1, author.getFullName(false), hdtNone));

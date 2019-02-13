@@ -34,7 +34,7 @@ import static org.hypernomicon.model.HyperDB.*;
 public class HDI_OfflinePointerSingle extends HDI_OfflineBase
 {
   int objID = -1;
-  private RelationType relType;
+  private final RelationType relType;
   Map<Tag, HDI_OfflineBase> tagToNestedItem;
 
   public HDI_OfflinePointerSingle(HDI_Schema newSchema, HDT_RecordState recordState)

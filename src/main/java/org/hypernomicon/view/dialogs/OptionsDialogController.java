@@ -64,69 +64,19 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 public class OptionsDialogController extends HyperDialog
 {
-  @FXML private TabPane tabPane;
-  @FXML private Tab tabLinkToExtBibMgr;
-  @FXML private Tab tabUnlinkFromExtBibMgr;
-  @FXML private AnchorPane apLinkToExtBibMgr;
-  @FXML private AnchorPane apUnlinkFromExtBibMgr;
-  @FXML private Label lblCurrentlyLinked;
-  @FXML private Button btnUnlink;
-
-  @FXML private CheckBox chkInternet;
-  @FXML private CheckBox chkAutoOpenPDF;
-  @FXML private CheckBox chkAutoRetrieveBib;
-  @FXML private TextField tfImageEditor;
-  @FXML private TextField tfPDFReader;
-  @FXML private Button btnImageEditorBrowse;
-  @FXML private Button btnPDFReaderBrowse;
+  @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
+  @FXML private Button btnAuthorize, btnImageEditorBrowse, btnPDFReaderBrowse, btnUnlink, btnVerify;
+  @FXML private CheckBox chkAddInitial, chkAutoOpenPDF, chkAutoRetrieveBib, chkInternet, chkLowercase, chkPosix, chkTreatEdAsAuthor, chkYearLetter;
+  @FXML private ComboBox<String> cbComponent1, cbComponent2, cbComponent3, cbComponent4, cbComponent5;
+  @FXML private Label lblCurrentlyLinked, lblExample, lblRedirect, lblStep2, lblStep2Instructions,
+                      lblStep3, lblStep3Instructions, lblStep4, lblStep4Instructions;
   @FXML private Slider sliderFontSize;
-  @FXML private Tab tabNaming;
-
-  @FXML private Button btnAuthorize;
-  @FXML private Button btnVerify;
-  @FXML private Label lblRedirect;
-  @FXML private TextField tfVerificationCode;
-  @FXML private Label lblStep2;
-  @FXML private Label lblStep2Instructions;
-  @FXML private Label lblStep3;
-  @FXML private Label lblStep3Instructions;
-  @FXML private Label lblStep4;
-  @FXML private Label lblStep4Instructions;
-
-  @FXML private ComboBox<String> cbComponent1;
-  @FXML private ComboBox<String> cbComponent2;
-  @FXML private ComboBox<String> cbComponent3;
-  @FXML private ComboBox<String> cbComponent4;
-  @FXML private ComboBox<String> cbComponent5;
-  @FXML private TextField tfSepBefore1;
-  @FXML private TextField tfSepBefore2;
-  @FXML private TextField tfSepBefore3;
-  @FXML private TextField tfSepBefore4;
-  @FXML private TextField tfSepBefore5;
-  @FXML private TextField tfSepWithin1;
-  @FXML private TextField tfSepWithin2;
-  @FXML private TextField tfSepWithin3;
-  @FXML private TextField tfSepWithin4;
-  @FXML private TextField tfSepWithin5;
-  @FXML private TextField tfSepAfter1;
-  @FXML private TextField tfSepAfter2;
-  @FXML private TextField tfSepAfter3;
-  @FXML private TextField tfSepAfter4;
-  @FXML private TextField tfSepAfter5;
-  @FXML private TextField tfTest1;
-  @FXML private TextField tfTest2;
-  @FXML private TextField tfTest3;
-  @FXML private TextField tfTest4;
-  @FXML private TextField tfTest5;
-  @FXML private CheckBox chkTreatEdAsAuthor;
-  @FXML private CheckBox chkAddInitial;
-  @FXML private CheckBox chkYearLetter;
-  @FXML private CheckBox chkPosix;
-  @FXML private CheckBox chkLowercase;
-  @FXML private TextField tfMaxChar;
-  @FXML private TextField tfExample;
-  @FXML private Label lblExample;
-
+  @FXML private Tab tabLinkToExtBibMgr, tabNaming, tabUnlinkFromExtBibMgr;
+  @FXML private TabPane tabPane;
+  @FXML private TextField tfExample, tfImageEditor, tfMaxChar, tfPDFReader, tfVerificationCode, tfTest1, tfTest2, tfTest3, tfTest4, tfTest5,
+                          tfSepAfter1, tfSepAfter2, tfSepAfter3, tfSepAfter4, tfSepAfter5,
+                          tfSepBefore1, tfSepBefore2, tfSepBefore3, tfSepBefore4, tfSepBefore5,
+                          tfSepWithin1, tfSepWithin2, tfSepWithin3, tfSepWithin4, tfSepWithin5;
   private static HashMap<String, Integer> componentMap;
   private StringProperty authUrl;
   private OAuth1RequestToken requestToken;

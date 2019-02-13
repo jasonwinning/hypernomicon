@@ -55,8 +55,7 @@ public class InvestigationsDialogController extends HyperDialog
 
 //---------------------------------------------------------------------------
 
-  @FXML private Button btnOk;
-  @FXML private Button btnCancel;
+  @FXML private Button btnOk, btnCancel;
   @FXML private TextField tfNew;
   @FXML private CheckBox chkNew;
   @FXML public ListView<InvestigationSetting> listView;

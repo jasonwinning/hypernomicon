@@ -53,14 +53,14 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class AllQueryEngine extends QueryEngine<HDT_Base>
 {
-  private static final int QUERY_RECORD_TYPE            = QUERY_FIRST_NDX + 1;
-  private static final int QUERY_RECORD_EQUALS          = QUERY_FIRST_NDX + 2;
-  private static final int QUERY_ASSOCIATED_WITH_PHRASE = QUERY_FIRST_NDX + 3;
-  public static final int QUERY_LINKING_TO_RECORD       = QUERY_FIRST_NDX + 4;
-  public static final int QUERY_MATCHING_RECORD         = QUERY_FIRST_NDX + 5;
-  public static final int QUERY_MATCHING_STRING         = QUERY_FIRST_NDX + 6;
-  private static final int QUERY_MENTIONED_BY           = QUERY_FIRST_NDX + 7;
-  private static final int QUERY_DUPLICATE_FOLDERS      = QUERY_FIRST_NDX + 8;
+  private static final int QUERY_RECORD_TYPE            = QUERY_FIRST_NDX + 1,
+                           QUERY_RECORD_EQUALS          = QUERY_FIRST_NDX + 2,
+                           QUERY_ASSOCIATED_WITH_PHRASE = QUERY_FIRST_NDX + 3;
+  public static final int  QUERY_LINKING_TO_RECORD      = QUERY_FIRST_NDX + 4,
+                           QUERY_MATCHING_RECORD        = QUERY_FIRST_NDX + 5,
+                           QUERY_MATCHING_STRING        = QUERY_FIRST_NDX + 6;
+  private static final int QUERY_MENTIONED_BY           = QUERY_FIRST_NDX + 7,
+                           QUERY_DUPLICATE_FOLDERS      = QUERY_FIRST_NDX + 8;
 
   public static final KeywordLinkList linkList = new KeywordLinkList();
   private static final SearchKeys dummySearchKeys = new SearchKeys();
@@ -110,6 +110,27 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
         vp2.setPopulator(row, null);
         vp3.setPopulator(row, null);
         break;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void cancelled()
+  {
+    cleanupSearchDummy();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void cleanupSearchDummy()
+  {
+    if (searchDummy != null)
+    {
+      db.deleteRecord(hdtPerson, searchDummy.getID());
+      searchDummy = null;
+      dummySearchKeys.removeAll();
     }
   }
 
@@ -170,11 +191,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
         }
 
         if (lastCall)
-        {
-          db.deleteRecord(hdtPerson, searchDummy.getID());
-          searchDummy = null;
-          dummySearchKeys.removeAll();
-        }
+          cleanupSearchDummy();
 
         return add;
 

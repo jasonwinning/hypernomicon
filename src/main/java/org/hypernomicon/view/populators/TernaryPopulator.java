@@ -28,11 +28,11 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class TernaryPopulator extends Populator
 {
-  public static final int TRUE_TERNARY_ID = 1,
+  public static final int TRUE_TERNARY_ID  = 1,
                           FALSE_TERNARY_ID = 2,
                           UNSET_TERNARY_ID = 3;
 
-  private static final HyperTableCell trueCell  = new HyperTableCell(TRUE_TERNARY_ID, "True", hdtNone),
+  private static final HyperTableCell trueCell  = new HyperTableCell(TRUE_TERNARY_ID , "True" , hdtNone),
                                       falseCell = new HyperTableCell(FALSE_TERNARY_ID, "False", hdtNone),
                                       unsetCell = new HyperTableCell(UNSET_TERNARY_ID, "Unset", hdtNone);
 
@@ -49,17 +49,4 @@ public class TernaryPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
-  {
-    switch (HyperTableCell.getCellID(cell))
-    {
-      case UNSET_TERNARY_ID : return unsetCell;
-      case TRUE_TERNARY_ID  : return trueCell;
-      case FALSE_TERNARY_ID : return falseCell;
-      default :               return null;
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 }

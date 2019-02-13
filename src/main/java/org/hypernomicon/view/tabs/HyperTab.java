@@ -54,8 +54,8 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
 {
   public static enum TabEnum
   {
-    personTab,   institutionTab,   workTab,   miscFileTab,   debateTab,   positionTab,   argumentTab,
-    noteTab,     termTab,          queryTab,  treeTab,       omniTab,     listTab
+    personTab, institutionTab, workTab,  miscFileTab, debateTab, positionTab, argumentTab,
+    noteTab,   termTab,        queryTab, treeTab,     omniTab,   listTab
   }
 
   private static final EnumMap<TabEnum, HyperTab<? extends HDT_Base, ? extends HDT_Base>> enumToHyperTab = new EnumMap<>(TabEnum.class);
@@ -75,7 +75,6 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
   public abstract void clear();
   public abstract boolean saveToRecord(boolean showMessage);
   public abstract void enable(boolean enabled);
-  public abstract void newClick(HDT_RecordType objType, HyperTableRow row);
   public abstract void setDividerPositions();
   public abstract void getDividerPositions();
   public abstract void setRecord(HDT_CT record);
@@ -90,6 +89,8 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
   public final HDT_CT viewRecord()            { return getView().getViewRecord(); }
   public final Tab getTab()                   { return tab; }
   public final TabEnum getTabEnum()           { return tabEnum; }
+
+  public void newClick(HDT_RecordType objType, HyperTableRow row) { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -176,17 +177,18 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
   {
     switch (recordType)
     {
-      case hdtTerm : case hdtConcept : return termTab;
+      case hdtTerm        :
+      case hdtConcept     : return termTab;
 
       case hdtInstitution : return institutionTab;
-      case hdtDebate :      return debateTab;
-      case hdtPosition :    return positionTab;
-      case hdtArgument :    return argumentTab;
-      case hdtWork :        return workTab;
-      case hdtMiscFile :    return miscFileTab;
-      case hdtNote :        return noteTab;
+      case hdtDebate      : return debateTab;
+      case hdtPosition    : return positionTab;
+      case hdtArgument    : return argumentTab;
+      case hdtWork        : return workTab;
+      case hdtMiscFile    : return miscFileTab;
+      case hdtNote        : return noteTab;
 
-      default :             return personTab;
+      default             : return personTab;
     }
   }
 

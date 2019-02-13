@@ -36,7 +36,7 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 
 public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSingle>
 {
-  private RelationType relType;
+  private final RelationType relType;
 
   public HDI_OnlinePointerSingle(HDI_Schema newSchema, HDT_Base newRecord)
   {
@@ -101,18 +101,9 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
 
   @Override public String getResultTextForTag(Tag tag)
   {
-    String allStr = "", oneStr;
-
     HyperObjList<HDT_Base, HDT_Base> objList = db.getObjectList(relType, record, false);
 
-    for (HDT_Base objRecord : objList)
-    {
-      oneStr = objRecord.listName();
-      if (oneStr.length() > 0)
-        allStr = allStr.length() == 0 ? oneStr : (allStr + "; " + oneStr);
-    }
-
-    return allStr;
+    return objList.isEmpty() ? "" : objList.get(0).listName();
   }
 
 //---------------------------------------------------------------------------

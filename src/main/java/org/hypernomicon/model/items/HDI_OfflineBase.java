@@ -26,7 +26,7 @@ import org.hypernomicon.model.records.HDT_RecordType;
 
 public abstract class HDI_OfflineBase extends HDI_Base
 {
-  HDT_RecordState recordState;
+  final HDT_RecordState recordState;
 
   public HDI_OfflineBase(HDI_Schema newSchema, HDT_RecordState recordState)
   {

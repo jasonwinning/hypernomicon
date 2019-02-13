@@ -31,13 +31,8 @@ import static org.hypernomicon.view.HyperFavorites.*;
 
 public class FavOrderDialogController extends HyperDialog
 {
-  @FXML private ListView<MenuItem> lvRecord;
-  @FXML private Button btnRecordUp;
-  @FXML private Button btnRecordDown;
-  @FXML private ListView<MenuItem> lvQuery;
-  @FXML private Button btnQueryUp;
-  @FXML private Button btnQueryDown;
-  @FXML private Button btnOk;
+  @FXML private ListView<MenuItem> lvRecord, lvQuery;
+  @FXML private Button btnRecordUp, btnRecordDown, btnQueryUp, btnQueryDown, btnOk;
 
   @Override protected boolean isValid() { return true; }
 

@@ -30,7 +30,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.text.PDFTextStripper;
 
@@ -45,73 +44,6 @@ import org.hypernomicon.util.filePath.FilePath;
 
 public class BibUtils
 {
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static class PdfMetadata
-  {
-    public PDDocumentInformation docInfo = null;
-    public XMPNode xmpRoot = null;
-    public BibDataStandalone bd = new BibDataStandalone();
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-    private void setDocInfo(PDDocumentInformation docInfo)
-    {
-      this.docInfo = docInfo;
-      if (docInfo == null) return;
-
-      bd.extractDOIandISBNs(docInfo.getAuthor());
-      bd.extractDOIandISBNs(docInfo.getCreator());
-      bd.extractDOIandISBNs(docInfo.getKeywords());
-      bd.extractDOIandISBNs(docInfo.getProducer());
-      bd.extractDOIandISBNs(docInfo.getSubject());
-      bd.extractDOIandISBNs(docInfo.getTitle());
-      bd.extractDOIandISBNs(docInfo.getTrapped());
-
-      for (String key : docInfo.getMetadataKeys())
-        if (key.toLowerCase().contains("journaldoi") == false)
-          bd.extractDOIandISBNs(docInfo.getCustomMetadataValue(key));
-    }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-    private void setXmpRoot(XMPNode xmpRoot)
-    {
-      this.xmpRoot = xmpRoot;
-
-      if (xmpRoot != null)
-        xmpRoot.extractDOIandISBNs(bd);
-    }
-
-    //---------------------------------------------------------------------------
-    //---------------------------------------------------------------------------
-
-    public BibData extractBibData()
-    {
-      if (bd == null) bd = new BibDataStandalone();
-
-      if (safeStr(docInfo.getAuthor()).length() > 0)
-      {
-        bd.getAuthors().clear();
-        BibAuthorsStandalone.class.cast(bd.getAuthors()).setOneLiner(docInfo.getAuthor());
-      }
-
-      if (safeStr(docInfo.getTitle()).length() > 0)
-        bd.setTitle(docInfo.getTitle());
-
-      if (safeStr(docInfo.getSubject()).length() > 0)
-        bd.addStr(bfMisc, docInfo.getSubject());
-
-      if (xmpRoot != null)
-        xmpRoot.extractBibData(bd);
-
-      return bd;
-    }
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

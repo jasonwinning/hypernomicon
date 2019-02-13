@@ -56,32 +56,14 @@ import javafx.scene.layout.AnchorPane;
 
 public class NewPersonDialogController extends HyperDialog
 {
-  @FXML private TextField tfLastName;
-  @FXML private TextField tfFirstName;
-  @FXML private TextField tfSearchKey;
-
-  @FXML private RadioButton rbUseName;
-  @FXML private RadioButton rbUseDupName;
-  @FXML private RadioButton rbCreateNoMerge;
-  @FXML private RadioButton rbAddNoCreate;
-  @FXML private RadioButton rbMerge;
-  @FXML private ToggleGroup grpAction;
-
-  @FXML private TextField tfDupLastName;
-  @FXML private TextField tfDupFirstName;
-  @FXML private TextField tfDupSearchKey;
-  @FXML private Label lblSearchKey;
-  @FXML private Label lblDupSearchKey;
-
-  @FXML private Button btnOK;
-  @FXML private Button btnCancel;
-  @FXML private Label lblDupType;
-  @FXML private Label lblDupTitle;
-  @FXML private Label lblDupYear;
-  @FXML private Label lblStatus;
-  @FXML private ProgressIndicator progressIndicator;
-  @FXML private TabPane tabPane;
   @FXML private AnchorPane apDup;
+  @FXML private Button btnCancel, btnOK;
+  @FXML private Label lblDupSearchKey, lblDupTitle, lblDupType, lblDupYear, lblSearchKey, lblStatus;
+  @FXML private ProgressIndicator progressIndicator;
+  @FXML private RadioButton rbAddNoCreate, rbCreateNoMerge, rbMerge, rbUseDupName, rbUseName;
+  @FXML private TabPane tabPane;
+  @FXML private TextField tfDupFirstName, tfDupLastName, tfDupSearchKey, tfFirstName, tfLastName, tfSearchKey;
+  @FXML private ToggleGroup grpAction;
 
   private HDT_Person person = null;
   private Author origAuthor = null;

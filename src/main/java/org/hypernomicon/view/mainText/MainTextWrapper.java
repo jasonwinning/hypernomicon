@@ -80,25 +80,22 @@ public final class MainTextWrapper
   private static WebView view;
   private static WebEngine we;
   private static KeywordLinkList list = new KeywordLinkList();
-  private static StringBuilder jQueryContents = new StringBuilder();
-  private static StringBuilder jHiliteContents = new StringBuilder();
+  private static StringBuilder jQueryContents = new StringBuilder(), jHiliteContents = new StringBuilder();
   private HDT_RecordWithConnector curRecord;
   private String html, completeHtml;
   private List<DisplayItem> displayItems;
   private List<KeyWork> keyWorks;
   private TextViewInfo viewInfo;
   private static MainTextWrapper curWrapper;
-  private static String textToHilite = "";
-  private static String lastTextToHilite = "";
-  private static String headContent, scriptContent;
+  private static String textToHilite = "", lastTextToHilite = "", headContent, scriptContent;
 
   private boolean editing, edited, showing;
 
-  private static final String ALPHA_SORTED_OUTER_CLASS = "sortedKeyWorksAZ";
-  private static final String NUMERIC_SORTED_OUTER_CLASS = "sortedKeyWorks19";
-  private static final String ALPHA_SORTED_INNER_CLASS = "keyWorksSpanAZ";
-  private static final String NUMERIC_SORTED_INNER_CLASS = "keyWorksSpan19";
-  private static final String TOPMOST_CLASS = "topmostKeyWorksSpan";
+  private static final String ALPHA_SORTED_OUTER_CLASS = "sortedKeyWorksAZ",
+                              NUMERIC_SORTED_OUTER_CLASS = "sortedKeyWorks19",
+                              ALPHA_SORTED_INNER_CLASS = "keyWorksSpanAZ",
+                              NUMERIC_SORTED_INNER_CLASS = "keyWorksSpan19",
+                              TOPMOST_CLASS = "topmostKeyWorksSpan";
 
   public static String getScriptContent() { return scriptContent; }
   public static String getHeadContent()   { return headContent; }

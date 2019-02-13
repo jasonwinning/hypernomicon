@@ -44,18 +44,18 @@ public class HyperTreeCellValue implements Comparable <HyperTreeCellValue>
 
     switch (row.getRecordType())
     {
-      case hdtDebate:      prefix = "JM."; break;
-      case hdtPosition:    prefix = "KM."; break;
-      case hdtArgument:    prefix = "LM."; break;
-      case hdtWorkLabel:   prefix = "MM."; break;
-      case hdtNote:        prefix = "NM."; break;
-      case hdtWork:        prefix = "OM."; break;
-      case hdtMiscFile:    prefix = "PM."; break;
-      case hdtPersonGroup: prefix = "QM."; break;
-      case hdtPerson:      prefix = "RM."; break;
-      case hdtGlossary:    prefix = "SM."; break;
-      case hdtConcept:     prefix = "TM."; break;
-      default:             prefix = "ZM.";
+      case hdtDebate      : prefix = "JM."; break;
+      case hdtPosition    : prefix = "KM."; break;
+      case hdtArgument    : prefix = "LM."; break;
+      case hdtWorkLabel   : prefix = "MM."; break;
+      case hdtNote        : prefix = "NM."; break;
+      case hdtWork        : prefix = "OM."; break;
+      case hdtMiscFile    : prefix = "PM."; break;
+      case hdtPersonGroup : prefix = "QM."; break;
+      case hdtPerson      : prefix = "RM."; break;
+      case hdtGlossary    : prefix = "SM."; break;
+      case hdtConcept     : prefix = "TM."; break;
+      default             : prefix = "ZM.";
     }
 
     return prefix + toString().toLowerCase();

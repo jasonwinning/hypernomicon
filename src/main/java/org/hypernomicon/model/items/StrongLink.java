@@ -21,8 +21,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
-import static java.util.Objects.*;
-
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -33,7 +31,7 @@ public class StrongLink
   private boolean alreadyModifying = false;
 
   Connector noteSpoke, conceptSpoke, debateSpoke, positionSpoke, labelSpoke;
-  HDT_Hub hub = null;
+  final HDT_Hub hub;
 
 //---------------------------------------------------------------------------
 
@@ -60,12 +58,12 @@ public class StrongLink
 
     alreadyModifying = true;
 
-    if (nonNull(hub          )) hub          .modifyNow();
-    if (nonNull(noteSpoke    )) noteSpoke    .modifyNow();
-    if (nonNull(conceptSpoke )) conceptSpoke .modifyNow();
-    if (nonNull(debateSpoke  )) debateSpoke  .modifyNow();
-    if (nonNull(positionSpoke)) positionSpoke.modifyNow();
-    if (nonNull(labelSpoke   )) labelSpoke   .modifyNow();
+    if (hub           != null) hub          .modifyNow();
+    if (noteSpoke     != null) noteSpoke    .modifyNow();
+    if (conceptSpoke  != null) conceptSpoke .modifyNow();
+    if (debateSpoke   != null) debateSpoke  .modifyNow();
+    if (positionSpoke != null) positionSpoke.modifyNow();
+    if (labelSpoke    != null) labelSpoke   .modifyNow();
 
     alreadyModifying = false;
   }
@@ -212,11 +210,11 @@ public class StrongLink
 
     // check number of spokes
 
-    if (nonNull(conceptSpoke )) { numSpokes++; if (spokeType != hdtConcept  ) otherSpoke = getSpoke(hdtConcept  ); }
-    if (nonNull(positionSpoke)) { numSpokes++; if (spokeType != hdtPosition ) otherSpoke = getSpoke(hdtPosition ); }
-    if (nonNull(debateSpoke  )) { numSpokes++; if (spokeType != hdtDebate   ) otherSpoke = getSpoke(hdtDebate   ); }
-    if (nonNull(noteSpoke    )) { numSpokes++; if (spokeType != hdtNote     ) otherSpoke = getSpoke(hdtNote     ); }
-    if (nonNull(labelSpoke   )) { numSpokes++; if (spokeType != hdtWorkLabel) otherSpoke = getSpoke(hdtWorkLabel); }
+    if (conceptSpoke  != null) { numSpokes++; if (spokeType != hdtConcept  ) otherSpoke = getSpoke(hdtConcept  ); }
+    if (positionSpoke != null) { numSpokes++; if (spokeType != hdtPosition ) otherSpoke = getSpoke(hdtPosition ); }
+    if (debateSpoke   != null) { numSpokes++; if (spokeType != hdtDebate   ) otherSpoke = getSpoke(hdtDebate   ); }
+    if (noteSpoke     != null) { numSpokes++; if (spokeType != hdtNote     ) otherSpoke = getSpoke(hdtNote     ); }
+    if (labelSpoke    != null) { numSpokes++; if (spokeType != hdtWorkLabel) otherSpoke = getSpoke(hdtWorkLabel); }
 
     if (numSpokes == 0) return false;
 

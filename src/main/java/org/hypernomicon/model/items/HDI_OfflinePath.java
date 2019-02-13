@@ -25,7 +25,6 @@ import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 
 import static org.hypernomicon.model.records.HDT_RecordState.*;
-import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.LinkedHashMap;
 
@@ -36,7 +35,7 @@ public class HDI_OfflinePath extends HDI_OfflineBase
 {
   int folderID = -1;
   String fileName = "";
-  RelationType relType = rtNone;
+  final RelationType relType;
 
   public HDI_OfflinePath(HDI_Schema newSchema, HDT_RecordState recordState)
   {

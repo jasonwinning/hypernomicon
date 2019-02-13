@@ -58,28 +58,21 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
   private HyperCB hcbState, hcbCountry, hcbType, hcbParentInst;
   private HDT_Institution curInstitution;
 
-  @FXML private TextField tfCity;
-  @FXML private TextField tfName;
-  @FXML private Button btnLink;
-  @FXML private Button btnParent;
+  @FXML private TextField tfCity, tfName;
+  @FXML private Button btnLink, btnParent;
   @FXML private TextField tfLink;
-  @FXML private ComboBox<HyperTableCell> cbType;
-  @FXML private ComboBox<HyperTableCell> cbParentInst;
-  @FXML private ComboBox<HyperTableCell> cbState;
-  @FXML private ComboBox<HyperTableCell> cbCountry;
-  @FXML private TableView<HyperTableRow> tvSubInstitutions;
-  @FXML private TableView<HyperTableRow> tvPersons;
+  @FXML private ComboBox<HyperTableCell> cbType, cbParentInst, cbState, cbCountry;
+  @FXML private TableView<HyperTableRow> tvSubInstitutions, tvPersons;
   @FXML private Hyperlink hlGoogleMaps;
   @FXML private SplitPane spHoriz;
 
-  @Override HDT_RecordType getType()                                { return hdtInstitution; }
-  @Override public void enable(boolean enabled)                     { ui.tabInstitutions.getContent().setDisable(enabled == false); }
-  @Override void focusOnSearchKey()                                 { return; }
-  @Override public void newClick(HDT_RecordType t, HyperTableRow r) { return; }
-  @Override public void setRecord(HDT_Institution activeRecord)     { curInstitution = activeRecord; }
-  @Override public void setDividerPositions()                       { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
-  @Override public void getDividerPositions()                       { getDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
-  @Override public void findWithinDesc(String text)                 { messageDialog("Internal error #52009", mtError); }
+  @Override HDT_RecordType getType()                            { return hdtInstitution; }
+  @Override public void enable(boolean enabled)                 { ui.tabInstitutions.getContent().setDisable(enabled == false); }
+  @Override void focusOnSearchKey()                             { return; }
+  @Override public void setRecord(HDT_Institution activeRecord) { curInstitution = activeRecord; }
+  @Override public void setDividerPositions()                   { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
+  @Override public void getDividerPositions()                   { getDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
+  @Override public void findWithinDesc(String text)             { messageDialog("Internal error #52009", mtError); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -147,21 +147,15 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
       case hdtPosition :
 
         HDT_Position position = db.createNewBlankRecord(hdtPosition);
-
         position.debates.add(curDebate);
-
         ui.goToRecord(position, false);
-
         break;
 
       case hdtDebate :
 
         HDT_Debate subDebate = db.createNewBlankRecord(hdtDebate);
-
         subDebate.largerDebates.add(curDebate);
-
         ui.goToRecord(subDebate, false);
-
         break;
 
       default:

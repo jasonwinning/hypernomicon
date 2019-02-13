@@ -73,14 +73,14 @@ import static org.hypernomicon.bib.BibData.EntryType.*;
 
 public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 {
-  private String apiKey;
-  private JsonHttpClient jsonClient;
+  private final String apiKey;
+  private final JsonHttpClient jsonClient;
   private long offlineLibVersion = -1, onlineLibVersion = -1;
   private Instant backoffTime = null, retryTime = null;
 
   static final EnumHashBiMap<EntryType, String> entryTypeMap = initTypeMap();
 
-  private String userID = "";
+  private final String userID;
   private static EnumMap<BibData.EntryType, JsonObj> templates = null;
 
   @Override public LibraryType type() { return LibraryType.ltZotero; }
@@ -317,33 +317,32 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       throw e;
     }
 
-    if (jsonClient.getHeaders() != null)
-      for (Header header : jsonClient.getHeaders())
+    if (jsonClient.getHeaders() != null) for (Header header : jsonClient.getHeaders())
+    {
+      int sec;
+
+      switch (header.getName())
       {
-        int sec;
+        case "Zotero-API-Version"    : apiVersion = header.getValue(); break;
+        case "Total-Results"         : totalResults = parseInt(header.getValue(), -1); break;
+        case "Last-Modified-Version" : onlineLibVersion = parseInt(header.getValue(), -1); break;
+        case "Backoff":
 
-        switch (header.getName())
-        {
-          case "Zotero-API-Version"    : apiVersion = header.getValue(); break;
-          case "Total-Results"         : totalResults = parseInt(header.getValue(), -1); break;
-          case "Last-Modified-Version" : onlineLibVersion = parseInt(header.getValue(), -1); break;
-          case "Backoff":
+          sec = parseInt(header.getValue(), -1);
+          if (sec > 0)
+            backoffTime = Instant.now().plusMillis(sec * 1000);
 
-            sec = parseInt(header.getValue(), -1);
-            if (sec > 0)
-              backoffTime = Instant.now().plusMillis(sec * 1000);
+          break;
 
-            break;
+        case "Retry-After":
 
-          case "Retry-After":
+          sec = parseInt(header.getValue(), -1);
+          if (sec > 0)
+            retryTime = Instant.now().plusMillis(sec * 1000);
 
-            sec = parseInt(header.getValue(), -1);
-            if (sec > 0)
-              retryTime = Instant.now().plusMillis(sec * 1000);
-
-            break;
-        }
+          break;
       }
+    }
 
     request = null;
     return jsonArray;
@@ -423,9 +422,11 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     ArrayList<ZoteroItem> uploadQueue = new ArrayList<>(); // implemented as array because indices are returned by server
     JsonArray jArr = new JsonArray();
 
-    for (ZoteroItem entry : getAllEntries())
+    getAllEntries().forEach(entry ->
+    {
       if (entry.isSynced() == false)
         uploadQueue.add(entry);
+    });
 
     if (uploadQueue.size() == 0) return false;
 
@@ -454,7 +455,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         if ((jUnchanged.keySet().isEmpty() == false) || (jFailed.keySet().isEmpty() == false))
           showWriteErrorMessages(jUnchanged, jFailed, uploadQueue);
 
-        for (String queueNdx : jSuccess.keySet())
+        jSuccess.keySet().forEach(queueNdx ->
         {
           JsonObj jObj = jSuccess.getObj(queueNdx);
           jObj.put("synced", "true");
@@ -472,7 +473,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
           if (item.getVersion() > onlineLibVersion)
             onlineLibVersion = item.getVersion();
-        }
+        });
 
         for (int ndx = 0; ndx < uploadCount; ndx++)
           uploadQueue.remove(0);
@@ -498,12 +499,12 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     if (unchanged.length() > 0)
       errMsgList.add("Unchanged: " + unchanged);
 
-    for (String queueNdx : jFailed.keySet())
+    jFailed.keySet().forEach(queueNdx ->
     {
       ZoteroItem item = uploadQueue.get(parseInt(queueNdx, -1));
       JsonObj jError = jFailed.getObj(queueNdx);
       errMsgList.add(item.getEntryKey() + " code: " + jError.getLong("code", -1) + " " + jError.getStr("message"));
-    }
+    });
 
     fxThreadReturnValue = null;
 
@@ -537,7 +538,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     {
       JsonObj jObj = jArr.getObj(0);
 
-      for (String key : jObj.keySet())
+      jObj.keySet().forEach(key ->
       {
         ZEntity entity = keyToEntity.get(key);
 
@@ -549,7 +550,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
           if (entity.getVersion() < onlineVersion)
             downloadQueue.add(key);
         }
-      }
+      });
 
       if (versionsCmd == ZoteroCmd.readTrashVersions) // This if block is necessary to determine if an item in the trash was remotely restored
         keyToTrashEntry.entrySet().removeIf(entry -> jObj.containsKey(entry.getKey()) == false);
@@ -832,10 +833,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       }
     });
 
-    JsonArray jArr = jObj.getArray("trash");
-    if (jArr == null) return;
-
-    jArr.getObjs().forEach(itemJsonObj ->
+    nullSwitch(jObj.getArray("trash"), jArr -> jArr.getObjs().forEach(itemJsonObj ->
     {
       ZoteroEntity entity = ZoteroEntity.create(this, itemJsonObj);
 
@@ -848,9 +846,9 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         keyToAllEntry.put(entity.getKey(), item);
         keyToTrashEntry.put(entity.getKey(), item);
       }
-    });
+    }));
 
-    jObj.getArray("collections").getObjs().forEach(collJsonObj ->
+    nullSwitch(jObj.getArray("collections"), jArr -> jArr.getObjs().forEach(collJsonObj ->
     {
       ZoteroEntity entity = ZoteroEntity.create(this, collJsonObj);
 
@@ -862,7 +860,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
         keyToColl.put(coll.getKey(), coll);
       }
-    });
+    }));
   }
 
 //---------------------------------------------------------------------------

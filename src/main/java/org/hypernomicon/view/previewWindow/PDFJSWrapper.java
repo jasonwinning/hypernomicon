@@ -61,21 +61,23 @@ import javafx.scene.layout.AnchorPane;
 public class PDFJSWrapper
 {
   private boolean ready = false, opened = false, pdfjsMode = true;
-  private PDFJSDoneHandler doneHndlr;
-  private PDFJSPageChangeHandler pageChangeHndlr;
-  private PDFJSRetrievedDataHandler retrievedDataHndlr;
+  private final PDFJSDoneHandler doneHndlr;
+  private final PDFJSPageChangeHandler pageChangeHndlr;
+  private final PDFJSRetrievedDataHandler retrievedDataHndlr;
   private int numPages = -1;
-  private JavascriptToJava javascriptToJava;
+  private final JavascriptToJava javascriptToJava;
   private Browser browser = null, oldBrowser = null;
   private BrowserView browserView = null;
   private static String viewerHTMLStr = null;
   private static final String basePlaceholder = "<!-- base placeholder -->";
-  private AnchorPane apBrowser = null;
+  private final AnchorPane apBrowser;
   private Runnable postBrowserLoadCode = null;
 
   private final boolean showJavascriptConsoleMessagesInJavaConsole = true;
 
-  int getNumPages() { return numPages; }
+  int getNumPages()    { return numPages; }
+  void prepareToHide() { removeFromAnchor(browserView); }
+  void prepareToShow() { apBrowser.getChildren().add(browserView); }
 
 //---------------------------------------------------------------------------
 
@@ -186,10 +188,7 @@ public class PDFJSWrapper
     addCustomProtocolHandler("jar");
     addViewerHTMLProtocolHandler();
 
-    apBrowser.setOnMouseEntered(event ->
-    {
-      safeFocus(browserView);
-    });
+    apBrowser.setOnMouseEntered(event -> safeFocus(browserView));
 
     browser.setPopupHandler(new com.teamdev.jxbrowser.chromium.javafx.DefaultPopupHandler());
 
@@ -423,10 +422,8 @@ public class PDFJSWrapper
         int pageNum = annotPages.get(ndx).asNumber().getInteger();
 
         if (hilitePages.contains(pageNum) == false)
-          hilitePages.add(pageNum);
+          addToSortedList(hilitePages, pageNum);
       }
-
-      hilitePages.sort(null);
 
       JSValue val = obj.getProperty("pageLabels");
 
@@ -508,7 +505,6 @@ public class PDFJSWrapper
   void loadHtml(String html)
   {
     clearHtml();
-
     browser.loadHTML(html);
   }
 
@@ -518,7 +514,6 @@ public class PDFJSWrapper
   void loadFile(FilePath file)
   {
     clearHtml();
-
     browser.loadURL(file.toURLString());
   }
 
@@ -595,7 +590,7 @@ public class PDFJSWrapper
 
   private void printJSValue(JSValue val, int indent)
   {
-    if (val.isNull())              { printIndented("NULL", indent); }
+    if      (val.isNull())         { printIndented("NULL", indent); }
     else if (val.isNumberObject()) { printIndented(String.valueOf(val.asNumberObject().getNumberValue()), indent); }
     else if (val.isNumber())       { printIndented(String.valueOf(val.getNumberValue()), indent); }
     else if (val.isBoolean())      { printIndented(String.valueOf(val.getBooleanValue()), indent); }
@@ -633,23 +628,7 @@ public class PDFJSWrapper
       printIndented(obj.getClass().getName() + ": " + obj.toString(), indent);
     }
 
-    else  { printIndented("NONE OF THE ABOVE", indent); }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void prepareToHide()
-  {
-    removeFromAnchor(browserView);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void prepareToShow()
-  {
-    apBrowser.getChildren().add(browserView);
+    else printIndented("NONE OF THE ABOVE", indent);
   }
 
 //---------------------------------------------------------------------------

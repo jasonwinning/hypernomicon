@@ -24,8 +24,6 @@ import static org.hypernomicon.view.OmniFinder.TierEnum.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod.*;
 
-import static java.util.Objects.*;
-
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -82,15 +80,14 @@ public class OmniFinder
   {
     LinkedHashSet<HDT_RecordType> typeSet = new LinkedHashSet<>();
 
-    typeSet.add(hdtTerm);          typeSet.add(hdtPosition);      typeSet.add(hdtDebate);
-    typeSet.add(hdtPerson);        typeSet.add(hdtPersonGroup);   typeSet.add(hdtWork);
-    typeSet.add(hdtWorkLabel);     typeSet.add(hdtMiscFile);      typeSet.add(hdtNote);
-    typeSet.add(hdtGlossary);      typeSet.add(hdtArgument);      typeSet.add(hdtInstitution);
-    typeSet.add(hdtInvestigation);
+    typeSet.add(hdtTerm);      typeSet.add(hdtPosition);    typeSet.add(hdtDebate);
+    typeSet.add(hdtPerson);    typeSet.add(hdtPersonGroup); typeSet.add(hdtWork);
+    typeSet.add(hdtWorkLabel); typeSet.add(hdtMiscFile);    typeSet.add(hdtNote);
+    typeSet.add(hdtGlossary);  typeSet.add(hdtArgument);    typeSet.add(hdtInstitution); typeSet.add(hdtInvestigation);
 
     LinkedHashSet<HDT_RecordType> authoredSet = new LinkedHashSet<>();
 
-    authoredSet.add(hdtWork);      authoredSet.add(hdtMiscFile);
+    authoredSet.add(hdtWork);  authoredSet.add(hdtMiscFile);
 
     this.htFind = htFind;
 
@@ -262,7 +259,7 @@ public class OmniFinder
     {
       String listName, fullName = "";
 
-      if (nonNull(author))
+      if (author != null)
         listName = author.getNameLastFirst(true).toLowerCase().trim();
       else
         listName = person.getNameLastFirst(true).toLowerCase().trim();
@@ -278,7 +275,7 @@ public class OmniFinder
 
         if (listName.equals(queryLC)) return true;
 
-        if (nonNull(author))
+        if (author != null)
           fullName = author.getFullName(true).toLowerCase().trim();
         else
           fullName = person.getFullName(true).toLowerCase().trim();
@@ -307,7 +304,7 @@ public class OmniFinder
 
         if (listName.startsWith(queryLC)) return true;
 
-        if (nonNull(author))
+        if (author != null)
           fullName = author.getFullName(true).toLowerCase().trim();
         else
           fullName = person.getFullName(true).toLowerCase().trim();
@@ -331,80 +328,63 @@ public class OmniFinder
     {
       if (records.contains(record)) return false;
 
-      String listName;
-
       switch (curTier)
       {
-      case tierKeywordStart:
+        case tierKeywordStart:
 
-        return true;
+          return true;
 
-      case tierAuthorContains: case tierAuthorExact: case tierAuthorKeyword: case tierAuthorStartExact:
+        case tierAuthorContains: case tierAuthorExact: case tierAuthorKeyword: case tierAuthorStartExact:
 
-        if (record.getType() == hdtWork)
-        {
-          HDT_Work work = (HDT_Work) record;
+          if (record.getType() == hdtWork)
+          {
+            for (Author author : HDT_Work.class.cast(record).getAuthors())
+              if (authorMatch(author, null, queryLC, curTier)) return true;
+          }
+          else if (record.getType() == hdtMiscFile)
+          {
+            for (HDT_Person author : HDT_MiscFile.class.cast(record).authors)
+              if (authorMatch(null, author, queryLC, curTier)) return true;
+          }
+          return false;
 
-          for (Author author : work.getAuthors())
-            if (authorMatch(author, null, queryLC, curTier)) return true;
-        }
-        else if (record.getType() == hdtMiscFile)
-        {
-          HDT_MiscFile file = (HDT_MiscFile) record;
+        case tierExactName:
 
-          for (HDT_Person author : file.authors)
-            if (authorMatch(null, author, queryLC, curTier)) return true;
-        }
+          if (record.getType() == hdtPerson)
+            return authorMatch(null, HDT_Person.class.cast(record), queryLC, tierAuthorExact);
 
-        break;
+          return record.getNameEngChar().toLowerCase().equals(queryLC);
 
-      case tierExactName:
+        case tierKeyword:
 
-        if (record.getType() == hdtPerson)
-          return authorMatch(null, HDT_Person.class.cast(record), queryLC, tierAuthorExact);
+          if (AllQueryEngine.linkList.getLinks().size() > 0)
+          {
+            for (KeywordLink keyLink : AllQueryEngine.linkList.getLinks())
+              if (keyLink.key.record == record)
+                return true;
+          }
+          return false;
 
-        listName = record.getNameEngChar().toLowerCase();
-        if (listName.equals(queryLC)) return true;
-        break;
+        case tierKeywordContains:
 
-      case tierKeyword:
+          return record.getSearchKey().toLowerCase().contains(queryLC);
 
-        if (AllQueryEngine.linkList.getLinks().size() > 0)
-        {
-          for (KeywordLink keyLink : AllQueryEngine.linkList.getLinks())
-            if (keyLink.key.record == record)
-              return true;
-        }
-        break;
+        case tierNameContains:
 
-      case tierKeywordContains:
+          if (record.getType() == hdtPerson)
+            return authorMatch(null, HDT_Person.class.cast(record), queryLC, tierAuthorContains);
 
-        if (record.getSearchKey().toLowerCase().contains(queryLC)) return true;
-        break;
+          return record.getNameEngChar().toLowerCase().contains(queryLC);
 
-      case tierNameContains:
+        case tierNameStartExact:
 
-        if (record.getType() == hdtPerson)
-          return authorMatch(null, HDT_Person.class.cast(record), queryLC, tierAuthorContains);
+          if (record.getType() == hdtPerson)
+            return authorMatch(null, HDT_Person.class.cast(record), queryLC, tierAuthorStartExact);
 
-        listName = record.getNameEngChar().toLowerCase();
-        if (listName.contains(queryLC)) return true;
-        break;
+          return record.getNameEngChar().toLowerCase().startsWith(queryLC);
 
-      case tierNameStartExact:
-
-        if (record.getType() == hdtPerson)
-          return authorMatch(null, HDT_Person.class.cast(record), queryLC, tierAuthorStartExact);
-
-        listName = record.getNameEngChar().toLowerCase();
-        if (listName.startsWith(queryLC)) return true;
-        break;
-
-      default:
-        break;
+        default: return false;
       }
-
-      return false;
     }
 
   //---------------------------------------------------------------------------
@@ -417,8 +397,8 @@ public class OmniFinder
 
       if (showingMore == false)
       {
-        if ((buffer.size() + rowNdx) >= ROWS_TO_SHOW) // rowNdx should be the number of rows currently in the table if the buffer has already been purged at least once
-          return true;
+        if ((buffer.size() + rowNdx) >= ROWS_TO_SHOW) // rowNdx should be the number of rows currently in the
+          return true;                                // table if the buffer has already been purged at least once
       }
 
       return false;
@@ -461,63 +441,8 @@ public class OmniFinder
 
         switch (record.getType())
         {
-          case hdtPerson:
-
-            cells.set(2, new HyperTableCell(record.getID(), "", record.getType(), hsmNumeric));
-            cells.set(3, new HyperTableCell(record.getID(), "", record.getType(), hsmTextSimple));
-
-            break;
-
-          case hdtPersonGroup:
-
-            cells.set(2, new HyperTableCell(record.getID(), "", record.getType(), hsmNumeric));
-            cells.set(3, new HyperTableCell(record.getID(), "", record.getType(), hsmTextSimple));
-
-            break;
-
-          case hdtInstitution:
-
-            cells.set(2, new HyperTableCell(record.getID(), "", record.getType(), hsmNumeric));
-            cells.set(3, new HyperTableCell(record.getID(), "", record.getType(), hsmTextSimple));
-
-            break;
-
-          case hdtInvestigation:
-
-            cells.set(2, new HyperTableCell(record.getID(), "", record.getType(), hsmNumeric));
-            cells.set(3, new HyperTableCell(record.getID(), "", record.getType(), hsmTextSimple));
-
-            break;
-
-          case hdtDebate:
-
-            cells.set(2, new HyperTableCell(record.getID(), "", record.getType(), hsmNumeric));
-            cells.set(3, new HyperTableCell(record.getID(), "", record.getType(), hsmTextSimple));
-
-            break;
-
-          case hdtArgument:
-
-            cells.set(2, new HyperTableCell(record.getID(), "", record.getType(), hsmNumeric));
-            cells.set(3, new HyperTableCell(record.getID(), "", record.getType(), hsmTextSimple));
-
-            break;
-
-          case hdtPosition:
-
-            cells.set(2, new HyperTableCell(record.getID(), "", record.getType(), hsmNumeric));
-            cells.set(3, new HyperTableCell(record.getID(), "", record.getType(), hsmTextSimple));
-
-            break;
-
-          case hdtTerm:
-
-            cells.set(2, new HyperTableCell(record.getID(), "", record.getType(), hsmNumeric));
-            cells.set(3, new HyperTableCell(record.getID(), "", record.getType(), hsmTextSimple));
-
-            break;
-
-          case hdtWorkLabel:
+          case hdtPerson: case hdtPersonGroup: case hdtPosition: case hdtTerm: case hdtWorkLabel: case hdtInvestigation:
+          case hdtDebate: case hdtInstitution: case hdtArgument: case hdtNote: case hdtGlossary:
 
             cells.set(2, new HyperTableCell(record.getID(), "", record.getType(), hsmNumeric));
             cells.set(3, new HyperTableCell(record.getID(), "", record.getType(), hsmTextSimple));
@@ -560,20 +485,6 @@ public class OmniFinder
 
             break;
 
-          case hdtNote:
-
-            cells.set(2, new HyperTableCell(record.getID(), "", record.getType(), hsmNumeric));
-            cells.set(3, new HyperTableCell(record.getID(), "", record.getType(), hsmTextSimple));
-
-            break;
-
-          case hdtGlossary:
-
-            cells.set(2, new HyperTableCell(record.getID(), "", record.getType(), hsmNumeric));
-            cells.set(3, new HyperTableCell(record.getID(), "", record.getType(), hsmTextSimple));
-
-            break;
-
           default :
 
             add = false;
@@ -605,8 +516,8 @@ public class OmniFinder
 
       runLaters++;
 
-      final boolean finalShowingMore = showingMore;
-      final boolean finalFirstBuffer = firstBuffer;
+      final boolean finalShowingMore = showingMore,
+                    finalFirstBuffer = firstBuffer;
 
       firstBuffer = false;
 
@@ -716,13 +627,12 @@ public class OmniFinder
   {
     boolean wasRunning = isRunning();
 
-    if (finderThread != null)
-      if (finderThread.isAlive())
-      {
-        stopRequested = true;
+    if ((finderThread != null) && finderThread.isAlive())
+    {
+      stopRequested = true;
 
-        try { finderThread.join(); } catch (InterruptedException e) { noOp(); }
-      }
+      try { finderThread.join(); } catch (InterruptedException e) { noOp(); }
+    }
 
     finderThread = null;
     Platform.runLater(htFind::clear);

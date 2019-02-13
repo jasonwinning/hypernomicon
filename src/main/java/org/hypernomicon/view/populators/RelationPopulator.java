@@ -55,21 +55,13 @@ public class RelationPopulator extends Populator
     relTypes.remove(rtNone);
     relTypes.remove(rtUnited);
 
-    relTypes.forEach(relType -> cells.add(new HyperTableCell(relType.getCode(), relType.getTitle(), objType)));
+    relTypes.forEach(relType ->
+    {
+      HyperTableCell cell = new HyperTableCell(relType.getCode(), relType.getTitle(), objType);
+      addToSortedList(cells, cell, (c1, c2) -> c1.getText().compareTo(c2.getText()));
+    });
 
     return cells;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
-  {
-    for (HyperTableCell choice : populate(nullSwitch(row, dummyRow), false))
-      if (HyperTableCell.getCellID(choice) == HyperTableCell.getCellID(cell))
-        return choice;
-
-    return null;
   }
 
 //---------------------------------------------------------------------------

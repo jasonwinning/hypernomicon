@@ -45,23 +45,13 @@ import javafx.stage.FileChooser;
 
 public class FileDialogController extends HyperDialog
 {
-  @FXML private TextField tfCurrentPath;
-  @FXML public TextField tfRecordName;
-  @FXML private TextField tfFileName;
-  @FXML private TextField tfNewPath;
-  @FXML private RadioButton rbMove;
-  @FXML private RadioButton rbCopy;
-  @FXML private RadioButton rbNeither;
+  @FXML private Button btnBrowseNew, btnBrowseOld, btnExplore, btnLaunch, btnOk, btnUseFile, btnUseRecord;
   @FXML private CheckBox chkDontChangeFilename;
   @FXML private Label lblName;
-  @FXML private Button btnLaunch;
-  @FXML private Button btnBrowseOld;
-  @FXML private Button btnUseFile;
-  @FXML private Button btnExplore;
-  @FXML private Button btnBrowseNew;
-  @FXML private Button btnUseRecord;
-  @FXML private Button btnOk;
+  @FXML private RadioButton rbCopy, rbMove, rbNeither;
+  @FXML private TextField tfCurrentPath, tfFileName, tfNewPath;
   @FXML public Button btnCancel;
+  @FXML public TextField tfRecordName;
 
   private FilePath srcFilePath;
   private HDT_RecordWithPath curFileRecord;

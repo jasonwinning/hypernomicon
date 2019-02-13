@@ -48,7 +48,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
     ltMendeley("mendeley", "Mendeley");
 
     private LibraryType(String descriptor, String userReadableName) { this.descriptor = descriptor; this.userReadableName = userReadableName; }
-    private String descriptor, userReadableName;
+    private final String descriptor, userReadableName;
 
     public String getDescriptor()       { return descriptor; }
     public String getUserReadableName() { return userReadableName; }

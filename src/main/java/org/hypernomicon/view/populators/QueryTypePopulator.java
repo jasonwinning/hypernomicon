@@ -18,7 +18,6 @@
 package org.hypernomicon.view.populators;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.queryEngines.QueryEngine.QueryType.*;
 
 import java.util.Arrays;
@@ -35,30 +34,18 @@ public class QueryTypePopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    return Arrays.asList(new HyperTableCell(qtAllRecords.getCode(), "Any records", hdtNone),
-                         new HyperTableCell(qtPersons.getCode(), "Person records", hdtPerson),
-                         new HyperTableCell(qtInstitutions.getCode(), "Institution records", hdtInstitution),
-                         new HyperTableCell(qtWorks.getCode(), "Work records", hdtWork),
-                         new HyperTableCell(qtFiles.getCode(), "File records", hdtMiscFile),
-                         new HyperTableCell(qtDebates.getCode(), "Problem/debate records", hdtDebate),
-                         new HyperTableCell(qtPositions.getCode(), "Position records", hdtPosition),
-                         new HyperTableCell(qtArguments.getCode(), "Argument records", hdtArgument),
-                         new HyperTableCell(qtNotes.getCode(), "Note records", hdtNote),
-                         new HyperTableCell(qtConcepts.getCode(), "Concept records", hdtConcept),
-                         new HyperTableCell(qtInvestigations.getCode(), "Investigation records", hdtInvestigation),
-                         new HyperTableCell(qtReport.getCode(), "Report", hdtNone));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
-  {
-    for (HyperTableCell choice : populate(nullSwitch(row, dummyRow), false))
-      if (HyperTableCell.getCellID(choice) == HyperTableCell.getCellID(cell))
-        return choice;
-
-    return null;
+    return Arrays.asList(new HyperTableCell(qtAllRecords    .getCode(), "Any records"           , hdtNone         ),
+                         new HyperTableCell(qtPersons       .getCode(), "Person records"        , hdtPerson       ),
+                         new HyperTableCell(qtInstitutions  .getCode(), "Institution records"   , hdtInstitution  ),
+                         new HyperTableCell(qtWorks         .getCode(), "Work records"          , hdtWork         ),
+                         new HyperTableCell(qtFiles         .getCode(), "File records"          , hdtMiscFile     ),
+                         new HyperTableCell(qtDebates       .getCode(), "Problem/debate records", hdtDebate       ),
+                         new HyperTableCell(qtPositions     .getCode(), "Position records"      , hdtPosition     ),
+                         new HyperTableCell(qtArguments     .getCode(), "Argument records"      , hdtArgument     ),
+                         new HyperTableCell(qtNotes         .getCode(), "Note records"          , hdtNote         ),
+                         new HyperTableCell(qtConcepts      .getCode(), "Concept records"       , hdtConcept      ),
+                         new HyperTableCell(qtInvestigations.getCode(), "Investigation records" , hdtInvestigation),
+                         new HyperTableCell(qtReport        .getCode(), "Report"                , hdtNone         ));
   }
 
 //---------------------------------------------------------------------------

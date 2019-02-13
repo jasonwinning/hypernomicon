@@ -53,7 +53,7 @@ public class CustomRecordPopulator extends Populator
 
   @Override public CellValueType getValueType()                                 { return cvtRecord; }
   @Override public HDT_RecordType getRecordType(HyperTableRow row)              { return recordType; }
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return populate(row, false).contains(cell) ? cell.clone() : null; }
+  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return equalMatch(row, cell); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -30,6 +30,10 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public abstract class Populator
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static final HyperTableRow dummyRow = new HyperTableRow(null, null);
 
   public static enum CellValueType
@@ -41,9 +45,14 @@ public abstract class Populator
 
   @FunctionalInterface public interface PopulatorFilter { boolean filter(HDT_Base record); }
 
-  public abstract HyperTableCell match(HyperTableRow row, HyperTableCell cell);
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public abstract List<HyperTableCell> populate(HyperTableRow row, boolean force);
   public abstract CellValueType getValueType();
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @SuppressWarnings("unused")
   public boolean hasChanged(HyperTableRow row)                            { return true; }
@@ -58,4 +67,36 @@ public abstract class Populator
 
   @SuppressWarnings("unused")
   public HyperTableCell addEntry(HyperTableRow row, int id, String value) { messageDialog("Internal error #90129", mtError); return null; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
+  {
+    return getChoiceByID(row, HyperTableCell.getCellID(cell));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected HyperTableCell equalMatch(HyperTableRow row, HyperTableCell cell)
+  {
+    return populate(nullSwitch(row, dummyRow), false).contains(cell) ? cell : null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HyperTableCell getChoiceByID(HyperTableRow row, int id)
+  {
+    for (HyperTableCell cell : populate(nullSwitch(row, dummyRow), false))
+      if (HyperTableCell.getCellID(cell) == id)
+        return cell;
+
+    return null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

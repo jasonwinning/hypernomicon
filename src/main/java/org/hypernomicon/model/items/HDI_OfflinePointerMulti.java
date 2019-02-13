@@ -33,9 +33,9 @@ import static org.hypernomicon.model.HyperDB.*;
 
 public class HDI_OfflinePointerMulti extends HDI_OfflineBase
 {
-  ArrayList<Integer> objIDs  = new ArrayList<>();
-  private RelationType relType;
-  public Map<Integer, Map<Tag, HDI_OfflineBase>> objIDtoMaps = new LinkedHashMap<>();
+  final ArrayList<Integer> objIDs = new ArrayList<>();
+  private final RelationType relType;
+  public final Map<Integer, Map<Tag, HDI_OfflineBase>> objIDtoMaps = new LinkedHashMap<>();
 
   public HDI_OfflinePointerMulti(HDI_Schema newSchema, HDT_RecordState recordState)
   {

@@ -28,15 +28,9 @@ import javafx.scene.input.TransferMode;
 
 public class ChangeParentDialogController extends HyperDialog
 {
-  @FXML private Button btnMove;
-  @FXML private Button btnCopy;
-  @FXML private Button btnCancel;
-  @FXML private Label label1;
-  @FXML private Label label2;
-  @FXML private Label label3;
-  @FXML private TextField tfChild;
-  @FXML private TextField tfNewParent;
-  @FXML private TextField tfOldParent;
+  @FXML private Button btnMove, btnCopy, btnCancel;
+  @FXML private Label label1, label2, label3;
+  @FXML private TextField tfChild, tfNewParent, tfOldParent;
 
   private TransferMode transferMode = null;
 

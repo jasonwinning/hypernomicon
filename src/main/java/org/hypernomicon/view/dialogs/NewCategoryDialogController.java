@@ -41,13 +41,9 @@ public class NewCategoryDialogController extends HyperDialog
   public HyperCB hcbRecordType, hcbCompare;
   private RecordTypePopulator typePopulator;
 
-  @FXML private ComboBox<HyperTableCell> cbRecordType;
-  @FXML private ComboBox<HyperTableCell> cbCompare;
-  @FXML private TextField tfCompareID;
-  @FXML private TextField tfCompareKey;
-  @FXML public TextField tfNewName;
-  @FXML public TextField tfNewID;
-  @FXML public TextField tfNewKey;
+  @FXML private ComboBox<HyperTableCell> cbRecordType, cbCompare;
+  @FXML private TextField tfCompareID, tfCompareKey;
+  @FXML public TextField tfNewName, tfNewID, tfNewKey;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

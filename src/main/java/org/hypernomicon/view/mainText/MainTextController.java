@@ -89,24 +89,16 @@ import javafx.scene.web.WebView;
 
 public class MainTextController
 {
-  @FXML private Button btnMoveUp;
-  @FXML private Button btnMoveDown;
-  @FXML private Button btnInsert;
-  @FXML private Button btnRemove;
+  @FXML private AnchorPane anchorPane;
+  @FXML private BorderPane borderPane;
+  @FXML private Button btnAdd, btnInsert, btnMoveDown, btnMoveUp, btnNew, btnRemove;
+  @FXML private ComboBox<HyperTableCell> cbKeyName, cbKeyType, cbName, cbType;
+  @FXML private GridPane gridPane;
   @FXML private HTMLEditor he;
+  @FXML private HiddenSidesPane hsPane;
   @FXML private ListView<MainText.DisplayItem> lvRecords;
-  @FXML private ComboBox<HyperTableCell> cbType;
-  @FXML private ComboBox<HyperTableCell> cbName;
-  @FXML private ComboBox<HyperTableCell> cbKeyType;
-  @FXML private ComboBox<HyperTableCell> cbKeyName;
   @FXML private TextArea taKeyWorks;
   @FXML private TitledPane tpKeyWorks;
-  @FXML private Button btnAdd;
-  @FXML private Button btnNew;
-  @FXML private BorderPane borderPane;
-  @FXML private AnchorPane anchorPane;
-  @FXML private GridPane gridPane;
-  @FXML private HiddenSidesPane hsPane;
 
   private HyperCB hcbType, hcbName, hcbKeyType, hcbKeyName;
   private HDT_RecordWithConnector curRecord;
@@ -696,10 +688,9 @@ public class MainTextController
         String searchKey = keyWork.getSearchKey(true);
 
         linkMap.put(searchKey, keyWork.getEditorText());
-        searchKeys.add(searchKey);
-      });
 
-      searchKeys.sort((s1, s2) -> s1.compareToIgnoreCase(s2));
+        addToSortedList(searchKeys, searchKey, (s1, s2) -> s1.compareToIgnoreCase(s2));
+      });
 
       boolean first = true;
 

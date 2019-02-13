@@ -26,8 +26,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 
-import static java.util.Objects.*;
-
 import java.io.IOException;
 
 import org.hypernomicon.bib.BibData;
@@ -58,51 +56,12 @@ import javafx.stage.StageStyle;
 
 public class MergeWorksDialogController extends HyperDialog
 {
-  @FXML private RadioButton rbTitle1;
-  @FXML private RadioButton rbTitle2;
-  @FXML private RadioButton rbTitle3;
-  @FXML private RadioButton rbTitle4;
-
-  @FXML private TextField tfTitle1;
-  @FXML private TextField tfTitle2;
-  @FXML private TextField tfTitle3;
-  @FXML private TextField tfTitle4;
-
-  @FXML private RadioButton rbType1;
-  @FXML private RadioButton rbType2;
-  @FXML private RadioButton rbType3;
-  @FXML private RadioButton rbType4;
-
-  @FXML private ComboBox<HyperTableCell> cbType1;
-  @FXML private ComboBox<HyperTableCell> cbType2;
-  @FXML private ComboBox<HyperTableCell> cbType3;
-  @FXML private ComboBox<HyperTableCell> cbType4;
-
-  @FXML private RadioButton rbYear1;
-  @FXML private RadioButton rbYear2;
-  @FXML private RadioButton rbYear3;
-  @FXML private RadioButton rbYear4;
-
-  @FXML private TextField tfYear1;
-  @FXML private TextField tfYear2;
-  @FXML private TextField tfYear3;
-  @FXML private TextField tfYear4;
-
-  @FXML private RadioButton rbAuthors1;
-  @FXML private RadioButton rbAuthors2;
-  @FXML private RadioButton rbAuthors3;
-  @FXML private RadioButton rbAuthors4;
-
-  @FXML private TableView<HyperTableRow> tvAuthors1;
-  @FXML private TableView<HyperTableRow> tvAuthors2;
-  @FXML private TableView<HyperTableRow> tvAuthors3;
-  @FXML private TableView<HyperTableRow> tvAuthors4;
-
-  @FXML private GridPane gpMain;
-  @FXML private GridPane gpTitle;
-  @FXML private GridPane gpType;
-  @FXML private GridPane gpYear;
-  @FXML private GridPane gpAuthors;
+  @FXML private ComboBox<HyperTableCell> cbType1, cbType2, cbType3, cbType4;
+  @FXML private GridPane gpAuthors, gpMain, gpTitle, gpType, gpYear;
+  @FXML private RadioButton rbAuthors1, rbAuthors2, rbAuthors3, rbAuthors4,
+                            rbTitle1, rbTitle2, rbTitle3, rbTitle4, rbType1, rbType2, rbType3, rbType4, rbYear1, rbYear2, rbYear3, rbYear4;
+  @FXML private TableView<HyperTableRow> tvAuthors1, tvAuthors2, tvAuthors3, tvAuthors4;
+  @FXML private TextField tfTitle1, tfTitle2, tfTitle3, tfTitle4, tfYear1, tfYear2, tfYear3, tfYear4;
 
   private final EnumMap<BibFieldEnum, BibField> singleFields = new EnumMap<>(BibFieldEnum.class);
   private final ArrayList<WorkToMerge> works = new ArrayList<>(4);
@@ -151,16 +110,16 @@ public class MergeWorksDialogController extends HyperDialog
     bd3 = bdList.get(2);
     bd4 = bdList.get(3);
 
-    if (nonNull(bd4))
+    if (bd4 != null)
       works.add(0, new WorkToMerge(bd4, rbTitle4, tfTitle4, rbType4, cbType4, rbYear4, tfYear4, rbAuthors4, tvAuthors4, destWork, creatingNewWork));
 
-    if (nonNull(bd3))
+    if (bd3 != null)
       works.add(0, new WorkToMerge(bd3, rbTitle3, tfTitle3, rbType3, cbType3, rbYear3, tfYear3, rbAuthors3, tvAuthors3, destWork, creatingNewWork));
 
     works.add(0, new WorkToMerge(bd2, rbTitle2, tfTitle2, rbType2, cbType2, rbYear2, tfYear2, rbAuthors2, tvAuthors2, destWork, creatingNewWork));
     works.add(0, new WorkToMerge(bd1, rbTitle1, tfTitle1, rbType1, cbType1, rbYear1, tfYear1, rbAuthors1, tvAuthors1, destWork, creatingNewWork));
 
-    if (isNull(bd4))
+    if (bd4 == null)
     {
       deleteGridPaneRow(gpTitle, 4);
       deleteGridPaneColumn(gpType, 3);
@@ -168,7 +127,7 @@ public class MergeWorksDialogController extends HyperDialog
       deleteGridPaneColumn(gpAuthors, 3);
     }
 
-    if (isNull(bd3))
+    if (bd3 == null)
     {
       deleteGridPaneRow(gpTitle, 3);
       deleteGridPaneColumn(gpType, 2);

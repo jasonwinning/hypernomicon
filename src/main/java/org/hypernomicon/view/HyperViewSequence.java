@@ -34,9 +34,6 @@ import static org.hypernomicon.Const.*;
 
 import javafx.scene.control.TabPane;
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
 public class HyperViewSequence
 {
 

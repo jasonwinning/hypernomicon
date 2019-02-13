@@ -19,7 +19,6 @@ package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static java.util.Objects.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.PersonName;
@@ -162,7 +161,7 @@ public final class Author implements Cloneable
 
   public String getSortKey()
   {
-    if (nonNull(person)) return person.getSortKey();
+    if (person != null) return person.getSortKey();
 
     String last = getLastName(true), first = getFirstName(true);
 

@@ -38,7 +38,7 @@ import org.apache.commons.io.FileUtils;
 import com.adobe.internal.xmp.XMPException;
 
 import org.hypernomicon.bib.BibUtils;
-import org.hypernomicon.bib.BibUtils.PdfMetadata;
+import org.hypernomicon.bib.PdfMetadata;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
@@ -46,9 +46,9 @@ import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 
 public class WorkQueryEngine extends QueryEngine<HDT_Work>
 {
-  private static final int QUERY_LIKELY_EDITED_VOLS            = QUERY_FIRST_NDX + 1;
-  private static final int QUERY_4_OR_MORE_AUTHORS             = QUERY_FIRST_NDX + 2;
-  private static final int QUERY_ANALYZE_METADATA              = QUERY_FIRST_NDX + 3;
+  private static final int QUERY_LIKELY_EDITED_VOLS            = QUERY_FIRST_NDX + 1,
+                           QUERY_4_OR_MORE_AUTHORS             = QUERY_FIRST_NDX + 2,
+                           QUERY_ANALYZE_METADATA              = QUERY_FIRST_NDX + 3;
 
   private static ArrayList<String> csvFile;
 
@@ -144,8 +144,7 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
                     PdfMetadata md = new PdfMetadata();
                     BibUtils.getPdfMetadata(pdfFilePath, md);
 
-                    if (md.xmpRoot != null)
-                      md.xmpRoot.addCsvLines(csvFile);
+                    nullSwitch(md.getXmpRoot(), xmpRoot -> xmpRoot.addCsvLines(csvFile));
                   }
                   catch (IOException e)
                   {

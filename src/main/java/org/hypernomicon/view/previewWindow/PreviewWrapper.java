@@ -27,8 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.tika.mime.MediaType;
-
 import org.zwobble.mammoth.DocumentConverter;
 import org.zwobble.mammoth.Result;
 
@@ -62,9 +60,9 @@ public class PreviewWrapper
 
   private FilePath filePathShowing = null;
   private int fileNdx, pageNum = -1, pageNumShowing = -1, workStartPageNum = -1, workEndPageNum = -1, numPages = 0;
-  private PreviewSource src;
-  private PreviewWindow window;
-  private Tab tab;
+  private final PreviewSource src;
+  private final PreviewWindow window;
+  private final Tab tab;
   private boolean viewerErrOccurred = false, needsRefresh = true, initialized = false, viewerClear = false;
   private PDFJSWrapper jsWrapper;
   private Map<String, Integer> labelToPage;
@@ -72,8 +70,8 @@ public class PreviewWrapper
   private List<Integer> hilitePages;
   private final List<PreviewFile> fileList;
   private PreviewFile curPrevFile;
-  private ToggleButton btn;
-  private AnchorPane ap;
+  private final ToggleButton btn;
+  private final AnchorPane ap;
 
   PreviewSource getSource()      { return src; }
   int getPageNum()               { return pageNum; }
@@ -86,6 +84,11 @@ public class PreviewWrapper
   HDT_RecordWithPath getRecord() { return curPrevFile == null ? null : curPrevFile.record; }
   ToggleButton getToggleButton() { return btn; }
   FilePath getFilePathShowing()  { return filePathShowing; }
+  void prepareToHide()           { if (initialized) jsWrapper.prepareToHide(); }
+  void prepareToShow()           { if (initialized) jsWrapper.prepareToShow(); }
+  int lowestHilitePage()         { return collEmpty(hilitePages) ? -1 : hilitePages.get(0); }
+  int highestHilitePage()        { return collEmpty(hilitePages) ? -1 : hilitePages.get(hilitePages.size() - 1); }
+
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -122,8 +125,8 @@ public class PreviewWrapper
         numPages = jsWrapper.getNumPages();
         Platform.runLater(() ->
         {
-          if (curPrevFile != null)
-            if (curPrevFile.navNdx == -1) incrementNav();
+          if ((curPrevFile != null) && (curPrevFile.navNdx == -1))
+            incrementNav();
 
           refreshControls();
         });
@@ -401,19 +404,16 @@ public class PreviewWrapper
   {
     boolean fileChanged = true;
 
-    if (record != null)
-      if ((record.getType() != hdtWork) && (record.getType() != hdtMiscFile))
-        record = null;
+    if ((record != null) && (record.getType() != hdtWork) && (record.getType() != hdtMiscFile))
+      record = null;
 
-    if (getRecord() == record)
-      if (FilePath.isEmpty(getFilePath()) == false)
-        if (curPrevFile.filePath.equals(filePath))
-        {
-          fileChanged = false;
+    if ((getRecord() == record) && (FilePath.isEmpty(getFilePath()) == false) && curPrevFile.filePath.equals(filePath))
+    {
+      fileChanged = false;
 
-          if (this.pageNum == pageNum)
-            return;
-        }
+      if (this.pageNum == pageNum)
+        return;
+    }
 
     if (fileChanged)
     {
@@ -482,15 +482,15 @@ public class PreviewWrapper
 
     if (forceReload || (curPrevFile.filePath.equals(filePathShowing) == false))
     {
-      MediaType mimetype = getMediaType(curPrevFile.filePath);
+      String mimetypeStr = getMediaType(curPrevFile.filePath).toString();
 
-      if (mimetype.toString().contains("html") ||
-          mimetype.toString().contains("openxmlformats-officedocument") ||
-          mimetype.toString().contains("pdf")  ||
-          mimetype.toString().contains("image") ||
-          mimetype.toString().contains("plain") ||
-          mimetype.toString().contains("video") ||
-          mimetype.toString().contains("audio"))
+      if (mimetypeStr.contains("html") ||
+          mimetypeStr.contains("openxmlformats-officedocument") ||
+          mimetypeStr.contains("pdf")  ||
+          mimetypeStr.contains("image") ||
+          mimetypeStr.contains("plain") ||
+          mimetypeStr.contains("video") ||
+          mimetypeStr.contains("audio"))
       {
         filePathShowing = null;
         pageNumShowing = -1;
@@ -506,9 +506,9 @@ public class PreviewWrapper
         pageToLabel = null;
         hilitePages = null;
 
-        if (mimetype.toString().contains("pdf"))
+        if (mimetypeStr.contains("pdf"))
           jsWrapper.loadPdf(curPrevFile.filePath, pageNum);
-        else if (mimetype.toString().contains("openxmlformats-officedocument"))
+        else if (mimetypeStr.contains("openxmlformats-officedocument"))
         {
           try
           {
@@ -541,9 +541,7 @@ public class PreviewWrapper
     }
 
     if (pageNum != pageNumShowing)
-    {
       jsWrapper.goToPage(pageNum);
-    }
 
     if (incrementNav)
       incrementNav();
@@ -631,11 +629,8 @@ public class PreviewWrapper
 
   void updatePage(int newPageNum)
   {
-    if (newPageNum < 1) return;
-    if (pageNum < 1) return;
-    if (curPrevFile == null) return;
-    if (curPrevFile.filePath == null) return;
-    if (newPageNum > numPages) return;
+    if ((newPageNum < 1) || (pageNum < 1) || (curPrevFile == null) || (curPrevFile.filePath == null) || (newPageNum > numPages))
+      return;
 
     setPreview(curPrevFile.filePath, newPageNum, curPrevFile.record);
   }
@@ -684,22 +679,6 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  int lowestHilitePage()
-  {
-    return collEmpty(hilitePages) ? -1 : hilitePages.get(0);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  int highestHilitePage()
-  {
-    return collEmpty(hilitePages) ? -1 : hilitePages.get(hilitePages.size() - 1);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   int getPrevHilite(int curPage)
   {
     if (collEmpty(hilitePages)) return -1;
@@ -707,9 +686,8 @@ public class PreviewWrapper
     int newPage = -1;
 
     for (Integer page : hilitePages)
-      if (page < curPage)
-        if (page > newPage)
-          newPage = page;
+      if ((page < curPage) && (page > newPage))
+        newPage = page;
 
     return newPage;
   }
@@ -724,9 +702,8 @@ public class PreviewWrapper
     int newPage = numPages + 1;
 
     for (Integer page : hilitePages)
-      if (page > curPage)
-        if (page < newPage)
-          newPage = page;
+      if ((page > curPage) && (page < newPage))
+        newPage = page;
 
     return newPage > numPages ? -1 : newPage;
   }
@@ -740,24 +717,6 @@ public class PreviewWrapper
       jsWrapper.cleanup(disposeHndlr);
     else
       disposeHndlr.run();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void prepareToHide()
-  {
-    if (initialized)
-      jsWrapper.prepareToHide();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void prepareToShow()
-  {
-    if (initialized)
-      jsWrapper.prepareToShow();
   }
 
 //---------------------------------------------------------------------------

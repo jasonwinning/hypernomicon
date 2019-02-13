@@ -21,7 +21,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import java.util.ArrayList;
-import static java.util.Objects.*;
 
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HDI_Schema;
@@ -31,7 +30,7 @@ import org.hypernomicon.model.records.HDT_Hub;
 
 public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 {
-  private HDT_Hub hub;
+  private final HDT_Hub hub;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -94,11 +93,11 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 
     if (spokeCount == 1)  // If only one connector, no reason for hub to exist...
     {
-      if      (nonNull(link.noteSpoke    ))  link.disconnectRecord(hdtNote,      false);
-      else if (nonNull(link.debateSpoke  ))  link.disconnectRecord(hdtDebate,    false);
-      else if (nonNull(link.positionSpoke))  link.disconnectRecord(hdtPosition,  false);
-      else if (nonNull(link.conceptSpoke ))  link.disconnectRecord(hdtConcept,   false);
-      else if (nonNull(link.labelSpoke   ))  link.disconnectRecord(hdtWorkLabel, false);
+      if      (link.noteSpoke     != null)  link.disconnectRecord(hdtNote,      false);
+      else if (link.debateSpoke   != null)  link.disconnectRecord(hdtDebate,    false);
+      else if (link.positionSpoke != null)  link.disconnectRecord(hdtPosition,  false);
+      else if (link.conceptSpoke  != null)  link.disconnectRecord(hdtConcept,   false);
+      else if (link.labelSpoke    != null)  link.disconnectRecord(hdtWorkLabel, false);
 
       spokeCount = 0;
     }

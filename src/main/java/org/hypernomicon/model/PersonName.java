@@ -26,9 +26,16 @@ import org.hypernomicon.util.SplitString;
 
 public final class PersonName implements Comparable<PersonName>, Cloneable
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static final PersonName EMPTY = new PersonName("", "");
 
   private final String first, last;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   public PersonName(String first, String last)
   {
@@ -113,13 +120,16 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
     }
   }
 
-  public String getFirst()                     { return safeStr(first); }
-  public String getLast()                      { return safeStr(last); }
-  public boolean isEmpty()                     { return (getLast().length() + getFirst().length()) == 0; }
-  public PersonName toLowerCase()              { return new PersonName(first.toLowerCase(), last.toLowerCase()); }
-  public String getFull()                      { return String.valueOf(first + " " + last).trim(); }
-  public String getSingle()                    { return getLast().length() > 0 ? getLast() : getFirst(); }
-  public PersonName toEngChar()                { return new PersonName(convertToEnglishChars(first), convertToEnglishChars(last)); }
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public String getFirst()        { return safeStr(first); }
+  public String getLast()         { return safeStr(last); }
+  public boolean isEmpty()        { return (getLast().length() + getFirst().length()) == 0; }
+  public PersonName toLowerCase() { return new PersonName(first.toLowerCase(), last.toLowerCase()); }
+  public String getFull()         { return String.valueOf(first + " " + last).trim(); }
+  public String getSingle()       { return getLast().length() > 0 ? getLast() : getFirst(); }
+  public PersonName toEngChar()   { return new PersonName(convertToEnglishChars(first), convertToEnglishChars(last)); }
 
   @Override public PersonName clone()
   { try { return (PersonName) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }}

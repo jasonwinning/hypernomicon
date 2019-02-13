@@ -388,24 +388,17 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       case hdtArgument :
 
         HDT_Argument counterArg = db.createNewBlankRecord(hdtArgument);
-
         counterArg.addCounterArg(curArgument, null);
-
         curArgument.positions.forEach(position -> counterArg.addPosition(position, null));
-
         ui.goToRecord(counterArg, false);
-
         lowerCtrlr.tabPane.getSelectionModel().select(lowerCtrlr.tabWhereMade);
         break;
 
       case hdtWork :
 
         HDT_Work work = db.createNewBlankRecord(hdtWork);
-
         nullSwitch(db.persons.getByID(row.getID(1)), author -> work.getAuthors().add(author));
-
         curArgument.works.add(work);
-
         ui.goToRecord(work, false);
         break;
 

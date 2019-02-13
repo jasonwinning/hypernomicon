@@ -17,7 +17,6 @@
 
 package org.hypernomicon.view;
 
-import static java.util.Objects.nonNull;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
@@ -40,6 +39,7 @@ import org.hypernomicon.bib.BibData;
 import org.hypernomicon.bib.lib.BibEntry;
 import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.Exceptions.*;
+import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
@@ -104,89 +104,35 @@ import javafx.util.StringConverter;
 
 public final class MainController
 {
-  @FXML private BorderPane mainPane;
-  @FXML private StackPane stackPane;
-  @FXML private ToolBar tbGoTo;
-  @FXML private ImageView ivDates;
-  @FXML private Label lblProgress;
-  @FXML private ProgressBar progressBar;
-  @FXML private TabPane tabPane;
-  @FXML private TabPane selectorTabPane;
-  @FXML private AnchorPane midAnchorPane;
-  @FXML private HBox topHBox;
-  @FXML private ToolBar topToolBar;
-  @FXML private AnchorPane apGoTo;
-  @FXML private AnchorPane apOmniGoTo;
-  @FXML private AnchorPane apListGoTo;
-  @FXML private AnchorPane apStatus;
-  @FXML public Tab tabPersons;
-  @FXML public Tab tabInstitutions;
-  @FXML public Tab tabTree;
-  @FXML public Tab tabQueries;
-  @FXML public Tab tabPositions;
-  @FXML public Tab tabArguments;
-  @FXML public Tab tabDebates;
-  @FXML public Tab tabTerms;
-  @FXML public Tab tabFiles;
-  @FXML public Tab tabNotes;
-  @FXML public Tab tabWorks;
-  @FXML Tab tabOmniSelector;
-  @FXML Tab tabViewSelector;
-  @FXML private Button btnDecrement;
-  @FXML private Button btnIncrement;
-  @FXML private ImageView ivLeft;
-  @FXML private ImageView ivRight;
-  @FXML private SeparatorMenuItem mnuBibImportSeparator;
-  @FXML private MenuItem mnuImportBibFile;
-  @FXML private MenuItem mnuImportBibClipboard;
-  @FXML private MenuItem mnuNewDatabase;
-  @FXML private MenuItem mnuCloseDatabase;
-  @FXML private MenuItem mnuExitNoSave;
-  @FXML private MenuItem mnuChangeID;
-  @FXML private MenuItem mnuNewField;
-  @FXML private MenuItem mnuNewCountry;
-  @FXML private MenuItem mnuNewRank;
-  @FXML private MenuItem mnuNewPersonStatus;
-  @FXML private MenuItem mnuSaveReloadAll;
-  @FXML public Label lblStatus;
-  @FXML private Button btnTextSearch;
-  @FXML private SplitMenuButton btnGoTo;
-  @FXML private Button btnSave;
-  @FXML private Button btnDelete;
-  @FXML private Button btnRevert;
-  @FXML private Button btnCreateNew;
-  @FXML private Button btnSearch;
-  @FXML private Button btnBack;
-  @FXML private Button btnForward;
-  @FXML private TextField tfRecord;
-  @FXML private TextField tfID;
-  @FXML private ComboBox<HyperTableCell> cbGoTo;
-  @FXML private TextField tfOmniGoTo;
-  @FXML private GridPane gpBottom;
-  @FXML private Button btnSaveAll;
-  @FXML private Button btnFileMgr;
-  @FXML private Button btnBibMgr;
-  @FXML private Button btnPreviewWindow;
-  @FXML private Button btnMentions;
-  @FXML private Button btnAdvancedSearch;
-  @FXML public ToggleButton btnPointerLaunch;
-  @FXML private ToggleButton btnPointerPreview;
-  @FXML private MenuBar menuBar;
-  @FXML private Menu mnuFolders;
-  @FXML public Menu mnuFavorites;
-  @FXML public Menu mnuQueries;
-  @FXML private MenuItem mnuToggleFavorite;
-  @FXML private MenuItem mnuRecordSelect;
-  @FXML private MenuItem mnuFindWithinName;
-  @FXML private MenuItem mnuFindWithinAnyField;
-  @FXML private MenuItem mnuFindPreviousAll;
-  @FXML private MenuItem mnuFindNextAll;
-  @FXML private MenuItem mnuFindPreviousInName;
-  @FXML private MenuItem mnuFindNextInName;
-  @FXML private MenuItem mnuRevertToDiskCopy;
-  @FXML private MenuItem mnuAddToQueryResults;
+  @FXML Tab tabOmniSelector, tabViewSelector;
   @FXML TableView<HyperTableRow> tvFind;
-  @FXML private AnchorPane apFindBackground;
+  @FXML private AnchorPane apFindBackground, apGoTo, apListGoTo, apOmniGoTo, apStatus, midAnchorPane;
+  @FXML private BorderPane mainPane;
+  @FXML private Button btnAdvancedSearch, btnBibMgr, btnDecrement, btnFileMgr, btnIncrement, btnMentions, btnPreviewWindow,
+                       btnSave, btnDelete, btnRevert, btnCreateNew, btnSearch, btnBack, btnForward, btnSaveAll, btnTextSearch;
+  @FXML private ComboBox<HyperTableCell> cbGoTo;
+  @FXML private GridPane gpBottom;
+  @FXML private HBox topHBox;
+  @FXML private ImageView ivDates, ivLeft, ivRight;
+  @FXML private Label lblProgress;
+  @FXML private Menu mnuFolders;
+  @FXML private MenuBar menuBar;
+  @FXML private MenuItem mnuAddToQueryResults, mnuChangeID, mnuCloseDatabase, mnuExitNoSave, mnuFindNextAll, mnuFindNextInName,
+                         mnuFindPreviousAll, mnuFindPreviousInName, mnuFindWithinAnyField, mnuFindWithinName, mnuImportBibClipboard,
+                         mnuImportBibFile, mnuNewCountry, mnuNewDatabase, mnuNewField, mnuNewPersonStatus, mnuNewRank,
+                         mnuRecordSelect, mnuRevertToDiskCopy, mnuSaveReloadAll, mnuToggleFavorite;
+  @FXML private ProgressBar progressBar;
+  @FXML private SeparatorMenuItem mnuBibImportSeparator;
+  @FXML private SplitMenuButton btnGoTo;
+  @FXML private StackPane stackPane;
+  @FXML private TabPane selectorTabPane, tabPane;
+  @FXML private TextField tfID, tfOmniGoTo, tfRecord;
+  @FXML private ToggleButton btnPointerPreview;
+  @FXML private ToolBar tbGoTo, topToolBar;
+  @FXML public Label lblStatus;
+  @FXML public Menu mnuFavorites, mnuQueries;
+  @FXML public Tab tabArguments, tabDebates, tabFiles, tabInstitutions, tabNotes, tabPersons, tabPositions, tabQueries, tabTerms, tabTree, tabWorks;
+  @FXML public ToggleButton btnPointerLaunch;
 
   public final WindowStack windows = new WindowStack();
   public HyperViewSequence viewSequence;
@@ -203,10 +149,9 @@ public final class MainController
   public HDT_Base treeSubjRecord = null, treeObjRecord = null;
   public final List<TreeTargetType> treeTargetTypes = new ArrayList<>();
 
-  private double toolBarWidth = 0;
   public Tooltip ttDates;
   private boolean selectorTabChangeIsProgrammatic = false, maximized = false, internetNotCheckedYet = true;
-  private double maxWidth = 0.0, maxHeight = 0.0;
+  private double toolBarWidth = 0.0, maxWidth = 0.0, maxHeight = 0.0;
 
   private static final String TREE_SELECT_BTN_CAPTION = "Select";
 
@@ -678,10 +623,10 @@ public final class MainController
       switch (activeTab())
       {
         case personTab : return pvsPersonTab;
-        case workTab :   return pvsWorkTab;
-        case queryTab :  return pvsQueryTab;
-        case treeTab :   return pvsTreeTab;
-        default :        return pvsOther;
+        case workTab   : return pvsWorkTab;
+        case queryTab  : return pvsQueryTab;
+        case treeTab   : return pvsTreeTab;
+        default        : return pvsOther;
       }
     }
 
@@ -765,8 +710,8 @@ public final class MainController
     if (anchorWidth == 0)
       anchorWidth = midAnchorPane.getWidth();
 
-    Point2D p2 = midAnchorPane.localToScreen(anchorWidth, 0);
-    Point2D p1 = tabTree.getGraphic().localToScreen(16, 0);
+    Point2D p2 = midAnchorPane.localToScreen(anchorWidth, 0),
+            p1 = tabTree.getGraphic().localToScreen(16, 0);
 
     if ((p1.getX() > 1) && (p2.getX() > 1))
     {
@@ -841,14 +786,14 @@ public final class MainController
 
         switch (workType)
         {
-          case wtBook:            return "resources/images/book.png";
-          case wtChapter:         return "resources/images/chapter.png";
-          case wtNone:            return "resources/images/unknown.png";
-          case wtPaper:           return "resources/images/paper.png";
-          case wtRecording:       return "resources/images/recording.png";
-          case wtWebPage:         return "resources/images/text-html.png";
-          case wtUnenteredSet:    return "resources/images/inbox-document-text.png";
-          default:                return "resources/images/unknown.png";
+          case wtBook         : return "resources/images/book.png";
+          case wtChapter      : return "resources/images/chapter.png";
+          case wtNone         : return "resources/images/unknown.png";
+          case wtPaper        : return "resources/images/paper.png";
+          case wtRecording    : return "resources/images/recording.png";
+          case wtWebPage      : return "resources/images/text-html.png";
+          case wtUnenteredSet : return "resources/images/inbox-document-text.png";
+          default             : return "resources/images/unknown.png";
         }
 
       case hdtMiscFile :
@@ -947,10 +892,9 @@ public final class MainController
     {
       if (save)
       {
-        if (cantSaveRecord(false))
-          if (prompt)
-            if (confirmDialog("Unable to accept most recent changes to this record; however, all other data will be saved. Continue exiting?") == false)
-              return;
+        if (cantSaveRecord(false) && prompt)
+          if (!confirmDialog("Unable to accept most recent changes to this record; however, all other data will be saved. Continue exiting?"))
+            return;
 
         if (appPrefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))
         {
@@ -1604,9 +1548,9 @@ public final class MainController
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void mnuNewFieldClick()        { mnuNewCategoryClick(hdtField); }
-  @FXML private void mnuNewRankClick()         { mnuNewCategoryClick(hdtRank); }
-  @FXML private void mnuNewCountryClick()      { mnuNewCategoryClick(hdtCountry); }
+  @FXML private void mnuNewFieldClick       () { mnuNewCategoryClick(hdtField       ); }
+  @FXML private void mnuNewRankClick        () { mnuNewCategoryClick(hdtRank        ); }
+  @FXML private void mnuNewCountryClick     () { mnuNewCategoryClick(hdtCountry     ); }
   @FXML private void mnuNewPersonStatusClick() { mnuNewCategoryClick(hdtPersonStatus); }
 
   private void mnuNewCategoryClick(HDT_RecordType type)
@@ -1982,21 +1926,21 @@ public final class MainController
       return;
     }
 
-    HyperTab.setTabView(new HyperView<>(personTab,      db.persons     .getByID(db.prefs.getInt(PREF_KEY_PERSON_ID     , -1))));
+    HyperTab.setTabView(new HyperView<>(personTab     , db.persons     .getByID(db.prefs.getInt(PREF_KEY_PERSON_ID     , -1))));
     HyperTab.setTabView(new HyperView<>(institutionTab, db.institutions.getByID(db.prefs.getInt(PREF_KEY_INSTITUTION_ID, -1))));
-    HyperTab.setTabView(new HyperView<>(debateTab,      db.debates     .getByID(db.prefs.getInt(PREF_KEY_DEBATE_ID     , -1))));
-    HyperTab.setTabView(new HyperView<>(positionTab,    db.positions   .getByID(db.prefs.getInt(PREF_KEY_POSITION_ID   , -1))));
-    HyperTab.setTabView(new HyperView<>(argumentTab,    db.arguments   .getByID(db.prefs.getInt(PREF_KEY_ARGUMENT_ID   , -1))));
-    HyperTab.setTabView(new HyperView<>(workTab,        db.works       .getByID(db.prefs.getInt(PREF_KEY_WORK_ID       , -1))));
+    HyperTab.setTabView(new HyperView<>(debateTab     , db.debates     .getByID(db.prefs.getInt(PREF_KEY_DEBATE_ID     , -1))));
+    HyperTab.setTabView(new HyperView<>(positionTab   , db.positions   .getByID(db.prefs.getInt(PREF_KEY_POSITION_ID   , -1))));
+    HyperTab.setTabView(new HyperView<>(argumentTab   , db.arguments   .getByID(db.prefs.getInt(PREF_KEY_ARGUMENT_ID   , -1))));
+    HyperTab.setTabView(new HyperView<>(workTab       , db.works       .getByID(db.prefs.getInt(PREF_KEY_WORK_ID       , -1))));
 
     HDT_Term term = db.terms.getByID(db.prefs.getInt(PREF_KEY_TERM_ID, -1));
     HDT_Concept concept = term != null ? term.concepts.get(0) : null;
     HyperTab.setTabView(new HyperView<>(termTab,        concept));
 
-    HyperTab.setTabView(new HyperView<>(miscFileTab,    db.miscFiles   .getByID(db.prefs.getInt(PREF_KEY_FILE_ID       , -1))));
-    HyperTab.setTabView(new HyperView<>(noteTab,        db.notes       .getByID(db.prefs.getInt(PREF_KEY_NOTE_ID       , -1))));
-    HyperTab.setTabView(new HyperView<>(queryTab,       null));
-    HyperTab.setTabView(new HyperView<>(treeTab,        null));
+    HyperTab.setTabView(new HyperView<>(miscFileTab   , db.miscFiles   .getByID(db.prefs.getInt(PREF_KEY_FILE_ID       , -1))));
+    HyperTab.setTabView(new HyperView<>(noteTab       , db.notes       .getByID(db.prefs.getInt(PREF_KEY_NOTE_ID       , -1))));
+    HyperTab.setTabView(new HyperView<>(queryTab      , null));
+    HyperTab.setTabView(new HyperView<>(treeTab       , null));
 
     enableAll(db.isLoaded());
 
@@ -2032,12 +1976,12 @@ public final class MainController
     }
 
     String otherCompName = db.getLockOwner();
-    if (nonNull(otherCompName))
+    if (otherCompName != null)
     {
       if (LockedDialogController.create("Database is Currently Locked", otherCompName).showModal() == false)
         return false;
 
-      if (nonNull(db.getLockOwner()))
+      if (db.getLockOwner() != null)
         return false;
     }
 
@@ -2080,13 +2024,7 @@ public final class MainController
 
   public boolean cantSaveRecord(boolean showMessage)
   {
-    if (db.isLoaded() == false)
-      return false;
-
-    if ((activeTab() == queryTab) || (activeTab() == treeTab))
-      return false;
-
-    if (activeRecord() == null)
+    if ((db.isLoaded() == false) || (activeTab() == queryTab) || (activeTab() == treeTab) || (activeRecord() == null))
       return false;
 
     CommitableWrapper.commitWrapper(primaryStage().getScene().getFocusOwner());
@@ -2325,10 +2263,8 @@ public final class MainController
         return activeType();
 
       default :
-        break;
+        return HyperTab.getRecordTypeByTabEnum(tabEnum);
     }
-
-    return HyperTab.getRecordTypeByTabEnum(tabEnum);
   }
 
 //---------------------------------------------------------------------------
@@ -2411,14 +2347,11 @@ public final class MainController
 
     hideFindTable();
 
-    if (setFocus && (selectorTF != null))
+    if (setFocus && (selectorTF != null)) Platform.runLater(() ->
     {
-      Platform.runLater(() ->
-      {
-        selectorTF.requestFocus();
-        selectorTF.selectAll();
-      });
-    }
+      selectorTF.requestFocus();
+      selectorTF.selectAll();
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -2426,11 +2359,11 @@ public final class MainController
 
   public void attachOrphansToRoots()
   {
-    Set<HDT_Position> orphans2 = db.getOrphans(rtParentPosOfPos, HDT_Position.class);
+    Set<HDT_Position> orphans = db.getOrphans(rtParentPosOfPos, HDT_Position.class);
 
     db.getOrphans(rtDebateOfPosition, HDT_Position.class).forEach(position ->
     {
-      if (orphans2.contains(position))
+      if (orphans.contains(position))
         position.debates.add(db.debates.getByID(1));
     });
 
@@ -2451,8 +2384,7 @@ public final class MainController
     HyperTab<? extends HDT_Base, ? extends HDT_Base> curTab = currentTab();
     if (curTab == null) return;
 
-    int count = curTab.getRecordCount();
-    int ndx = curTab.getRecordNdx();
+    int count = curTab.getRecordCount(), ndx = curTab.getRecordNdx();
     HDT_Base activeRec = activeRecord();
     TabEnum activeTabEnum = activeTab();
 
@@ -2494,14 +2426,9 @@ public final class MainController
 
       btnRevert.setDisable(false);
       btnRevert.setText("Refresh");
-      btnIncrement.setDisable(true);
-      btnDecrement.setDisable(true);
 
-      if (count > 0)
-      {
-        btnDecrement.setDisable(false);
-        btnIncrement.setDisable(false);
-      }
+      btnIncrement.setDisable(count < 1);
+      btnDecrement.setDisable(count < 1);
 
       btnDelete.setDisable(activeRec == null);
     }
@@ -2526,16 +2453,8 @@ public final class MainController
 
       btnSave.setText("Accept Edits");
 
-      if (activeRec != null)
-      {
-        btnDelete.setDisable(false);
-        btnSave.setDisable(false);
-      }
-      else
-      {
-        btnDelete.setDisable(true);
-        btnSave.setDisable(true);
-      }
+      btnDelete.setDisable(activeRec == null);
+      btnSave  .setDisable(activeRec == null);
 
       btnRevert.setText("Revert");
 //      if (changed)
@@ -2543,30 +2462,16 @@ public final class MainController
 //      else
 //        btnRevert->Enabled = false;
 
-      if ((count == 0) || (ndx == 0))
-        btnDecrement.setDisable(true);
-      else
-        btnDecrement.setDisable(false);
-
-      if ((count == 0) || (ndx == (count - 1)))
-        btnIncrement.setDisable(true);
-      else
-        btnIncrement.setDisable(false);
+      btnDecrement.setDisable((count == 0) || (ndx == 0));
+      btnIncrement.setDisable((count == 0) || (ndx == (count - 1)));
     }
 
   //---------------------------------------------------------------------------
   // General stuff
   //---------------------------------------------------------------------------
 
-    if (count > 0)
-      tfRecord.setText((ndx + 1) + " of " + count);
-    else
-      tfRecord.setText("");
-
-    if (activeRec != null)
-      tfID.setText(String.valueOf(activeRec.getID()));
-    else
-      tfID.setText("");
+    tfRecord.setText(count < 1 ? "" : ((ndx + 1) + " of " + count));
+    tfID.setText(activeRec == null ? "" : String.valueOf(activeRec.getID()));
 
     updateDatesTooltip(activeRec);
     updateFavorites();
@@ -2630,14 +2535,14 @@ public final class MainController
       return;
     }
 
-    HDT_RecordType type = activeType();
+    HyperDataset<? extends HDT_Base>.CoreAccessor records = db.records(activeType());
 
-    int ndx = db.records(type).getKeyNdxByID(activeRecord().getID());
+    int ndx = records.getKeyNdxByID(activeRecord().getID());
 
     if (increment)
     {
       ndx++;
-      if (ndx >= db.records(type).size()) return;
+      if (ndx >= records.size()) return;
     }
     else
     {
@@ -2645,7 +2550,7 @@ public final class MainController
       ndx--;
     }
 
-    goToRecord(db.records(type).getByKeyNdx(ndx), true);
+    goToRecord(records.getByKeyNdx(ndx), true);
   }
 
 //---------------------------------------------------------------------------
@@ -2889,9 +2794,7 @@ public final class MainController
 
     ImportBibEntryDialogController ibed = ImportBibEntryDialogController.create("Import Bibliography File", lines, filePath);
 
-    if (ibed.getFailedToLoad()) return;
-
-    if (!ibed.showModal()) return;
+    if (ibed.getFailedToLoad() || !ibed.showModal()) return;
 
     lines = ibed.getLines();
     filePath = ibed.getFilePath();

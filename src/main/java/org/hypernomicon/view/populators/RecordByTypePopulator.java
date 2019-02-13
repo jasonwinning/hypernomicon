@@ -19,7 +19,6 @@ package org.hypernomicon.view.populators;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -182,19 +181,16 @@ public class RecordByTypePopulator extends Populator
 
     HDT_RecordType recordType = rowToRecordType.get(row);
     choices.clear();
-    choices.add(new HyperTableCell(-1, "", hdtNone));
+    choices.add(HyperTableCell.blankCell);
 
     if (recordType == hdtNone) return choices;
 
     HashMap<Integer, Boolean> map = new HashMap<>();
     boolean firstAdd = true;
-    ArrayList<Integer> recent;
 
     if (recordType.getDisregardDates() == false)
     {
-      recent = getRecent(recordType, 5);
-
-      for (Integer id : recent)
+      for (Integer id : getRecent(recordType, 5))
       {
         HDT_Base record = db.records(recordType).getByID(id.intValue());
 
@@ -212,29 +208,20 @@ public class RecordByTypePopulator extends Populator
 
     for (HDT_Base record : db.records(recordType).keyIterable())
     {
-      if (((filter == null) || filter.filter(record)) && (map.containsKey(record.getID()) == false))
+      if (map.containsKey(record.getID()) == false)
       {
-        if (firstAdd)
+        HyperTableCell choice = getCell(record);
+
+        if (choice != null)
         {
-          choices.clear();
-          firstAdd = false;
+          if (firstAdd)
+          {
+            choices.clear();
+            firstAdd = false;
+          }
+
+          addToSortedList(choices, choice);
         }
-
-        HyperTableCell choice;
-
-        if (nameOnly)
-          choice = new HyperTableCell(record.getID(), record.name(), recordType);
-        else if (recordType == hdtWork)
-          choice = new HyperTableCell(record.getID(), record.getCBText(), recordType, hsmWork);
-        else
-          choice = new HyperTableCell(record.getID(), record.getCBText(), recordType);
-
-        int ndx = Collections.binarySearch(choices, choice);
-
-        if (ndx < 0)
-          ndx = (ndx + 1) * -1;
-
-        choices.add(ndx, choice);
       }
     }
 
@@ -246,7 +233,7 @@ public class RecordByTypePopulator extends Populator
         choices.add(ndx, recentChoices.get(ndx));
     }
 
-    choices.add(new HyperTableCell(-1, "", hdtNone));
+    choices.add(HyperTableCell.blankCell);
 
     rowToChanged.put(row, false);
     return choices;
@@ -255,9 +242,58 @@ public class RecordByTypePopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private HyperTableCell getCell(HDT_Base record)
+  {
+    if ((filter != null) && (filter.filter(record) == false))
+      return null;
+
+    if (nameOnly)
+      return new HyperTableCell(record.getID(), record.name(), record.getType());
+    else if (record.getType() == hdtWork)
+      return new HyperTableCell(record.getID(), record.getCBText(), record.getType(), hsmWork);
+    else
+      return new HyperTableCell(record.getID(), record.getCBText(), record.getType());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
   {
-    return populate(nullSwitch(row, dummyRow), false).contains(cell) ? cell.clone() : null;
+    if (row == null) row = dummyRow;
+    if (hasChanged(row) == false) return equalMatch(row, cell);
+
+    if (rowToRecordType.containsKey(row) == false)
+      rowToRecordType.put(row, hdtNone);
+
+    HDT_RecordType recordType = rowToRecordType.get(row);
+
+    if ((recordType == hdtNone) || (HyperTableCell.getCellType(cell) == hdtNone) || (HyperTableCell.getCellID(cell) < 1))
+      return HyperTableCell.blankCell;
+
+    if (recordType != HyperTableCell.getCellType(cell))
+      return null;
+
+    return getCell(HyperTableCell.getRecord(cell));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public HyperTableCell getChoiceByID(HyperTableRow row, int id)
+  {
+    if (row == null) row = dummyRow;
+    if (hasChanged(row) == false) return super.getChoiceByID(row, id);
+
+    if (rowToRecordType.containsKey(row) == false)
+      rowToRecordType.put(row, hdtNone);
+
+    HDT_RecordType recordType = rowToRecordType.get(row);
+
+    if ((recordType == hdtNone) || (id < 1))
+      return HyperTableCell.blankCell;
+
+    return getCell(db.records(recordType).getByID(id));
   }
 
 //---------------------------------------------------------------------------

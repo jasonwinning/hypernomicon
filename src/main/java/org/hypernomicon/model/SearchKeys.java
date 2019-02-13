@@ -79,8 +79,8 @@ public final class SearchKeys
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    @Override public final String toString()  { return (startOnly ? "^" + text : text) + (endOnly ? "$" : ""); }
-    public final String getPrefix()           { return text.substring(0, 3).toLowerCase(); }
+    @Override public String toString()  { return (startOnly ? "^" + text : text) + (endOnly ? "$" : ""); }
+    public String getPrefix()           { return text.substring(0, 3).toLowerCase(); }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------

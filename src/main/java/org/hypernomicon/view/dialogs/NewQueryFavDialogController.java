@@ -29,8 +29,7 @@ public class NewQueryFavDialogController extends HyperDialog
 {
   @FXML private TextField tfName;
   @FXML private CheckBox chkAutoExec;
-  @FXML private Button btnOk;
-  @FXML private Button btnCancel;
+  @FXML private Button btnOk, btnCancel;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

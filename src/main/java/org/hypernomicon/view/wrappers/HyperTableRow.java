@@ -60,7 +60,7 @@ public class HyperTableRow
 
     for (int colNdx = 0; colNdx < colCount; colNdx++)
     {
-      cells.add(new HyperTableCell(-1, "", HDT_RecordType.hdtNone));
+      cells.add(HyperTableCell.blankCell);
       populators.put(colNdx, table.getPopulator(colNdx));
     }
   }
@@ -169,7 +169,6 @@ public class HyperTableRow
                                                 // when you change values in the cell objects, just the row objects
 
     CellUpdateHandler handler = col.updateHandler;
-    final HyperTableCell finalCell = newCell.clone();
 
     if (handler != null)
     {
@@ -177,7 +176,7 @@ public class HyperTableRow
       if (table.getColumns().size() > (colNdx + 1))
         nextPop = populators.get(colNdx + 1);
 
-      handler.handle(this, finalCell, colNdx + 1, nextPop);
+      handler.handle(this, newCell, colNdx + 1, nextPop);
 
       if (table.getColumns().size() > (colNdx + 1))
         table.refreshCol(colNdx + 1);           // Necessary workaround; tableview does not automatically refresh

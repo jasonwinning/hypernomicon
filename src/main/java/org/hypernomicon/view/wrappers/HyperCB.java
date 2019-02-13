@@ -614,17 +614,12 @@ public class HyperCB implements CommitableWrapper
 
   public void selectID(int objID)
   {
-    populate(false);
+    HyperTableCell choice = populator.getChoiceByID(row, objID);
 
-    for (HyperTableCell choice : cb.getItems())
-    {
-      if ((choice.getID() == objID) || ((choice.getID() < 1) && (objID < 1)))
-      {
-        cb.getSelectionModel().select(choice);
-        cb.setValue(choice);
-        return;
-      }
-    }
+    if (choice == null) return;
+
+    cb.getSelectionModel().select(choice);
+    cb.setValue(choice);
   }
 
 //---------------------------------------------------------------------------
@@ -660,6 +655,5 @@ public class HyperCB implements CommitableWrapper
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-
 
 }

@@ -35,9 +35,7 @@ import javafx.scene.control.TableView;
 
 public class ObjectOrderDialogController extends HyperDialog
 {
-  @FXML private Button btnMoveUp;
-  @FXML private Button btnMoveDown;
-  @FXML private Button btnOK;
+  @FXML private Button btnMoveUp, btnMoveDown, btnOK;
   @FXML private TableView<HyperTableRow> tv;
 
   private ObservableList<HyperTableRow> rows;

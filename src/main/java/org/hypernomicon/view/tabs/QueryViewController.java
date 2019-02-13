@@ -28,10 +28,8 @@ import javafx.scene.layout.AnchorPane;
 
 public class QueryViewController extends SplitPane
 {
-  @FXML MasterDetailPane spMain;
-  @FXML MasterDetailPane spLower;
+  @FXML MasterDetailPane spMain, spLower;
   @FXML TableView<HyperTableRow> tvFields;
   @FXML TableView<ResultsRow> tvResults;
-  @FXML AnchorPane apDescription;
-  @FXML AnchorPane apResults;
+  @FXML AnchorPane apDescription, apResults;
 }

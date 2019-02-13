@@ -40,10 +40,8 @@ public class ChangeIDDialogController extends HyperDialog
 {
   public HyperCB hcbType, hcbRecord;
 
-  @FXML private ComboBox<HyperTableCell> cbType;
-  @FXML private ComboBox<HyperTableCell> cbRecord;
-  @FXML public TextField tfOldID;
-  @FXML public TextField tfNewID;
+  @FXML private ComboBox<HyperTableCell> cbType, cbRecord;
+  @FXML public TextField tfOldID, tfNewID;
   @FXML private Button btnNextID;
   @FXML private Label lblNotAvailable;
 

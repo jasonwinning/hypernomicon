@@ -36,8 +36,9 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
     hsmStandard, hsmTextSimple, hsmNumeric, hsmLast, hsmWork
   }
 
-  public static final HyperTableCell trueCell  = new HyperTableCell(1, "", hdtNone),
-                                     falseCell = new HyperTableCell(0, "", hdtNone);
+  public static final HyperTableCell trueCell  = new HyperTableCell(1 , "", hdtNone),
+                                     falseCell = new HyperTableCell(0 , "", hdtNone),
+                                     blankCell = new HyperTableCell(-1, "", hdtNone);
 
   private int id;
   private String text;

@@ -18,7 +18,6 @@
 package org.hypernomicon.view.populators;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.HashMap;
@@ -40,8 +39,9 @@ public class HybridSubjectPopulator extends Populator
 
 //---------------------------------------------------------------------------
 
-  @Override public CellValueType getValueType()                    { return cvtRecord; }
-  @Override public HDT_RecordType getRecordType(HyperTableRow row) { return db.getSubjType(relType); }
+  @Override public CellValueType getValueType()                                 { return cvtRecord; }
+  @Override public HDT_RecordType getRecordType(HyperTableRow row)              { return db.getSubjType(relType); }
+  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return equalMatch(row, cell); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -115,14 +115,6 @@ public class HybridSubjectPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)
-  {
-    return populate(nullSwitch(row, dummyRow), false).contains(cell) ?  cell.clone() : null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public boolean hasChanged(HyperTableRow row)
   {
     if (row == null) row = dummyRow;
@@ -167,5 +159,8 @@ public class HybridSubjectPopulator extends Populator
     standardPop.addEntry(row, id, value);
     return subjPop.addEntry(row, id, value);
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 }

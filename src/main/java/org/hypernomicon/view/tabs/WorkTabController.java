@@ -19,7 +19,7 @@ package org.hypernomicon.view.tabs;
 
 import org.hypernomicon.bib.BibData;
 import org.hypernomicon.bib.BibUtils;
-import org.hypernomicon.bib.BibUtils.PdfMetadata;
+import org.hypernomicon.bib.PdfMetadata;
 import org.hypernomicon.bib.lib.BibEntry;
 import org.hypernomicon.model.SearchKeys;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
@@ -78,6 +78,7 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.json.simple.parser.ParseException;
 
 import com.adobe.internal.xmp.XMPException;
@@ -115,70 +116,24 @@ import javafx.stage.FileChooser;
 
 public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 {
-  @FXML private Button btnTree;
-  @FXML private Button btnWorldCat;
-  @FXML private Button btnScholar;
-  @FXML private SplitMenuButton btnDOI;
-  @FXML private Button btnOpenLink;
-  @FXML private Button btnLaunch;
-  @FXML private Button btnNewChapter;
-  @FXML private Button btnLargerWork;
-  @FXML private Button btnStop;
-  @FXML private MenuButton btnWebQuery;
-  @FXML private MenuButton btnPDFMeta;
-  @FXML private Button btnUseDOI;
-  @FXML private Button btnUseISBN;
-  @FXML private Button btnMergeBib;
-  @FXML private Button btnBibManager;
-  @FXML private MenuItem mnuGoogle;
-  @FXML private MenuItem mnuCrossref;
-  @FXML private MenuItem mnuFindDOIonCrossref;
-  @FXML private MenuItem mnuFindISBNonGoogleBooks;
-  @FXML private MenuItem mnuShowMetadata;
-  @FXML private MenuItem mnuStoreMetadata;
-  @FXML public TextField tfYear;
-  @FXML private TextField tfTitle;
-  @FXML private TextField tfDOI;
-  @FXML private TextField tfSearchKey;
-  @FXML private TextField tfLink;
-  @FXML private TabPane tpBib;
-  @FXML private Tab tabMiscBib;
-  @FXML private TextArea taMiscBib;
-  @FXML private Tab tabPdfMetadata;
-  @FXML private TextArea taPdfMetadata;
-  @FXML private Tab tabCrossref;
-  @FXML private TextArea taCrossref;
-  @FXML private Tab tabGoogleBooks;
-  @FXML private TextArea taGoogleBooks;
-  @FXML private TableView<HyperTableRow> tvAuthors;
-  @FXML private TableView<HyperTableRow> tvLabels;
-  @FXML private TableView<HyperTableRow> tvSubworks;
-  @FXML private TableView<HyperTableRow> tvInvestigations;
-  @FXML private TableView<HyperTableRow> tvArguments;
-  @FXML private TableView<HyperTableRow> tvMiscFiles;
-  @FXML private TableView<HyperTableRow> tvWorkFiles;
-  @FXML private TableView<HyperTableRow> tvISBN;
-  @FXML private ComboBox<HyperTableCell> cbType;
-  @FXML private ComboBox<HyperTableCell> cbLargerWork;
-  @FXML private Tab tabWorkFiles;
-  @FXML private Tab tabSubworks;
-  @FXML private Tab tabMiscFiles;
-  @FXML private Tab tabBibDetails;
-  @FXML private Tab tabInvestigations;
-  @FXML private TabPane tabPane;
-  @FXML private AnchorPane apDescription;
-  @FXML private SplitPane spHoriz1;
-  @FXML private SplitPane spHoriz2;
-  @FXML private SplitPane spVert;
-  @FXML private AnchorPane apLowerMid;
-  @FXML private AnchorPane apLowerRight;
-  @FXML private TableView<HyperTableRow> tvKeyMentions;
-  @FXML private TabPane lowerTabPane;
-  @FXML private Tab tabArguments;
-  @FXML private Tab tabKeyMentions;
-  @FXML private Label lblTitle;
-  @FXML private Label lblSearchKey;
+  @FXML private AnchorPane apDescription, apLowerMid, apLowerRight;
+  @FXML private Button btnBibManager, btnLargerWork, btnLaunch, btnMergeBib, btnNewChapter, btnOpenLink,
+                       btnScholar, btnStop, btnTree, btnUseDOI, btnUseISBN, btnWorldCat;
+  @FXML private ComboBox<HyperTableCell> cbLargerWork, cbType;
+  @FXML private Label lblSearchKey, lblTitle;
+  @FXML private MenuButton btnPDFMeta, btnWebQuery;
+  @FXML private MenuItem mnuCrossref, mnuFindDOIonCrossref, mnuFindISBNonGoogleBooks, mnuGoogle, mnuShowMetadata, mnuStoreMetadata;
   @FXML private ProgressBar progressBar;
+  @FXML private SplitMenuButton btnDOI;
+  @FXML private SplitPane spHoriz1, spHoriz2, spVert;
+  @FXML private Tab tabArguments, tabBibDetails, tabCrossref, tabGoogleBooks, tabInvestigations, tabKeyMentions,
+                    tabMiscBib, tabMiscFiles, tabPdfMetadata, tabSubworks, tabWorkFiles;
+  @FXML private TabPane lowerTabPane, tabPane, tpBib;
+  @FXML private TableView<HyperTableRow> tvArguments, tvAuthors, tvISBN, tvInvestigations, tvKeyMentions,
+                                         tvLabels, tvMiscFiles, tvSubworks, tvWorkFiles;
+  @FXML private TextArea taCrossref, taGoogleBooks, taMiscBib, taPdfMetadata;
+  @FXML private TextField tfDOI, tfLink, tfSearchKey, tfTitle;
+  @FXML public TextField tfYear;
 
   private HyperTable htLabels, htSubworks, htInvestigations, htArguments, htMiscFiles, htWorkFiles, htKeyMentioners, htISBN;
   private HyperCB hcbLargerWork;
@@ -1749,12 +1704,9 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
       case hdtMiscFile :
 
         if (ui.cantSaveRecord(true)) return;
-
         HDT_MiscFile file = db.createNewBlankRecord(hdtMiscFile);
-
         file.work.set(curWork);
         ui.goToRecord(file, false);
-
         break;
 
       default:
@@ -1966,9 +1918,11 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 
       taPdfMetadata.appendText(pdfBD.get().createReport());
 
-      addBibLine("Keywords", goodMD.docInfo.getKeywords(), taPdfMetadata);
-      addBibLine("Creator", goodMD.docInfo.getCreator(), taPdfMetadata);
-      addBibLine("Producer", goodMD.docInfo.getProducer(), taPdfMetadata);
+      PDDocumentInformation docInfo = goodMD.getDocInfo();
+
+      addBibLine("Keywords", docInfo.getKeywords(), taPdfMetadata);
+      addBibLine("Creator" , docInfo.getCreator (), taPdfMetadata);
+      addBibLine("Producer", docInfo.getProducer(), taPdfMetadata);
     }
     catch (IOException | XMPException e)
     {

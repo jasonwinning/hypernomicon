@@ -26,7 +26,6 @@ import java.util.Set;
 
 import org.hypernomicon.bib.BibData.EntryType;
 import org.hypernomicon.bib.lib.BibEntry;
-import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.wrappers.HyperTable;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -57,9 +56,8 @@ public class BibEntryTable
   {
     CondBibEntryRowHandler condHandler;
     BibEntryRowHandler handler;
-    String caption;
-    boolean visible = true;
-    boolean disabled = false;
+    final String caption;
+    boolean visible = true, disabled = false;
 
     BibEntryRowMenuItemSchema(String caption) { this.caption = caption; }
   }
@@ -104,13 +102,13 @@ public class BibEntryTable
     tv.setItems(rows);
     tv.setPlaceholder(new Text("There are no entries in the current view."));
 
-    TableColumn<BibEntryRow, String> tcEntryKey    = (TableColumn<BibEntryRow, String>) tv.getColumns().get(0);
-    TableColumn<BibEntryRow, String> tcType        = (TableColumn<BibEntryRow, String>) tv.getColumns().get(1);
-    TableColumn<BibEntryRow, String> tcAuthors     = (TableColumn<BibEntryRow, String>) tv.getColumns().get(2);
-    TableColumn<BibEntryRow, String> tcTitle       = (TableColumn<BibEntryRow, String>) tv.getColumns().get(3);
-    TableColumn<BibEntryRow, String> tcYear        = (TableColumn<BibEntryRow, String>) tv.getColumns().get(4);
-    TableColumn<BibEntryRow, String> tcAssocRecord = (TableColumn<BibEntryRow, String>) tv.getColumns().get(5);
-    TableColumn<BibEntryRow, String> tcPublishedIn = (TableColumn<BibEntryRow, String>) tv.getColumns().get(6);
+    TableColumn<BibEntryRow, String> tcEntryKey    = (TableColumn<BibEntryRow, String>) tv.getColumns().get(0),
+                                     tcType        = (TableColumn<BibEntryRow, String>) tv.getColumns().get(1),
+                                     tcAuthors     = (TableColumn<BibEntryRow, String>) tv.getColumns().get(2),
+                                     tcTitle       = (TableColumn<BibEntryRow, String>) tv.getColumns().get(3),
+                                     tcYear        = (TableColumn<BibEntryRow, String>) tv.getColumns().get(4),
+                                     tcAssocRecord = (TableColumn<BibEntryRow, String>) tv.getColumns().get(5),
+                                     tcPublishedIn = (TableColumn<BibEntryRow, String>) tv.getColumns().get(6);
 
     tcEntryKey   .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getEntryKey()));
     tcType       .setCellValueFactory(cellData -> new SimpleStringProperty(BibUtils.getEntryTypeName(cellData.getValue().getEntry().getEntryType())));
@@ -139,17 +137,8 @@ public class BibEntryTable
     tcYear.setComparator(cmp);
     tcAssocRecord.setComparator(cmp);
 
-    tcAssocRecord.setCellValueFactory(cellData ->
-    {
-      int id = -1;
-      String key = cellData.getValue().getEntry().getEntryKey();
-      HDT_Work work = db.getWorkByBibEntryKey(key);
-
-      if (work != null)
-        id = work.getID();
-
-      return new SimpleStringProperty(id < 1 ? "" : String.valueOf(id));
-    });
+    tcAssocRecord.setCellValueFactory(cellData -> new SimpleStringProperty
+      (nullSwitch(db.getWorkByBibEntryKey(cellData.getValue().getEntry().getEntryKey()), "", work -> String.valueOf(work.getID()))));
   }
 
 //---------------------------------------------------------------------------
@@ -189,12 +178,11 @@ public class BibEntryTable
 
     entries.forEach(entry ->
     {
-      if (entry.getEntryType() != EntryType.etOther)
-      {
-        BibEntryRow row = new BibEntryRow(entry);
-        rows.add(row);
-        keyToRow.put(entry.getEntryKey(), row);
-      }
+      if (entry.getEntryType() == EntryType.etOther) return;
+
+      BibEntryRow row = new BibEntryRow(entry);
+      rows.add(row);
+      keyToRow.put(entry.getEntryKey(), row);
     });
   }
 
@@ -203,9 +191,7 @@ public class BibEntryTable
 
   void selectKey(String bibEntryKey)
   {
-    BibEntryRow row = keyToRow.get(bibEntryKey);
-
-    tv.getSelectionModel().select(row);
+    tv.getSelectionModel().select(keyToRow.get(bibEntryKey));
     HyperTable.scrollToSelection(tv, true);
   }
 

@@ -39,8 +39,7 @@ public class RenameDialogController extends HyperDialog
     ntFolder
   }
 
-  @FXML private Button btnOk;
-  @FXML private Button btnCancel;
+  @FXML private Button btnOk, btnCancel;
   @FXML private Label lblInvalid;
   @FXML private TextField tfName;
 

@@ -40,10 +40,8 @@ public class NewInstDialogController extends HyperDialog
 {
   public HyperCB hcbParent, hcbType;
 
-  @FXML public TextField tfName;
-  @FXML private ComboBox<HyperTableCell> cbType;
-  @FXML public TextField tfNewParentName;
-  @FXML private ComboBox<HyperTableCell> cbParent;
+  @FXML public TextField tfName, tfNewParentName;
+  @FXML private ComboBox<HyperTableCell> cbType, cbParent;
   @FXML public RadioButton rbNew;
   @FXML private RadioButton rbExisting;
 

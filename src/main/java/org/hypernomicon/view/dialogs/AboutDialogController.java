@@ -38,10 +38,7 @@ public class AboutDialogController extends HyperDialog
 {
   private @FXML WebView webView;
   private @FXML TabPane tabPane;
-  private @FXML Tab tabGeneral;
-  private @FXML Tab tabContributors;
-  private @FXML Tab tabAcknowledgements;
-  private @FXML Tab tabLicense;
+  private @FXML Tab tabGeneral, tabContributors, tabAcknowledgements, tabLicense;
 
   private String tabGeneralHtml, tabContributorsHtml, tabAcknowledgementsHtml;
 

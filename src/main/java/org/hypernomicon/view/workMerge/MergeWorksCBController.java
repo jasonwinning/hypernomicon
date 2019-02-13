@@ -32,18 +32,9 @@ import javafx.scene.layout.GridPane;
 
 public class MergeWorksCBController extends BibFieldRow
 {
-  @FXML private RadioButton rb1;
-  @FXML private RadioButton rb2;
-  @FXML private RadioButton rb3;
-  @FXML private RadioButton rb4;
-
-  @FXML private ComboBox<EntryType> cb1;
-  @FXML private ComboBox<EntryType> cb2;
-  @FXML private ComboBox<EntryType> cb3;
-  @FXML private ComboBox<EntryType> cb4;
-
+  @FXML private RadioButton rb1, rb2, rb3, rb4;
+  @FXML private ComboBox<EntryType> cb1, cb2, cb3, cb4;
   @FXML private GridPane gp;
-
   @FXML private Label lbl;
 
 //---------------------------------------------------------------------------

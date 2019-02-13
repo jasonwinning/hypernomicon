@@ -70,31 +70,15 @@ public class BibField
     if (type == bftString)
       return safeStr(str);
 
-    String allStr = "";
-
     switch (bibFieldEnum)
     {
       case bfContainerTitle: case bfTitle:
 
-        for (String titleStr : strList)
-          allStr = addTitleComponent(allStr, titleStr);
-
-        return allStr;
+        return buildTitle(strList);
 
       case bfMisc:
 
-        for (String miscStr : strList)
-        {
-          if (miscStr.length() > 0)
-          {
-            if (allStr.length() > 0)
-              allStr = allStr + System.lineSeparator();
-
-            allStr = allStr + miscStr;
-          }
-        }
-
-        return allStr;
+        return strListToStr(strList, false, true);
 
       default:
         messageDialog("Internal error #90227", mtError);
@@ -105,24 +89,28 @@ public class BibField
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String addTitleComponent(String str, String titleStr)
+  public static String buildTitle(List<String> list)
   {
-    titleStr = titleStr.trim();
+    StringBuilder sb = new StringBuilder();
 
-    if (titleStr.length() > 0)
+    list.forEach(titleStr ->
     {
-      if (str.length() > 0)
-      {
-        if (StringUtils.isAlpha(StringUtils.right(str, 1)))
-          str = str + ":";
+      titleStr = titleStr.trim();
 
-        str = str + " ";
+      if (titleStr.length() == 0) return;
+
+      if (sb.length() > 0)
+      {
+        if (StringUtils.isAlpha(StringUtils.right(sb.toString(), 1)))
+          sb.append(":");
+
+        sb.append(" ");
       }
 
-      str = str + titleStr;
-    }
+      sb.append(titleStr);
+    });
 
-    return str;
+    return sb.toString();
   }
 
 //---------------------------------------------------------------------------
@@ -180,19 +168,9 @@ public class BibField
 
     switch (bibFieldEnum)
     {
-      case bfISBNs :
-
-        matchISBN(newStr, strList);
-        break;
-
-      case bfISSNs :
-
-        matchISSN(newStr, strList);
-        break;
-
-      default :
-        strList.add(newStr);
-        break;
+      case bfISBNs : matchISBN(newStr, strList); break;
+      case bfISSNs : matchISSN(newStr, strList); break;
+      default :      strList.add(newStr);        break;
     }
   }
 

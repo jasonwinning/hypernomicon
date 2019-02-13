@@ -26,7 +26,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 
-public class Connector
+public final class Connector
 {
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -79,7 +79,7 @@ public class Connector
   //---------------------------------------------------------------------------
 
 
-  final void resolvePointers() throws HDB_InternalError
+  void resolvePointers() throws HDB_InternalError
   {
     if (HDT_Record.isEmptyThrowsException(getHub()))
       link = null;
@@ -90,7 +90,7 @@ public class Connector
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  final void expire()
+  void expire()
   {
     if (getType() == hdtHub) return;
 
