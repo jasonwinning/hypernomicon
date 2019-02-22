@@ -33,8 +33,8 @@ import org.hypernomicon.view.wrappers.HyperTableCell;
 class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements CommitableWrapper
 {
   private TextField textField;
-  private MutableBoolean canEditIfEmpty, isNumeric;
-  private HyperTable table;
+  private final MutableBoolean canEditIfEmpty, isNumeric;
+  private final HyperTable table;
 
 //---------------------------------------------------------------------------
 

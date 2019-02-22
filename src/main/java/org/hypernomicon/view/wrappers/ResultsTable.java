@@ -54,11 +54,11 @@ import javafx.scene.input.MouseEvent;
 
 public final class ResultsTable implements RecordListView
 {
-  private TableView<ResultsRow> tv;
+  private final TableView<ResultsRow> tv;
   private boolean datesAdded = false;
   public static final ArrayList<ColumnGroup> colGroups = new ArrayList<>();
   private static ColumnGroup generalGroup;
-  private List<HyperMenuItem<? extends HDT_Base>> contextMenuItems;
+  private final List<HyperMenuItem<? extends HDT_Base>> contextMenuItems;
 
   public TableView<ResultsRow> getTV() { return tv; }
 
@@ -182,22 +182,16 @@ public final class ResultsTable implements RecordListView
 
   private ContextMenu createContextMenu(ResultsRow row)
   {
-    boolean noneVisible = true;
-
     HDT_Base record = row.getRecord();
     if (record == null) return null;
 
     ContextMenu rowMenu = new ContextMenu();
+    boolean noneVisible = true;
 
     for (HyperMenuItem<? extends HDT_Base> hItem : contextMenuItems)
-    {
-      MenuItem newItem = createContextMenuItem(hItem, record, rowMenu);
+      if (createContextMenuItem(hItem, record, rowMenu).isVisible()) noneVisible = false;
 
-      if (newItem.isVisible()) noneVisible = false;
-    }
-
-    if (noneVisible) return null;
-    return rowMenu;
+    return noneVisible ? null : rowMenu;
   }
 
 //---------------------------------------------------------------------------

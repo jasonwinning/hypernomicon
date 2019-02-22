@@ -33,21 +33,12 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.SearchKeys;
-import org.hypernomicon.model.records.HDT_Base;
-import org.hypernomicon.model.records.HDT_Folder;
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordState;
-import org.hypernomicon.model.records.HDT_RecordType;
-import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.HDT_WorkFile;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.querySources.AllQuerySource;
 import org.hypernomicon.querySources.FilteredQuerySource;
 import org.hypernomicon.querySources.QuerySource;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.populators.QueryPopulator;
-import org.hypernomicon.view.populators.RecordByTypePopulator;
-import org.hypernomicon.view.populators.RecordTypePopulator;
-import org.hypernomicon.view.populators.VariablePopulator;
+import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -293,11 +284,11 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
             if (specifiedRecord.getType() == hdtWork)
             {
               HDT_Work work = (HDT_Work) specifiedRecord;
-              for (HDT_WorkFile workFile : work.workFiles)
+              work.workFiles.forEach(workFile ->
               {
                 while (list.contains(workFile))
                   list.remove(workFile);
-              }
+              });
             }
 
             if (choseNotToWait.isTrue())
@@ -324,8 +315,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
             HDT_RecordType specifiedType = getCellType(op1);
             int specifiedID = getCellID(op2);
             if ((specifiedType == hdtNone) || (specifiedID == -1)) return;
-            HDT_Base specifiedRecord = db.records(specifiedType).getByID(specifiedID);
-            list.add(specifiedRecord);
+            list.add(db.records(specifiedType).getByID(specifiedID));
           }
         };
 
@@ -337,7 +327,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
             HashMap<FilePath, HDT_Folder> map = new HashMap<>();
             HashSet<HDT_Folder> set = new HashSet<>();
 
-            for (HDT_Folder folder : db.folders)
+            db.folders.forEach(folder ->
             {
               FilePath filePath = folder.getPath().getFilePath();
 
@@ -354,7 +344,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
               }
               else
                 map.put(filePath, folder);
-            }
+            });
           }
         };
 

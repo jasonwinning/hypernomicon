@@ -631,13 +631,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
       switchToRecordMode();
 
-      QuerySource combinedSource;
-      Set<HDT_Base> filteredRecords = new LinkedHashSet<>();
-      boolean hasFiltered = false, hasUnfiltered = false, needMentionsIndex = false;
-      EnumSet<HDT_RecordType> unfilteredTypes = EnumSet.noneOf(HDT_RecordType.class);
-      LinkedHashMap<HyperTableRow, QuerySource> sources = new LinkedHashMap<>();
-      HDT_RecordType singleType = null;
-      boolean showDesc = false;
+      boolean needMentionsIndex = false, showDesc = false;
 
       for (HyperTableRow row : htFields.getDataRows())
       {
@@ -678,6 +672,10 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
       // Build list of sources and list of unfiltered types
 
+      LinkedHashMap<HyperTableRow, QuerySource> sources = new LinkedHashMap<>();
+      boolean hasFiltered = false, hasUnfiltered = false;
+      EnumSet<HDT_RecordType> unfilteredTypes = EnumSet.noneOf(HDT_RecordType.class);
+
       for (HyperTableRow row : htFields.getDataRows())
       {
         QuerySource source = getSource(row);
@@ -717,6 +715,10 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
       // Generate combined record source
 
+      QuerySource combinedSource;
+      HDT_RecordType singleType = null;
+      Set<HDT_Base> filteredRecords = new LinkedHashSet<>();
+
       if (hasUnfiltered)
       {
         combinedSource = new CombinedUnfilteredQuerySource(unfilteredTypes);
@@ -742,9 +744,8 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
       else
         combinedSource = new CombinedUnfilteredQuerySource(EnumSet.noneOf(HDT_RecordType.class));
 
-      if (singleType == null) singleType = hdtNone;
-      final HDT_RecordType finalSingleType = singleType;
-      final int total = combinedSource.count();
+      boolean searchLinkedRecords = (singleType != null) && (singleType != hdtNone);
+      int total = combinedSource.count();
 
       // Evaluate record queries
 
@@ -790,7 +791,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
                 param2 = row.getCell(3);
                 param3 = row.getCell(4);
 
-                result = evaluate(record, row, finalSingleType != hdtNone, firstCall, recordNdx == (total - 1));
+                result = evaluate(record, row, searchLinkedRecords, firstCall, recordNdx == (total - 1));
                 firstCall = false;
               }
 
@@ -1012,7 +1013,11 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
           break;
       }
 
-      typeToEngine.get(getQueryType(row)).queryChange(query, row, vp1, vp2, vp3);
+      QueryType queryType = getQueryType(row);
+
+      if (queryType != qtReport)
+        typeToEngine.get(queryType).queryChange(query, row, vp1, vp2, vp3);
+
       return true;
     }
 
@@ -1316,23 +1321,27 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void addToEngineMap(QueryEngine<? extends HDT_Base> queryEngine)
+  {
+    typeToEngine.put(queryEngine.getQueryType(), queryEngine);
+  }
+
   @Override void init(TabEnum tabEnum)
   {
     this.tabEnum = tabEnum;
     queryViews = new ArrayList<>();
 
-    typeToEngine.put(qtPersons, new PersonQueryEngine());
-    typeToEngine.put(qtPositions, new PositionQueryEngine());
-    typeToEngine.put(qtConcepts, new ConceptQueryEngine());
-    typeToEngine.put(qtWorks, new WorkQueryEngine());
-    typeToEngine.put(qtNotes, new NoteQueryEngine());
-    typeToEngine.put(qtDebates, new DebateQueryEngine());
-    typeToEngine.put(qtArguments, new ArgumentQueryEngine());
-    typeToEngine.put(qtInstitutions, new InstitutionQueryEngine());
-    typeToEngine.put(qtInvestigations, new InvestigationQueryEngine());
-    typeToEngine.put(qtFiles, new FileQueryEngine());
-    typeToEngine.put(qtAllRecords, new AllQueryEngine());
-    typeToEngine.put(qtReport, new ReportQueryEngine());
+    addToEngineMap(new PersonQueryEngine());
+    addToEngineMap(new PositionQueryEngine());
+    addToEngineMap(new ConceptQueryEngine());
+    addToEngineMap(new WorkQueryEngine());
+    addToEngineMap(new NoteQueryEngine());
+    addToEngineMap(new DebateQueryEngine());
+    addToEngineMap(new ArgumentQueryEngine());
+    addToEngineMap(new InstitutionQueryEngine());
+    addToEngineMap(new InvestigationQueryEngine());
+    addToEngineMap(new FileQueryEngine());
+    addToEngineMap(new AllQueryEngine());
 
     btnExecute.setOnAction(event -> btnExecuteClick());
     btnClear.setOnAction(event -> curQV.resetFields());
@@ -1667,14 +1676,17 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
   public static void addQueries(QueryPopulator pop, HyperTableRow row, QueryType newType)
   {
-    if (newType != QueryType.qtReport)
+    if (newType == QueryType.qtReport)
     {
-      pop.addEntry(row, QUERY_WITH_NAME_CONTAINING, "with name containing");
-      pop.addEntry(row, QUERY_ANY_FIELD_CONTAINS, "where any field contains");
-      pop.addEntry(row, QUERY_LIST_ALL, "list all records");
-      pop.addEntry(row, QUERY_WHERE_FIELD, "where field");
-      pop.addEntry(row, QUERY_WHERE_RELATIVE, "where set of records having this record as");
+      ReportEngine.addQueries(pop, row);
+      return;
     }
+
+    pop.addEntry(row, QUERY_WITH_NAME_CONTAINING, "with name containing");
+    pop.addEntry(row, QUERY_ANY_FIELD_CONTAINS, "where any field contains");
+    pop.addEntry(row, QUERY_LIST_ALL, "list all records");
+    pop.addEntry(row, QUERY_WHERE_FIELD, "where field");
+    pop.addEntry(row, QUERY_WHERE_RELATIVE, "where set of records having this record as");
 
     typeToEngine.get(newType).addQueries(pop, row);
   }

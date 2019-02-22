@@ -65,7 +65,7 @@ public class FileTable implements DragNDropContainer<FileRow>
   {
     CondFileRowHandler condHandler;
     FileRowHandler handler;
-    String caption;
+    final String caption;
     boolean visible = true;
     boolean disabled = false;
 
@@ -82,15 +82,15 @@ public class FileTable implements DragNDropContainer<FileRow>
       this.schema = schema;
     }
 
-    FileRowMenuItemSchema schema;
+    final FileRowMenuItemSchema schema;
   }
 
 //---------------------------------------------------------------------------
 
   static class FileCellValue<Comp_T extends Comparable<Comp_T>> implements Comparable<FileCellValue<Comp_T>>
   {
-    private String text;
-    private Comparable<Comp_T> sortVal;
+    private final String text;
+    private final Comparable<Comp_T> sortVal;
 
     FileCellValue(String text, Comparable<Comp_T> sortVal)
     {
@@ -114,6 +114,8 @@ public class FileTable implements DragNDropContainer<FileRow>
   final List<FileRowMenuItemSchema> contextMenuSchemata;
   List<MarkedRowInfo> draggingRows;
   private final DragNDropHoverHelper<FileRow> ddHoverHelper;
+
+  void clear() { rows.clear(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -186,29 +188,18 @@ public class FileTable implements DragNDropContainer<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void clear()
-  {
-    rows.clear();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   void update(HDT_Folder folder, TreeItem<FileRow> parentTreeItem)
   {
     clear();
-    int nextDirNdx = 0;
 
-    HyperPath hyperPath = null;
-    FilePath hFilePath = null;
     Path path = null;
 
     if (folder != null)
     {
-      hyperPath = folder.getPath();
+      HyperPath hyperPath = folder.getPath();
       if (hyperPath != null)
       {
-        hFilePath = hyperPath.getFilePath();
+        FilePath hFilePath = hyperPath.getFilePath();
         if (hFilePath != null)
           path = hFilePath.toPath();
       }
@@ -225,6 +216,8 @@ public class FileTable implements DragNDropContainer<FileRow>
 
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(path, "**"))
     {
+      int nextDirNdx = 0;
+
       for (Path entry: stream)
       {
         FilePath filePath = new FilePath(entry);

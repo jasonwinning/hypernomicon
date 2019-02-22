@@ -60,7 +60,7 @@ public class FilePathSet implements Set<FilePath>
   {
     FilePath filePath;
 
-    if (o instanceof String)        filePath = new FilePath((String)o);
+    if      (o instanceof String)   filePath = new FilePath((String)o);
     else if (o instanceof Path)     filePath = new FilePath((Path)o);
     else if (o instanceof File)     filePath = new FilePath((File)o);
     else if (o instanceof FilePath) filePath = (FilePath)o;

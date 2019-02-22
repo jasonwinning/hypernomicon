@@ -70,14 +70,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.tika.mime.MediaType;
 import org.jbibtex.ParseException;
 import org.jbibtex.TokenMgrException;
-
 import com.google.common.collect.EnumHashBiMap;
 import com.melloware.jintellitype.JIntellitype;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
@@ -1329,13 +1328,9 @@ public final class MainController
   @FXML public void btnSaveClick()
   {
     if (btnSave.getText().equals(TREE_SELECT_BTN_CAPTION))
-    {
       treeSelect();
-      return;
-    }
-
-    if (cantSaveRecord(true)) return;
-    update();
+    else if (!cantSaveRecord(true))
+      update();
   }
 
 //---------------------------------------------------------------------------
@@ -1346,10 +1341,7 @@ public final class MainController
     if (cantSaveRecord(true)) return;
 
     HDT_RecordType type = selectorType();
-    String name = "";
-
-    if (hcbGoTo.selectedID() == -1)
-      name = cbGoTo.getEditor().getText();
+    String name = hcbGoTo.selectedID() == -1 ? cbGoTo.getEditor().getText() : "";
 
     HDT_Base record = db.createNewBlankRecord(type);
     if (name.length() > 0)
@@ -1382,11 +1374,11 @@ public final class MainController
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void deleteCurrentRecord(boolean confirm)
+  public boolean deleteCurrentRecord(boolean confirm)
   {
     HDT_Base record = activeRecord();
 
-    if (record == null) return;
+    if (record == null) return false;
 
     HDT_RecordType type = record.getType();
 
@@ -1395,25 +1387,18 @@ public final class MainController
       case hdtGlossary :
 
         if (activeTab() != treeTab)
-        {
-          messageDialog("Glossary records can only be deleted from the tree tab.", mtError);
-          return;
-        }
+          return falseWithErrorMessage("Glossary records can only be deleted from the tree tab.");
 
         HDT_Glossary glossary = (HDT_Glossary) record;
 
         if (glossary.concepts.isEmpty() == false)
-        {
-          messageDialog("A glossary record can only be deleted if it does not contain any terms.", mtError);
-          return;
-        }
+          return falseWithErrorMessage("A glossary record can only be deleted if it does not contain any terms.");
 
         break;
 
       case hdtNone : case hdtConcept : case hdtFolder : case hdtWorkFile : case hdtHub :
 
-        messageDialog("Records of that type cannot be deleted by this method.", mtError);
-        return;
+        return falseWithErrorMessage("Records of that type cannot be deleted by this method.");
 
       default :
         break;
@@ -1430,13 +1415,14 @@ public final class MainController
 
       if (confirmDialog("Type: " + db.getTypeName(type) + "\n" +
                         "Name: " + record.getCBText() + "\n" +
-                        "ID: " + record.getID() + "\n\n" + msg) == false) return;
+                        "ID: " + record.getID() + "\n\n" + msg) == false) return false;
     }
 
     db.deleteRecord(type, record.getID());
 
     viewSequence.activateCurrentSlot();
     fileManagerDlg.setNeedRefresh();
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -1831,29 +1817,20 @@ public final class MainController
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void mnuRevertToDiskCopyClick()
+  @FXML private boolean mnuRevertToDiskCopyClick()
   {
     if (db.isLoaded() == false)
-    {
-      messageDialog("No database is currently loaded.", mtError);
-      return;
-    }
+      return falseWithErrorMessage("No database is currently loaded.");
 
     HDT_Base record = activeRecord();
 
     if (record == null)
-    {
-      messageDialog("No record is currently selected.", mtError);
-      return;
-    }
+      return falseWithErrorMessage("No record is currently selected.");
 
     if (record.hasStoredState() == false)
-    {
-      messageDialog("Unable to revert: the record may not have been previously saved to disk.", mtError);
-      return;
-    }
+      return falseWithErrorMessage("Unable to revert: the record may not have been previously saved to disk.");
 
-    if (confirmDialog("Are you sure you want to revert this record to the last version saved to disk?") == false) return;
+    if (confirmDialog("Are you sure you want to revert this record to the last version saved to disk?") == false) return false;
 
     HDT_Base viewRecord = viewRecord();
 
@@ -1862,6 +1839,7 @@ public final class MainController
         revertToDiskCopy(viewRecord);
 
     update();
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -2089,10 +2067,10 @@ public final class MainController
     if (link == null) return null;
 
     HDT_RecordWithConnector spoke = link.getConcept();
-    if (spoke == null) spoke = link.getDebate();
-    if (spoke == null) spoke = link.getPosition();
-    if (spoke == null) spoke = link.getNote();
-    if (spoke == null) spoke = link.getLabel();
+    if (spoke == null)      spoke = link.getDebate();
+    if (spoke == null)      spoke = link.getPosition();
+    if (spoke == null)      spoke = link.getNote();
+    if (spoke == null)      spoke = link.getLabel();
 
     return spoke;
   }
@@ -2257,20 +2235,15 @@ public final class MainController
   {
     TabEnum tabEnum = selectorTabEnum();
 
-    switch (tabEnum)
-    {
-      case listTab: case omniTab :
-        return activeType();
+    if (EnumSet.of(listTab, omniTab).contains(selectorTabEnum()))
+      return activeType();
 
-      default :
-        return HyperTab.getRecordTypeByTabEnum(tabEnum);
-    }
+    return HyperTab.getRecordTypeByTabEnum(tabEnum);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("cast")
   private void updateSelectorTab(boolean setFocus)
   {
     TabEnum tabEnum = selectorTabEnum();
@@ -2339,8 +2312,11 @@ public final class MainController
         if (cbGoTo.isEditable() == false) cbGoTo.setEditable(true);
         btnCreateNew.setDisable(false);
 
-        if (count > 0)         // HDT_Base cast added to avoid Maven compile errors
-          hcbGoTo.addAndSelectEntryOrBlank((HDT_Base)nullSwitch(hyperTab, null, HyperTab::activeRecord), HDT_Base::listName);
+        if (count > 0)
+        {
+          HDT_Base record = nullSwitch(hyperTab, null, HyperTab::activeRecord);  // Save to variable to avoid Maven compile errors
+          hcbGoTo.addAndSelectEntryOrBlank(record, HDT_Base::listName);
+        }
 
         break;
     }
@@ -2439,17 +2415,8 @@ public final class MainController
 
     else
     {
-      switch (activeType())
-      {
-        case hdtArgument: case hdtDebate:   case hdtMiscFile: case hdtNote:
-        case hdtPerson:   case hdtPosition: case hdtTerm:     case hdtWork:
-
-          btnTextSearch.setDisable(false); break;
-
-        default:
-
-          btnTextSearch.setDisable(true);
-      }
+      btnTextSearch.setDisable(EnumSet.of(hdtArgument, hdtDebate,   hdtMiscFile, hdtNote,
+                                          hdtPerson,   hdtPosition, hdtTerm,     hdtWork).contains(activeType()) == false);
 
       btnSave.setText("Accept Edits");
 
@@ -2758,9 +2725,9 @@ public final class MainController
 
     FilePath filePath = new FilePath(args.get(0));
 
-    MediaType mediaType = getMediaType(filePath);
+    String mediaTypeStr = getMediaType(filePath).toString();
 
-    if (mediaType.toString().contains("pdf"))
+    if (mediaTypeStr.contains("pdf"))
     {
       if (cantSaveRecord(true)) return;
 
@@ -2776,7 +2743,7 @@ public final class MainController
       return;
     }
 
-    if (mediaType.toString().contains("text") == false)
+    if (mediaTypeStr.contains("text") == false)
     {
       messageDialog("Unable to import file: " + filePath.toString(), mtError);
       return;

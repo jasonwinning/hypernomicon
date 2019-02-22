@@ -40,6 +40,7 @@ import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -62,6 +63,7 @@ public class MergeWorksDialogController extends HyperDialog
                             rbTitle1, rbTitle2, rbTitle3, rbTitle4, rbType1, rbType2, rbType3, rbType4, rbYear1, rbYear2, rbYear3, rbYear4;
   @FXML private TableView<HyperTableRow> tvAuthors1, tvAuthors2, tvAuthors3, tvAuthors4;
   @FXML private TextField tfTitle1, tfTitle2, tfTitle3, tfTitle4, tfYear1, tfYear2, tfYear3, tfYear4;
+  @FXML private Hyperlink hlFixCase;
 
   private final EnumMap<BibFieldEnum, BibField> singleFields = new EnumMap<>(BibFieldEnum.class);
   private final ArrayList<WorkToMerge> works = new ArrayList<>(4);
@@ -135,16 +137,11 @@ public class MergeWorksDialogController extends HyperDialog
       deleteGridPaneColumn(gpAuthors, 2);
     }
 
-    int cnt = 0;
-
     if (creatingNewEntry)
       addField(bfEntryType, bd1, bd2, bd3, bd4);
 
     for (BibFieldEnum bibFieldEnum : BibFieldEnum.values())
     {
-      cnt = 0;
-      BibData singleBD = null;
-
       switch (bibFieldEnum)
       {
         case bfAuthors : case bfEditors : case bfTranslators : case bfTitle : case bfYear : case bfWorkType : case bfEntryType :
@@ -152,6 +149,9 @@ public class MergeWorksDialogController extends HyperDialog
 
         default : break;
       }
+
+      int cnt = 0;
+      BibData singleBD = null;
 
       boolean fieldsEqual = true;
 
@@ -202,6 +202,20 @@ public class MergeWorksDialogController extends HyperDialog
 
       if ((bibFieldEnum == bfMisc) || ((cnt > 0) && ((fieldsEqual == false) || (cnt < works.size()))))
         addField(bibFieldEnum, bd1, bd2, bd3, bd4);
+
+      hlFixCase.setOnAction(event ->
+      {
+        TextField tf;
+
+        if      (rbTitle1.isSelected()) tf = tfTitle1;
+        else if (rbTitle2.isSelected()) tf = tfTitle2;
+        else if (rbTitle3.isSelected()) tf = tfTitle3;
+        else                            tf = tfTitle4;
+
+        tf.setText(titleCase(tf.getText()));
+      });
+
+      onShown = () -> safeFocus(rbTitle1);
     }
   }
 

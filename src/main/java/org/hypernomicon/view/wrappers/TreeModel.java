@@ -40,11 +40,11 @@ import static org.hypernomicon.util.Util.*;
 
 public class TreeModel<RowType extends AbstractTreeRow<RowType>>
 {
-  private BidiOneToManyRecordMap parentToChildren;
-  private MappingFromRecordToRows recordToRows;
-  private AbstractTreeWrapper<RowType> treeWrapper = null;
+  final private BidiOneToManyRecordMap parentToChildren;
+  final private MappingFromRecordToRows recordToRows;
+  final private AbstractTreeWrapper<RowType> treeWrapper;
   private RowType rootRow;
-  private Map<HDT_RecordType, Set<HDT_RecordType>> parentChildRelations;
+  final private Map<HDT_RecordType, Set<HDT_RecordType>> parentChildRelations;
 
   public boolean pruningOperationInProgress = false;
 
@@ -55,8 +55,8 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
 
   private class MappingFromRecordToRows
   {
-    private SetMultimap<HDT_Base, RowType> recordToRows = LinkedHashMultimap.create();
-    private TreeCB tcb;
+    final private SetMultimap<HDT_Base, RowType> recordToRows = LinkedHashMultimap.create();
+    final private TreeCB tcb;
 
     //---------------------------------------------------------------------------
 

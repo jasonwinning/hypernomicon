@@ -51,6 +51,7 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListView;
 import javafx.util.StringConverter;
 
 //---------------------------------------------------------------------------
@@ -257,9 +258,6 @@ public class HyperCB implements CommitableWrapper
 
   private void cbOnAction(ActionEvent event, HyperTable table)
   {
-    boolean added, alreadyParsedName = false;
-    PersonName personName = null;
-
     int colNdx = -1;
 
     if (table != null)
@@ -284,13 +282,15 @@ public class HyperCB implements CommitableWrapper
         }
 
         List<HyperTableCell> cells = new ArrayList<>();
-        boolean match, atLeastOneRealMatch = ((populator.getRecordType(row) != hdtPerson) || dontCreateNewRecord);
+        boolean match, alreadyParsedName = false, atLeastOneRealMatch = (populator.getRecordType(row) != hdtPerson) || dontCreateNewRecord;
+        PersonName personName = null;
+
         AllQueryEngine.linkList.generate(str);
 
         for (HyperTableCell cell : cb.getItems())
         {
           HDT_Base record = HyperTableCell.getRecord(cell);
-          added = false;
+          boolean added = false;
 
           if (record != null)
             match = record.getNameEngChar().toLowerCase().equals(str);
@@ -492,6 +492,12 @@ public class HyperCB implements CommitableWrapper
     if (cell != null)
       cb.getSelectionModel().select(cell);
 
+    if ((choices.size() > 0) && ((cell == null) || (cell.equals(HyperTableCell.blankCell))))
+    {
+      ListView<HyperTableCell> lv = getCBListView(cb);
+      if (lv != null) lv.scrollTo(0);
+    }
+
     return choices;
   }
 
@@ -614,12 +620,11 @@ public class HyperCB implements CommitableWrapper
 
   public void selectID(int objID)
   {
-    HyperTableCell choice = populator.getChoiceByID(row, objID);
-
-    if (choice == null) return;
-
-    cb.getSelectionModel().select(choice);
-    cb.setValue(choice);
+    nullSwitch(populator.getChoiceByID(row, objID), choice ->
+    {
+      cb.getSelectionModel().select(choice);
+      cb.setValue(choice);
+    });
   }
 
 //---------------------------------------------------------------------------

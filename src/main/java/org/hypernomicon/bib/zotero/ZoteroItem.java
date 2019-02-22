@@ -247,8 +247,8 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         jData.put(fieldKey, oldDate.replaceFirst("[12]\\d\\d\\d", newStr)); // Leave all parts of the date other than the year intact
         return;
 
-      case bfDOI       : case bfURL       : case bfVolume    : case bfIssue     : case bfPages     :
-      case bfPublisher : case bfPubLoc    : case bfEdition   : case bfLanguage  :
+      case bfDOI       : case bfURL    : case bfVolume  : case bfIssue    : case bfPages :
+      case bfPublisher : case bfPubLoc : case bfEdition : case bfLanguage :
 
         break;
 
@@ -278,14 +278,15 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
       case bfEdition   : return "edition";
       case bfLanguage  : return "language";
       case bfYear      : return "date";
+
       case bfContainerTitle :
 
         JsonObj template = zWrapper.getTemplate(getEntryType());
         if (template == null) return "";
 
-        if (template.containsKey("publicationTitle")) return "publicationTitle";
-        else if (template.containsKey("bookTitle"))   return "bookTitle";
-        else if (template.containsKey("seriesTitle")) return "seriesTitle";
+        if      (template.containsKey("publicationTitle")) return "publicationTitle";
+        else if (template.containsKey("bookTitle"       )) return "bookTitle";
+        else if (template.containsKey("seriesTitle"     )) return "seriesTitle";
 
         return "";
 
@@ -332,7 +333,6 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         case bfYear  : return getWork().getYear();
         case bfURL   : return getWork().getWebLink();
         case bfTitle : return getWork().name();
-
         default      : break;
       }
     }
@@ -341,27 +341,24 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
     switch (bibFieldEnum)
     {
-      case bfEntryType :
-        return BibUtils.getEntryTypeName(getEntryType());
+      case bfEntryType : return BibUtils.getEntryTypeName(getEntryType());
 
       case bfDOI       : case bfURL       : case bfVolume    : case bfIssue     : case bfPages :
       case bfPublisher : case bfPubLoc    : case bfEdition   : case bfLanguage  :
 
         return jData.getStrSafe(fieldKey);
 
-      case bfYear      : return extractYear(jData.getStrSafe(fieldKey));
+      case bfYear : return extractYear(jData.getStrSafe(fieldKey));
 
-      case bfAuthors: return getAuthors().getStr(AuthorType.author);
-      case bfEditors: return getAuthors().getStr(AuthorType.editor);
-      case bfTranslators: return getAuthors().getStr(AuthorType.translator);
+      case bfAuthors     : return getAuthors().getStr(AuthorType.author);
+      case bfEditors     : return getAuthors().getStr(AuthorType.editor);
+      case bfTranslators : return getAuthors().getStr(AuthorType.translator);
 
-      case bfContainerTitle: case bfTitle:
+      case bfContainerTitle : case bfTitle :
 
         return BibField.buildTitle(getMultiStr(bibFieldEnum));
 
-      case bfMisc:
-
-        return strListToStr(getMultiStr(bibFieldEnum), false, true);
+      case bfMisc : return strListToStr(getMultiStr(bibFieldEnum), false, true);
 
       default:
         break;
@@ -382,7 +379,6 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         case bfTitle : getWork().setName(BibField.buildTitle(list));   return;
         case bfISBNs : getWork().setISBNs(list);                       return;
         case bfMisc  : getWork().setMiscBib(strListToStr(list, true)); return;
-
         default      : break;
       }
     }
@@ -399,19 +395,10 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
     switch (bibFieldEnum)
     {
-      case bfContainerTitle : case bfTitle :
-
-        newStr = strListToStr(list, false); break;
-
-      case bfMisc  :
-
-        newStr = strListToStr(list, true); break;
-
-      case bfISBNs : case bfISSNs :
-
-        newStr = getMultiStrSpaceDelimited(list); break;
-
-      default : return;
+      case bfContainerTitle : case bfTitle : newStr = strListToStr(list, false      ); break;
+      case bfMisc           :                newStr = strListToStr(list, true       ); break;
+      case bfISBNs          : case bfISSNs : newStr = getMultiStrSpaceDelimited(list); break;
+      default               : return;
     }
 
     if (jData.getStrSafe(fieldKey).equals(safeStr(newStr))) return;
@@ -441,11 +428,9 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
       case bfContainerTitle :
 
-        String containerTitle = jData.getStrSafe("publicationTitle");
-        if (containerTitle.length() == 0)
-          containerTitle = jData.getStrSafe("bookTitle");
-        if (containerTitle.length() == 0)
-          containerTitle = jData.getStrSafe("seriesTitle");
+        String                            containerTitle = jData.getStrSafe("publicationTitle");
+        if (containerTitle.length() == 0) containerTitle = jData.getStrSafe("bookTitle");
+        if (containerTitle.length() == 0) containerTitle = jData.getStrSafe("seriesTitle");
 
         return convertMultiLineStrToStrList(containerTitle, false);
 
@@ -536,25 +521,22 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
   {
     JsonObj jServerObj = jObj.clone();
 
-    for (BibFieldEnum bibFieldEnum : EnumSet.allOf(BibFieldEnum.class))
+    EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum -> { switch (bibFieldEnum)
     {
-      switch (bibFieldEnum)
-      {
-        case bfDOI : case bfYear : case bfURL : case bfISBNs : case bfMisc : case bfTitle :
-          break;
+      case bfDOI : case bfYear : case bfURL : case bfISBNs : case bfMisc : case bfTitle :
+        break;
 
-        default :
+      default :
 
-          if (thisTypeHasFieldKey(bibFieldEnum) == false)
-          {
-            String fieldKey = getFieldKey(bibFieldEnum);
-            if (fieldKey.length() > 0)
-              jServerObj.getObj("data").remove(getFieldKey(bibFieldEnum)); // This should be done even if missingKeysOK == true
-          }
+        if (thisTypeHasFieldKey(bibFieldEnum) == false)
+        {
+          String fieldKey = getFieldKey(bibFieldEnum);
+          if (fieldKey.length() > 0)
+            jServerObj.getObj("data").remove(getFieldKey(bibFieldEnum)); // This should be done even if missingKeysOK == true
+        }
 
-          break;
-      }
-    }
+        break;
+    }});
 
     if (linkedToWork())
     {
@@ -567,15 +549,13 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
       if (missingKeysOK || thisTypeHasFieldKey(bfMisc))  serverItem.setMultiStr(bfMisc, getMultiStr(bfMisc));
       if (missingKeysOK || thisTypeHasFieldKey(bfTitle)) serverItem.setTitle(getStr(bfTitle));
 
-      serverItem.getAuthors().clear();
+      BibAuthors serverAuthors = serverItem.getAuthors();
+      serverAuthors.clear();
 
-      getAuthors().forEach(serverItem.getAuthors()::add);
+      getAuthors().forEach(serverAuthors::add);
     }
 
-    if (isNewEntry())
-      return jServerObj.getObj("data");
-
-    return jServerObj;
+    return isNewEntry() ? jServerObj.getObj("data") : jServerObj;
   }
 
 //---------------------------------------------------------------------------

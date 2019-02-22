@@ -22,6 +22,7 @@ import static org.hypernomicon.model.HyperDB.*;
 
 import java.util.List;
 
+import org.hypernomicon.bib.BibAuthors;
 import org.hypernomicon.bib.BibData;
 import org.hypernomicon.model.records.HDT_Work;
 
@@ -53,9 +54,10 @@ public abstract class BibEntry extends BibData
     setMultiStr(bfISBNs, bd.getMultiStr(bfISBNs));
     setTitle(bd.getStr(bfTitle));
 
-    getAuthors().clear();
+    BibAuthors authors = getAuthors();
+    authors.clear();
 
-    bd.getAuthors().forEach(getAuthors()::add);
+    bd.getAuthors().forEach(authors::add);
   }
 
 //---------------------------------------------------------------------------

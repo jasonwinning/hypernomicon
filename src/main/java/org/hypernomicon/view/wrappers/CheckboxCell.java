@@ -22,8 +22,8 @@ import javafx.scene.control.TableCell;
 
 class CheckboxCell extends TableCell<HyperTableRow, Boolean>
 {
-  private HyperTable table;
-  private CheckBox chk;
+  final private HyperTable table;
+  final private CheckBox chk;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

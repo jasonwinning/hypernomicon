@@ -280,16 +280,7 @@ public class MainTextController
       btnMoveUp.setDisable(false);
       btnMoveDown.setDisable(false);
 
-      switch (newValue.type)
-      {
-        case diRecord:
-          btnRemove.setDisable(false);
-          break;
-
-        default:
-          btnRemove.setDisable(true);
-          break;
-      }
+      btnRemove.setDisable(newValue.type != diRecord);
     });
 
     btnMoveUp  .setOnAction(event -> btnMoveUpClick());

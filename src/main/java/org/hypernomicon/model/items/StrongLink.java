@@ -21,7 +21,10 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.hypernomicon.model.records.*;
@@ -75,8 +78,7 @@ public class StrongLink
   {
     Set<Connector> set = new LinkedHashSet<>();
 
-    for (HDT_RecordType cType : new HDT_RecordType[] { hdtDebate, hdtPosition, hdtConcept, hdtNote, hdtWorkLabel })
-      nullSwitch(getSpoke(cType), spoke -> set.add(spoke));
+    EnumSet.of(hdtDebate, hdtPosition, hdtConcept, hdtNote, hdtWorkLabel).forEach(cType -> nullSwitch(getSpoke(cType), set::add));
 
     return set;
   }
@@ -103,9 +105,6 @@ public class StrongLink
 
   public static boolean connectRecords(Connector spoke1, Connector spoke2, String newDesc)
   {
-    HDT_Hub hub = null;
-    StrongLink link = null;
-
     if ((spoke1.getType() == hdtPosition) && (spoke2.getType() == hdtDebate))  // Sanity checks
       return falseWithErrorMessage("A position record and a problem/debate record cannot be linked together.");
     if ((spoke2.getType() == hdtPosition) && (spoke1.getType() == hdtDebate))
@@ -115,7 +114,8 @@ public class StrongLink
     if ((spoke1.getSpoke().isUnitable() == false) || (spoke2.getSpoke().isUnitable() == false))
       return falseWithErrorMessage("One or more of the records are not of a linkable type.");
 
-    Connector spokes[] = new Connector[2];
+    HDT_Hub hub;
+    StrongLink link;
 
     if (spoke1.isLinked())
     {
@@ -156,22 +156,21 @@ public class StrongLink
       link = hub.getLink();
     }
 
-    spokes[0] = spoke1;
-    spokes[1] = spoke2;
+    List<Connector> spokes = Arrays.asList(spoke1, spoke2);
 
-    for (int ndx = 0; ndx < 2; ndx++)
+    spokes.forEach(spoke ->
     {
-      switch (spokes[ndx].getType())
+      switch (spoke.getType())
       {
-        case hdtNote      : link.noteSpoke     = spokes[ndx]; break;
-        case hdtPosition  : link.positionSpoke = spokes[ndx]; break;
-        case hdtDebate    : link.debateSpoke   = spokes[ndx]; break;
-        case hdtConcept   : link.conceptSpoke  = spokes[ndx]; break;
-        case hdtWorkLabel : link.labelSpoke    = spokes[ndx]; break;
+        case hdtNote      : link.noteSpoke     = spoke; break;
+        case hdtPosition  : link.positionSpoke = spoke; break;
+        case hdtDebate    : link.debateSpoke   = spoke; break;
+        case hdtConcept   : link.conceptSpoke  = spoke; break;
+        case hdtWorkLabel : link.labelSpoke    = spoke; break;
 
         default : break;
       }
-    }
+    });
 
     MainText mainText = new MainText(spoke1.getMainText(), spoke2.getMainText(), hub.getConnector(), newDesc);
 
@@ -184,14 +183,14 @@ public class StrongLink
     if      (spoke1.getSpoke().name().length() == 0) spoke1.getSpoke().setName(spoke2.getSpoke().name());
     else if (spoke2.getSpoke().name().length() == 0) spoke2.getSpoke().setName(spoke1.getSpoke().name());
 
-    for (Connector spoke : spokes)
+    spokes.forEach(spoke ->
     {
       db.replaceMainText(spoke.mainText, mainText);
       spoke.mainText = mainText;
 
       if (spoke.getType() == hdtWorkLabel)
         ((HDT_WorkLabel) spoke.getSpoke()).refreshSubjects();
-    }
+    });
 
     link.modifyNow();
 

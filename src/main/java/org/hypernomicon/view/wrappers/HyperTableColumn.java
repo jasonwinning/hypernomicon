@@ -62,19 +62,20 @@ public class HyperTableColumn
     ctIcon,          ctInvSelect
   }
 
-  private TableColumn<HyperTableRow, HyperTableCell> tc;
-  private TableColumn<HyperTableRow, Boolean> chkCol;
-  private Populator populator;
-  private int colNdx;
-  private HDT_RecordType objType;
-  private HyperCtrlType ctrlType;
+  final private TableColumn<HyperTableRow, HyperTableCell> tc;
+  final private TableColumn<HyperTableRow, Boolean> chkCol;
+  final private Populator populator;
+  final private HDT_RecordType objType;
+  final private HyperCtrlType ctrlType;
   final EnumMap<ButtonAction, String> tooltips = new EnumMap<>(ButtonAction.class);
-  CellUpdateHandler updateHandler;
+  final CellUpdateHandler updateHandler;
+  final private MutableBoolean canEditIfEmpty      = new MutableBoolean(true ),
+                               isNumeric           = new MutableBoolean(false),
+                               dontCreateNewRecord = new MutableBoolean(false);
+
+  private int colNdx;
   public CellTextHandler textHndlr = null;
   private boolean moreButtonClicked = false;
-  final private MutableBoolean canEditIfEmpty = new MutableBoolean(true),
-                               isNumeric = new MutableBoolean(false),
-                               dontCreateNewRecord = new MutableBoolean(false);
 
 //---------------------------------------------------------------------------
 
@@ -93,27 +94,27 @@ public class HyperTableColumn
 //---------------------------------------------------------------------------
 
   HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol) {
-    init(table, objType, ctrlType, populator, targetCol, null, null, null, null); }
+    this(table, objType, ctrlType, populator, targetCol, null, null, null, null); }
 
   HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, EventHandler<ActionEvent> onAction) {
-    init(table, objType, ctrlType, populator, targetCol, null, onAction, null, null); }
+    this(table, objType, ctrlType, populator, targetCol, null, onAction, null, null); }
 
   HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, CellUpdateHandler updateHandler) {
-    init(table, objType, ctrlType, populator, targetCol, null, null, updateHandler, null); }
+    this(table, objType, ctrlType, populator, targetCol, null, null, updateHandler, null); }
 
   HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol,
                           EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler) {
-    init(table, objType, ctrlType, populator, targetCol, null, onAction, updateHandler, null); }
+    this(table, objType, ctrlType, populator, targetCol, null, onAction, updateHandler, null); }
 
   HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, ButtonCellHandler btnHandler, String btnCaption) {
-    init(table, objType, ctrlType, populator, targetCol, btnHandler, null, null, btnCaption); }
+    this(table, objType, ctrlType, populator, targetCol, btnHandler, null, null, btnCaption); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private void init(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, ButtonCellHandler btnHandler,
-                    EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler, String btnCaption)
+  private HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol,
+                           ButtonCellHandler btnHandler, EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler, String btnCaption)
   {
     this.ctrlType = ctrlType;
     this.populator = populator;
@@ -123,9 +124,15 @@ public class HyperTableColumn
     colNdx = table.getColumns().size();
 
     if (ctrlType == ctCheckbox)
+    {
       chkCol = (TableColumn<HyperTableRow, Boolean>) table.getTV().getColumns().get(colNdx);
+      tc = null;
+    }
     else
+    {
       tc = (TableColumn<HyperTableRow, HyperTableCell>) table.getTV().getColumns().get(colNdx);
+      chkCol = null;
+    }
 
     switch (ctrlType)
     {

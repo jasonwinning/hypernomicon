@@ -20,8 +20,10 @@ package org.hypernomicon.model;
 import static org.hypernomicon.model.HyperDB.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +43,6 @@ public final class SearchKeys
     public final String text;
     public final boolean startOnly, endOnly;
     public final HDT_Base record;
-    public boolean expired = false;
 
   //---------------------------------------------------------------------------
 
@@ -81,6 +82,7 @@ public final class SearchKeys
 
     @Override public String toString()  { return (startOnly ? "^" + text : text) + (endOnly ? "$" : ""); }
     public String getPrefix()           { return text.substring(0, 3).toLowerCase(); }
+    public HDT_Base getRecord()         { return record; }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -115,10 +117,7 @@ public final class SearchKeys
   {
     ArrayList<SearchKeyword> list = new ArrayList<>();
 
-    Map<String, SearchKeyword> keyStringToKeyObject = prefixStrToKeywordStrToKeywordObj.get(prefix.toLowerCase());
-
-    if (keyStringToKeyObject != null)
-      list.addAll(keyStringToKeyObject.values());
+    nullSwitch(prefixStrToKeywordStrToKeywordObj.get(prefix.toLowerCase()), map -> list.addAll(map.values()));
 
     return list;
   }
@@ -148,7 +147,7 @@ public final class SearchKeys
     if ((newKey.length() == 1) || (newKey.length() == 2))
       throw new SearchKeyException(true, record.getID(), record.getType(), newKey);
 
-    setAllExpired(record, true);
+    LinkedHashSet<SearchKeyword> oldKeywordObjs = unassignKeywordsForRecord(record);
 
   // Loop through new substrings
   // ---------------------------
@@ -162,20 +161,17 @@ public final class SearchKeys
   // ----------------------------------------
         if (keyword.text.length() < 3)
         {
-          setAllExpired(record, false);
+          assignKeywordsToRecord(record, oldKeywordObjs);
           throw new SearchKeyException(true, record.getID(), record.getType(), keyword.text);
         }
 
-        HDT_Base existingRecord = getRecordForKeywordStr(keyword.text);
-
-        if (existingRecord == record)
-          updateKeyword(keyword);
+        HDT_Base existingRecord = nullSwitch(getKeywordObjByKeywordStr(keyword.text), null, SearchKeyword::getRecord);
 
   // If the substring was already a key for a different record, error out
   // --------------------------------------------------------------------
-        else if (existingRecord != null)
+        if ((existingRecord != null) && (existingRecord != record))
         {
-          setAllExpired(record, false);
+          assignKeywordsToRecord(record, oldKeywordObjs);
           throw new SearchKeyException(false, record.getID(), record.getType(), keyword.text);
         }
 
@@ -185,10 +181,6 @@ public final class SearchKeys
           addKeyword(keyword);
       }
     }
-
-  // Delete keys for substrings no longer used
-  // -----------------------------------------
-    purgeExpired(record);
 
     if (noMod == false)
       record.modifyNow();
@@ -202,14 +194,7 @@ public final class SearchKeys
 
   List<SearchKeyword> getKeysByRecord(HDT_Base record)
   {
-    ArrayList<SearchKeyword> list = new ArrayList<>();
-
-    Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.get(record);
-
-    if (keywordStrToKeywordObj != null)
-      list.addAll(keywordStrToKeywordObj.values());
-
-    return list;
+    return nullSwitch(recordToKeywordStrToKeywordObj.get(record), new ArrayList<>(), map -> new ArrayList<>(map.values()));
   }
 
 //---------------------------------------------------------------------------
@@ -230,15 +215,12 @@ public final class SearchKeys
   String getFirstActiveKeyword(HDT_Base record)
   {
     Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.get(record);
-
     if (keywordStrToKeywordObj == null) return "";
 
     synchronized (keywordStrToKeywordObj)
     {
-      if (keywordStrToKeywordObj.values().isEmpty())
-        return "";
-
-      return keywordStrToKeywordObj.values().toArray(new SearchKeyword[0])[0].text;
+      Collection<SearchKeyword> values = keywordStrToKeywordObj.values();
+      return values.isEmpty() ? "" : values.iterator().next().text;
     }
   }
 
@@ -247,17 +229,17 @@ public final class SearchKeys
 
   String getStringForRecord(HDT_Base record)
   {
-    String text = "";
-
     Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.get(record);
-
     if (keywordStrToKeywordObj == null) return "";
+
+    String text = "";
 
     synchronized (keywordStrToKeywordObj)
     {
       for (SearchKeyword keyword : keywordStrToKeywordObj.values())
         text = text.length() == 0 ? keyword.toString() : text + "; " + keyword.toString();
     }
+
     return text;
   }
 
@@ -290,66 +272,36 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void purgeExpired(HDT_Base record)
+  private void assignKeywordsToRecord(HDT_Base record, LinkedHashSet<SearchKeyword> oldKeywordObjs)
   {
-    Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.get(record);
+    unassignKeywordsForRecord(record);
+    oldKeywordObjs.forEach(this::addKeyword);
+  }
 
-    if (keywordStrToKeywordObj == null) return;
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-    synchronized (keywordStrToKeywordObj)
+  private LinkedHashSet<SearchKeyword> unassignKeywordsForRecord(HDT_Base record)
+  {
+    LinkedHashSet<SearchKeyword> oldKeywordObjs = new LinkedHashSet<>();
+
+    nullSwitch(recordToKeywordStrToKeywordObj.get(record), map -> { synchronized (map) { map.entrySet().removeIf(entry ->
     {
-      keywordStrToKeywordObj.entrySet().removeIf(entry ->
-      {
-        SearchKeyword keyword = entry.getValue();
+      SearchKeyword keyword = entry.getValue();
+      oldKeywordObjs.add(keyword);
 
-        if (keyword.expired == false) return false;
+      String prefix = keyword.getPrefix();
 
-        String prefix = keyword.getPrefix();
+      Map<String, SearchKeyword> map2 = prefixStrToKeywordStrToKeywordObj.get(prefix);
+      map2.remove(keyword.text.toLowerCase());
 
-        Map<String, SearchKeyword> keywordStrToKeywordObj2 = prefixStrToKeywordStrToKeywordObj.get(keyword.getPrefix());
-        keywordStrToKeywordObj2.remove(keyword.text.toLowerCase());
+      if (map2.isEmpty())
+        prefixStrToKeywordStrToKeywordObj.remove(prefix);
 
-        if (keywordStrToKeywordObj2.isEmpty())
-          prefixStrToKeywordStrToKeywordObj.remove(prefix);
+      return true;
+    }); }});
 
-        return true;
-      });
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void setAllExpired(HDT_Base record, boolean expired)
-  {
-    Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.get(record);
-
-    if (keywordStrToKeywordObj == null) return;
-
-    synchronized (keywordStrToKeywordObj)
-    {
-      keywordStrToKeywordObj.values().forEach(keyword -> keyword.expired = expired);
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void updateKeyword(SearchKeyword keyword)
-  {
-    Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.get(keyword.record);
-    keywordStrToKeywordObj.put(keyword.text.toLowerCase(), keyword);
-
-    keywordStrToKeywordObj = prefixStrToKeywordStrToKeywordObj.get(keyword.getPrefix());
-    keywordStrToKeywordObj.put(keyword.text.toLowerCase(), keyword);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private HDT_Base getRecordForKeywordStr(String keywordStr)
-  {
-    return nullSwitch(getKeywordObjByKeywordStr(keywordStr), null, keywordObj -> keywordObj.record);
+    return oldKeywordObjs;
   }
 
 //---------------------------------------------------------------------------

@@ -36,9 +36,9 @@ import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
 
 public class HyperTableRow
 {
-  private ObservableList<HyperTableCell> cells;
-  private HyperTable table;
-  private HashMap<Integer, Populator> populators = new HashMap<>();
+  final private ObservableList<HyperTableCell> cells;
+  final private HyperTable table;
+  final private HashMap<Integer, Populator> populators = new HashMap<>();
 
 //---------------------------------------------------------------------------
 

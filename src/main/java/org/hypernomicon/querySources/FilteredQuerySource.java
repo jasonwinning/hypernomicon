@@ -17,8 +17,6 @@
 
 package org.hypernomicon.querySources;
 
-import static org.hypernomicon.model.records.HDT_RecordType.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -66,32 +64,10 @@ public abstract class FilteredQuerySource implements QuerySource
 
   protected abstract void runFilter();
 
+  public HDT_RecordType recordType()                  { return queryType.getRecordType(); }
   public boolean containsCell(HyperTableCell cell)    { ensureGenerated(); return list.contains(HyperTableCell.getRecord(cell)); }
-
   public void addAllTo(Set<HDT_Base> filteredRecords) { ensureGenerated(); filteredRecords.addAll(list); }
   protected void ensureGenerated()                    { if (!generated) { runFilter(); generated = true; }}
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HDT_RecordType recordType()
-  {
-    switch (queryType)
-    {
-      case qtPersons :       return hdtPerson;
-      case qtAllRecords:     return hdtNone;
-      case qtArguments:      return hdtArgument;
-      case qtDebates:        return hdtDebate;
-      case qtFiles:          return hdtMiscFile;
-      case qtInstitutions:   return hdtInstitution;
-      case qtInvestigations: return hdtInvestigation;
-      case qtNotes:          return hdtNote;
-      case qtPositions:      return hdtPosition;
-      case qtConcepts:       return hdtConcept;
-      case qtWorks:          return hdtWork;
-      default:               return null;
-    }
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

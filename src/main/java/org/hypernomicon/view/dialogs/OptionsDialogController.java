@@ -369,9 +369,9 @@ public class OptionsDialogController extends HyperDialog
       switch (code)
       {
         case AUTHOR_FN_COMPONENT : author = ultraTrim("" + value); break;
-        case TITLE_FN_COMPONENT : title = ultraTrim("" + value); break;
-        case YEAR_FN_COMPONENT : year = ultraTrim("" + value); break;
-        case TRANS_FN_COMPONENT : trans = ultraTrim("" + value); break;
+        case TITLE_FN_COMPONENT  : title  = ultraTrim("" + value); break;
+        case YEAR_FN_COMPONENT   : year   = ultraTrim("" + value); break;
+        case TRANS_FN_COMPONENT  : trans  = ultraTrim("" + value); break;
         case EDITOR_FN_COMPONENT : editor = ultraTrim("" + value); break;
       }
     }

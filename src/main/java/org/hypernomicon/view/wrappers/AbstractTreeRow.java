@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view.wrappers;
 
-import static org.hypernomicon.model.records.HDT_RecordType.hdtNone;
+import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Base;
@@ -28,8 +28,10 @@ import javafx.scene.image.ImageView;
 public abstract class AbstractTreeRow<RowType extends AbstractTreeRow<RowType>> implements Comparable<RowType>
 {
   protected TreeItem<RowType> treeItem = null;
-  protected TreeModel<RowType> treeModel;
+  protected final TreeModel<RowType> treeModel;
   protected ImageView graphic = null;
+
+  protected AbstractTreeRow(TreeModel<RowType> treeModel) { this.treeModel = treeModel; }
 
 //---------------------------------------------------------------------------
 

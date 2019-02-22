@@ -43,6 +43,9 @@ import org.hypernomicon.view.tabs.QueriesTabController;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+
+import com.google.common.collect.Lists;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableView;
@@ -153,7 +156,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
     ht.addCustomActionCol(-1, "Merge", (row, colNdx) ->
     {
-      ArrayList<Author> pair = makeArrayList(rowToMatch.get(row));
+      ArrayList<Author> pair = Lists.newArrayList(rowToMatch.get(row));
 
       Author author1 = null, author2 = null;
 

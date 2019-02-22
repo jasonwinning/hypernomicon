@@ -263,6 +263,8 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     htKeyMentioners.addCol(hdtNone, ctNone);
     htKeyMentioners.addCol(hdtNone, ctNone);
 
+    RecordListView.addDefaultMenuItems(htKeyMentioners);
+
     htInvestigations = new HyperTable(tvInvestigations, 2, true, PREF_KEY_HT_WORK_INV);
 
     htInvestigations.addActionCol(ctGoBtn, 2);
@@ -1963,8 +1965,6 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 
     tpBib.getSelectionModel().select(tab);
 
-    final String finalUrl = url;
-
     ta.clear();
     btnStop.setVisible(true);
     progressBar.setVisible(true);
@@ -1984,7 +1984,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
         googleBD.set(bd);
       }
 
-      ta.setText("Query URL: " + finalUrl + System.lineSeparator());
+      ta.setText("Query URL: " + url + System.lineSeparator());
 
       btnStop.setVisible(false);
       progressBar.setVisible(false);
@@ -2000,7 +2000,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     {
       btnStop.setVisible(false);
       progressBar.setVisible(false);
-      ta.setText("Query URL: " + finalUrl + System.lineSeparator());
+      ta.setText("Query URL: " + url + System.lineSeparator());
 
       if ((e instanceof ParseException) || (e instanceof TerminateTaskException))
         return;

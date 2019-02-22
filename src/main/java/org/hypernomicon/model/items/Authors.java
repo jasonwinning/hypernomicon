@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -39,6 +38,9 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.NestedValue;
 import org.hypernomicon.model.relations.ObjectGroup;
+
+import com.google.common.collect.Sets;
+
 import org.hypernomicon.bib.BibAuthors;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
@@ -88,10 +90,10 @@ public final class Authors implements Iterable<Author>
   void expire()            { clearNoMod(); }
 
   public boolean containsPerson(HDT_Person person) { return objListNoMod.contains(person); }
+  public Collection<Author> asCollection()         { return Sets.newLinkedHashSet(this); }
+  void resolvePointers() throws HDB_InternalError  { db.resolvePointersByRelation(rtAuthorOfWork, work); }
 
   @Override public Iterator<Author> iterator()     { return new AuthorIterator(); }
-
-  void resolvePointers() throws HDB_InternalError  { db.resolvePointersByRelation(rtAuthorOfWork, work); }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -100,18 +102,6 @@ public final class Authors implements Iterable<Author>
   {
     if (allRecords) return new Author(work, objList.get(ndx));
     else            return authorList.get(ndx);
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  public Collection<Author> asCollection()
-  {
-    Collection<Author> set = new LinkedHashSet<>();
-
-    forEach(set::add);
-
-    return set;
   }
 
   //---------------------------------------------------------------------------

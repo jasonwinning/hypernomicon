@@ -20,6 +20,7 @@ package org.hypernomicon.bib;
 import java.util.List;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.hypernomicon.bib.lib.BibEntry;
 import org.hypernomicon.model.records.HDT_Work;
@@ -114,7 +115,7 @@ public class WorkBibData extends BibData
   {
     switch (bibFieldEnum)
     {
-      case bfTitle : return singletonMutableList(work.name());
+      case bfTitle : return Arrays.asList(work.name());
       case bfISBNs : return work.getISBNs();
       case bfMisc  : return convertMultiLineStrToStrList(work.getMiscBib(), true);
 

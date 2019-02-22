@@ -119,14 +119,9 @@ public class PathInfo
 
     hyperPath = null;
 
-    if (filePath.exists() == false)
-      fileKind = fkUnknown;
-    else if (filePath.isDirectory())
-      fileKind = fkFolder;
-    else
-      fileKind = fkFile;
-
-    return;
+    if (filePath.exists() == false)  fileKind = fkUnknown;
+    else if (filePath.isDirectory()) fileKind = fkFolder;
+    else                             fileKind = fkFile;
   }
 
 //---------------------------------------------------------------------------

@@ -119,12 +119,14 @@ public class FilePath implements Comparable<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public boolean deleteReturnsBoolean(boolean noExistOK) { return deleteReturnsBoolean(noExistOK, null); }
+
   public boolean deleteReturnsBoolean(boolean noExistOK, StringBuilder errorSB)
   {
     try { delete(noExistOK); }
     catch (Exception e)
     {
-      assignSB(errorSB, e.getMessage());
+      if (errorSB != null) assignSB(errorSB, e.getMessage());
       return false;
     }
 

@@ -25,7 +25,7 @@ import org.hypernomicon.model.items.MainText;
 
 public class BidiOneToManyMainTextMap
 {
-  private Map<MainText, Set<MainText>> forwardMap, reverseMap;
+  private final Map<MainText, Set<MainText>> forwardMap, reverseMap;
 
   public BidiOneToManyMainTextMap()
   {

@@ -42,8 +42,8 @@ public class CollectionTree
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void selectAllEntries()    { treeView.getSelectionModel().select(treeRowAllEntries.getTreeItem()); }
-  void selectTrash()         { treeView.getSelectionModel().select(treeRowTrash.getTreeItem()); }
+  void selectAllEntries() { treeView.getSelectionModel().select(treeRowAllEntries.getTreeItem()); }
+  void selectTrash()      { treeView.getSelectionModel().select(treeRowTrash.getTreeItem()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

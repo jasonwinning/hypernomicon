@@ -99,7 +99,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TitledPane;
@@ -313,8 +312,8 @@ public final class Util
 
   public static void searchGoogle(String str, boolean removeParen)
   {
-    if (safeStr(str).length() == 0) return;
-    openWebLink("http://www.google.com/search?q=" + escapeURL(str, removeParen));
+    if (safeStr(str).length() > 0)
+      openWebLink("http://www.google.com/search?q=" + escapeURL(str, removeParen));
   }
 
 //---------------------------------------------------------------------------
@@ -322,8 +321,8 @@ public final class Util
 
   public static void searchGoogleImage(String str)
   {
-    if (safeStr(str).length() == 0) return;
-    openWebLink("http://www.google.com/search?q=" + escapeURL(str, true) + "&tbm=isch");
+    if (safeStr(str).length() > 0)
+      openWebLink("http://www.google.com/search?q=" + escapeURL(str, true) + "&tbm=isch");
   }
 
 //---------------------------------------------------------------------------
@@ -331,8 +330,8 @@ public final class Util
 
   public static void searchSEP(String str)
   {
-    if (safeStr(str).length() == 0) return;
-    openWebLink("http://plato.stanford.edu/search/searcher.py?query=" + escapeURL(str, true));
+    if (safeStr(str).length() > 0)
+      openWebLink("http://plato.stanford.edu/search/searcher.py?query=" + escapeURL(str, true));
   }
 
 //---------------------------------------------------------------------------
@@ -340,8 +339,8 @@ public final class Util
 
   public static void searchWikipedia(String str)
   {
-    if (safeStr(str).length() == 0) return;
-    openWebLink("http://en.wikipedia.org/w/index.php?search=" + escapeURL(str, true));
+    if (safeStr(str).length() > 0)
+      openWebLink("http://en.wikipedia.org/w/index.php?search=" + escapeURL(str, true));
   }
 
 //---------------------------------------------------------------------------
@@ -349,8 +348,8 @@ public final class Util
 
   public static void searchIEP(String str)
   {
-    if (safeStr(str).length() == 0) return;
-    openWebLink("http://www.google.com/cse?cx=001101905209118093242%3Arsrjvdp2op4&ie=UTF-8&sa=Search&q=" + escapeURL(str, true));
+    if (safeStr(str).length() > 0)
+      openWebLink("http://www.google.com/cse?cx=001101905209118093242%3Arsrjvdp2op4&ie=UTF-8&sa=Search&q=" + escapeURL(str, true));
   }
 
 //---------------------------------------------------------------------------
@@ -425,9 +424,8 @@ public final class Util
       param = param + doi;
     }
 
-    if (param.length() == 0) return;
-
-    openWebLink("https://scholar.google.com/scholar?q=" + escapeURL(param, true));
+    if (param.length() > 0)
+      openWebLink("https://scholar.google.com/scholar?q=" + escapeURL(param, true));
   }
 
 //---------------------------------------------------------------------------
@@ -903,7 +901,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("rawtypes")
   public static void scaleNodeForDPI(Node node)
   {
     boolean childrenOnly = false;
@@ -953,14 +950,8 @@ public final class Util
         AnchorPane.setRightAnchor(node, val.doubleValue() * displayScale);
     }
 
-    if (node instanceof TableView)
-    {
-      for (Object colObj : TableView.class.cast(node).getColumns())
-      {
-        TableColumn column = TableColumn.class.cast(colObj);
-        scalePropertiesForDPI(column.maxWidthProperty(), column.minWidthProperty(), column.prefWidthProperty());
-      }
-    }
+    if (node instanceof TableView) ((TableView<?>)node).getColumns().forEach(column ->
+      scalePropertiesForDPI(column.maxWidthProperty(), column.minWidthProperty(), column.prefWidthProperty()));
 
     if (node instanceof GridPane)
     {
@@ -971,21 +962,13 @@ public final class Util
     }
 
     if (node instanceof ToolBar)
-    {
       ToolBar.class.cast(node).getItems().forEach(Util::scaleNodeForDPI);
-    }
     else if (node instanceof TitledPane)
-    {
       scaleNodeForDPI(TitledPane.class.cast(node).getContent());
-    }
     else if (node instanceof TabPane)
-    {
       TabPane.class.cast(node).getTabs().forEach(tab -> scaleNodeForDPI(tab.getContent()));
-    }
     else if (node instanceof Parent)
-    {
       Parent.class.cast(node).getChildrenUnmodifiable().forEach(Util::scaleNodeForDPI);
-    }
   }
 
 //---------------------------------------------------------------------------
@@ -1252,11 +1235,11 @@ public final class Util
     if (emptiesOK == false)
     {
       list2 = new ArrayList<>();
-      for (String one : list)
+      list.forEach(one ->
       {
         if (safeStr(one).length() > 0)
           list2.add(one);
-      }
+      });
     }
     else
       list2 = list;
@@ -1577,8 +1560,7 @@ public final class Util
     if (mimetype == null)
       mimetype = getMediaType(filePath);
 
-    String imageName = "";
-    String typeStr = mimetype.toString();
+    String imageName = "", typeStr = mimetype.toString();
 
     if (mimetype == MediaType.APPLICATION_XML)
       imageName = "document-code";
@@ -1640,17 +1622,11 @@ public final class Util
     stage.setFullScreen(false);
     stage.setIconified(false);
 
-    if (stage.getX() < 0)
-      stage.setX(0.0);
+    stage.setX(Math.max(stage.getX(), 0.0));
+    stage.setY(Math.max(stage.getY(), 0.0));
 
-    if (stage.getY() < 0)
-      stage.setY(0.0);
-
-    if (stage.getWidth() < 250)
-      stage.setWidth(defaultW);
-
-    if (stage.getHeight() < 75)
-      stage.setHeight(defaultH);
+    if (stage.getWidth() < 250) stage.setWidth(defaultW);
+    if (stage.getHeight() < 75) stage.setHeight(defaultH);
 
     double minX = Double.MAX_VALUE, maxX = Double.NEGATIVE_INFINITY, minY = Double.MAX_VALUE, maxY = Double.NEGATIVE_INFINITY;
 
@@ -1658,23 +1634,16 @@ public final class Util
     {
       Rectangle2D bounds = screen.getBounds();
 
-      if (minX > bounds.getMinX()) minX = bounds.getMinX();
-      if (minY > bounds.getMinY()) minY = bounds.getMinY();
-      if (maxX < bounds.getMaxX()) maxX = bounds.getMaxX();
-      if (maxY < bounds.getMaxY()) maxY = bounds.getMaxY();
+      minX = Math.min(minX, bounds.getMinX());
+      minY = Math.min(minY, bounds.getMinY());
+      maxX = Math.max(maxX, bounds.getMaxX());
+      maxY = Math.max(maxY, bounds.getMaxY());
     }
 
-    if (stage.getX() >= (maxX - 50))
-      stage.setX(maxX - 50);
-
-    if (stage.getY() >= (maxY - 50))
-      stage.setY(maxY - 50);
-
-    if (stage.getWidth() >= maxX - 100)
-      stage.setWidth(maxX - 100);
-
-    if (stage.getHeight() >= maxY - 100)
-      stage.setHeight(maxY - 100);
+    stage.setX(Math.min(stage.getX(), maxX - 50.0));
+    stage.setY(Math.min(stage.getY(), maxY - 50.0));
+    stage.setWidth(Math.min(stage.getWidth(), maxX - 100.0));
+    stage.setHeight(Math.min(stage.getHeight(), maxY - 100.0));
   }
 
 //---------------------------------------------------------------------------
@@ -1724,27 +1693,6 @@ public final class Util
     }
 
     return null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static <T> ArrayList<T> makeArrayList(Iterable<T> it)
-  {
-    ArrayList<T> list = new ArrayList<>();
-
-    it.forEach(list::add);
-
-    return list;
-  }
-
-  public static <T> ArrayList<T> makeArrayList(Iterator<T> it)
-  {
-    ArrayList<T> list = new ArrayList<>();
-
-    it.forEachRemaining(list::add);
-
-    return list;
   }
 
 //---------------------------------------------------------------------------
@@ -1824,7 +1772,7 @@ public final class Util
 
   public static List<String> convertMultiLineStrToStrList(String str, boolean emptiesOK)
   {
-    ArrayList<String> list = new ArrayList<>(); list.addAll(Arrays.asList(str.split("\\r?\\n")));
+    ArrayList<String> list = new ArrayList<>(Arrays.asList(str.split("\\r?\\n")));
 
     if (list.isEmpty()) return list;
 
@@ -1845,28 +1793,6 @@ public final class Util
     list.removeIf(s -> ultraTrim(s).length() == 0);
 
     return list;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static <T> List<T> singletonMutableList(T o)
-  {
-    ArrayList<T> list = new ArrayList<>();
-    list.add(o);
-    return list;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static <T> Iterator<T> readOnlyIterator(Iterator<T> it)
-  {
-    return new Iterator<T>()
-    {
-      @Override public boolean hasNext() { return it.hasNext(); }
-      @Override public T next()          { return it.next();    }
-    };
   }
 
 //---------------------------------------------------------------------------

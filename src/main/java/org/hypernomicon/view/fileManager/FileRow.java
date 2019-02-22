@@ -48,15 +48,15 @@ import javafx.scene.image.ImageView;
 
 public class FileRow extends AbstractTreeRow<FileRow>
 {
-  private HyperPath hyperPath;
+  private final HyperPath hyperPath;
   private MediaType mimetype = null;
 
 //---------------------------------------------------------------------------
 
   FileRow(HyperPath hyperPath, TreeModel<FileRow> treeModel)
   {
+    super(treeModel);
     this.hyperPath = hyperPath;
-    this.treeModel = treeModel;
 
     if (treeModel != null)
       treeItem = new TreeItem<>(this);
@@ -64,12 +64,12 @@ public class FileRow extends AbstractTreeRow<FileRow>
 
 //---------------------------------------------------------------------------
 
-  FilePath getFilePath()   { return hyperPath.getFilePath(); }
-  boolean isDirectory()    { return hyperPath.getFilePath().isDirectory(); }
-  HDT_Folder getFolder()   { return hyperPath.getParentFolder(); }
-  String getFileName()     { return hyperPath.getNameStr(); }
-  HyperPath getHyperPath() { return hyperPath; }
-  private void determineType()    { if (mimetype == null) mimetype = getMediaType(hyperPath.getFilePath()); }
+  FilePath getFilePath()       { return hyperPath.getFilePath(); }
+  boolean isDirectory()        { return hyperPath.getFilePath().isDirectory(); }
+  HDT_Folder getFolder()       { return hyperPath.getParentFolder(); }
+  String getFileName()         { return hyperPath.getNameStr(); }
+  HyperPath getHyperPath()     { return hyperPath; }
+  private void determineType() { if (mimetype == null) mimetype = getMediaType(hyperPath.getFilePath()); }
 
   void setFolderTreeItem(TreeItem<FileRow> treeItem) { this.treeItem  = treeItem; }
 
@@ -189,8 +189,7 @@ public class FileRow extends AbstractTreeRow<FileRow>
       }
     });
 
-    if (noneVisible) return null;
-    return rowMenu;
+    return noneVisible ? null : rowMenu;
   }
 
 //---------------------------------------------------------------------------
@@ -198,15 +197,10 @@ public class FileRow extends AbstractTreeRow<FileRow>
 
   boolean rename(String newName)
   {
-    if (isDirectory())
-    {
-      HDT_Folder theFolder = (HDT_Folder)getRecord();
-      if (theFolder.renameTo(newName) == false) return false;
-    }
+    if (isDirectory() && (HDT_Folder.class.cast(getRecord()).renameTo(newName) == false))
+      return false;
 
-    TreeItem<FileRow> item = getTreeItem();
-    item.setValue(this);
-
+    getTreeItem().setValue(this);
     return true;
   }
 

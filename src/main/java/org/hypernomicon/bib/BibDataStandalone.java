@@ -37,7 +37,9 @@ public class BibDataStandalone extends BibData
   private final LinkedHashSet<BibField> bibFields = new LinkedHashSet<>();
   private final HashMap<BibFieldEnum, BibField> bibFieldEnumToBibField = new HashMap<>();
   protected YearType yearType;      // Internally-used descriptor indicates where year field came from for purposes of determining priority
-  private BibAuthorsStandalone authors = new BibAuthorsStandalone();
+  private final BibAuthorsStandalone authors = new BibAuthorsStandalone();
+
+  private static final EnumSet<BibFieldType> stringBibFieldTypes = EnumSet.of(bftString, bftMultiString);
 
   public BibDataStandalone()
   {
@@ -46,19 +48,11 @@ public class BibDataStandalone extends BibData
 
     EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum ->
     {
-      BibFieldType type = bibFieldEnumToType.get(bibFieldEnum);
-
-      switch (type)
+      if (stringBibFieldTypes.contains(bibFieldEnumToType.get(bibFieldEnum)))
       {
-        case bftString : case bftMultiString :
-
-          BibField bibField = new BibField(bibFieldEnum);
-          bibFields.add(bibField);
-          bibFieldEnumToBibField.put(bibFieldEnum, bibField);
-          break;
-
-        default :
-          break;
+        BibField bibField = new BibField(bibFieldEnum);
+        bibFields.add(bibField);
+        bibFieldEnumToBibField.put(bibFieldEnum, bibField);
       }
     });
   }
@@ -84,7 +78,7 @@ public class BibDataStandalone extends BibData
       }
     }
 
-    bd.getAuthors().forEach(getAuthors()::add);
+    bd.getAuthors().forEach(authors::add);
   }
 
 //---------------------------------------------------------------------------
@@ -158,8 +152,8 @@ public class BibDataStandalone extends BibData
       case bfContainerTitle: case bfMisc: case bfTitle:
         return bibFieldEnumToBibField.get(bibFieldEnum).getStr();
 
-      case bfAuthors: return authors.getStr(AuthorType.author);
-      case bfEditors: return authors.getStr(AuthorType.editor);
+      case bfAuthors:     return authors.getStr(AuthorType.author);
+      case bfEditors:     return authors.getStr(AuthorType.editor);
       case bfTranslators: return authors.getStr(AuthorType.translator);
 
       default:

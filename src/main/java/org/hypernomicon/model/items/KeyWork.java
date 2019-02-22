@@ -52,7 +52,7 @@ public class KeyWork implements Comparable<KeyWork>
       final int prime = 31;
       int result = 1;
       result = prime * result + getID();
-      result = prime * result + nullSwitch(getType(), 0, type -> type.hashCode());
+      result = prime * result + nullSwitch(getType(), 0, HDT_RecordType::hashCode);
       return result;
     }
 
@@ -65,11 +65,7 @@ public class KeyWork implements Comparable<KeyWork>
 
       RecordPointer other = (RecordPointer) obj;
 
-      if (getID() == other.getID())
-        if (getType() == other.getType())
-          return true;
-
-      return false;
+      return (getID() == other.getID()) && (getType() == other.getType());
     }
   }
 
@@ -264,18 +260,12 @@ public class KeyWork implements Comparable<KeyWork>
 
   private int getYear()
   {
-    int year = 0;
-
     if (record.getType() == hdtWork)
-      year = parseInt(HDT_Work.class.cast(record.getRecord()).getYear(), 0);
+      return parseInt(HDT_Work.class.cast(record.getRecord()).getYear(), 0);
     else if (record.getType() == hdtMiscFile)
-    {
-      HDT_Work work = HDT_MiscFile.class.cast(record.getRecord()).work.get();
-      if (work != null)
-        year = parseInt(work.getYear(), 0);
-    }
+      return nullSwitch(HDT_MiscFile.class.cast(record.getRecord()).work.get(), 0, work -> parseInt(work.getYear(), 0));
 
-    return year;
+    return 0;
   }
 
   //---------------------------------------------------------------------------
@@ -284,15 +274,10 @@ public class KeyWork implements Comparable<KeyWork>
   @Override public boolean equals(Object obj)
   {
     if (this == obj) return true;
-    if (obj == null) return false;
+    if ((obj == null) || (record == null)) return false;
     if (getClass() != obj.getClass()) return false;
 
-    KeyWork other = (KeyWork) obj;
-
-    if ((other.record != null) && (record != null))
-      return record.equals(other.record);
-
-    return false;
+    return record.equals(((KeyWork)obj).record);
   }
 
   //---------------------------------------------------------------------------
@@ -300,13 +285,8 @@ public class KeyWork implements Comparable<KeyWork>
 
   @Override public int compareTo(KeyWork o)
   {
-    int year1 = getYear(),
-        year2 = o.getYear();
-
-    if (year1 == year2)
-      return getSearchKey().compareToIgnoreCase(o.getSearchKey());
-
-    return year1 - year2;
+    int diff = getYear() - o.getYear();
+    return diff == 0 ? getSearchKey().compareToIgnoreCase(o.getSearchKey()) : diff;
   }
 
   //---------------------------------------------------------------------------

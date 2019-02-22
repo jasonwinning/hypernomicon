@@ -116,39 +116,41 @@ public final class HyperDB
   final private EnumMap<Tag, EnumSet<HDT_RecordType>> tagToSubjType = new EnumMap<>(Tag.class);
   final private EnumMap<Tag, String> tagToHeader = new EnumMap<>(Tag.class);
 
-  final private EnumBiMap<HDT_RecordType, Tag> typeToTag = EnumBiMap.create(HDT_RecordType.class, Tag.class);
-  final private EnumHashBiMap<Tag, String> tagToStr = EnumHashBiMap.create(Tag.class);
-  final private EnumHashBiMap<HDT_RecordType, String> typeToTagStr = EnumHashBiMap.create(HDT_RecordType.class);
-  final private SearchKeys searchKeys = new SearchKeys();
   final private ArrayList<RecordDeleteHandler> recordDeleteHandlers          = new ArrayList<>();
   final private ArrayList<DatabaseEvent>       dbCloseHandlers               = new ArrayList<>(),
                                                dbPreChangeHandlers           = new ArrayList<>(),
                                                dbMentionsNdxCompleteHandlers = new ArrayList<>(),
                                                bibChangedHandlers            = new ArrayList<>();
+
+  final private EnumBiMap<HDT_RecordType, Tag> typeToTag = EnumBiMap.create(HDT_RecordType.class, Tag.class);
+  final private EnumHashBiMap<Tag, String> tagToStr = EnumHashBiMap.create(Tag.class);
+  final private EnumHashBiMap<HDT_RecordType, String> typeToTagStr = EnumHashBiMap.create(HDT_RecordType.class);
+  final private SearchKeys searchKeys = new SearchKeys();
   final private MentionsIndex mentionsIndex = new MentionsIndex(dbMentionsNdxCompleteHandlers);
   final private ArrayList<HDT_Base> initialNavList = new ArrayList<>();
   final private EnumMap<HDT_RecordType, RelationChangeHandler> keyWorkHandlers = new EnumMap<>(HDT_RecordType.class);
+  final private HashMap<HDT_RecordWithPath, Set<HDT_RecordWithConnector>> keyWorkIndex = new HashMap<>();
+  final private BidiOneToManyMainTextMap displayedAtIndex = new BidiOneToManyMainTextMap();
+  final private Map<String, HDT_Work> bibEntryKeyToWork = new HashMap<>();
+
+  final public FilenameMap<Set<HyperPath>> filenameMap = new FilenameMap<>();
+
   public Preferences prefs;
   private Preferences appPrefs;
   private LibraryWrapper<? extends BibEntry, ? extends BibCollection> bibLibrary = null;
   private FolderTreeWatcher folderTreeWatcher;
   private FilePath lockFilePath = null;
-  public FilenameMap<Set<HyperPath>> filenameMap;
-  private HashMap<HDT_RecordWithPath, Set<HDT_RecordWithConnector>> keyWorkIndex;
-  private BidiOneToManyMainTextMap displayedAtIndex;
-  private Map<String, HDT_Work> bibEntryKeyToWork;
   private DialogResult deleteFileAnswer;
   HyperTask task;
   long totalTaskCount, curTaskCount;
   private FilePath rootFilePath, prefsFilePath;
   private Instant dbCreationDate;
 
-  private boolean loaded = false, deletionInProgress = false, pointerResolutionInProgress = false, resolveAgain = false,
-                  unableToLoad = false, initialized = false;
+  private boolean loaded       = false, deletionInProgress = false, pointerResolutionInProgress = false,
+                  unableToLoad = false, initialized        = false, resolveAgain = false;
 
-  public boolean runningConversion = false; // suppresses "view date" updating
-
-  public boolean viewTestingInProgress = false;
+  public boolean runningConversion     = false, // suppresses "view date" updating
+                 viewTestingInProgress = false;
 
 //---------------------------------------------------------------------------
   @FunctionalInterface public interface RelationChangeHandler { void handle(HDT_Base subject, HDT_Base object, boolean affirm); }
@@ -402,15 +404,10 @@ public final class HyperDB
 
     datasets.get(type).writeToXML(xml);
 
-    switch (type)
-    {
-      case hdtDebate : case hdtNote : case hdtPersonGroup : case hdtWorkLabel : case hdtGlossary :
-        curTaskCount += records(type).size() - 1;
-        break;
+    curTaskCount += records(type).size();
 
-      default :
-        curTaskCount += records(type).size();
-    }
+    if (EnumSet.of(hdtDebate, hdtNote, hdtPersonGroup, hdtWorkLabel, hdtGlossary).contains(type))
+      curTaskCount--;
   }
 
 //---------------------------------------------------------------------------
@@ -1287,22 +1284,22 @@ public final class HyperDB
 
   public String getLockOwner()
   {
-    List<String> s = new ArrayList<>();
     FilePath filePath = getLockFilePath();
-    StringBuilder errorSB = new StringBuilder("");
 
     if (filePath.exists())
     {
+      List<String> s;
+
       try { s = FileUtils.readLines(filePath.toFile(), "UTF-8"); }
       catch (IOException e) { return "whatevervolleyball"; }
 
       if (s.get(0).equals(getComputerName()) == false)
         return s.get(0);
       else
-        filePath.deleteReturnsBoolean(true, errorSB);
+        filePath.deleteReturnsBoolean(true);
     }
 
-    getRequestMessageFilePath().deletePromptOnFail(true);
+    getRequestMessageFilePath ().deletePromptOnFail(true);
     getResponseMessageFilePath().deletePromptOnFail(true);
 
     return null;
@@ -1326,7 +1323,7 @@ public final class HyperDB
 
   public void close(EnumSet<HDT_RecordType> datasetsToKeep) throws HDB_InternalError
   {
-    boolean bringOnline = (datasetsToKeep != null); // Datasets remain online through process of creating a new database
+    boolean bringOnline = datasetsToKeep != null; // Datasets remain online through process of creating a new database
 
     folderTreeWatcher.stop();
 
@@ -1341,11 +1338,11 @@ public final class HyperDB
     clearAllDataSets(datasetsToKeep);
     cleanupRelations();
 
-    initialNavList.clear();
-    filenameMap = new FilenameMap<>();
-    keyWorkIndex = new HashMap<>();
-    displayedAtIndex = new BidiOneToManyMainTextMap();
-    bibEntryKeyToWork = new HashMap<>();
+    initialNavList   .clear();
+    filenameMap      .clear();
+    keyWorkIndex     .clear();
+    displayedAtIndex .clear();
+    bibEntryKeyToWork.clear();
 
     if (bibLibrary != null)
     {
@@ -1970,15 +1967,7 @@ public final class HyperDB
 
   public String getTypeName(HDT_RecordType type)
   {
-    Tag tag = typeToTag.get(type);
-    if (tag != null)
-      return tagToHeader.get(tag);
-
-    switch (type)
-    {
-      case hdtNone : return "All";
-      default: return "Unknown";
-    }
+    return nullSwitch(typeToTag.get(type), type == hdtNone ? "All" : "Unknown", tagToHeader::get);
   }
 
 //---------------------------------------------------------------------------

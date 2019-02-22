@@ -19,6 +19,7 @@ package org.hypernomicon.view.populators;
 
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -30,9 +31,8 @@ public class EmptyPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force) { return null; }
+  @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force) { return Collections.emptyList(); }
   @Override public CellValueType getValueType()                                    { return cvtRecord; }
-  @Override public HyperTableCell getChoiceByID(HyperTableRow row, int id)         { return null; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

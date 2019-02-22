@@ -1073,18 +1073,13 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   @Override public String getHtml(BibEntryRow row)
   {
-    if (row == null) return "";
-    ZoteroItem item = (ZoteroItem) row.getEntry();
+    ZoteroItem item = (ZoteroItem) nullSwitch(row, null, BibEntryRow::getEntry);
     if (item == null) return "";
 
     JsonObj jData = item.exportJsonObjForUploadToServer(true);
     jData = nullSwitch(jData.getObj("data"), jData);
 
-    StringBuilder html = new StringBuilder();
-
-    html.append("<html><head><style>")
-        .append("td.fieldName { vertical-align: text-top; text-align: right; padding-right:10px; }</style></head><body>")
-        .append("<table style=\"font-size:9pt; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,sans-serif; } line-height:10pt;\">");
+    StringBuilder html = getHtmlStart();
 
     for (String key : jData.keySet())
     {
@@ -1125,8 +1120,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       }
     }
 
-    html.append("</table></body></html>");
-    return html.toString();
+    return finishHtml(html);
   }
 
 //---------------------------------------------------------------------------
@@ -1139,9 +1133,10 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     if (fieldName.equals("Item Type"))
       str = camelToTitle(str);
 
-    html.append("<tr><td class=\"fieldName\">" + fieldName + "</td><td>")
-        .append(str)
-        .append("</td></tr>");
+    if (fieldName.equals("URL"))
+      str = anchorTag(str, str);
+
+    addRowToHtml(fieldName, str, html);
   }
 
 //---------------------------------------------------------------------------
@@ -1168,9 +1163,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         if (personName.isEmpty()) return;
       }
 
-      html.append("<tr><td class=\"fieldName\">" + type + "</td><td>")
-          .append(personName.getLastFirst())
-          .append("</td></tr>");
+      addRowToHtml(type, personName.getLastFirst(), html);
     });
   }
 
@@ -1187,28 +1180,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       list.add(str);
     }
 
-    addStringListHtml(fieldName, list, html);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void addStringListHtml(String fieldName, List<String> list, StringBuilder html)
-  {
-    list.removeIf(str -> (str == null) || (ultraTrim(str).length() == 0));
-
-    if (list.size() == 0) return;
-
-    html.append("<tr><td class=\"fieldName\">" + fieldName + "</td><td>");
-
-    for (int ndx = 0; ndx < list.size(); ndx++)
-    {
-      html.append(list.get(ndx));
-      if (ndx < (list.size() - 1))
-        html.append("<br>");
-    }
-
-    html.append("</td></tr>");
+    addRowsToHtml(fieldName, list, html);
   }
 
 //---------------------------------------------------------------------------

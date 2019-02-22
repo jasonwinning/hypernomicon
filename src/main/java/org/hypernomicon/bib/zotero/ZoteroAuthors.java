@@ -72,9 +72,7 @@ public class ZoteroAuthors extends BibAuthors
 
     creatorsArr.getObjs().forEach(creatorObj ->
     {
-      String aTypeStr = creatorObj.getStrSafe("creatorType");
-      AuthorType aType = getAuthorTypeForStr(aTypeStr);
-
+      AuthorType aType = getAuthorTypeForStr(creatorObj.getStrSafe("creatorType"));
       if (aType == null) return;
 
       ArrayList<BibAuthor> list = null;
@@ -87,7 +85,7 @@ public class ZoteroAuthors extends BibAuthors
       }
 
       String firstName = creatorObj.getStrSafe("firstName"),
-             lastName = creatorObj.getStrSafe("lastName");
+             lastName  = creatorObj.getStrSafe("lastName");
 
       if ((firstName.length() > 0) || (lastName.length() > 0))
         list.add(new BibAuthor(aType, new PersonName(firstName, lastName)));

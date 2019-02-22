@@ -17,6 +17,8 @@
 
 package org.hypernomicon.queryEngines;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 
 import org.hypernomicon.model.records.HDT_Base;
@@ -27,6 +29,9 @@ import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.queryEngines.QueryEngine.QueryType.*;
+
 @SuppressWarnings("unused")
 public abstract class QueryEngine<HDT_T extends HDT_Base>
 {
@@ -35,27 +40,51 @@ public abstract class QueryEngine<HDT_T extends HDT_Base>
 
   public static enum QueryType
   {
-    qtAllRecords(1),
-    qtPersons(2),
-    qtWorks(3),
-    qtInstitutions(4),
-    qtInvestigations(5),
-    qtDebates(6),
-    qtPositions(7),
-    qtArguments(8),
-    qtNotes(9),
-    qtFiles(10),
-    qtConcepts(11),
-    qtReport(12),
-    qtNone(13);
+    qtAllRecords    (1,  "Any records"           , hdtNone         ),
+    qtPersons       (2,  "Person records"        , hdtPerson       ),
+    qtWorks         (3,  "Institution records"   , hdtWork         ),
+    qtInstitutions  (4,  "Work records"          , hdtInstitution  ),
+    qtInvestigations(5,  "File records"          , hdtInvestigation),
+    qtDebates       (6,  "Problem/debate records", hdtDebate       ),
+    qtPositions     (7,  "Position records"      , hdtPosition     ),
+    qtArguments     (8,  "Argument records"      , hdtArgument     ),
+    qtNotes         (9,  "Note records"          , hdtNote         ),
+    qtFiles         (10, "Concept records"       , hdtMiscFile     ),
+    qtConcepts      (11, "Investigation records" , hdtConcept      ),
+    qtReport        (12, "Report"                , hdtNone         );
 
     //---------------------------------------------------------------------------
 
     private final int code;
+    private final String caption;
+    private final HDT_RecordType recordType;
     private static final HashMap<Integer, QueryType> codeToValMap = new HashMap<>();
+    private static final EnumMap<QueryType, HDT_RecordType> queryTypeToRecordType;
+    private static final EnumMap<HDT_RecordType, QueryType> recordTypeToQueryType;
 
-    private QueryType(int code) { this.code = code; }
-    public int getCode()        { return code; }
+    private QueryType(int code, String caption, HDT_RecordType recordType)
+    {
+      this.code = code;
+      this.caption = caption;
+      this.recordType = recordType;
+    }
+
+    static
+    {
+      queryTypeToRecordType = new EnumMap<>(QueryType.class);
+      recordTypeToQueryType = new EnumMap<>(HDT_RecordType.class);
+
+      EnumSet.allOf(QueryType.class).forEach(type ->
+      {
+        queryTypeToRecordType.put(type, type.recordType);
+        if (type != qtReport)
+          recordTypeToQueryType.put(type.recordType, type);
+      });
+    }
+
+    public int getCode()                  { return code; }
+    public String getCaption()            { return caption; }
+    public HDT_RecordType getRecordType() { return recordType; }
 
     //---------------------------------------------------------------------------
 
@@ -72,22 +101,7 @@ public abstract class QueryEngine<HDT_T extends HDT_Base>
 
     public static QueryType fromRecordType(HDT_RecordType recordType)
     {
-      if (recordType == null) return qtAllRecords;
-
-      switch (recordType)
-      {
-        case hdtArgument      : return qtArguments;
-        case hdtDebate        : return qtDebates;
-        case hdtMiscFile      : return qtFiles;
-        case hdtInstitution   : return qtInstitutions;
-        case hdtInvestigation : return qtInvestigations;
-        case hdtNote          : return qtNotes;
-        case hdtPerson        : return qtPersons;
-        case hdtPosition      : return qtPositions;
-        case hdtConcept       : return qtConcepts;
-        case hdtWork          : return qtWorks;
-        default               : return qtAllRecords;
-      }
+      return recordType == null ? qtAllRecords : recordTypeToQueryType.getOrDefault(recordType, qtAllRecords);
     }
   }
 

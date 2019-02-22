@@ -47,6 +47,7 @@ import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.RecordListView;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -268,9 +269,8 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     btnFolder.setOnAction(event -> launchFile(folderPath));
     btnBrowse.setOnAction(event -> browseClick());
 
-    htSubnotes.addCondContextMenuItem("Launch subnote folder", HDT_Note.class,
-      note -> note.folder.getID() > 0,
-      note -> launchFile(note.folder.get().getPath().getFilePath()));
+    RecordListView.addDefaultMenuItems(htMentioners);
+    RecordListView.addDefaultMenuItems(htSubnotes);
 
     htSubnotes.addContextMenuItem("Go to subnote", HDT_Note.class,
       note -> ui.goToRecord(note, true));

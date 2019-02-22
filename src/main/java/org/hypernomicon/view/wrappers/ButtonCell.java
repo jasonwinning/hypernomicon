@@ -33,13 +33,12 @@ import static org.hypernomicon.util.Util.*;
 public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 {
   final Button cellButton;
-  HyperTable ht;
-  int colNdxOfTarget;
-  static int cnt = 0;
-  HyperCtrlType ctrlType;
-  private HyperTableColumn col;
-  private ButtonCellHandler handler;
-  private String btnCaption;
+  final HyperTable ht;
+  final int colNdxOfTarget;
+  final HyperCtrlType ctrlType;
+  final private HyperTableColumn col;
+  final private ButtonCellHandler handler;
+  final private String btnCaption;
 
 //---------------------------------------------------------------------------
 
@@ -70,9 +69,9 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
         setAction(ctrlType == ctGoBtn ? ButtonAction.baGo : ButtonAction.baNew); break;
 
       case ctCustomBtn : setAction(ButtonAction.baCustom); break;
-      case ctLinkBtn :   setAction(ButtonAction.baLink); break;
+      case ctLinkBtn   : setAction(ButtonAction.baLink  ); break;
       case ctBrowseBtn : setAction(ButtonAction.baBrowse); break;
-      default : break;
+      default          : break;
     }
   }
 

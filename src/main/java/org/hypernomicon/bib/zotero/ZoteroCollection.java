@@ -44,11 +44,7 @@ public class ZoteroCollection implements ZoteroEntity, BibCollection
   @Override public String getParentKey()
   {
     String parentKey = jObj.getObj("data").getStrSafe("parentCollection");
-
-    if (parentKey.length() > 0)
-      return parentKey;
-
-    return null;
+    return parentKey.length() > 0 ? parentKey : null;
   }
 
 //---------------------------------------------------------------------------
@@ -57,11 +53,10 @@ public class ZoteroCollection implements ZoteroEntity, BibCollection
   @Override public void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge)
   {
     this.jObj = jObj;
-    if (jObj.containsKey("synced"))
-    {
-      synced = jObj.getBoolean("synced", false);
-      jObj.remove("synced");
-    }
+    if (jObj.containsKey("synced") == false) return;
+
+    synced = jObj.getBoolean("synced", false);
+    jObj.remove("synced");
   }
 
 //---------------------------------------------------------------------------

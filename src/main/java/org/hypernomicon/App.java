@@ -91,36 +91,28 @@ import javafx.scene.input.TransferMode;
 public final class App extends Application
 {
   private Stage primaryStage;
-  private static final double baseDisplayScale = 81.89306640625;
-
-  public static TikaConfig tika;
-  public static final FolderTreeWatcher folderTreeWatcher = new FolderTreeWatcher();
-
-  private static int total, ctr, lastPercent;
-  private static boolean isDebugging;
-
-  public static Preferences appPrefs;
-
-  public static QueryView curQV;
-
-  public static final String appTitle = "Hypernomicon";
-
-  public static App app;
-  public static MainController ui;
-  public static BibManager bibManagerDlg = null;
-  public static FileManager fileManagerDlg = null;
-  public static PreviewWindow previewWindow = null;
-  public static ContentsWindow contentsWindow = null;
-
-  public static double displayScale;
-
+  private boolean testMainTextEditing = false;
   private double deltaX;
   private long swipeStartTime;
-  private boolean testMainTextEditing = false;
-
-  public static boolean jxBrowserDisabled = false;
-  public static boolean browserCoreInitialized = false;
   private static String jxBrowserErrMsg = "";
+  private static boolean isDebugging;
+  private static final double baseDisplayScale = 81.89306640625;
+  private static int total, ctr, lastPercent;
+
+  public static App app;
+  public static BibManager bibManagerDlg = null;
+  public static ContentsWindow contentsWindow = null;
+  public static FileManager fileManagerDlg = null;
+  public static MainController ui;
+  public static Preferences appPrefs;
+  public static PreviewWindow previewWindow = null;
+  public static QueryView curQV;
+  public static TikaConfig tika;
+  public static boolean browserCoreInitialized = false,
+                        jxBrowserDisabled = false;
+  public static double displayScale;
+  public static final FolderTreeWatcher folderTreeWatcher = new FolderTreeWatcher();
+  public static final String appTitle = "Hypernomicon";
 
   public Stage getPrimaryStage() { return primaryStage; }
   public boolean debugging()     { return isDebugging; }
@@ -393,23 +385,22 @@ public final class App extends Application
                                      new Image(App.class.getResourceAsStream("resources/images/logo-64x64.png")),
                                      new Image(App.class.getResourceAsStream("resources/images/logo-128x128.png")),
                                      new Image(App.class.getResourceAsStream("resources/images/logo-256x256.png")));
-
       ui.hideFindTable();
 
       initScaling(rootLayout);
 
-      double x = appPrefs.getDouble(PREF_KEY_WINDOW_X, primaryStage.getX());
-      double y = appPrefs.getDouble(PREF_KEY_WINDOW_Y, primaryStage.getY());
-      double width = appPrefs.getDouble(PREF_KEY_WINDOW_WIDTH, primaryStage.getWidth());
-      double height = appPrefs.getDouble(PREF_KEY_WINDOW_HEIGHT, primaryStage.getHeight());
-      boolean fullScreen = appPrefs.getBoolean(PREF_KEY_WINDOW_FULLSCREEN, primaryStage.isFullScreen());
-      boolean maximized = appPrefs.getBoolean(PREF_KEY_WINDOW_MAXIMIZED, primaryStage.isMaximized());
+      double  x          = appPrefs.getDouble (PREF_KEY_WINDOW_X,          primaryStage.getX()),
+              y          = appPrefs.getDouble (PREF_KEY_WINDOW_Y,          primaryStage.getY()),
+              width      = appPrefs.getDouble (PREF_KEY_WINDOW_WIDTH,      primaryStage.getWidth()),
+              height     = appPrefs.getDouble (PREF_KEY_WINDOW_HEIGHT,     primaryStage.getHeight());
+      boolean fullScreen = appPrefs.getBoolean(PREF_KEY_WINDOW_FULLSCREEN, primaryStage.isFullScreen()),
+              maximized  = appPrefs.getBoolean(PREF_KEY_WINDOW_MAXIMIZED,  primaryStage.isMaximized());
 
       primaryStage.setX(x); // set X and Y first so that window gets full-screened or
       primaryStage.setY(y); // maximized onto the correct monitor if there are more than one
 
-      if (fullScreen)     primaryStage.setFullScreen(true);
-      else if (maximized) primaryStage.setMaximized(true);
+      if      (fullScreen) primaryStage.setFullScreen(true);
+      else if (maximized)  primaryStage.setMaximized(true);
       else
       {
         primaryStage.setWidth(width);

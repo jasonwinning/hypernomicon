@@ -40,37 +40,24 @@ public class BibAuthorsStandalone extends BibAuthors
 
   public BibAuthorsStandalone()
   {
-    authors.put(AuthorType.author, new ArrayList<>());
-    authors.put(AuthorType.editor, new ArrayList<>());
+    authors.put(AuthorType.author    , new ArrayList<>());
+    authors.put(AuthorType.editor    , new ArrayList<>());
     authors.put(AuthorType.translator, new ArrayList<>());
   }
 
   @Override public void add(BibAuthor author)   { authors.get(author.getType()).add(author); }
+  @Override public boolean isEmpty()            { return listsAreEmpty() && (safeStr(oneLiner).length() == 0); }
 
-  public void setOneLiner(String str)
-  {
-    oneLiner = ultraTrim(convertToSingleLine(safeStr(str)));
-  }
+  public void setOneLiner(String str)           { oneLiner = ultraTrim(convertToSingleLine(safeStr(str))); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private boolean listsAreEmpty()
   {
-    return (authors.get(AuthorType.author).size() == 0) &&
-           (authors.get(AuthorType.editor).size() == 0) &&
-           (authors.get(AuthorType.translator).size() == 0);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean isEmpty()
-  {
-    if (listsAreEmpty() == false)
-      return false;
-
-    return safeStr(oneLiner).length() == 0;
+    return authors.get(AuthorType.author    ).isEmpty() &&
+           authors.get(AuthorType.editor    ).isEmpty() &&
+           authors.get(AuthorType.translator).isEmpty();
   }
 
 //---------------------------------------------------------------------------
@@ -78,8 +65,8 @@ public class BibAuthorsStandalone extends BibAuthors
 
   @Override public void clear()
   {
-    authors.get(AuthorType.author).clear();
-    authors.get(AuthorType.editor).clear();
+    authors.get(AuthorType.author    ).clear();
+    authors.get(AuthorType.editor    ).clear();
     authors.get(AuthorType.translator).clear();
     oneLiner = "";
   }
@@ -89,9 +76,8 @@ public class BibAuthorsStandalone extends BibAuthors
 
   @Override public String getStr()
   {
-    if (listsAreEmpty())
-      if (safeStr(oneLiner).length() > 0)
-        return oneLiner;
+    if (listsAreEmpty() && (safeStr(oneLiner).length() > 0))
+      return oneLiner;
 
     return super.getStr();
   }
@@ -132,9 +118,9 @@ public class BibAuthorsStandalone extends BibAuthors
     if (listsAreEmpty())
       return getOneLinerAsList().iterator();
 
-    return readOnlyIterator(Iterators.concat(authors.get(AuthorType.author).iterator(),
-                                             authors.get(AuthorType.editor).iterator(),
-                                             authors.get(AuthorType.translator).iterator()));
+    return Iterators.unmodifiableIterator(Iterators.concat(authors.get(AuthorType.author    ).iterator(),
+                                                           authors.get(AuthorType.editor    ).iterator(),
+                                                           authors.get(AuthorType.translator).iterator()));
   }
 
 //---------------------------------------------------------------------------
@@ -148,8 +134,8 @@ public class BibAuthorsStandalone extends BibAuthors
       return;
     }
 
-    authorList.addAll(authors.get(AuthorType.author));
-    editorList.addAll(authors.get(AuthorType.editor));
+    authorList    .addAll(authors.get(AuthorType.author    ));
+    editorList    .addAll(authors.get(AuthorType.editor    ));
     translatorList.addAll(authors.get(AuthorType.translator));
   }
 

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,10 +34,11 @@ import com.google.common.collect.EnumHashBiMap;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.BibData.EntryType;
 import org.hypernomicon.bib.BibEntryRow;
-import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.mainText.MainTextWrapper;
 
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.util.Util.*;
 
 public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_T extends BibCollection>
 {
@@ -73,15 +75,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
     public boolean getChanged() { return changed; }
   }
 
-  public LibraryWrapper()
-  {
-    keyToAllEntry = new HashMap<>();
-    keyToTrashEntry = new HashMap<>();
-    keyToColl = new HashMap<>();
-  }
-
-  protected final Map<String, BibEntry_T> keyToAllEntry, keyToTrashEntry;
-  protected final Map<String, BibCollection_T> keyToColl;
+  protected final Map<String, BibEntry_T> keyToAllEntry = new HashMap<>(), keyToTrashEntry = new HashMap<>();
+  protected final Map<String, BibCollection_T> keyToColl = new HashMap<>();
 
   protected SyncTask syncTask = null;
   protected HttpUriRequest request = null;
@@ -111,9 +106,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
   public final void stop()
   {
-    if (syncTask != null)
-      if (syncTask.isRunning())
-        syncTask.cancel();
+    if ((syncTask != null) && syncTask.isRunning())
+      syncTask.cancel();
 
     if (request != null)
       request.abort();
@@ -133,12 +127,68 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
     if (keyToColl.containsKey(oldKey))
       keyToColl.put(newKey, keyToColl.remove(oldKey));
 
-    HDT_Work work = db.getWorkByBibEntryKey(oldKey);
-
-    if (work != null)
-      work.setBibEntryKey(newKey);
+    nullSwitch(db.getWorkByBibEntryKey(oldKey), work -> work.setBibEntryKey(newKey));
 
     keyChangeHndlr.handle(oldKey, newKey);
+  }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  protected static String anchorTag(String text, String url)
+  {
+    return "<a href=\"\" onclick=\"openURL('" + url + "'); return false;\">" + text + "</a>";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected static StringBuilder getHtmlStart()
+  {
+    return new StringBuilder()
+
+        .append("<html><head>" + MainTextWrapper.getScriptContent() + "<style>")
+        .append("td.fieldName { vertical-align: text-top; text-align: right; padding-right:10px; }</style></head><body>")
+        .append("<table style=\"font-size:9pt; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,sans-serif; } line-height:10pt;\">");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected static String finishHtml(StringBuilder html)
+  {
+    return html.append("</table></body></html>").toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected static void addRowToHtml(String fieldName, String str, StringBuilder html)
+  {
+    html.append("<tr><td class=\"fieldName\">" + fieldName + "</td><td>")
+        .append(str)
+        .append("</td></tr>");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected static void addRowsToHtml(String fieldName, List<String> list, StringBuilder html)
+  {
+    list.removeIf(str -> (str == null) || (ultraTrim(str).length() == 0));
+
+    if (list.size() == 0) return;
+
+    html.append("<tr><td class=\"fieldName\">" + fieldName + "</td><td>");
+
+    for (int ndx = 0; ndx < list.size(); ndx++)
+    {
+      html.append(list.get(ndx));
+      if (ndx < (list.size() - 1))
+        html.append("<br>");
+    }
+
+    html.append("</td></tr>");
   }
 
 //---------------------------------------------------------------------------

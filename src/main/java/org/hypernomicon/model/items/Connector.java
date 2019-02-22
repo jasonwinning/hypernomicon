@@ -46,7 +46,7 @@ public final class Connector
   private final HDT_RecordWithConnector record;
   StrongLink link;
   MainText mainText;
-  boolean alreadyModifying = false;
+  private boolean alreadyModifying = false;
 
   public HDT_RecordType getType()            { return getSpoke().getType(); }
   public boolean isLinked()                  { return link != null; }

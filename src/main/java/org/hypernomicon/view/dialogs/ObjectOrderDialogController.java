@@ -55,7 +55,7 @@ public class ObjectOrderDialogController extends HyperDialog
 
   private void init(HyperTable ht, ObservableList<HyperTableRow> rows)
   {
-    ArrayList<TableColumn<HyperTableRow, String>> tableCols = new ArrayList<>();
+    ArrayList<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
 
     this.rows = rows;
     tv.getColumns().clear();

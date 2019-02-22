@@ -17,6 +17,7 @@
 
 package org.hypernomicon.model.records;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,43 +30,43 @@ public enum HDT_RecordType
 {
   hdtNone           (HDT_Base.class),
 
-  hdtFolder         (HDT_Folder.class),  // Folders must be brought online first. See HyperPath.assignNameInternal
-  hdtPerson         (HDT_Person.class),
-  hdtPersonStatus   (HDT_PersonStatus.class),
-  hdtPersonGroup    (HDT_PersonGroup.class),
-  hdtRank           (HDT_Rank.class),
-  hdtInstitution    (HDT_Institution.class),
+  hdtFolder         (HDT_Folder         .class),  // Folders must be brought online first. See HyperPath.assignNameInternal
+  hdtPerson         (HDT_Person         .class),
+  hdtPersonStatus   (HDT_PersonStatus   .class),
+  hdtPersonGroup    (HDT_PersonGroup    .class),
+  hdtRank           (HDT_Rank           .class),
+  hdtInstitution    (HDT_Institution    .class),
   hdtInstitutionType(HDT_InstitutionType.class),
-  hdtInvestigation  (HDT_Investigation.class),
-  hdtDebate         (HDT_Debate.class),
-  hdtArgument       (HDT_Argument.class),
-  hdtPosition       (HDT_Position.class),
-  hdtTerm           (HDT_Term.class),
-  hdtConcept        (HDT_Concept.class),
-  hdtField          (HDT_Field.class),
-  hdtSubfield       (HDT_Subfield.class),
-  hdtWorkFile       (HDT_WorkFile.class),
-  hdtMiscFile       (HDT_MiscFile.class),
-  hdtWork           (HDT_Work.class),
-  hdtWorkType       (HDT_WorkType.class),
-  hdtWorkLabel      (HDT_WorkLabel.class),
-  hdtState          (HDT_State.class),
-  hdtCountry        (HDT_Country.class),
+  hdtInvestigation  (HDT_Investigation  .class),
+  hdtDebate         (HDT_Debate         .class),
+  hdtArgument       (HDT_Argument       .class),
+  hdtPosition       (HDT_Position       .class),
+  hdtTerm           (HDT_Term           .class),
+  hdtConcept        (HDT_Concept        .class),
+  hdtField          (HDT_Field          .class),
+  hdtSubfield       (HDT_Subfield       .class),
+  hdtWorkFile       (HDT_WorkFile       .class),
+  hdtMiscFile       (HDT_MiscFile       .class),
+  hdtWork           (HDT_Work           .class),
+  hdtWorkType       (HDT_WorkType       .class),
+  hdtWorkLabel      (HDT_WorkLabel      .class),
+  hdtState          (HDT_State          .class),
+  hdtCountry        (HDT_Country        .class),
   hdtPositionVerdict(HDT_PositionVerdict.class),
   hdtArgumentVerdict(HDT_ArgumentVerdict.class),
-  hdtFileType       (HDT_FileType.class),
-  hdtNote           (HDT_Note.class),
-  hdtGlossary       (HDT_Glossary.class),
+  hdtFileType       (HDT_FileType       .class),
+  hdtNote           (HDT_Note           .class),
+  hdtGlossary       (HDT_Glossary       .class),
 
-  hdtAuxiliary      (HDT_Base.class),
+  hdtAuxiliary      (HDT_Base           .class),
 
-  hdtHub            (HDT_Hub.class);
+  hdtHub            (HDT_Hub            .class);
 
 //---------------------------------------------------------------------------
 
   private final Class<? extends HDT_Base> klass;
   private final boolean simple, gotConnector, disregardDates;
-  private final static Map<Class<? extends HDT_Base>, HDT_RecordType> classToType = new HashMap<>();
+  private final static Map<Class<? extends HDT_Base>, HDT_RecordType> classToType;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -81,26 +82,22 @@ public enum HDT_RecordType
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  static
+  {
+    classToType = new HashMap<>();
+    EnumSet.allOf(HDT_RecordType.class).forEach(type -> classToType.put(type.klass, type));
+    classToType.put(HDT_Base.class, hdtNone);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public Class<? extends HDT_Base> getRecordClass() { return klass; }
   public boolean isSimple()                         { return simple; }
   public boolean hasConnector()                     { return gotConnector; }
   public boolean getDisregardDates()                { return disregardDates; }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static final HDT_RecordType typeByRecordClass(Class<? extends HDT_Base> klass)
-  {
-    if (classToType.isEmpty())
-    {
-      for (HDT_RecordType type : values())
-        classToType.put(type.klass, type);
-
-      classToType.put(HDT_Base.class, hdtNone);
-    }
-
-    return classToType.getOrDefault(klass, hdtNone);
-  }
+  public static HDT_RecordType typeByRecordClass(Class<? extends HDT_Base> klass) { return classToType.getOrDefault(klass, hdtNone); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

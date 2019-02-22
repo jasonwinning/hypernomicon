@@ -25,6 +25,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -57,8 +58,7 @@ public class OmniFinder
 
   private String query = "";
   private FinderThread finderThread = null;
-  private boolean stopRequested = false;
-  private boolean stopped = true, showingMore = false;
+  private boolean stopRequested = false, stopped = true, showingMore = false;
 
   protected enum TierEnum
   {
@@ -78,16 +78,13 @@ public class OmniFinder
 
   OmniFinder(HyperTable htFind)
   {
-    LinkedHashSet<HDT_RecordType> typeSet = new LinkedHashSet<>();
+    LinkedHashSet<HDT_RecordType> typeSet = new LinkedHashSet<>(Arrays.asList
+    (
+      hdtTerm,      hdtPosition,    hdtDebate, hdtPerson,    hdtPersonGroup, hdtWork,
+      hdtWorkLabel, hdtMiscFile,    hdtNote,   hdtGlossary,  hdtArgument,    hdtInstitution, hdtInvestigation
+    ));
 
-    typeSet.add(hdtTerm);      typeSet.add(hdtPosition);    typeSet.add(hdtDebate);
-    typeSet.add(hdtPerson);    typeSet.add(hdtPersonGroup); typeSet.add(hdtWork);
-    typeSet.add(hdtWorkLabel); typeSet.add(hdtMiscFile);    typeSet.add(hdtNote);
-    typeSet.add(hdtGlossary);  typeSet.add(hdtArgument);    typeSet.add(hdtInstitution); typeSet.add(hdtInvestigation);
-
-    LinkedHashSet<HDT_RecordType> authoredSet = new LinkedHashSet<>();
-
-    authoredSet.add(hdtWork);  authoredSet.add(hdtMiscFile);
+    LinkedHashSet<HDT_RecordType> authoredSet = new LinkedHashSet<>(Arrays.asList(hdtWork, hdtMiscFile));
 
     this.htFind = htFind;
 
@@ -97,15 +94,15 @@ public class OmniFinder
     tierToTypeSet = new EnumMap<>(TierEnum.class);
     records = new HashSet<>();
 
-    tierToTypeSet.put(tierExactName,        typeSet);
-    tierToTypeSet.put(tierNameStartExact,   typeSet);
-    tierToTypeSet.put(tierAuthorExact,      authoredSet);
+    tierToTypeSet.put(tierExactName       , typeSet);
+    tierToTypeSet.put(tierNameStartExact  , typeSet);
+    tierToTypeSet.put(tierAuthorExact     , authoredSet);
     tierToTypeSet.put(tierAuthorStartExact, authoredSet);
-    tierToTypeSet.put(tierKeyword,          typeSet);
-    tierToTypeSet.put(tierAuthorKeyword,    authoredSet);
-    tierToTypeSet.put(tierKeywordContains,  typeSet);
-    tierToTypeSet.put(tierNameContains,     typeSet);
-    tierToTypeSet.put(tierAuthorContains,   authoredSet);
+    tierToTypeSet.put(tierKeyword         , typeSet);
+    tierToTypeSet.put(tierAuthorKeyword   , authoredSet);
+    tierToTypeSet.put(tierKeywordContains , typeSet);
+    tierToTypeSet.put(tierNameContains    , typeSet);
+    tierToTypeSet.put(tierAuthorContains  , authoredSet);
 
     tierSet = EnumSet.allOf(TierEnum.class);
 

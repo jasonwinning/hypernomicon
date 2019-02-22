@@ -189,7 +189,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 
     tcb.clear();
 
-    ttv.setRoot(new TreeItem<TreeRow>(null));
+    ttv.setRoot(new TreeItem<>(null));
     ttv.setShowRoot(false);
 
     debateTree.clear();
@@ -637,11 +637,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
     HDT_Base record = treeRow.getRecord();
 
     for (HyperMenuItem<? extends HDT_Base> hItem : contextMenuItems)
-    {
-      MenuItem newItem = createContextMenuItem(hItem, record, rowMenu);
-
-      if (newItem.isVisible()) noneVisible = false;
-    }
+      if (createContextMenuItem(hItem, record, rowMenu).isVisible()) noneVisible = false;
 
     if (treeRow.treeItem.isLeaf() == false)
     {
@@ -660,8 +656,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
       newItem.setOnAction(event -> setAllExpanded(getTreeItem(treeRow), false));
     }
 
-    if (noneVisible) return null;
-    return rowMenu;
+    return noneVisible ? null : rowMenu;
   }
 
 //---------------------------------------------------------------------------

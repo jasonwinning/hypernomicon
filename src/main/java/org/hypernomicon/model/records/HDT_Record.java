@@ -138,11 +138,11 @@ public abstract class HDT_Record implements HDT_Base
     name = new NameItem();
 
     this.xmlState = xmlState;
-    this.id = xmlState.id;
+    id = xmlState.id;
     dummyFlag = xmlState.dummyFlag;
     this.dataset = dataset;
     this.nameTag = nameTag;
-    this.sortKeyAttr = safeStr(xmlState.sortKeyAttr);
+    sortKeyAttr = safeStr(xmlState.sortKeyAttr);
 
     items = new LinkedHashMap<>();
 

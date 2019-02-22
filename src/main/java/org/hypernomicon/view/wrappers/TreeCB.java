@@ -33,11 +33,11 @@ import javafx.util.StringConverter;
 
 class TreeCB
 {
-  private ComboBox<TreeRow> cb;
-  private HashMap<HDT_Base, TreeRow> recordToRow;
-  private ObservableList<TreeRow> rows;
+  private final ComboBox<TreeRow> cb;
+  private final HashMap<HDT_Base, TreeRow> recordToRow;
+  private final ObservableList<TreeRow> rows;
   private boolean sorted = false;
-  private TreeWrapper tree;
+  private final TreeWrapper tree;
 
 //---------------------------------------------------------------------------
 
@@ -45,6 +45,9 @@ class TreeCB
   {
     this.cb = comboBox;
     this.tree = tree;
+    recordToRow = new HashMap<>();
+    rows = FXCollections.observableArrayList();
+    cb.setItems(rows);
 
     comboBox.setEditable(true);
 
@@ -111,10 +114,8 @@ class TreeCB
 
   void clear()
   {
-    rows = FXCollections.observableArrayList();
-
-    cb.setItems(rows);
-    recordToRow = new HashMap<>();
+    rows.clear();
+    recordToRow.clear();
   }
 
 //---------------------------------------------------------------------------

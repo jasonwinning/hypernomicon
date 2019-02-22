@@ -39,6 +39,8 @@ import org.jbibtex.ParseException;
 import org.jbibtex.TokenMgrException;
 import org.jbibtex.Value;
 
+import com.google.common.collect.Lists;
+
 import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -58,10 +60,7 @@ public abstract class BibData
 
 //---------------------------------------------------------------------------
 
-  public static enum AuthorType
-  {
-    author, editor, translator
-  }
+  public static enum AuthorType { author, editor, translator }
 
 //---------------------------------------------------------------------------
 
@@ -98,14 +97,11 @@ public abstract class BibData
 
 //---------------------------------------------------------------------------
 
-  public static enum BibFieldType
-  {
-    bftString, bftMultiString, bftEntryType, bftWorkType, bftAuthor
-  }
+  public static enum BibFieldType { bftString, bftMultiString, bftEntryType, bftWorkType, bftAuthor }
 
 //---------------------------------------------------------------------------
 
-  private static HashMap<String, YearType> descToYearType = new HashMap<>();
+  private static final HashMap<String, YearType> descToYearType = new HashMap<>();
 
   static enum YearType
   {
@@ -157,26 +153,26 @@ public abstract class BibData
     bibFieldEnumToName = new HashMap<>();
     bibFieldEnumToType = new HashMap<>();
 
-    addBibField(bfEntryType,      "Entry Type",                bftEntryType);
-    addBibField(bfWorkType,       "Work Type",                 bftWorkType);
-    addBibField(bfAuthors,        "Authors",                   bftAuthor);
-    addBibField(bfContainerTitle, "Container Title",           bftMultiString); // For articles this is the journal title; for chapters it is the book title
-    addBibField(bfDOI,            "DOI",                       bftString);      // Document Object ID only, without "doi:" or url
-    addBibField(bfEdition,        "Edition",                   bftString);      // Information about publication edition
-    addBibField(bfEditors,        "Editors",                   bftAuthor);
-    addBibField(bfISBNs,          "ISBNs",                     bftMultiString); // International standard book numbers
-    addBibField(bfISSNs,          "ISSNs",                     bftMultiString); // International standard serial numbers
-    addBibField(bfIssue,          "Issue",                     bftString);      // Issue number
-    addBibField(bfLanguage,       "Language",                  bftString);      // Language
-    addBibField(bfMisc,           "Miscellaneous Information", bftMultiString); // Used internally to hold uncategorized extracted information
-    addBibField(bfPages,          "Page Numbers",              bftString);      // Page range
-    addBibField(bfPubLoc,         "Publisher Location",        bftString);      // Where published
-    addBibField(bfPublisher,      "Publisher",                 bftString);      // May or may not include city
-    addBibField(bfTitle,          "Title",                     bftMultiString); // Title of this work
-    addBibField(bfTranslators,    "Translators",               bftAuthor);
-    addBibField(bfURL,            "URL",                       bftString);      // URL where this work can be found
-    addBibField(bfVolume,         "Volume",                    bftString);      // Volume number
-    addBibField(bfYear,           "Year",                      bftString);      // Publication year
+    addBibField(bfEntryType      , "Entry Type"                , bftEntryType);
+    addBibField(bfWorkType       , "Work Type"                 , bftWorkType);
+    addBibField(bfAuthors        , "Authors"                   , bftAuthor);
+    addBibField(bfContainerTitle , "Container Title"           , bftMultiString); // For articles this is the journal title; for chapters it is the book title
+    addBibField(bfDOI            , "DOI"                       , bftString);      // Document Object ID only, without "doi:" or url
+    addBibField(bfEdition        , "Edition"                   , bftString);      // Information about publication edition
+    addBibField(bfEditors        , "Editors"                   , bftAuthor);
+    addBibField(bfISBNs          , "ISBNs"                     , bftMultiString); // International standard book numbers
+    addBibField(bfISSNs          , "ISSNs"                     , bftMultiString); // International standard serial numbers
+    addBibField(bfIssue          , "Issue"                     , bftString);      // Issue number
+    addBibField(bfLanguage       , "Language"                  , bftString);      // Language
+    addBibField(bfMisc           , "Miscellaneous Information" , bftMultiString); // Used internally to hold uncategorized extracted information
+    addBibField(bfPages          , "Page Numbers"              , bftString);      // Page range
+    addBibField(bfPubLoc         , "Publisher Location"        , bftString);      // Where published
+    addBibField(bfPublisher      , "Publisher"                 , bftString);      // May or may not include city
+    addBibField(bfTitle          , "Title"                     , bftMultiString); // Title of this work
+    addBibField(bfTranslators    , "Translators"               , bftAuthor);
+    addBibField(bfURL            , "URL"                       , bftString);      // URL where this work can be found
+    addBibField(bfVolume         , "Volume"                    , bftString);      // Volume number
+    addBibField(bfYear           , "Year"                      , bftString);      // Publication year
   }
 
 //---------------------------------------------------------------------------
@@ -221,12 +217,11 @@ public abstract class BibData
 
   protected static String getMultiStrSpaceDelimited(List<String> list)
   {
-    String all = "";
+    StringBuilder all = new StringBuilder();
 
-    for (String one : list)
-      all = all + (all.length() > 0 ? " " : "") + ultraTrim(one);
+    list.forEach(one -> all.append((all.length() > 0 ? " " : "") + ultraTrim(one)));
 
-    return ultraTrim(all);
+    return ultraTrim(all.toString());
   }
 
 //---------------------------------------------------------------------------
@@ -272,15 +267,15 @@ public abstract class BibData
   {
     switch (workTypeEnum)
     {
-      case wtBook:         return EntryType.etBook;
-      case wtChapter:      return EntryType.etBookChapter;
-      case wtNone:         return EntryType.etUnentered;
-      case wtPaper:        return EntryType.etJournalArticle;
-      case wtRecording:    return EntryType.etAudiovisualMaterial;
-      case wtUnenteredSet: return EntryType.etNone;
-      case wtWebPage:      return EntryType.etWebPage;
+      case wtBook         : return EntryType.etBook;
+      case wtChapter      : return EntryType.etBookChapter;
+      case wtNone         : return EntryType.etUnentered;
+      case wtPaper        : return EntryType.etJournalArticle;
+      case wtRecording    : return EntryType.etAudiovisualMaterial;
+      case wtUnenteredSet : return EntryType.etNone;
+      case wtWebPage      : return EntryType.etWebPage;
 
-      default:             return EntryType.etUnentered;
+      default             : return EntryType.etUnentered;
     }
   }
 
@@ -372,14 +367,9 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static ArrayList<String> jsonStrList(JsonArray jArr)
+  private static List<String> jsonStrList(JsonArray jArr)
   {
-    ArrayList<String> list = new ArrayList<>();
-
-    if (jArr != null)
-      jArr.getStrs().forEach(list::add);
-
-    return list;
+    return jArr == null ? new ArrayList<>() : Lists.newArrayList((Iterable<String>)jArr.getStrs());
   }
 
 //---------------------------------------------------------------------------
@@ -398,8 +388,8 @@ public abstract class BibData
 
     BibDataStandalone bd = new BibDataStandalone();
 
-    String title = jsonObj.getStrSafe("title");
-    String subtitle = jsonObj.getStrSafe("subtitle");
+    String title    = jsonObj.getStrSafe("title"),
+           subtitle = jsonObj.getStrSafe("subtitle");
 
     bd.addStr(bfTitle, title);
 
@@ -411,28 +401,16 @@ public abstract class BibData
 
     String publishedDate = jsonObj.getStrSafe(ytPublishedDate.desc);
     if (publishedDate.length() > 0)
-    {
       bd.setYear(publishedDate.substring(0, 4), ytPublishedDate);
-    }
 
-    ArrayList<String> authors = jsonStrList(jsonObj.getArray("authors"));
+    BibAuthors authors = bd.getAuthors();
+    jsonStrList(jsonObj.getArray("authors")).forEach(authStr -> authors.add(new BibAuthor(AuthorType.author, new PersonName(authStr))));
 
-    for (int ndx = 0; ndx < authors.size(); ndx++)
+    nullSwitch(jsonObj.getArray("industryIdentifiers"), iiArr -> iiArr.getObjs().forEach(iiObj ->
     {
-      BibAuthor author = new BibAuthor(AuthorType.author, new PersonName(authors.get(ndx)));
-      bd.getAuthors().add(author);
-    }
-
-    JsonArray iiArr = jsonObj.getArray("industryIdentifiers");
-
-    if (iiArr != null)
-    {
-      iiArr.getObjs().forEach(iiObj ->
-      {
-        if (iiObj.getStrSafe("type").toLowerCase().contains("isbn"))
-          bd.addISBN(iiObj.getStrSafe("identifier"));
-      });
-    }
+      if (iiObj.getStrSafe("type").toLowerCase().contains("isbn"))
+        bd.addISBN(iiObj.getStrSafe("identifier"));
+    }));
 
     if (bd.fieldNotEmpty(bfISBNs) == false)
       bd.addISBN(queryIsbn);
@@ -465,7 +443,7 @@ public abstract class BibData
 
       if (val.indexOf('\\') > -1 || val.indexOf('{') > -1)
       {
-        List<LaTeXObject> latexObjects = latexParser. parse(val);
+        List<LaTeXObject> latexObjects = latexParser.parse(val);
         val = latexPrinter.print(latexObjects);
       }
 
@@ -473,32 +451,32 @@ public abstract class BibData
 
       switch (mapping.getKey().getValue())
       {
-        case "address" :   bd.setStr(bfPubLoc, val); break;
-        case "author" :    bd.addBibTexAuthor(val, AuthorType.author); break;
+        case "address"   : bd.setStr(bfPubLoc, val); break;
+        case "author"    : bd.addBibTexAuthor(val, AuthorType.author); break;
         case "booktitle" : bd.setMultiStr(bfContainerTitle, Collections.singletonList(val)); break;
-        case "edition" :   bd.setStr(bfEdition, val); break;
-        case "editor" :    bd.addBibTexAuthor(val, AuthorType.editor); break;
-        case "journal" :   bd.setMultiStr(bfContainerTitle, Collections.singletonList(val)); break;
-        case "language" :  bd.setStr(bfLanguage, val); break;
-        case "note" :      bd.addStr(bfMisc, val); break;
-        case "number" :    bd.setStr(bfIssue, val); break;
-        case "pages" :     bd.setStr(bfPages, val); break;
+        case "edition"   : bd.setStr(bfEdition, val); break;
+        case "editor"    : bd.addBibTexAuthor(val, AuthorType.editor); break;
+        case "journal"   : bd.setMultiStr(bfContainerTitle, Collections.singletonList(val)); break;
+        case "language"  : bd.setStr(bfLanguage, val); break;
+        case "note"      : bd.addStr(bfMisc, val); break;
+        case "number"    : bd.setStr(bfIssue, val); break;
+        case "pages"     : bd.setStr(bfPages, val); break;
         case "publisher" : bd.setStr(bfPublisher, val); break;
-        case "series" :
+        case "series"    :
 
           if (bd.getMultiStr(bfContainerTitle).size() == 0)
             bd.addStr(bfContainerTitle, val);
           break;
 
-        case "title" :     bd.addStr(bfTitle, val); break;
-        case "type" :      bd.setEntryType(parseBibTexType(val)); break;
-        case "url" :       bd.setStr(bfURL, val); break;
-        case "volume" :    bd.setStr(bfVolume, val); break;
-        case "year" :      bd.setYear(val, ytPublicationDate); break;
+        case "title"     : bd.addStr(bfTitle, val); break;
+        case "type"      : bd.setEntryType(parseBibTexType(val)); break;
+        case "url"       : bd.setStr(bfURL, val); break;
+        case "volume"    : bd.setStr(bfVolume, val); break;
+        case "year"      : bd.setYear(val, ytPublicationDate); break;
 
         case "doi" : case "isbn" : case "issn" : break; // captured already
 
-        default :          bd.addStr(bfMisc, mapping.getKey().getValue() + ": " + val); break;
+        default          : bd.addStr(bfMisc, mapping.getKey().getValue() + ": " + val); break;
       }
     }
 
@@ -510,6 +488,8 @@ public abstract class BibData
 
   protected void addBibTexAuthor(String val, AuthorType authorType)
   {
+    BibAuthors authors = getAuthors();
+
     for (String auth : val.split("\n"))
     {
       if (auth.startsWith("and "))
@@ -518,7 +498,7 @@ public abstract class BibData
       auth = ultraTrim(auth);
 
       if (auth.length() > 0)
-        getAuthors().add(authorType, new PersonName(auth));
+        authors.add(authorType, new PersonName(auth));
     }
   }
 
@@ -633,7 +613,6 @@ public abstract class BibData
     try
     {
       jsonObj = jsonObj.getObj("message");
-
       jsonObj = nullSwitch(jsonObj.getArray("items"), jsonObj, items -> items.getObj(0));
     }
     catch (NullPointerException | IndexOutOfBoundsException e)
@@ -668,8 +647,8 @@ public abstract class BibData
     bd.setStr(bfVolume, jsonObj.getStrSafe("volume"));
     bd.setStr(bfIssue, jsonObj.getStrSafe("issue"));
 
-    ArrayList<String> title = jsonStrList(jsonObj.getArray("title"));
-    ArrayList<String> subtitle = jsonStrList(jsonObj.getArray("subtitle"));
+    List<String> title = jsonStrList(jsonObj.getArray("title")),
+                 subtitle = jsonStrList(jsonObj.getArray("subtitle"));
 
     if (strListsEqual(title, subtitle, true) == false)
       title.addAll(subtitle);
@@ -680,9 +659,11 @@ public abstract class BibData
     bd.setMultiStr(bfISBNs, jsonStrList(jsonObj.getArray("ISBN")));
     bd.setMultiStr(bfISSNs, jsonStrList(jsonObj.getArray("ISSN")));
 
-    bd.getAuthors().setFromCrossRefJson(jsonObj.getArray("author"), AuthorType.author);
-    bd.getAuthors().setFromCrossRefJson(jsonObj.getArray("editor"), AuthorType.editor);
-    bd.getAuthors().setFromCrossRefJson(jsonObj.getArray("translator"), AuthorType.translator);
+    BibAuthors authors = bd.getAuthors();
+
+    authors.setFromCrossRefJson(jsonObj.getArray("author"    ), AuthorType.author);
+    authors.setFromCrossRefJson(jsonObj.getArray("editor"    ), AuthorType.editor);
+    authors.setFromCrossRefJson(jsonObj.getArray("translator"), AuthorType.translator);
 
     if (bd.fieldNotEmpty(bfDOI) == false)
       bd.setDOI(queryDoi);
@@ -695,13 +676,8 @@ public abstract class BibData
 
   protected static String extractYear(String text)
   {
-    Pattern p = Pattern.compile("(\\A|\\D)([12]\\d\\d\\d)(\\z|\\D)");
-    Matcher m = p.matcher(text);
-
-    if (m.find())
-      return m.group(2);
-
-    return "";
+    Matcher m = Pattern.compile("(\\A|\\D)([12]\\d\\d\\d)(\\z|\\D)").matcher(text);
+    return m.find() ? m.group(2) : "";
   }
 
 //---------------------------------------------------------------------------
@@ -717,15 +693,11 @@ public abstract class BibData
 
   private void addReportMultiStr(BibFieldEnum bibFieldEnum, List<String> list)
   {
-    String line = "";
+    StringBuilder line = new StringBuilder();
 
-    for (String str : getMultiStr(bibFieldEnum))
-    {
-      if (line.length() > 0) line = line + "; ";
-      line = line + str;
-    }
+    getMultiStr(bibFieldEnum).forEach(str -> line.append((line.length() > 0 ? "; " : "") + str));
 
-    appendToReport(getFieldName(bibFieldEnum), line, list);
+    appendToReport(getFieldName(bibFieldEnum), line.toString(), list);
   }
 
 //---------------------------------------------------------------------------
@@ -733,9 +705,8 @@ public abstract class BibData
 
   private void appendToReport(String fieldName, String fieldVal, List<String> list)
   {
-    if (fieldVal.trim().length() == 0) return;
-
-    list.add(fieldName + ": " + fieldVal);
+    if (fieldVal.trim().length() > 0)
+      list.add(fieldName + ": " + fieldVal);
   }
 
 //---------------------------------------------------------------------------
@@ -744,25 +715,28 @@ public abstract class BibData
   public String createReport()
   {
     ArrayList<String> list = new ArrayList<>();
+    BibAuthors authors = getAuthors();
 
-    addReportStr(bfTitle, list);
-    addReportStr(bfEntryType, list);
-    appendToReport(getFieldName(bfAuthors), getAuthors().getStr(AuthorType.author), list);
-    appendToReport(getFieldName(bfEditors), getAuthors().getStr(AuthorType.editor), list);
-    appendToReport(getFieldName(bfTranslators), getAuthors().getStr(AuthorType.translator), list);
-    addReportStr(bfYear, list);
-    addReportStr(bfDOI, list);
-    addReportMultiStr(bfISBNs, list);
-    addReportStr(bfURL, list);
+    addReportStr(bfTitle         , list);
+    addReportStr(bfEntryType     , list);
+
+    appendToReport(getFieldName(bfAuthors    ), authors.getStr(AuthorType.author    ), list);
+    appendToReport(getFieldName(bfEditors    ), authors.getStr(AuthorType.editor    ), list);
+    appendToReport(getFieldName(bfTranslators), authors.getStr(AuthorType.translator), list);
+
+    addReportStr(bfYear          , list);
+    addReportStr(bfDOI           , list);
+    addReportMultiStr(bfISBNs    , list);
+    addReportStr(bfURL           , list);
     addReportStr(bfContainerTitle, list);
-    addReportStr(bfVolume, list);
-    addReportStr(bfIssue, list);
-    addReportStr(bfPages, list);
-    addReportStr(bfPublisher, list);
-    addReportStr(bfPubLoc, list);
-    addReportStr(bfEdition, list);
-    addReportStr(bfMisc, list);
-    addReportMultiStr(bfISSNs, list);
+    addReportStr(bfVolume        , list);
+    addReportStr(bfIssue         , list);
+    addReportStr(bfPages         , list);
+    addReportStr(bfPublisher     , list);
+    addReportStr(bfPubLoc        , list);
+    addReportStr(bfEdition       , list);
+    addReportStr(bfMisc          , list);
+    addReportMultiStr(bfISSNs    , list);
 
     return strListToStr(list, false);
   }
@@ -772,41 +746,37 @@ public abstract class BibData
 
   public void copyAllFieldsFrom(BibData bd, boolean includeAuthors, boolean includeEntryType)
   {
-    for (BibFieldEnum bibFieldEnum : BibFieldEnum.values())
+    EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum -> { switch (bibFieldEnumToType.get(bibFieldEnum))
     {
-      BibFieldType type = bibFieldEnumToType.get(bibFieldEnum);
+      case bftString :
 
-      switch (type)
-      {
-        case bftString :
+        setStr(bibFieldEnum, bd.getStr(bibFieldEnum));
+        break;
 
-          setStr(bibFieldEnum, bd.getStr(bibFieldEnum));
-          break;
+      case bftMultiString :
 
-        case bftMultiString :
+        setMultiStr(bibFieldEnum, bd.getMultiStr(bibFieldEnum));
+        break;
 
-          setMultiStr(bibFieldEnum, bd.getMultiStr(bibFieldEnum));
-          break;
+      case bftEntryType :
 
-        case bftEntryType :
+        if (includeEntryType) setEntryType(bd.getEntryType());
+        break;
 
-          if (includeEntryType) setEntryType(bd.getEntryType());
-          break;
+      case bftWorkType :
 
-        case bftWorkType :
+        setWorkType(bd.getWorkType());
+        break;
 
-          setWorkType(bd.getWorkType());
-          break;
+      case bftAuthor :
 
-        case bftAuthor :
-
-          break;
-      }
-    }
+        break;
+    }});
 
     if (includeAuthors == false) return;
 
-    bd.getAuthors().forEach(getAuthors()::add);
+    BibAuthors authors = getAuthors();
+    bd.getAuthors().forEach(authors::add);
   }
 
 //---------------------------------------------------------------------------
@@ -814,26 +784,20 @@ public abstract class BibData
 
   public EnumSet<BibFieldEnum> fieldsWithExternalData()
   {
-    EnumSet<BibFieldEnum> set = EnumSet.noneOf(BibFieldEnum.class);
+    EnumSet<BibFieldEnum> set = EnumSet.allOf(BibFieldEnum.class);
 
-    for (BibFieldEnum bibFieldEnum : EnumSet.allOf(BibFieldEnum.class))
+    set.removeIf(bibFieldEnum -> { switch (bibFieldEnum)
     {
-      switch (bibFieldEnum)
-      {
-        case bfAuthors:   case bfEditors:  case bfTranslators: case bfTitle:
-        case bfDOI:       case bfISBNs:    case bfMisc:        case bfYear:
-        case bfEntryType: case bfWorkType: case bfURL:
+      case bfAuthors:   case bfEditors:  case bfTranslators: case bfTitle:
+      case bfDOI:       case bfISBNs:    case bfMisc:        case bfYear:
+      case bfEntryType: case bfWorkType: case bfURL:
 
-          break;
+        return true;
 
-        default:
+      default:
 
-          if (this.fieldNotEmpty(bibFieldEnum))
-            set.add(bibFieldEnum);
-
-          break;
-      }
-    }
+        return fieldNotEmpty(bibFieldEnum) == false;
+    }});
 
     return set;
   }

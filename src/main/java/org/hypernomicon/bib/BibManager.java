@@ -34,6 +34,7 @@ import java.util.Set;
 import com.google.common.collect.EnumHashBiMap;
 
 import org.hypernomicon.bib.BibData.EntryType;
+import org.hypernomicon.bib.CollectionTree.BibCollectionType;
 import org.hypernomicon.bib.lib.BibCollection;
 import org.hypernomicon.bib.lib.BibEntry;
 import org.hypernomicon.bib.lib.LibraryWrapper;
@@ -43,6 +44,7 @@ import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.dialogs.HyperDialog;
 import org.hypernomicon.view.dialogs.SelectWorkDialogController;
 import org.hypernomicon.view.mainText.MainTextWrapper;
@@ -55,6 +57,7 @@ import javafx.animation.RotateTransition;
 import javafx.animation.SequentialTransition;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
@@ -97,6 +100,8 @@ public class BibManager extends HyperDialog
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  public void saveToDisk() { libraryWrapper.saveToDisk(db.getRootFilePath().resolve(new FilePath(HyperDB.BIB_FILE_NAME))); }
 
   @Override public boolean isValid() { return true; }
 
@@ -202,10 +207,10 @@ public class BibManager extends HyperDialog
 
   private void hideBottomControls()
   {
-    lblSelect.setVisible(false);
-    btnSelect.setVisible(false);
+    lblSelect   .setVisible(false);
+    btnSelect   .setVisible(false);
     btnCreateNew.setVisible(false);
-    cbNewType.setVisible(false);
+    cbNewType   .setVisible(false);
   }
 
 //---------------------------------------------------------------------------
@@ -295,7 +300,17 @@ public class BibManager extends HyperDialog
     {
       if (confirmDialog("Are you sure you want to unassign the work record?") == false) return;
       if (ui.cantSaveRecord(true)) return;
+
+      HDT_Work work = row.getWork();
+
       row.getEntry().unassignWork();
+
+      if (workRecordToAssign.get() == work)
+      {
+        workRecordToAssign.set(null);
+        workRecordToAssign.set(work);
+      }
+
       refresh();
       ui.update();
     });
@@ -346,6 +361,11 @@ public class BibManager extends HyperDialog
           previewWindow.setPreview(src, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
           ui.openPreviewWindow(src);
         });
+
+    webView.getEngine().titleProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
+    {
+      MainTextWrapper.handleJSEvent("", webView.getEngine(), new TextViewInfo());
+    });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
@@ -499,22 +519,17 @@ public class BibManager extends HyperDialog
 
   private Set<? extends BibEntry> getViewForTreeItem(TreeItem<BibCollectionRow> item)
   {
-    if (item == null)
-      return Collections.emptySet();
+    BibCollectionRow row = nullSwitch(item, null, TreeItem::getValue);
+    BibCollectionType type = nullSwitch(row, null, BibCollectionRow::getType);
 
-    BibCollectionRow row = item.getValue();
+    if (type == null) return Collections.emptySet();
 
-    if (row == null)
-      return Collections.emptySet();
-
-    switch (row.getType())
+    switch (type)
     {
       case bctAll      : return libraryWrapper.getNonTrashEntries();
       case bctTrash    : return libraryWrapper.getTrash();
       case bctUser     : return libraryWrapper.getCollectionEntries(row.getKey());
-      case bctUnsorted : return libraryWrapper.getUnsorted();
-
-      default          : return Collections   .emptySet();
+      default          : return libraryWrapper.getUnsorted();
     }
   }
 
@@ -556,14 +571,6 @@ public class BibManager extends HyperDialog
     BibEntryRow row = tableView.getSelectionModel().getSelectedItem();
 
     btnSelect.setDisable((row == null) || (row.getWork() != null));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void saveToDisk()
-  {
-    libraryWrapper.saveToDisk(db.getRootFilePath().resolve(new FilePath(HyperDB.BIB_FILE_NAME)));
   }
 
 //---------------------------------------------------------------------------

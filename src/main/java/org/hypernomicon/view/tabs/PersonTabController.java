@@ -65,6 +65,7 @@ import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
 import static java.util.Collections.*;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -283,8 +284,8 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       {
         switch (displayer.getType())
         {
-          case hdtArgument : argsToAdd.add((HDT_Argument) displayer); break;
-          case hdtPosition : posToAdd.add((HDT_Position) displayer); break;
+          case hdtArgument : argsToAdd .add((HDT_Argument) displayer); break;
+          case hdtPosition : posToAdd  .add((HDT_Position) displayer); break;
           default :          otherToAdd.add(displayer); break;
         }
       }
@@ -937,12 +938,10 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
   private void initArgContextMenu()
   {
-    for (HDT_RecordType type : new HDT_RecordType[] { hdtArgument, hdtPosition,      hdtDebate,
-                                                      hdtTerm,     hdtNote,          hdtWork,
-                                                      hdtMiscFile, hdtInvestigation, hdtPerson })
-    {
-      htArguments.addContextMenuItem(db.getTypeName(type) + " Record...", type.getRecordClass(), record -> ui.goToRecord(record, true));
-    }
+    RecordListView.addDefaultMenuItems(htArguments);
+
+    EnumSet.of(hdtArgument, hdtPosition, hdtDebate, hdtTerm, hdtNote, hdtWork, hdtMiscFile, hdtInvestigation, hdtPerson).forEach(type ->
+      htArguments.addContextMenuItem(db.getTypeName(type) + " Record...", type.getRecordClass(), record -> ui.goToRecord(record, true)));
   }
 
 //---------------------------------------------------------------------------
@@ -1131,12 +1130,12 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
   private void tpPersonChange(Tab oldValue, Tab newValue)
   {
-    InvestigationView iV = null;
-
     if (oldValue == tabOverview)
       mainText.hide();
     else if (oldValue != tabNew)
     {
+      InvestigationView iV = null;
+
       for (InvestigationView view : invViews)
         if (view.tab == oldValue)
           iV = view;
@@ -1150,43 +1149,45 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       HDT_Investigation inv = db.createNewBlankRecord(hdtInvestigation);
       inv.person.set(curPerson);
 
-      iV = addInvView(inv);
+      InvestigationView iV = addInvView(inv);
       tpPerson.getSelectionModel().select(iV.tab);
 
-      final InvestigationView finalIV = iV;
-      Platform.runLater(finalIV.tfName::requestFocus);
+      Platform.runLater(iV.tfName::requestFocus);
+      return;
     }
-    else if (newValue == tabOverview)
+
+    if (newValue == tabOverview)
     {
       htWorks.clearFilter();
       mainText.showReadOnly();
+      return;
     }
+
+    InvestigationView iV = null;
+
+    for (InvestigationView view : invViews)
+      if (view.tab == newValue)
+        iV = view;
+
+    if (iV == null) return;
+
+    if (iV.id < 1)
+      htWorks.clearFilter();
     else
     {
-      for (InvestigationView view : invViews)
-        if (view.tab == newValue)
-          iV = view;
+      final HDT_Investigation inv = db.investigations.getByID(iV.id);
 
-      if (iV == null) return;
-
-      if (iV.id < 1)
-        htWorks.clearFilter();
-      else
+      htWorks.setFilter(row ->
       {
-        final HDT_Investigation inv = db.investigations.getByID(iV.id);
+        HDT_Base record = row.getRecord();
+        if ((record == null) || (record.getType() != hdtWork)) return false;
 
-        htWorks.setFilter(row ->
-        {
-          HDT_Base record = row.getRecord();
-          if ((record == null) || (record.getType() != hdtWork)) return false;
-
-          return HDT_Work.class.cast(record).investigations.contains(inv);
-        });
-        db.investigations.getByID(iV.id).viewNow();
-      }
-
-      iV.textWrapper.showReadOnly();
+        return HDT_Work.class.cast(record).investigations.contains(inv);
+      });
+      db.investigations.getByID(iV.id).viewNow();
     }
+
+    iV.textWrapper.showReadOnly();
   }
 
 //---------------------------------------------------------------------------

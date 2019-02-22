@@ -17,7 +17,6 @@
 
 package org.hypernomicon.view.populators;
 
-import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.tabs.QueriesTabController.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
@@ -37,7 +36,7 @@ public class QueryPopulator extends Populator
   private final HashMap<HyperTableRow, QueryType> rowToQueryType;
   private final HashMap<HyperTableRow, List<HyperTableCell>> rowToChoices;
 
-  @Override public CellValueType getValueType()          { return cvtQuery; }
+  @Override public CellValueType getValueType() { return cvtQuery; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -64,24 +63,7 @@ public class QueryPopulator extends Populator
 
   @Override public HDT_RecordType getRecordType(HyperTableRow row)
   {
-    switch (rowToQueryType.getOrDefault(row, QueryType.qtNone))
-    {
-      case qtAllRecords     : return hdtNone;
-      case qtArguments      : return hdtArgument;
-      case qtDebates        : return hdtDebate;
-      case qtFiles          : return hdtMiscFile;
-      case qtInstitutions   : return hdtInstitution;
-      case qtInvestigations : return hdtInvestigation;
-      case qtNotes          : return hdtNote;
-      case qtPersons        : return hdtPerson;
-      case qtPositions      : return hdtPosition;
-      case qtConcepts       : return hdtConcept;
-      case qtWorks          : return hdtWork;
-
-      default               : break;
-    }
-
-    return hdtNone;
+    return rowToQueryType.getOrDefault(row, QueryType.qtAllRecords).getRecordType();
   }
 
 //---------------------------------------------------------------------------
@@ -98,7 +80,7 @@ public class QueryPopulator extends Populator
     switch (curQuery)
     {
       case QUERY_WITH_NAME_CONTAINING : case QUERY_ANY_FIELD_CONTAINS :
-      case QUERY_LIST_ALL : case QUERY_WHERE_FIELD :
+      case QUERY_LIST_ALL             : case QUERY_WHERE_FIELD        :
         break;
 
       default :

@@ -59,7 +59,7 @@ public class ZoteroOAuthApi extends DefaultApi10a
 
   @Override public String getAuthorizationUrl(OAuth1RequestToken requestToken)
   {
-    final ParameterList parameters = new ParameterList();
+    ParameterList parameters = new ParameterList();
     parameters.add(OAuthConstants.TOKEN, requestToken.getToken());
     parameters.add("library_access", "1");
     parameters.add("write_access", "1");

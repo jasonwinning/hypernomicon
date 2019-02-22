@@ -30,9 +30,9 @@ import javafx.scene.input.MouseButton;
 
 public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
 {
-  private boolean incremental;
-  private HyperTable table;
-  private HyperTableColumn col;
+  private final boolean incremental;
+  private final HyperTable table;
+  private final HyperTableColumn col;
   public static final int INCREMENTAL_ROWS = 20;
 
 //---------------------------------------------------------------------------

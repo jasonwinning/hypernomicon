@@ -27,7 +27,6 @@ import javafx.scene.control.ComboBox;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("rawtypes")
   public static void commitWrapper(Node node)
   {
     if (node == null) return;
@@ -40,8 +39,7 @@ import javafx.scene.control.ComboBox;
     }
     else if (node instanceof ComboBox)
     {
-      ComboBox cb = (ComboBox) node;
-      HyperCB hcb = HyperCB.cbRegistry.get(cb);
+      HyperCB hcb = HyperCB.cbRegistry.get(node);
 
       if (hcb == null)
       {

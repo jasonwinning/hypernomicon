@@ -543,16 +543,8 @@ public class WorkDialogController extends HyperDialog
   {
     FileChooser fileChooser = new FileChooser();
 
-    switch (curWork.getWorkTypeValue())
-    {
-      case wtBook: case wtChapter: case wtNone: case wtPaper:
-
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Adobe PDF file (*.pdf)", "*.pdf"));
-        break;
-
-      default :
-        break;
-    }
+    if (EnumSet.of(wtBook, wtChapter, wtNone, wtPaper).contains(curWork.getWorkTypeValue()))
+      fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Adobe PDF file (*.pdf)", "*.pdf"));
 
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
 

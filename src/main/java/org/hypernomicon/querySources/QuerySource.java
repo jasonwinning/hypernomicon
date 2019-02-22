@@ -25,7 +25,6 @@ public interface QuerySource
   {
     QST_allRecords,
     QST_recordsByType,
-    QST_report,
     QST_filteredRecords,
     QST_combinedFilteredRecords,
     QST_combinedUnfilteredRecords

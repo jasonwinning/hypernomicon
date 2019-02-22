@@ -275,9 +275,10 @@ public class XMPNode
       {
         if (name.equals("creator"))
         {
-          bd.getAuthors().clear();
+          BibAuthors authors = bd.getAuthors();
+          authors.clear();
 
-          elements.forEach(child -> bd.getAuthors().add(AuthorType.author, new PersonName(child.value)));
+          elements.forEach(child -> authors.add(AuthorType.author, new PersonName(child.value)));
         }
         else if (name.equals("title"))
         {

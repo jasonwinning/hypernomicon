@@ -59,13 +59,11 @@ public class LicenseReportEngine extends ReportEngine
     ArrayList<HyperTableRow> rows = new ArrayList<>();
 
     ObservableList<HyperTableCell> cells = FXCollections.observableArrayList();
-
     cells.add(new HyperTableCell(-1, "LICENSE.html", hdtNone));
 
     rows.add(new HyperTableRow(cells, ht));
 
     cells = FXCollections.observableArrayList();
-
     cells.add(new HyperTableCell(-1, "NOTICE.html", hdtNone));
 
     rows.add(new HyperTableRow(cells, ht));
@@ -123,12 +121,11 @@ public class LicenseReportEngine extends ReportEngine
 
   @Override String getHtml(HyperTableRow row)
   {
-    if (row == null) return "";
+    String str = nullSwitch(row, "", r -> nullSwitch(r.getCell(0), "", HyperTableCell::getText));
 
-    if (row.getCell(0).getText().contains("LICENSE"))     return license.toString();
-    else if (row.getCell(0).getText().contains("NOTICE")) return notice.toString();
-
-    return "";
+    if      (str.contains("LICENSE")) return license.toString();
+    else if (str.contains("NOTICE" )) return notice .toString();
+    else                              return "";
   }
 
 //---------------------------------------------------------------------------

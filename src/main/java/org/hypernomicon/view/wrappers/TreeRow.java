@@ -43,8 +43,9 @@ public class TreeRow extends AbstractTreeRow<TreeRow>
 
   TreeRow(HDT_Base record, TreeModel<TreeRow> treeModel)
   {
+    super(treeModel);
+
     this.record = record;
-    this.treeModel = treeModel;
     text = "";
 
     if (record == null) return;
@@ -57,9 +58,10 @@ public class TreeRow extends AbstractTreeRow<TreeRow>
 
   TreeRow(String text)
   {
+    super(null);
+
     this.text = text;
     record = null;
-    treeModel = null;
   }
 
 //---------------------------------------------------------------------------
@@ -109,12 +111,12 @@ public class TreeRow extends AbstractTreeRow<TreeRow>
 
     switch (workType.getEnumVal())
     {
-      case wtPaper :    typeName = "Paper"; break;
-      case wtBook :     typeName = "Book"; break;
-      case wtChapter:   typeName = "Chapter"; break;
-      case wtRecording: typeName = "Lecture"; break;
-      case wtWebPage:   typeName = "Web Page"; break;
-      default:          typeName = "Work";
+      case wtPaper     : typeName = "Paper"; break;
+      case wtBook      : typeName = "Book"; break;
+      case wtChapter   : typeName = "Chapter"; break;
+      case wtRecording : typeName = "Lecture"; break;
+      case wtWebPage   : typeName = "Web Page"; break;
+      default          : typeName = "Work";
     }
 
     return HDT_Work.addFileIndicator(typeName, work);

@@ -35,6 +35,8 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.model.relations.HyperObjList;
 
+import com.google.common.collect.Sets;
+
 //---------------------------------------------------------------------------
 
 public class HDT_Argument extends HDT_RecordWithConnector
@@ -122,18 +124,7 @@ public class HDT_Argument extends HDT_RecordWithConnector
 
   public boolean isInFavor(HDT_Position position)
   {
-    HDT_PositionVerdict verdict = this.getPosVerdict(position);
-
-    if (verdict == null) return false;
-
-    switch (verdict.getID())
-    {
-      case 1: case 3: case 6: case 17:
-        return true;
-      default: break;
-    }
-
-    return false;
+    return Sets.newHashSet(1, 3, 6, 17).contains(nullSwitch(getPosVerdict(position), -1, HDT_Base::getID));
   }
 
 //---------------------------------------------------------------------------

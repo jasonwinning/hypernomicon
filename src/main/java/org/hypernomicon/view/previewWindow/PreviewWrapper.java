@@ -50,16 +50,29 @@ import javafx.scene.layout.AnchorPane;
 
 public class PreviewWrapper
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private class PreviewFile
   {
-    private FilePath filePath;
-    private HDT_RecordWithPath record;
-    private List<Integer> navList;
-    private int navNdx;
+    private final FilePath filePath;
+    private final HDT_RecordWithPath record;
+    private final List<Integer> navList = new ArrayList<>();
+    private int navNdx = -1;
+
+    public PreviewFile(FilePath filePath, HDT_RecordWithPath record)
+    {
+      this.filePath = filePath;
+      this.record = record;
+    }
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private FilePath filePathShowing = null;
-  private int fileNdx, pageNum = -1, pageNumShowing = -1, workStartPageNum = -1, workEndPageNum = -1, numPages = 0;
+  private int fileNdx = -1, pageNum = -1, pageNumShowing = -1, workStartPageNum = -1, workEndPageNum = -1, numPages = 0;
   private final PreviewSource src;
   private final PreviewWindow window;
   private final Tab tab;
@@ -68,7 +81,7 @@ public class PreviewWrapper
   private Map<String, Integer> labelToPage;
   private Map<Integer, String> pageToLabel;
   private List<Integer> hilitePages;
-  private final List<PreviewFile> fileList;
+  private final List<PreviewFile> fileList = new ArrayList<>();
   private PreviewFile curPrevFile;
   private final ToggleButton btn;
   private final AnchorPane ap;
@@ -89,6 +102,7 @@ public class PreviewWrapper
   int lowestHilitePage()         { return collEmpty(hilitePages) ? -1 : hilitePages.get(0); }
   int highestHilitePage()        { return collEmpty(hilitePages) ? -1 : hilitePages.get(hilitePages.size() - 1); }
 
+  boolean enableFileNavButton(boolean isForward) { return (isForward ? getNextFileNdx() : getPreviousFileNdx()) != -1; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -100,9 +114,6 @@ public class PreviewWrapper
     this.window = window;
     this.btn = btn;
     this.ap = ap;
-
-    fileList = new ArrayList<>();
-    fileNdx = -1;
 
     btn.selectedProperty().addListener((observable, oldValue, newValue) ->
     {
@@ -225,14 +236,6 @@ public class PreviewWrapper
       return (curPrevFile.navNdx + 1) < curPrevFile.navList.size();
 
     return curPrevFile.navNdx >= 1;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  boolean enableFileNavButton(boolean isForward)
-  {
-    return (isForward ? getNextFileNdx() : getPreviousFileNdx()) != -1;
   }
 
 //---------------------------------------------------------------------------
@@ -421,12 +424,7 @@ public class PreviewWrapper
         curPrevFile = prevFile;
       else
       {
-        curPrevFile = new PreviewFile();
-
-        curPrevFile.filePath = filePath;
-        curPrevFile.record = (HDT_RecordWithPath)record;
-        curPrevFile.navList = new ArrayList<>();
-        curPrevFile.navNdx = -1;
+        curPrevFile = new PreviewFile(filePath, (HDT_RecordWithPath)record);
 
         fileNdx++;
         while (fileList.size() > fileNdx)

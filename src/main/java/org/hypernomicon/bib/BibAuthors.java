@@ -38,7 +38,6 @@ import org.hypernomicon.view.dialogs.NewPersonDialogController;
 
 import static org.hypernomicon.model.HyperDB.Tag.tagEditor;
 import static org.hypernomicon.model.HyperDB.Tag.tagTranslator;
-import static org.hypernomicon.util.Util.*;
 
 public abstract class BibAuthors implements Iterable<BibAuthor>
 {
@@ -123,7 +122,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
     getLists(authorList, editorList, translatorList);
 
-    return readOnlyIterator(Iterators.concat(authorList.iterator(), editorList.iterator(), translatorList.iterator()));
+    return Iterators.unmodifiableIterator(Iterators.concat(authorList.iterator(), editorList.iterator(), translatorList.iterator()));
   }
 
 //---------------------------------------------------------------------------
@@ -168,7 +167,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
     getLists(authorList, editorList, translatorList);
 
-    for (BibAuthor bibAuthor : translatorList)
+    translatorList.forEach(bibAuthor ->
     {
       PersonName name = bibAuthor.getName();
       HDT_Person person = bibAuthor.getPerson();
@@ -186,9 +185,9 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
         if (person != null)
           personList.set(nameList.indexOf(name), person);
       }
-    }
+    });
 
-    for (BibAuthor bibAuthor : editorList)
+    editorList.forEach(bibAuthor ->
     {
       PersonName name = bibAuthor.getName();
       HDT_Person person = bibAuthor.getPerson();
@@ -207,9 +206,9 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
         if (person != null)
           personList.set(nameList.indexOf(name), person);
       }
-    }
+    });
 
-    for (BibAuthor bibAuthor : authorList)
+    authorList.forEach(bibAuthor ->
     {
       PersonName name = bibAuthor.getName();
       HDT_Person person = bibAuthor.getPerson();
@@ -228,7 +227,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
         if (person != null)
           personList.set(nameList.indexOf(name), person);
       }
-    }
+    });
 
     removeDupPersonRecordsFromLists(nameList, personList);
 

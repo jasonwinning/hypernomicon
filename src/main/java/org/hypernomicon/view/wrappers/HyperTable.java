@@ -50,6 +50,7 @@ import com.google.common.collect.HashBasedTable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -82,23 +83,24 @@ import javafx.stage.Modality;
 
 public class HyperTable implements RecordListView
 {
-  private int mainCol;
-  HyperTableRow showMoreRow = null;
-  private boolean canAddRows;
-  private TableView<HyperTableRow> tv;
-  private List<HyperTableColumn> cols;
-  private ObservableList<HyperTableRow> rows;
-  private SortedList<HyperTableRow> sortedRows;
-  private FilteredList<HyperTableRow> filteredRows;
-  final ArrayList<TableColumn<HyperTableRow, HyperTableCell>> tableCols = new ArrayList<>();
-  private List<HyperMenuItem<? extends HDT_Base>> contextMenuItems;
+  final private int mainCol;
+  final private TableView<HyperTableRow> tv;
+  final private List<HyperTableColumn> cols;
+  final private ObservableList<HyperTableRow> rows;
+  final private SortedList<HyperTableRow> sortedRows;
+  final private FilteredList<HyperTableRow> filteredRows;
+  final ArrayList<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
+  final private List<HyperMenuItem<? extends HDT_Base>> contextMenuItems;
+
   RecordHandler<? extends HDT_Base> dblClickHandler = null;
   Runnable onShowMore = null;
+  HyperTableRow showMoreRow = null;
+  private boolean canAddRows;
   public boolean disableRefreshAfterCellUpdate = false,
                  autoCommitListSelections = false;
 
-  private static HashMap<TableView<?>, Double> rowHeight = new HashMap<>();
-  private static HashBasedTable<TableView<?>, Orientation, ScrollBar> sbMap = HashBasedTable.create();
+  private static final HashMap<TableView<?>, Double> rowHeight = new HashMap<>();
+  private static final HashBasedTable<TableView<?>, Orientation, ScrollBar> sbMap = HashBasedTable.create();
 
   private static final HashMap<String, TableView<?>> registry = new HashMap<>();
   private static final HashMap<String, HyperDialog> dialogs = new HashMap<>();
@@ -130,8 +132,9 @@ public class HyperTable implements RecordListView
 
   private class DataRowIterator implements Iterable<HyperTableRow>, Iterator<HyperTableRow>
   {
-    private int nextNdx = 0, dataRowCnt = getDataRowCount();
-    private Iterator<HyperTableRow> rowIt = rows.iterator();
+    private int nextNdx = 0;
+    final private int dataRowCnt = getDataRowCount();
+    final private Iterator<HyperTableRow> rowIt = rows.iterator();
 
     @Override public Iterator<HyperTableRow> iterator() { return this; }
     @Override public boolean hasNext()                  { return nextNdx < dataRowCnt; }
@@ -234,7 +237,6 @@ public class HyperTable implements RecordListView
     this(tv, mainCol, canAddRows, prefID, null);
   }
 
-  @SuppressWarnings("unchecked")
   public HyperTable(TableView<HyperTableRow> tv, int mainCol, boolean canAddRows, String prefID, HyperDialog dialog)
   {
     this.tv = tv;
@@ -257,28 +259,18 @@ public class HyperTable implements RecordListView
     tv.setItems(sortedRows);
     tv.setPlaceholder(new Text(""));
 
-    tv.getColumns().forEach(tc -> tableCols.add((TableColumn<HyperTableRow, HyperTableCell>) tc));
+    tv.getColumns().forEach(tc -> tableCols.add(tc));
 
     tv.setOnKeyPressed(event ->
     {
-      if (event.getCode() == KeyCode.ENTER)
-      {
-        for (HyperTableColumn col : cols)
-        {
-          switch (col.getCtrlType())
-          {
-            case ctCheckbox:     case ctDropDown:
-            case ctDropDownList: case ctEdit:
-              return;
-            default:
-              break;
-          }
-        }
+      if (event.getCode() != KeyCode.ENTER) return;
 
-        doRowAction();
+      for (HyperTableColumn col : cols)
+        if (EnumSet.of(ctCheckbox, ctDropDown, ctDropDownList, ctEdit).contains(col.getCtrlType()))
+          return;
 
-        event.consume();
-      }
+      doRowAction();
+      event.consume();
     });
 
     tv.setRowFactory(theTV ->
@@ -351,8 +343,7 @@ public class HyperTable implements RecordListView
       if (newItem.isVisible()) noneVisible = false;
     }
 
-    if (noneVisible) return null;
-    return rowMenu;
+    return noneVisible ? null : rowMenu;
   }
 
 //---------------------------------------------------------------------------
@@ -411,7 +402,7 @@ public class HyperTable implements RecordListView
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <RowType, ColType> void preventMovingColumns(TableView<RowType> tv, ArrayList<TableColumn<RowType, ColType>> colList)
+  public static <RowType> void preventMovingColumns(TableView<RowType> tv, ArrayList<TableColumn<RowType, ?>> colList)
   {
     // This handsome block of code is the only way within JavaFX to prevent the user from moving columns around
     tv.getColumns().addListener(new ListChangeListener<TableColumn<RowType, ?>>()
@@ -519,16 +510,10 @@ public class HyperTable implements RecordListView
 
   public HyperTableColumn addCol(HDT_RecordType objType, HyperCtrlType ctrlType)
   {
-    switch (ctrlType)
-    {
-      case ctDropDown: case ctDropDownList:
+    if ((ctrlType == ctDropDown) || (ctrlType == ctDropDownList))
+      return addColAltPopulator(objType, ctrlType, new StandardPopulator(objType));
 
-        return addColAltPopulator(objType, ctrlType, new StandardPopulator(objType));
-
-      default:
-
-        return addColAltPopulator(objType, ctrlType, new EmptyPopulator());
-    }
+    return addColAltPopulator(objType, ctrlType, new EmptyPopulator());
   }
 
 //---------------------------------------------------------------------------
@@ -1041,19 +1026,12 @@ public class HyperTable implements RecordListView
   {
     ArrayList<HDT_T> list = new ArrayList<>();
 
-    rows.forEach(row ->
+    rows.forEach(row -> { if (row.getType(colNdx) == objType)
     {
-      if (row.getType(colNdx) == objType)
-      {
-        int id = row.getID(colNdx);
-        if (id > 0)
-        {
-          HDT_T record = (HDT_T) db.records(objType).getByID(id);
-          if (record != null)
-            list.add(record);
-        }
-      }
-    });
+      int id = row.getID(colNdx);
+      if (id > 0)
+        nullSwitch((HDT_T) db.records(objType).getByID(id), list::add);
+    }});
 
     return list;
   }
@@ -1103,16 +1081,16 @@ public class HyperTable implements RecordListView
     ScrollBar sb = getScrollBar(tv, Orientation.VERTICAL);
     if (sb == null) return;
 
-    double rHeight = getRowHeight(tv);
+    double rHeight = getRowHeight(tv),
 
-    double allRowsHeight = rHeight * (tv.getItems().size() + 1);
-    double dataRowsHeight = rHeight * tv.getItems().size();
-    double vpHeight = allRowsHeight * sb.getVisibleAmount();
-    double vpTop = (dataRowsHeight - vpHeight) * sb.getValue();
-    double vpBottom = vpTop + vpHeight;
+           allRowsHeight = rHeight * (tv.getItems().size() + 1),
+           dataRowsHeight = rHeight * tv.getItems().size(),
+           vpHeight = allRowsHeight * sb.getVisibleAmount(),
+           vpTop = (dataRowsHeight - vpHeight) * sb.getValue(),
+           vpBottom = vpTop + vpHeight,
 
-    double y1 = ndx * rHeight;
-    double y2 = (ndx + 1) * rHeight;
+           y1 = ndx * rHeight,
+           y2 = (ndx + 1) * rHeight;
 
     if (y1 < vpTop)
       sb.setValue(y1 / (dataRowsHeight - vpHeight));

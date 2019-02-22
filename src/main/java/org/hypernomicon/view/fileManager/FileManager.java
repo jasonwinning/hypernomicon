@@ -91,16 +91,14 @@ public class FileManager extends HyperDialog
 
   private static class HistoryItem
   {
-    private HDT_Folder folder;
-    private FilePath fileName;
-    private HDT_Base record;
+    private final HDT_Folder folder;
+    private final FilePath fileName;
+    private final HDT_Base record;
 
     private HistoryItem(FileRow folderRow, FileRow fileRow, HDT_Base record)
     {
       folder = (HDT_Folder) folderRow.getRecord();
-
       fileName = nullSwitch(fileRow, null, () -> fileRow.getFilePath().getNameOnly());
-
       this.record = record;
     }
   }
@@ -110,10 +108,9 @@ public class FileManager extends HyperDialog
 
   private static class FolderHistory
   {
-    private List<HistoryItem> history = new ArrayList<>();
+    private final List<HistoryItem> history = new ArrayList<>();
+    private final Button btnForward, btnBack;
     private int ndx = -1;
-    private Button btnForward;
-    private Button btnBack;
     private boolean doAdd = true;
 
     private FolderHistory(Button btnForward, Button btnBack)
@@ -187,6 +184,8 @@ public class FileManager extends HyperDialog
   private static HyperTask task;
   private static long totalTaskCount, curTaskCount;
 
+  FileRow getFolderRow() { return nullSwitch(curFolder, null, folder -> folderTree.getRowsForRecord(folder).get(0)); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -213,30 +212,40 @@ public class FileManager extends HyperDialog
     }
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void setSrcRows(List<MarkedRowInfo> rows, boolean dragging)
   {
     if (dragging)
-      dragRows = rows;
-    else
     {
-      markedRows = rows;
-      btnPaste.setDisable(false);
-      pasteMenuItem.disabled = false;
+      dragRows = rows;
+      return;
     }
+
+    markedRows = rows;
+    btnPaste.setDisable(false);
+    pasteMenuItem.disabled = false;
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private List<MarkedRowInfo> getSrcRows(boolean dragging)
   {
-    if (dragging)
-      return dragRows;
-
-    return markedRows;
+    return dragging ? dragRows : markedRows;
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void cutCopy(FileRow srcRow, boolean copying)
   {
     moveCopy(getMarkedRows(srcRow), copying, false);
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   boolean moveCopy(List<MarkedRowInfo> rows, boolean copying, boolean dragging)
   {
@@ -274,12 +283,7 @@ public class FileManager extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static enum PasteAnswer
-  {
-    check,
-    overwriteNone,
-    overwriteAll
-  }
+  private static enum PasteAnswer { check, overwriteNone, overwriteAll }
 
   private boolean doPasteChecks(FileRow destRow, Map<FilePath, FilePath> srcToDest, boolean copying, boolean dragging)
   {
@@ -525,20 +529,8 @@ public class FileManager extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  FileRow getFolderRow()
-  {
-    if (curFolder != null)
-      return folderTree.getRowsForRecord(curFolder).get(0);
-
-    return null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   void paste(FileRow destRow, boolean copying, boolean dragging)
   {
-    FilePath pathToHilite = null;
     Map<FilePath, FilePath> srcToDest = new HashMap<>();
 
     if (destRow == null)
@@ -663,8 +655,7 @@ public class FileManager extends HyperDialog
 
           srcToDest.forEach((srcFilePath, destFilePath) ->
           {
-            updateProgress(curTaskCount, totalTaskCount);
-            curTaskCount++;
+            updateProgress(curTaskCount++, totalTaskCount);
 
             if ((srcFilePath.exists() == false) || (srcFilePath.isDirectory() == false)) return;
 
@@ -702,10 +693,7 @@ public class FileManager extends HyperDialog
 
     suppressNeedRefresh = false;
 
-    if (srcToDest.isEmpty() == false)
-      pathToHilite = srcToDest.get(srcPathToHilite);
-
-    final FilePath finalPathToHilite = pathToHilite;
+    FilePath pathToHilite = srcToDest.isEmpty() ? null : srcToDest.get(srcPathToHilite);
 
     if (success || dragging)
       clearSrcRows(dragging);
@@ -717,8 +705,8 @@ public class FileManager extends HyperDialog
 
       ui.update();
 
-      if (FilePath.isEmpty(finalPathToHilite) == false)
-        goToFilePath(finalPathToHilite);
+      if (FilePath.isEmpty(pathToHilite) == false)
+        goToFilePath(pathToHilite);
     });
   }
 
@@ -834,7 +822,7 @@ public class FileManager extends HyperDialog
       this.related = related;
     }
 
-    FileRow row;
+    final FileRow row;
     private boolean related;
   }
 
@@ -1093,19 +1081,15 @@ public class FileManager extends HyperDialog
 
   private void rename(FileRow fileRow)
   {
-    HDT_RecordWithPath fileRecord = null;
-    boolean isDir = true, cantRename = false;
-    String noun;
-
     if (ui.cantSaveRecord(true)) return;
 
     if (fileRow == null) fileRow = fileTV.getSelectionModel().getSelectedItem();
     if (fileRow == null) fileRow = getFolderRow();
     if (fileRow == null) return;
 
-    fileRecord = fileRow.getRecord();
-
-    isDir = fileRow.isDirectory();
+    HDT_RecordWithPath fileRecord = fileRow.getRecord();
+    boolean isDir = fileRow.isDirectory(), cantRename;
+    String noun;
 
     if (isDir) { noun = "folder"; cantRename = HyperDB.isUnstoredRecord(fileRecord.getID(), hdtFolder); }
     else       { noun = "file";   cantRename = db.isProtectedFile(fileRow.getFilePath()); }
@@ -1523,8 +1507,7 @@ public class FileManager extends HyperDialog
   {
     HDT_Folder folderRecord = null;
     Set<HDT_Base> relatives = new LinkedHashSet<>();
-    boolean hasMore = false;
-    HyperTableRow row;
+    boolean hasMore;
 
     recordTable.clear();
 
@@ -1550,7 +1533,7 @@ public class FileManager extends HyperDialog
 
       hasMore = db.getRelatives(fileRecord, relatives, showingMore ? -1 : ReadOnlyCell.INCREMENTAL_ROWS);
 
-      row = recordTable.newDataRow();
+      HyperTableRow row = recordTable.newDataRow();
       row.setCellValue(0, fileRecord, db.getTypeName(fileRecord.getType()));
       row.setCellValue(1, fileRecord, fileRecord.listName());
     }
@@ -1563,21 +1546,17 @@ public class FileManager extends HyperDialog
 
       if ((hasMore) && (relIt.hasNext() == false))
       {
-        row = recordTable.newDataRow();
+        HyperTableRow row = recordTable.newDataRow();
         row.setCellValue(0, -1, "",  hdtAuxiliary, HyperCellSortMethod.hsmLast);
         row.setCellValue(1, -1, "",  hdtNone, HyperCellSortMethod.hsmLast);
         break;
       }
 
-      switch (relative.getType())
+      if (relative.getType() != hdtFolder)
       {
-        case hdtFolder : break;
-        default:
-
-          row = recordTable.newDataRow();
-          row.setCellValue(0, relative, db.getTypeName(relative.getType()));
-          row.setCellValue(1, relative, relative.listName());
-          break;
+        HyperTableRow row = recordTable.newDataRow();
+        row.setCellValue(0, relative, db.getTypeName(relative.getType()));
+        row.setCellValue(1, relative, relative.listName());
       }
     }
 

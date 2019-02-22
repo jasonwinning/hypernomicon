@@ -39,7 +39,6 @@ import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Folder;
-import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_RecordState;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -91,8 +90,7 @@ public class HyperPath
       return;
     }
 
-    Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
-    if (set.size() > 0)
+    if (HyperPath.getHyperPathSetForFilePath(filePath).size() > 0)
     {
       messageDialog("Internal error #90178", mtError);
       return;
@@ -119,10 +117,10 @@ public class HyperPath
 
   public String getNameStr()
   {
-    if (record != null)
-      if (record.getID() == HyperDB.ROOT_FOLDER_ID)
-        if (record.getType() == hdtFolder)
-          return "Root";
+    if ((record != null) &&
+        (record.getID() == HyperDB.ROOT_FOLDER_ID) &&
+        (record.getType() == hdtFolder))
+      return "Root";
 
     return nullSwitch(getFileName(), "", fn -> fn.getNameOnly().toString());
   }
@@ -141,14 +139,12 @@ public class HyperPath
     else
       folder = null;
 
-    if (FilePath.isEmpty(filePath) == false)
-      if (filePath.exists() && filePath.isFile())
-      {
-        Set<HyperPath> paths = getHyperPathSetForFilePath(filePath);
+    if (FilePath.isEmpty(filePath)   ||
+        (filePath.exists() == false) ||
+        (filePath.isFile() == false))   return;
 
-        if (deleteFile && paths.isEmpty())
-          db.fileNoLongerInUse(filePath);
-      }
+    if (deleteFile && getHyperPathSetForFilePath(filePath).isEmpty())
+      db.fileNoLongerInUse(filePath);
   }
 
 //---------------------------------------------------------------------------
@@ -156,15 +152,14 @@ public class HyperPath
 
   public static Set<HyperPath> getHyperPathSetForFilePath(FilePath filePath)
   {
-    String name = filePath.getNameOnly().toString();
-    Set<HyperPath> paths = db.filenameMap.get(name);
-    Set<HyperPath> matchedPaths = new HashSet<>();
+    Set<HyperPath> paths = db.filenameMap.get(filePath.getNameOnly().toString()),
+                   matchedPaths = new HashSet<>();
 
-    if (paths == null) return matchedPaths;
-
-    for (HyperPath path : paths)
+    if (paths != null) paths.forEach(path ->
+    {
       if (path.getFilePath().equals(filePath))
         matchedPaths.add(path);
+    });
 
     return matchedPaths;
   }
@@ -178,15 +173,11 @@ public class HyperPath
       if ((record.getType() == hdtFolder) && (record.getID() == HyperDB.ROOT_FOLDER_ID))
         return db.getRootFilePath();
 
-    if (FilePath.isEmpty(getFileName())) return null;
+    if (FilePath.isEmpty(fileName)) return null;
 
-    HDT_Folder folder = getParentFolder();
-    if (folder == null) return getFileName();
-
-    HyperPath hPath = folder.getPath();
-    if (hPath == null) return getFileName();
-
-    return nullSwitch(hPath.getFilePath(), getFileName(), folderFP -> folderFP.resolve(getFileName()));
+    return nullSwitch(getParentFolder()  , fileName, folder   ->
+           nullSwitch(folder.getPath()   , fileName, hPath    ->
+           nullSwitch(hPath.getFilePath(), fileName, folderFP -> folderFP.resolve(fileName))));
   }
 
 //---------------------------------------------------------------------------
@@ -217,9 +208,9 @@ public class HyperPath
     {
       BasicFileAttributes attribs = Files.readAttributes(dirFilePath.toPath(), BasicFileAttributes.class);
 
-      recordState.creationDate = attribs.creationTime().toInstant();
+      recordState.creationDate = attribs.creationTime    ().toInstant();
       recordState.modifiedDate = attribs.lastModifiedTime().toInstant();
-      recordState.viewDate = attribs.lastAccessTime().toInstant();
+      recordState.viewDate     = attribs.lastAccessTime  ().toInstant();
     }
     catch (IOException e) { noOp(); }
 
@@ -275,19 +266,16 @@ public class HyperPath
 
   public static HDT_RecordWithPath getFileFromFilePath(FilePath filePath)
   {
-    Set<HyperPath> set = getHyperPathSetForFilePath(filePath);
-
-    for (HyperPath hyperPath : set)
+    for (HyperPath hyperPath : getHyperPathSetForFilePath(filePath))
     {
-      if (hyperPath.record != null)
+      if (hyperPath.record == null) continue;
+
+      switch (hyperPath.record.getType())
       {
-        switch (hyperPath.record.getType())
-        {
-          case hdtMiscFile : case hdtWorkFile :
-            return hyperPath.record;
-          default:
-            break;
-        }
+        case hdtMiscFile : case hdtWorkFile :
+          return hyperPath.record;
+        default:
+          break;
       }
     }
 
@@ -325,24 +313,17 @@ public class HyperPath
 
     Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(srcFilePath);
 
-    if (changeFilename)
-      destFilePath = newFolder.getPath().getFilePath().resolve(new FilePath(newName));
-    else
-      destFilePath = newFolder.getPath().getFilePath().resolve(srcFilePath.getNameOnly());
+    destFilePath = newFolder.getPath().getFilePath().resolve(changeFilename ? new FilePath(newName) : srcFilePath.getNameOnly());
 
     if (srcFilePath.equals(destFilePath)) return true;
 
-    if (srcFilePath.moveTo(destFilePath, confirm))
-    {
-      db.unmapFilePath(srcFilePath);
+    if (srcFilePath.moveTo(destFilePath, confirm) == false) return false;
 
-      for (HyperPath hyperPath : set)
-        hyperPath.assign(db.folders.getByID(folderID), destFilePath.getNameOnly());
+    db.unmapFilePath(srcFilePath);
 
-      return true;
-    }
+    set.forEach(hyperPath -> hyperPath.assign(db.folders.getByID(folderID), destFilePath.getNameOnly()));
 
-    return false;
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -384,11 +365,7 @@ public class HyperPath
   void assignNameInternal(FilePath newFileName)
   {
     if (FilePath.isEmpty(fileName) == false)
-    {
-      Set<HyperPath> set = db.filenameMap.get(fileName.toString());
-      if (set != null)
-        set.remove(this);
-    }
+      nullSwitch(db.filenameMap.get(fileName.toString()), set -> set.remove(this));
 
     if (FilePath.isEmpty(newFileName) == false)
     {
@@ -408,20 +385,17 @@ public class HyperPath
     if (record != null)
       record.updateSortKey();
 
-    if (FilePath.isEmpty(fileName) == false)
+    if (FilePath.isEmpty(fileName))
+      return;
+
+    // now remove duplicates
+
+    db.filenameMap.get(fileName.getNameOnly().toString()).removeIf(path ->
     {
-      Set<HyperPath> set = db.filenameMap.get(fileName.getNameOnly().toString());
-
-      set.removeIf(path ->
-      {
-        if (path.isEmpty() == false)
-          if (path.getFilePath().equals(getFilePath())) // for this to work, folder records have to be brought online first
-            if (path != this)
-              return true;
-
-        return false;
-      });
-    }
+      return ((path.isEmpty() == false) &&
+              path.getFilePath().equals(getFilePath()) && // for this to work, folder records have to be brought online first
+              (path != this));
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -429,48 +403,42 @@ public class HyperPath
 
   public String getRecordsString()
   {
-    Set<HDT_Base> set = new LinkedHashSet<>();
-    String val = "";
-    String piece;
-    HDT_Person person;
-
     if (getRecord() == null) return "";
+
+    StringBuilder val = new StringBuilder();
 
     if (getParentFolder() == db.folders.getByID(HyperDB.PICTURES_FOLDER_ID))
     {
-      Set<HyperPath> hyperPathSet = HyperPath.getHyperPathSetForFilePath(getFilePath());
-      for (HyperPath hyperPath : hyperPathSet)
+      HyperPath.getHyperPathSetForFilePath(getFilePath()).forEach(hyperPath ->
       {
-        if (hyperPath.getRecordType() == hdtPerson)
-        {
-          person = (HDT_Person) hyperPath.getRecord();
-          piece = db.getTypeName(hdtPerson) + ": " + person.listName();
-          val = val.length() == 0 ? piece : val + "; " + piece;
-        }
-      }
+        if (hyperPath.getRecordType() != hdtPerson) return;
+
+        if (val.length() > 0) val.append("; ");
+        val.append(db.getTypeName(hdtPerson) + ": " + hyperPath.getRecord().listName());
+      });
     }
 
+    Set<HDT_Base> set = new LinkedHashSet<>();
     db.getRelatives(getRecord(), set, 10);
 
-    for (HDT_Base relative : set)
-      if (relative.getType() != hdtFolder)
-      {
-        piece = db.getTypeName(relative.getType()) + ": " + relative.listName();
-        val = val.length() == 0 ? piece : val + "; " + piece;
-      }
+    set.forEach(relative ->
+    {
+      if (relative.getType() == hdtFolder) return;
+
+      if (val.length() > 0) val.append("; ");
+      val.append(db.getTypeName(relative.getType()) + ": " + relative.listName());
+    });
 
     if ((val.length() == 0) && (getRecordType() == hdtFolder))
     {
-      HDT_Folder theFolder = (HDT_Folder) getRecord();
-      for (HDT_Folder subFolder : theFolder.childFolders)
+      for (HDT_Folder subFolder : HDT_Folder.class.cast(getRecord()).childFolders)
       {
-        String childStr = subFolder.getPath().getRecordsString();
-        if (childStr.length() > 0)
+        if (subFolder.getPath().getRecordsString().length() > 0)
           return "(Subfolders have associated records)";
       }
     }
 
-    return val;
+    return val.toString();
   }
 
 //---------------------------------------------------------------------------

@@ -87,14 +87,18 @@ public class MainText
 
 //---------------------------------------------------------------------------
 
-  List<DisplayItem> displayItems;
-  List<KeyWork> keyWorks;  // this can be works or miscFiles
+  final List<DisplayItem> displayItems;
+  final List<KeyWork> keyWorks;  // this can be works or miscFiles
   private String plainText = "";
   private String htmlText = "";
-  private Connector connector;
+  final private Connector connector;
 
-  public String getHtml()                    { return htmlText; }
-  public HDT_RecordWithConnector getRecord() { return connector.getSpoke(); }
+  public String getHtml()                         { return htmlText; }
+  public HDT_RecordWithConnector getRecord()      { return connector.getSpoke(); }
+  public String getPlain()                        { return plainText; }
+  private boolean hasKeyWork(HDT_Base rec)        { return getKeyWork(rec) != null; }
+  public List<DisplayItem> getDisplayItemsUnmod() { return Collections.unmodifiableList(displayItems); }
+  public List<KeyWork> getKeyWorks()              { return Collections.unmodifiableList(keyWorks); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -113,14 +117,6 @@ public class MainText
     }
 
     return str;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public String getPlain()
-  {
-    return plainText;
   }
 
 //---------------------------------------------------------------------------
@@ -200,14 +196,6 @@ public class MainText
     }
 
     return null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private boolean hasKeyWork(HDT_Base keyWorkRecord)
-  {
-    return getKeyWork(keyWorkRecord) != null;
   }
 
 //---------------------------------------------------------------------------
@@ -351,9 +339,6 @@ public class MainText
     return list;
   }
 
-  public List<DisplayItem> getDisplayItemsUnmod() { return Collections.unmodifiableList(displayItems); }
-  public List<KeyWork> getKeyWorks()              { return Collections.unmodifiableList(keyWorks); }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -473,20 +458,20 @@ public class MainText
     boolean modify = false;
     HashSet<HDT_RecordWithConnector> oldSet = new HashSet<>(), newSet = new HashSet<>();
 
-    for (DisplayItem item : displayItems)
+    displayItems.forEach(item ->
     {
       if (item.type == diRecord)
         oldSet.add(item.record);
-    }
+    });
 
     displayItems.clear();
     displayItems.addAll(src);
 
-    for (DisplayItem item : displayItems)
+    displayItems.forEach(item ->
     {
       if (item.type == diRecord)
         newSet.add(item.record);
-    }
+    });
 
     for (HDT_RecordWithConnector displayRecord : oldSet)
       if (newSet.contains(displayRecord) == false)

@@ -76,9 +76,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 
   private final RelationType type;
   private final HDT_RecordType objType, subjType;
-  private final boolean hasNestedItems;
-
-  private boolean trackOrphans = false;
+  private final boolean hasNestedItems, trackOrphans;
 
   public HDT_RecordType getObjType()                      { return objType; }
   public HDT_RecordType getSubjType()                     { return subjType; }
@@ -87,6 +85,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   public HDT_RecordType getTargetType(Tag tag)            { return tagToTargetType.get(tag); }
   public boolean getHasNestedItems()                      { return hasNestedItems; }
   public void addChangeHandler(RelationChangeHandler rch) { changeHandlers.add(rch); }
+  public Set<HDT_Subj> getOrphans()                       { return Collections.unmodifiableSet(new HashSet<>(orphans)); } // Make a new copy of the set to prevent concurrent modification exception
   private void addObjAndMod(HDT_Subj subj, HDT_Obj obj)   { new HyperObjList<>(this, subj, true).add(obj); }
   List<HDT_Obj> getUnmodifiableObjectList(HDT_Subj subj)  { return Collections.unmodifiableList(subjToObjList.get(subj)); }
   List<HDT_Subj> getUnmodifiableSubjectList(HDT_Obj obj)  { return Collections.unmodifiableList(objToSubjList.get(obj)); }
@@ -105,6 +104,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 
   private RelationSet(RelationType newType) throws HDB_InternalError
   {
+    boolean trackOrphans = false;
     type = newType;
 
     switch (type)
@@ -180,9 +180,11 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
       default :                         hasNestedItems = false; subjType = hdtNone;          objType = hdtNone;
 
         messageDialog("Internal error #84723", mtError);                                           break;
+
     }
 
     typeMappings.put(subjType, objType, type);
+    this.trackOrphans = trackOrphans;
 
     if (trackOrphans)
     {
@@ -195,16 +197,6 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 
       relSets.add(this);
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public Set<HDT_Subj> getOrphans()
-  {
-    if (orphans.isEmpty()) return Collections.unmodifiableSet(orphans);
-
-    return Collections.unmodifiableSet(new HashSet<>(orphans)); // Need to make a new copy of the set to prevent concurrent modification exception
   }
 
 //---------------------------------------------------------------------------
@@ -623,10 +615,9 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
     if (hasNestedItems)
       objectGroups.remove(subj, obj);
 
-    if (type == RelationType.rtWorkFileOfWork)
-      if (getSubjectCount(obj) == 0)
-        if (obj.isExpired() == false) // The obj record may have just been deleted, and the pointers are still being resolved
-          db.deleteRecord(hdtWorkFile, obj.getID());
+    if ((type == RelationType.rtWorkFileOfWork) && (getSubjectCount(obj) == 0))
+      if (obj.isExpired() == false) // The obj record may have just been deleted, and the pointers are still being resolved
+        db.deleteRecord(hdtWorkFile, obj.getID());
   }
 
 //---------------------------------------------------------------------------
@@ -807,8 +798,8 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 
     private RelationType(int code, String title)  { this.code = code; this.title = title; }
     public static RelationType codeToVal(int num) { return codeToVal.get(num); }
-    public final int getCode()                    { return code; }
-    public final String getTitle()                { return title; }
+    public int getCode()                          { return code; }
+    public String getTitle()                      { return title; }
   }
 
 //---------------------------------------------------------------------------
@@ -868,44 +859,44 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   {
     switch (relType)
     {
-      case rtAuthorOfFile:             return new RelationSet<HDT_MiscFile,      HDT_Work>           (relType);
-      case rtAuthorOfWork:             return new RelationSet<HDT_Work,          HDT_Person>         (relType);
-      case rtConceptOfTerm:            return new RelationSet<HDT_Term,          HDT_Concept>        (relType);
-      case rtCounterOfArgument:        return new RelationSet<HDT_Argument,      HDT_Argument>       (relType);
-      case rtCountryOfInst:            return new RelationSet<HDT_Institution,   HDT_Country>        (relType);
-      case rtDebateOfPosition:         return new RelationSet<HDT_Position,      HDT_Debate>         (relType);
-      case rtFieldOfPerson:            return new RelationSet<HDT_Person,        HDT_Field>          (relType);
-      case rtFieldOfSubfield:          return new RelationSet<HDT_Subfield,      HDT_Field>          (relType);
-      case rtFolderOfMiscFile:         return new RelationSet<HDT_MiscFile,      HDT_Folder>         (relType);
-      case rtFolderOfNote:             return new RelationSet<HDT_Note,          HDT_Folder>         (relType);
-      case rtFolderOfWorkFile:         return new RelationSet<HDT_WorkFile,      HDT_Folder>         (relType);
-      case rtGlossaryOfConcept:        return new RelationSet<HDT_Concept,       HDT_Glossary>       (relType);
-      case rtInstOfPerson:             return new RelationSet<HDT_Person,        HDT_Institution>    (relType);
-      case rtInvestigationOfWork:      return new RelationSet<HDT_Work,          HDT_Investigation>  (relType);
-      case rtLabelOfFile:              return new RelationSet<HDT_MiscFile,      HDT_WorkLabel>      (relType);
-      case rtLabelOfWork:              return new RelationSet<HDT_Work,          HDT_WorkLabel>      (relType);
-      case rtParentDebateOfDebate:     return new RelationSet<HDT_Debate,        HDT_Debate>         (relType);
-      case rtParentFolderOfFolder:     return new RelationSet<HDT_Folder,        HDT_Folder>         (relType);
-      case rtParentGlossaryOfGlossary: return new RelationSet<HDT_Glossary,      HDT_Glossary>       (relType);
-      case rtParentGroupOfGroup:       return new RelationSet<HDT_PersonGroup,   HDT_PersonGroup>    (relType);
-      case rtParentInstOfInst:         return new RelationSet<HDT_Institution,   HDT_Institution>    (relType);
-      case rtParentLabelOfLabel:       return new RelationSet<HDT_WorkLabel,     HDT_WorkLabel>      (relType);
-      case rtParentNoteOfNote:         return new RelationSet<HDT_Note,          HDT_Note>           (relType);
-      case rtParentPosOfPos:           return new RelationSet<HDT_Position,      HDT_Position>       (relType);
-      case rtParentWorkOfWork:         return new RelationSet<HDT_Work,          HDT_Work>           (relType);
-      case rtPersonOfInv:              return new RelationSet<HDT_Investigation, HDT_Person>         (relType);
-      case rtPositionOfArgument:       return new RelationSet<HDT_Argument,      HDT_Position>       (relType);
-      case rtRankOfPerson:             return new RelationSet<HDT_Person,        HDT_Rank>           (relType);
-      case rtStateOfInst:              return new RelationSet<HDT_Institution,   HDT_State>          (relType);
-      case rtStatusOfPerson:           return new RelationSet<HDT_Person,        HDT_PersonStatus>   (relType);
-      case rtSubfieldOfPerson:         return new RelationSet<HDT_Person,        HDT_Subfield>       (relType);
-      case rtTypeOfFile:               return new RelationSet<HDT_MiscFile,      HDT_FileType>       (relType);
-      case rtTypeOfInst:               return new RelationSet<HDT_Institution,   HDT_InstitutionType>(relType);
-      case rtTypeOfWork:               return new RelationSet<HDT_Work,          HDT_WorkType>       (relType);
-      case rtWorkFileOfWork:           return new RelationSet<HDT_Work,          HDT_WorkFile>       (relType);
-      case rtWorkOfArgument:           return new RelationSet<HDT_Argument,      HDT_Work>           (relType);
-      case rtWorkOfMiscFile:           return new RelationSet<HDT_MiscFile,      HDT_Work>           (relType);
-      default:                         return null;
+      case rtAuthorOfFile             : return new RelationSet < HDT_MiscFile      , HDT_Work            > (relType);
+      case rtAuthorOfWork             : return new RelationSet < HDT_Work          , HDT_Person          > (relType);
+      case rtConceptOfTerm            : return new RelationSet < HDT_Term          , HDT_Concept         > (relType);
+      case rtCounterOfArgument        : return new RelationSet < HDT_Argument      , HDT_Argument        > (relType);
+      case rtCountryOfInst            : return new RelationSet < HDT_Institution   , HDT_Country         > (relType);
+      case rtDebateOfPosition         : return new RelationSet < HDT_Position      , HDT_Debate          > (relType);
+      case rtFieldOfPerson            : return new RelationSet < HDT_Person        , HDT_Field           > (relType);
+      case rtFieldOfSubfield          : return new RelationSet < HDT_Subfield      , HDT_Field           > (relType);
+      case rtFolderOfMiscFile         : return new RelationSet < HDT_MiscFile      , HDT_Folder          > (relType);
+      case rtFolderOfNote             : return new RelationSet < HDT_Note          , HDT_Folder          > (relType);
+      case rtFolderOfWorkFile         : return new RelationSet < HDT_WorkFile      , HDT_Folder          > (relType);
+      case rtGlossaryOfConcept        : return new RelationSet < HDT_Concept       , HDT_Glossary        > (relType);
+      case rtInstOfPerson             : return new RelationSet < HDT_Person        , HDT_Institution     > (relType);
+      case rtInvestigationOfWork      : return new RelationSet < HDT_Work          , HDT_Investigation   > (relType);
+      case rtLabelOfFile              : return new RelationSet < HDT_MiscFile      , HDT_WorkLabel       > (relType);
+      case rtLabelOfWork              : return new RelationSet < HDT_Work          , HDT_WorkLabel       > (relType);
+      case rtParentDebateOfDebate     : return new RelationSet < HDT_Debate        , HDT_Debate          > (relType);
+      case rtParentFolderOfFolder     : return new RelationSet < HDT_Folder        , HDT_Folder          > (relType);
+      case rtParentGlossaryOfGlossary : return new RelationSet < HDT_Glossary      , HDT_Glossary        > (relType);
+      case rtParentGroupOfGroup       : return new RelationSet < HDT_PersonGroup   , HDT_PersonGroup     > (relType);
+      case rtParentInstOfInst         : return new RelationSet < HDT_Institution   , HDT_Institution     > (relType);
+      case rtParentLabelOfLabel       : return new RelationSet < HDT_WorkLabel     , HDT_WorkLabel       > (relType);
+      case rtParentNoteOfNote         : return new RelationSet < HDT_Note          , HDT_Note            > (relType);
+      case rtParentPosOfPos           : return new RelationSet < HDT_Position      , HDT_Position        > (relType);
+      case rtParentWorkOfWork         : return new RelationSet < HDT_Work          , HDT_Work            > (relType);
+      case rtPersonOfInv              : return new RelationSet < HDT_Investigation , HDT_Person          > (relType);
+      case rtPositionOfArgument       : return new RelationSet < HDT_Argument      , HDT_Position        > (relType);
+      case rtRankOfPerson             : return new RelationSet < HDT_Person        , HDT_Rank            > (relType);
+      case rtStateOfInst              : return new RelationSet < HDT_Institution   , HDT_State           > (relType);
+      case rtStatusOfPerson           : return new RelationSet < HDT_Person        , HDT_PersonStatus    > (relType);
+      case rtSubfieldOfPerson         : return new RelationSet < HDT_Person        , HDT_Subfield        > (relType);
+      case rtTypeOfFile               : return new RelationSet < HDT_MiscFile      , HDT_FileType        > (relType);
+      case rtTypeOfInst               : return new RelationSet < HDT_Institution   , HDT_InstitutionType > (relType);
+      case rtTypeOfWork               : return new RelationSet < HDT_Work          , HDT_WorkType        > (relType);
+      case rtWorkFileOfWork           : return new RelationSet < HDT_Work          , HDT_WorkFile        > (relType);
+      case rtWorkOfArgument           : return new RelationSet < HDT_Argument      , HDT_Work            > (relType);
+      case rtWorkOfMiscFile           : return new RelationSet < HDT_MiscFile      , HDT_Work            > (relType);
+      default                         : return null;
     }
   }
 
