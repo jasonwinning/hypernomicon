@@ -61,9 +61,7 @@ public class ClickHoldButton
 
     if ((parent instanceof Pane) && !(parent instanceof GridPane))
     {
-      Pane ap = (Pane)parent;
-      ObservableList<Node> children = ap.getChildren();
-
+      ObservableList<Node> children = Pane.class.cast(parent).getChildren();
       children.add(children.indexOf(btn), btnMenu);
     }
     else
@@ -71,7 +69,6 @@ public class ClickHoldButton
 
     copyRegionLayout(btn, btnMenu);
 
-    btnMenu.visibleProperty().bind(btn.disabledProperty().not());
     btnMenu.visibleProperty().bind(btn.disabledProperty().not());
 
     getMenu().clear();
@@ -114,7 +111,7 @@ public class ClickHoldButton
       }
 
       mouseDown = true;
-      final int curMouseDownCtr = mouseDownCtr;
+      int curMouseDownCtr = mouseDownCtr;
 
       runDelayedInFXThread(1, BUTTON_MENU_DELAY_MS, event ->
       {

@@ -40,6 +40,9 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.fileManager.FileManager.MarkedRowInfo;
 import org.hypernomicon.view.wrappers.DragNDropHoverHelper;
 import org.hypernomicon.view.wrappers.HyperTable;
+
+import com.google.common.collect.Lists;
+
 import org.hypernomicon.view.wrappers.DragNDropHoverHelper.DragNDropContainer;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -255,8 +258,7 @@ public class FileTable implements DragNDropContainer<FileRow>
         }
         else
         {
-          FileRow row = new FileRow(new HyperPath(filePath), null);
-          rows.add(row);
+          rows.add(new FileRow(new HyperPath(filePath), null));
         }
       }
     }
@@ -286,15 +288,11 @@ public class FileTable implements DragNDropContainer<FileRow>
   {
     FilePath nameOnly = fileName.getNameOnly();
 
-    for (FileRow row : rows)
+    nullSwitch(findFirst(rows, row -> row.getFilePath().getNameOnly().equals(nameOnly)), row ->
     {
-      if (row.getFilePath().getNameOnly().equals(nameOnly))
-      {
-        fileTV.getSelectionModel().select(row);
-        HyperTable.scrollToSelection(fileTV, true);
-        return;
-      }
-    }
+      fileTV.getSelectionModel().select(row);
+      HyperTable.scrollToSelection(fileTV, true);
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -310,8 +308,7 @@ public class FileTable implements DragNDropContainer<FileRow>
 
   void startDragFromFolderTree(FileRow fileRow)
   {
-    draggingRows = new ArrayList<>();
-    draggingRows.add(new MarkedRowInfo(fileRow, false));
+    draggingRows = Lists.newArrayList(new MarkedRowInfo(fileRow, false));
   }
 
 //---------------------------------------------------------------------------

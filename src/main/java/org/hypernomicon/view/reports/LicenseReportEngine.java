@@ -35,8 +35,9 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import com.google.common.collect.Lists;
+
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.control.TableView;
 
 public class LicenseReportEngine extends ReportEngine
@@ -56,17 +57,9 @@ public class LicenseReportEngine extends ReportEngine
 
   @Override public List<HyperTableRow> getRows()
   {
-    ArrayList<HyperTableRow> rows = new ArrayList<>();
-
-    ObservableList<HyperTableCell> cells = FXCollections.observableArrayList();
-    cells.add(new HyperTableCell(-1, "LICENSE.html", hdtNone));
-
-    rows.add(new HyperTableRow(cells, ht));
-
-    cells = FXCollections.observableArrayList();
-    cells.add(new HyperTableCell(-1, "NOTICE.html", hdtNone));
-
-    rows.add(new HyperTableRow(cells, ht));
+    ArrayList<HyperTableRow> rows = Lists.newArrayList(
+      new HyperTableRow(FXCollections.observableArrayList(new HyperTableCell(-1, "LICENSE.html", hdtNone)), ht),
+      new HyperTableRow(FXCollections.observableArrayList(new HyperTableCell(-1, "NOTICE.html" , hdtNone)), ht));
 
     if (license == null)
     {

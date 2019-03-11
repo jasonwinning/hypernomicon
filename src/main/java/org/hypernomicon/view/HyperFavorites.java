@@ -48,14 +48,14 @@ public class HyperFavorites
 
   public static class QueryRow
   {
-    public HyperTableCell[] cells = new HyperTableCell[6];
+    public final HyperTableCell[] cells = new HyperTableCell[6];
   }
 
 //---------------------------------------------------------------------------
 
   public static class QueryFavorite
   {
-    public ArrayList<QueryRow> rows = new ArrayList<>();
+    public final ArrayList<QueryRow> rows = new ArrayList<>();
     public String name;
     public boolean autoexec;
 

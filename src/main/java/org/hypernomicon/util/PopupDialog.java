@@ -44,7 +44,7 @@ public class PopupDialog
   private final Alert dlg = new Alert(AlertType.CONFIRMATION);
   private final LinkedHashMap<ButtonType, DialogResult> bTypeToResult = new LinkedHashMap<>();
 
-  public DialogResult showModal() { return bTypeToResult.get(showAndWait(dlg).get()); }
+  public DialogResult showModal() { return bTypeToResult.get(showAndWait(dlg)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -44,11 +44,11 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
   private ComboBox<HyperTableCell> cB;
   private HyperCB hCB;
   private HyperCtrlType ctrlType;
-  private Populator populator;
-  private EventHandler<ActionEvent> onAction;
-  private HyperTable table;
-  private MutableBoolean dontCreateNewRecord;
-  private CellTextHandler textHndlr;
+  private final Populator populator;
+  private final EventHandler<ActionEvent> onAction;
+  private final HyperTable table;
+  private final MutableBoolean dontCreateNewRecord;
+  private final CellTextHandler textHndlr;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

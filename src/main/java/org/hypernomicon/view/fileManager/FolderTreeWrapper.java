@@ -62,6 +62,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
   @Override public void focusOnTreeCtrl()                                { safeFocus(tv); }
   @Override public void scrollToNdx(int ndx)                             { tv.scrollTo(ndx); }
   @Override public TreeItem<FileRow> getTreeItem(FileRow treeRow)        { return treeRow.getTreeItem(); }
+  @Override public ArrayList<FileRow> getRowsForRecord(HDT_Base record)  { return new ArrayList<>(treeModel.getRowsForRecord(record)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -112,18 +113,6 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
 
       return row;
     });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public ArrayList<FileRow> getRowsForRecord(HDT_Base record)
-  {
-    ArrayList<FileRow> list = new ArrayList<>();
-
-    list.addAll(treeModel.getRowsForRecord(record));
-
-    return list;
   }
 
 //---------------------------------------------------------------------------

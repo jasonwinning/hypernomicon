@@ -145,7 +145,6 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
       default :
 
         htmlText = nodeText;
-        return;
     }
   }
 
@@ -175,7 +174,7 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
     {
       case tagDisplayRecord :
 
-        for (DisplayItem displayItem : displayItems)
+        displayItems.forEach(displayItem ->
         {
           switch (displayItem.type)
           {
@@ -197,21 +196,20 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
             default:
               break;
           }
-        }
+        });
 
         break;
 
       case tagKeyWork :
 
-        for (KeyWork keyWork : keyWorks)
-          writePointerTag(xml, tag, keyWork.getRecordID(), keyWork.getRecordType(), keyWork.getSearchKey(false));
+        keyWorks.forEach(keyWork ->
+          writePointerTag(xml, tag, keyWork.getRecordID(), keyWork.getRecordType(), keyWork.getSearchKey(false)));
 
         break;
 
       default :
 
         writeStringTag(xml, tag, htmlText);
-        return;
     }
   }
 

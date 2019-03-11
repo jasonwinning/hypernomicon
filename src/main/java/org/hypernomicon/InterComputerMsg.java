@@ -23,9 +23,10 @@ import static org.hypernomicon.util.Util.*;
 import org.hypernomicon.model.HyperDB.HDB_MessageType;
 import org.hypernomicon.util.filePath.FilePath;
 
+import com.google.common.collect.Lists;
+
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -58,19 +59,16 @@ public class InterComputerMsg
 
   public boolean writeToDisk()
   {
-    List<String> s = new ArrayList<>();
     FilePath filePath;
-
-    s.add(source);
-    s.add(dest);
+    List<String> s = Lists.newArrayList(source, dest);
 
     switch (type)
     {
-      case hmtEchoRequest    : s.add("echo request"   ); filePath = db.getRequestMessageFilePath ();  break;
+      case hmtEchoRequest    : s.add("echo request"   ); filePath = db.getRequestMessageFilePath (); break;
       case hmtEchoReply      : s.add("echo reply"     ); filePath = db.getResponseMessageFilePath(); break;
-      case hmtUnlockRequest  : s.add("unlock request" ); filePath = db.getRequestMessageFilePath ();  break;
+      case hmtUnlockRequest  : s.add("unlock request" ); filePath = db.getRequestMessageFilePath (); break;
       case hmtUnlockComplete : s.add("unlock complete"); filePath = db.getResponseMessageFilePath(); break;
-      default : return false;
+      default                : return false;
     }
 
     try { FileUtils.writeLines(filePath.toFile(), s); }

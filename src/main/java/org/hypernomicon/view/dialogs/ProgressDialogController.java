@@ -103,8 +103,8 @@ public class ProgressDialogController extends HyperDialog
     dialogStage.setOnShowing(event ->
     {
       EventHandler<WorkerStateEvent> successHndlr = task.getOnSucceeded(),
-                                     failHndlr = task.getOnFailed(),
-                                     cancelHndlr = task.getOnCancelled();
+                                     failHndlr    = task.getOnFailed(),
+                                     cancelHndlr  = task.getOnCancelled();
       task.setOnSucceeded(e ->
       {
         if (successHndlr != null) successHndlr.handle(e);

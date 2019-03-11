@@ -40,16 +40,14 @@ public class CombinedUnfilteredQuerySource implements QuerySource
   public CombinedUnfilteredQuerySource()
   {
     types = EnumSet.allOf(HDT_RecordType.class);
-    types.remove(hdtNone);
-    types.remove(hdtAuxiliary);
-    types.remove(hdtHub);
+    types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
 
-    for (HDT_RecordType type : types)
+    types.forEach(type ->
     {
       firstNdxForType.put(type, total);
       total += db.records(type).size();
       lastNdxForType.put(type, total - 1);
-    }
+    });
   }
 
 //---------------------------------------------------------------------------

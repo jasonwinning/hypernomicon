@@ -26,10 +26,8 @@ import static org.hypernomicon.view.dialogs.NewPersonDialogController.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -44,6 +42,8 @@ import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import javafx.collections.FXCollections;
@@ -53,7 +53,7 @@ import javafx.scene.control.TableView;
 public class DupAuthorsReportEngine extends ReportEngine
 {
   private final ArrayList<HyperTableRow> rows = new ArrayList<>();
-  private final HashMap<HyperTableRow, LinkedHashSet<Author>> rowToMatch = new HashMap<>();
+  private final HashMap<HyperTableRow, ImmutableSet<Author>> rowToMatch = new HashMap<>();
   private HyperTable ht;
 
 //---------------------------------------------------------------------------
@@ -73,7 +73,6 @@ public class DupAuthorsReportEngine extends ReportEngine
 
     if (db.isLoaded() == false) return;
 
-    ArrayList<Author> matchedAuthors;
     LinkedHashMap<Author, List<Author>> matchMap = new LinkedHashMap<>();
     LinkedList<PersonForDupCheck> list = createListForDupCheck();
 
@@ -84,7 +83,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
     while (list.size() > 0)
     {
-      matchedAuthors = new ArrayList<>();
+      ArrayList<Author> matchedAuthors = new ArrayList<>();
       doDupCheck(person, list, matchedAuthors, task, ndx, total);
 
       if (matchedAuthors.size() > 0)
@@ -100,9 +99,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
     matchMap.forEach((author, authorList) -> authorList.forEach(match ->
     {
-      ObservableList<HyperTableCell> cells = FXCollections.observableArrayList();
-
-      cells.add(HyperTableCell.blankCell);
+      ObservableList<HyperTableCell> cells = FXCollections.observableArrayList(HyperTableCell.blankCell);
 
       if (author.getPerson() == null)
         cells.add(new HyperTableCell(-1, author.getFullName(false), hdtNone));
@@ -122,12 +119,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
       rows.add(row);
 
-      LinkedHashSet<Author> pair = new LinkedHashSet<>();
-
-      pair.add(author);
-      pair.add(match);
-
-      rowToMatch.put(row, pair);
+      rowToMatch.put(row, ImmutableSet.of(author, match));
     }));
   }
 
@@ -156,7 +148,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
     ht.addCustomActionCol(-1, "Merge", (row, colNdx) ->
     {
-      ArrayList<Author> pair = Lists.newArrayList(rowToMatch.get(row));
+      ImmutableList<Author> pair = rowToMatch.get(row).asList();
 
       Author author1 = null, author2 = null;
 
@@ -178,7 +170,7 @@ public class DupAuthorsReportEngine extends ReportEngine
       }
 
       NewPersonDialogController npdc = NewPersonDialogController.create(author1.getName(), null, false, author1.getPerson(),
-                                                                        author1, new ArrayList<>(Collections.singletonList(author2)));
+                                                                        author1, Lists.newArrayList(author2));
 
       if (npdc.showModal() == false) return;
 

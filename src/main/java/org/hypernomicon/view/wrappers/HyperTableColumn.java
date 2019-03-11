@@ -56,10 +56,10 @@ public class HyperTableColumn
 {
   public static enum HyperCtrlType
   {
-    ctNone,          ctIncremental,        ctDropDownList,      ctDropDown,
-    ctEdit,          ctLinkBtn,            ctBrowseBtn,         ctGoBtn,
-    ctGoNewBtn,      ctEditNewBtn,         ctCustomBtn,         ctCheckbox,
-    ctIcon,          ctInvSelect
+    ctNone,     ctIncremental, ctDropDownList, ctDropDown,
+    ctEdit,     ctLinkBtn,     ctBrowseBtn,    ctGoBtn,
+    ctGoNewBtn, ctEditNewBtn,  ctCustomBtn,    ctCheckbox,
+    ctIcon,     ctInvSelect
   }
 
   final private TableColumn<HyperTableRow, HyperTableCell> tc;
@@ -69,11 +69,11 @@ public class HyperTableColumn
   final private HyperCtrlType ctrlType;
   final EnumMap<ButtonAction, String> tooltips = new EnumMap<>(ButtonAction.class);
   final CellUpdateHandler updateHandler;
+  final private int colNdx;
   final private MutableBoolean canEditIfEmpty      = new MutableBoolean(true ),
                                isNumeric           = new MutableBoolean(false),
                                dontCreateNewRecord = new MutableBoolean(false);
 
-  private int colNdx;
   public CellTextHandler textHndlr = null;
   private boolean moreButtonClicked = false;
 
@@ -272,12 +272,11 @@ public class HyperTableColumn
 
   List<HyperTableCell> getSelectedItems()
   {
-    int recordID;
     List<HyperTableCell> choices = new ArrayList<>();
 
     for (HyperTableRow row : tc.getTableView().getItems())
     {
-      recordID = row.getID(colNdx);
+      int recordID = row.getID(colNdx);
       if (recordID > 0)
         choices.add(new HyperTableCell(recordID, db.records(row.getType(colNdx)).getByID(recordID).getCBText(), row.getType(colNdx)));
     }
@@ -293,14 +292,14 @@ public class HyperTableColumn
   {
     Button cellButton = new Button();
 
-    cellButton.setMinHeight(18.0 * displayScale);
+    cellButton.setMinHeight (18.0 * displayScale);
     cellButton.setPrefHeight(18.0 * displayScale);
-    cellButton.setMaxHeight(18.0 * displayScale);
+    cellButton.setMaxHeight (18.0 * displayScale);
     cellButton.setPadding(new Insets(0.0, 7.0, 0.0, 7.0));
 
     tableCell.emptyProperty().addListener((observable, oldValue, newValue) -> cellButton.setVisible(newValue.booleanValue() == false));
 
-    return  cellButton;
+    return cellButton;
   }
 
 //---------------------------------------------------------------------------

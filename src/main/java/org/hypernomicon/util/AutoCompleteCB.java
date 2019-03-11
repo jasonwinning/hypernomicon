@@ -50,8 +50,8 @@ import org.hypernomicon.model.records.HDT_Person;
 
 public class AutoCompleteCB implements EventHandler<KeyEvent>
 {
-  private ComboBox<HyperTableCell> cb;
-  private HyperCB hcb;
+  private final ComboBox<HyperTableCell> cb;
+  private final HyperCB hcb;
   private boolean limitToChoices;
   private HyperTableCell startValue;
 
@@ -109,10 +109,10 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
   @Override public void handle(KeyEvent event)
   {
-    if (event.isControlDown() || event.getCode() == KeyCode.BACK_SPACE ||
-        event.getCode() == KeyCode.RIGHT || event.getCode() == KeyCode.LEFT ||
-        event.getCode() == KeyCode.DELETE || event.getCode() == KeyCode.HOME ||
-        event.getCode() == KeyCode.END || event.getCode() == KeyCode.TAB)
+    if (event.isControlDown()             || event.getCode() == KeyCode.BACK_SPACE ||
+        event.getCode() == KeyCode.RIGHT  || event.getCode() == KeyCode.LEFT       ||
+        event.getCode() == KeyCode.DELETE || event.getCode() == KeyCode.HOME       ||
+        event.getCode() == KeyCode.END    || event.getCode() == KeyCode.TAB)
     {
       hcb.typedMatch = null;
       return;

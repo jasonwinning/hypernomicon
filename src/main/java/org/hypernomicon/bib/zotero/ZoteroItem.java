@@ -18,6 +18,7 @@
 package org.hypernomicon.bib.zotero;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -31,6 +32,8 @@ import org.hypernomicon.bib.lib.BibEntry;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
+
+import com.google.common.collect.Lists;
 
 import static org.hypernomicon.bib.BibData.EntryType.*;
 import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
@@ -166,15 +169,13 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
   @Override protected List<String> getCollKeys(boolean deletedOK)
   {
-    List<String> list = new ArrayList<>();
-
     JsonArray collArray = jObj.getObj("data").getArray("collections");
 
     if (collArray != null)
       if ((zWrapper.getTrash().contains(this) == false) || deletedOK)
-        collArray.getStrs().forEach(list::add);
+        return Lists.newArrayList((Iterable<String>)collArray.getStrs());
 
-    return list;
+    return new ArrayList<>();
   }
 
 //---------------------------------------------------------------------------
@@ -453,14 +454,8 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     if (thisIsBackup) return true;
     if (authorsChanged()) return false;
 
-    for (BibFieldEnum bibFieldEnum : BibFieldEnum.values())
-    {
-      if (thisTypeHasFieldKey(bibFieldEnum))
-        if (fieldsAreEqual(bibFieldEnum, backupItem) == false)
-          return false;
-    }
-
-    return true;
+    return Arrays.stream(BibFieldEnum.values()).allMatch(bibFieldEnum ->
+      (thisTypeHasFieldKey(bibFieldEnum) == false) || fieldsAreEqual(bibFieldEnum, backupItem));
   }
 
 //---------------------------------------------------------------------------
@@ -479,12 +474,12 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
     // Backup item will not have authors of certain types if they are not allowed by Zotero for this entry type
 
-    if (ZoteroAuthors.getCreatorTypeStr(entryType, AuthorType.author).length() == 0) authorList1.clear();
-    if (ZoteroAuthors.getCreatorTypeStr(entryType, AuthorType.editor).length() == 0) editorList1.clear();
+    if (ZoteroAuthors.getCreatorTypeStr(entryType, AuthorType.author    ).length() == 0) authorList1    .clear();
+    if (ZoteroAuthors.getCreatorTypeStr(entryType, AuthorType.editor    ).length() == 0) editorList1    .clear();
     if (ZoteroAuthors.getCreatorTypeStr(entryType, AuthorType.translator).length() == 0) translatorList1.clear();
 
-    if (authorList1.size() != authorList2.size()) return true;
-    if (editorList1.size() != editorList2.size()) return true;
+    if (authorList1    .size() != authorList2    .size()) return true;
+    if (editorList1    .size() != editorList2    .size()) return true;
     if (translatorList1.size() != translatorList2.size()) return true;
 
     for (int ndx = 0; ndx < authorList1.size(); ndx++)

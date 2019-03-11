@@ -138,8 +138,8 @@ final class HyperCore<HDT_DT extends HDT_Base>
           record.expire();
           throw new HDB_InternalError(88388);
         }
-        else
-          record.resolvePointers();
+
+        record.resolvePointers();
       }
 
       if (record.isExpired()) // See HDI_OnlineHubSpokes.resolvePointers
@@ -197,9 +197,7 @@ final class HyperCore<HDT_DT extends HDT_Base>
     }
 
     idToKey.put(id, newKey);
-    KeyIDpair pair = new KeyIDpair(id, newKey);
-
-    addToSortedList(sortedKeys, pair);
+    addToSortedList(sortedKeys, new KeyIDpair(id, newKey));
   }
 
 //---------------------------------------------------------------------------

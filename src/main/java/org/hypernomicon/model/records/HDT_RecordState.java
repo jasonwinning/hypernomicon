@@ -18,6 +18,8 @@
 package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
@@ -32,11 +34,7 @@ import static com.google.common.xml.XmlEscapers.*;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Exceptions.InvalidItemException;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.*;
-
-import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 public class HDT_RecordState
 {
@@ -83,7 +81,7 @@ public class HDT_RecordState
 
     creationDate = null;
     modifiedDate = null;
-    viewDate = null;
+    viewDate     = null;
 
     initItems();
   }
@@ -131,11 +129,10 @@ public class HDT_RecordState
   {
     stored = true;
 
-    if (type == hdtHub)
-      if (tag == Tag.tagName)
-        return;
+    if ((type == hdtHub) && (tag == tagName))
+      return;
 
-    if (tag == Tag.tagNone)
+    if (tag == tagNone)
     {
       simpleName = nodeText;
       return;
@@ -218,7 +215,7 @@ public class HDT_RecordState
 
     xml.append("  <creation_date>" + dateTimeToIso8601offset(creationDate) + "</creation_date>"); xml.append(System.lineSeparator())
        .append("  <modified_date>" + dateTimeToIso8601offset(modifiedDate) + "</modified_date>"); xml.append(System.lineSeparator())
-       .append("  <view_date>" + dateTimeToIso8601offset(viewDate) + "</view_date>"); xml.append(System.lineSeparator());
+       .append("  <view_date>"     + dateTimeToIso8601offset(viewDate)     + "</view_date>"    ); xml.append(System.lineSeparator());
   }
 
 //---------------------------------------------------------------------------
@@ -308,7 +305,7 @@ public class HDT_RecordState
   {
     creationDate = instant;
     modifiedDate = instant;
-    viewDate = instant;
+    viewDate     = instant;
   }
 
 //---------------------------------------------------------------------------

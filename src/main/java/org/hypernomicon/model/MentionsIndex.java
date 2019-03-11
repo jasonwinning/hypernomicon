@@ -66,9 +66,7 @@ class MentionsIndex
     mentionedAnywhereToMentioners = new BidiOneToManyRecordMap();
 
     types = EnumSet.allOf(HDT_RecordType.class);
-    types.remove(hdtNone);
-    types.remove(hdtAuxiliary);
-    types.remove(hdtHub);
+    types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
 
     linkList = new KeywordLinkList();
   }
@@ -78,7 +76,7 @@ class MentionsIndex
 
   void removeRecord(HDT_Base record)
   {
-    if ((thread != null) && (thread.isAlive()))
+    if ((thread != null) && thread.isAlive())
     {
       startRebuild();
       return;
@@ -93,7 +91,7 @@ class MentionsIndex
 
   void updateMentioner(HDT_Base record)
   {
-    if ((thread != null) && (thread.isAlive()))
+    if ((thread != null) && thread.isAlive())
     {
       startRebuild();
       return;

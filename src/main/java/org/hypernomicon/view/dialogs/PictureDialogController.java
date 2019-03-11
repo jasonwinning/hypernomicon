@@ -120,7 +120,7 @@ public class PictureDialogController extends HyperDialog
     rbFile.   selectedProperty().addListener((observable, oldValue, newValue) -> { if (newValue) rbFileSelected    (); });
     rbWeb.    selectedProperty().addListener((observable, oldValue, newValue) -> { if (newValue) rbWebSelected     (); });
 
-    UnaryOperator<TextFormatter.Change> filter = (change) ->
+    UnaryOperator<TextFormatter.Change> filter = change ->
     {
       if (change.isContentChange() == false)
         return change;
@@ -270,7 +270,7 @@ public class PictureDialogController extends HyperDialog
   {
     String ext = "";
 
-    FilePath filePath = db.getPath(PREF_KEY_PICTURES_PATH, new FilePath(tfName.getText()));
+    FilePath filePath = db.getPath(PREF_KEY_PICTURES_PATH, tfName.getText());
     ext = filePath.getExtensionOnly();
     if (ext.length() == 0) ext = "jpg";
 
@@ -312,7 +312,7 @@ public class PictureDialogController extends HyperDialog
   {
     if (FilePath.isFilenameValid(fileName) == false) return true;
 
-    FilePath filePath = db.getPath(PREF_KEY_PICTURES_PATH, new FilePath(fileName));
+    FilePath filePath = db.getPath(PREF_KEY_PICTURES_PATH, fileName);
     if (filePath.equals(personCtrlr.curPicture)) return false;
 
     return filePath.exists();
@@ -520,7 +520,7 @@ public class PictureDialogController extends HyperDialog
       if (tfName.getText().length() == 0) return;
 
       src = personCtrlr.curPicture;
-      dest = db.getPath(PREF_KEY_PICTURES_PATH, new FilePath(tfName.getText()));
+      dest = db.getPath(PREF_KEY_PICTURES_PATH, tfName.getText());
 
       if (src.equals(dest) == false)
       {
@@ -537,7 +537,7 @@ public class PictureDialogController extends HyperDialog
       {
         if (tfFile.getText().length() == 0) return;
         src = new FilePath(tfFile.getText());
-        dest = db.getPath(PREF_KEY_PICTURES_PATH, new FilePath(tfName.getText()));
+        dest = db.getPath(PREF_KEY_PICTURES_PATH, tfName.getText());
         sameFile = src.equals(dest);
       }
       else
@@ -559,7 +559,7 @@ public class PictureDialogController extends HyperDialog
       return;
 
     String execPath = appPrefs.get(PREF_KEY_IMAGE_EDITOR, "");
-    FilePath picturePath = db.getPath(PREF_KEY_PICTURES_PATH, new FilePath(tfName.getText()));
+    FilePath picturePath = db.getPath(PREF_KEY_PICTURES_PATH, tfName.getText());
 
     if (execPath.length() == 0)
       DesktopApi.edit(picturePath);
@@ -618,7 +618,7 @@ public class PictureDialogController extends HyperDialog
       progressBar.setVisible(false);
       btnStop.setVisible(false);
 
-    }, ex -> exceptionHappened(ex));
+    }, this::exceptionHappened);
   }
 
 //---------------------------------------------------------------------------
@@ -735,10 +735,10 @@ public class PictureDialogController extends HyperDialog
   {
     FileChooser fileChooser = new FileChooser();
 
-    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image files", "*.jpg;*.gif;*.png;*.jpeg"));
-    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
+    fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Image files", "*.jpg;*.gif;*.png;*.jpeg"),
+                                             new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
 
-    fileChooser.setInitialDirectory(db.getPath(PREF_KEY_PICTURES_PATH, null).toFile());
+    fileChooser.setInitialDirectory(db.getPath(PREF_KEY_PICTURES_PATH).toFile());
 
     FilePath filePath = new FilePath(fileChooser.showOpenDialog(getStage()));
 
@@ -759,7 +759,7 @@ public class PictureDialogController extends HyperDialog
   {
     FilePath curFile = personCtrlr.curPicture,
              newFileOrig = null,
-             newFileNew = db.getPath(PREF_KEY_PICTURES_PATH, new FilePath(tfName.getText()));
+             newFileNew = db.getPath(PREF_KEY_PICTURES_PATH, tfName.getText());
 
     String curFileName = "",
            newFileOldName,
@@ -860,7 +860,7 @@ public class PictureDialogController extends HyperDialog
           progressBar.setVisible(true);
           btnStop.setVisible(true);
 
-          FileDownloadUtility.downloadToFile(tfWeb.getText(), db.getPath(PREF_KEY_PICTURES_PATH, null), newFileNewName,
+          FileDownloadUtility.downloadToFile(tfWeb.getText(), db.getPath(PREF_KEY_PICTURES_PATH), newFileNewName,
                                              new StringBuilder(), true, httpClient, buffer ->
           {
             personCtrlr.curPicture = newFileNew;
@@ -870,7 +870,7 @@ public class PictureDialogController extends HyperDialog
             okClicked = true;
             dialogStage.close();
 
-          }, ex -> exceptionHappened(ex));
+          }, this::exceptionHappened);
 
           return false;
         }

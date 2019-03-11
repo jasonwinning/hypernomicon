@@ -46,10 +46,7 @@ public class HDI_OnlineBoolean extends HDI_OnlineBase<HDI_OfflineBoolean>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
-  {
-    return;
-  }
+  @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords) { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

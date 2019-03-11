@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
@@ -223,7 +224,7 @@ public class WorkDialogController extends HyperDialog
 
     htAuthors.addCondRowBasedContextMenuItem("Remove this row",
         row -> (row.getText(0).length() > 0) && (row.getID(0) < 1),
-        row -> htAuthors.removeRow(row));
+        htAuthors::removeRow);
 
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), null);
 
@@ -301,7 +302,7 @@ public class WorkDialogController extends HyperDialog
       alreadyChangingTitle = false;
     });
 
-    UnaryOperator<TextFormatter.Change> filter = (change) ->
+    UnaryOperator<TextFormatter.Change> filter = change ->
     {
       if (alreadyChangingTitle) return change;
 
@@ -548,7 +549,7 @@ public class WorkDialogController extends HyperDialog
 
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
 
-    fileChooser.setInitialDirectory(db.getPath(PREF_KEY_UNENTERED_PATH, null).toFile());
+    fileChooser.setInitialDirectory(db.getPath(PREF_KEY_UNENTERED_PATH).toFile());
 
     useChosenFile(new FilePath(fileChooser.showOpenDialog(getStage())));
   }
@@ -585,7 +586,7 @@ public class WorkDialogController extends HyperDialog
 
     if (rbCurrent.isSelected())
     {
-      if (rbCurrent.isDisabled() || db.getPath(PREF_KEY_UNENTERED_PATH, null).isSubpath(chosenFile))
+      if (rbCurrent.isDisabled() || db.getPath(PREF_KEY_UNENTERED_PATH).isSubpath(chosenFile))
         rbMove.setSelected(true);
     }
 
@@ -1008,8 +1009,7 @@ public class WorkDialogController extends HyperDialog
 
     ArrayList<PersonName> nameList = new ArrayList<>();
     ArrayList<HDT_Person> personList = new ArrayList<>();
-    HashMap<PersonName, Boolean> nameToEd = new HashMap<>();
-    HashMap<PersonName, Boolean> nameToTr = new HashMap<>();
+    HashMap<PersonName, Boolean> nameToEd = new HashMap<>(), nameToTr = new HashMap<>();
 
     bibAuthors.getListsForWorkMerge(nameList, personList, nameToEd, nameToTr, destWork);
 
@@ -1037,10 +1037,7 @@ public class WorkDialogController extends HyperDialog
 
     curBD.setWorkType(hcbType.selectedRecord());
 
-    ArrayList<String> isbns = new ArrayList<>();
-    htISBN.getDataRows().forEach(row -> isbns.add(row.getText(0)));
-
-    curBD.setMultiStr(bfISBNs, isbns);
+    curBD.setMultiStr(bfISBNs, htISBN.dataRowStream().map(row -> row.getText(0)).collect(Collectors.toList()));
 
     curBD.getAuthors().setAllFromTable(getAuthorGroups());
 
@@ -1100,10 +1097,7 @@ public class WorkDialogController extends HyperDialog
 
         msg = msg + "Otherwise, existing information for these fields will be lost: ";
 
-        String fieldsStr = "";
-
-        for (BibFieldEnum extField : extFields)
-          fieldsStr = fieldsStr + (fieldsStr.length() > 0 ? ", " : "") + BibData.getFieldName(extField);
+        String fieldsStr = extFields.stream().map(BibData::getFieldName).reduce((s1, s2) -> s1 + ", " + s2).orElse("");
 
         chkCreateBibEntry.setSelected(confirmDialog(msg + fieldsStr));
       }
@@ -1147,14 +1141,14 @@ public class WorkDialogController extends HyperDialog
       if (chkKeepFilenameUnchanged.isSelected())
         newFilePath = origFilePath;
       else
-        newFilePath = origFilePath.getDirOnly().resolve(new FilePath(tfNewFile.getText()));
+        newFilePath = origFilePath.getDirOnly().resolve(tfNewFile.getText());
     }
     else
     {
       if (chkKeepFilenameUnchanged.isSelected())
         newFilePath = HDT_Work.getBasePathForWorkTypeID(hcbType.selectedID()).resolve(origFilePath.getNameOnly());
       else
-        newFilePath = HDT_Work.getBasePathForWorkTypeID(hcbType.selectedID()).resolve(new FilePath(tfNewFile.getText()));
+        newFilePath = HDT_Work.getBasePathForWorkTypeID(hcbType.selectedID()).resolve(tfNewFile.getText());
     }
 
     HDT_RecordWithPath existingFile = HyperPath.getFileFromFilePath(newFilePath);

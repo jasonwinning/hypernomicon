@@ -115,11 +115,7 @@ public final class SearchKeys
 
   public List<SearchKeyword> getKeywordsByPrefix(String prefix)
   {
-    ArrayList<SearchKeyword> list = new ArrayList<>();
-
-    nullSwitch(prefixStrToKeywordStrToKeywordObj.get(prefix.toLowerCase()), map -> list.addAll(map.values()));
-
-    return list;
+    return nullSwitch(prefixStrToKeywordStrToKeywordObj.get(prefix.toLowerCase()), new ArrayList<>(), map -> new ArrayList<>(map.values()));
   }
 
 //---------------------------------------------------------------------------
@@ -145,9 +141,9 @@ public final class SearchKeys
     if (newKey.equals(getStringForRecord(record))) return;
 
     if ((newKey.length() == 1) || (newKey.length() == 2))
-      throw new SearchKeyException(true, record.getID(), record.getType(), newKey);
+      throw new SearchKeyException(true, record, newKey);
 
-    LinkedHashSet<SearchKeyword> oldKeywordObjs = unassignKeywordsForRecord(record);
+    LinkedHashSet<SearchKeyword> oldKeywordObjs = unassignKeywordsFromRecord(record);
 
   // Loop through new substrings
   // ---------------------------
@@ -155,31 +151,29 @@ public final class SearchKeys
     {
       SearchKeyword keyword = new SearchKeyword(subStr.trim(), record);
 
-      if (keyword.text.length() > 0)
-      {
+      if (keyword.text.length() < 1) continue;
+
   // If the substring is too short, error out
   // ----------------------------------------
-        if (keyword.text.length() < 3)
-        {
-          assignKeywordsToRecord(record, oldKeywordObjs);
-          throw new SearchKeyException(true, record.getID(), record.getType(), keyword.text);
-        }
+      if (keyword.text.length() < 3)
+      {
+        assignKeywordsToRecord(record, oldKeywordObjs);
+        throw new SearchKeyException(true, record, keyword.text);
+      }
 
-        HDT_Base existingRecord = nullSwitch(getKeywordObjByKeywordStr(keyword.text), null, SearchKeyword::getRecord);
+      HDT_Base existingRecord = nullSwitch(getKeywordObjByKeywordStr(keyword.text), null, SearchKeyword::getRecord);
 
   // If the substring was already a key for a different record, error out
   // --------------------------------------------------------------------
-        if ((existingRecord != null) && (existingRecord != record))
-        {
-          assignKeywordsToRecord(record, oldKeywordObjs);
-          throw new SearchKeyException(false, record.getID(), record.getType(), keyword.text);
-        }
+      if ((existingRecord != null) && (existingRecord != record))
+      {
+        assignKeywordsToRecord(record, oldKeywordObjs);
+        throw new SearchKeyException(false, record, keyword.text);
+      }
 
   // Add new substring
   // -----------------
-        else
-          addKeyword(keyword);
-      }
+      addKeyword(keyword);
     }
 
     if (noMod == false)
@@ -232,15 +226,10 @@ public final class SearchKeys
     Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.get(record);
     if (keywordStrToKeywordObj == null) return "";
 
-    String text = "";
-
     synchronized (keywordStrToKeywordObj)
     {
-      for (SearchKeyword keyword : keywordStrToKeywordObj.values())
-        text = text.length() == 0 ? keyword.toString() : text + "; " + keyword.toString();
+      return keywordStrToKeywordObj.values().stream().map(SearchKeyword::toString).reduce((s1, s2) -> s1 + "; " + s2).orElse("");
     }
-
-    return text;
   }
 
 //---------------------------------------------------------------------------
@@ -274,14 +263,14 @@ public final class SearchKeys
 
   private void assignKeywordsToRecord(HDT_Base record, LinkedHashSet<SearchKeyword> oldKeywordObjs)
   {
-    unassignKeywordsForRecord(record);
+    unassignKeywordsFromRecord(record);
     oldKeywordObjs.forEach(this::addKeyword);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private LinkedHashSet<SearchKeyword> unassignKeywordsForRecord(HDT_Base record)
+  private LinkedHashSet<SearchKeyword> unassignKeywordsFromRecord(HDT_Base record)
   {
     LinkedHashSet<SearchKeyword> oldKeywordObjs = new LinkedHashSet<>();
 

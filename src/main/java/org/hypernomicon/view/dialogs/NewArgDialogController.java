@@ -98,18 +98,13 @@ public class NewArgDialogController extends HyperDialog
 
       if ((work != null) && (hcbPerson.selectedID() == -1))
       {
-        HDT_Person person = null;
-
-        for (Author author : work.getAuthors()) if ((author.getPerson() != null) && (author.getInFileName() == Ternary.True))
-        { person = author.getPerson(); break; }
+        HDT_Person person = findFirst(work.getAuthors(), author -> (author.getPerson() != null) && (author.getInFileName() == Ternary.True), Author::getPerson);
 
         if (person == null)
-          for (Author author : work.getAuthors()) if ((author.getPerson() != null) && (author.getInFileName() != Ternary.False))
-          { person = author.getPerson(); break; }
+          person = findFirst(work.getAuthors(), author -> (author.getPerson() != null) && (author.getInFileName() != Ternary.False), Author::getPerson);
 
         if (person == null)
-          for (Author author : work.getAuthors()) if (author.getPerson() != null)
-          { person = author.getPerson(); break; }
+          person = findFirst(work.getAuthors(), author -> author.getPerson() != null, Author::getPerson);
 
         if (person != null)
         {
@@ -247,9 +242,7 @@ public class NewArgDialogController extends HyperDialog
       work = db.createNewBlankRecord(hdtWork);
 
       work.setName(tfTitle.getText());
-      HDT_Person person = hcbPerson.selectedRecord();
-      if (person != null)
-        work.getAuthors().add(person);
+      nullSwitch(hcbPerson.selectedRecord(), person -> work.getAuthors().add((HDT_Person) person));
     }
     else
       work = hcbWork.selectedRecord();

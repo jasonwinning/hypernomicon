@@ -43,7 +43,6 @@ import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.dialogs.HyperDialog;
 import org.hypernomicon.view.dialogs.SelectWorkDialogController;
@@ -101,7 +100,7 @@ public class BibManager extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void saveToDisk() { libraryWrapper.saveToDisk(db.getRootFilePath().resolve(new FilePath(HyperDB.BIB_FILE_NAME))); }
+  public void saveToDisk() { libraryWrapper.saveToDisk(db.getRootFilePath().resolve(HyperDB.BIB_FILE_NAME)); }
 
   @Override public boolean isValid() { return true; }
 
@@ -160,7 +159,7 @@ public class BibManager extends HyperDialog
 
     btnStop.setDisable(false);
 
-    libraryWrapper.setKeyChangeHandler((oldKey, newKey) -> entryTable.updateKey(oldKey, newKey));
+    libraryWrapper.setKeyChangeHandler(entryTable::updateKey);
 
     syncTask = libraryWrapper.createNewSyncTask();
 
@@ -332,14 +331,7 @@ public class BibManager extends HyperDialog
     {
       if (ui.cantSaveRecord(true)) return;
 
-      HDT_Person person = null;
-
-      for (BibAuthor bibAuthor : row.getEntry().getAuthors())
-      {
-        person = HDT_Person.lookUpByName(bibAuthor.getName());
-        if (person != null)
-          break;
-      }
+      HDT_Person person = findFirstHaving(row.getEntry().getAuthors(), bibAuthor -> HDT_Person.lookUpByName(bibAuthor.getName()));
 
       SelectWorkDialogController dlg = SelectWorkDialogController.create("Select a work record", person);
 
@@ -600,9 +592,7 @@ public class BibManager extends HyperDialog
       }
     });
 
-    List<EntryType> choices = new ArrayList<>();
-
-    choices.addAll(map.keySet());
+    List<EntryType> choices = new ArrayList<>(map.keySet());
 
     choices.sort((et1, et2) -> BibUtils.getEntryTypeName(et1).compareTo(BibUtils.getEntryTypeName(et2)));
 

@@ -91,9 +91,8 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
 
   @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
   {
-    if (!searchLinkedRecords) return;
-
-    db.getObjectList(relType, record, false).forEach(objRecord -> list.add(objRecord.listName()));
+    if (searchLinkedRecords)
+      db.getObjectList(relType, record, false).forEach(objRecord -> list.add(objRecord.listName()));
   }
 
 //---------------------------------------------------------------------------

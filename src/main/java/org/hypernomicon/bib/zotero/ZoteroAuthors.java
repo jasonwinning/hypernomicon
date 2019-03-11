@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Map.Entry;
 
 import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Iterators;
 
 import org.hypernomicon.bib.BibAuthor;
 import org.hypernomicon.bib.BibAuthors;
@@ -52,13 +53,10 @@ public class ZoteroAuthors extends BibAuthors
 
   @Override public void clear()
   {
-    creatorsArr.removeObjIf(creatorObj ->
+    Iterators.removeIf(creatorsArr.getObjs(), creatorObj ->
     {
-      String aTypeStr = creatorObj.getStrSafe("creatorType");
-      AuthorType aType = getAuthorTypeForStr(aTypeStr);
-
-      return aType != null;  // If the creatorType is one that does not map onto a
-    });                      // Hypernomicon-aware type (author, editor, or translator) then ignore
+      return getAuthorTypeForStr(creatorObj.getStrSafe("creatorType")) != null;  // If the creatorType is one that does not map onto a
+    });                                                                          // Hypernomicon-aware type (author, editor, or translator) then ignore
   }
 
 //---------------------------------------------------------------------------
@@ -151,13 +149,7 @@ public class ZoteroAuthors extends BibAuthors
   {
     if (authorType == null) return "";
 
-    for (Entry<String, AuthorType> entry : creatorTypes.row(entryType).entrySet())
-    {
-      if (entry.getValue().equals(authorType))
-        return entry.getKey();
-    }
-
-    return "";
+    return findFirst(creatorTypes.row(entryType).entrySet(), ent -> ent.getValue().equals(authorType), "", Entry::getKey);
   }
 
 //---------------------------------------------------------------------------

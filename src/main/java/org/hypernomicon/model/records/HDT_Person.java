@@ -30,7 +30,11 @@ import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.util.SplitString;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import javafx.geometry.Rectangle2D;
 
@@ -163,15 +167,8 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 
     // Delete unused subfields
 
-    ArrayList<Integer> killList = new ArrayList<>();
-
-    db.subfields.forEach(subfield ->
-    {
-      if (subfield.persons.isEmpty())
-        killList.add(subfield.getID());
-    });
-
-    killList.forEach(subfieldID -> db.deleteRecord(hdtSubfield, subfieldID));
+    db.subfields.stream().filter(subfield -> subfield.persons.isEmpty()).map(HDT_Subfield::getID).collect(Collectors.toList()).forEach(subfieldID ->
+      db.deleteRecord(hdtSubfield, subfieldID));
   }
 
 //---------------------------------------------------------------------------
@@ -219,19 +216,16 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 
   public static class PotentialKeySet
   {
-    private ArrayList<String> keys = new ArrayList<>();
-    private ArrayList<Boolean> useForDupCheck = new ArrayList<>();
-    private boolean lowerCase;
+    private final Map<String, Boolean> keys = new HashMap<>();
+    private final boolean lowerCase;
 
     private PotentialKeySet(boolean lowerCase)
     {
       this.lowerCase = lowerCase;
     }
 
-    private int size()                         { return keys.size(); }
-    private String getKey(int ndx)             { return keys.get(ndx); }
-    private boolean getUseForDupCheck(int ndx) { return useForDupCheck.get(ndx); }
-    private boolean containsKey(String key)    { return keys.contains(key); }
+    private boolean containsKey(String key)           { return keys.containsKey(key); }
+    public boolean isSubsetOf(PotentialKeySet keySet) { return keys.keySet().stream().allMatch(keySet::containsKey); }
 
   //---------------------------------------------------------------------------
 
@@ -241,35 +235,10 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 
       if (lowerCase) newKey = newKey.toLowerCase();
 
-      int ndx = keys.indexOf(newKey);
-
-      if (ndx < 0)
-      {
-        keys.add(newKey);
-        useForDupCheck.add(newUseForDupCheck);
-      }
+      if (keys.containsKey(newKey) && newUseForDupCheck)
+        keys.put(newKey, true);
       else
-      {
-        if (newUseForDupCheck && (useForDupCheck.get(ndx) == false))
-        {
-          keys.remove(ndx);
-          useForDupCheck.remove(ndx);
-
-          keys.add(newKey);
-          useForDupCheck.add(true);
-        }
-      }
-    }
-
-    //---------------------------------------------------------------------------
-
-    public boolean isSubsetOf(PotentialKeySet keySet)
-    {
-      for (String key : keys)
-        if (keySet.containsKey(key) == false)
-          return false;
-
-      return true;
+        keys.put(newKey, newUseForDupCheck);
     }
   }
 
@@ -285,10 +254,10 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 
     PotentialKeySet keySet = makeSearchKeySet(name, false, false, false);
 
-    for (int ndx = 0; ndx < keySet.size(); ndx++)
+    for (Entry<String, Boolean> entry : keySet.keys.entrySet())
     {
-      rv = addSearchKey(keys, keySet.getKey(ndx), person);
-      if (keySet.getUseForDupCheck(ndx) && (rv != null))
+      rv = addSearchKey(keys, entry.getKey(), person);
+      if (entry.getValue() && (rv != null))
         otherPerson = rv;
     }
 

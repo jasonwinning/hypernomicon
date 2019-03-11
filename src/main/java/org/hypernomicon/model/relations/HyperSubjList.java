@@ -172,8 +172,8 @@ public class HyperSubjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HD
 
     if (size() != list.size()) throw new NoSuchElementException();
 
-    for (HDT_SubjType record : list)
-      if (contains(record) == false) throw new NoSuchElementException();
+    if (list.stream().allMatch(this::contains) == false)
+      throw new NoSuchElementException();
 
     for (int ndx = 0; ndx < size(); ndx++)
     {

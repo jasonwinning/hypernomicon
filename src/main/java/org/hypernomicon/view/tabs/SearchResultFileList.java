@@ -24,25 +24,23 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.multipdf.PDFCloneUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
-import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.util.filePath.FilePath;
+
+import com.google.common.collect.Iterators;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -83,9 +81,7 @@ public class SearchResultFileList
       if (filePath.equals(other.filePath) == false)
         return false;
 
-      if (endPage < other.startPage) return false;
-      if (other.endPage < startPage) return false;
-      return true;
+      return (endPage >= other.startPage) && (other.endPage >= startPage);
     }
 
   //---------------------------------------------------------------------------
@@ -96,9 +92,8 @@ public class SearchResultFileList
       if (filePath.equals(other.filePath) == false)
         return false;
 
-      if ((startPage <= other.startPage) && (endPage >= other.endPage)) return true;
-      if ((other.startPage <= startPage) && (other.endPage >= endPage)) return true;
-      return false;
+      return ((startPage <= other.startPage) && (endPage >= other.endPage)) ||
+             ((other.startPage <= startPage) && (other.endPage >= endPage));
     }
 
     //---------------------------------------------------------------------------
@@ -131,9 +126,8 @@ public class SearchResultFileList
       {
         PDPage page = pdf.getPage(curPageNdx);
 
-        for (PDAnnotation annotation : page.getAnnotations())
-          if ((annotation.getSubtype().equals("Link") == false) && (annotation.getSubtype().equals("Widget") == false))
-            return true;
+        if (page.getAnnotations().stream().anyMatch(an -> (an.getSubtype().equals("Link") == false) && (an.getSubtype().equals("Widget") == false)))
+          return true;
       }
 
       return false;
@@ -144,7 +138,7 @@ public class SearchResultFileList
 
     private static FilePath getDestPath(FilePath filePath)
     {
-      FilePath destFilePath = db.getPath(PREF_KEY_RESULTS_PATH, filePath.getNameOnly());
+      FilePath destFilePath = db.getPath(PREF_KEY_RESULTS_PATH, filePath.getNameOnly().toString());
       String destStr = destFilePath.toString(),
              baseStr = FilenameUtils.removeExtension(destStr),
              ext = FilenameUtils.EXTENSION_SEPARATOR_STR + filePath.getExtensionOnly();
@@ -217,15 +211,12 @@ public class SearchResultFileList
 
                   if (annots != null)
                   {
-                    Iterator<COSBase> it = annots.iterator();
-
-                    while (it.hasNext())
+                    Iterators.removeIf(annots.iterator(), annot ->
                     {
-                      String subtype = COSName.class.cast(COSDictionary.class.cast(it.next()).getItem(COSName.SUBTYPE)).getName();
+                      String subtype = COSName.class.cast(COSDictionary.class.cast(annot).getItem(COSName.SUBTYPE)).getName();
 
-                      if ((subtype.equals("Link") == false) && (subtype.equals("Widget") == false))
-                        it.remove();
-                    }
+                      return (subtype.equals("Link") == false) && (subtype.equals("Widget") == false);
+                    });
                   }
                 }
 
@@ -261,17 +252,8 @@ public class SearchResultFileList
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private final ArrayList<SearchResultFile> list;
-  private final ArrayList<String> errList;
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  SearchResultFileList()
-  {
-    list = new ArrayList<>();
-    errList = new ArrayList<>();
-  }
+  private final ArrayList<SearchResultFile> list = new ArrayList<>();
+  private final ArrayList<String> errList = new ArrayList<>();
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -288,11 +270,7 @@ public class SearchResultFileList
       case hdtWork :
 
         HDT_Work work = (HDT_Work)record;
-        boolean isAuthored = false;
-
-        for (Author author : work.getAuthors())
-          if ((author.getIsEditor() == false) && (author.getIsTrans() == false))
-            isAuthored = true;
+        boolean isAuthored = work.getAuthors().stream().allMatch(author -> author.getIsEditor() || author.getIsTrans()) == false;
 
         if (!isAuthored && !includeEdited) return;
 

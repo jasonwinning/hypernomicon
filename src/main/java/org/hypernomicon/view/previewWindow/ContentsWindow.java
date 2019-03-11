@@ -175,7 +175,6 @@ public class ContentsWindow extends HyperDialog
 
   public void update(HDT_WorkFile workFile, int curPage, boolean setFocus)
   {
-    ArrayList<HDT_Work> works = new ArrayList<>();
     Property<HyperTableRow> rowToSelect = new SimpleObjectProperty<>(null);
 
     clear();
@@ -186,7 +185,7 @@ public class ContentsWindow extends HyperDialog
 
     dialogStage.setTitle(dialogTitle + " - " + workFile.getPath().getNameStr());
 
-    works.addAll(workFile.works);
+    ArrayList<HDT_Work> works = new ArrayList<>(workFile.works);
 
     works.sort((work1, work2) ->
     {

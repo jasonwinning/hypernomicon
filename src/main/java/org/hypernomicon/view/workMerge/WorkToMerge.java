@@ -46,10 +46,10 @@ import javafx.scene.control.TextField;
 
 public class WorkToMerge
 {
-  private BibData bibData = null;
-  private HyperCB hcbType;
-  private HyperTable htAuthors;
-  private boolean creatingNewWork;
+  private final BibData bibData;
+  private final HyperCB hcbType;
+  private final HyperTable htAuthors;
+  private final boolean creatingNewWork;
 
   public List<ObjectGroup> getAuthorGroups(HDT_Work work) { return htAuthors.getAuthorGroups(work, 0, -1, 2, 3); }
   public HDT_WorkType getWorkType()                       { return hcbType.selectedRecord(); }
@@ -132,13 +132,11 @@ public class WorkToMerge
 
   private void loadFromBibData(RadioButton rbType, HDT_Work destWork)
   {
-    HDT_WorkType workType = bibData.getWorkType();
-
-    if (workType != null)
+    nullSwitch(bibData.getWorkType(), workType ->
     {
       hcbType.addAndSelectEntry(workType, HDT_Base::name);
       rbType.setSelected(true);
-    }
+    });
 
     htAuthors.getPopulator(0).populate(null, false);
 

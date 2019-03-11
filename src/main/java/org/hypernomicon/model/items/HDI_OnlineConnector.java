@@ -78,7 +78,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 
         if (val.displayItems.size() > 0)
         {
-          for (HDI_OfflineConnector.DisplayItem displayItem : val.displayItems)
+          val.displayItems.forEach(displayItem ->
           {
             if (displayItem.type == diRecord)
             {
@@ -95,7 +95,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
             }
             else
               mainText.displayItems.add(new MainText.DisplayItem(displayItem.type));
-          }
+          });
         }
         else
           mainText.addDefaultItems();
@@ -142,7 +142,6 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
           mainText.setInternal("", "");
         else
           mainText.setInternal(val.htmlText, extractTextFromHTML(val.htmlText).trim());
-        return;
     }
   }
 
@@ -167,13 +166,13 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 
         val.displayItems.clear();
 
-        for (MainText.DisplayItem displayItem : mainText.displayItems)
+        mainText.displayItems.forEach(displayItem ->
         {
           if (displayItem.type == diRecord)
             val.displayItems.add(new DisplayItem(displayItem.record.getID(), displayItem.record.getType()));
           else
             val.displayItems.add(new DisplayItem(displayItem.type));
-        }
+        });
 
         break;
 

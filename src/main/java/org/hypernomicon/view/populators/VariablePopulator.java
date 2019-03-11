@@ -43,7 +43,7 @@ public class VariablePopulator extends Populator
   public boolean getRestricted(HyperTableRow row)                  { return rowToRestricted.getOrDefault(row, true); }
 
   @SuppressWarnings("unchecked")
-  public <PopType extends Populator> PopType getPopulator(HyperTableRow row) { return (PopType) rowToPop.get(row); }
+  public <PopType extends Populator> PopType getPopulator(HyperTableRow row)        { return (PopType) rowToPop.get(row); }
 
   @Override public CellValueType getValueType()                                     { return cvtVaries; }
   @Override public void clear()                                                     { rowToPop.clear(); rowToRestricted.clear(); }

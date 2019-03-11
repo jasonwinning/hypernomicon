@@ -33,6 +33,8 @@ import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 import org.hypernomicon.view.wrappers.RecordListView;
 
+import com.google.common.collect.Lists;
+
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -294,15 +296,11 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     curMiscFile.fileType.setID(fileTypeID);
 
-    for (int ndx = 0; ndx < db.fileTypes.size(); ndx++)
+    Lists.newArrayList(db.fileTypes).forEach(fileType ->
     {
-      HDT_FileType fileType = db.fileTypes.getByIDNdx(ndx);
       if (fileType.miscFiles.isEmpty())
-      {
         db.deleteRecord(hdtFileType, fileType.getID());
-        ndx--;
-      }
-    }
+    });
 
   // End file type
 

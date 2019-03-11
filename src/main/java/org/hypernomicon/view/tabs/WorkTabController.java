@@ -72,10 +72,10 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
@@ -168,6 +168,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   private void lblSearchKeyClick()             { tfSearchKey.setText(makeWorkSearchKey(getAuthorsFromUI(), tfYear.getText(), curWork)); }
   public String getTitle()                     { return tfTitle.getText(); }
   private void setTabCaption(Tab tab, int cnt) { tab.setText(tabCaptions.get(tab) + " (" + cnt + ")"); }
+  private void saveISBNs()                     { curWork.setISBNs(htISBN.dataRowStream().map(row -> row.getText(0)).collect(Collectors.toList())); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -344,13 +345,8 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     htWorkFiles.addCondContextMenuItemOkayIfBlank("Select parent work file",
         record ->
         {
-          if ((curWork == null) || (curWork.largerWork.isNotNull() == false)) return false;
-
-          for (HDT_WorkFile workFile : curWork.largerWork.get().workFiles)
-            if (curWork.workFiles.contains(workFile) == false)
-              return true;
-
-          return false;
+          if ((curWork == null) || curWork.largerWork.isNull()) return false;
+          return curWork.largerWork.get().workFiles.stream().anyMatch(workFile -> curWork.workFiles.contains(workFile) == false);
         },
         record ->
         {
@@ -375,12 +371,10 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     {
       if (inNormalMode || workFile.getPath().isEmpty()) return false;
 
-      for (HDT_Work work : workFile.works)
-        if (work.getWorkTypeValue() != wtUnenteredSet) return false;
+      if (workFile.works.stream().anyMatch(work -> work.getWorkTypeValue() != wtUnenteredSet))
+        return false;
 
-      if (curWork.getWorkTypeValue() != wtUnenteredSet) return false;
-
-      return true;
+      return curWork.getWorkTypeValue() == wtUnenteredSet;
     };
 
     htWorkFiles.addCondContextMenuItem("Move to an existing work record", HDT_WorkFile.class, condHandler, this::moveFileToDifferentWork);
@@ -580,7 +574,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
       safeFocus(tfTitle);
     });
 
-    UnaryOperator<TextFormatter.Change> filter = (change) ->
+    UnaryOperator<TextFormatter.Change> filter = change ->
     {
       if (alreadyChangingTitle) return change;
 
@@ -828,8 +822,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 
     if (curWork == lastWork)
     {
-      ArrayList<TableColumn<HyperTableRow, ?>> list = new ArrayList<>();
-      list.addAll(htWorkFiles.getTV().getSortOrder());
+      ArrayList<TableColumn<HyperTableRow, ?>> list = new ArrayList<>(htWorkFiles.getTV().getSortOrder());
 
       htWorkFiles.getTV().getSortOrder().clear();
       htWorkFiles.getTV().getSortOrder().addAll(list);
@@ -938,7 +931,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 
   static int populateDisplayersAndKeyMentioners(HDT_RecordWithPath record, HyperTable hyperTable)
   {
-    Set<HDT_RecordWithConnector> set = nullSwitch(db.getKeyWorkMentioners(record), new HashSet<>());
+    Set<HDT_RecordWithConnector> set = db.getKeyWorkMentioners(record);
 
     if (record.hasMainText())
       db.getDisplayers(((HDT_RecordWithConnector)record).getMainText()).forEach(displayerText -> set.add(displayerText.getRecord()));
@@ -1230,10 +1223,10 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   {
     FileChooser fileChooser = new FileChooser();
 
-    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Adobe PDF file (*.pdf)", "*.pdf"));
-    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
+    fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Adobe PDF file (*.pdf)", "*.pdf"),
+                                             new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
 
-    fileChooser.setInitialDirectory(db.getPath(PREF_KEY_UNENTERED_PATH, null).toFile());
+    fileChooser.setInitialDirectory(db.getPath(PREF_KEY_UNENTERED_PATH).toFile());
 
     List<File> files = fileChooser.showOpenMultipleDialog(app.getPrimaryStage());
 
@@ -1368,7 +1361,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   {
     DirectoryChooser dirChooser = new DirectoryChooser();
 
-    FilePath destPath = curWork.workFiles.size() > 0 ? curWork.getPath().getFilePath().getDirOnly() : db.getPath(PREF_KEY_UNENTERED_PATH, null);
+    FilePath destPath = curWork.workFiles.size() > 0 ? curWork.getPath().getFilePath().getDirOnly() : db.getPath(PREF_KEY_UNENTERED_PATH);
 
     FilePath folder = null;
     HDT_Folder folderRecord = null;
@@ -1381,7 +1374,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
         dirChooser.setInitialDirectory(destPath.toFile());
       else
       {
-        folder = db.getPath(PREF_KEY_UNENTERED_PATH, null);
+        folder = db.getPath(PREF_KEY_UNENTERED_PATH);
         if (folder.exists() && folder.isDirectory())
           dirChooser.setInitialDirectory(folder.toFile());
       }
@@ -1616,17 +1609,6 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void saveISBNs()
-  {
-    ArrayList<String> isbns = new ArrayList<>();
-    htISBN.getDataRows().forEach(row -> isbns.add(row.getText(0)));
-
-    curWork.setISBNs(isbns);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public boolean saveToRecord(boolean showMessage)
   {
     WorkTypeEnum workTypeEnumVal = HDT_WorkType.workTypeIDToEnumVal(hcbType.selectedID());
@@ -1806,7 +1788,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     if (tpBib.getSelectionModel().getSelectedItem() == tabMiscBib)
       return BibUtils.matchISBN(taMiscBib.getText());
 
-    return nullSwitch(getBibDataFromBibTab(), new ArrayList<String>(), bd -> bd.getMultiStr(bfISBNs));
+    return nullSwitch(getBibDataFromBibTab(), new ArrayList<>(), bd -> bd.getMultiStr(bfISBNs));
   }
 
 //---------------------------------------------------------------------------
@@ -1906,8 +1888,8 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
           if (isbns.isEmpty() && (goodMD == null))
             goodMD = lastMD;
 
-          for (String isbn : curIsbns)
-            if (isbns.contains(isbn) == false) isbns.add(isbn);
+          curIsbns.forEach(isbn -> {
+            if (isbns.contains(isbn) == false) isbns.add(isbn); });
         }
       }
 
@@ -2079,8 +2061,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 
   public void getBibDataFromGUI(BibData bd)
   {
-    ArrayList<String> isbns = new ArrayList<>();
-    htISBN.getDataRows().forEach(row -> isbns.add(row.getText(0)));
+    List<String> isbns = htISBN.dataRowStream().map(row -> row.getText(0)).collect(Collectors.toList());
 
     bd.setMultiStr(bfISBNs, isbns);
 

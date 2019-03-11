@@ -29,14 +29,17 @@ import java.util.List;
 
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Work;
+
+import com.google.common.collect.Iterators;
+
 import javafx.collections.ObservableList;
 import javafx.scene.control.MenuItem;
 
 public class ViewList
 {
   private int curNdx;
-  private List<HyperView<? extends HDT_Base>> viewList;
-  private HyperViewSequence hvs;
+  private final List<HyperView<? extends HDT_Base>> viewList = new ArrayList<>();
+  private final HyperViewSequence hvs;
 
   ViewList(HyperViewSequence hvs)
   {
@@ -47,7 +50,7 @@ public class ViewList
   boolean canGoBack()                     { return curNdx >= 1; }
   boolean canGoForward()                  { return curNdx < (viewList.size() - 1); }
   boolean isEmpty()                       { return viewList.isEmpty(); }
-  void clear()                            { viewList = new ArrayList<>(); curNdx = -1; }
+  void clear()                            { viewList.clear(); curNdx = -1; }
   void goBack()                           { curNdx--; if (curNdx < 0) curNdx = 0; }
   HyperView<? extends HDT_Base> getView() { return viewList.get(curNdx); }
   void refreshAll()                       { viewList.forEach(HyperView::refresh); }
@@ -59,11 +62,8 @@ public class ViewList
   {
     curNdx++;
 
-    if (canAdd == false)
-    {
-      if (curNdx >= viewList.size())
-        curNdx = viewList.size() - 1;
-    }
+    if ((canAdd == false) && (curNdx >= viewList.size()))
+      curNdx = viewList.size() - 1;
   }
 
 //---------------------------------------------------------------------------
@@ -199,21 +199,16 @@ public class ViewList
 
   void removeRecord(HDT_Base record)
   {
-    // Do not change the following code to use removeIf. The line that checks whether curNdx should be decremented will not work
+    // Do not change the following code to use ArrayList.removeIf. The line that checks whether curNdx should be decremented will not work
     // because the ArrayList does not actually get modified until all of the removeIf checks are completed.
 
-    Iterator<HyperView<? extends HDT_Base>> it = viewList.iterator();
-
-    while (it.hasNext())
+    Iterators.removeIf(viewList.iterator(), view ->
     {
-      HyperView<? extends HDT_Base> view = it.next();
+      if (view.getViewRecord() != record) return false;
 
-      if (view.getViewRecord() == record)
-      {
-        if (curNdx >= viewList.indexOf(view)) curNdx--;
-        it.remove();
-      }
-    }
+      if (curNdx >= viewList.indexOf(view)) curNdx--;
+      return true;
+    });
   }
 
 //---------------------------------------------------------------------------

@@ -25,6 +25,7 @@ import javafx.collections.ObservableList;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
@@ -87,11 +88,7 @@ public class HyperTableRow
     if (type == hdtNone)
       return getRecord();
 
-    for (HyperTableCell cell : cells)
-      if (HyperTableCell.getCellType(cell) == type)
-        return HyperTableCell.getRecord(cell);
-
-    return null;
+    return findFirst(cells, cell -> HyperTableCell.getCellType(cell) == type, cell -> HyperTableCell.getRecord(cell));
   }
 
 //---------------------------------------------------------------------------

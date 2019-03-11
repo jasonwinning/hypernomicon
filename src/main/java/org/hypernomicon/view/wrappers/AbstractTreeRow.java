@@ -48,7 +48,7 @@ public abstract class AbstractTreeRow<RowType extends AbstractTreeRow<RowType>> 
 
   public final HDT_RecordType getParentType()
   {
-    return nullSwitch(nullSwitch(treeItem.getParent(), null, parent -> parent.getValue()), hdtNone, RowType::getRecordType);
+    return nullSwitch(nullSwitch(treeItem.getParent(), null, TreeItem::getValue), hdtNone, RowType::getRecordType);
   }
 
 //---------------------------------------------------------------------------
@@ -56,7 +56,7 @@ public abstract class AbstractTreeRow<RowType extends AbstractTreeRow<RowType>> 
 
   public final int getParentID()
   {
-    return nullSwitch(nullSwitch(treeItem.getParent(), null, parent -> parent.getValue()), -1, RowType::getRecordID);
+    return nullSwitch(nullSwitch(treeItem.getParent(), null, TreeItem::getValue), -1, RowType::getRecordID);
   }
 
 //---------------------------------------------------------------------------

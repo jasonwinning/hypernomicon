@@ -84,9 +84,7 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
 
   @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
   {
-    if (!searchLinkedRecords) return;
-
-    if (target != null)
+    if (searchLinkedRecords &&(target != null))
       list.add(target.listName());
   }
 

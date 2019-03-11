@@ -292,16 +292,13 @@ public abstract class HDT_Record implements HDT_Base
     {
       creationDate = backupState.creationDate;
       modifiedDate = backupState.modifiedDate;
-      viewDate = backupState.viewDate;
+      viewDate     = backupState.viewDate;
     }
 
     if (this instanceof HDT_SimpleRecord)
       setNameInternal(backupState.simpleName, false);
 
-    int hubID = -1;
-
-    if (backupState.items.containsKey(tagHub))
-      hubID = HDI_OfflineConnector.class.cast(backupState.items.get(tagHub)).getHubID();
+    int hubID = nullSwitch((HDI_OfflineConnector)backupState.items.get(tagHub), -1, HDI_OfflineConnector::getHubID);
 
     for (Entry<Tag, HDI_OfflineBase> backupEntry : backupState.items.entrySet())
     {
@@ -358,7 +355,7 @@ public abstract class HDT_Record implements HDT_Base
     {
       newState.creationDate = getCreationDate();
       newState.modifiedDate = getModifiedDate();
-      newState.viewDate = getViewDate();
+      newState.viewDate     = getViewDate();
     }
 
     newState.items.forEach((tag, offlineItem) -> HDI_OnlineBase.class.cast(items.get(tag)).getToOfflineValue(offlineItem, tag));
@@ -421,10 +418,7 @@ public abstract class HDT_Record implements HDT_Base
 
   protected final String getTagString(Tag tag)
   {
-    if (tag == nameTag)
-      return name.get();
-
-    return HDI_OnlineString.class.cast(items.get(tag)).get();
+    return tag == nameTag ? name.get() : HDI_OnlineString.class.cast(items.get(tag)).get();
   }
 
 //---------------------------------------------------------------------------
@@ -452,10 +446,8 @@ public abstract class HDT_Record implements HDT_Base
       boolean theSame = true;
 
       for (int ndx = 0; ndx < newGroups.size(); ndx++)
-      {
         if (newGroups.get(ndx).equals(oldGroups.get(ndx)) == false)
           theSame = false;
-      }
 
       if (theSame) return;
     }
@@ -626,7 +618,7 @@ public abstract class HDT_Record implements HDT_Base
   {
     modifiedDate = newDate;
     creationDate = newDate;
-    viewDate = newDate;
+    viewDate     = newDate;
   }
 
 //---------------------------------------------------------------------------

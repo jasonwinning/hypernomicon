@@ -127,8 +127,8 @@ public class FileDialogController extends HyperDialog
       {
         tfCurrentPath.setText(srcFilePath.toString());
 
-        if (db.getPath(PREF_KEY_UNENTERED_PATH, null).isSubpath(srcFilePath))
-          tfNewPath.setText(db.getPath(PREF_KEY_MISC_FILES_PATH, null).toString());
+        if (db.getPath(PREF_KEY_UNENTERED_PATH).isSubpath(srcFilePath))
+          tfNewPath.setText(db.getPath(PREF_KEY_MISC_FILES_PATH).toString());
         else
         {
           tfNewPath.setText(srcFilePath.getDirOnly().toString());
@@ -158,7 +158,7 @@ public class FileDialogController extends HyperDialog
         if (FilePath.isEmpty(newFilePath) == false)
           tfNewPath.setText(newFilePath.getDirOnly().toString());
         else
-          tfNewPath.setText(db.getPath(PREF_KEY_TOPICAL_PATH, null).toString());
+          tfNewPath.setText(db.getPath(PREF_KEY_TOPICAL_PATH).toString());
       }
     }
     else
@@ -168,7 +168,7 @@ public class FileDialogController extends HyperDialog
         if (FilePath.isEmpty(srcFilePath) == false)
           tfNewPath.setText(srcFilePath.getDirOnly().toString());
         else
-          tfNewPath.setText(db.getPath(PREF_KEY_MISC_FILES_PATH, null).toString());
+          tfNewPath.setText(db.getPath(PREF_KEY_MISC_FILES_PATH).toString());
       }
 
       tfRecordName.setText(recordName);
@@ -229,7 +229,7 @@ public class FileDialogController extends HyperDialog
     }
 
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
-    fileChooser.setInitialDirectory(db.getPath(PREF_KEY_UNENTERED_PATH, null).toFile());
+    fileChooser.setInitialDirectory(db.getPath(PREF_KEY_UNENTERED_PATH).toFile());
 
     FilePath chosenFilePath = new FilePath(fileChooser.showOpenDialog(getStage()));
 

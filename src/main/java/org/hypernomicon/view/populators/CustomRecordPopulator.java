@@ -19,8 +19,8 @@ package org.hypernomicon.view.populators;
 
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
@@ -60,11 +60,7 @@ public class CustomRecordPopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    List<HyperTableCell> cellList = new ArrayList<>();
-
-    handler.handle(row, force).forEach(record -> cellList.add(new HyperTableCell(record.getID(), record.getCBText(), recordType)));
-
-    return cellList;
+    return handler.handle(row, force).stream().map(record -> new HyperTableCell(record, record.getCBText())).collect(Collectors.toList());
   }
 
 //---------------------------------------------------------------------------

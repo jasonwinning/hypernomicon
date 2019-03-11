@@ -191,10 +191,7 @@ public class PreviewWrapper
     if (App.jxBrowserDisabled)
       return;
 
-    jsWrapper = new PDFJSWrapper(ap,
-        (cmd, success, errMessage)              -> doneHndlr(cmd, success, errMessage),
-        (newPageNumShowing)                     -> pageChangeHndlr(newPageNumShowing),
-        (labelToPage, pageToLabel, hilitePages) -> retrievedDataHndlr(labelToPage, pageToLabel, hilitePages));
+    jsWrapper = new PDFJSWrapper(ap, this::doneHndlr, this::pageChangeHndlr, this::retrievedDataHndlr);
 
     if (App.jxBrowserDisabled)
       return;

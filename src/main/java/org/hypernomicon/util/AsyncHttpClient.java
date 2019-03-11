@@ -98,7 +98,7 @@ public class AsyncHttpClient
   public boolean isRunning()
   {
     if (stopped == true) return false;
-    return requestThread == null ? false : requestThread.isAlive();
+    return nullSwitch(requestThread, false, RequestThread::isAlive);
   }
 
 //---------------------------------------------------------------------------
@@ -108,24 +108,21 @@ public class AsyncHttpClient
   {
     boolean wasRunning = isRunning();
 
-    if (requestThread != null)
-      if (requestThread.isAlive())
+    if ((requestThread != null) && requestThread.isAlive())
+    {
+      if (request != null)
       {
-        if (request != null)
-        {
-          cancelledByUser = true;
-          request.abort();
-        }
-
-        try { requestThread.join(); } catch (InterruptedException e) { noOp(); }
-
-        request = null;
+        cancelledByUser = true;
+        request.abort();
       }
 
-    requestThread = null;
+      try { requestThread.join(); } catch (InterruptedException e) { noOp(); }
 
-    if (stopped == false)
-      stopped = true;
+      request = null;
+    }
+
+    requestThread = null;
+    stopped = true;
 
     return wasRunning;
   }

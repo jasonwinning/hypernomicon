@@ -176,9 +176,9 @@ public class ImportBibEntryDialogController extends HyperDialog
   {
     FileChooser fileChooser = new FileChooser();
 
-    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("RIS File (*.ris)", "*.ris"));
-    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("BibTeX File (*.bib)", "*.bib"));
-    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All Files (*.*)", "*.*"));
+    fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("RIS File (*.ris)", "*.ris"),
+                                             new FileChooser.ExtensionFilter("BibTeX File (*.bib)", "*.bib"),
+                                             new FileChooser.ExtensionFilter("All Files (*.*)", "*.*"));
 
     File dir = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, System.getProperty("user.dir")));
 

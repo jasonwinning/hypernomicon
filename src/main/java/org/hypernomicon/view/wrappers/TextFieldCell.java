@@ -120,9 +120,8 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
     setGraphic(null);
 
     HyperTableRow row = (HyperTableRow) getTableRow().getItem();
-    int colNdx = getTableView().getColumns().indexOf(getTableColumn());
 
-    row.setCellValue(colNdx, newValue);
+    row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), newValue);
   }
 
 //---------------------------------------------------------------------------
@@ -140,7 +139,7 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
 
     if (isNumeric.isTrue())
     {
-      UnaryOperator<TextFormatter.Change> filter = (change) ->
+      UnaryOperator<TextFormatter.Change> filter = change ->
       {
         if (change.isReplaced())
           if (change.getText().matches("[^0-9]"))
@@ -177,8 +176,8 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
 
   @Override public void commit()
   {
-    HyperTableCell oldItem = getItem();
-    HyperTableCell newItem = new HyperTableCell(getCellID(oldItem), textField.getText(), getCellType(oldItem));
+    HyperTableCell oldItem = getItem(),
+                   newItem = new HyperTableCell(getCellID(oldItem), textField.getText(), getCellType(oldItem));
     commitEdit(newItem);
   }
 

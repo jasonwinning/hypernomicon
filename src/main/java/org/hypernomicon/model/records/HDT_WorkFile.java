@@ -102,7 +102,6 @@ public class HDT_WorkFile extends HDT_Record implements HDT_RecordWithPath
   public static String makeFileName(List<FileNameAuthor> authors, String year, String title, String ext)
   {
     ArrayList<FileNameComponentConfig> configList = new ArrayList<>();
-    FileNameComponentConfig authConfig = null;
 
     String fileName = "";
 
@@ -131,14 +130,7 @@ public class HDT_WorkFile extends HDT_Record implements HDT_RecordWithPath
                                                db.prefs.get(PREF_KEY_FN_WITHIN_SEP_5, " "),
                                                db.prefs.get(PREF_KEY_FN_AFTER_SEP_5, "")));
 
-    for (FileNameComponentConfig config : configList)
-    {
-      if (config.code == AUTHOR_FN_COMPONENT)
-      {
-        authConfig = config;
-        break;
-      }
-    }
+    FileNameComponentConfig authConfig = findFirst(configList, config -> config.code == AUTHOR_FN_COMPONENT);
 
     for (FileNameComponentConfig config : configList)
       fileName = fileName + getFNComponent(config, authConfig, authors, year, title);
@@ -222,7 +214,6 @@ public class HDT_WorkFile extends HDT_Record implements HDT_RecordWithPath
   {
     String comp = "";
     int pos;
-    boolean treatAsAuthor = false;
 
     switch (config.code)
     {
@@ -233,17 +224,8 @@ public class HDT_WorkFile extends HDT_Record implements HDT_RecordWithPath
 
       case EDITOR_FN_COMPONENT :
 
-        if ((db.prefs.getBoolean(PREF_KEY_FN_TREAT_ED_AS_AUTHOR, true)) && (authConfig != null))
-        {
-          treatAsAuthor = true;
-          for (FileNameAuthor author : authors)
-          {
-            if ((author.isEditor == false) && (author.isTrans == false))
-              treatAsAuthor = false;
-          }
-        }
-
-        if (treatAsAuthor)
+        if (db.prefs.getBoolean(PREF_KEY_FN_TREAT_ED_AS_AUTHOR, true) && (authConfig != null) &&
+            authors.stream().allMatch(author -> author.isEditor || author.isTrans))
           config = authConfig;
 
         comp = getAuthorStr(authors, true, false);

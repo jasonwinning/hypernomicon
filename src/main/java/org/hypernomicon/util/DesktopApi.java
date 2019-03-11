@@ -23,7 +23,6 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.hypernomicon.util.Util.*;
@@ -31,6 +30,8 @@ import static org.hypernomicon.util.Util.*;
 import org.apache.commons.lang3.SystemUtils;
 
 import org.hypernomicon.util.filePath.FilePath;
+
+import com.google.common.collect.Lists;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -41,7 +42,7 @@ public class DesktopApi
   static boolean browse(String url)
   {
     if ((SystemUtils.IS_OS_WINDOWS) || (SystemUtils.IS_OS_MAC))
-      return browseDESKTOP(url);
+      return browseDesktop(url);
 
     try
     {
@@ -73,10 +74,6 @@ public class DesktopApi
 
   public static boolean edit(FilePath filePath)
   {
-    // you can try something like
-    // runCommand("gimp", "%s", file.getPath())
-    // based on user preferences.
-
     if ((SystemUtils.IS_OS_WINDOWS) || (SystemUtils.IS_OS_MAC))
       return editDesktop(filePath);
 
@@ -115,7 +112,7 @@ public class DesktopApi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean browseDESKTOP(String url)
+  private static boolean browseDesktop(String url)
   {
     try
     {
@@ -194,17 +191,7 @@ public class DesktopApi
 
       try
       {
-        int retval = p.exitValue();
-        if (retval == 0)
-        {
-          // Process terminated normally.
-          return true;
-        }
-        else
-        {
-          // Process crashed.
-          return false;
-        }
+        return p.exitValue() == 0;
       }
       catch (IllegalThreadStateException itse)
       {
@@ -224,8 +211,7 @@ public class DesktopApi
 
   private static String[] prepareCommand(String command, String args, String pathStr)
   {
-    List<String> parts = new ArrayList<>();
-    parts.add(command);
+    List<String> parts = Lists.newArrayList(command);
 
     if (args != null)
     {

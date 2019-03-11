@@ -70,9 +70,8 @@ public final class KeywordLinkList
 
     if (text.matches(".*[a-zA-Z][.][a-zA-Z].*"))
     {
-      if (text.matches(".*[^a-zA-Z][a-zA-Z][.][a-zA-Z].*"))
-        checkPeriods = true;
-      else if (text.matches(".*^[a-zA-Z][.][a-zA-Z].*"))
+      if (text.matches(".*[^a-zA-Z][a-zA-Z][.][a-zA-Z].*") ||
+          text.matches(".*^[a-zA-Z][.][a-zA-Z].*"))
         checkPeriods = true;
     }
 
@@ -107,10 +106,7 @@ public final class KeywordLinkList
       List<SearchKeyword> keys;
       int curMatchLen = 0;
 
-      if (overrideSet)
-        keys = searchKeysToUse.getKeywordsByPrefix(prefix);
-      else
-        keys = db.getKeysByPrefix(prefix);
+      keys = overrideSet ? searchKeysToUse.getKeywordsByPrefix(prefix) : db.getKeysByPrefix(prefix);
 
       for (SearchKeyword key : keys)
       {

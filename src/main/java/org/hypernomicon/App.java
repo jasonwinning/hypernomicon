@@ -39,6 +39,7 @@ import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 import org.hypernomicon.view.tabs.QueriesTabController.QueryView;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -48,8 +49,10 @@ import java.net.Socket;
 import static java.lang.management.ManagementFactory.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
@@ -237,16 +240,13 @@ public final class App extends Application
 
   private void testUpdatingAllRecords()
   {
-    total = db.persons.size()   + db.institutions.size() + db.investigations.size() + db.debates.size() +
-            db.positions.size() + db.arguments.size()    + db.works.size()          + db.terms.size() +
-            db.miscFiles.size() + db.notes.size();
+    List<HDT_RecordType> types = Arrays.asList(hdtPerson,   hdtInstitution, hdtInvestigation, hdtDebate,   hdtPosition,
+                                               hdtArgument, hdtWork,        hdtTerm,          hdtMiscFile, hdtNote);
 
-    ctr = 0;
-    lastPercent = 0;
+    total = 0; ctr = 0; lastPercent = 0;
+    types.forEach(type -> total += db.records(type).size());
 
-    testUpdatingRecords(hdtPerson);   testUpdatingRecords(hdtInstitution); testUpdatingRecords(hdtInvestigation); testUpdatingRecords(hdtDebate);
-    testUpdatingRecords(hdtPosition); testUpdatingRecords(hdtArgument);    testUpdatingRecords(hdtWork);          testUpdatingRecords(hdtTerm);
-    testUpdatingRecords(hdtMiscFile); testUpdatingRecords(hdtNote);
+    types.forEach(this::testUpdatingRecords);
   }
 
 //---------------------------------------------------------------------------
@@ -366,11 +366,7 @@ public final class App extends Application
           if (board.hasFiles())
           {
             success = true;
-            List<String> args = new ArrayList<>();
-
-            board.getFiles().forEach(file -> args.add(file.getAbsolutePath()));
-
-            Platform.runLater(() -> ui.handleArgs(args));
+            Platform.runLater(() -> ui.handleArgs(board.getFiles().stream().map(File::getAbsolutePath).collect(Collectors.toList())));
           }
           event.setDropCompleted(success);
           event.consume();

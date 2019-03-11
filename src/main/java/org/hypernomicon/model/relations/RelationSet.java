@@ -27,7 +27,6 @@ import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_Record.*;
-import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.util.EnumBasedTable;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -48,6 +47,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table.Cell;
 
 import javafx.application.Platform;
@@ -58,6 +58,7 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.records.HDT_Record.HyperDataCategory.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 //---------------------------------------------------------------------------
 
@@ -84,8 +85,9 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   public Collection<HDI_Schema> getSchemas()              { return tagToSchema.values(); }
   public HDT_RecordType getTargetType(Tag tag)            { return tagToTargetType.get(tag); }
   public boolean getHasNestedItems()                      { return hasNestedItems; }
+  public Set<Tag> getNestedTags()                         { return tagToSchema == null ? new HashSet<>() : new HashSet<>(tagToSchema.keySet()); }
   public void addChangeHandler(RelationChangeHandler rch) { changeHandlers.add(rch); }
-  public Set<HDT_Subj> getOrphans()                       { return Collections.unmodifiableSet(new HashSet<>(orphans)); } // Make a new copy of the set to prevent concurrent modification exception
+  public Set<HDT_Subj> getOrphans()                       { return ImmutableSet.copyOf(orphans); } // Make a new copy of the set to prevent concurrent modification exception
   private void addObjAndMod(HDT_Subj subj, HDT_Obj obj)   { new HyperObjList<>(this, subj, true).add(obj); }
   List<HDT_Obj> getUnmodifiableObjectList(HDT_Subj subj)  { return Collections.unmodifiableList(subjToObjList.get(subj)); }
   List<HDT_Subj> getUnmodifiableSubjectList(HDT_Obj obj)  { return Collections.unmodifiableList(objToSubjList.get(obj)); }
@@ -247,19 +249,6 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Set<Tag> getNestedTags()
-  {
-    HashSet<Tag> set = new HashSet<>();
-
-    if (tagToSchema != null)
-      set.addAll(tagToSchema.keySet());
-
-    return set;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @SuppressWarnings({ "unchecked" })
   public void saveNestedValuesToOfflineMap(HDT_Subj subj, HDT_Obj obj, Map<Tag, HDI_OfflineBase> tagToNestedItem, HDT_RecordState recordState)
   {
@@ -408,7 +397,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   public List<ObjectGroup> getObjectGroupList(HDT_Subj subj, Collection<Tag> tags)
   {
     ArrayList<ObjectGroup> list = new ArrayList<>();
-    HashSet<HDT_Obj> objSet = new LinkedHashSet<>();
+    Set<HDT_Obj> objSet = new LinkedHashSet<>();
 
     if (subjToObjList.containsKey(subj))
       objSet.addAll(subjToObjList.get(subj));
@@ -572,7 +561,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
       if (obj.getType() == subj.getType())
       {
         if (subj.getID() == obj.getID())
-          throw new RelationCycleException(subj.getID(), subj.getType(), obj.getID(), obj.getType());
+          throw new RelationCycleException(subj, obj);
         cycleCheck(subj, (HDT_Subj) obj, obj);
       }
 
@@ -629,7 +618,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
     for (HDT_Obj nextObj : subjToObjList.get(obj))
     {
       if (nextObj == subj)
-        throw new RelationCycleException(subj.getID(), subj.getType(), origObj.getID(), obj.getType());
+        throw new RelationCycleException(subj, origObj);
 
       cycleCheck(subj, (HDT_Subj) nextObj, origObj);
     }
@@ -842,11 +831,9 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 
     if (existingValueList.size() != newValueList.size()) return;
 
-    for (HDT_Value value : newValueList)
-      if (existingValueList.contains(value) == false) return;
-
-    for (HDT_Value value : existingValueList)
-      if (newValueList.contains(value) == false) return;
+    if ((newValueList.stream().allMatch(existingValueList::contains) == false) ||
+        (existingValueList.stream().allMatch(newValueList::contains) == false))
+      return;
 
     for (int ndx = 0; ndx < existingValueList.size(); ndx++)
       existingValueList.set(ndx, newValueList.get(ndx));
@@ -855,49 +842,12 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static RelationSet<? extends HDT_Base, ? extends HDT_Base> createSet(RelationType relType) throws HDB_InternalError
+  public static RelationSet<HDT_Base, HDT_Base> createSet(RelationType relType) throws HDB_InternalError
   {
-    switch (relType)
-    {
-      case rtAuthorOfFile             : return new RelationSet < HDT_MiscFile      , HDT_Work            > (relType);
-      case rtAuthorOfWork             : return new RelationSet < HDT_Work          , HDT_Person          > (relType);
-      case rtConceptOfTerm            : return new RelationSet < HDT_Term          , HDT_Concept         > (relType);
-      case rtCounterOfArgument        : return new RelationSet < HDT_Argument      , HDT_Argument        > (relType);
-      case rtCountryOfInst            : return new RelationSet < HDT_Institution   , HDT_Country         > (relType);
-      case rtDebateOfPosition         : return new RelationSet < HDT_Position      , HDT_Debate          > (relType);
-      case rtFieldOfPerson            : return new RelationSet < HDT_Person        , HDT_Field           > (relType);
-      case rtFieldOfSubfield          : return new RelationSet < HDT_Subfield      , HDT_Field           > (relType);
-      case rtFolderOfMiscFile         : return new RelationSet < HDT_MiscFile      , HDT_Folder          > (relType);
-      case rtFolderOfNote             : return new RelationSet < HDT_Note          , HDT_Folder          > (relType);
-      case rtFolderOfWorkFile         : return new RelationSet < HDT_WorkFile      , HDT_Folder          > (relType);
-      case rtGlossaryOfConcept        : return new RelationSet < HDT_Concept       , HDT_Glossary        > (relType);
-      case rtInstOfPerson             : return new RelationSet < HDT_Person        , HDT_Institution     > (relType);
-      case rtInvestigationOfWork      : return new RelationSet < HDT_Work          , HDT_Investigation   > (relType);
-      case rtLabelOfFile              : return new RelationSet < HDT_MiscFile      , HDT_WorkLabel       > (relType);
-      case rtLabelOfWork              : return new RelationSet < HDT_Work          , HDT_WorkLabel       > (relType);
-      case rtParentDebateOfDebate     : return new RelationSet < HDT_Debate        , HDT_Debate          > (relType);
-      case rtParentFolderOfFolder     : return new RelationSet < HDT_Folder        , HDT_Folder          > (relType);
-      case rtParentGlossaryOfGlossary : return new RelationSet < HDT_Glossary      , HDT_Glossary        > (relType);
-      case rtParentGroupOfGroup       : return new RelationSet < HDT_PersonGroup   , HDT_PersonGroup     > (relType);
-      case rtParentInstOfInst         : return new RelationSet < HDT_Institution   , HDT_Institution     > (relType);
-      case rtParentLabelOfLabel       : return new RelationSet < HDT_WorkLabel     , HDT_WorkLabel       > (relType);
-      case rtParentNoteOfNote         : return new RelationSet < HDT_Note          , HDT_Note            > (relType);
-      case rtParentPosOfPos           : return new RelationSet < HDT_Position      , HDT_Position        > (relType);
-      case rtParentWorkOfWork         : return new RelationSet < HDT_Work          , HDT_Work            > (relType);
-      case rtPersonOfInv              : return new RelationSet < HDT_Investigation , HDT_Person          > (relType);
-      case rtPositionOfArgument       : return new RelationSet < HDT_Argument      , HDT_Position        > (relType);
-      case rtRankOfPerson             : return new RelationSet < HDT_Person        , HDT_Rank            > (relType);
-      case rtStateOfInst              : return new RelationSet < HDT_Institution   , HDT_State           > (relType);
-      case rtStatusOfPerson           : return new RelationSet < HDT_Person        , HDT_PersonStatus    > (relType);
-      case rtSubfieldOfPerson         : return new RelationSet < HDT_Person        , HDT_Subfield        > (relType);
-      case rtTypeOfFile               : return new RelationSet < HDT_MiscFile      , HDT_FileType        > (relType);
-      case rtTypeOfInst               : return new RelationSet < HDT_Institution   , HDT_InstitutionType > (relType);
-      case rtTypeOfWork               : return new RelationSet < HDT_Work          , HDT_WorkType        > (relType);
-      case rtWorkFileOfWork           : return new RelationSet < HDT_Work          , HDT_WorkFile        > (relType);
-      case rtWorkOfArgument           : return new RelationSet < HDT_Argument      , HDT_Work            > (relType);
-      case rtWorkOfMiscFile           : return new RelationSet < HDT_MiscFile      , HDT_Work            > (relType);
-      default                         : return null;
-    }
+    if ((relType == rtNone) || (relType == rtUnited))
+      return null;
+
+    return new RelationSet<>(relType);
   }
 
 //---------------------------------------------------------------------------

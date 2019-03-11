@@ -19,6 +19,7 @@ package org.hypernomicon.queryEngines;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.tabs.QueriesTabController.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
@@ -67,7 +68,9 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
     pop.addEntry(row, QUERY_MATCHING_RECORD, "with any text that would link to this record");
     pop.addEntry(row, QUERY_MATCHING_STRING, "with any text that would link to a record having this search key");
     pop.addEntry(row, QUERY_MENTIONED_BY, "that are mentioned by record");
-    pop.addEntry(row, QUERY_DUPLICATE_FOLDERS, "that are duplicate folders");
+
+    if (app.debugging())
+      pop.addEntry(row, QUERY_DUPLICATE_FOLDERS, "that are duplicate folders");
   }
 
 //---------------------------------------------------------------------------
@@ -130,7 +133,6 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
 
   @Override public boolean evaluate(HDT_Base record, boolean firstCall, boolean lastCall)
   {
-    HDT_Base specifiedRecord;
     boolean add = false;
 
     switch (curQuery)
@@ -188,7 +190,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
 
       case QUERY_LINKING_TO_RECORD : case QUERY_MENTIONED_BY :
 
-        specifiedRecord = HyperTableCell.getRecord(param2);
+        HDT_Base specifiedRecord = HyperTableCell.getRecord(param2);
         if (HDT_Record.isEmpty(specifiedRecord)) return false;
 
         boolean result;

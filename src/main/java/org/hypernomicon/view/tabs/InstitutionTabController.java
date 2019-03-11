@@ -118,23 +118,11 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
       row.setCellValue(1, person.rank.getID(), person.rank.isNotNull() ? person.rank.get().name() : "", hdtRank);
       row.setCellValue(2, person.field.getID(), person.field.isNotNull() ? person.field.get().name() : "", hdtField);
 
-      ArrayList<HDT_Institution> instList = new ArrayList<>();
-      instList.addAll(peopleMap.get(person));
+      ArrayList<HDT_Institution> instList = new ArrayList<>(peopleMap.get(person));
       instList.sort((inst1, inst2) -> inst1.name().compareTo(inst2.name()));
 
-      String instStr = "";
-      int instID = -1;
-
-      for (HDT_Institution inst : instList)
-      {
-        if (instID == -1)
-        {
-          instID = inst.getID();
-          instStr = inst.name();
-        }
-        else
-          instStr = instStr + ", " + inst.name();
-      }
+      String instStr = instList.stream().map(HDT_Institution::name).reduce((name1, name2) -> name1 + ", " + name2).orElse("");
+      int instID = instList.size() == 0 ? -1 : instList.get(0).getID();
 
       row.setCellValue(3, instID, instStr, hdtInstitution);
     });
@@ -387,11 +375,7 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
 
   private boolean hasSubInstWithDifferentLocation(HDT_Institution instToCheck, HDT_Institution baseInst)
   {
-    for (HDT_Institution subInst : instToCheck.subInstitutions)
-      if (differentLocation(subInst, baseInst))
-        return true;
-
-    return false;
+    return instToCheck.subInstitutions.stream().anyMatch(subInst -> differentLocation(subInst, baseInst));
   }
 
 //---------------------------------------------------------------------------

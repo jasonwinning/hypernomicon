@@ -83,7 +83,7 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
   {
     val.authors.clear();
 
-    for (Author author : authors)
+    authors.forEach(author ->
     {
       OfflineAuthor offlineAuthor = new OfflineAuthor();
 
@@ -125,7 +125,7 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
       }
 
       val.authors.add(offlineAuthor);
-    }
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -133,9 +133,8 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 
   @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
   {
-    if (!searchLinkedRecords) return;
-
-    authors.forEach(author -> list.add(author.getNameLastFirst()));
+    if (searchLinkedRecords)
+      authors.forEach(author -> list.add(author.getNameLastFirst()));
   }
 
 //---------------------------------------------------------------------------
@@ -143,16 +142,9 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 
   @Override public String getResultTextForTag(Tag tag)
   {
-    String allStr = "", oneStr;
-
-    for (Author author : authors)
-    {
-      oneStr = author.getNameLastFirst();
-      if (oneStr.length() > 0)
-        allStr = allStr.length() == 0 ? oneStr : (allStr + "; " + oneStr);
-    }
-
-    return allStr;
+    return authors.stream().map(Author::getNameLastFirst)
+                           .filter(name -> name.length() > 0)
+                           .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
   }
 
 //---------------------------------------------------------------------------

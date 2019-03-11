@@ -50,9 +50,9 @@ public class PdfMetadata
     bd.extractDOIandISBNs(docInfo.getTitle());
     bd.extractDOIandISBNs(docInfo.getTrapped());
 
-    for (String key : docInfo.getMetadataKeys())
+    docInfo.getMetadataKeys().forEach(key -> {
       if (key.toLowerCase().contains("journaldoi") == false)
-        bd.extractDOIandISBNs(docInfo.getCustomMetadataValue(key));
+        bd.extractDOIandISBNs(docInfo.getCustomMetadataValue(key)); });
   }
 
 //---------------------------------------------------------------------------

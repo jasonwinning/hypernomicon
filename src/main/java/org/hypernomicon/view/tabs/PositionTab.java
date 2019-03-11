@@ -17,10 +17,13 @@
 
 package org.hypernomicon.view.tabs;
 
+import java.util.Collection;
 import java.util.EnumSet;
 
+import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 import org.hypernomicon.model.records.HDT_Position.PositionSource;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.view.HyperView.TextViewInfo;
@@ -32,6 +35,8 @@ import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 import org.hypernomicon.view.wrappers.RecordListView;
 import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
+
+import com.google.common.collect.ImmutableSet;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -118,11 +123,13 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
     {
       row.setCellValue(1, subPos, subPos.getCBText());
 
+      Collection<Author> authors = subPos.getPeople().stream().map(ArgumentAuthor::getAuthObj).collect(ImmutableSet.toImmutableSet());
+
       PositionSource ps = subPos.getWorkWithAuthor();
       if (ps != null)
-        row.setCellValue(2, ps.author, Authors.getShortAuthorsStr(subPos.getPeople(), true, true));
+        row.setCellValue(2, ps.author, Authors.getShortAuthorsStr(authors, true, true));
       else
-        row.setCellValue(2, -1, Authors.getShortAuthorsStr(subPos.getPeople(), true, true), hdtPerson);
+        row.setCellValue(2, -1, Authors.getShortAuthorsStr(authors, true, true), hdtPerson);
     });
 
     return true;
@@ -158,12 +165,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
     htParents.addActionCol(ctBrowseBtn, 3);
 
     RecordTypePopulator rtp = new RecordTypePopulator();
-    EnumSet<HDT_RecordType> types = EnumSet.noneOf(HDT_RecordType.class);
-
-    types.add(hdtDebate);
-    types.add(hdtPosition);
-
-    rtp.setTypes(types);
+    rtp.setTypes(EnumSet.of(hdtDebate, hdtPosition));
 
     htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
     {
@@ -183,17 +185,17 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
     htArguments = new HyperTable(ctrlr.tvLeftChildren, 3, true, PREF_KEY_HT_POS_ARG);
 
     htArguments.addActionCol(ctGoNewBtn, 3);
-    htArguments.addCol(hdtPerson, ctNone);
+    htArguments.addCol(hdtPerson         , ctNone);
     htArguments.addCol(hdtPositionVerdict, ctNone);
-    htArguments.addCol(hdtArgument, ctNone);
-    htArguments.addCol(hdtWork, ctNone);
-    htArguments.addCol(hdtArgument, ctNone);
+    htArguments.addCol(hdtArgument       , ctNone);
+    htArguments.addCol(hdtWork           , ctNone);
+    htArguments.addCol(hdtArgument       , ctNone);
 
     htSubpositions = new HyperTable(ctrlr.tvRightChildren, 1, true, PREF_KEY_HT_POS_SUB);
 
     htSubpositions.addActionCol(ctGoNewBtn, 1);
     htSubpositions.addCol(hdtPosition, ctNone);
-    htSubpositions.addCol(hdtPerson, ctNone);
+    htSubpositions.addCol(hdtPerson  , ctNone);
 
     initArgContextMenu();
     ui.initPositionContextMenu(htSubpositions);

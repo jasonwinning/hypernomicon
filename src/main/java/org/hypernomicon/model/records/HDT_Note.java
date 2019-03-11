@@ -22,6 +22,7 @@ import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
@@ -51,7 +52,7 @@ public class HDT_Note extends HDT_RecordWithConnector
 
   public String getFolderStr()
   {
-    return folder.isNull() ? "" : db.getPath(PREF_KEY_TOPICAL_PATH, null).relativize(folder.get().getPath().getFilePath()).toString();
+    return folder.isNull() ? "" : db.getPath(PREF_KEY_TOPICAL_PATH).relativize(folder.get().getPath().getFilePath()).toString();
   }
 
 //---------------------------------------------------------------------------
@@ -71,15 +72,7 @@ public class HDT_Note extends HDT_RecordWithConnector
     if (folder.isNotNull())
       return folder.get();
 
-    HDT_Folder defFolder;
-
-    for (HDT_Note parent : parentNotes)
-    {
-      defFolder = parent.getDefaultFolder();
-      if (defFolder != null) return defFolder;
-    }
-
-    return null;
+    return findFirstHaving(parentNotes, HDT_Note::getDefaultFolder);
   }
 
 //---------------------------------------------------------------------------

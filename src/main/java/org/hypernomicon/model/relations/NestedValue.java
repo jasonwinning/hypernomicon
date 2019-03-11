@@ -36,23 +36,23 @@ public class NestedValue
   public boolean bool = false;
   public Ternary ternary = Ternary.Unset;
   public HDT_Base target = null;
-  public HyperDataCategory hdc;
+  public final HyperDataCategory hdc;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public NestedValue(HDI_OnlineBase<? extends HDI_OfflineBase> item)
   {
-    switch (item.getCategory())
-    {
-      case hdcString : str = HDI_OnlineString.class.cast(item).get(); break;
-      case hdcBoolean : bool = HDI_OnlineBoolean.class.cast(item).get(); break;
-      case hdcTernary : ternary = HDI_OnlineTernary.class.cast(item).get(); break;
-      case hdcNestedPointer : target = HDI_OnlineNestedPointer.class.cast(item).get(); break;
-      default : break;
-    }
+    this(item.getCategory());
 
-    hdc = item.getCategory();
+    switch (hdc)
+    {
+      case hdcString        : str     = HDI_OnlineString       .class.cast(item).get(); break;
+      case hdcBoolean       : bool    = HDI_OnlineBoolean      .class.cast(item).get(); break;
+      case hdcTernary       : ternary = HDI_OnlineTernary      .class.cast(item).get(); break;
+      case hdcNestedPointer : target  = HDI_OnlineNestedPointer.class.cast(item).get(); break;
+      default               : break;
+    }
   }
 
 //---------------------------------------------------------------------------

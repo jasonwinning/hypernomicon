@@ -72,9 +72,9 @@ public class FilePath implements Comparable<FilePath>
   public boolean copyTo(FilePath destFilePath, boolean confirmOverwrite) throws IOException { return moveOrCopy(destFilePath, confirmOverwrite, false); }
   public boolean moveTo(FilePath destFilePath, boolean confirmOverwrite) throws IOException { return moveOrCopy(destFilePath, confirmOverwrite, true); }
 
-  public boolean renameTo(String newNameStr) throws IOException { return moveOrCopy(getDirOnly().resolve(new FilePath(newNameStr)), false, true); }
+  public boolean renameTo(String newNameStr) throws IOException { return moveOrCopy(getDirOnly().resolve(newNameStr), false, true); }
 
-  public static boolean isEmpty(FilePath filePath) { return nullSwitch(filePath, true, () -> safeStr(filePath.toString()).length() == 0); }
+  public static boolean isEmpty(FilePath filePath) { return filePath == null ? true : safeStr(filePath.toString()).length() == 0; }
 
   @Override public int hashCode()            { return innerVal.hashCode(); }
   @Override public String toString()         { return innerVal.getPathStr(); }
@@ -88,6 +88,9 @@ public class FilePath implements Comparable<FilePath>
 
   // this = base, parameter = relative, output = resolved
   public FilePath resolve(FilePath relativeFilePath) { return new FilePath(innerVal.getPath().resolve(relativeFilePath.toPath())); }
+
+  // this = base, parameter = relative, output = resolved
+  public FilePath resolve(String relativeStr) { return new FilePath(innerVal.getPath().resolve(Paths.get(relativeStr))); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -483,13 +486,8 @@ public class FilePath implements Comparable<FilePath>
     {
       try (DirectoryStream<Path> stream = Files.newDirectoryStream(getDirOnly().toPath(), "**"))
       {
-        for (Path entry: stream)
-        {
-          FilePath entryFilePath = new FilePath(entry);
-
-          if (entryFilePath.isDirectory() == false)
-            return true;
-        }
+        if (findFirst(stream, entry -> new FilePath(entry).isDirectory()) != null)
+          return true;
       }
 
       return false;

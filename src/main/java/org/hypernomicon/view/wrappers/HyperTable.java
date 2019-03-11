@@ -26,12 +26,12 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
-import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record.HyperDataCategory;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.NestedValue;
@@ -57,6 +57,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -85,12 +87,12 @@ public class HyperTable implements RecordListView
 {
   final private int mainCol;
   final private TableView<HyperTableRow> tv;
-  final private List<HyperTableColumn> cols;
-  final private ObservableList<HyperTableRow> rows;
+  final private List<HyperTableColumn> cols = new ArrayList<>();
+  final private ObservableList<HyperTableRow> rows = FXCollections.observableArrayList();
   final private SortedList<HyperTableRow> sortedRows;
   final private FilteredList<HyperTableRow> filteredRows;
   final ArrayList<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
-  final private List<HyperMenuItem<? extends HDT_Base>> contextMenuItems;
+  final private List<HyperMenuItem<? extends HDT_Base>> contextMenuItems = new ArrayList<>();
 
   RecordHandler<? extends HDT_Base> dblClickHandler = null;
   Runnable onShowMore = null;
@@ -122,6 +124,7 @@ public class HyperTable implements RecordListView
   public void setTooltip(int colNdx, ButtonAction ba, String text) { cols.get(colNdx).setTooltip(ba, text); }
   public void removeRow(HyperTableRow row)                         { rows.remove(row); }
   public Iterable<HyperTableRow> getDataRows()                     { return new DataRowIterator(); }
+  public Stream<HyperTableRow> dataRowStream()                     { return StreamSupport.stream(new DataRowIterator().spliterator(), false); }
   public int getDataRowCount()                                     { return canAddRows ? Math.max(rows.size() - 1, 0) : rows.size(); }
 
   @SuppressWarnings("unused")
@@ -237,6 +240,8 @@ public class HyperTable implements RecordListView
     this(tv, mainCol, canAddRows, prefID, null);
   }
 
+  private static final EnumSet<HyperCtrlType> editableCtrlTypes = EnumSet.of(ctCheckbox, ctDropDown, ctDropDownList, ctEdit);
+
   public HyperTable(TableView<HyperTableRow> tv, int mainCol, boolean canAddRows, String prefID, HyperDialog dialog)
   {
     this.tv = tv;
@@ -246,11 +251,6 @@ public class HyperTable implements RecordListView
     if (prefID.length() > 0)
       registerTable(tv, prefID, dialog);
 
-    cols = new ArrayList<>();
-    rows = FXCollections.observableArrayList();
-
-    contextMenuItems = new ArrayList<>();
-
     filteredRows = new FilteredList<>(rows, row -> true);
 
     sortedRows = new SortedList<>(filteredRows);
@@ -259,15 +259,12 @@ public class HyperTable implements RecordListView
     tv.setItems(sortedRows);
     tv.setPlaceholder(new Text(""));
 
-    tv.getColumns().forEach(tc -> tableCols.add(tc));
+    tv.getColumns().forEach(tableCols::add);
 
     tv.setOnKeyPressed(event ->
     {
-      if (event.getCode() != KeyCode.ENTER) return;
-
-      for (HyperTableColumn col : cols)
-        if (EnumSet.of(ctCheckbox, ctDropDown, ctDropDownList, ctEdit).contains(col.getCtrlType()))
-          return;
+      if ((event.getCode() != KeyCode.ENTER) || (cols.stream().map(HyperTableColumn::getCtrlType).anyMatch(editableCtrlTypes::contains)))
+        return;
 
       doRowAction();
       event.consume();
@@ -275,7 +272,7 @@ public class HyperTable implements RecordListView
 
     tv.setRowFactory(theTV ->
     {
-      final TableRow<HyperTableRow> row = new TableRow<>();
+      TableRow<HyperTableRow> row = new TableRow<>();
 
       row.itemProperty().addListener((observable, oldValue, newValue) ->
       {
@@ -296,7 +293,7 @@ public class HyperTable implements RecordListView
 
   public <HDT_T extends HDT_Base> HDT_T selectedRecord()
   {
-    return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, row -> row.getRecord());
+    return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, HyperTableRow::getRecord);
   }
 
 //---------------------------------------------------------------------------
@@ -433,16 +430,25 @@ public class HyperTable implements RecordListView
 
   public static class HyperMenuItem<HDT_T extends HDT_Base>
   {
-    HDT_RecordType recordType = hdtNone;
-    RecordHandler<HDT_T> recordHandler;
-    CondRecordHandler<HDT_T> condRecordHandler;
-    private RowHandler rowHandler;
-    private CondRowHandler condRowHandler;
+    final HDT_RecordType recordType;
+    final CondRecordHandler<HDT_T> condRecordHandler;
+    final RecordHandler<HDT_T> recordHandler;
+    final private CondRowHandler condRowHandler;
+    final private RowHandler rowHandler;
+    final String caption;
+    final private boolean okayIfBlank;
 
-    String caption;
-    private boolean okayIfBlank = false;
-
-    HyperMenuItem(String caption) { this.caption = caption; }
+    HyperMenuItem(String caption, HDT_RecordType recordType, CondRecordHandler<HDT_T> condRecordHandler, RecordHandler<HDT_T> recordHandler,
+                  CondRowHandler condRowHandler, RowHandler rowHandler, boolean okayIfBlank)
+    {
+      this.caption = caption;
+      this.recordType = recordType;
+      this.condRecordHandler = condRecordHandler;
+      this.recordHandler = recordHandler;
+      this.condRowHandler = condRowHandler;
+      this.rowHandler = rowHandler;
+      this.okayIfBlank = okayIfBlank;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -450,15 +456,7 @@ public class HyperTable implements RecordListView
 
   public HyperMenuItem<HDT_Base> addCondRowBasedContextMenuItem(String caption, CondRowHandler condRowHandler, RowHandler rowHandler)
   {
-    HyperMenuItem<HDT_Base> mnu;
-
-    mnu = new HyperMenuItem<>(caption);
-    mnu.recordType = hdtNone;
-    mnu.condRecordHandler = null;
-    mnu.recordHandler = null;
-    mnu.condRowHandler = condRowHandler;
-    mnu.rowHandler = rowHandler;
-    mnu.okayIfBlank = true;
+    HyperMenuItem<HDT_Base> mnu = new HyperMenuItem<>(caption, hdtNone, null, null, condRowHandler, rowHandler, true);
 
     contextMenuItems.add(mnu);
     return mnu;
@@ -469,13 +467,7 @@ public class HyperTable implements RecordListView
 
   public HyperMenuItem<HDT_Base> addCondContextMenuItemOkayIfBlank(String caption, CondRecordHandler<HDT_Base> condRecordHandler, RecordHandler<HDT_Base> recordHandler)
   {
-    HyperMenuItem<HDT_Base> mnu;
-
-    mnu = new HyperMenuItem<>(caption);
-    mnu.recordType = hdtNone;
-    mnu.condRecordHandler = condRecordHandler;
-    mnu.recordHandler = recordHandler;
-    mnu.okayIfBlank = true;
+    HyperMenuItem<HDT_Base> mnu = new HyperMenuItem<>(caption, hdtNone, condRecordHandler, recordHandler, null, null, true);
 
     contextMenuItems.add(mnu);
     return mnu;
@@ -494,12 +486,7 @@ public class HyperTable implements RecordListView
 
   @Override public <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addCondContextMenuItem(String caption, Class<HDT_T> klass, CondRecordHandler<HDT_T> condRecordHandler, RecordHandler<HDT_T> recordHandler)
   {
-    HyperMenuItem<HDT_T> mnu;
-
-    mnu = new HyperMenuItem<>(caption);
-    mnu.recordType = HDT_RecordType.typeByRecordClass(klass);
-    mnu.condRecordHandler = condRecordHandler;
-    mnu.recordHandler = recordHandler;
+    HyperMenuItem<HDT_T> mnu = new HyperMenuItem<>(caption, HDT_RecordType.typeByRecordClass(klass), condRecordHandler, recordHandler, null, null, false);
 
     contextMenuItems.add(mnu);
     return mnu;
@@ -728,14 +715,7 @@ public class HyperTable implements RecordListView
 
   public void selectID(int colNdx, HyperTableRow row, int newID)
   {
-    for (HyperTableCell cell : cols.get(colNdx).getPopulator().populate(row, false))
-    {
-      if (cell.getID() == newID)
-      {
-        row.setCellValue(colNdx, cell);
-        return;
-      }
-    }
+    nullSwitch(findFirst(cols.get(colNdx).getPopulator().populate(row, false), cell -> cell.getID() == newID), cell -> row.setCellValue(colNdx, cell));
   }
 
 //---------------------------------------------------------------------------
@@ -743,14 +723,7 @@ public class HyperTable implements RecordListView
 
   public void selectType(int colNdx, HyperTableRow row, HDT_RecordType newType)
   {
-    for (HyperTableCell cell : cols.get(colNdx).getPopulator().populate(row, false))
-    {
-      if (cell.getType() == newType)
-      {
-        row.setCellValue(colNdx, cell);
-        return;
-      }
-    }
+    nullSwitch(findFirst(cols.get(colNdx).getPopulator().populate(row, false), cell -> cell.getType() == newType), cell -> row.setCellValue(colNdx, cell));
   }
 
 //---------------------------------------------------------------------------
@@ -766,13 +739,7 @@ public class HyperTable implements RecordListView
 
   public HyperTableRow getRowByRecord(HDT_Base record)
   {
-    if (mainCol < 0) return null;
-
-    for (HyperTableRow row : rows)
-      if (row.getRecord() == record)
-        return row;
-
-    return null;
+    return mainCol < 0 ? null : findFirst(rows, row -> row.getRecord() == record);
   }
 
 //---------------------------------------------------------------------------
@@ -969,8 +936,8 @@ public class HyperTable implements RecordListView
 
           colNdxToTag.forEach((colNdx, tag) ->
           {
-            HDI_Schema schema = db.getNestedSchema(relType, tag);
-            NestedValue val = new NestedValue(schema.getCategory());
+            HyperDataCategory hdc = db.getNestedSchema(relType, tag).getCategory();
+            NestedValue val = new NestedValue(hdc);
 
             if (colNdx < 0)
             {
@@ -978,7 +945,7 @@ public class HyperTable implements RecordListView
               {
                 if (id > 0)
                 {
-                  switch (schema.getCategory())
+                  switch (hdc)
                   {
                     case hdcString        : val.str = db.getNestedString(subj, obj, tag); break;
                     case hdcBoolean       : val.bool = db.getNestedBoolean(subj, obj, tag); break;
@@ -998,7 +965,7 @@ public class HyperTable implements RecordListView
                 }
               }
             }
-            else switch (schema.getCategory())
+            else switch (hdc)
             {
               case hdcString        : val.str = row.getText(colNdx); break;
               case hdcBoolean       : val.bool = row.getCheckboxValue(colNdx); break;

@@ -19,7 +19,7 @@ package org.hypernomicon.view.tabs;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
@@ -117,7 +117,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
     public ResultsTable resultsTable;
     private ReportTable reportTable;
 
-    public ArrayList<ResultsRow> resultsBackingList;
+    public final ArrayList<ResultsRow> resultsBackingList = new ArrayList<>();
     private Set<HDT_RecordType> resultTypes;
     private Set<Tag> resultTags;
 
@@ -137,8 +137,6 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
     private QueryView()
     {
-      resultTypes = EnumSet.noneOf(HDT_RecordType.class);
-
       EventHandler<ActionEvent> onAction = event ->
       {
         btnExecute.requestFocus();
@@ -255,6 +253,8 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
       htFields.getColumns().forEach(col -> col.setDontCreateNewRecord(true));
 
       resultsTable = new ResultsTable(tvResults);
+      resultsTable.getTV().setItems(FXCollections.observableList(resultsBackingList));
+
       reportTable = new ReportTable(this);
 
       tvResults.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
@@ -266,12 +266,10 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
       resultsTable.addContextMenuItem("Remove from query results", HDT_Base.class, record ->
       {
-        ArrayList<ResultsRow> rows = new ArrayList<>();
-
-        rows.addAll(resultsTable.getTV().getSelectionModel().getSelectedItems());
-
-        rows.forEach(row -> resultsTable.getTV().getItems().remove(row));
+        new ArrayList<>(resultsTable.getTV().getSelectionModel().getSelectedItems()).forEach(row -> resultsTable.getTV().getItems().remove(row));
       });
+
+      clear();
 
       scaleNodeForDPI(ctrlr);
       setFontSize(ctrlr);
@@ -516,7 +514,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
     {
       resultsTable.clear();
       resultTags = EnumSet.noneOf(Tag.class);
-      resultsBackingList = new ArrayList<>();
+      resultsBackingList.clear();
       resultTypes = EnumSet.noneOf(HDT_RecordType.class);
 
       switchToRecordMode();
@@ -620,7 +618,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
       {
         if (QueryType.codeToVal(row.getID(0)) == QueryType.qtReport)
         {
-          htFields.setDataRows(Collections.singletonList(row));
+          htFields.setDataRows(Arrays.asList(row));
 
           executeReport(row, setCaption);
           return true;
@@ -655,12 +653,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
       if (needMentionsIndex)
       {
         if (db.waitUntilRebuildIsDone() == false)
-        {
-          if (resultsBackingList == null)
-            clear();
-
           return false;
-        }
       }
 
       resultsTable.clear();
@@ -701,12 +694,8 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
           case QST_allRecords :
 
             hasUnfiltered = true;
-
             unfilteredTypes = EnumSet.allOf(HDT_RecordType.class);
-
-            unfilteredTypes.remove(hdtNone);
-            unfilteredTypes.remove(hdtAuxiliary);
-            unfilteredTypes.remove(hdtHub);
+            unfilteredTypes.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
             break;
 
           default : break;
@@ -755,7 +744,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
         HDT_Base record;
 
         resultTags = EnumSet.noneOf(Tag.class);
-        resultsBackingList = new ArrayList<>();
+        resultsBackingList.clear();
 
         updateMessage("Running query...");
         updateProgress(0, 1);
@@ -956,13 +945,14 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
       if (db.isLoaded() == false) return false;
 
       VariablePopulator vp1 = htFields.getPopulator(2), vp2 = htFields.getPopulator(3), vp3 = htFields.getPopulator(4);
+      CellValueType valueType = nullSwitch(vp1.getPopulator(row), cvtVaries, Populator::getValueType);
       boolean samePop = false;
 
       switch (query)
       {
         case QUERY_WITH_NAME_CONTAINING : case QUERY_ANY_FIELD_CONTAINS :
 
-          samePop = (vp1.getRestricted(row) == false);
+          samePop = vp1.getRestricted(row) == false;
 
           clearOperands(row, samePop ? 2 : 1);
 
@@ -977,7 +967,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
         case QUERY_WHERE_RELATIVE :
 
-          if ((vp1.getPopulator(row) != null) && (vp1.getPopulator(row).getValueType() == CellValueType.cvtRelation))
+          if (valueType == cvtRelation)
           {
             RelationPopulator rp = vp1.getPopulator(row);
             if (rp.getRecordType(row) == row.getType(0))
@@ -994,7 +984,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
         case QUERY_WHERE_FIELD :
 
-          if ((vp1.getPopulator(row) != null) && (vp1.getPopulator(row).getValueType() == CellValueType.cvtTagItem))
+          if (valueType == cvtTagItem)
           {
             TagItemPopulator tip = vp1.getPopulator(row);
             if (tip.getRecordType(null) == row.getType(0))
@@ -1257,11 +1247,11 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 //---------------------------------------------------------------------------
 
   public static final int QUERY_WITH_NAME_CONTAINING = 1,
-                          QUERY_ANY_FIELD_CONTAINS = 2,
-                          QUERY_LIST_ALL = 3,
-                          QUERY_WHERE_FIELD = 4,
-                          QUERY_WHERE_RELATIVE = 5,
-                          QUERY_FIRST_NDX = 6;
+                          QUERY_ANY_FIELD_CONTAINS   = 2,
+                          QUERY_LIST_ALL             = 3,
+                          QUERY_WHERE_FIELD          = 4,
+                          QUERY_WHERE_RELATIVE       = 5,
+                          QUERY_FIRST_NDX            = 6;
 
   @FXML private CheckBox chkShowFields, chkShowDesc;
   @FXML private Button btnToggleFavorite, btnClear, btnExecute;
@@ -1286,7 +1276,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
   public static HyperTask task;
   public static int curQuery;
   public static HyperTableCell param1, param2, param3;
-  public ArrayList<QueryView> queryViews;
+  public final ArrayList<QueryView> queryViews = new ArrayList<>();
 
   public void setCB(ComboBox<ResultsRow> cb)        { this.cb = cb; updateCB(); }
   private void updateCB()                           { if (curQV != null) curQV.updateCB(); }
@@ -1306,7 +1296,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
   @Override public void findWithinDesc(String text) { if (activeRecord() != null) MainTextWrapper.hiliteText(text, webView.getEngine()); }
 
   @FXML private void mnuCopyToFolderClick()         { copyFilesToFolder(true); }
-  @FXML private void mnuShowSearchFolderClick()     { if (db.isLoaded()) launchFile(db.getPath(PREF_KEY_RESULTS_PATH, null)); }
+  @FXML private void mnuShowSearchFolderClick()     { if (db.isLoaded()) launchFile(db.getPath(PREF_KEY_RESULTS_PATH)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1329,7 +1319,6 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
   @Override void init(TabEnum tabEnum)
   {
     this.tabEnum = tabEnum;
-    queryViews = new ArrayList<>();
 
     addToEngineMap(new PersonQueryEngine());
     addToEngineMap(new PositionQueryEngine());
@@ -1404,14 +1393,14 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
   private void addFilesButton()
   {
-    ObservableList<CheckBoxOrCommand> items = FXCollections.observableArrayList();
+    ObservableList<CheckBoxOrCommand> items = FXCollections.observableArrayList(
 
-    items.addAll(new CheckBoxOrCommand("Include edited works", includeEdited),
-                 new CheckBoxOrCommand("Copy files without annotations", excludeAnnots),
-                 new CheckBoxOrCommand("Clear Search Results Folder and Add All Results", () -> { mnuCopyAllClick();           fileBtn.hide(); }),
-                 new CheckBoxOrCommand("Clear Search Results Folder",                     () -> { mnuClearSearchFolderClick(); fileBtn.hide(); }),
-                 new CheckBoxOrCommand("Copy Selected to Search Results Folder",          () -> { mnuCopyToFolderClick();      fileBtn.hide(); }),
-                 new CheckBoxOrCommand("Show Search Results Folder",                      () -> { mnuShowSearchFolderClick();  fileBtn.hide(); }));
+      new CheckBoxOrCommand("Include edited works", includeEdited),
+      new CheckBoxOrCommand("Copy files without annotations", excludeAnnots),
+      new CheckBoxOrCommand("Clear Search Results Folder and Add All Results", () -> { mnuCopyAllClick();           fileBtn.hide(); }),
+      new CheckBoxOrCommand("Clear Search Results Folder",                     () -> { mnuClearSearchFolderClick(); fileBtn.hide(); }),
+      new CheckBoxOrCommand("Copy Selected to Search Results Folder",          () -> { mnuCopyToFolderClick();      fileBtn.hide(); }),
+      new CheckBoxOrCommand("Show Search Results Folder",                      () -> { mnuShowSearchFolderClick();  fileBtn.hide(); }));
 
     fileBtn = CheckBoxOrCommand.createComboBox(items, "Files");
 
@@ -1431,7 +1420,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
   private void tabPaneChange(Tab newValue)
   {
-    QueryView qV = null;
+    QueryView qV;
 
     if (newValue == tabNew)
     {
@@ -1441,10 +1430,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
     }
     else
     {
-      for (QueryView view : queryViews)
-        if (view.tab == newValue)
-          qV = view;
-
+      qV = findFirst(queryViews, view -> view.tab == newValue);
       if (qV == null) return;
     }
 
@@ -1474,12 +1460,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
   private void deleteView(Tab tab)
   {
-    QueryView qV = null;
-
-    for (QueryView view : queryViews)
-      if (view.tab == tab)
-        qV = view;
-
+    QueryView qV = findFirst(queryViews, view -> view.tab == tab);
     if (qV == null) return;
 
     HyperTable.saveColWidthsForTable(qV.tvFields, PREF_KEY_HT_QUERY_FIELDS, false);
@@ -1542,11 +1523,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
         String val1 = getCellText(param1).toLowerCase();
 
-        for (String str : list)
-          if (str.toLowerCase().indexOf(val1) >= 0)
-            return true;
-
-        return false;
+        return list.stream().anyMatch(str -> str.toLowerCase().indexOf(val1) >= 0);
 
       case QUERY_LIST_ALL :
 
@@ -1600,18 +1577,17 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
         Tag tag = Tag.getTagByNum(getCellID(param1));
         HDI_Schema schema = record.getSchema(tag);
-        String tagStrVal;
 
         if (schema == null) return false;
 
         VariablePopulator vp3 = curQV.htFields.getPopulator(4);
-        CellValueType pm = vp3.getPopulator(row) == null ? cvtVaries : vp3.getPopulator(row).getValueType();
+        CellValueType valueType = nullSwitch(vp3.getPopulator(row), cvtVaries, Populator::getValueType);
 
         switch (getCellID(param2))
         {
           case EQUAL_TO_OPERAND_ID : case NOT_EQUAL_TO_OPERAND_ID :
 
-            switch (pm)
+            switch (valueType)
             {
               case cvtRecord :
 
@@ -1631,7 +1607,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
               default :
 
-                tagStrVal = record.getResultTextForTag(tag);
+                String tagStrVal = record.getResultTextForTag(tag);
                 if (tagStrVal.length() == 0) return false;
 
                 return tagStrVal.trim().equalsIgnoreCase(getCellText(param3).trim()) == (getCellID(param2) == EQUAL_TO_OPERAND_ID);
@@ -1642,13 +1618,13 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
             String val3 = getCellText(param3).trim();
             if (val3.length() == 0) return false;
 
-            tagStrVal = record.getResultTextForTag(tag).toLowerCase().trim();
+            String tagStrVal = record.getResultTextForTag(tag).toLowerCase().trim();
 
             return tagStrVal.contains(val3.toLowerCase()) == (getCellID(param2) == CONTAINS_OPERAND_ID);
 
           case IS_EMPTY_OPERAND_ID : case IS_NOT_EMPTY_OPERAND_ID :
 
-            switch (pm)
+            switch (valueType)
             {
               case cvtRecord :
 
@@ -1790,7 +1766,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
 
     boolean startWatcher = folderTreeWatcher.stop();
 
-    try { FileUtils.cleanDirectory(db.getPath(PREF_KEY_RESULTS_PATH, null).toFile()); }
+    try { FileUtils.cleanDirectory(db.getPath(PREF_KEY_RESULTS_PATH).toFile()); }
     catch (IOException e) { messageDialog("One or more files were not deleted. Reason: " + e.getMessage(), mtError); }
 
     if (startWatcher)

@@ -19,9 +19,11 @@ package org.hypernomicon.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.UnaryOperator;
 
 import static org.hypernomicon.util.Util.*;
 
@@ -30,7 +32,7 @@ import org.apache.commons.io.FilenameUtils;
 public class FilenameMap<T> implements Map<String, T>
 {
   private final Map<String, T> nameToObject = new ConcurrentHashMap<>();
-  private final Map<String, ArrayList<String>> lowerToList = new ConcurrentHashMap<>();
+  private final Map<String, List<String>> lowerToList = new ConcurrentHashMap<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -50,14 +52,11 @@ public class FilenameMap<T> implements Map<String, T>
 
   private String findKey(String query)
   {
-    ArrayList<String> list = lowerToList.get(query.toLowerCase());
+    List<String> list = lowerToList.get(query.toLowerCase());
 
     if (list == null) return "";
 
-    for (String entry : list)
-      if (FilenameUtils.equalsNormalizedOnSystem(entry, query)) return entry;
-
-    return "";
+    return findFirst(list, entry -> FilenameUtils.equalsNormalizedOnSystem(entry, query), "", UnaryOperator.identity());
   }
 
 //---------------------------------------------------------------------------
@@ -81,7 +80,7 @@ public class FilenameMap<T> implements Map<String, T>
 
     T oldVal = remove(key);
 
-    ArrayList<String> list = lowerToList.get(key.toLowerCase());
+    List<String> list = lowerToList.get(key.toLowerCase());
     list.add(key);
     nameToObject.put(key, value);
 
@@ -98,7 +97,7 @@ public class FilenameMap<T> implements Map<String, T>
     String strKey = (String) key;
     T oldVal = get(strKey);
 
-    ArrayList<String> list = lowerToList.get(strKey.toLowerCase());
+    List<String> list = lowerToList.get(strKey.toLowerCase());
     if (list == null)
     {
       list = new ArrayList<>();

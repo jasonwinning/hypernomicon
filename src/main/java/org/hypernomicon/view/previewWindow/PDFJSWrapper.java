@@ -614,11 +614,11 @@ public class PDFJSWrapper
     {
       JSObject obj = val.asObject();
 
-      for (String propName : obj.getPropertyNames())
+      obj.getPropertyNames().forEach(propName ->
       {
         printIndented(propName + ":", indent);
         printJSValue(obj.getProperty(propName), indent + 2);
-      }
+      });
     }
 
     else if (val.isJavaObject())

@@ -239,21 +239,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
       {
         if (confirmDialog("Recursively update ISBN(s) for contained/container works?"))
         {
-          List<String> allISBNs = new ArrayList<>();
-          allISBNs.addAll(ISBNs);
-
-          for (String isbn : lwISBNs)
-            if (ISBNs.contains(isbn) == false)
-              allISBNs.add(isbn);
-
-          String isbnStr = "";
-          for (String isbn : allISBNs)
-          {
-            if (isbnStr.length() > 0)
-              isbnStr = isbnStr + "; " + isbn;
-            else
-              isbnStr = isbn;
-          }
+          String isbnStr = lwISBNs.stream().filter(isbn -> ISBNs.contains(isbn) == false).reduce((s1, s2) -> s1 + "; " + s2).orElse("");
 
           HDT_Work ancestor = this;
           while (ancestor.largerWork.isNotNull())
@@ -279,11 +265,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     if (workFiles.size() != largerWork.workFiles.size())
       ask = true;
     else
-    {
-      for (HDT_WorkFile workFile : workFiles)
-        if (largerWork.workFiles.contains(workFile) == false)
-          ask = true;
-    }
+      ask = workFiles.stream().allMatch(workFile -> largerWork.workFiles.contains(workFile)) == false;
 
     if (ask)
     {
@@ -317,14 +299,15 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   public void addWorkFile(int newID, boolean alsoAddToEmptySubworks, boolean confirmToRemoveFromUnenteredSet)
   {
     HDT_WorkFile workFile = db.workFiles.getByID(newID);
-    boolean okToRemoveFromUnenteredSet;
 
     getObjList(rtWorkFileOfWork).add(workFile);
 
-    for (HDT_Work work : workFile.works)
+    workFile.works.forEach(work ->
     {
       if ((work.getID() != getID()) && (work.getWorkTypeValue() == WorkTypeEnum.wtUnenteredSet))
       {
+        boolean okToRemoveFromUnenteredSet;
+
         if (confirmToRemoveFromUnenteredSet)
           okToRemoveFromUnenteredSet = confirmDialog("Okay to remove the file from the the unentered set of work files: \"" + work.name() + "\"?");
         else
@@ -333,12 +316,12 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
         if (okToRemoveFromUnenteredSet)
           db.getObjectList(rtWorkFileOfWork, work, true).remove(workFile);
       }
-    }
+    });
 
     if (alsoAddToEmptySubworks == false) return;
 
-    for (HDT_Work childWork : subWorks)
-      if (childWork.workFiles.isEmpty()) childWork.addWorkFile(newID, true, confirmToRemoveFromUnenteredSet);
+    subWorks.forEach(childWork -> {
+      if (childWork.workFiles.isEmpty()) childWork.addWorkFile(newID, true, confirmToRemoveFromUnenteredSet); });
   }
 
 //---------------------------------------------------------------------------
@@ -348,10 +331,10 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   {
     switch (HDT_WorkType.workTypeIDToEnumVal(workTypeID))
     {
-      case wtBook:    return db.getPath(PREF_KEY_BOOKS_PATH, null);
-      case wtChapter: return db.getPath(PREF_KEY_BOOKS_PATH, null);
-      case wtPaper:   return db.getPath(PREF_KEY_PAPERS_PATH, null);
-      default:        return db.getPath(PREF_KEY_MISC_FILES_PATH, null);
+      case wtBook:    return db.getPath(PREF_KEY_BOOKS_PATH);
+      case wtChapter: return db.getPath(PREF_KEY_BOOKS_PATH);
+      case wtPaper:   return db.getPath(PREF_KEY_PAPERS_PATH);
+      default:        return db.getPath(PREF_KEY_MISC_FILES_PATH);
     }
   }
 
@@ -379,14 +362,8 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
   public String getInvText(HDT_Person person)
   {
-    String invText = "";
-    for (HDT_Investigation inv : investigations)
-    {
-      if (inv.person.get() == person)
-        invText = invText.length() == 0 ? inv.listName() : invText + ", " + inv.listName();
-    }
-
-    return invText;
+    return person.investigations.stream().map(HDT_Investigation::listName)
+                                         .reduce((s1, s2) -> s1 + ", " + s2).orElse("");
   }
 
 //---------------------------------------------------------------------------
@@ -421,30 +398,17 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
   public void setISBNs(List<String> list)
   {
-    String isbnStr = "";
     List<String> allIsbns = new ArrayList<>();
 
     list.forEach(isbn -> BibUtils.matchISBN(isbn, allIsbns));
 
-    boolean unequal = false;
     List<String> curISBNs = getISBNs();
-    for (String isbn : allIsbns)
-      if (curISBNs.contains(isbn) == false)
-        unequal = true;
 
-    for (String isbn : curISBNs)
-      if (allIsbns.contains(isbn) == false)
-        unequal = true;
+    if (allIsbns.stream().allMatch(curISBNs::contains) &&
+        curISBNs.stream().allMatch(allIsbns::contains))
+      return;
 
-    if (unequal == false) return;
-
-    for (String isbn : allIsbns)
-    {
-      if (isbnStr.length() > 0)
-        isbnStr = isbnStr + "; " + isbn;
-      else
-        isbnStr = isbn;
-    }
+    String isbnStr = allIsbns.stream().reduce((s1, s2) -> s1 + "; " + s2).orElse("");
 
     if (largerWork.isNotNull())
     {

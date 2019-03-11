@@ -19,7 +19,6 @@ package org.hypernomicon.util.json;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.function.Predicate;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -43,7 +42,6 @@ public class JsonArray
   public void clear()                     { jArr.clear(); }
   public JsonObj getObj(int ndx)          { return new JsonObj((JSONObject) jArr.get(ndx)); }
   public JsonArray getArray(int ndx)      { return new JsonArray((JSONArray) jArr.get(ndx)); }
-  public String getStr(int ndx)           { return (String) jArr.get(ndx); }
   public boolean contains(String collKey) { return jArr.contains(collKey); }
   public int size()                       { return jArr.size(); }
   public JsonNodeType getType(int ndx)    { return JsonObj.determineType(jArr.get(ndx)); }
@@ -146,49 +144,7 @@ public class JsonArray
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean removeStrIf(Predicate<String> filter)
-  {
-    Iterator<String> it = getStrs();
-    boolean removed = false;
-
-    while (it.hasNext())
-    {
-      String str = it.next();
-      if (filter.test(str))
-      {
-        removed = true;
-        it.remove();
-      }
-    }
-
-    return removed;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean removeObjIf(Predicate<JsonObj> filter)
-  {
-    Iterator<JsonObj> it = getObjs();
-    boolean removed = false;
-
-    while (it.hasNext())
-    {
-      JsonObj obj = it.next();
-      if (filter.test(obj))
-      {
-        removed = true;
-        it.remove();
-      }
-    }
-
-    return removed;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public String getStrSafe(int ndx)
+  public String getStr(int ndx)
   {
     Object obj = jArr.get(ndx);
     return obj instanceof String ? String.class.cast(obj) : "";

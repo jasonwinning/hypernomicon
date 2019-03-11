@@ -54,13 +54,12 @@ public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
 
   private ScrollBar getScrollBar()
   {
-    for (Node child: node.lookupAll(".scroll-bar"))
-      if (child instanceof ScrollBar)
-      {
-        ScrollBar sb = (ScrollBar) child;
-        if (sb.getOrientation().equals(Orientation.VERTICAL))
-          return sb;
-      }
+    for (Node child: node.lookupAll(".scroll-bar")) if (child instanceof ScrollBar)
+    {
+      ScrollBar sb = (ScrollBar) child;
+      if (sb.getOrientation().equals(Orientation.VERTICAL))
+        return sb;
+    }
 
     return null;
   }

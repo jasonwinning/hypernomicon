@@ -36,7 +36,10 @@ public abstract class BibEntry extends BibData
   protected abstract boolean isNewEntry();
   public abstract String getEntryURL();
 
-  public BibEntry(boolean thisIsBackup) { this.thisIsBackup = thisIsBackup; }
+  public BibEntry(boolean thisIsBackup)       { this.thisIsBackup = thisIsBackup; }
+
+  @Override public HDT_Work getWork()         { return thisIsBackup ? null : db.getWorkByBibEntryKey(getEntryKey()); }
+  @Override protected boolean linkedToWork()  { return thisIsBackup ? false : getWork() != null; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -58,26 +61,6 @@ public abstract class BibEntry extends BibData
     authors.clear();
 
     bd.getAuthors().forEach(authors::add);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HDT_Work getWork()
-  {
-    if (thisIsBackup) return null;
-
-    return db.getWorkByBibEntryKey(getEntryKey());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected boolean linkedToWork()
-  {
-    if (thisIsBackup) return false;
-
-    return getWork() != null;
   }
 
 //---------------------------------------------------------------------------

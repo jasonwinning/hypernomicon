@@ -37,10 +37,7 @@ public class HDI_OnlinePersonName extends HDI_OnlineBase<HDI_OfflinePersonName>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromOfflineValue(HDI_OfflinePersonName val, Tag tag)
-  {
-    return;
-  }
+  @Override public void setFromOfflineValue(HDI_OfflinePersonName val, Tag tag) { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

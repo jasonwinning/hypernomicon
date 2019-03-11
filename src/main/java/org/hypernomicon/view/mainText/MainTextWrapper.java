@@ -19,7 +19,6 @@ package org.hypernomicon.view.mainText;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +33,8 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
+
+import com.google.common.collect.ImmutableList;
 
 import org.hypernomicon.App;
 import org.hypernomicon.model.KeywordLinkList;
@@ -365,10 +366,8 @@ public final class MainTextWrapper
 
   private static void appendDetailedKeyWorkBody(List<KeyWork> keyWorks, StringBuilder innerHtml, boolean sortByName, boolean topmost)
   {
-    ArrayList<KeyWork> sortedKeys = new ArrayList<>();
+    ArrayList<KeyWork> sortedKeys = new ArrayList<>(keyWorks);
     MutableBoolean firstOne = new MutableBoolean(true);
-
-    sortedKeys.addAll(keyWorks);
 
     if (sortByName)
       sortedKeys.sort((s1, s2) ->
@@ -388,7 +387,7 @@ public final class MainTextWrapper
         return bibAuthors1.compareTo(bibAuthors2);
       });
     else
-      sortedKeys.sort((s1, s2) -> s1.compareTo(s2));
+      sortedKeys.sort(KeyWork::compareTo);
 
     sortedKeys.forEach(key ->
     {
@@ -477,8 +476,7 @@ public final class MainTextWrapper
       keyWorks = new ArrayList<>();
       html = editCtrlr.getHtmlAndKeyWorks(keyWorks);
 
-      displayItems = new ArrayList<>();
-      displayItems.addAll(editCtrlr.getDisplayItems());
+      displayItems = new ArrayList<>(editCtrlr.getDisplayItems());
 
       setCompleteHtml();
     }
@@ -515,16 +513,9 @@ public final class MainTextWrapper
           mainTextWrapper.beginEditing(true);
     });
 
-    boolean noDisplayRecords = true;
+    boolean noDisplayRecords = displayItems == null ? true : displayItems.stream().noneMatch(item -> item.type == DisplayItemType.diRecord);
 
-    if (displayItems != null)
-    {
-      for (DisplayItem item : displayItems)
-        if (item.type == DisplayItemType.diRecord)
-          noDisplayRecords = false;
-    }
-
-    int keyWorksSize = nullSwitch(keyWorks, 0, () -> getNestedKeyWorkCount(curRecord, keyWorks));
+    int keyWorksSize = keyWorks == null ? 0 : getNestedKeyWorkCount(curRecord, keyWorks);
 
     if ((Jsoup.parse(html).text().trim().length() == 0) && (keyWorksSize == 0) && noDisplayRecords)
       beginEditing(false);
@@ -909,23 +900,18 @@ public final class MainTextWrapper
 
     if (addSpace) innerHtml.append("&nbsp;"); // Seems to be an inconsistency in how img tags (and spans with images)
                                               // are handled by the rendering engine; in a <summary> tag, there is no space after images
-    StrongLink link = label.getLink();
-    if (link == null) return;
 
-    Set<Connector> spokes = link.getSpokes();
-
-    spokes.forEach(spoke ->
+    nullSwitch(label.getLink(), link -> link.getSpokes().forEach(spoke ->
     {
-      if (spoke.getType() != hdtWorkLabel)
-      {
-        innerHtml.append("<span style=\"display:inline-block; font-size:12pt; width:16px; height:16px; padding:0px; border:0px; margin:0px;\">")
-                 .append(getGoToRecordAnchor(spoke.getSpoke(), " style=\"width:16px; height:16px; padding:0px; border:0px; margin:0px; background-repeat: no-repeat;background-image:url('" + getImageDataURI(ui.getGraphicRelativePathByType(spoke.getType())) + "'); text-decoration: none;\"",
-                                             "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"))
-                 .append("</span>");
+      if (spoke.getType() == hdtWorkLabel) return;
 
-        if (addSpace) innerHtml.append("&nbsp;"); // Seems to be an inconsistency in how img tags (and spans with images)
-      }                                           // are handled by the rendering engine; in a <summary> tag, there is no space after images
-    });
+      innerHtml.append("<span style=\"display:inline-block; font-size:12pt; width:16px; height:16px; padding:0px; border:0px; margin:0px;\">")
+               .append(getGoToRecordAnchor(spoke.getSpoke(), " style=\"width:16px; height:16px; padding:0px; border:0px; margin:0px; background-repeat: no-repeat;background-image:url('" + getImageDataURI(ui.getGraphicRelativePathByType(spoke.getType())) + "'); text-decoration: none;\"",
+                                           "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"))
+               .append("</span>");
+
+      if (addSpace) innerHtml.append("&nbsp;"); // Seems to be an inconsistency in how img tags (and spans with images)
+    }));                                        // are handled by the rendering engine; in a <summary> tag, there is no space after images
   }
 
 //---------------------------------------------------------------------------
@@ -1341,7 +1327,7 @@ public final class MainTextWrapper
     });
 
     if (sortByName)
-      sortedKeys.sort((s1, s2) -> s1.compareToIgnoreCase(s2));
+      sortedKeys.sort(String::compareToIgnoreCase);
     else
       sortedKeys.sort((s1, s2) -> keyToKeyWork.get(s1).compareTo(keyToKeyWork.get(s2)));
 
@@ -1374,19 +1360,8 @@ public final class MainTextWrapper
 
     HashMap<String, String> linkMap = getKeyWorkLinkMap(keyWorks, searchKeys, sortByName);
 
-    boolean first = true;
-
-    for (String searchKey : searchKeys)
-    {
-      String link = linkMap.get(searchKey);
-
-      if (first)
-        innerHtml.append(link);
-      else
-        innerHtml.append(", " + link);
-
-      first = false;
-    }
+    innerHtml.append(searchKeys.stream().map(searchKey -> new StringBuilder(linkMap.get(searchKey)))
+                               .reduce((sb1, sb2) -> sb1.append(", ").append(sb2)).orElse(new StringBuilder()));
   }
 
 //---------------------------------------------------------------------------
@@ -1477,7 +1452,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static List<Integer> zoomFactors = Arrays.asList(25, 33, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500);
+  private static List<Integer> zoomFactors = ImmutableList.of(25, 33, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500);
 
   public static void webViewAddZoom(WebView view, String prefID)
   {

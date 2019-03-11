@@ -35,6 +35,7 @@ import org.hypernomicon.view.populators.CustomRecordPopulator;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -72,21 +73,19 @@ public class SelectConceptDialogController extends HyperDialog
       List<HDT_Base> glossaries = new ArrayList<>();
 
       HDT_Term term = hcbTerm.selectedRecord();
-      if (term != null)
-      {
-        if (oldConcept == null)
-        {
-          for (HDT_Concept curConcept : term.concepts)
-            glossaries.add(curConcept.glossary.get());
-        }
-        else
-        {
-          List<HDT_Glossary> termGlossaries = term.getGlossaries();
+      if (term == null) return glossaries;
 
-          for (HDT_Glossary glossary : db.glossaries)
-            if (termGlossaries.contains(glossary) == false)
-              glossaries.add(glossary);
-        }
+      if (oldConcept == null)
+      {
+        term.concepts.forEach(curConcept -> glossaries.add(curConcept.glossary.get()));
+      }
+      else
+      {
+        List<HDT_Glossary> termGlossaries = term.getGlossaries();
+
+        db.glossaries.forEach(glossary -> {
+          if (termGlossaries.contains(glossary) == false)
+            glossaries.add(glossary); });
       }
 
       return glossaries;
@@ -107,15 +106,13 @@ public class SelectConceptDialogController extends HyperDialog
 
       if ((term != null) && (oldConcept == null))
       {
-        for (HyperTableCell cell : glossaryCells)
-          if (cell.getID() == 1)
-            hcbGlossary.selectID(1);
+        if (glossaryCells.stream().anyMatch(cell -> cell.getID() == 1))
+          hcbGlossary.selectID(1);
       }
       else
       {
-        for (HyperTableCell cell : glossaryCells)
-          if (cell.getID() == oldConcept.glossary.getID())
-            hcbGlossary.selectID(1);
+        if (glossaryCells.stream().anyMatch(cell -> cell.getID() == oldConcept.glossary.getID()))
+          hcbGlossary.selectID(1);
       }
 
       alreadyChanging = false;

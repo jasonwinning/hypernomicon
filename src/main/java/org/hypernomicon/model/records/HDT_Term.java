@@ -21,10 +21,11 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.Util.*;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.MainText;
@@ -74,11 +75,7 @@ public class HDT_Term extends HDT_Record implements HDT_RecordWithDescription
 
   public List<HDT_Glossary> getGlossaries()
   {
-    ArrayList<HDT_Glossary> glossaries = new ArrayList<>();
-
-    concepts.forEach(concept -> glossaries.add(concept.glossary.get()));
-
-    return glossaries;
+    return concepts.stream().map(concept -> concept.glossary.get()).collect(Collectors.toList());
   }
 
 //---------------------------------------------------------------------------
@@ -86,11 +83,7 @@ public class HDT_Term extends HDT_Record implements HDT_RecordWithDescription
 
   public HDT_Concept getConcept(HDT_Glossary glossary)
   {
-    for (HDT_Concept concept : concepts)
-      if (concept.glossary.get() == glossary)
-        return concept;
-
-    return null;
+    return findFirst(concepts, concept -> concept.glossary.get() == glossary);
   }
 
 //---------------------------------------------------------------------------

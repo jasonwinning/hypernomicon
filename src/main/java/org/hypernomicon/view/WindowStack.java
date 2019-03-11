@@ -27,6 +27,8 @@ import org.apache.commons.lang3.SystemUtils;
 
 import com.sun.glass.ui.Window;
 
+import static java.util.Objects.*;
+
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
@@ -128,13 +130,10 @@ public final class WindowStack
     {
       for (int ndx = 0; ndx < 6; ndx++)
       {
-        for (Window window : Window.getWindows())
+        if (Window.getWindows().stream().anyMatch(window -> nonNull(window.getOwner())))
         {
-          if (window.getOwner() != null)
-          {
-            cyclingFocus = false;
-            return;
-          }
+          cyclingFocus = false;
+          return;
         }
 
         sleepForMillis(50);
@@ -166,11 +165,7 @@ public final class WindowStack
 
   public Stage getOutermostStage()
   {
-    for (WindowWrapper window : windows)
-      if (window.isStage())
-        return StageWrapper.class.cast(window).stage;
-
-    return null;
+    return findFirst(windows, WindowWrapper::isStage, window -> StageWrapper.class.cast(window).stage);
   }
 
 //---------------------------------------------------------------------------
@@ -200,9 +195,8 @@ public final class WindowStack
         if (app.getPrimaryStage().isShowing() == false)
           return;
 
-        for (WindowWrapper window : windows)
-          if (window.getModality() != Modality.NONE)
-            return;
+        if (windows.stream().anyMatch(window -> window.getModality() != Modality.NONE))
+          return;
 
         app.getPrimaryStage().hide();
         app.getPrimaryStage().show();

@@ -28,6 +28,7 @@ import static org.hypernomicon.model.relations.RelationSet.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
@@ -38,7 +39,6 @@ import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
-import org.hypernomicon.util.Util;
 import org.hypernomicon.view.dialogs.ChangeParentDialogController;
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.tabs.TreeTabController;
@@ -63,7 +63,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
   private final TreeTableView<TreeRow> ttv;
   private final boolean hasTerms;
   private final TreeCB tcb;
-  private final List<HyperMenuItem<? extends HDT_Base>> contextMenuItems;
+  private final List<HyperMenuItem<? extends HDT_Base>> contextMenuItems = new ArrayList<>();
   private boolean searchingDown = true;
   private boolean searchingNameOnly = false;
   private TreeRow draggingRow = null;
@@ -99,8 +99,6 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
     noteTree = new TreeModel<>(this, tcb);
     termTree = new TreeModel<>(this, tcb);
     labelTree = new TreeModel<>(this, tcb);
-
-    contextMenuItems = new ArrayList<>();
 
     clear();
 
@@ -165,8 +163,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
     ArrayList<TreeRow> rows = new ArrayList<>();
 
     rows.addAll(debateTree.getRowsForRecord(record));
-    rows.addAll(noteTree.getRowsForRecord(record));
-    rows.addAll(labelTree.getRowsForRecord(record));
+    rows.addAll(noteTree  .getRowsForRecord(record));
+    rows.addAll(labelTree .getRowsForRecord(record));
 
     if (this.hasTerms)
       rows.addAll(termTree.getRowsForRecord(record));
@@ -223,12 +221,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 
   @Override public <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addCondContextMenuItem(String caption, Class<HDT_T> klass, CondRecordHandler<HDT_T> condHandler, RecordHandler<HDT_T> handler)
   {
-    HyperMenuItem<HDT_T> mnu;
-
-    mnu = new HyperMenuItem<>(caption);
-    mnu.recordType = HDT_RecordType.typeByRecordClass(klass);
-    mnu.condRecordHandler = condHandler;
-    mnu.recordHandler = handler;
+    HyperMenuItem<HDT_T> mnu = new HyperMenuItem<>(caption, HDT_RecordType.typeByRecordClass(klass), condHandler, handler, null, null, false);
 
     contextMenuItems.add(mnu);
     return mnu;
@@ -336,7 +329,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
     if ((fromChild == false) && (item.getChildren().size() > 0))
       return item.getChildren().get(0);
 
-    return nullSwitch(item.nextSibling(), nullSwitch(item.getParent(), null, parent -> getNext(parent, true)), Util::that);
+    return nullSwitch(item.nextSibling(), nullSwitch(item.getParent(), null, parent -> getNext(parent, true)), UnaryOperator.identity());
   }
 
 //---------------------------------------------------------------------------
@@ -362,8 +355,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
   {
     ddHoverHelper.scroll(dragEvent);
 
-    HDT_Base source = nullSwitch(draggingRow, null, row -> row.getRecord()),
-             target = nullSwitch(targetRow, null, row -> row.getRecord());
+    HDT_Base source = nullSwitch(draggingRow, null, TreeRow::getRecord),
+             target = nullSwitch(targetRow, null, TreeRow::getRecord);
 
     if ((source == null) || (target == null) || (source == target) ||
         (source.getType() == target.getType()) && (source.getID() == target.getID())) return false;

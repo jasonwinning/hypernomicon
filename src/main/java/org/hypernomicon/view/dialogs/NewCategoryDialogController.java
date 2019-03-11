@@ -60,17 +60,12 @@ public class NewCategoryDialogController extends HyperDialog
 
   private void init(HDT_RecordType recordType)
   {
-    EnumSet<HDT_RecordType> typeSet = EnumSet.noneOf(HDT_RecordType.class);
-
     typePopulator = new RecordTypePopulator();
     hcbRecordType = new HyperCB(cbRecordType, ctDropDownList, typePopulator, null, false);
 
     hcbCompare = new HyperCB(cbCompare, ctDropDownList, new RecordByTypePopulator(), null);
 
-    typeSet.add(hdtField);
-    typeSet.add(hdtCountry);
-    typeSet.add(hdtRank);
-    typeSet.add(hdtPersonStatus);
+    EnumSet<HDT_RecordType> typeSet = EnumSet.of(hdtField, hdtCountry, hdtRank, hdtPersonStatus);
 
     typePopulator.setTypes(typeSet);
 

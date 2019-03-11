@@ -17,9 +17,9 @@
 
 package org.hypernomicon.view.populators;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hypernomicon.queryEngines.QueryEngine.QueryType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -33,13 +33,9 @@ public class QueryTypePopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    List<HyperTableCell> list = new ArrayList<>();
-
-    EnumSet.allOf(QueryType.class).forEach(queryType -> list.add(new HyperTableCell(queryType.getCode(),
-                                                                                    queryType.getCaption(),
-                                                                                    queryType.getRecordType())));
-
-    return list;
+    return EnumSet.allOf(QueryType.class).stream()
+                                         .map(queryType -> new HyperTableCell(queryType.getCode(), queryType.getCaption(), queryType.getRecordType()))
+                                         .collect(Collectors.toList());
   }
 
 //---------------------------------------------------------------------------

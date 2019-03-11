@@ -31,15 +31,10 @@ import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.fileManager.FileTable.CondFileRowHandler;
-import org.hypernomicon.view.fileManager.FileTable.FileCellValue;
-import org.hypernomicon.view.fileManager.FileTable.FileRowHandler;
-import org.hypernomicon.view.fileManager.FileTable.FileRowMenuItem;
-import org.hypernomicon.view.fileManager.FileTable.FileRowMenuItemSchema;
+import org.hypernomicon.view.fileManager.FileTable.*;
 import org.hypernomicon.view.wrappers.AbstractTreeRow;
 import org.hypernomicon.view.wrappers.TreeModel;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.ImageView;
 
@@ -144,9 +139,7 @@ public class FileRow extends AbstractTreeRow<FileRow>
 
   static FileRowMenuItemSchema addCondContextMenuItem(String caption, CondFileRowHandler condHandler, FileRowHandler handler, List<FileRowMenuItemSchema> contextMenuSchemata)
   {
-    FileRowMenuItemSchema mnu;
-
-    mnu = new FileRowMenuItemSchema(caption);
+    FileRowMenuItemSchema mnu = new FileRowMenuItemSchema(caption);
     mnu.condHandler = condHandler;
     mnu.handler = handler;
 
@@ -179,15 +172,12 @@ public class FileRow extends AbstractTreeRow<FileRow>
       }
     }
 
-    rowMenu.setOnShowing(event ->
+    rowMenu.setOnShowing(event -> rowMenu.getItems().forEach(menuItem ->
     {
-      for (MenuItem menuItem : rowMenu.getItems())
-      {
-        FileRowMenuItem rowItem = (FileRowMenuItem)menuItem;
-        rowItem.setVisible(rowItem.schema.visible);
-        rowItem.setDisable(rowItem.schema.disabled);
-      }
-    });
+      FileRowMenuItem rowItem = (FileRowMenuItem)menuItem;
+      rowItem.setVisible(rowItem.schema.visible);
+      rowItem.setDisable(rowItem.schema.disabled);
+    }));
 
     return noneVisible ? null : rowMenu;
   }

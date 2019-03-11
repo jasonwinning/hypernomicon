@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.HyperDB.RelationChangeHandler;
@@ -99,24 +100,24 @@ public class MainText
   private boolean hasKeyWork(HDT_Base rec)        { return getKeyWork(rec) != null; }
   public List<DisplayItem> getDisplayItemsUnmod() { return Collections.unmodifiableList(displayItems); }
   public List<KeyWork> getKeyWorks()              { return Collections.unmodifiableList(keyWorks); }
+  public List<DisplayItem> getDisplayItemsCopy()  { return new ArrayList<>(displayItems); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  String getKeyWorksString()
+  {
+    return keyWorks.stream().map(keyWork -> keyWork.getSearchKey(true)).reduce((s1, s2) -> s1 + " " + s2).orElse("");
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   String getDisplayItemsString()
   {
-    String str = "";
-
-    for (DisplayItem item : displayItems)
-    {
-      if (item.type == diRecord)
-      {
-        if (str.length() > 0) str = str + "; ";
-        str = str + item.record.listName() + " (" + db.getTypeName(item.record.getType()) + ")";
-      }
-    }
-
-    return str;
+    return displayItems.stream().filter(item -> item.type == diRecord)
+                                .map(item -> item.record.listName() + " (" + db.getTypeName(item.record.getType()) + ")")
+                                .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
   }
 
 //---------------------------------------------------------------------------
@@ -130,21 +131,6 @@ public class MainText
       return plainText;
 
     return ultraTrim(plainText + " Key works: " + keyWorksStr);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  String getKeyWorksString()
-  {
-    if (collEmpty(keyWorks)) return "";
-
-    String newPlainText = "";
-
-    for (KeyWork keyWork : keyWorks)
-      newPlainText = newPlainText + keyWork.getSearchKey(true) + " ";
-
-    return ultraTrim(newPlainText);
   }
 
 //---------------------------------------------------------------------------
@@ -191,11 +177,8 @@ public class MainText
   {
     synchronized (keyWorks)
     {
-      for (KeyWork keyWork : keyWorks)
-        if (keyWork.getRecord().equals(child)) return keyWork;
+      return findFirst(keyWorks, keyWork -> keyWork.getRecord().equals(child));
     }
-
-    return null;
   }
 
 //---------------------------------------------------------------------------
@@ -221,8 +204,7 @@ public class MainText
 
     keyWorks = Collections.synchronizedList(new ArrayList<>());
 
-    for (KeyWork keyWork : mainText.keyWorks)
-      keyWorks.add(keyWork.getOnlineCopy());
+    mainText.keyWorks.forEach(keyWork -> keyWorks.add(keyWork.getOnlineCopy()));
 
     displayItems = Collections.synchronizedList(new ArrayList<>());
 
@@ -233,7 +215,7 @@ public class MainText
     }
     else
     {
-      for (DisplayItem srcItem : mainText.displayItems)
+      mainText.displayItems.forEach(srcItem ->
       {
         if (srcItem.type == diRecord)
         {
@@ -244,7 +226,7 @@ public class MainText
           displayItems.add(new DisplayItem(srcItem.type));
 
         setInternal(mainText.htmlText, extractTextFromHTML(mainText.htmlText).trim());
-      }
+      });
     }
   }
 
@@ -255,15 +237,10 @@ public class MainText
   {
     connector = hubConnector;
 
-    displayItems = Collections.synchronizedList(new ArrayList<>());
+    displayItems = Collections.synchronizedList(new ArrayList<>(src1.displayItems));
 
-    for (DisplayItem displayItem : src1.displayItems)
-    {
-      displayItems.add(displayItem);
-    }
-
-    ArrayList<Connector> src1Connectors = new ArrayList<>();
-    ArrayList<Connector> src2Connectors = new ArrayList<>();
+    ArrayList<Connector> src1Connectors = new ArrayList<>(),
+                         src2Connectors = new ArrayList<>();
 
     if (src1.getRecord().getType() == hdtHub)
     {
@@ -304,39 +281,25 @@ public class MainText
 
     keyWorks = Collections.synchronizedList(new ArrayList<>());
 
-    for (KeyWork keyWork : src1.keyWorks)
+    src1.keyWorks.forEach(keyWork ->
     {
       keyWorks.add(keyWork.getOnlineCopy());
 
       if (src2.hasKeyWork(keyWork.getRecord()) == false)
-      {
-        for (Connector curConn : src2Connectors)
-          db.handleKeyWork(curConn.getSpoke(), keyWork.getRecord(), true);
-      }
-    }
+        src2Connectors.forEach(curConn ->  db.handleKeyWork(curConn.getSpoke(), keyWork.getRecord(), true));
+    });
 
-    for (KeyWork keyWork : src2.keyWorks)
+    src2.keyWorks.forEach(keyWork ->
     {
       if (src1.hasKeyWork(keyWork.getRecord()) == false)
       {
         keyWorks.add(keyWork.getOnlineCopy());
 
-        for (Connector curConn : src1Connectors)
-          db.handleKeyWork(curConn.getSpoke(), keyWork.getRecord(), true);
+        src1Connectors.forEach(curConn -> db.handleKeyWork(curConn.getSpoke(), keyWork.getRecord(), true));
       }
-    }
+    });
 
     setInternal(newHtml, extractTextFromHTML(newHtml).trim());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public List<DisplayItem> getDisplayItemsCopy()
-  {
-    ArrayList<DisplayItem> list = new ArrayList<>();
-    list.addAll(displayItems);
-    return list;
   }
 
 //---------------------------------------------------------------------------
@@ -348,7 +311,7 @@ public class MainText
     String newPlainText = extractTextFromHTML(newHtml).trim();
 
     if (plainText.replaceAll("\\h*", "").equalsIgnoreCase(newPlainText.replaceAll("\\h*", "")))  // Remove all horizontal whitespaces and then compare
-        modify = false;
+      modify = false;
 
     if (ultraTrim(convertToSingleLine(newPlainText)).length() == 0)
       if (ultraTrim(convertToSingleLine(plainText)).length() == 0)
@@ -453,25 +416,21 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private Set<HDT_RecordWithConnector> getRecordDisplayItems()
+  {
+    return displayItems.stream().filter(item -> item.type == diRecord).map(item -> item.record).collect(Collectors.toSet());
+  }
+
   public void setDisplayItemsFromList(List<DisplayItem> src)
   {
-    boolean modify = false;
-    HashSet<HDT_RecordWithConnector> oldSet = new HashSet<>(), newSet = new HashSet<>();
-
-    displayItems.forEach(item ->
-    {
-      if (item.type == diRecord)
-        oldSet.add(item.record);
-    });
+    Set<HDT_RecordWithConnector> oldSet = getRecordDisplayItems();
 
     displayItems.clear();
     displayItems.addAll(src);
 
-    displayItems.forEach(item ->
-    {
-      if (item.type == diRecord)
-        newSet.add(item.record);
-    });
+    Set<HDT_RecordWithConnector> newSet = getRecordDisplayItems();
+
+    boolean modify = false;
 
     for (HDT_RecordWithConnector displayRecord : oldSet)
       if (newSet.contains(displayRecord) == false)
@@ -549,7 +508,7 @@ public class MainText
       connector.modifyNow();
 
     if (refreshSubjects)
-      nullSwitch(connector.getLink(), link -> nullSwitch(link.getLabel(), label -> label.refreshSubjects()));
+      nullSwitch(connector.getLink(), link -> nullSwitch(link.getLabel(), HDT_WorkLabel::refreshSubjects));
   }
 
 //---------------------------------------------------------------------------
@@ -560,7 +519,7 @@ public class MainText
     Set<MainText> displayers = db.getDisplayers(this);
     HashSet<Connector> displayerConns = new HashSet<>();
 
-    for (MainText displayerText : displayers)
+    displayers.forEach(displayerText ->
     {
       Connector displayer = displayerText.connector;
 
@@ -575,7 +534,7 @@ public class MainText
       }
 
       displayerConns.add(displayer);
-    }
+    });
 
     return displayerConns;
   }

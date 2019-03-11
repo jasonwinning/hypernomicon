@@ -25,8 +25,7 @@ import org.hypernomicon.model.records.HDT_Base;
 public class HyperObjListIterator<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> implements ListIterator<HDT_ObjType>
 {
   private final HyperObjList<HDT_SubjType, HDT_ObjType> list;
-  private int nextNdx;
-  private int lastNdx = -1;
+  private int nextNdx, lastNdx = -1;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -85,10 +84,7 @@ public class HyperObjListIterator<HDT_SubjType extends HDT_Base, HDT_ObjType ext
 
   @Override public void remove()
   {
-    if (lastNdx < 0)
-      throw new IllegalStateException();
-
-    if (lastNdx >= list.size())
+    if ((lastNdx < 0) || (lastNdx >= list.size()))
       throw new IllegalStateException();
 
     list.remove(lastNdx);
@@ -103,10 +99,7 @@ public class HyperObjListIterator<HDT_SubjType extends HDT_Base, HDT_ObjType ext
 
   @Override public void set(HDT_ObjType e)
   {
-    if (lastNdx < 0)
-      throw new IllegalStateException();
-
-    if (lastNdx >= list.size())
+    if ((lastNdx < 0) || (lastNdx >= list.size()))
       throw new IllegalStateException();
 
     list.set(lastNdx, e);

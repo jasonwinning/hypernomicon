@@ -62,13 +62,13 @@ public class HDI_OfflinePointerMulti extends HDI_OfflineBase
   {
     HDT_RecordType objType = db.getObjType(relType);
 
-    for (Integer objID : objIDs)
+    objIDs.forEach(objID ->
     {
       if (objIDtoMaps.containsKey(objID))
         writePointerTagWithNestedPointers(xml, tag, objID, db.records(objType).getByID(objID.intValue()).getXMLObjectName(), objIDtoMaps.get(objID));
       else
         writePointerTag(xml, tag, objID, hdtNone, db.records(objType).getByID(objID.intValue()).getXMLObjectName());
-    }
+    });
   }
 
 //---------------------------------------------------------------------------

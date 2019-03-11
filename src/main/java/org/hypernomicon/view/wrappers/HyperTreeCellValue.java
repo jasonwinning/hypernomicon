@@ -40,7 +40,7 @@ public class HyperTreeCellValue implements Comparable <HyperTreeCellValue>
 
   private String makeKey()
   {
-    String prefix = "ZM.";
+    String prefix;
 
     switch (row.getRecordType())
     {

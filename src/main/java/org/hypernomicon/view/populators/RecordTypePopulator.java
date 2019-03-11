@@ -93,7 +93,6 @@ public class RecordTypePopulator extends Populator
   {
     choices.clear();
     changed = true;
-    return;
   }
 
 //---------------------------------------------------------------------------

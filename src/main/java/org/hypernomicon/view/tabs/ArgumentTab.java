@@ -190,8 +190,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
     RecordTypePopulator rtp = new RecordTypePopulator();
     EnumSet<HDT_RecordType> types = EnumSet.noneOf(HDT_RecordType.class);
 
-    types.add(hdtPosition);
-    types.add(hdtArgument);
+    types.addAll(EnumSet.of(hdtPosition, hdtArgument));
 
     rtp.setTypes(types);
 
@@ -284,43 +283,18 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       person -> ui.goToRecord(person, true));
 
     htCounters.addCondContextMenuItem("Launch work file", HDT_Argument.class,
-      arg ->
-      {
-        for (HDT_Work work : arg.works)
-          if (work.getPath().isEmpty() == false)
-            return true;
-
-        return false;
-      },
-      arg ->
-      {
-        for (HDT_Work work : arg.works)
-          if (work.getPath().isEmpty() == false)
-          {
-            work.launch(-1);
-            return;
-          }
-      });
+      arg -> arg.works.stream().anyMatch(work -> work.getPath().isEmpty() == false),
+      arg -> findFirst(arg.works, work -> work.getPath().isEmpty() == false).launch(-1));
 
     htCounters.addCondContextMenuItem("Go to work record", HDT_Argument.class,
       arg -> arg.works.size() > 0,
-      arg ->
-      {
-        for (HDT_Work work : arg.works)
-          if (work.getPath().isEmpty() == false)
-          {
-            ui.goToRecord(work, true);
-            return;
-          }
-
-        ui.goToRecord(arg.works.get(0), true);
-      });
+      arg -> ui.goToRecord(nullSwitch(findFirst(arg.works, work -> work.getPath().isEmpty() == false), arg.works.get(0)), true));
 
     htCounters.addContextMenuItem("Go to person record", HDT_Person.class,
-        person -> ui.goToRecord(person, true));
+      person -> ui.goToRecord(person, true));
 
     htCounters.addContextMenuItem("Go to argument record", HDT_Argument.class,
-        argument -> ui.goToRecord(argument, true));
+      argument -> ui.goToRecord(argument, true));
   }
 
 //---------------------------------------------------------------------------

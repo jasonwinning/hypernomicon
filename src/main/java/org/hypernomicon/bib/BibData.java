@@ -20,7 +20,7 @@ package org.hypernomicon.bib;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -284,7 +284,7 @@ public abstract class BibData
 
   public void setTitle(String newTitle)
   {
-    setMultiStr(bfTitle, Collections.singletonList(newTitle));
+    setMultiStr(bfTitle, Arrays.asList(newTitle));
   }
 
 //---------------------------------------------------------------------------
@@ -453,10 +453,10 @@ public abstract class BibData
       {
         case "address"   : bd.setStr(bfPubLoc, val); break;
         case "author"    : bd.addBibTexAuthor(val, AuthorType.author); break;
-        case "booktitle" : bd.setMultiStr(bfContainerTitle, Collections.singletonList(val)); break;
+        case "booktitle" : bd.setMultiStr(bfContainerTitle, Arrays.asList(val)); break;
         case "edition"   : bd.setStr(bfEdition, val); break;
         case "editor"    : bd.addBibTexAuthor(val, AuthorType.editor); break;
-        case "journal"   : bd.setMultiStr(bfContainerTitle, Collections.singletonList(val)); break;
+        case "journal"   : bd.setMultiStr(bfContainerTitle, Arrays.asList(val)); break;
         case "language"  : bd.setStr(bfLanguage, val); break;
         case "note"      : bd.addStr(bfMisc, val); break;
         case "number"    : bd.setStr(bfIssue, val); break;
@@ -490,7 +490,7 @@ public abstract class BibData
   {
     BibAuthors authors = getAuthors();
 
-    for (String auth : val.split("\n"))
+    Arrays.stream(val.split("\n")).forEach(auth ->
     {
       if (auth.startsWith("and "))
         auth = auth.substring(4);
@@ -499,7 +499,7 @@ public abstract class BibData
 
       if (auth.length() > 0)
         authors.add(authorType, new PersonName(auth));
-    }
+    });
   }
 
 //---------------------------------------------------------------------------

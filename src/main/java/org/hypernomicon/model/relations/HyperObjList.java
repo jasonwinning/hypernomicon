@@ -278,8 +278,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
         {
           Exception e = lastException;
 
-          for (HDT_ObjType rec : added)
-            remove(rec);
+          added.forEach(this::remove);
 
           lastException = e;
 
@@ -317,8 +316,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
         {
           Exception e = lastException;
 
-          for (HDT_ObjType rec : added)
-            remove(rec);
+          added.forEach(this::remove);
 
           lastException = e;
           modEnd();
@@ -342,12 +340,9 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
     modStart();
 
     for (Object o : c)
-    {
       while (contains(o))
-      {
-        if (remove(o)) removedAny = true;
-      }
-    }
+        if (remove(o))
+          removedAny = true;
 
     modEnd();
     return removedAny;

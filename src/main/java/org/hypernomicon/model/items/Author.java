@@ -82,7 +82,8 @@ public final class Author implements Cloneable
   public HDT_Person getPerson()                   { return person; }
   public HDT_Work getWork()                       { return work; }
   String getBibName()                             { return getName().getBibName(); }
-  private PersonName getName(boolean engChar)     { return nullSwitch(person, engChar ? nameEngChar : name, () -> person.getName(engChar)); }
+  private PersonName getName(boolean engChar)     { return person == null ? (engChar ? nameEngChar : name) : person.getName(engChar); }
+  public boolean outOfDate()                      { return work.getAuthors().stream().noneMatch(this::equals); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -127,18 +128,6 @@ public final class Author implements Cloneable
     return (getInFileName() == other.getInFileName()) &&
            (getIsEditor  () == other.getIsEditor  ()) &&
            (getIsTrans   () == other.getIsTrans   ());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean outOfDate()
-  {
-    for (Author workAuthor : work.getAuthors())
-      if (equals(workAuthor))
-        return false;
-
-    return true;
   }
 
 //---------------------------------------------------------------------------

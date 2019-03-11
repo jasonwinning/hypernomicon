@@ -27,6 +27,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.view.tabs.QueriesTabController.*;
 
 import java.io.IOException;
@@ -46,9 +47,9 @@ import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 
 public class WorkQueryEngine extends QueryEngine<HDT_Work>
 {
-  private static final int QUERY_LIKELY_EDITED_VOLS            = QUERY_FIRST_NDX + 1,
-                           QUERY_4_OR_MORE_AUTHORS             = QUERY_FIRST_NDX + 2,
-                           QUERY_ANALYZE_METADATA              = QUERY_FIRST_NDX + 3;
+  private static final int QUERY_LIKELY_EDITED_VOLS = QUERY_FIRST_NDX + 1,
+                           QUERY_4_OR_MORE_AUTHORS  = QUERY_FIRST_NDX + 2,
+                           QUERY_ANALYZE_METADATA   = QUERY_FIRST_NDX + 3;
 
   private static ArrayList<String> csvFile;
 
@@ -56,7 +57,9 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
   {
     pop.addEntry(row, QUERY_LIKELY_EDITED_VOLS, "likely edited volumes");
     pop.addEntry(row, QUERY_4_OR_MORE_AUTHORS, "with 4 or more authors");
-    pop.addEntry(row, QUERY_ANALYZE_METADATA, "analyze pdf metadata");
+
+    if (app.debugging())
+      pop.addEntry(row, QUERY_ANALYZE_METADATA, "analyze pdf metadata");
   }
 
 //---------------------------------------------------------------------------
@@ -89,13 +92,8 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
         if (work.authorRecords.isEmpty()) return false;
         if (work.getWorkTypeValue() == WorkTypeEnum.wtPaper) return false;
 
-        boolean alreadyEdited = true;
-
-        for (HDT_Person author : work.authorRecords)
-          if ((work.personIsEditor(author) == false) && (work.personIsTranslator(author) == false))
-            alreadyEdited = false;
-
-        if (alreadyEdited) return false;
+        if (work.authorRecords.stream().allMatch(author -> work.personIsEditor(author) || work.personIsTranslator(author)))
+          return false;
 
         for (HDT_Work subWork : work.subWorks)
           for (HDT_Person subAuthor : subWork.authorRecords)
@@ -119,7 +117,7 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
 
         if (firstCall)
         {
-          FilePath filePath = new FilePath("c:\\Users\\Jason\\Desktop\\data.csv");
+          FilePath filePath = getHomeDir().resolve("data.csv");
           if (filePath.exists()) try
           {
             Files.delete(filePath.toPath());
@@ -158,7 +156,7 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
 
         if (lastCall)
         {
-          FilePath filePath = new FilePath("c:\\Users\\Jason\\Desktop\\data.csv");
+          FilePath filePath = getHomeDir().resolve("data.csv");
 
           try
           {

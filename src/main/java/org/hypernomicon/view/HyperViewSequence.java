@@ -17,11 +17,8 @@
 
 package org.hypernomicon.view;
 
-import java.util.List;
-
 import org.hypernomicon.model.records.*;
 
-import static org.hypernomicon.model.records.HDT_RecordType.*;
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.tabs.TreeTabController;
 import org.hypernomicon.view.wrappers.ClickHoldButton;
@@ -30,7 +27,8 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.tabs.HyperTab.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.Const.*;
+import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.util.Util.*;
 
 import javafx.scene.control.TabPane;
 
@@ -40,10 +38,10 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private TabPane tabPane;
-  private ViewList viewList;
+  private final TabPane tabPane;
+  private final ViewList viewList;
   private boolean alreadyChangingTab = false;
-  private ClickHoldButton chbBack, chbForward;
+  private final ClickHoldButton chbBack, chbForward;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -57,10 +55,7 @@ public class HyperViewSequence
 
     tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) ->
     {
-      HyperTab<? extends HDT_Base, ? extends HDT_Base> hyperTab;
-
-      if (db.isLoaded() == false) return;
-      if (alreadyChangingTab) return;
+      if ((db.isLoaded() == false) || alreadyChangingTab) return;
 
       if (ui.cantSaveRecord(true))
       {
@@ -71,8 +66,7 @@ public class HyperViewSequence
         return;
       }
 
-      hyperTab = getHyperTabByTab(newTab);
-      TabEnum tabEnum = hyperTab.getTabEnum();
+      TabEnum tabEnum = getHyperTabByTab(newTab).getTabEnum();
 
       if (tabEnum != TabEnum.workTab)
         bibManagerDlg.workRecordToAssign.set(null);
@@ -187,30 +181,22 @@ public class HyperViewSequence
 
     ui.update();
 
-    if (curHyperTab.getTabEnum() != queryTab)
+    if (curHyperTab.getTabEnum() != queryTab) nullSwitch(ui.activeRecord(), activeRecord ->
     {
-      HDT_Base activeRecord = ui.activeRecord();
-
-      if (activeRecord != null)
+      if (activeRecord.getType() == hdtPerson)
       {
-        if (activeRecord.getType() == hdtPerson)
-        {
-          HDT_Person person = (HDT_Person) activeRecord;
-          if (person.getLastName().length() > 0)
-            ui.omniFocus();
-        }
-        else if (activeRecord.name().length() > 0)
+        if (HDT_Person.class.cast(activeRecord).getLastName().length() > 0)
           ui.omniFocus();
       }
-    }
+      else if (activeRecord.name().length() > 0)
+        ui.omniFocus();
+    });
 
     if (curHyperTab.getTabEnum() != workTab)
       bibManagerDlg.workRecordToAssign.set(null);
 
     if (curHyperTab.getTabEnum() == treeTab)
-    {
       TreeTabController.class.cast(HyperTab.getHyperTab(treeTab)).selectRecord(curView.getViewRecord(), true);
-    }
   }
 
 //---------------------------------------------------------------------------
@@ -218,36 +204,22 @@ public class HyperViewSequence
 
   void init()
   {
-    List<HDT_Base> initialNavList = db.getInitialNavList();
-    int listSize = initialNavList.size();
-
     viewList.clear();
 
-    for (int ndx = INITIAL_NAV_LIST_SIZE; ndx > 0; ndx--)
+    db.getInitialNavList().forEach(record ->
     {
-      if ((listSize - ndx) >= 0)
-      {
-        HDT_Base record = initialNavList.get(listSize - ndx);
+      if (record.getType() == hdtInvestigation)
+        record = HDT_Investigation.class.cast(record).person.get();
+      else if (record.getType() == hdtTerm)
+        record = HDT_Term.class.cast(record).concepts.get(0);
 
-        if (record.getType() == hdtInvestigation)
-          record = HDT_Investigation.class.cast(record).person.get();
-        else if (record.getType() == hdtTerm)
-          record = HDT_Term.class.cast(record).concepts.get(0);
+      if (record == null) return;
 
-        if (record != null)
-        {
-          HyperView<? extends HDT_Base> view;
+      HyperView<? extends HDT_Base> view = record.getType() == hdtWorkLabel ? new HyperView<>(treeTab, record) : createViewForRecord(record);
 
-          if (record.getType() == hdtWorkLabel)
-            view = new HyperView<>(treeTab, record);
-          else
-            view = createViewForRecord(record);
-
-          viewList.goForward(true);
-          viewList.setView(view);
-        }
-      }
-    }
+      viewList.goForward(true);
+      viewList.setView(view);
+    });
   }
 
 //---------------------------------------------------------------------------

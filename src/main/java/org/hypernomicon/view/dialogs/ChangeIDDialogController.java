@@ -103,10 +103,8 @@ public class ChangeIDDialogController extends HyperDialog
     tfNewID.textProperty().addListener((observable, oldValue, newValue) ->
     {
       int id = parseInt(newValue, -1);
-      HDT_RecordType type = hcbRecord.selectedType();
 
-      if (id > 0)
-        if (db.idAvailable(type, id) == false)
+      if ((id > 0) && (db.idAvailable(hcbRecord.selectedType(), id) == false))
         {
           lblNotAvailable.setVisible(true);
           return;

@@ -26,7 +26,7 @@ import org.hypernomicon.model.records.HDT_Base;
 public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> extends HyperObjList<HDT_SubjType, HDT_ObjType>
 {
   private final HyperObjList<HDT_SubjType, HDT_ObjType> parentList;
-  private int startNdx;
+  private final int startNdx;
   private int endNdx;
 
   @Override Exception getLastException() { return parentList.getLastException(); }
@@ -51,12 +51,9 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
   @Override public void clear()             { while (endNdx > startNdx) remove(0); }
   @Override public HDT_ObjType get(int ndx) { return parentList.get(startNdx + ndx); }
 
+  @Override public boolean containsAll(Collection<?> c)          { return c.stream().allMatch(this::contains); }
   @Override public HDT_ObjType set(int ndx, HDT_ObjType element) { return parentList.set(startNdx + ndx, element); }
-
-  @Override public List<HDT_ObjType> subList(int from, int to)
-  {
-    return new HyperObjSubList<>(parentList, startNdx + from, startNdx + to);
-  }
+  @Override public List<HDT_ObjType> subList(int from, int to)   { return new HyperObjSubList<>(parentList, startNdx + from, startNdx + to); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -149,17 +146,6 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean containsAll(Collection<?> c)
-  {
-    for (Object o : c)
-      if (contains(o) == false) return false;
-
-    return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public boolean addAll(Collection<? extends HDT_ObjType> c)
   {
     List<HDT_ObjType> added = new ArrayList<>();
@@ -174,8 +160,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
         {
           Exception e = parentList.lastException;
 
-          for (HDT_ObjType rec : added)
-            remove(rec);
+          added.forEach(this::remove);
 
           parentList.lastException = e;
           return false;
@@ -207,8 +192,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
         {
           Exception e = parentList.lastException;
 
-          for (HDT_ObjType rec : added)
-            remove(rec);
+          added.forEach(this::remove);
 
           parentList.lastException = e;
           return false;

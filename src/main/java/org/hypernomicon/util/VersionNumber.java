@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 import static org.hypernomicon.util.Util.*;
 
 public class VersionNumber implements Comparable<VersionNumber>
@@ -31,12 +33,9 @@ public class VersionNumber implements Comparable<VersionNumber>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public VersionNumber(int minParts, int... parts)
+  public VersionNumber(int minParts, Integer... parts)
   {
-    List<Integer> tempParts = new ArrayList<>();
-
-    for (int part : parts)
-      tempParts.add(part);
+    List<Integer> tempParts = Lists.newArrayList(parts);
 
     while (tempParts.size() < minParts)
       tempParts.add(0);
@@ -74,12 +73,7 @@ public class VersionNumber implements Comparable<VersionNumber>
 
   @Override public String toString()
   {
-    String str = "";
-
-    for (int part : parts)
-      str = str.length() == 0 ? String.valueOf(part) : str + "." + String.valueOf(part);
-
-    return str;
+    return parts.stream().map(String::valueOf).reduce((part1, part2) -> part1 + "." + part2).orElse("");
   }
 
 //---------------------------------------------------------------------------
@@ -87,9 +81,6 @@ public class VersionNumber implements Comparable<VersionNumber>
 
   @Override public int hashCode()
   {
-    final int prime = 31;
-    int result = 1;
-
     List<Integer> newList = new ArrayList<>();
     boolean gotNonzero = false;
 
@@ -102,10 +93,7 @@ public class VersionNumber implements Comparable<VersionNumber>
         newList.add(0, parts.get(ndx));
     }
 
-    for (int part : newList)
-      result = prime * result + part;
-
-    return result;
+    return newList.stream().reduce(1, (num1, num2) -> 31 * num1 + num2);
   }
 
 //---------------------------------------------------------------------------

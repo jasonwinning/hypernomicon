@@ -107,15 +107,15 @@ public class SelectColumnsDialogController extends HyperDialog
         {
           chkSelectNone.setSelected(false);
 
-          for (ColumnGroup grp : colGroups)
+          colGroups.forEach(grp ->
           {
-            if (grp.items.size() == 0) continue;
+            if (grp.items.size() == 0) return;
 
             TypeCheckBox tcb = grp.checkBox;
             tcb.setSelected(true);
 
             tcb.children.forEach(ccb -> ccb.setSelected(true));
-          }
+          });
         }
         else
           chkSelectAll.setSelected(true);
@@ -132,15 +132,15 @@ public class SelectColumnsDialogController extends HyperDialog
         {
           chkSelectAll.setSelected(false);
 
-          for (ColumnGroup grp : colGroups)
+          colGroups.forEach(grp ->
           {
-            if (grp.items.size() == 0) continue;
+            if (grp.items.size() == 0) return;
 
             TypeCheckBox tcb = grp.checkBox;
             tcb.setSelected(false);
 
             tcb.children.forEach(ccb -> ccb.setSelected(false));
-          }
+          });
         }
         else
           chkSelectNone.setSelected(true);
@@ -187,29 +187,19 @@ public class SelectColumnsDialogController extends HyperDialog
             if (noListen) return;
             noListen = true;
 
-            boolean allSelected = true;
-            boolean noneSelected = true;
             TypeCheckBox tcb = chkField.parent;
 
             if (newValue)
             {
               chkSelectNone.setSelected(false);
-              for (CheckBox cb : tcb.children)
-              {
-                if (cb.isSelected() == false)
-                  allSelected = false;
-              }
-              if (allSelected) tcb.setSelected(true);
+              if (tcb.children.stream().allMatch(CheckBox::isSelected))
+                tcb.setSelected(true);
             }
             else
             {
               chkSelectAll.setSelected(false);
-              for (CheckBox cb : tcb.children)
-              {
-                if (cb.isSelected())
-                  noneSelected = false;
-              }
-              if (noneSelected) tcb.setSelected(false);
+              if (tcb.children.stream().noneMatch(CheckBox::isSelected))
+                tcb.setSelected(false);
             }
 
             noListen = false;

@@ -25,16 +25,18 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.model.relations.HyperObjList;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 //---------------------------------------------------------------------------
@@ -132,33 +134,76 @@ public class HDT_Argument extends HDT_RecordWithConnector
 
   public HDT_Debate getDebate()
   {
-    HDT_Debate debate = null;
+    HDT_Debate debate = findFirstHaving(positions, HDT_Position::getDebate);
 
-    for (HDT_Position curPos : positions)
-    {
-      debate = curPos.getDebate();
-      if (debate != null) return debate;
-    }
-
-    for (HDT_Argument curArg : counteredArgs)
-    {
-      debate = curArg.getDebate();
-      if (debate != null) return debate;
-    }
-
-    return null;
+    return nullSwitch(debate, findFirstHaving(counteredArgs, HDT_Argument::getDebate));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public LinkedHashSet<Author> getPeople()
+  // Wrapper class for Author that treats authors the same if they have the same person record. If the
+  // person record is null for both authors, then they are the same if they have the same name.
+
+  public static class ArgumentAuthor
   {
-    LinkedHashSet<Author> people = new LinkedHashSet<>();
+    public ArgumentAuthor(Author author)
+    {
+      person = author.getPerson();
+      name = person == null ? author.getName() : null;
+      this.author = author;
+    }
 
-    works.forEach(work -> work.getAuthors().forEach(people::add));
+    public Author getAuthObj() { return author; }
 
-    return people;
+  //---------------------------------------------------------------------------
+
+    @Override public int hashCode()
+    {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((name == null) ? 0 : name.hashCode());
+      result = prime * result + ((person == null) ? 0 : person.hashCode());
+      return result;
+    }
+
+  //---------------------------------------------------------------------------
+
+    @Override public boolean equals(Object obj)
+    {
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
+
+      ArgumentAuthor other = (ArgumentAuthor) obj;
+      if (name == null)
+      {
+        if (other.name != null) return false;
+      }
+      else if (!name.equals(other.name)) return false;
+      if (person == null)
+      {
+        if (other.person != null) return false;
+      }
+      else if (!person.equals(other.person)) return false;
+      return true;
+    }
+
+  //---------------------------------------------------------------------------
+
+    private final HDT_Person person;
+    private final PersonName name;
+    private final Author author;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public ImmutableSet<ArgumentAuthor> getPeople()
+  {
+    return works.stream().map(work -> work.getAuthors().stream().map(ArgumentAuthor::new))
+                         .reduce(Stream::concat).orElse(Stream.empty())
+                         .collect(ImmutableSet.toImmutableSet());
   }
 
 //---------------------------------------------------------------------------

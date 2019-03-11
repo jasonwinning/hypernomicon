@@ -23,11 +23,13 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.hypernomicon.model.records.*;
+
+import com.google.common.collect.ImmutableSet;
 
 public class StrongLink
 {
@@ -46,11 +48,11 @@ public class StrongLink
 //---------------------------------------------------------------------------
 
   public HDT_Hub       getHub()      { return hub; }
-  public HDT_Note      getNote()     { return (HDT_Note     ) nullSwitch(noteSpoke    , null, sp -> sp.getSpoke()); }
-  public HDT_Concept   getConcept()  { return (HDT_Concept  ) nullSwitch(conceptSpoke , null, sp -> sp.getSpoke()); }
-  public HDT_Debate    getDebate()   { return (HDT_Debate   ) nullSwitch(debateSpoke  , null, sp -> sp.getSpoke()); }
-  public HDT_Position  getPosition() { return (HDT_Position ) nullSwitch(positionSpoke, null, sp -> sp.getSpoke()); }
-  public HDT_WorkLabel getLabel()    { return (HDT_WorkLabel) nullSwitch(labelSpoke   , null, sp -> sp.getSpoke()); }
+  public HDT_Note      getNote()     { return (HDT_Note     ) nullSwitch(noteSpoke    , null, Connector::getSpoke); }
+  public HDT_Concept   getConcept()  { return (HDT_Concept  ) nullSwitch(conceptSpoke , null, Connector::getSpoke); }
+  public HDT_Debate    getDebate()   { return (HDT_Debate   ) nullSwitch(debateSpoke  , null, Connector::getSpoke); }
+  public HDT_Position  getPosition() { return (HDT_Position ) nullSwitch(positionSpoke, null, Connector::getSpoke); }
+  public HDT_WorkLabel getLabel()    { return (HDT_WorkLabel) nullSwitch(labelSpoke   , null, Connector::getSpoke); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -76,11 +78,9 @@ public class StrongLink
 
   public Set<Connector> getSpokes()
   {
-    Set<Connector> set = new LinkedHashSet<>();
-
-    EnumSet.of(hdtDebate, hdtPosition, hdtConcept, hdtNote, hdtWorkLabel).forEach(cType -> nullSwitch(getSpoke(cType), set::add));
-
-    return set;
+    return EnumSet.of(hdtDebate, hdtPosition, hdtConcept, hdtNote, hdtWorkLabel).stream().map(this::getSpoke)
+                                                                                         .filter(Objects::nonNull)
+                                                                                         .collect(ImmutableSet.toImmutableSet());
   }
 
 //---------------------------------------------------------------------------

@@ -54,37 +54,36 @@ public class ChooseParentWorkFileDialogController extends HyperDialog
 
   private void init(HDT_Work work)
   {
-    String pathStr;
     HDT_Work parentWork = work.largerWork.get();
-    HyperTableRow row;
 
     htFiles = new HyperTable(tvFiles, 0, false, "");
     htFiles.addCol(hdtWorkFile, ctNone);
     htFiles.addCol(hdtWorkFile, ctNone);
     htFiles.setDblClickHandler(HDT_WorkFile.class, workFile -> launchFile(workFile.getPath().getFilePath()));
 
-    for (HDT_WorkFile workFile : parentWork.workFiles)
+    parentWork.workFiles.forEach(workFile ->
     {
-      if (work.workFiles.contains(workFile) == false)
+      if (work.workFiles.contains(workFile)) return;
+
+      String pathStr;
+
+      if (workFile.getPath().isEmpty() == false)
       {
-        if (workFile.getPath().isEmpty() == false)
-        {
-          FilePath filePath = workFile.getPath().getFilePath();
-          FilePath relPath = db.getRootFilePath().relativize(filePath);
+        FilePath filePath = workFile.getPath().getFilePath();
+        FilePath relPath = db.getRootFilePath().relativize(filePath);
 
-          if (relPath == null)
-            pathStr = filePath.getNameOnly().toString();
-          else
-            pathStr = relPath.toString();
-        }
+        if (relPath == null)
+          pathStr = filePath.getNameOnly().toString();
         else
-          pathStr = "";
-
-        row = htFiles.newDataRow();
-        row.setCellValue(0, workFile, pathStr);
-        row.setCellValue(1, workFile, workFile.name());
+          pathStr = relPath.toString();
       }
-    }
+      else
+        pathStr = "";
+
+      HyperTableRow row = htFiles.newDataRow();
+      row.setCellValue(0, workFile, pathStr);
+      row.setCellValue(1, workFile, workFile.name());
+    });
   }
 
 //---------------------------------------------------------------------------

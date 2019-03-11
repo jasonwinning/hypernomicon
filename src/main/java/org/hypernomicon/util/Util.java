@@ -59,22 +59,30 @@ import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.swing.filechooser.FileSystemView;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -147,7 +155,6 @@ public final class Util
   public static final Escaper htmlEscaper = HtmlEscapers.htmlEscaper();
 
   static String hostName = "";
-  static boolean uiNeedsRefresh = true;
 
 //---------------------------------------------------------------------------
 
@@ -183,10 +190,8 @@ public final class Util
 
   public static String getClipboardText(boolean noCarriageReturns)
   {
-    Object content = Clipboard.getSystemClipboard().getContent(DataFormat.PLAIN_TEXT);
-    if (content == null) return "";
-
-    String text = (String) content;
+    String text = safeStr((String) Clipboard.getSystemClipboard().getContent(DataFormat.PLAIN_TEXT));
+    if (text.length() == 0) return "";
 
     text = text.replace("\ufffd", ""); // I don't know what this is but it is usually appended at the end when copying text from Acrobat
 
@@ -230,7 +235,7 @@ public final class Util
 
     List<String> list = convertMultiLineStrToStrList(input, true);
 
-    list.replaceAll(str -> ultraTrim(str));
+    list.replaceAll(Util::ultraTrim);
 
     return strListToStr(list, true);
   }
@@ -369,13 +374,11 @@ public final class Util
 
   public static String removeFirstParenthetical(String str)
   {
-    String result;
-
     int pos1 = str.indexOf('('), pos2 = str.indexOf(')');
 
     if (pos1 > 0)
     {
-      result = str.substring(0, pos1).trim();
+      String result = str.substring(0, pos1).trim();
       if (pos2 > pos1)
         result = String.valueOf(result + " " + safeSubstring(str, pos2 + 1, str.length()).trim()).trim();
 
@@ -523,29 +526,17 @@ public final class Util
     {
       if (SystemUtils.IS_OS_MAC)
       {
-        command.add("open");
-        command.add("-a");
-        command.add(execPathStr);
+        Collections.addAll(command, "open", "-a", execPathStr);
+        Collections.addAll(command, params);
 
-        for (String param : params)
-          command.add(param);
-
-        String[] commandArr = new String[command.size()];
-        commandArr = command.toArray(commandArr);
-
-        Runtime.getRuntime().exec(commandArr).waitFor();
+        Runtime.getRuntime().exec(command.toArray(new String[0])).waitFor();
       }
       else
       {
         command.add(execPathStr);
+        Collections.addAll(command, params);
 
-        for (String param : params)
-          command.add(param);
-
-        String[] commandArr = new String[command.size()];
-        commandArr = command.toArray(commandArr);
-
-        ProcessBuilder pb = new ProcessBuilder(commandArr);
+        ProcessBuilder pb = new ProcessBuilder(command.toArray(new String[0]));
         pb.start();
       }
     }
@@ -657,23 +648,17 @@ public final class Util
     {
       case mtWarning :
         alert = new Alert(AlertType.WARNING);
-        alert.setTitle(appTitle);
         alert.setHeaderText("Warning");
-
         break;
 
       case mtError :
         alert = new Alert(AlertType.ERROR);
-        alert.setTitle(appTitle);
         alert.setHeaderText("Error");
-
         break;
 
       case mtInformation :
         alert = new Alert(AlertType.INFORMATION);
-        alert.setTitle(appTitle);
         alert.setHeaderText("Information");
-
         break;
 
       default:
@@ -681,6 +666,7 @@ public final class Util
         return;
     }
 
+    alert.setTitle(appTitle);
     alert.setContentText(msg);
 
     showAndWait(alert);
@@ -689,7 +675,7 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static Optional<ButtonType> showAndWait(Alert dlg)
+  static ButtonType showAndWait(Alert dlg)
   {
     WindowStack windowStack = ui == null ? null : ui.windows;
 
@@ -713,7 +699,7 @@ public final class Util
     if (windowStack != null)
       windowStack.pop();
 
-    return result;
+    return result.orElse(null);
   }
 
 //---------------------------------------------------------------------------
@@ -1229,29 +1215,8 @@ public final class Util
 
   public static String strListToStr(List<String> list, boolean emptiesOK, boolean useSystemNewLineChar)
   {
-    StringBuilder all = new StringBuilder();
-    List<String> list2;
-
-    if (emptiesOK == false)
-    {
-      list2 = new ArrayList<>();
-      list.forEach(one ->
-      {
-        if (safeStr(one).length() > 0)
-          list2.add(one);
-      });
-    }
-    else
-      list2 = list;
-
-    for (int ndx = 0; ndx < list2.size(); ndx++)
-    {
-      all.append(list2.get(ndx));
-      if (ndx < (list2.size() - 1))
-        all.append(useSystemNewLineChar ? System.lineSeparator() : "\n");
-    }
-
-    return all.toString();
+    Stream<StringBuilder> strm = (emptiesOK ? list.stream() : list.stream().filter(one -> safeStr(one).length() > 0)).map(StringBuilder::new);
+    return strm.reduce((all, one) -> all.append(useSystemNewLineChar ? System.lineSeparator() : "\n").append(one)).orElse(new StringBuilder()).toString();
   }
 
 //---------------------------------------------------------------------------
@@ -1283,7 +1248,7 @@ public final class Util
 
   public static String convertToEnglishCharsWithMap(String input, ArrayList<Integer> posMap)
   {
-    String s, output = transliterator2.transliterate(transliterator1.transliterate(input));
+    String output = transliterator2.transliterate(transliterator1.transliterate(input));
 
     if (posMap == null) posMap = new ArrayList<>();
 
@@ -1291,7 +1256,7 @@ public final class Util
     for (int inPos = 0; inPos < input.length(); inPos++)
     {
       char c = input.charAt(inPos);
-      s = charMap.get(c);
+      String s = charMap.get(c);
 
       if (s == null)
       {
@@ -1380,8 +1345,7 @@ public final class Util
     ObservableList<Node> menuChildren = cmc.getItemsContainer().getChildren();
     menuChildren.clear();
 
-    for (MenuItem item : items)
-      menuChildren.add(cmc.new MenuItemContainer(item));
+    Arrays.asList(items).forEach(item -> menuChildren.add(cmc.new MenuItemContainer(item)));
   }
 
 //---------------------------------------------------------------------------
@@ -1447,8 +1411,7 @@ public final class Util
     Timeline timeline = new Timeline();
     timeline.setCycleCount(cycles);
 
-    final KeyFrame kf = new KeyFrame(Duration.millis(delayMS), handler);
-    timeline.getKeyFrames().add(kf);
+    timeline.getKeyFrames().add(new KeyFrame(Duration.millis(delayMS), handler));
     timeline.play();
   }
 
@@ -1532,10 +1495,7 @@ public final class Util
 
   public static ImageView getImageViewForRelativePath(String relPath)
   {
-    if (relPath.length() > 0)
-      return new ImageView(App.class.getResource(relPath).toString());
-
-    return null;
+    return relPath.length() > 0 ? new ImageView(App.class.getResource(relPath).toString()) : null;
   }
 
 //---------------------------------------------------------------------------
@@ -1628,7 +1588,7 @@ public final class Util
     if (stage.getWidth() < 250) stage.setWidth(defaultW);
     if (stage.getHeight() < 75) stage.setHeight(defaultH);
 
-    double minX = Double.MAX_VALUE, maxX = Double.NEGATIVE_INFINITY, minY = Double.MAX_VALUE, maxY = Double.NEGATIVE_INFINITY;
+    double minX = Double.MAX_VALUE, minY = minX, maxX = Double.NEGATIVE_INFINITY, maxY = maxX;
 
     for (Screen screen : Screen.getScreens())
     {
@@ -1698,19 +1658,37 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface VoidFunction<T1>      { void    evaluate(T1 obj); }
-  @FunctionalInterface public static interface BoolExpression        { boolean evaluate(); }
-  @FunctionalInterface public static interface ObjExpression<T1>     { T1      evaluate(); }
-  @FunctionalInterface public static interface ObjFunction<T1, T2>   { T1      evaluate(T2 obj); }
+  public static <T>      void nullSwitch(T  obj,         Consumer<T>      ex) { if (obj != null)           ex.accept(obj); }
+  public static <T>      T    nullSwitch(T  obj, T  def                     ) { return obj == null ? def : obj           ; }
+  public static <T1, T2> T1   nullSwitch(T2 obj, T1 def, Function<T2, T1> ex) { return obj == null ? def : ex.apply(obj) ; }
 
-  public static <T>      void    nullSwitch(T  obj,              VoidFunction<T>     ex) { if (obj != null)           ex.evaluate(obj); }
-  public static <T>      boolean nullSwitch(T  obj, boolean def, BoolExpression      ex) { return obj == null ? def : ex.evaluate()   ; }
-  public static <T1, T2> T1      nullSwitch(T2 obj, T1      def, ObjExpression<T1>   ex) { return obj == null ? def : ex.evaluate()   ; }
-  public static <T1, T2> T1      nullSwitch(T2 obj, T1      def, ObjFunction<T1, T2> ex) { return obj == null ? def : ex.evaluate(obj); }
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-  public static <T> T nullSwitch(T obj, T def) { return obj == null ? def : obj; }
+  public static <T1, T2> T1 findFirstHaving(Iterable<T2> iterable, Function<T2, T1> func)
+  {
+    return StreamSupport.stream(iterable.spliterator(), false).map(func).filter(Objects::nonNull).findFirst().orElse(null);
+  }
 
-  public static <T> T that(T obj) { return obj; }
+  public static <T1, T2> T1 findFirstHaving(Iterable<T2> iterable, Function<T2, T1> func, Predicate<T1> pred)
+  {
+    return StreamSupport.stream(iterable.spliterator(), false).map(func).filter(pred).findFirst().orElse(null);
+  }
+
+  public static <T1, T2> T1 findFirst(Iterable<T2> iterable, Predicate<T2> pred, T1 def, Function<T2, T1> func)
+  {
+    return nullSwitch(findFirst(iterable, pred), def, func);
+  }
+
+  public static <T1, T2> T1 findFirst(Iterable<T2> iterable, Predicate<T2> pred, Function<T2, T1> func)
+  {
+    return nullSwitch(findFirst(iterable, pred), null, func);
+  }
+
+  public static <T> T findFirst(Iterable<T> iterable, Predicate<T> pred)
+  {
+    return StreamSupport.stream(iterable.spliterator(), false).filter(pred).findFirst().orElse(null);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1833,6 +1811,14 @@ public final class Util
   {
     int ndx = binarySearch(list, item);
     list.add(ndx >= 0 ? ndx + 1 : ~ndx, item);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static FilePath getHomeDir()
+  {
+    return new FilePath(FileSystemView.getFileSystemView().getHomeDirectory());
   }
 
 //---------------------------------------------------------------------------

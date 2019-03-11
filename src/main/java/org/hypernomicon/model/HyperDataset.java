@@ -24,9 +24,9 @@ import static org.hypernomicon.util.Util.*;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.RelationSet;
 
+import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +34,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public final class HyperDataset<HDT_DT extends HDT_Base>
 {
@@ -70,6 +72,8 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
     public Iterator<HDT_DT> idIterator()         { return new CoreIterator(this, false); }
 
     @Override public Iterator<HDT_DT> iterator() { return idIterator(); }
+
+    public Stream<HDT_DT> stream() { return StreamSupport.stream(spliterator(), false); }
   }
 
 //---------------------------------------------------------------------------
@@ -268,38 +272,16 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
   @SuppressWarnings("unchecked")
   private final HDT_DT createRecord(HDT_RecordState recordState)
   {
-    switch (recordState.type)
-    {
-      case hdtPerson          : return (HDT_DT) new HDT_Person          (recordState, (HyperDataset<HDT_Person          >) this);
-      case hdtPersonStatus    : return (HDT_DT) new HDT_PersonStatus    (recordState, (HyperDataset<HDT_PersonStatus    >) this);
-      case hdtRank            : return (HDT_DT) new HDT_Rank            (recordState, (HyperDataset<HDT_Rank            >) this);
-      case hdtInstitution     : return (HDT_DT) new HDT_Institution     (recordState, (HyperDataset<HDT_Institution     >) this);
-      case hdtInstitutionType : return (HDT_DT) new HDT_InstitutionType (recordState, (HyperDataset<HDT_InstitutionType >) this);
-      case hdtInvestigation   : return (HDT_DT) new HDT_Investigation   (recordState, (HyperDataset<HDT_Investigation   >) this);
-      case hdtDebate          : return (HDT_DT) new HDT_Debate          (recordState, (HyperDataset<HDT_Debate          >) this);
-      case hdtArgument        : return (HDT_DT) new HDT_Argument        (recordState, (HyperDataset<HDT_Argument        >) this);
-      case hdtPosition        : return (HDT_DT) new HDT_Position        (recordState, (HyperDataset<HDT_Position        >) this);
-      case hdtTerm            : return (HDT_DT) new HDT_Term            (recordState, (HyperDataset<HDT_Term            >) this);
-      case hdtConcept         : return (HDT_DT) new HDT_Concept         (recordState, (HyperDataset<HDT_Concept         >) this);
-      case hdtField           : return (HDT_DT) new HDT_Field           (recordState, (HyperDataset<HDT_Field           >) this);
-      case hdtSubfield        : return (HDT_DT) new HDT_Subfield        (recordState, (HyperDataset<HDT_Subfield        >) this);
-      case hdtWorkType        : return (HDT_DT) new HDT_WorkType        (recordState, (HyperDataset<HDT_WorkType        >) this);
-      case hdtWorkLabel       : return (HDT_DT) new HDT_WorkLabel       (recordState, (HyperDataset<HDT_WorkLabel       >) this);
-      case hdtWork            : return (HDT_DT) new HDT_Work            (recordState, (HyperDataset<HDT_Work            >) this);
-      case hdtState           : return (HDT_DT) new HDT_State           (recordState, (HyperDataset<HDT_State           >) this);
-      case hdtCountry         : return (HDT_DT) new HDT_Country         (recordState, (HyperDataset<HDT_Country         >) this);
-      case hdtPositionVerdict : return (HDT_DT) new HDT_PositionVerdict (recordState, (HyperDataset<HDT_PositionVerdict >) this);
-      case hdtArgumentVerdict : return (HDT_DT) new HDT_ArgumentVerdict (recordState, (HyperDataset<HDT_ArgumentVerdict >) this);
-      case hdtMiscFile        : return (HDT_DT) new HDT_MiscFile        (recordState, (HyperDataset<HDT_MiscFile        >) this);
-      case hdtNote            : return (HDT_DT) new HDT_Note            (recordState, (HyperDataset<HDT_Note            >) this);
-      case hdtHub             : return (HDT_DT) new HDT_Hub             (recordState, (HyperDataset<HDT_Hub             >) this);
-      case hdtFileType        : return (HDT_DT) new HDT_FileType        (recordState, (HyperDataset<HDT_FileType        >) this);
-      case hdtPersonGroup     : return (HDT_DT) new HDT_PersonGroup     (recordState, (HyperDataset<HDT_PersonGroup     >) this);
-      case hdtWorkFile        : return (HDT_DT) new HDT_WorkFile        (recordState, (HyperDataset<HDT_WorkFile        >) this);
-      case hdtFolder          : return (HDT_DT) new HDT_Folder          (recordState, (HyperDataset<HDT_Folder          >) this);
-      case hdtGlossary        : return (HDT_DT) new HDT_Glossary        (recordState, (HyperDataset<HDT_Glossary        >) this);
+    Class<HDT_DT> klazz = (Class<HDT_DT>) recordState.type.getRecordClass();
 
-      default                 : return null;
+    try
+    {
+      return klazz.getConstructor(HDT_RecordState.class, getClass()).newInstance(recordState, this);
+    }
+    catch (NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e)
+    {
+      e.printStackTrace();
+      return null;
     }
   }
 

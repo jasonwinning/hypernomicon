@@ -111,7 +111,6 @@ public class SubjectPopulator extends Populator
       rowToChoices.put(row, new ArrayList<>());
 
     List<HyperTableCell> choices = rowToChoices.get(row);
-    HyperTableCell choice;
 
     if ((hasChanged(row) == false) && (force == false))
       return choices;
@@ -140,6 +139,8 @@ public class SubjectPopulator extends Populator
         choices.clear();
         noneYet = false;
       }
+
+      HyperTableCell choice;
 
       if (nameOnly)
         choice = new HyperTableCell(subj.getID(), subj.name(), subj.getType());

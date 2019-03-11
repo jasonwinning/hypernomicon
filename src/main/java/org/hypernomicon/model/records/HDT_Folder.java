@@ -93,7 +93,7 @@ public class HDT_Folder extends HDT_Record implements HDT_RecordWithPath
     if (parentFilePath.exists() == false)
       return falseWithErrorMessage("Unable to rename the folder: parent folder does not exist.");
 
-    FilePath destFilePath = parentFilePath.resolve(new FilePath(newName));
+    FilePath destFilePath = parentFilePath.resolve(newName);
 
     if (destFilePath.exists())
       return falseWithErrorMessage("Unable to rename the folder: a file or folder already has that name.");
@@ -224,11 +224,7 @@ public class HDT_Folder extends HDT_Record implements HDT_RecordWithPath
   {
     if ((workFiles.size() > 0) || (miscFiles.size() > 0)) return true;
 
-    for (HDT_Folder childFolder : childFolders)
-      if (childFolder.path.getRecordsString().length() > 0)
-        return true;
-
-    return false;
+    return childFolders.stream().anyMatch(childFolder -> childFolder.path.getRecordsString().length() > 0);
   }
 
 //---------------------------------------------------------------------------
@@ -238,10 +234,7 @@ public class HDT_Folder extends HDT_Record implements HDT_RecordWithPath
   {
     if ( ! (notes.isEmpty() && workFiles.isEmpty() && miscFiles.isEmpty())) return false;
 
-    for (HDT_Folder child : childFolders)
-      if (child.hasNoNonFolderRecordDependencies() == false) return false;
-
-    return true;
+    return childFolders.stream().allMatch(HDT_Folder::hasNoNonFolderRecordDependencies);
   }
 
 //---------------------------------------------------------------------------

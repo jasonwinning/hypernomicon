@@ -34,10 +34,7 @@ public class AllQuerySource implements QuerySource
   public AllQuerySource()
   {
     EnumSet<HDT_RecordType> types = EnumSet.allOf(HDT_RecordType.class);
-
-    types.remove(hdtNone);
-    types.remove(hdtAuxiliary);
-    types.remove(hdtHub);
+    types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
 
     source = new CombinedUnfilteredQuerySource(types);
   }

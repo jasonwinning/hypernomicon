@@ -114,8 +114,9 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
   @FXML public ComboBox<HyperTableCell> cbField;
   @FXML public TextField tfFirst, tfLast;
 
+  final private ArrayList<InvestigationView> invViews = new ArrayList<>();
+
   private HyperTable htPersonInst, htWorks, htArguments;
-  private ArrayList<InvestigationView> invViews;
   private MainTextWrapper mainText;
   public FilePath curPicture = null;
   private Rectangle2D viewPort = null;
@@ -187,10 +188,10 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 // Populate the debates
 // --------------------
 
-      for (HDT_Argument argument : work.arguments)
+      work.arguments.forEach(argument -> {
         if (htArguments.containsRecord(argument) == false)
           if (addArgToTopicTable(argument, topicRecordsAdded, emptySet(), emptySet()))
-            topicRecordsAdded.add(work);
+            topicRecordsAdded.add(work); });
 
 // Populate the works
 // ------------------
@@ -327,8 +328,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     }
     else
     {
-      ArrayList<TableColumn<HyperTableRow, ?>> list = new ArrayList<>();
-      list.addAll(htWorks.getTV().getSortOrder());
+      ArrayList<TableColumn<HyperTableRow, ?>> list = new ArrayList<>(htWorks.getTV().getSortOrder());
 
       htWorks.getTV().getSortOrder().clear();
       htWorks.getTV().getSortOrder().addAll(list);
@@ -387,7 +387,6 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     else if (mentioned.getType() == hdtMiscFile) HDT_MiscFile.class.cast(mentioned).labels.forEach(consumer);
 
     Set<HDT_RecordWithConnector> mentioners = db.getKeyWorkMentioners(mentioned);
-    if (mentioners == null) return;
 
     mentioners.forEach(mentioner ->
     {
@@ -569,7 +568,6 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
   @Override public boolean saveToRecord(boolean showMessage)
   {
     int ndx, subfieldID;
-    boolean noDelete;
     HDT_Subfield subfield;
 
     if (!saveSearchKey(curPerson, tfSearchKey, showMessage)) return false;
@@ -611,23 +609,11 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     // Now delete the unused investigations
     // ------------------------------------
 
-    for (ndx = 0; ndx < curPerson.investigations.size(); ndx++)
+    new ArrayList<>(curPerson.investigations).forEach(inv ->
     {
-      noDelete = false;
-      HDT_Investigation inv = curPerson.investigations.get(ndx);
-
-      for (InvestigationView iV : invViews)
-      {
-        if (iV.id == inv.getID())
-          noDelete = true;
-      }
-
-      if (noDelete == false)
-      {
+      if (invViews.stream().noneMatch(iV -> iV.id == inv.getID()))
         db.deleteRecord(hdtInvestigation, inv.getID());
-        ndx--;
-      }
-    }
+    });
 
     // End of save investigations
     // ----------------------------------------------------------------------------------------------------
@@ -667,7 +653,8 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     else
       curPerson.subfield.setID(-1);
 
-    // Now delete the unused subfields
+  // Now delete the unused subfields
+
     for (ndx = 0; ndx < db.subfields.size(); ndx++)
     {
       subfield = db.subfields.getByIDNdx(ndx);
@@ -744,12 +731,12 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
     htWorks = new HyperTable(tvWorks, 4, false, PREF_KEY_HT_PERSON_WORKS);
 
-    htWorks.addCol(hdtNone, ctNone);
-    htWorks.addCol(hdtWorkType, ctNone);
-    htWorks.addCol(hdtNone, ctNone);
+    htWorks.addCol(hdtNone         , ctNone);
+    htWorks.addCol(hdtWorkType     , ctNone);
+    htWorks.addCol(hdtNone         , ctNone);
     htWorks.addCol(hdtInvestigation, ctInvSelect);
-    htWorks.addCol(hdtWork, ctNone);
-    htWorks.addCol(hdtPerson, ctNone);
+    htWorks.addCol(hdtWork         , ctNone);
+    htWorks.addCol(hdtPerson       , ctNone);
 
     tvWorks.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
@@ -772,15 +759,15 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     htArguments = new HyperTable(tvArguments, 4, false, PREF_KEY_HT_PERSON_ARG);
 
     htArguments.addIconCol();
-    htArguments.addCol(hdtNone, ctNone);
+    htArguments.addCol(hdtNone    , ctNone);
     htArguments.addCol(hdtPosition, ctNone);
-    htArguments.addCol(hdtNone, ctNone);      // record type = hdtNone so that the column will sort purely based on the displayed text
+    htArguments.addCol(hdtNone    , ctNone);   // record type = hdtNone so that the column will sort purely based on the displayed text
     htArguments.addCol(hdtArgument, ctNone);
 
-    hcbRank = new HyperCB(cbRank, ctDropDownList, new StandardPopulator(hdtRank), null);
-    hcbStatus = new HyperCB(cbStatus, ctDropDownList, new StandardPopulator(hdtPersonStatus), null);
-    hcbField = new HyperCB(cbField, ctDropDownList, new StandardPopulator(hdtField), null);
-    hcbSubfield = new HyperCB(cbSubfield, ctDropDown, new SubjectPopulator(rtFieldOfSubfield, false), null);
+    hcbRank     = new HyperCB(cbRank    , ctDropDownList, new StandardPopulator(hdtRank)                 , null);
+    hcbStatus   = new HyperCB(cbStatus  , ctDropDownList, new StandardPopulator(hdtPersonStatus)         , null);
+    hcbField    = new HyperCB(cbField   , ctDropDownList, new StandardPopulator(hdtField)                , null);
+    hcbSubfield = new HyperCB(cbSubfield, ctDropDown    , new SubjectPopulator (rtFieldOfSubfield, false), null);
 
     tfFirst.setTooltip(new Tooltip("To indicate what name the person informally goes by, write it in parentheses. For example, \"William (Bill)\""));
 
@@ -790,7 +777,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       updateSearchKey(new PersonName(newValue, tfLast.getText()), false);
     });
 
-    UnaryOperator<TextFormatter.Change> filter = (change) ->
+    UnaryOperator<TextFormatter.Change> filter = change ->
     {
       if (alreadyChangingName) return change;
 
@@ -846,8 +833,6 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
     btnGoogle.setOnAction(event -> searchGoogle(tfFirst.getText() + " " + tfLast.getText() + " " + HyperTableCell.getCellText(cbField.getSelectionModel().getSelectedItem()), true));
     btnScholar.setOnAction(event -> btnScholarClick());
-
-    invViews = new ArrayList<>();
 
     ivPerson.setOnMouseClicked(event ->
     {
@@ -1017,29 +1002,18 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
   private void deleteInvestigation(Event event)
   {
-    InvestigationView view = null;
-    Tab tab;
-    int invID;
-
     if (confirmDialog("Are you sure you want to delete the investigation?"))
     {
-      tab = (Tab) event.getSource();
+      Tab tab = (Tab) event.getSource();
 
-      for (InvestigationView iV : invViews)
-      {
-        if (iV.tab.equals(tab))
-        {
-          view = iV;
-          break;
-        }
-      }
+      InvestigationView view = findFirst(invViews, iV -> iV.tab.equals(tab));
 
       if (view == null) return;
 
       if (view.id < 1)
         return;           // this is the only scenario where the event is allowed to continue propagating
 
-      invID = view.id;
+      int invID = view.id;
 
       if (ui.cantSaveRecord(true))
       {
@@ -1097,16 +1071,13 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     gPane.add(new Label("Search key:"), 2, 0);
     gPane.add(iV.tfSearchKey, 3, 0);
 
-    ColumnConstraints cc2 = new ColumnConstraints();
-    ColumnConstraints cc4 = new ColumnConstraints();
+    ColumnConstraints cc2 = new ColumnConstraints(),
+                      cc4 = new ColumnConstraints();
 
     cc2.setHgrow(Priority.ALWAYS);
     cc4.setHgrow(Priority.ALWAYS);
 
-    gPane.getColumnConstraints().add(new ColumnConstraints());
-    gPane.getColumnConstraints().add(cc2);
-    gPane.getColumnConstraints().add(new ColumnConstraints());
-    gPane.getColumnConstraints().add(cc4);
+    gPane.getColumnConstraints().addAll(new ColumnConstraints(), cc2, new ColumnConstraints(), cc4);
 
     gPane.setHgap(3);
 
@@ -1133,16 +1104,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     if (oldValue == tabOverview)
       mainText.hide();
     else if (oldValue != tabNew)
-    {
-      InvestigationView iV = null;
-
-      for (InvestigationView view : invViews)
-        if (view.tab == oldValue)
-          iV = view;
-
-      if (iV != null)
-        iV.textWrapper.hide();
-    }
+      nullSwitch(findFirst(invViews, view -> view.tab == oldValue), iV -> iV.textWrapper.hide());
 
     if (newValue == tabNew)
     {
@@ -1163,12 +1125,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       return;
     }
 
-    InvestigationView iV = null;
-
-    for (InvestigationView view : invViews)
-      if (view.tab == newValue)
-        iV = view;
-
+    InvestigationView iV = findFirst(invViews, view -> view.tab == newValue);
     if (iV == null) return;
 
     if (iV.id < 1)
@@ -1242,15 +1199,11 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
   public void showInvestigation(int id)
   {
-    for (InvestigationView iV : invViews)
+    nullSwitch(findFirst(invViews, iV -> iV.id == id), iV ->
     {
-      if (iV.id == id)
-      {
-        tpPerson.getSelectionModel().select(iV.tab);
-        safeFocus(iV.tfName);
-        break;
-      }
-    }
+      tpPerson.getSelectionModel().select(iV.tab);
+      safeFocus(iV.tfName);
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -1258,11 +1211,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
   public MainTextWrapper getInvMainTextWrapper(int id)
   {
-    for (InvestigationView iV : invViews)
-      if (iV.id == id)
-        return iV.textWrapper;
-
-    return null;
+    return findFirst(invViews, iV -> iV.id == id, iV -> iV.textWrapper);
   }
 
 //---------------------------------------------------------------------------
@@ -1313,12 +1262,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       return;
     }
 
-    for (InvestigationView iV : invViews)
-      if (iV.tab.equals(tab))
-      {
-        iV.textWrapper.hilite(text);
-        return;
-      }
+    nullSwitch(findFirst(invViews, iV -> iV.tab.equals(tab)), iV -> iV.textWrapper.hilite(text));
   }
 
 //---------------------------------------------------------------------------
@@ -1331,11 +1275,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     if (tab.equals(tabOverview))
       return mainText.getViewInfo();
 
-    for (InvestigationView iV : invViews)
-      if (iV.tab.equals(tab))
-        return iV.textWrapper.getViewInfo();
-
-    return new TextViewInfo();
+    return nullSwitch(findFirst(invViews, iV -> iV.tab.equals(tab)), new TextViewInfo(), iV -> iV.textWrapper.getViewInfo());
   }
 
 //---------------------------------------------------------------------------

@@ -80,11 +80,10 @@ public class InvestigationsDialogController extends HyperDialog
   {
     final ObservableList<InvestigationSetting> data = FXCollections.observableArrayList();
 
-    for (HDT_Investigation inv : curPerson.investigations)
-      data.add(new InvestigationSetting(work.investigations.contains(inv), inv));
+    curPerson.investigations.forEach(inv -> data.add(new InvestigationSetting(work.investigations.contains(inv), inv)));
 
     listView.setItems(data);
-    listView.setCellFactory(CheckBoxListCell.forListView(invSetting -> invSetting.selectedProperty()));
+    listView.setCellFactory(CheckBoxListCell.forListView(InvestigationSetting::selectedProperty));
 
     tfNew.textProperty().addListener((observable, oldValue, newValue) ->
     {

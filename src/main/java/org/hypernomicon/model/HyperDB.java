@@ -50,11 +50,12 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.InvalidPreferencesFormatException;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -74,6 +75,7 @@ import org.json.simple.parser.ParseException;
 
 import com.google.common.collect.EnumBiMap;
 import com.google.common.collect.EnumHashBiMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import javafx.beans.property.ObjectProperty;
@@ -110,7 +112,7 @@ public final class HyperDB
 
   final private EnumMap<HDT_RecordType, HyperDataset<? extends HDT_Base>> datasets = new EnumMap<>(HDT_RecordType.class);
   final private EnumMap<HDT_RecordType, HyperDataset<? extends HDT_Base>.CoreAccessor> accessors = new EnumMap<>(HDT_RecordType.class);
-  final private EnumMap<RelationType, RelationSet<? extends HDT_Base, ? extends HDT_Base>> relationSets = new EnumMap<>(RelationType.class);
+  final private EnumMap<RelationType, RelationSet<HDT_Base, HDT_Base>> relationSets = new EnumMap<>(RelationType.class);
   final private EnumMap<RelationType, Boolean> relTypeToIsMulti = new EnumMap<>(RelationType.class);
   final private EnumMap<Tag, HDT_RecordType> tagToObjType = new EnumMap<>(Tag.class);
   final private EnumMap<Tag, EnumSet<HDT_RecordType>> tagToSubjType = new EnumMap<>(Tag.class);
@@ -355,22 +357,26 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FilePath getPath(String prefKey, FilePath relativePath)
+  public FilePath getPath(String prefKey)
+  {
+    return getPath(prefKey, "");
+  }
+
+  public FilePath getPath(String prefKey, String relativeStr)
   {
     String pathStr = appPrefs.get(PREF_KEY_SOURCE_PATH, "");
     if (pathStr.equals("")) return null;
     FilePath sourcePath = new FilePath(pathStr);
 
     if (prefKey.length() == 0)
-      return sourcePath.resolve(relativePath);
+      return sourcePath.resolve(relativeStr);
 
     String path2 = prefs.get(prefKey, "");
     if (path2.equals("")) return null;
 
-    if (FilePath.isEmpty(relativePath)) return sourcePath.resolve(new FilePath(path2));
+    if (relativeStr.equals("")) return sourcePath.resolve(path2);
 
-    return sourcePath.resolve(new FilePath(path2))
-                     .resolve(relativePath);
+    return sourcePath.resolve(path2).resolve(relativeStr);
   }
 
 //---------------------------------------------------------------------------
@@ -418,8 +424,7 @@ public final class HyperDB
     if (loaded == false) return false;
 
     ArrayList<String> filenameList = new ArrayList<>();
-    ArrayList<StringBuilder> xmlList = new ArrayList<>();
-    xmlList.add(new StringBuilder());
+    ArrayList<StringBuilder> xmlList = Lists.newArrayList(new StringBuilder());
 
     task = new HyperTask() { @Override protected Boolean call() throws Exception
     {
@@ -470,7 +475,7 @@ public final class HyperDB
         writeDatasetToXML(xmlList, hdtHub);             finalizeXMLFile(xmlList, filenameList, HUB_FILE_NAME);
 
         for (int ndx = 0; ndx < filenameList.size(); ndx++)
-          saveStringBuilderToFile(xmlList.get(ndx), rootFilePath.resolve(new FilePath(filenameList.get(ndx))));
+          saveStringBuilderToFile(xmlList.get(ndx), rootFilePath.resolve(filenameList.get(ndx)));
       }
       catch (IOException | HDB_InternalError e)
       {
@@ -524,7 +529,7 @@ public final class HyperDB
     close(null);
 
     rootFilePath = newRootFilePath;
-    prefsFilePath = rootFilePath.resolve(new FilePath(appPrefs.get(PREF_KEY_SOURCE_FILENAME, PREFS_DEFAULT_FILENAME)));
+    prefsFilePath = rootFilePath.resolve(appPrefs.get(PREF_KEY_SOURCE_FILENAME, PREFS_DEFAULT_FILENAME));
 
     if (dbChanged)
       dbPreChangeHandlers.forEach(DatabaseEvent::handle);
@@ -535,7 +540,7 @@ public final class HyperDB
                                          DEBATE_FILE_NAME, ARGUMENT_FILE_NAME, POSITION_FILE_NAME,    WORK_FILE_NAME,
                                          TERM_FILE_NAME,   FILE_FILE_NAME,     NOTE_FILE_NAME,        HUB_FILE_NAME })
     {
-      FilePath filePath = rootFilePath.resolve(new FilePath(fileName));
+      FilePath filePath = rootFilePath.resolve(fileName);
 
       if (filePath.exists() == false)
         return falseWithErrorMessage("Unable to load database. Reason: File does not exist: " + filePath);
@@ -604,13 +609,13 @@ public final class HyperDB
         Preferences.importPreferences(is);
         favorites.loadFromPrefNode();
 
-        if ((db.getPath(PREF_KEY_PICTURES_PATH  , null) == null) ||
-            (db.getPath(PREF_KEY_BOOKS_PATH     , null) == null) ||
-            (db.getPath(PREF_KEY_PAPERS_PATH    , null) == null) ||
-            (db.getPath(PREF_KEY_RESULTS_PATH   , null) == null) ||
-            (db.getPath(PREF_KEY_UNENTERED_PATH , null) == null) ||
-            (db.getPath(PREF_KEY_MISC_FILES_PATH, null) == null) ||
-            (db.getPath(PREF_KEY_TOPICAL_PATH   , null) == null))
+        if ((db.getPath(PREF_KEY_PICTURES_PATH  ) == null) ||
+            (db.getPath(PREF_KEY_BOOKS_PATH     ) == null) ||
+            (db.getPath(PREF_KEY_PAPERS_PATH    ) == null) ||
+            (db.getPath(PREF_KEY_RESULTS_PATH   ) == null) ||
+            (db.getPath(PREF_KEY_UNENTERED_PATH ) == null) ||
+            (db.getPath(PREF_KEY_MISC_FILES_PATH) == null) ||
+            (db.getPath(PREF_KEY_TOPICAL_PATH   ) == null))
         {
           throw new HyperDataException("Unable to load information about paths from database options HDB file");
         }
@@ -682,7 +687,7 @@ public final class HyperDB
 
     bibLibrary = null;
 
-    getRootFilePath().resolve(new FilePath(BIB_FILE_NAME)).deletePromptOnFail(true);
+    getRootFilePath().resolve(BIB_FILE_NAME).deletePromptOnFail(true);
 
     prefs.remove(PREF_KEY_BIB_API_KEY);
     prefs.remove(PREF_KEY_BIB_USER_ID);
@@ -705,7 +710,7 @@ public final class HyperDB
     if (bibLibrary != null)
       throw new HDB_InternalError(21174);
 
-    FilePath bibJsonFilePath = getRootFilePath().resolve(new FilePath(BIB_FILE_NAME));
+    FilePath bibJsonFilePath = getRootFilePath().resolve(BIB_FILE_NAME);
 
     if (bibJsonFilePath.exists())
     {
@@ -743,7 +748,7 @@ public final class HyperDB
         throw new HDB_InternalError(21175);
     }
 
-    bLibrary.loadFromDisk(getRootFilePath().resolve(new FilePath(BIB_FILE_NAME)));
+    bLibrary.loadFromDisk(getRootFilePath().resolve(BIB_FILE_NAME));
 
     bibLibrary = bLibrary;
 
@@ -1152,8 +1157,6 @@ public final class HyperDB
       String msg = "Internal error #42837";
       throw new HyperDataException(msg, e);
     }
-
-    return;
   }
 
 //---------------------------------------------------------------------------
@@ -1253,19 +1256,22 @@ public final class HyperDB
     }
 
     addToSortedList(initialNavList, record, (record1, record2) -> record1.getViewDate().compareTo(record2.getViewDate()));
+
+    while (initialNavList.size() > INITIAL_NAV_LIST_SIZE)
+      initialNavList.remove(0);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public FilePath getRequestMessageFilePath()
-  { return new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(new FilePath(REQUEST_MSG_FILE_NAME)); }
+  { return new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(REQUEST_MSG_FILE_NAME); }
 
   public FilePath getResponseMessageFilePath()
-  { return new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(new FilePath(RESPONSE_MSG_FILE_NAME)); }
+  { return new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(RESPONSE_MSG_FILE_NAME); }
 
   public FilePath getLockFilePath()
-  { return new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(new FilePath(LOCK_FILE_NAME)); }
+  { return new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(LOCK_FILE_NAME); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1393,23 +1399,12 @@ public final class HyperDB
 
   private void clearAllDataSets(EnumSet<HDT_RecordType> datasetsToKeep)
   {
-    boolean leaveOnline = false;
-
     if (datasetsToKeep != null) // It should only be non-null when a new database is being created
-    {
-      datasetsToKeep.add(hdtWorkType);
-      datasetsToKeep.add(hdtPositionVerdict);
-      datasetsToKeep.add(hdtArgumentVerdict);
-      datasetsToKeep.add(hdtInstitutionType);
+      datasetsToKeep.addAll(EnumSet.of(hdtWorkType, hdtPositionVerdict, hdtArgumentVerdict, hdtInstitutionType));
 
-      leaveOnline = true; // Datasets remain online through process of creating a new database
-    }
-    else
-      datasetsToKeep = EnumSet.noneOf(HDT_RecordType.class);
-
-    for (Entry<HDT_RecordType, HyperDataset<? extends HDT_Base>> entry : datasets.entrySet())
-      if (datasetsToKeep.contains(entry.getKey()) == false)
-        entry.getValue().removeAll(leaveOnline);
+    datasets.forEach((type, dataset) -> {
+      if ((datasetsToKeep == null) || (datasetsToKeep.contains(type) == false))
+        dataset.removeAll(datasetsToKeep != null); }); // Datasets remain online through process of creating a new database
 
     searchKeys.removeAll();
   }
@@ -1431,7 +1426,7 @@ public final class HyperDB
 
     appPrefs.put(PREF_KEY_SOURCE_PATH, newPath);
     rootFilePath = new FilePath(newPath);
-    prefsFilePath = rootFilePath.resolve(new FilePath(appPrefs.get(PREF_KEY_SOURCE_FILENAME, PREFS_DEFAULT_FILENAME)));
+    prefsFilePath = rootFilePath.resolve(appPrefs.get(PREF_KEY_SOURCE_FILENAME, PREFS_DEFAULT_FILENAME));
 
     folders.forEach(prefs::put);
 
@@ -1529,9 +1524,7 @@ public final class HyperDB
 
   public Set<HDI_Schema> getSchemasByTag(Tag tag)
   {
-    Set<HDI_Schema> schemas = new HashSet<>();
-    datasets.values().forEach(dataset -> nullSwitch(dataset.getSchema(tag), schemas::add));
-    return schemas;
+    return datasets.values().stream().map(dataset -> dataset.getSchema(tag)).filter(Objects::nonNull).collect(Collectors.toSet());
   }
 
 //---------------------------------------------------------------------------
@@ -1989,20 +1982,20 @@ public final class HyperDB
         filePath.equals(getRequestMessageFilePath()) ||
         filePath.equals(getResponseMessageFilePath()) ||
         filePath.equals(getLockFilePath()) ||
-        filePath.equals(rootFilePath.resolve(new FilePath(PERSON_FILE_NAME))) ||
-        filePath.equals(rootFilePath.resolve(new FilePath(PERSON_FILE_NAME))) ||
-        filePath.equals(rootFilePath.resolve(new FilePath(OTHER_FILE_NAME))) ||
-        filePath.equals(rootFilePath.resolve(new FilePath(INSTITUTION_FILE_NAME))) ||
-        filePath.equals(rootFilePath.resolve(new FilePath(INVESTIGATION_FILE_NAME))) ||
-        filePath.equals(rootFilePath.resolve(new FilePath(DEBATE_FILE_NAME))) ||
-        filePath.equals(rootFilePath.resolve(new FilePath(ARGUMENT_FILE_NAME))) ||
-        filePath.equals(rootFilePath.resolve(new FilePath(POSITION_FILE_NAME))) ||
-        filePath.equals(rootFilePath.resolve(new FilePath(WORK_FILE_NAME))) ||
-        filePath.equals(rootFilePath.resolve(new FilePath(TERM_FILE_NAME))) ||
-        filePath.equals(rootFilePath.resolve(new FilePath(FILE_FILE_NAME))) ||
-        filePath.equals(rootFilePath.resolve(new FilePath(NOTE_FILE_NAME))) ||
-        filePath.equals(rootFilePath.resolve(new FilePath(HUB_FILE_NAME))) ||
-        filePath.equals(rootFilePath.resolve(new FilePath(BIB_FILE_NAME))))
+        filePath.equals(rootFilePath.resolve(PERSON_FILE_NAME       )) ||
+        filePath.equals(rootFilePath.resolve(PERSON_FILE_NAME       )) ||
+        filePath.equals(rootFilePath.resolve(OTHER_FILE_NAME        )) ||
+        filePath.equals(rootFilePath.resolve(INSTITUTION_FILE_NAME  )) ||
+        filePath.equals(rootFilePath.resolve(INVESTIGATION_FILE_NAME)) ||
+        filePath.equals(rootFilePath.resolve(DEBATE_FILE_NAME       )) ||
+        filePath.equals(rootFilePath.resolve(ARGUMENT_FILE_NAME     )) ||
+        filePath.equals(rootFilePath.resolve(POSITION_FILE_NAME     )) ||
+        filePath.equals(rootFilePath.resolve(WORK_FILE_NAME         )) ||
+        filePath.equals(rootFilePath.resolve(TERM_FILE_NAME         )) ||
+        filePath.equals(rootFilePath.resolve(FILE_FILE_NAME         )) ||
+        filePath.equals(rootFilePath.resolve(NOTE_FILE_NAME         )) ||
+        filePath.equals(rootFilePath.resolve(HUB_FILE_NAME          )) ||
+        filePath.equals(rootFilePath.resolve(BIB_FILE_NAME          )))
       return true;
 
     return false;
@@ -2140,9 +2133,9 @@ public final class HyperDB
 
   public Set<HDT_RecordWithConnector> getKeyWorkMentioners(HDT_RecordWithPath record)
   {
-    if (keyWorkIndex.get(record) == null) return null;
-
     HashSet<HDT_RecordWithConnector> set = new HashSet<>();
+
+    if (keyWorkIndex.get(record) == null) return set;
 
     keyWorkIndex.get(record).forEach(mentioner ->
     {

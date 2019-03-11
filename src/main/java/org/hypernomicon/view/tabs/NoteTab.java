@@ -61,9 +61,9 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 {
-  private SplitMenuButton btnFolder = new SplitMenuButton();
-  private Button btnBrowse = new Button("...");
-  private TextField tfFolder = new TextField();
+  final private SplitMenuButton btnFolder = new SplitMenuButton();
+  final private Button btnBrowse = new Button("...");
+  final private TextField tfFolder = new TextField();
   private TabPane tabPane;
   private Tab tabSubnotes, tabMentioners;
   private HyperTable htParents, htSubnotes, htMentioners;
@@ -292,7 +292,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
       if ((folder != null) && (folder.getPath().getFilePath().exists()))
         dirChooser.setInitialDirectory(folder.getPath().getFilePath().toFile());
       else
-        dirChooser.setInitialDirectory(db.getPath(PREF_KEY_TOPICAL_PATH, null).toFile());
+        dirChooser.setInitialDirectory(db.getPath(PREF_KEY_TOPICAL_PATH).toFile());
     }
     else
       dirChooser.setInitialDirectory(folderPath.toFile());

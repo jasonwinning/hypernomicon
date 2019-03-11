@@ -20,6 +20,8 @@ package org.hypernomicon.view.wrappers;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 
+import static org.hypernomicon.util.Util.*;
+
 @FunctionalInterface public interface CommitableWrapper
 {
   void commit();
@@ -33,26 +35,22 @@ import javafx.scene.control.ComboBox;
 
     if (node instanceof CommitableWrapper)
     {
-      CommitableWrapper wrapper = (CommitableWrapper) node;
-      wrapper.commit();
+      CommitableWrapper.class.cast(node).commit();
       return;
     }
-    else if (node instanceof ComboBox)
+
+    if (node instanceof ComboBox)
     {
       HyperCB hcb = HyperCB.cbRegistry.get(node);
 
-      if (hcb == null)
+      if (hcb != null)
       {
-        commitWrapper(node.getParent());
+        hcb.commit();
         return;
       }
-
-      hcb.commit();
-      return;
     }
 
-    if (node.getParent() == null) return;
-    commitWrapper(node.getParent());
+    nullSwitch(node.getParent(), CommitableWrapper::commitWrapper);
   }
 
 //---------------------------------------------------------------------------

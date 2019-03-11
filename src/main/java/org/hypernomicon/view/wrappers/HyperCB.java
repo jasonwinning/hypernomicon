@@ -168,19 +168,13 @@ public class HyperCB implements CommitableWrapper
     {
       @Override public String toString(HyperTableCell cell)
       {
-        return nullSwitch(cell, "", HyperTableCell::getText);
+        return HyperTableCell.getCellText(cell);
       }
 
       @Override public HyperTableCell fromString(String string)
       {
-        if (cb.getItems() == null)
-          return new HyperTableCell(-1, string, populator.getRecordType(row));
-
-        for (HyperTableCell cell : cb.getItems())
-          if (string.equals(cell.getText()))
-            return cell;
-
-        return new HyperTableCell(-1, string, populator.getRecordType(row));
+        HyperTableCell cell = nullSwitch(cb.getItems(), null, items -> findFirst(items, htc -> string.equals(htc.getText())));
+        return cell == null ? new HyperTableCell(-1, string, populator.getRecordType(row)) : cell;
       }
     });
 
@@ -218,8 +212,7 @@ public class HyperCB implements CommitableWrapper
 
     cb.setOnHidden(event ->
     {
-      if (adjusting) return;
-      if ((preShowingValue == null) || (table == null) || (table.autoCommitListSelections == false)) return;
+      if (adjusting || (preShowingValue == null) || (table == null) || (table.autoCommitListSelections == false)) return;
 
       String newText = HyperTableCell.getCellText(cb.getValue());
       if (newText.length() == 0) return;
@@ -634,15 +627,11 @@ public class HyperCB implements CommitableWrapper
   {
     populate(false);
 
-    for (HyperTableCell choice : cb.getItems())
+    nullSwitch(findFirst(cb.getItems(), choice -> choice.getType() == objType), choice ->
     {
-      if (choice.getType() == objType)
-      {
-        cb.getSelectionModel().select(choice);
-        cb.setValue(choice);
-        return;
-      }
-    }
+      cb.getSelectionModel().select(choice);
+      cb.setValue(choice);
+    });
   }
 
 //---------------------------------------------------------------------------

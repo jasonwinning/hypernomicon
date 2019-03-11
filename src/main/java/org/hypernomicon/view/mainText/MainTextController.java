@@ -108,7 +108,7 @@ public class MainTextController
 //---------------------------------------------------------------------------
 
   List<DisplayItem> getDisplayItems() { return lvRecords.getItems(); }
-  boolean isEmpty()                   { return getHtmlAndKeyWorks(new ArrayList<KeyWork>()).trim().length() == 0; }
+  boolean isEmpty()                   { return getHtmlAndKeyWorks(new ArrayList<>()).trim().length() == 0; }
 
   int getScrollPos()    { return nullSwitch(getWebView(), 0, webView -> MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
 
@@ -327,9 +327,7 @@ public class MainTextController
       runDelayedInFXThread(5, 100, e -> cbType.requestFocus());
     });
 
-    bar.getItems().add(btnLink);
-    bar.getItems().add(btnClear);
-    bar.getItems().add(btnEditLayout);
+    bar.getItems().addAll(btnLink, btnClear, btnEditLayout);
 
     he.setFocusTraversable(false);
   }
@@ -342,13 +340,11 @@ public class MainTextController
     if (ui.cantSaveRecord(true)) return;
 
     HDT_RecordType keyType = hcbKeyType.selectedType();
-    ArrayList<KeyWork> keyWorks = new ArrayList<>();
-    keyWorks.addAll(curRecord.getMainText().getKeyWorks());
+    ArrayList<KeyWork> keyWorks = new ArrayList<>(curRecord.getMainText().getKeyWorks());
 
     HDT_RecordWithPath keyRecord = db.createNewBlankRecord(keyType);
-    KeyWork keyWork = new KeyWork(keyRecord);
+    keyWorks.add(new KeyWork(keyRecord));
 
-    keyWorks.add(keyWork);
     curRecord.getMainText().setKeyWorksFromList(keyWorks, true);
     ui.goToRecord(keyRecord, false);
 
@@ -382,9 +378,8 @@ public class MainTextController
 
     getKeyWorks(list);
 
-    for (KeyWork keyWork : list)
-      if ((keyWork.getRecordID() == keyID) && (keyWork.getRecordType() == keyType))
-        return;
+    if (list.stream().anyMatch(keyWork -> (keyWork.getRecordID() == keyID) && (keyWork.getRecordType() == keyType)))
+      return;
 
     KeyWork keyWork = new KeyWork((HDT_RecordWithPath) db.records(keyType).getByID(keyID));
 
@@ -683,17 +678,7 @@ public class MainTextController
         addToSortedList(searchKeys, searchKey, (s1, s2) -> s1.compareToIgnoreCase(s2));
       });
 
-      boolean first = true;
-
-      for (String searchKey : searchKeys)
-      {
-        if (first)
-          keyWorksText = keyWorksText + linkMap.get(searchKey);
-        else
-          keyWorksText = keyWorksText + ", " + linkMap.get(searchKey);
-
-        first = false;
-      }
+      keyWorksText = searchKeys.stream().map(linkMap::get).reduce((s1, s2) -> s1 + ", " + s2).orElse("");
     }
     else
       if (borderPane.getTop() == tpKeyWorks)

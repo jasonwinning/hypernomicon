@@ -21,6 +21,8 @@ import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+import com.google.common.collect.ImmutableSet;
+
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
@@ -28,7 +30,11 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
+import java.util.Collection;
+
+import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
+import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 import org.hypernomicon.model.records.HDT_Debate;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_RecordType;
@@ -65,10 +71,12 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
     {
       PositionSource ps = position.getWorkWithAuthor();
 
+      Collection<Author> authors = position.getPeople().stream().map(ArgumentAuthor::getAuthObj).collect(ImmutableSet.toImmutableSet());
+
       if (ps != null)
-        row.setCellValue(1, ps.author, Authors.getShortAuthorsStr(position.getPeople(), true, true));
+        row.setCellValue(1, ps.author, Authors.getShortAuthorsStr(authors, true, true));
       else
-        row.setCellValue(1, -1, Authors.getShortAuthorsStr(position.getPeople(), true, true), hdtPerson);
+        row.setCellValue(1, -1, Authors.getShortAuthorsStr(authors, true, true), hdtPerson);
 
       row.setCellValue(2, position, position.name());
     });

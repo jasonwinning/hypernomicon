@@ -234,10 +234,8 @@ public class OptionsDialogController extends HyperDialog
 
   private void initComponentCB(ComboBox<String> cb, String prefKey, int defValue)
   {
-    ObservableList<String> choices = FXCollections.observableArrayList();
     int selNdx = 0, selCode;
-
-    choices.addAll(componentMap.keySet());
+    ObservableList<String> choices = FXCollections.observableArrayList(componentMap.keySet());
 
     cb.setItems(null);
     cb.setItems(choices);

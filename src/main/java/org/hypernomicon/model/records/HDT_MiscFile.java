@@ -21,8 +21,8 @@ import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.Author;
@@ -76,11 +76,8 @@ public class HDT_MiscFile extends HDT_RecordWithConnector implements HDT_RecordW
 
   public String getShortAuthorsStr(boolean fullNameIfSingleton)
   {
-    ArrayList<Author> authList = new ArrayList<>();
-
-    authors.forEach(authRecord -> authList.add(new Author(null, authRecord)));
-
-    return Authors.getShortAuthorsStr(authList, false, fullNameIfSingleton);
+    return Authors.getShortAuthorsStr(authors.stream().map(authRecord -> new Author(null, authRecord))
+                                                      .collect(Collectors.toList()), false, fullNameIfSingleton);
   }
 
 //---------------------------------------------------------------------------

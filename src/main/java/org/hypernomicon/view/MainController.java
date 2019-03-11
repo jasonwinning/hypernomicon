@@ -57,7 +57,6 @@ import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.view.tabs.*;
 import org.hypernomicon.view.tabs.HyperTab.TabEnum;
-import org.hypernomicon.view.tabs.QueriesTabController.QueryView;
 import org.hypernomicon.view.workMerge.MergeWorksDialogController;
 import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.TreeWrapper.TreeTargetType;
@@ -83,7 +82,6 @@ import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanExpression;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -403,7 +401,7 @@ public final class MainController
 
 //---------------------------------------------------------------------------
 
-    db.addDeleteHandler((record) ->
+    db.addDeleteHandler(record ->
     {
       if (record.getType() == hdtPerson)
       {
@@ -412,8 +410,8 @@ public final class MainController
           personHyperTab.curPicture = null;  // User has already been asked if they want to delete the picture; don't ask again
       }
 
-      for (QueryView qv : QueriesTabController.class.cast(HyperTab.getHyperTab(queryTab)).queryViews)
-        qv.resultsTable.getTV().getItems().removeIf(row -> row.getRecord() == record);
+      QueriesTabController.class.cast(HyperTab.getHyperTab(queryTab)).queryViews.forEach(qv ->
+        qv.resultsTable.getTV().getItems().removeIf(row -> row.getRecord() == record));
 
       int ndx = favorites.indexOfRecord(record);
 
@@ -515,17 +513,13 @@ public final class MainController
         return;
       }
 
-      int curRecordNdx = db.records(activeType()).getKeyNdxByID(activeRecord().getID());
-      int newRecordNdx = parseInt(tfRecord.getText(), 0) - 1;
+      int curRecordNdx = db.records(activeType()).getKeyNdxByID(activeRecord().getID()),
+          newRecordNdx = parseInt(tfRecord.getText(), 0) - 1;
 
-      if (newRecordNdx != curRecordNdx)
-        if ((newRecordNdx >= 0) && (newRecordNdx < db.records(activeType()).size()))
-        {
-          goToRecord(db.records(activeType()).getByKeyNdx(newRecordNdx), true);
-          return;
-        }
-
-      tfRecord.setText("");
+      if ((newRecordNdx != curRecordNdx) && (newRecordNdx >= 0) && (newRecordNdx < db.records(activeType()).size()))
+        goToRecord(db.records(activeType()).getByKeyNdx(newRecordNdx), true);
+      else
+        tfRecord.setText("");
     });
 
 //---------------------------------------------------------------------------
@@ -561,16 +555,11 @@ public final class MainController
       }
 
       int newRecordID = parseInt(tfID.getText(), -1);
-      if (record.getID() == newRecordID)
-        return;
 
-      if ((newRecordID > 0) && db.records(activeType()).getIDNdxByID(newRecordID) > -1)
-      {
+      if ((record.getID() != newRecordID) && (newRecordID > 0) && (db.records(activeType()).getIDNdxByID(newRecordID) > -1))
         goToRecord(db.records(activeType()).getByID(newRecordID), true);
-        return;
-      }
-
-      tfID.setText("" + activeRecord().getID());
+      else
+        tfID.setText("" + activeRecord().getID());
     });
 
 //---------------------------------------------------------------------------
@@ -802,14 +791,10 @@ public final class MainController
         if (miscFile.getPath().isEmpty() == false)
           return getImageRelPathForFilePath(miscFile.getPath().getFilePath(), null);
 
-        break;
-
       default :
 
-        break;
+        return getGraphicRelativePathByType(record.getType());
     }
-
-    return getGraphicRelativePathByType(record.getType());
   }
 
 //---------------------------------------------------------------------------
@@ -933,9 +918,7 @@ public final class MainController
       fileManagerDlg.getDividerPositions();
       bibManagerDlg.getDividerPositions();
 
-      boolean iconified = stage.isIconified();
-      boolean fullScreen = stage.isFullScreen();
-      boolean maximized;
+      boolean iconified = stage.isIconified(), fullScreen = stage.isFullScreen(), maximized;
 
       if (Environment.isMac())
         maximized = this.maximized;
@@ -991,8 +974,6 @@ public final class MainController
       Platform.runLater(previewWindow::cleanup); // This eventually closes the application main window
     else
       stage.close();
-
-    return;
   }
 
 //---------------------------------------------------------------------------
@@ -1019,7 +1000,7 @@ public final class MainController
 
   private void enableAll(boolean enabled)
   {
-    boolean disabled = (enabled == false);
+    boolean disabled = !enabled;
 
     gpBottom.getChildren().forEach(node -> node.setDisable(disabled));
 
@@ -1098,11 +1079,7 @@ public final class MainController
         if (cbResultGoTo.getItems() == null)
           return new ResultsRow("");
 
-        for (ResultsRow row : cbResultGoTo.getItems())
-          if (string.equals(row.getCBText()))
-            return row;
-
-        return new ResultsRow(string);
+        return nullSwitch(findFirst(cbResultGoTo.getItems(), row -> string.equals(row.getCBText())), new ResultsRow(string));
       }
     });
   }
@@ -1194,11 +1171,11 @@ public final class MainController
 
   private <HDT_RT extends HDT_Base, HDT_CT extends HDT_Base> void refreshTab(HyperTab<HDT_RT, HDT_CT> hyperTab)
   {
-    HyperView<HDT_CT> view = hyperTab.getView();
-    if (view == null) return;
-
-    view.refresh();
-    nullSwitch(view.getViewRecord(), record -> hyperTab.setRecord(record));
+    nullSwitch(hyperTab.getView(), view ->
+    {
+      view.refresh();
+      nullSwitch(view.getViewRecord(), hyperTab::setRecord);
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -1208,8 +1185,7 @@ public final class MainController
   {
     FileChooser fileChooser = new FileChooser();
 
-    FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter(appTitle + " files (*.hdb)", "*.hdb");
-    fileChooser.getExtensionFilters().add(extFilter);
+    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(appTitle + " files (*.hdb)", "*.hdb"));
 
     File dir = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, System.getProperty("user.dir")));
 
@@ -1476,7 +1452,7 @@ public final class MainController
       return;
     }
 
-    FilePath topicsPath = db.getPath(PREF_KEY_TOPICAL_PATH, null);
+    FilePath topicsPath = db.getPath(PREF_KEY_TOPICAL_PATH);
     mnuFolders.setDisable(false);
 
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(topicsPath.toPath(), "**"))
@@ -1579,14 +1555,14 @@ public final class MainController
 
     switch (code)
     {
-      case 1 : filePath = db.getPath(PREF_KEY_PAPERS_PATH    , null); break;
-      case 2 : filePath = db.getPath(PREF_KEY_BOOKS_PATH     , null); break;
-      case 3 : filePath = db.getPath(PREF_KEY_UNENTERED_PATH , null); break;
-      case 4 : filePath = db.getPath(PREF_KEY_TOPICAL_PATH   , null); break;
-      case 5 : filePath = db.getPath(PREF_KEY_PICTURES_PATH  , null); break;
-      case 6 : filePath = db.getPath(PREF_KEY_MISC_FILES_PATH, null); break;
+      case 1 : filePath = db.getPath(PREF_KEY_PAPERS_PATH    ); break;
+      case 2 : filePath = db.getPath(PREF_KEY_BOOKS_PATH     ); break;
+      case 3 : filePath = db.getPath(PREF_KEY_UNENTERED_PATH ); break;
+      case 4 : filePath = db.getPath(PREF_KEY_TOPICAL_PATH   ); break;
+      case 5 : filePath = db.getPath(PREF_KEY_PICTURES_PATH  ); break;
+      case 6 : filePath = db.getPath(PREF_KEY_MISC_FILES_PATH); break;
       case 7 : filePath = new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")); break;
-      case 8 : filePath = db.getPath(PREF_KEY_RESULTS_PATH   , null); break;
+      case 8 : filePath = db.getPath(PREF_KEY_RESULTS_PATH   ); break;
     }
 
     if (FilePath.isEmpty(filePath)) return;
@@ -1802,12 +1778,6 @@ public final class MainController
       return;
     }
 
-    if (curQV.resultsBackingList == null)
-    {
-      curQV.clear();
-      curQV.resultsTable.getTV().setItems(FXCollections.observableList(curQV.resultsBackingList));
-    }
-
     for (ResultsRow row : curQV.resultsBackingList)
       if (row.getRecord() == record) return;
 
@@ -1989,7 +1959,7 @@ public final class MainController
       getTree().expandMainBranches();
       fileManagerDlg.folderTree.expandMainBranches();
 
-      primaryStage().setTitle(appTitle + " - " + db.getPath("", new FilePath(appPrefs.get(PREF_KEY_SOURCE_FILENAME, ""))));
+      primaryStage().setTitle(appTitle + " - " + db.getPath("", appPrefs.get(PREF_KEY_SOURCE_FILENAME, "")));
     }
     else
       mnuCloseClick();
@@ -2247,8 +2217,7 @@ public final class MainController
   private void updateSelectorTab(boolean setFocus)
   {
     TabEnum tabEnum = selectorTabEnum();
-    HyperTab<? extends HDT_Base, ? extends HDT_Base> hyperTab = HyperTab.getHyperTab(tabEnum);
-    if (hyperTab == null) hyperTab = currentTab();
+    HyperTab<? extends HDT_Base, ? extends HDT_Base> hyperTab = nullSwitch(HyperTab.getHyperTab(tabEnum), currentTab());
     selectorTF = null;
 
     int count = hyperTab == null ? 0 : hyperTab.getRecordCount();
@@ -2532,16 +2501,11 @@ public final class MainController
     }
 
     HDT_Base record = nullSwitch(getTree().selectedItem(), null, treeItem ->
-                      nullSwitch(treeItem.getValue(), null, row ->
-                      row.getRecord()));
+                      nullSwitch(treeItem.getValue(), null, TreeRow::getRecord));
 
     if (record == null) return;
 
-    RelationType relType = rtNone;
-
-    for (TreeTargetType ttType : treeTargetTypes)
-      if (ttType.objType == record.getType())
-        relType = ttType.relType;
+    RelationType relType = findFirst(treeTargetTypes, ttType -> ttType.objType == record.getType(), rtNone, ttType -> ttType.relType);
 
     if (relType == rtNone)
     {
@@ -2652,12 +2616,9 @@ public final class MainController
     }
 
     if (StrongLink.connectRecords(record1.getConnector(), record2.getConnector(), desc))
-    {
       goToRecord(record1, false);
-      return;
-    }
-
-    update();
+    else
+      update();
   }
 
 //---------------------------------------------------------------------------
@@ -2743,13 +2704,10 @@ public final class MainController
       return;
     }
 
-    if (mediaTypeStr.contains("text") == false)
-    {
+    if (mediaTypeStr.contains("text"))
+      importBibFile(null, filePath);
+    else
       messageDialog("Unable to import file: " + filePath.toString(), mtError);
-      return;
-    }
-
-    importBibFile(null, filePath);
   }
 
 //---------------------------------------------------------------------------
@@ -2834,10 +2792,8 @@ public final class MainController
     goToRecord(work, false);
     update();
 
-    if ((filePath == null) || (ibed.getDeleteFile() == false))
-      return;
-
-    filePath.deletePromptOnFail(true);
+    if ((filePath != null) && ibed.getDeleteFile())
+      filePath.deletePromptOnFail(true);
   }
 
 //---------------------------------------------------------------------------

@@ -38,9 +38,7 @@ public class BibEntryRow
 
   public static BibEntryRowMenuItemSchema addCondContextMenuItem(String caption, CondBibEntryRowHandler condHandler, BibEntryRowHandler handler, List<BibEntryRowMenuItemSchema> contextMenuSchemata)
   {
-    BibEntryRowMenuItemSchema mnu;
-
-    mnu = new BibEntryRowMenuItemSchema(caption);
+    BibEntryRowMenuItemSchema mnu = new BibEntryRowMenuItemSchema(caption);
     mnu.condHandler = condHandler;
     mnu.handler = handler;
 

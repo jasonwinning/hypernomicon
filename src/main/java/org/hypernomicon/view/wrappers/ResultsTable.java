@@ -58,7 +58,7 @@ public final class ResultsTable implements RecordListView
   private boolean datesAdded = false;
   public static final ArrayList<ColumnGroup> colGroups = new ArrayList<>();
   private static ColumnGroup generalGroup;
-  private final List<HyperMenuItem<? extends HDT_Base>> contextMenuItems;
+  private final List<HyperMenuItem<? extends HDT_Base>> contextMenuItems = new ArrayList<>();
 
   public TableView<ResultsRow> getTV() { return tv; }
 
@@ -81,24 +81,23 @@ public final class ResultsTable implements RecordListView
 
   public static final class ColumnGroup
   {
+    public final String caption;
+    public final ArrayList<ColumnGroupItem> items = new ArrayList<>();
+    public TypeCheckBox checkBox;
+
     public ColumnGroup(String caption, Set<Tag> tags)
     {
       this.caption = caption;
 
-      for (Tag tag : tags)
-        items.add(new ColumnGroupItem(tag, db.getTagHeader(tag)));
+      tags.forEach(tag -> items.add(new ColumnGroupItem(tag, db.getTagHeader(tag))));
     }
 
     public <Comp_T extends Comparable<Comp_T>> void setColumns(TableColumn<ResultsRow, ResultCellValue<Comp_T>> col, Tag tag)
     {
-      for (ColumnGroupItem item : items)
+      items.forEach(item -> {
         if (item.tag == tag)
-          item.col = col;
+          item.col = col; });
     }
-
-    public String caption;
-    public ArrayList<ColumnGroupItem> items = new ArrayList<>();
-    public TypeCheckBox checkBox;
   }
 
 //---------------------------------------------------------------------------
@@ -148,7 +147,6 @@ public final class ResultsTable implements RecordListView
     tv = tvResults;
 
     tv.setItems(FXCollections.observableArrayList());
-    contextMenuItems = new ArrayList<>();
 
     tv.setPlaceholder(new Label("There are no query results to display."));
     tv.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
@@ -210,12 +208,10 @@ public final class ResultsTable implements RecordListView
 
     rowMenu.getItems().add(newItem);
 
-    boolean visible = false;
-
     if ((record.getType() == hItem.recordType) || (hItem.recordType == hdtNone))
-      visible = (hItem.condRecordHandler.handle((HDT_T) record));
-
-    newItem.setVisible(visible);
+      newItem.setVisible(hItem.condRecordHandler.handle((HDT_T) record));
+    else
+      newItem.setVisible(false);
 
     return newItem;
   }
@@ -400,12 +396,7 @@ public final class ResultsTable implements RecordListView
 
   @Override public <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addCondContextMenuItem(String caption, Class<HDT_T> klass, CondRecordHandler<HDT_T> condHandler, RecordHandler<HDT_T> handler)
   {
-    HyperMenuItem<HDT_T> mnu;
-
-    mnu = new HyperMenuItem<>(caption);
-    mnu.recordType = HDT_RecordType.typeByRecordClass(klass);
-    mnu.condRecordHandler = condHandler;
-    mnu.recordHandler = handler;
+    HyperMenuItem<HDT_T> mnu = new HyperMenuItem<>(caption, HDT_RecordType.typeByRecordClass(klass), condHandler, handler, null, null, false);
 
     contextMenuItems.add(mnu);
     return mnu;

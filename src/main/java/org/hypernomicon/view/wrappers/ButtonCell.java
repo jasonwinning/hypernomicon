@@ -106,7 +106,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
           cellButton.setText("...");
 
         cellButton.setGraphic(null);
-        setOnAction((row, colNdx) -> ht.browseClick(row, colNdx));
+        setOnAction(ht::browseClick);
 
         break;
 
@@ -176,8 +176,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
     if (col.tooltips.containsKey(newAction) == false) return;
 
     String tooltip = col.tooltips.get(newAction);
-    if (tooltip == null) return;
-    if (tooltip.length() == 0) return;
+    if ((tooltip == null) || (tooltip.length() == 0)) return;
 
     cellButton.setTooltip(new Tooltip(tooltip));
   }

@@ -54,10 +54,7 @@ public class WorkBibData extends BibData
   {
     String entryKey = work.getBibEntryKey();
 
-    if (entryKey.length() > 0)
-      return db.getBibEntryByKey(entryKey);
-
-    return null;
+    return entryKey.length() > 0 ? db.getBibEntryByKey(entryKey) : null;
   }
 
 //---------------------------------------------------------------------------
@@ -65,7 +62,7 @@ public class WorkBibData extends BibData
 
   @Override public EntryType getEntryType()
   {
-    return nullSwitch(getBibEntry(), convertWorkTypeToEntryType(work.getWorkTypeValue()), bibEntry -> bibEntry.getEntryType());
+    return nullSwitch(getBibEntry(), convertWorkTypeToEntryType(work.getWorkTypeValue()), BibEntry::getEntryType);
   }
 
 //---------------------------------------------------------------------------

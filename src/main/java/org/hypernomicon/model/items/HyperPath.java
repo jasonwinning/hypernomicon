@@ -28,6 +28,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
 
@@ -152,16 +153,8 @@ public class HyperPath
 
   public static Set<HyperPath> getHyperPathSetForFilePath(FilePath filePath)
   {
-    Set<HyperPath> paths = db.filenameMap.get(filePath.getNameOnly().toString()),
-                   matchedPaths = new HashSet<>();
-
-    if (paths != null) paths.forEach(path ->
-    {
-      if (path.getFilePath().equals(filePath))
-        matchedPaths.add(path);
-    });
-
-    return matchedPaths;
+    return nullSwitch(db.filenameMap.get(filePath.getNameOnly().toString()), new HashSet<>(),
+                      paths -> paths.stream().filter(path -> path.getFilePath().equals(filePath)).collect(Collectors.toSet()));
   }
 
 //---------------------------------------------------------------------------
@@ -192,9 +185,8 @@ public class HyperPath
 
     Set<HyperPath> set = getHyperPathSetForFilePath(dirFilePath);
 
-    for (HyperPath hyperPath : set)
-      if (hyperPath.getRecordType() == hdtFolder)
-        return (HDT_Folder)hyperPath.getRecord();
+    HDT_RecordWithPath folder = findFirst(set, hyperPath -> hyperPath.getRecordType() == hdtFolder, HyperPath::getRecord);
+    if (folder != null) return (HDT_Folder) folder;
 
     if (dirFilePath.exists() == false) return null;
 
@@ -266,20 +258,8 @@ public class HyperPath
 
   public static HDT_RecordWithPath getFileFromFilePath(FilePath filePath)
   {
-    for (HyperPath hyperPath : getHyperPathSetForFilePath(filePath))
-    {
-      if (hyperPath.record == null) continue;
-
-      switch (hyperPath.record.getType())
-      {
-        case hdtMiscFile : case hdtWorkFile :
-          return hyperPath.record;
-        default:
-          break;
-      }
-    }
-
-    return null;
+    return findFirstHaving(getHyperPathSetForFilePath(filePath), HyperPath::getRecord, record ->
+      (record.getType() == hdtMiscFile) || (record.getType() == hdtWorkFile));
   }
 
 //---------------------------------------------------------------------------
@@ -432,10 +412,8 @@ public class HyperPath
     if ((val.length() == 0) && (getRecordType() == hdtFolder))
     {
       for (HDT_Folder subFolder : HDT_Folder.class.cast(getRecord()).childFolders)
-      {
         if (subFolder.getPath().getRecordsString().length() > 0)
           return "(Subfolders have associated records)";
-      }
     }
 
     return val.toString();

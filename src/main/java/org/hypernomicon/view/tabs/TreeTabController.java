@@ -144,11 +144,11 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
     });
 
     tree.addCondContextMenuItem("Select", HDT_Base.class,
-      record -> (ui.treeSubjRecord != null) && (record != null) && (db.isLoaded()),
+      record -> (ui.treeSubjRecord != null) && (record != null) && db.isLoaded(),
       record -> ui.treeSelect());
 
     tree.addCondContextMenuItem("Go to this record", HDT_Base.class,
-      record -> (record != null) && (db.isLoaded()),
+      record -> (record != null) && db.isLoaded(),
       record -> ui.goToRecord(record, false));
 
     tree.addCondContextMenuItem("Choose parent to assign", HDT_Base.class,
@@ -160,60 +160,60 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
       this::chooseParent);
 
     tree.addCondContextMenuItem("Detach from this parent", HDT_Base.class,
-        record -> tree.canDetach(false),
-        record -> tree.canDetach(true));
+      record -> tree.canDetach(false),
+      record -> tree.canDetach(true));
 
     tree.addCondContextMenuItem("Launch file...", HDT_Work.class,
-        work -> work.canLaunch() && db.isLoaded(),
-        work -> work.launch(-1));
+      work -> work.canLaunch() && db.isLoaded(),
+      work -> work.launch(-1));
 
     tree.addCondContextMenuItem("Launch file...", HDT_MiscFile.class,
-        miscFile -> (miscFile.getPath().isEmpty() == false) && db.isLoaded(),
-        miscFile ->
-        {
-          miscFile.viewNow();
-          launchFile(miscFile.getPath().getFilePath());
-        });
+      miscFile -> (miscFile.getPath().isEmpty() == false) && db.isLoaded(),
+      miscFile ->
+      {
+        miscFile.viewNow();
+        launchFile(miscFile.getPath().getFilePath());
+      });
 
     tree.addCondContextMenuItem("Rename...", HDT_WorkLabel.class,
-        label -> db.isLoaded(),
-        this::renameRecord);
+      label -> db.isLoaded(),
+      this::renameRecord);
 
     tree.addCondContextMenuItem("Rename...", HDT_Glossary.class,
-        glossary -> db.isLoaded(),
-        this::renameRecord);
+      glossary -> db.isLoaded(),
+      this::renameRecord);
 
     tree.addCondContextMenuItem("New label under this record...", HDT_WorkLabel.class,
-        label -> db.isLoaded(),
-        this::createLabel);
+      label -> db.isLoaded(),
+      this::createLabel);
 
     tree.addCondContextMenuItem("New debate under this debate...", HDT_Debate.class,
-        debate -> db.isLoaded(),
-        debate -> createChild(debate, rtParentDebateOfDebate));
+      debate -> db.isLoaded(),
+      debate -> createChild(debate, rtParentDebateOfDebate));
 
     tree.addCondContextMenuItem("New position under this debate...", HDT_Debate.class,
-        debate -> db.isLoaded(),
-        debate -> createChild(debate, rtDebateOfPosition));
+      debate -> db.isLoaded(),
+      debate -> createChild(debate, rtDebateOfPosition));
 
     tree.addCondContextMenuItem("New position under this position...", HDT_Position.class,
-        pos -> db.isLoaded(),
-        pos -> createChild(pos, rtParentPosOfPos));
+      pos -> db.isLoaded(),
+      pos -> createChild(pos, rtParentPosOfPos));
 
     tree.addCondContextMenuItem("New argument under this position...", HDT_Position.class,
-        pos -> db.isLoaded(),
-        pos -> createChild(pos, rtPositionOfArgument));
+      pos -> db.isLoaded(),
+      pos -> createChild(pos, rtPositionOfArgument));
 
     tree.addCondContextMenuItem("New counterargument under this argument...", HDT_Argument.class,
-        arg -> db.isLoaded(),
-        arg -> createChild(arg, rtCounterOfArgument));
+      arg -> db.isLoaded(),
+      arg -> createChild(arg, rtCounterOfArgument));
 
     tree.addCondContextMenuItem("New note under this note...", HDT_Note.class,
-        note -> db.isLoaded(),
-        note -> createChild(note, rtParentNoteOfNote));
+      note -> db.isLoaded(),
+      note -> createChild(note, rtParentNoteOfNote));
 
     tree.addCondContextMenuItem("New glossary under this glossary...", HDT_Glossary.class,
-        glossary -> db.isLoaded(),
-        this::createGlossary);
+      glossary -> db.isLoaded(),
+      this::createGlossary);
 
     webView.getEngine().titleProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
     {
@@ -412,52 +412,18 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
 
   private void chooseParent(HDT_Base child)
   {
-    EnumSet<HDT_RecordType> types = EnumSet.noneOf(HDT_RecordType.class);
+    EnumSet<HDT_RecordType> types = null;
 
     switch (child.getType())
     {
-      case hdtWorkLabel :
-
-        types.add(hdtWorkLabel);
-        break;
-
-      case hdtNote :
-
-        types.add(hdtNote);
-        break;
-
-      case hdtPosition :
-
-        types.add(hdtDebate);
-        types.add(hdtPosition);
-        break;
-
-      case hdtDebate :
-
-        types.add(hdtDebate);
-        break;
-
-      case hdtArgument :
-
-        types.add(hdtPosition);
-        types.add(hdtArgument);
-        break;
-
-      case hdtWork :
-
-        types.add(hdtArgument);
-        types.add(hdtWork);
-        types.add(hdtWorkLabel);
-        break;
-
-      case hdtMiscFile :
-
-        types.add(hdtWork);
-        types.add(hdtWorkLabel);
-        break;
-
-      default :
-        break;
+      case hdtWorkLabel : types = EnumSet.of(hdtWorkLabel);                       break;
+      case hdtNote      : types = EnumSet.of(hdtNote);                            break;
+      case hdtPosition  : types = EnumSet.of(hdtDebate, hdtPosition);             break;
+      case hdtDebate    : types = EnumSet.of(hdtDebate);                          break;
+      case hdtArgument  : types = EnumSet.of(hdtPosition, hdtArgument);           break;
+      case hdtWork      : types = EnumSet.of(hdtArgument, hdtWork, hdtWorkLabel); break;
+      case hdtMiscFile  : types = EnumSet.of(hdtWork, hdtWorkLabel);              break;
+      default           :                                                         break;
     }
 
     ChooseParentDialogController dlg = ChooseParentDialogController.create("Record select", child, types);
@@ -543,7 +509,7 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
   {
     if (newValue == null) return "";
 
-    String caption = nullSwitch(newValue.getValue(), "", val -> val.getName());
+    String caption = nullSwitch(newValue.getValue(), "", TreeRow::getName);
 
     if (newValue.getParent() == ttv2.getRoot())
       return caption;
@@ -573,7 +539,7 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
 
   @Override public int getRecordNdx()
   {
-    return nullSwitch(nullSwitch(tree.selectedItem(), null, item -> item.getValue()), -1, row -> tree.getRowsForRecord(row.getRecord()).indexOf(row));
+    return nullSwitch(nullSwitch(tree.selectedItem(), null, TreeItem::getValue), -1, row -> tree.getRowsForRecord(row.getRecord()).indexOf(row));
   }
 
 //---------------------------------------------------------------------------

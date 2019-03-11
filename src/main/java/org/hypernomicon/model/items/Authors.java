@@ -23,6 +23,8 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
+import static java.util.Objects.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,6 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import java.util.Map.Entry;
 
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
@@ -92,6 +96,7 @@ public final class Authors implements Iterable<Author>
   public boolean containsPerson(HDT_Person person) { return objListNoMod.contains(person); }
   public Collection<Author> asCollection()         { return Sets.newLinkedHashSet(this); }
   void resolvePointers() throws HDB_InternalError  { db.resolvePointersByRelation(rtAuthorOfWork, work); }
+  public Stream<Author> stream()                   { return StreamSupport.stream(spliterator(), false); }
 
   @Override public Iterator<Author> iterator()     { return new AuthorIterator(); }
 
@@ -192,14 +197,7 @@ public final class Authors implements Iterable<Author>
 
   public Author getAuthor(PersonName personName)
   {
-    if (allRecords) return null;
-
-    for (Author author : authorList)
-      if (author.getPerson() == null)
-        if (author.getName().equals(personName))
-          return author;
-
-    return null;
+    return allRecords ? null : findFirst(authorList, author -> isNull(author.getPerson()) && author.getName().equals(personName));
   }
 
   //---------------------------------------------------------------------------
@@ -344,10 +342,8 @@ public final class Authors implements Iterable<Author>
     if (isTrans) work.setPersonIsTranslator(person, true);
     if (inFileName != Ternary.Unset) work.setPersonIsInFileName(person, inFileName);
 
-    if (allRecords)
-      return;
-
-    authorList.add(new Author(work, person));
+    if (allRecords == false)
+      authorList.add(new Author(work, person));
   }
 
   //---------------------------------------------------------------------------
@@ -459,8 +455,7 @@ public final class Authors implements Iterable<Author>
 
     ArrayList<PersonName> nameList = new ArrayList<>();
     ArrayList<HDT_Person> personList = new ArrayList<>();
-    HashMap<PersonName, Boolean> nameToEd = new HashMap<>();
-    HashMap<PersonName, Boolean> nameToTr = new HashMap<>();
+    HashMap<PersonName, Boolean> nameToEd = new HashMap<>(), nameToTr = new HashMap<>();
 
     bibAuthors.getListsForWorkMerge(nameList, personList, nameToEd, nameToTr, work);
 

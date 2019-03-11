@@ -46,7 +46,7 @@ public class JsonObj implements Cloneable
   public void remove(String key)          { jObj.remove(key); }
   public JsonNodeType getType(String key) { return JsonObj.determineType(jObj.get(key)); }
 
-  public JsonObj getObj(String key)                  { return nullSwitch(jObj.get(key), null, obj -> new JsonObj((JSONObject) obj)); }
+  public JsonObj getObj(String key)                  { return nullSwitch((JSONObject)jObj.get(key), null, obj -> new JsonObj(obj)); }
   public String getStr(String key)                   { return (String) jObj.get(key); }
   public JsonArray getArray(String key)              { return nullSwitch((JSONArray)jObj.get(key), null, obj -> new JsonArray(obj)); }
   public long getLong(String key, long def)          { return nullSwitch((Long)jObj.get(key), def,  Long::longValue); }

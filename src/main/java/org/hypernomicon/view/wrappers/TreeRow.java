@@ -69,7 +69,7 @@ public class TreeRow extends AbstractTreeRow<TreeRow>
 
   public HyperTreeCellValue getNameCell() { return new HyperTreeCellValue(this); }
   String getCBText()                      { return record == null ? text : "(" + db.getTypeName(getRecordType()) + ") " + getName(); }
-  public String getName()                 { return nullSwitch(record, text, () -> record.getType() == hdtWork ? record.getCBText() : record.listName()); }
+  public String getName()                 { return record == null ? text : (record.getType() == hdtWork ? record.getCBText() : record.listName()); }
 
   public String getDescString()
   {

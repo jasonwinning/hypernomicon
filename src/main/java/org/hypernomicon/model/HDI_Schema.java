@@ -19,12 +19,13 @@ package org.hypernomicon.model;
 
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_Record.HyperDataCategory;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
+
+import com.google.common.collect.ImmutableList;
 
 public final class HDI_Schema
 {
@@ -49,7 +50,7 @@ public final class HDI_Schema
 
   public HDI_Schema(HyperDataCategory category, RelationType relType, Tag... tags)
   {
-    this.tags = Arrays.asList(tags);
+    this.tags = ImmutableList.copyOf(tags);
     this.category = category;
     this.relType = relType;
   }

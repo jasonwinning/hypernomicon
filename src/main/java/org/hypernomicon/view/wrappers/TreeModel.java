@@ -192,14 +192,14 @@ public class TreeModel<RowType extends AbstractTreeRow<RowType>>
 
     parentToChildren.addForward(parent, child);
 
-    for (RowType row : new ArrayList<>(recordToRows.getRowsForRecord(parent)))
+    new ArrayList<>(recordToRows.getRowsForRecord(parent)).forEach(row ->
     {
       RowType childRow = treeWrapper.newRow(child, this);
 
       insertTreeItem(treeWrapper.getTreeItem(row).getChildren(), childRow);
       recordToRows.addRow(childRow);
       addChildRows(childRow);
-    }
+    });
   }
 
 //---------------------------------------------------------------------------

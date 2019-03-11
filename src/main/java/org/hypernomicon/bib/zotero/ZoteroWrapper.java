@@ -33,12 +33,10 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
@@ -50,6 +48,8 @@ import org.json.simple.parser.ParseException;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.EnumHashBiMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
@@ -73,15 +73,14 @@ import static org.hypernomicon.bib.BibData.EntryType.*;
 
 public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 {
-  private final String apiKey;
+  private final String apiKey, userID;
   private final JsonHttpClient jsonClient;
   private long offlineLibVersion = -1, onlineLibVersion = -1;
   private Instant backoffTime = null, retryTime = null;
 
   static final EnumHashBiMap<EntryType, String> entryTypeMap = initTypeMap();
 
-  private final String userID;
-  private static EnumMap<BibData.EntryType, JsonObj> templates = null;
+  private static EnumMap<EntryType, JsonObj> templates = null;
 
   @Override public LibraryType type() { return LibraryType.ltZotero; }
 
@@ -375,7 +374,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
       StringBuilder json = new StringBuilder(jObj.toString());
 
-      FilePath filePath = db.getRootFilePath().resolve(new FilePath(ZOTERO_CREATOR_TYPES_FILE_NAME));
+      FilePath filePath = db.getRootFilePath().resolve(ZOTERO_CREATOR_TYPES_FILE_NAME);
 
       saveStringBuilderToFile(json, filePath);
     }
@@ -404,7 +403,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
       StringBuilder json = new StringBuilder(jArr.toString());
 
-      FilePath filePath = db.getRootFilePath().resolve(new FilePath(ZOTERO_TEMPLATE_FILE_NAME));
+      FilePath filePath = db.getRootFilePath().resolve(ZOTERO_TEMPLATE_FILE_NAME);
 
       saveStringBuilderToFile(json, filePath);
     }
@@ -488,13 +487,9 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   private void showWriteErrorMessages(JsonObj jUnchanged, JsonObj jFailed, ArrayList<ZoteroItem> uploadQueue)
   {
-    ArrayList<String> errMsgList = new ArrayList<>();
+    ArrayList<String> errMsgList = Lists.newArrayList("Attempt(s) to upload changes to server failed:");
 
-    errMsgList.add("Attempt(s) to upload changes to server failed:");
-
-    String unchanged = "";
-    for (String queueNdx : jUnchanged.keySet())
-      unchanged = unchanged + (unchanged.length() > 0 ? ", " : "") + jUnchanged.getStr(queueNdx);
+    String unchanged = jUnchanged.keySet().stream().map(jUnchanged::getStr).reduce((s1, s2) -> s1 + ", " + s2).orElse("");
 
     if (unchanged.length() > 0)
       errMsgList.add("Unchanged: " + unchanged);
@@ -972,16 +967,8 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   @Override public Set<ZoteroItem> getCollectionEntries(String collKey)
   {
-    LinkedHashSet<ZoteroItem> view = new LinkedHashSet<>();
-
-    getNonTrashEntries().forEach(item ->
-    {
-      List<String> collKeys = item.getCollKeys(false);
-      if (collKeys.contains(collKey))
-        view.add(item);
-    });
-
-    return Collections.unmodifiableSet(view);
+    return getNonTrashEntries().stream().filter(item -> item.getCollKeys(false).contains(collKey))
+                                        .collect(ImmutableSet.toImmutableSet());
   }
 
 //---------------------------------------------------------------------------
@@ -989,15 +976,8 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   @Override public Set<ZoteroItem> getNonTrashEntries()
   {
-    LinkedHashSet<ZoteroItem> view = new LinkedHashSet<>();
-
-    keyToAllEntry.values().forEach(item ->
-    {
-      if (keyToTrashEntry.containsKey(item.getEntryKey()) == false)
-        view.add(item);
-    });
-
-    return Collections.unmodifiableSet(view);
+    return keyToAllEntry.values().stream().filter(item -> keyToTrashEntry.containsKey(item.getEntryKey()) == false)
+                                          .collect(ImmutableSet.toImmutableSet());
   }
 
 //---------------------------------------------------------------------------
@@ -1005,22 +985,15 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   @Override public Set<ZoteroItem> getUnsorted()
   {
-    LinkedHashSet<ZoteroItem> view = new LinkedHashSet<>();
-    view.addAll(keyToAllEntry.values());
-
-    view.removeIf(item ->
+    Predicate<ZoteroItem> predicate = item ->
     {
       if (keyToTrashEntry.containsKey(item.getEntryKey()))
-        return true;
+        return false;
 
-      for (String collKey : item.getCollKeys(true))
-        if (keyToColl.containsKey(collKey))
-          return true;
+      return item.getCollKeys(true).stream().noneMatch(keyToColl::containsKey);
+    };
 
-      return false;
-    });
-
-    return Collections.unmodifiableSet(view);
+    return keyToAllEntry.values().stream().filter(predicate).collect(ImmutableSet.toImmutableSet());
   }
 
 //---------------------------------------------------------------------------
@@ -1076,19 +1049,19 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     ZoteroItem item = (ZoteroItem) nullSwitch(row, null, BibEntryRow::getEntry);
     if (item == null) return "";
 
-    JsonObj jData = item.exportJsonObjForUploadToServer(true);
-    jData = nullSwitch(jData.getObj("data"), jData);
+    JsonObj jObj  = item.exportJsonObjForUploadToServer(true),
+            jData = nullSwitch(jObj.getObj("data"), jObj);
 
     StringBuilder html = getHtmlStart();
 
-    for (String key : jData.keySet())
+    jData.keySet().forEach(key ->
     {
       String fieldName = key;
 
       switch (fieldName)
       {
         case "relations" : case "collections" : case "key" :
-        case "dateAdded" : case "accessDate" : case "dateModified" : continue;
+        case "dateAdded" : case "accessDate"  : case "dateModified" : return;
 
         case "url"  : fieldName = "URL"; break;
 
@@ -1118,7 +1091,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         default:
           break;
       }
-    }
+    });
 
     return finishHtml(html);
   }
@@ -1172,15 +1145,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   private static void addArrayHtml(String fieldName, JsonArray jArr, StringBuilder html)
   {
-    ArrayList<String> list = new ArrayList<>();
-
-    for (int ndx = 0; ndx < jArr.size(); ndx++)
-    {
-      String str = jArr.getStrSafe(ndx);
-      list.add(str);
-    }
-
-    addRowsToHtml(fieldName, list, html);
+    addRowsToHtml(fieldName, Lists.newArrayList((Iterable<String>)jArr.getStrs()), html);
   }
 
 //---------------------------------------------------------------------------

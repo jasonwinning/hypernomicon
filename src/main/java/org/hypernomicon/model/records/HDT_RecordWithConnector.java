@@ -119,9 +119,7 @@ public abstract class HDT_RecordWithConnector extends HDT_Record implements HDT_
     List<DisplayItem> displayItems = getMainText().getDisplayItemsCopy();
     HDT_RecordType type = getType();
 
-    for (DisplayItem displayItem : displayItems)
-      if (displayItem.type == diRecord)
-        return;
+    if (displayItems.stream().anyMatch(displayItem -> displayItem.type == diRecord)) return;
 
     switch (type)
     {

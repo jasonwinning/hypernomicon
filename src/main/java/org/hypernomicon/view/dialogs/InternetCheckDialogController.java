@@ -91,7 +91,7 @@ public class InternetCheckDialogController extends HyperDialog
 
     onShown = () ->
     {
-      task.setOnSucceeded(e -> getStage().close());
+      task.setOnSucceeded(event -> getStage().close());
 
       Thread thread = new Thread(task);
       task.setThread(thread);

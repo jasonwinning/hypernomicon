@@ -35,23 +35,12 @@ public class FilePathSet implements Set<FilePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void clear()                       { nameToPaths.clear(); }
-  @Override public Iterator<FilePath> iterator()      { return new FilePathIterator(nameToPaths); }
-  @Override public boolean isEmpty()                  { return size() == 0; }
-  @Override public boolean retainAll(Collection<?> c) { return removeIf(filePath -> c.contains(filePath) == false); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public int size()
-  {
-    int cnt = 0;
-
-    for (Set<FilePath> pathSet : nameToPaths.values())
-      cnt += pathSet.size();
-
-    return cnt;
-  }
+  @Override public void clear()                         { nameToPaths.clear(); }
+  @Override public Iterator<FilePath> iterator()        { return new FilePathIterator(nameToPaths); }
+  @Override public boolean isEmpty()                    { return size() == 0; }
+  @Override public boolean retainAll(Collection<?> c)   { return removeIf(filePath -> c.contains(filePath) == false); }
+  @Override public int size()                           { return nameToPaths.values().stream().map(Set::size).reduce(0, Math::addExact); }
+  @Override public boolean containsAll(Collection<?> c) { return c.stream().allMatch(this::contains); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -69,11 +58,7 @@ public class FilePathSet implements Set<FilePath>
     Set<FilePath> set = nameToPaths.get(filePath.getNameOnly().toString());
     if (set == null) return false;
 
-    for (FilePath setPath : set)
-      if (setPath.equals(filePath))
-        return true;
-
-    return false;
+    return set.stream().anyMatch(filePath::equals);
   }
 
 //---------------------------------------------------------------------------
@@ -155,17 +140,6 @@ public class FilePathSet implements Set<FilePath>
       }
 
     return false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean containsAll(Collection<?> c)
-  {
-    for (Object o : c)
-      if (this.contains(o) == false) return false;
-
-    return true;
   }
 
 //---------------------------------------------------------------------------

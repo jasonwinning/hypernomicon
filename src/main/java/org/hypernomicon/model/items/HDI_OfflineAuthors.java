@@ -80,10 +80,10 @@ public class HDI_OfflineAuthors extends HDI_OfflineBase
 
   @Override public void writeToXml(Tag tag, StringBuilder xml)
   {
-    String name;
-
-    for (OfflineAuthor author : authors)
+    authors.forEach(author ->
     {
+      String name;
+
       if (author.personID > 0)
         name = db.persons.getByID(author.personID).getName().getLastFirst();
       else
@@ -93,7 +93,7 @@ public class HDI_OfflineAuthors extends HDI_OfflineBase
         writePointerTagWithNestedPointers(xml, tag, author.personID, name, author.nestedItems, true);
       else
         writePointerTag(xml, tag, author.personID, hdtNone, name, true);
-    }
+    });
   }
 
 //---------------------------------------------------------------------------

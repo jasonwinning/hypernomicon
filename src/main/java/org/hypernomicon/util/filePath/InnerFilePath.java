@@ -62,7 +62,7 @@ class InnerFilePath
   {
     if (path != null) return path;
 
-    if      (file != null)    path = file.toPath();
+    if      (file    != null) path = file.toPath();
     else if (pathStr != null) path = Paths.get(pathStr);
 
     return path;

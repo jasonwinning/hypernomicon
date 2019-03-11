@@ -97,11 +97,7 @@ class TreeCB
         if (comboBox.getItems() == null)
           return new TreeRow(string);
 
-        for (TreeRow row : comboBox.getItems())
-          if (string.equals(row.getCBText()))
-            return row;
-
-        return new TreeRow(string);
+        return nullSwitch(findFirst(comboBox.getItems(), row -> string.equals(row.getCBText())), new TreeRow(string));
       }
     });
 
@@ -157,7 +153,7 @@ class TreeCB
   {
     sorted = false;
 
-    nullSwitch(nullSwitch(tree.selectedRecord(), db.debates.getByID(1)), record -> select(record));
+    nullSwitch(nullSwitch(tree.selectedRecord(), db.debates.getByID(1)), this::select);
   }
 
 //---------------------------------------------------------------------------

@@ -35,6 +35,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -76,9 +77,9 @@ public class NewPersonDialogController extends HyperDialog
   public HDT_Person getPerson()     { return person; }
   public PersonName getName()       { return new PersonName(tfFirstName.getText(), tfLastName.getText()); }
   public String getNameLastFirst()  { return getName().getLastFirst(); }
-  private int numMatches()          { return nullSwitch(matchedAuthors, 0, matchedAuths -> matchedAuths.size()); }
+  private int numMatches()          { return nullSwitch(matchedAuthors, 0, List::size); }
   private Author curDupAuthor()     { return numMatches() == 0 ? null : matchedAuthors.get(tabPane.getSelectionModel().getSelectedIndex()); }
-  private HDT_Person curDupPerson() { return nullSwitch(curDupAuthor(), null, author -> author.getPerson()); }
+  private HDT_Person curDupPerson() { return nullSwitch(curDupAuthor(), null, Author::getPerson); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -156,7 +157,7 @@ public class NewPersonDialogController extends HyperDialog
 
     tfSearchKey.disableProperty().bind(rbAddNoCreate.selectedProperty());
 
-    UnaryOperator<TextFormatter.Change> filter = (change) ->
+    UnaryOperator<TextFormatter.Change> filter = change ->
     {
       if (alreadyChangingName) return change;
 
@@ -295,7 +296,7 @@ public class NewPersonDialogController extends HyperDialog
       fullLCNameEngChar = ultraTrim(fullLCNameEngChar);
     }
 
-    public HDT_Person getPerson() { return nullSwitch(author, null, author -> author.getPerson()); }
+    public HDT_Person getPerson() { return nullSwitch(author, null, Author::getPerson); }
     public Author getAuthor()     { return author; }
     public PersonName getName()   { return name; }
 
@@ -313,7 +314,7 @@ public class NewPersonDialogController extends HyperDialog
     LinkedList<PersonForDupCheck> list = new LinkedList<>();
     HashSet<HDT_Person> persons = new HashSet<>();
 
-    for (HDT_Work work : db.works) work.getAuthors().forEach(author ->
+    db.works.forEach(work -> work.getAuthors().forEach(author ->
     {
       HDT_Person person = author.getPerson();
 
@@ -329,7 +330,7 @@ public class NewPersonDialogController extends HyperDialog
 
       if (personForDupCheck.fullLCNameEngChar.length() > 0)
         list.add(personForDupCheck);
-    });
+    }));
 
     db.persons.forEach(person ->
     {
@@ -353,7 +354,7 @@ public class NewPersonDialogController extends HyperDialog
 
     HashSet<HDT_Person> matchedPersons = new HashSet<>();
 
-    HDT_Work work1 = nullSwitch(person1.author, null, author1 -> author1.getWork());
+    HDT_Work work1 = nullSwitch(person1.author, null, Author::getWork);
 
     for (PersonForDupCheck person2 : list)
     {
@@ -393,7 +394,7 @@ public class NewPersonDialogController extends HyperDialog
       if (isMatch)
       {
         matchedAuthors.add(person2.author);
-        nullSwitch(person2.author.getPerson(), personRecord -> matchedPersons.add(personRecord));
+        nullSwitch(person2.author.getPerson(), matchedPersons::add);
       }
 
       if (task.isCancelled()) throw new TerminateTaskException();
@@ -401,16 +402,6 @@ public class NewPersonDialogController extends HyperDialog
       if ((ctr % 10) == 0) task.updateProgress(ctr, total);
 
       ctr++;
-    }
-
-    // Now make sure it is not an exact match (in terms of auto-generated search key) with an existing person record
-
-    HDT_Person otherPerson = HDT_Person.lookUpByName(person1.getName());
-
-    if ((otherPerson != person1.getPerson()) && (otherPerson != null) && (matchedPersons.contains(otherPerson) == false))
-    {
-      matchedAuthors.add(new Author(otherPerson));
-      matchedPersons.add(otherPerson);
     }
   }
 
@@ -456,7 +447,7 @@ public class NewPersonDialogController extends HyperDialog
     lblStatus.setVisible(true);
     progressIndicator.setVisible(true);
 
-    task = createDupCheckTask(Collections.singletonList(personName), Collections.singletonList(origAuthor), matchedAuthorsList, this::finishDupSearch);
+    task = createDupCheckTask(Arrays.asList(personName), Arrays.asList(origAuthor), matchedAuthorsList, this::finishDupSearch);
 
     task.updateProgress(0, 1);
 

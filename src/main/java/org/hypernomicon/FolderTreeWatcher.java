@@ -632,7 +632,7 @@ public class FolderTreeWatcher
   public boolean isRunning()
   {
     if (stopped == true) return false;
-    return watcherThread == null ? false : watcherThread.isAlive();
+    return nullSwitch(watcherThread, false, WatcherThread::isAlive);
   }
 
 //---------------------------------------------------------------------------
@@ -642,35 +642,30 @@ public class FolderTreeWatcher
   {
     boolean wasRunning = isRunning();
 
-    if (watcherThread != null)
-      if (watcherThread.isAlive())
-      {
-        stopRequested = true;
-        try { watcherThread.join(); } catch (InterruptedException e) { noOp(); }
-      }
-
-    if (watcher != null)
+    if ((watcherThread != null) && watcherThread.isAlive())
     {
-      if (stopped == false)
-      {
-        try
-        {
-          watcher.close();
-          stopped = true;
+      stopRequested = true;
+      try { watcherThread.join(); } catch (InterruptedException e) { noOp(); }
+    }
 
-          if (app.debugging())
-            System.out.println("Watcher closed");
-        }
-        catch (IOException e)
-        {
-          if (app.debugging())
-            System.out.println("Watcher close exception");
-        }
+    if ((watcher != null) && (stopped == false))
+    {
+      try
+      {
+        watcher.close();
+        stopped = true;
+
+        if (app.debugging())
+          System.out.println("Watcher closed");
+      }
+      catch (IOException e)
+      {
+        if (app.debugging())
+          System.out.println("Watcher close exception");
       }
     }
 
     watcherThread = null;
-
     return wasRunning;
   }
 

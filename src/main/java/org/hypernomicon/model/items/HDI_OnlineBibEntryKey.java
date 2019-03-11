@@ -86,10 +86,7 @@ public class HDI_OnlineBibEntryKey extends HDI_OnlineBase<HDI_OfflineString>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
-  {
-    return;
-  }
+  @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords) { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

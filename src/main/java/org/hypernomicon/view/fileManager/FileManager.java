@@ -98,7 +98,7 @@ public class FileManager extends HyperDialog
     private HistoryItem(FileRow folderRow, FileRow fileRow, HDT_Base record)
     {
       folder = (HDT_Folder) folderRow.getRecord();
-      fileName = nullSwitch(fileRow, null, () -> fileRow.getFilePath().getNameOnly());
+      fileName = fileRow == null ? null : fileRow.getFilePath().getNameOnly();
       this.record = record;
     }
   }
@@ -386,12 +386,7 @@ public class FileManager extends HyperDialog
       Entry<FilePath, FilePath> entry = it.next();
 
       Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(entry.getValue());
-      boolean isRelated = false;
-
-      if (set.isEmpty() == false)
-        for (HyperPath hyperPath : set)
-          if (hyperPath.getRecordType() != hdtNone)
-            isRelated = true;
+      boolean isRelated = (set.isEmpty() == false) && set.stream().anyMatch(hyperPath -> hyperPath.getRecordType() != hdtNone);
 
       if (!isRelated && entry.getValue().exists())
       {
@@ -438,18 +433,19 @@ public class FileManager extends HyperDialog
         {
           case check:
 
-            String confirmMessage = "The file \"" + entry.getValue() + "\" is assigned to the following record(s):" + System.lineSeparator() + System.lineSeparator();
+            StringBuilder confirmMessage = new StringBuilder("The file \"" + entry.getValue() + "\" is assigned to the following record(s):\n\n");
 
-            for (HyperPath hyperPath : set)
+            set.forEach(hyperPath ->
             {
               if (hyperPath.getRecordType() != hdtNone)
-                confirmMessage = confirmMessage + db.getTypeName(hyperPath.getRecord().getType()) + " ID " + hyperPath.getRecord().getID() + ": " +
-                                                  hyperPath.getRecord().getCBText() + System.lineSeparator();
-            }
+                confirmMessage.append(db.getTypeName(hyperPath.getRecord().getType())).append(" ID ")
+                              .append(hyperPath.getRecord().getID()).append(": ")
+                              .append(hyperPath.getRecord().getCBText()).append("\n");
+            });
 
-            confirmMessage = confirmMessage + System.lineSeparator() + "Okay to overwrite the file with \"" + entry.getKey() + "\"?";
+            confirmMessage.append("\nOkay to overwrite the file with \"" + entry.getKey() + "\"?");
 
-            switch (seriesConfirmDialog(confirmMessage))
+            switch (seriesConfirmDialog(confirmMessage.toString()))
             {
               case mrNo:
 
@@ -751,7 +747,7 @@ public class FileManager extends HyperDialog
 
     fileTable.addContextMenuItem("Cut", fileRow -> cutCopy(fileRow, false));
     fileTable.addContextMenuItem("Copy", fileRow -> cutCopy(fileRow, true));
-    pasteMenuItem = fileTable.addCondContextMenuItem("Paste into this folder", fileRow -> fileRow.isDirectory(), dirRow -> paste(dirRow, clipboardCopying, false));
+    pasteMenuItem = fileTable.addCondContextMenuItem("Paste into this folder", FileRow::isDirectory, dirRow -> paste(dirRow, clipboardCopying, false));
     fileTable.addContextMenuItem("Delete", this::delete);
 
     btnCut.setOnAction(event -> cutCopy(null, false));
@@ -824,6 +820,8 @@ public class FileManager extends HyperDialog
 
     final FileRow row;
     private boolean related;
+
+    public boolean isRelated() { return related; }
   }
 
   List<MarkedRowInfo> getMarkedRows(FileRow srcRow)
@@ -878,9 +876,8 @@ public class FileManager extends HyperDialog
   // See if any of it can be ruled out off the bat
   //---------------------------------------------------------------------------
 
-    for (MarkedRowInfo rowInfo : rowInfoList)
-      if (canCutRow(rowInfo, true) == false)
-        return;
+    if (rowInfoList.stream().allMatch(rowInfo -> canCutRow(rowInfo, true)) == false)
+      return;
 
   //---------------------------------------------------------------------------
   // Show the appropriate confirmation dialog
@@ -922,12 +919,7 @@ public class FileManager extends HyperDialog
     }
     else
     {
-      boolean related = false;
-
-      for (MarkedRowInfo rowInfo : rowInfoList)
-        if (rowInfo.related) related = true;
-
-      if (related)
+      if (rowInfoList.stream().anyMatch(MarkedRowInfo::isRelated))
       {
         if (confirmDialog("One or more of the selected items is associated with a database record. Okay to delete the " + rowInfoList.size() + " items and associated record(s)?") == false)
           return;
@@ -947,8 +939,7 @@ public class FileManager extends HyperDialog
 
     suppressNeedRefresh = true;
 
-    for (MarkedRowInfo rowInfo : rowInfoList)
-      if (deleteRow(rowInfo) == false) break;
+    rowInfoList.stream().allMatch(this::deleteRow); // Deletes rows until deleteRow returns false
 
     folderTree.prune();
 
@@ -1056,7 +1047,7 @@ public class FileManager extends HyperDialog
 
     try
     {
-      Files.createDirectory(curFolder.getPath().getFilePath().resolve(new FilePath(dlg.getNewName())).toPath());
+      Files.createDirectory(curFolder.getPath().getFilePath().resolve(dlg.getNewName()).toPath());
     }
     catch (FileAlreadyExistsException e)
     {
@@ -1106,7 +1097,7 @@ public class FileManager extends HyperDialog
 
     FilePath srcFilePath = fileRow.getFilePath();
     FilePath parentFilePath = srcFilePath.getParent();
-    FilePath destFilePath = parentFilePath.resolve(new FilePath(dlg.getNewName()));
+    FilePath destFilePath = parentFilePath.resolve(dlg.getNewName());
 
     if (destFilePath.exists())
     {
@@ -1234,25 +1225,22 @@ public class FileManager extends HyperDialog
   {
     folderTree.selectRecord(item.folder, -1, false);
 
-    if (item.fileName != null)
+    if (item.fileName == null) return;
+
+    fileTable.selectByFileName(item.fileName);
+
+    if (item.record != null)
     {
-      fileTable.selectByFileName(item.fileName);
-
-      if (item.record != null)
+      HyperTableRow row = findFirst(recordTable.getDataRows(), r -> r.getRecord() == item.record);
+      if (row != null)
       {
-        for (HyperTableRow row : recordTable.getDataRows())
-        {
-          if (row.getRecord() == item.record)
-          {
-            recordTable.selectRow(row);
-            recordTV.requestFocus();
-            return;
-          }
-        }
+        recordTable.selectRow(row);
+        recordTV.requestFocus();
+        return;
       }
-
-      fileTV.requestFocus();
     }
+
+    fileTV.requestFocus();
   }
 
 //---------------------------------------------------------------------------

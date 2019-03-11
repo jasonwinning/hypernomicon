@@ -28,8 +28,7 @@ import org.hypernomicon.model.records.HDT_Base;
 public class HyperSubjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> extends HyperSubjList<HDT_SubjType, HDT_ObjType>
 {
   private final HyperSubjList<HDT_SubjType, HDT_ObjType> parentList;
-  private int startNdx;
-  private int endNdx;
+  private final int startNdx, endNdx;
 
   public HyperSubjSubList(HyperSubjList<HDT_SubjType, HDT_ObjType> parentList, int startNdx, int endNdx)
   {
@@ -43,9 +42,10 @@ public class HyperSubjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int size()                  { return endNdx - startNdx; }
-  @Override public boolean isEmpty()           { return size() > 0; }
-  @Override public HDT_SubjType get(int index) { return parentList.get(startNdx + index); }
+  @Override public int size()                           { return endNdx - startNdx; }
+  @Override public boolean isEmpty()                    { return size() > 0; }
+  @Override public HDT_SubjType get(int index)          { return parentList.get(startNdx + index); }
+  @Override public boolean containsAll(Collection<?> c) { return c.stream().allMatch(this::contains); }
 
   @Override public boolean add(HDT_SubjType e)                                     { throw new UnsupportedOperationException(modErrMsg); }
   @Override public boolean remove(Object o)                                        { throw new UnsupportedOperationException(modErrMsg); }
@@ -101,17 +101,6 @@ public class HyperSubjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends
       a[subjList.size()] = null;
 
     return a;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public boolean containsAll(Collection<?> c)
-  {
-    for (Object o : c)
-      if (this.contains(o) == false) return false;
-
-    return true;
   }
 
 //---------------------------------------------------------------------------

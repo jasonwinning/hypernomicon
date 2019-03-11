@@ -64,19 +64,14 @@ public class BibDataStandalone extends BibData
   {
     this();
 
-    for (BibFieldEnum bibFieldEnum : BibFieldEnum.values())
+    EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum -> { switch (bibFieldEnumToType.get(bibFieldEnum))
     {
-      BibFieldType type = bibFieldEnumToType.get(bibFieldEnum);
-
-      switch (type)
-      {
-        case bftString :      setStr(bibFieldEnum, bd.getStr(bibFieldEnum)); break;
-        case bftMultiString : setMultiStr(bibFieldEnum, bd.getMultiStr(bibFieldEnum)); break;
-        case bftEntryType :   entryType = bd.getEntryType(); break;
-        case bftWorkType :    workType = bd.getWorkType(); break;
-        case bftAuthor :      break;
-      }
-    }
+      case bftString      : setStr(bibFieldEnum, bd.getStr(bibFieldEnum)); break;
+      case bftMultiString : setMultiStr(bibFieldEnum, bd.getMultiStr(bibFieldEnum)); break;
+      case bftEntryType   : entryType = bd.getEntryType(); break;
+      case bftWorkType    : workType = bd.getWorkType(); break;
+      case bftAuthor      : break;
+    }});
 
     bd.getAuthors().forEach(authors::add);
   }

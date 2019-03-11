@@ -62,17 +62,12 @@ public abstract class HyperDialog
 
   protected static final <T extends HyperDialog> T createUsingFullPath(String loc, String title, boolean resizable, StageStyle stageStyle, Modality modality)
   {
-    FXMLLoader loader = null;
-    AnchorPane mainPane = null;
-    Stage dialogStage = null;
-    Scene scene = null;
-
     try
     {
-      loader = new FXMLLoader(App.class.getResource(loc));
-      mainPane = (AnchorPane) loader.load();
+      FXMLLoader loader = new FXMLLoader(App.class.getResource(loc));
+      AnchorPane mainPane = (AnchorPane) loader.load();
 
-      dialogStage = new Stage();
+      Stage dialogStage = new Stage();
       dialogStage.setTitle(title);
       dialogStage.initModality(modality);
       dialogStage.setResizable(resizable);
@@ -83,16 +78,11 @@ public abstract class HyperDialog
       else
         dialogStage.initOwner(ui.windows.getOutermostStage());
       dialogStage.getIcons().addAll(app.getPrimaryStage().getIcons());
-      scene = new Scene(mainPane);
+      Scene scene = new Scene(mainPane);
       dialogStage.setScene(scene);
 
-      String id = safeStr(mainPane.getId());
-
-      if (id.equals("About") == false)
-      {
-        String css = App.class.getResource("resources/css.css").toExternalForm();
-        scene.getStylesheets().add(css);
-      }
+      if (safeStr(mainPane.getId()).equals("About") == false)
+        scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
 
       final T dlg = loader.getController();
 

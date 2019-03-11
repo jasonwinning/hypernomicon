@@ -17,6 +17,7 @@
 
 package org.hypernomicon.model;
 
+import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -71,10 +72,10 @@ public class Exceptions
   {
     private final boolean tooShort;
 
-    SearchKeyException(boolean tooShort, int recordID, HDT_RecordType recordType, String key)
+    SearchKeyException(boolean tooShort, HDT_Base record, String key)
     {
-      super(tooShort ? "Search key: \"" + key + "\" is too short. Record type: " + db.getTypeName(recordType) + " ID : " + recordID :
-                       "Duplicate search key: \"" + key + "\". Record type: " + db.getTypeName(recordType) + " ID : " + recordID);
+      super(tooShort ? "Search key: \"" + key + "\" is too short. Record type: " + db.getTypeName(record.getType()) + " ID : " + record.getID() :
+                       "Duplicate search key: \"" + key + "\". Record type: " + db.getTypeName(record.getType()) + " ID : " + record.getID());
 
       this.tooShort = tooShort;
     }
@@ -99,10 +100,10 @@ public class Exceptions
 
   public static class RelationCycleException extends Exception
   {
-    public RelationCycleException(int childID, HDT_RecordType childType, int parentID, HDT_RecordType parentType)
+    public RelationCycleException(HDT_Base child, HDT_Base parent)
     {
-      super("Unable to assign " + db.getTypeName(childType) + " ID " + childID + " as child of " +
-            db.getTypeName(parentType) + " ID " + parentID + ": A cycle would result.");
+      super("Unable to assign " + db.getTypeName(child.getType()) + " ID " + child.getID() + " as child of " +
+            db.getTypeName(parent.getType()) + " ID " + parent.getID() + ": A cycle would result.");
     }
   }
 

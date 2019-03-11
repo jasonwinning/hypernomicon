@@ -49,8 +49,8 @@ public class FileDownloadUtility
 
   public static class Buffer extends InputStream
   {
-    private ArrayList<byte[]> buffers = new ArrayList<>();
-    private ArrayList<Integer> lengths = new ArrayList<>();
+    private final ArrayList<byte[]> buffers = new ArrayList<>();
+    private final ArrayList<Integer> lengths = new ArrayList<>();
     private int curBufferNdx = 0, curPosition = 0;
 
   //---------------------------------------------------------------------------
@@ -73,11 +73,7 @@ public class FileDownloadUtility
 
     private int length()
     {
-      int total = 0;
-      for (Integer length : lengths)
-        total += length;
-
-      return total;
+      return lengths.stream().reduce(0, Math::addExact);
     }
 
   //---------------------------------------------------------------------------
@@ -262,9 +258,9 @@ public class FileDownloadUtility
       else
       {
         if (fileNameStr.length() == 0)
-          saveFilePath = dirPath.resolve(new FilePath(fileName.toString()));
+          saveFilePath = dirPath.resolve(fileName.toString());
         else
-          saveFilePath = dirPath.resolve(new FilePath(fileNameStr));
+          saveFilePath = dirPath.resolve(fileNameStr);
 
         // opens input stream from the HTTP connection
         // opens an output stream to save into file

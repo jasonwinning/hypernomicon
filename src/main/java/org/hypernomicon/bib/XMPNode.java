@@ -192,9 +192,7 @@ public class XMPNode
       return;
     }
 
-    XMPNode child = new XMPNode(xmpMeta, this, targetInfo);
-    elements.add(child);
-    return;
+    elements.add(new XMPNode(xmpMeta, this, targetInfo));
   }
 
 //---------------------------------------------------------------------------

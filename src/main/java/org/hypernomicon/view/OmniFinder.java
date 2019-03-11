@@ -25,12 +25,10 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
@@ -42,6 +40,7 @@ import org.hypernomicon.queryEngines.AllQueryEngine;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -50,11 +49,11 @@ import javafx.scene.text.Text;
 public class OmniFinder
 {
   private final HyperTable htFind;
-  private final ArrayList<ObservableList<HyperTableCell>> cellLists;
-  private final ArrayList<HyperTableRow> rows;
+  private final ArrayList<ObservableList<HyperTableCell>> cellLists = new ArrayList<>();
+  private final ArrayList<HyperTableRow> rows = new ArrayList<>();
   private final EnumSet<TierEnum> tierSet;
-  private final EnumMap<TierEnum, LinkedHashSet<HDT_RecordType>> tierToTypeSet;
-  private final HashSet<HDT_Base> records;
+  private final EnumMap<TierEnum, EnumSet<HDT_RecordType>> tierToTypeSet = new EnumMap<>(TierEnum.class);
+  private final HashSet<HDT_Base> records = new HashSet<>();
 
   private String query = "";
   private FinderThread finderThread = null;
@@ -78,21 +77,15 @@ public class OmniFinder
 
   OmniFinder(HyperTable htFind)
   {
-    LinkedHashSet<HDT_RecordType> typeSet = new LinkedHashSet<>(Arrays.asList
+    EnumSet<HDT_RecordType> typeSet = EnumSet.of
     (
       hdtTerm,      hdtPosition,    hdtDebate, hdtPerson,    hdtPersonGroup, hdtWork,
       hdtWorkLabel, hdtMiscFile,    hdtNote,   hdtGlossary,  hdtArgument,    hdtInstitution, hdtInvestigation
-    ));
+    ),
 
-    LinkedHashSet<HDT_RecordType> authoredSet = new LinkedHashSet<>(Arrays.asList(hdtWork, hdtMiscFile));
+    authoredSet = EnumSet.of(hdtWork, hdtMiscFile);
 
     this.htFind = htFind;
-
-    cellLists = new ArrayList<>();
-    rows = new ArrayList<>();
-
-    tierToTypeSet = new EnumMap<>(TierEnum.class);
-    records = new HashSet<>();
 
     tierToTypeSet.put(tierExactName       , typeSet);
     tierToTypeSet.put(tierNameStartExact  , typeSet);
@@ -108,17 +101,11 @@ public class OmniFinder
 
     for (int ndx = 0; ndx < ROWS_TO_SHOW; ndx++)
     {
-      ArrayList<HyperTableCell> cellList = new ArrayList<>();
-
-      cellList.add(new HyperTableCell(-1, "", hdtWork));
-      cellList.add(new HyperTableCell(-1, "", hdtWork));
-      cellList.add(new HyperTableCell(-1, "", hdtWork, hsmNumeric));
-      cellList.add(new HyperTableCell(-1, "", hdtPerson, hsmTextSimple));
-
-      ObservableList<HyperTableCell> oList = FXCollections.observableList(cellList);
-
+      ObservableList<HyperTableCell> oList = FXCollections.observableArrayList(new HyperTableCell(-1, "", hdtWork),
+                                                                               new HyperTableCell(-1, "", hdtWork),
+                                                                               new HyperTableCell(-1, "", hdtWork, hsmNumeric),
+                                                                               new HyperTableCell(-1, "", hdtPerson, hsmTextSimple));
       cellLists.add(oList);
-
       rows.add(new HyperTableRow(oList, htFind));
     }
   }
@@ -291,9 +278,7 @@ public class OmniFinder
           if (person != null)
             for (KeywordLink keyLink : AllQueryEngine.linkList.getLinks())
               if (keyLink.key.record == person)
-              {
                 return true;
-              }
         }
         break;
 
@@ -416,20 +401,12 @@ public class OmniFinder
       for (HDT_Base record : buffer)
       {
         if (showingMore)
-        {
-          ArrayList<HyperTableCell> cellList = new ArrayList<>();
-
-          cellList.add(new HyperTableCell(-1, "", hdtWork));
-          cellList.add(new HyperTableCell(-1, "", hdtWork));
-          cellList.add(new HyperTableCell(-1, "", hdtWork, hsmNumeric));
-          cellList.add(new HyperTableCell(-1, "", hdtPerson, hsmTextSimple));
-
-          cells = FXCollections.observableList(cellList);
-        }
+          cells = FXCollections.observableArrayList(new HyperTableCell(-1, "", hdtWork),
+                                                    new HyperTableCell(-1, "", hdtWork),
+                                                    new HyperTableCell(-1, "", hdtWork, hsmNumeric),
+                                                    new HyperTableCell(-1, "", hdtPerson, hsmTextSimple));
         else
-        {
           cells = cellLists.get(rowNdx);
-        }
 
         add = true;
 
@@ -529,7 +506,7 @@ public class OmniFinder
         {
           htFind.selectRow(ROWS_TO_SHOW - 1);
           htFind.getTV().refresh();
-          runDelayedInFXThread(1, 30, (event) -> htFind.scrollToSelection());
+          runDelayedInFXThread(1, 30, event -> htFind.scrollToSelection());
         }
         else if (finalFirstBuffer)
           htFind.selectRow(0);
@@ -614,7 +591,7 @@ public class OmniFinder
   private boolean isRunning()
   {
     if (stopped == true) return false;
-    return finderThread == null ? false : finderThread.isAlive();
+    return nullSwitch(finderThread, false, FinderThread::isAlive);
   }
 
 //---------------------------------------------------------------------------

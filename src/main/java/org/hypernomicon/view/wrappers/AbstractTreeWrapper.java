@@ -54,8 +54,7 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<RowTyp
     item.setExpanded(expanded);
     if (item.getChildren() == null) return;
 
-    for (TreeItem<RowType> child : item.getChildren())
-      setAllExpanded(child, expanded);
+    item.getChildren().forEach(child -> setAllExpanded(child, expanded));
   }
 
 //---------------------------------------------------------------------------

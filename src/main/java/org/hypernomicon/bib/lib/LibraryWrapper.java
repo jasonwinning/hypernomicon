@@ -20,6 +20,7 @@ package org.hypernomicon.bib.lib;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -57,11 +58,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
     public static LibraryType getByDescriptor(String descriptor)
     {
-      for (LibraryType type : LibraryType.values())
-        if (type.descriptor.equals(descriptor))
-          return type;
-
-      return null;
+      return findFirst(EnumSet.allOf(LibraryType.class), type -> type.descriptor.equals(descriptor));
     }
   }
 
