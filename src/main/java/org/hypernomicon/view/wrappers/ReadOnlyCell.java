@@ -20,8 +20,9 @@ package org.hypernomicon.view.wrappers;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
+import java.util.function.Consumer;
+
 import org.hypernomicon.model.records.HDT_Base;
-import org.hypernomicon.view.wrappers.RecordListView.RecordHandler;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
@@ -68,9 +69,9 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private static <HDT_T extends HDT_Base> void handleRecord(RecordHandler<HDT_T> handler, HDT_Base record)
+  private static <HDT_T extends HDT_Base> void handleRecord(Consumer<HDT_T> handler, HDT_Base record)
   {
-    handler.handle((HDT_T) record);
+    handler.accept((HDT_T) record);
   }
 
 //---------------------------------------------------------------------------

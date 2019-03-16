@@ -40,7 +40,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.UnaryOperator;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -157,7 +156,7 @@ public class NewPersonDialogController extends HyperDialog
 
     tfSearchKey.disableProperty().bind(rbAddNoCreate.selectedProperty());
 
-    UnaryOperator<TextFormatter.Change> filter = change ->
+    tfLastName.setTextFormatter(new TextFormatter<>(change ->
     {
       if (alreadyChangingName) return change;
 
@@ -188,9 +187,7 @@ public class NewPersonDialogController extends HyperDialog
       }
 
       return change;
-    };
-
-    tfLastName.setTextFormatter(new TextFormatter<>(filter));
+    }));
 
     dialogStage.setOnHidden(event -> stopDupThread());
 

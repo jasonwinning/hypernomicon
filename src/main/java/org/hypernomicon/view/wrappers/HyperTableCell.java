@@ -98,6 +98,9 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
 
     if (getCellType(this) != getCellType(other))
     {
+      if ((getCellType(this) == hdtAuxiliary) || (getCellType(other) == hdtAuxiliary))
+        return false;
+
       if ((id < 0) && (other.id < 0))
         if (safeStr(text).length() == 0)
           if (safeStr(other.text).length() == 0)

@@ -17,14 +17,11 @@
 
 package org.hypernomicon.bib;
 
-import java.util.List;
-
-import org.hypernomicon.bib.BibEntryTable.*;
 import org.hypernomicon.bib.lib.BibEntry;
 import org.hypernomicon.model.records.HDT_Work;
-import javafx.scene.control.ContextMenu;
+import org.hypernomicon.view.wrappers.AbstractRow;
 
-public class BibEntryRow
+public class BibEntryRow extends AbstractRow<HDT_Work, BibEntryRow>
 {
   private final BibEntry entry;
 
@@ -33,53 +30,8 @@ public class BibEntryRow
   public HDT_Work getWork()          { return entry.getWork(); }
   public String getURL()             { return entry.getEntryURL(); }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static BibEntryRowMenuItemSchema addCondContextMenuItem(String caption, CondBibEntryRowHandler condHandler, BibEntryRowHandler handler, List<BibEntryRowMenuItemSchema> contextMenuSchemata)
-  {
-    BibEntryRowMenuItemSchema mnu = new BibEntryRowMenuItemSchema(caption);
-    mnu.condHandler = condHandler;
-    mnu.handler = handler;
-
-    contextMenuSchemata.add(mnu);
-    return mnu;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static ContextMenu createContextMenu(BibEntryRow entryRow, List<BibEntryRowMenuItemSchema> contextMenuSchemata)
-  {
-    boolean noneVisible = true;
-    ContextMenu rowMenu = new ContextMenu();
-
-    for (BibEntryRowMenuItemSchema schema : contextMenuSchemata)
-    {
-      if (schema.condHandler.handle(entryRow))
-      {
-        BibEntryRowMenuItem newItem = new BibEntryRowMenuItem(schema.caption, schema);
-
-        newItem.setOnAction(event ->
-        {
-          rowMenu.hide();
-          schema.handler.handle(entryRow);
-        });
-
-        rowMenu.getItems().add(newItem);
-        noneVisible = false;
-      }
-    }
-
-    rowMenu.setOnShowing(event -> rowMenu.getItems().forEach(menuItem ->
-    {
-      BibEntryRowMenuItem rowItem = (BibEntryRowMenuItem)menuItem;
-      rowItem.setVisible(rowItem.schema.visible);
-      rowItem.setDisable(rowItem.schema.disabled);
-    }));
-
-    return noneVisible ? null : rowMenu;
-  }
+  @SuppressWarnings("unchecked")
+  @Override public HDT_Work getRecord() { return getWork(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

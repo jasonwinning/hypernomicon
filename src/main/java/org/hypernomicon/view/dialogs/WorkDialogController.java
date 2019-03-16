@@ -24,7 +24,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.UnaryOperator;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
@@ -165,7 +165,7 @@ public class WorkDialogController extends HyperDialog
 
     htISBN.addTextEditCol(hdtWork, true, false);
 
-    htISBN.addCondRowBasedContextMenuItem("Use this ISBN to fill in fields",
+    htISBN.addContextMenuItem("Use this ISBN to fill in fields",
       row -> row.getText(0).length() > 0,
       row ->
       {
@@ -222,9 +222,9 @@ public class WorkDialogController extends HyperDialog
     htAuthors.addRemoveMenuItem();
     htAuthors.addChangeOrderMenuItem(true);
 
-    htAuthors.addCondRowBasedContextMenuItem("Remove this row",
-        row -> (row.getText(0).length() > 0) && (row.getID(0) < 1),
-        htAuthors::removeRow);
+    htAuthors.addContextMenuItem("Remove this row",
+      row -> (row.getText(0).length() > 0) && (row.getID(0) < 1),
+      htAuthors::removeRow);
 
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), null);
 
@@ -302,7 +302,7 @@ public class WorkDialogController extends HyperDialog
       alreadyChangingTitle = false;
     });
 
-    UnaryOperator<TextFormatter.Change> filter = change ->
+    tfTitle.setTextFormatter(new TextFormatter<>(change ->
     {
       if (alreadyChangingTitle) return change;
 
@@ -321,9 +321,7 @@ public class WorkDialogController extends HyperDialog
       }
 
       return change;
-    };
-
-    tfTitle.setTextFormatter(new TextFormatter<>(filter));
+    }));
 
     btnStop.setOnAction(event -> stopClicked());
   }
@@ -331,9 +329,7 @@ public class WorkDialogController extends HyperDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface WorkSource { HDT_Work getWork(); }
-
-  public static CellUpdateHandler createAuthorRecordHandler(HyperTable htAuthors, WorkSource workSource)
+  public static CellUpdateHandler createAuthorRecordHandler(HyperTable htAuthors, Supplier<HDT_Work> workSource)
   {
     return (row, cellVal, nextColNdx, nextPopulator) ->
     {
@@ -356,7 +352,7 @@ public class WorkDialogController extends HyperDialog
       }
 
       Author author = null;
-      HDT_Work work = workSource.getWork();
+      HDT_Work work = workSource.get();
 
       if (work != null)
       {

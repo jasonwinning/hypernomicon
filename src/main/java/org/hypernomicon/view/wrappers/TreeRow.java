@@ -23,7 +23,6 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Base;
-import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
@@ -33,7 +32,7 @@ import javafx.scene.image.ImageView;
 
 //---------------------------------------------------------------------------
 
-public class TreeRow extends AbstractTreeRow<TreeRow>
+public class TreeRow extends AbstractTreeRow<HDT_Base, TreeRow>
 {
   private final String text;
   private final HDT_Base record;
@@ -78,10 +77,10 @@ public class TreeRow extends AbstractTreeRow<TreeRow>
 
   @Override public String toString()               { return getCBText(); }
   @Override public ImageView getGraphic()          { return graphic != null ? graphic : getImageViewForRelativePath(ui.getGraphicRelativePath(record)); }
-  @Override public HDT_RecordType getRecordType()  { return record == null ? hdtNone : record.getType(); }
-  @Override public int getRecordID()               { return record == null ? -1 : record.getID(); }
-  @Override public HDT_Base getRecord()            { return record; }
   @Override public int compareTo(TreeRow o)        { return record.getSortKey().compareTo(o.record.getSortKey()); }
+
+  @SuppressWarnings("unchecked")
+  @Override public HDT_Base getRecord()            { return record; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

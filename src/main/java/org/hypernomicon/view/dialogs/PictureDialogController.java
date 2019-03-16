@@ -36,7 +36,6 @@ import org.hypernomicon.view.tabs.PersonTabController;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import java.io.IOException;
-import java.util.function.UnaryOperator;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -120,7 +119,7 @@ public class PictureDialogController extends HyperDialog
     rbFile.   selectedProperty().addListener((observable, oldValue, newValue) -> { if (newValue) rbFileSelected    (); });
     rbWeb.    selectedProperty().addListener((observable, oldValue, newValue) -> { if (newValue) rbWebSelected     (); });
 
-    UnaryOperator<TextFormatter.Change> filter = change ->
+    tfWeb.setTextFormatter(new TextFormatter<>(change ->
     {
       if (change.isContentChange() == false)
         return change;
@@ -142,9 +141,7 @@ public class PictureDialogController extends HyperDialog
       }
 
       return change;
-    };
-
-    tfWeb.setTextFormatter(new TextFormatter<>(filter));
+    }));
 
     tfWeb.focusedProperty().addListener((ov, oldValue, newValue) ->
     {

@@ -20,6 +20,8 @@ package org.hypernomicon.view.dialogs;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
+import java.util.function.Predicate;
+
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Institution;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_InstitutionType;
@@ -28,7 +30,6 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import org.hypernomicon.view.populators.StandardPopulator;
-import org.hypernomicon.view.populators.Populator.PopulatorFilter;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import javafx.fxml.FXML;
@@ -60,7 +61,7 @@ public class NewInstDialogController extends HyperDialog
 
   private void init(HDT_Institution parent, String newName, boolean isParent)
   {
-    PopulatorFilter popFilter = record -> HDT_Institution.class.cast(record).subInstitutions.size() > 0;
+    Predicate<HDT_Base> popFilter = record -> HDT_Institution.class.cast(record).subInstitutions.size() > 0;
 
     hcbParent = new HyperCB(cbParent, ctDropDownList, new StandardPopulator(hdtInstitution, popFilter, true), null, false);
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType), null, false);

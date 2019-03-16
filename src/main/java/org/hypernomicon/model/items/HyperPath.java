@@ -68,7 +68,6 @@ public class HyperPath
 
   public HDT_RecordWithPath getRecord()       { return record; }
   public HDT_RecordType     getRecordType()   { return record == null ? hdtNone : record.getType(); }
-  public int                getRecordID()     { return record == null ? -1 : record.getID(); }
   public FilePath           getFileName()     { return fileName; }
   public HDT_Folder         getParentFolder() { return folderPtr == null ? folder : folderPtr.get(); }
 
@@ -398,7 +397,7 @@ public class HyperPath
       });
     }
 
-    Set<HDT_Base> set = new LinkedHashSet<>();
+    LinkedHashSet<HDT_Base> set = new LinkedHashSet<>();
     db.getRelatives(getRecord(), set, 10);
 
     set.forEach(relative ->

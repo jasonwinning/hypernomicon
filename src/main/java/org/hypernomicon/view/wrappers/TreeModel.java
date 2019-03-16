@@ -38,7 +38,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
-public class TreeModel<RowType extends AbstractTreeRow<RowType>>
+public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Base, RowType>>
 {
   final private BidiOneToManyRecordMap parentToChildren;
   final private MappingFromRecordToRows recordToRows;

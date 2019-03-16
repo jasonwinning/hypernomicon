@@ -20,6 +20,7 @@ package org.hypernomicon.view.wrappers;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Function;
 
 import static javafx.scene.input.MouseButton.*;
 
@@ -58,8 +59,6 @@ import javafx.util.StringConverter;
 
 public class HyperCB implements CommitableWrapper
 {
-  @FunctionalInterface public interface CellTextHandler { String getText(HyperTableRow row); }
-
   private final ComboBox<HyperTableCell> cb;
   private final Populator populator;
   final HyperTableRow row;
@@ -497,14 +496,12 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface RecordString { String get(HDT_Base record); }
-
   public void addBlankEntry() { addEntry(-1, "", false); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addAndSelectEntry(HyperObjPointer<? extends HDT_Base, ? extends HDT_Base> pntr, RecordString rs)
+  public void addAndSelectEntry(HyperObjPointer<? extends HDT_Base, ? extends HDT_Base> pntr, Function<HDT_Base, String> rs)
   {
     if (pntr.isNotNull())
       addAndSelectEntry(pntr.get(), rs);
@@ -513,7 +510,7 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addAndSelectEntryOrBlank(HyperObjPointer<? extends HDT_Base, ? extends HDT_Base> pntr, RecordString rs)
+  public void addAndSelectEntryOrBlank(HyperObjPointer<? extends HDT_Base, ? extends HDT_Base> pntr, Function<HDT_Base, String> rs)
   {
     if (pntr.isNotNull())
       addAndSelectEntry(pntr.get(), rs);
@@ -524,19 +521,19 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addAndSelectEntry(HDT_Base record, RecordString rs)
+  public void addAndSelectEntry(HDT_Base record, Function<HDT_Base, String> rs)
   {
     if (record != null)
-      addEntry(record.getID(), rs.get(record), true);
+      addEntry(record.getID(), rs.apply(record), true);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addAndSelectEntryOrBlank(HDT_Base record, RecordString rs)
+  public void addAndSelectEntryOrBlank(HDT_Base record, Function<HDT_Base, String> rs)
   {
     if (record != null)
-      addEntry(record.getID(), rs.get(record), true);
+      addEntry(record.getID(), rs.apply(record), true);
     else
       addBlankEntry();
   }

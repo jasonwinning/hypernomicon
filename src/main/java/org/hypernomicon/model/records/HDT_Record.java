@@ -213,7 +213,7 @@ public abstract class HDT_Record implements HDT_Base
     if (expired) return;
 
     if (dummyFlag == false)
-      db.getRecordDeleteHandlers().forEach(handler -> handler.handle(this));
+      db.getRecordDeleteHandlers().forEach(handler -> handler.accept(this));
 
     items.values().forEach(HDI_OnlineBase::expire);
 

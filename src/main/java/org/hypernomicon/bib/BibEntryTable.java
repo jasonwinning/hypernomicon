@@ -17,22 +17,23 @@
 
 package org.hypernomicon.bib;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.hypernomicon.bib.BibData.EntryType;
 import org.hypernomicon.bib.lib.BibEntry;
+import org.hypernomicon.view.wrappers.HasRightClickableRows;
 import org.hypernomicon.view.wrappers.HyperTable;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.text.Text;
 
 import static org.hypernomicon.App.*;
@@ -45,42 +46,14 @@ import static org.hypernomicon.util.Util.*;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-public class BibEntryTable
+public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 {
-  @FunctionalInterface interface BibEntryRowHandler     { void handle(BibEntryRow row); }
-  @FunctionalInterface interface CondBibEntryRowHandler { boolean handle(BibEntryRow row); }
-
-//---------------------------------------------------------------------------
-
-  static class BibEntryRowMenuItemSchema
-  {
-    CondBibEntryRowHandler condHandler;
-    BibEntryRowHandler handler;
-    final String caption;
-    boolean visible = true, disabled = false;
-
-    BibEntryRowMenuItemSchema(String caption) { this.caption = caption; }
-  }
-
-//---------------------------------------------------------------------------
-
-  static class BibEntryRowMenuItem extends MenuItem
-  {
-    BibEntryRowMenuItem(String caption, BibEntryRowMenuItemSchema schema)
-    {
-      super(caption);
-      this.schema = schema;
-    }
-
-    BibEntryRowMenuItemSchema schema;
-  }
 
 //---------------------------------------------------------------------------
 
   private final ObservableList<BibEntryRow> rows;
   private final Map<String, BibEntryRow> keyToRow;
   private final TableView<BibEntryRow> tv;
-  final List<BibEntryRowMenuItemSchema> contextMenuSchemata;
 
   void updateKey(String oldKey, String newKey) { keyToRow.put(newKey, keyToRow.remove(oldKey)); }
   boolean containsKey(String bibEntryKey)      { return keyToRow.containsKey(bibEntryKey); }
@@ -93,7 +66,6 @@ public class BibEntryTable
   {
     this.tv = tv;
     rows = FXCollections.observableArrayList();
-    contextMenuSchemata = new ArrayList<>();
     keyToRow = new HashMap<>();
 
     if (prefID.length() > 0)
@@ -139,6 +111,21 @@ public class BibEntryTable
 
     tcAssocRecord.setCellValueFactory(cellData -> new SimpleStringProperty
       (nullSwitch(db.getWorkByBibEntryKey(cellData.getValue().getEntry().getEntryKey()), "", work -> String.valueOf(work.getID()))));
+
+    tv.setRowFactory(thisTV ->
+    {
+      TableRow<BibEntryRow> row = new TableRow<>();
+
+      row.itemProperty().addListener((o, ov, nv) -> row.setContextMenu(nv == null ? null : createContextMenu(nv)));
+
+      row.setOnMouseClicked(mouseEvent ->
+      {
+        if ((mouseEvent.getButton().equals(MouseButton.PRIMARY)) && (mouseEvent.getClickCount() == 2))
+          nullSwitch(row.getItem(), item -> nullSwitch(item.getWork(), work -> ui.goToRecord(work, true)));
+      });
+
+      return row;
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -193,22 +180,6 @@ public class BibEntryTable
   {
     tv.getSelectionModel().select(keyToRow.get(bibEntryKey));
     HyperTable.scrollToSelection(tv, true);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  BibEntryRowMenuItemSchema addContextMenuItem(String caption, BibEntryRowHandler handler)
-  {
-    return BibEntryRow.addCondContextMenuItem(caption, row -> true, handler, contextMenuSchemata);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  BibEntryRowMenuItemSchema addCondContextMenuItem(String caption, CondBibEntryRowHandler condHandler, BibEntryRowHandler handler)
-  {
-    return BibEntryRow.addCondContextMenuItem(caption, condHandler, handler, contextMenuSchemata);
   }
 
 //---------------------------------------------------------------------------

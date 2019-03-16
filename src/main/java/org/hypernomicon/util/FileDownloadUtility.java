@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.http.Header;
@@ -36,7 +37,6 @@ import org.apache.tika.mime.MimeTypeException;
 import org.hypernomicon.App;
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
-import org.hypernomicon.util.AsyncHttpClient.ExHandler;
 import org.hypernomicon.util.filePath.FilePath;
 
 import static org.hypernomicon.util.Util.*;
@@ -44,8 +44,6 @@ import static org.hypernomicon.util.Util.*;
 public class FileDownloadUtility
 {
   private static final int BUFFER_SIZE = 4096;
-
-  @FunctionalInterface public interface BufferHandler { void handle(Buffer buffer); }
 
   public static class Buffer extends InputStream
   {
@@ -137,7 +135,7 @@ public class FileDownloadUtility
 //---------------------------------------------------------------------------
 
   public static void downloadToFile(String fileURL, FilePath dirPath, String fileNameStr, StringBuilder fileName, boolean assumeIsImage,
-                                    AsyncHttpClient httpClient, BufferHandler successHndlr, ExHandler failHndlr)
+                                    AsyncHttpClient httpClient, Consumer<Buffer> successHndlr, Consumer<Exception> failHndlr)
   {
     downloadFile(fileURL, dirPath, fileNameStr, false, fileName, assumeIsImage, httpClient, successHndlr, failHndlr);
   }
@@ -146,7 +144,7 @@ public class FileDownloadUtility
 //---------------------------------------------------------------------------
 
   public static void downloadToBuffer(String fileURL, StringBuilder fileName, boolean assumeIsImage,
-                                      AsyncHttpClient httpClient, BufferHandler successHndlr, ExHandler failHndlr)
+                                      AsyncHttpClient httpClient, Consumer<Buffer> successHndlr, Consumer<Exception> failHndlr)
   {
     downloadFile(fileURL, null, "", true, fileName, assumeIsImage, httpClient, successHndlr, failHndlr);
   }
@@ -156,7 +154,7 @@ public class FileDownloadUtility
 
   @SuppressWarnings({ "unused" })
   private static void downloadFile(String fileURL, FilePath dirPath, String fileNameStr, boolean saveToBuffer, StringBuilder fileName,
-                                   boolean assumeIsImage, AsyncHttpClient httpClient, BufferHandler successHndlr, ExHandler failHndlr)
+                                   boolean assumeIsImage, AsyncHttpClient httpClient, Consumer<Buffer> successHndlr, Consumer<Exception> failHndlr)
   {
     assignSB(fileName, "");
 
@@ -171,7 +169,7 @@ public class FileDownloadUtility
 
       if (statusCode >= 400)
       {
-        runInFXThread(() -> failHndlr.handle(new HttpResponseException(statusCode, reasonPhrase)));
+        runInFXThread(() -> failHndlr.accept(new HttpResponseException(statusCode, reasonPhrase)));
         return false;
       }
 
@@ -243,14 +241,14 @@ public class FileDownloadUtility
       {
         try (Buffer buffer = new Buffer(entity.getContent()))
         {
-          runInFXThread(() -> successHndlr.handle(buffer));
+          runInFXThread(() -> successHndlr.accept(buffer));
         }
         catch (Exception e)
         {
           if (httpClient.wasCancelledByUser())
-            runInFXThread(() -> failHndlr.handle(new TerminateTaskException()));
+            runInFXThread(() -> failHndlr.accept(new TerminateTaskException()));
           else
-            runInFXThread(() -> failHndlr.handle(e));
+            runInFXThread(() -> failHndlr.accept(e));
 
           return false;
         }
@@ -276,11 +274,11 @@ public class FileDownloadUtility
             outputStream.write(byteBuffer, 0, bytesRead);
           }
 
-          runInFXThread(() -> successHndlr.handle(null));
+          runInFXThread(() -> successHndlr.accept(null));
         }
         catch (Exception e)
         {
-          runInFXThread(() -> failHndlr.handle(e));
+          runInFXThread(() -> failHndlr.accept(e));
           return false;
         }
       }
@@ -299,7 +297,7 @@ public class FileDownloadUtility
     }
     catch (Exception e)
     {
-      runInFXThread(() -> failHndlr.handle(e));
+      runInFXThread(() -> failHndlr.accept(e));
       return;
     }
 

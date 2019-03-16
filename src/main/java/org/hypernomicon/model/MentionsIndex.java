@@ -26,7 +26,6 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import javafx.application.Platform;
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.model.HyperDB.DatabaseEvent;
 import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.HDT_Base;
@@ -45,7 +44,7 @@ class MentionsIndex
 {
   private final BidiOneToManyRecordMap mentionedInDescToMentioners;
   private final BidiOneToManyRecordMap mentionedAnywhereToMentioners;
-  private final List<DatabaseEvent> ndxCompleteHandlers;
+  private final List<Runnable> ndxCompleteHandlers;
   private final KeywordLinkList linkList;
   private final EnumSet<HDT_RecordType> types;
   private final ArrayList<String> strList = new ArrayList<>();
@@ -58,7 +57,7 @@ class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  MentionsIndex(List<DatabaseEvent> ndxCompleteHandlers)
+  MentionsIndex(List<Runnable> ndxCompleteHandlers)
   {
     this.ndxCompleteHandlers = ndxCompleteHandlers;
 
@@ -220,7 +219,7 @@ class MentionsIndex
         {
           try { oldThread.join(); } catch (InterruptedException e) { noOp(); }
 
-          ndxCompleteHandlers.forEach(DatabaseEvent::handle);
+          ndxCompleteHandlers.forEach(Runnable::run);
         });
       }
 

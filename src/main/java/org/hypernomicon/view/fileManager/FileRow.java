@@ -19,7 +19,6 @@ package org.hypernomicon.view.fileManager;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.mime.MediaType;
@@ -28,20 +27,18 @@ import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Folder;
-import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.fileManager.FileTable.*;
 import org.hypernomicon.view.wrappers.AbstractTreeRow;
 import org.hypernomicon.view.wrappers.TreeModel;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.ImageView;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-public class FileRow extends AbstractTreeRow<FileRow>
+public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 {
   private final HyperPath hyperPath;
   private MediaType mimetype = null;
@@ -68,14 +65,8 @@ public class FileRow extends AbstractTreeRow<FileRow>
 
   void setFolderTreeItem(TreeItem<FileRow> treeItem) { this.treeItem  = treeItem; }
 
+  @SuppressWarnings("unchecked")
   @Override public HDT_RecordWithPath getRecord() { return hyperPath.getRecord(); }
-  @Override public HDT_RecordType getRecordType() { return hyperPath.getRecordType(); }
-  @Override public int getRecordID()              { return hyperPath.getRecordID(); }
-
-  static FileRowMenuItemSchema addContextMenuItem(String caption, FileRowHandler handler, List<FileRowMenuItemSchema> contextMenuSchemata)
-  {
-    return addCondContextMenuItem(caption, fileRow -> true, handler, contextMenuSchemata);
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -132,54 +123,6 @@ public class FileRow extends AbstractTreeRow<FileRow>
 
     graphic = getImageViewForRelativePath(getImageRelPathForFilePath(hyperPath.getFilePath(), mimetype, isDir));
     return graphic;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  static FileRowMenuItemSchema addCondContextMenuItem(String caption, CondFileRowHandler condHandler, FileRowHandler handler, List<FileRowMenuItemSchema> contextMenuSchemata)
-  {
-    FileRowMenuItemSchema mnu = new FileRowMenuItemSchema(caption);
-    mnu.condHandler = condHandler;
-    mnu.handler = handler;
-
-    contextMenuSchemata.add(mnu);
-    return mnu;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  static ContextMenu createContextMenu(FileRow fileRow, List<FileRowMenuItemSchema> contextMenuSchemata)
-  {
-    boolean noneVisible = true;
-    ContextMenu rowMenu = new ContextMenu();
-
-    for (FileRowMenuItemSchema schema : contextMenuSchemata)
-    {
-      if (schema.condHandler.handle(fileRow))
-      {
-        FileRowMenuItem newItem = new FileRowMenuItem(schema.caption, schema);
-
-        newItem.setOnAction(event ->
-        {
-          rowMenu.hide();
-          schema.handler.handle(fileRow);
-        });
-        rowMenu.getItems().add(newItem);
-
-        noneVisible = false;
-      }
-    }
-
-    rowMenu.setOnShowing(event -> rowMenu.getItems().forEach(menuItem ->
-    {
-      FileRowMenuItem rowItem = (FileRowMenuItem)menuItem;
-      rowItem.setVisible(rowItem.schema.visible);
-      rowItem.setDisable(rowItem.schema.disabled);
-    }));
-
-    return noneVisible ? null : rowMenu;
   }
 
 //---------------------------------------------------------------------------

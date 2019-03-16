@@ -20,7 +20,9 @@ package org.hypernomicon.view.populators;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.List;
+import java.util.function.Predicate;
 
+import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -35,11 +37,11 @@ public class StandardPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public StandardPopulator(HDT_RecordType objType)                         { this(objType, null, false); }
-  public StandardPopulator(HDT_RecordType objType, boolean nameOnly)       { this(objType, null, nameOnly); }
-  public StandardPopulator(HDT_RecordType objType, PopulatorFilter filter) { this(objType, filter, false); }
+  public StandardPopulator(HDT_RecordType objType)                             { this(objType, null, false); }
+  public StandardPopulator(HDT_RecordType objType, boolean nameOnly)           { this(objType, null, nameOnly); }
+  public StandardPopulator(HDT_RecordType objType, Predicate<HDT_Base> filter) { this(objType, filter, false); }
 
-  public StandardPopulator(HDT_RecordType objType, PopulatorFilter filter, boolean nameOnly)
+  public StandardPopulator(HDT_RecordType objType, Predicate<HDT_Base> filter, boolean nameOnly)
   {
     this.objType = objType;
 

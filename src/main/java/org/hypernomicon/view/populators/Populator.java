@@ -23,7 +23,6 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.util.List;
 
-import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -42,8 +41,6 @@ public abstract class Populator
     cvtRecord,       cvtConnective,   cvtBoolean,        cvtTernary,
     cvtOperand,      cvtTagItem,      cvtRelation
   }
-
-  @FunctionalInterface public interface PopulatorFilter { boolean filter(HDT_Base record); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

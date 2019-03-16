@@ -21,6 +21,8 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
+import java.util.function.Function;
+
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
@@ -30,7 +32,6 @@ import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
-import org.hypernomicon.view.wrappers.HyperCB.CellTextHandler;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ComboBox;
@@ -48,13 +49,13 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
   private final EventHandler<ActionEvent> onAction;
   private final HyperTable table;
   private final MutableBoolean dontCreateNewRecord;
-  private final CellTextHandler textHndlr;
+  private final Function<HyperTableRow, String> textHndlr;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   ComboBoxCell(HyperTable table, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction,
-               MutableBoolean dontCreateNewRecord, CellTextHandler textHndlr)
+               MutableBoolean dontCreateNewRecord, Function<HyperTableRow, String> textHndlr)
   {
     super();
     this.table = table;
@@ -70,24 +71,23 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 
   @Override public void startEdit()
   {
-    if (!isEmpty())
-    {
-      super.startEdit();
-      createComboBox();
+    if (isEmpty()) return;
 
-      hCB.populate(false);
+    super.startEdit();
+    createComboBox();
 
-      HyperTableCell cell = getItem();
+    hCB.populate(false);
 
-      cB.setValue(cell);
-      if (cell != null)
-        cB.getSelectionModel().select(cell);
+    HyperTableCell cell = getItem();
 
-      setGraphic(cB);
-      safeFocus(cB);
-      AutoCompleteCB.scrollToValue(cB);
-      cB.show();
-    }
+    cB.setValue(cell);
+    if (cell != null)
+      cB.getSelectionModel().select(cell);
+
+    setGraphic(cB);
+    safeFocus(cB);
+    AutoCompleteCB.scrollToValue(cB);
+    cB.show();
   }
 
 //---------------------------------------------------------------------------
@@ -120,23 +120,22 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
       setText(null);
       setItem(null);
       setGraphic(null);
+      return;
+    }
+
+    if (isEditing())
+    {
+      if (hCB != null)
+        hCB.populate(false);
+
+      setText(null);
+      setGraphic(cB);
     }
     else
     {
-      if (this.isEditing())
-      {
-        if (hCB != null)
-          hCB.populate(false);
-
-        setText(null);
-        setGraphic(cB);
-      }
-      else
-      {
-        setItem(item);
-        setText(getString());
-        setGraphic(null);
-      }
+      setItem(item);
+      setText(getString());
+      setGraphic(null);
     }
   }
 
@@ -146,12 +145,12 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
   private void createComboBox()
   {
     cB = new ComboBox<>();
-    cB.setPrefWidth(this.getWidth() - this.getGraphicTextGap() * 2);
+    cB.setPrefWidth(getWidth() - getGraphicTextGap() * 2);
     cB.setMinHeight(18.0 * displayScale);
     cB.setPrefHeight(18.0 * displayScale);
     cB.setMaxHeight(18.0 * displayScale);
 
-    HyperTableRow row = (HyperTableRow) this.getTableRow().getItem();
+    HyperTableRow row = (HyperTableRow) getTableRow().getItem();
 
     if (populator.getValueType() == cvtVaries)
     {
@@ -188,9 +187,9 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
   private String getString()
   {
     if (textHndlr != null)
-      return textHndlr.getText(getTableView().getItems().get(getTableRow().getIndex()));
+      return textHndlr.apply(getTableView().getItems().get(getTableRow().getIndex()));
 
-    return getItem() == null ? "" : getItem().getText();
+    return HyperTableCell.getCellText(getItem());
   }
 
 //---------------------------------------------------------------------------
@@ -198,7 +197,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 
   @Override public void commit()
   {
-    if (isEditing())
+    if (getGraphic() == cB)
       commitEdit(hCB.selectedHTC());
   }
 

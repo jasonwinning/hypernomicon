@@ -22,6 +22,7 @@ import static org.hypernomicon.util.Util.*;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Consumer;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -34,15 +35,11 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
-import org.hypernomicon.util.AsyncHttpClient.ExHandler;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
 public class JsonHttpClient
 {
-  @FunctionalInterface public interface JsonSuccessHandler { void handle(JsonHttpClient jsonClient); }
-  @FunctionalInterface public interface JsonObjHandler     { void handle(JsonObj jsonObj); }
-
   private Header[] headers;
   private int statusCode;
   private String reasonPhrase = "";
@@ -58,23 +55,23 @@ public class JsonHttpClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void getObjAsync(String url, AsyncHttpClient httpClient, JsonObjHandler successHndlr, ExHandler failHndlr)
+  public static void getObjAsync(String url, AsyncHttpClient httpClient, Consumer<JsonObj> successHndlr, Consumer<Exception> failHndlr)
   {
     try
     {
-      new JsonHttpClient().doAsyncRequest(new HttpGet(url), httpClient, jsonClient -> runInFXThread(() -> successHndlr.handle(jsonClient.jsonObj)), failHndlr);
+      new JsonHttpClient().doAsyncRequest(new HttpGet(url), httpClient, jsonClient -> runInFXThread(() -> successHndlr.accept(jsonClient.jsonObj)), failHndlr);
     }
     catch (Exception e)
     {
       if (failHndlr != null)
-        failHndlr.handle(e);
+        failHndlr.accept(e);
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void doAsyncRequest(HttpUriRequest request, AsyncHttpClient httpClient, JsonSuccessHandler successHndlr, ExHandler failHndlr)
+  private void doAsyncRequest(HttpUriRequest request, AsyncHttpClient httpClient, Consumer<JsonHttpClient> successHndlr, Consumer<Exception> failHndlr)
   {
     jsonArray = null;
     jsonObj = null;
@@ -146,7 +143,7 @@ public class JsonHttpClient
 //----------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private ResponseHandler<Boolean> getResponseHndlr(JsonSuccessHandler successHndlr, ExHandler failHndlr) { return response ->
+  private ResponseHandler<Boolean> getResponseHndlr(Consumer<JsonHttpClient> successHndlr, Consumer<Exception> failHndlr) { return response ->
   {
     statusCode = response.getStatusLine().getStatusCode();
     reasonPhrase = response.getStatusLine().getReasonPhrase();
@@ -154,7 +151,7 @@ public class JsonHttpClient
     if (statusCode >= 400)
     {
       if (failHndlr != null)
-        runInFXThread(() -> failHndlr.handle(new Exception("Response from " + lastUrl + ": " + reasonPhrase)));
+        runInFXThread(() -> failHndlr.accept(new Exception("Response from " + lastUrl + ": " + reasonPhrase)));
 
       return false;
     }
@@ -183,7 +180,7 @@ public class JsonHttpClient
           jsonObj = new JsonObj((JSONObject) obj);
 
           if (successHndlr != null)
-            runInFXThread(() -> successHndlr.handle(this));
+            runInFXThread(() -> successHndlr.accept(this));
 
           return true;
         }
@@ -192,7 +189,7 @@ public class JsonHttpClient
           jsonArray = new JsonArray((JSONArray) obj);
 
           if (successHndlr != null)
-            runInFXThread(() -> successHndlr.handle(this));
+            runInFXThread(() -> successHndlr.accept(this));
 
           return true;
         }
@@ -202,12 +199,12 @@ public class JsonHttpClient
         lastException = e;
 
         if (failHndlr != null)
-          runInFXThread(() -> failHndlr.handle(e));
+          runInFXThread(() -> failHndlr.accept(e));
       }
     }
 
     if (successHndlr != null)
-      runInFXThread(() -> successHndlr.handle(this));
+      runInFXThread(() -> successHndlr.accept(this));
 
     return true;
   }; }

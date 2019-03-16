@@ -26,6 +26,7 @@ import static org.hypernomicon.util.Util.*;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
@@ -39,7 +40,6 @@ import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
-import org.hypernomicon.view.wrappers.HyperCB.CellTextHandler;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
@@ -74,7 +74,7 @@ public class HyperTableColumn
                                isNumeric           = new MutableBoolean(false),
                                dontCreateNewRecord = new MutableBoolean(false);
 
-  public CellTextHandler textHndlr = null;
+  public Function<HyperTableRow, String> textHndlr = null;
   private boolean moreButtonClicked = false;
 
 //---------------------------------------------------------------------------

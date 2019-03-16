@@ -262,7 +262,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
         refreshView(newValue.intValue());
       });
 
-      RecordListView.addDefaultMenuItems(resultsTable);
+      resultsTable.addDefaultMenuItems();
 
       resultsTable.addContextMenuItem("Remove from query results", HDT_Base.class, record ->
       {

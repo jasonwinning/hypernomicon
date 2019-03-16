@@ -50,7 +50,6 @@ import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.workMerge.MergeWorksDialogController;
 import org.hypernomicon.view.wrappers.*;
-import org.hypernomicon.view.wrappers.RecordListView.*;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
 
@@ -74,7 +73,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.function.UnaryOperator;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -192,46 +191,46 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     htAuthors.addRemoveMenuItem();
     htAuthors.addChangeOrderMenuItem(true);
 
-    htAuthors.addCondRowBasedContextMenuItem("Remove this row",
-        row -> (row.getText(1).length() > 0) && (row.getID(1) < 1),
-        htAuthors::removeRow);
+    htAuthors.addContextMenuItem("Remove this row",
+      row -> (row.getText(1).length() > 0) && (row.getID(1) < 1),
+      htAuthors::removeRow);
 
-    htAuthors.addCondRowBasedContextMenuItem("Create person record",
-        row -> (row.getText(1).length() > 0) && (row.getID(1) < 1),
-        row ->
+    htAuthors.addContextMenuItem("Create person record",
+      row -> (row.getText(1).length() > 0) && (row.getID(1) < 1),
+      row ->
+      {
+        if (ui.cantSaveRecord(true)) return;
+
+        String text = row.getText(1);
+
+        Ternary isInFileName = Ternary.Unset;
+        Author author = curWork.getAuthors().getAuthor(new PersonName(text));
+        if (author != null)
+          isInFileName = author.getInFileName();
+
+        HDT_Person otherPerson = otherPersonToUse(text);
+
+        if (otherPerson != null)
         {
-          if (ui.cantSaveRecord(true)) return;
+          htAuthors.selectID(1, row, otherPerson.getID());
+          saveToRecord(false);
+          curWork.setPersonIsInFileName(otherPerson, isInFileName);
+          ui.update();
+          return;
+        }
 
-          String text = row.getText(1);
+        NewPersonDialogController npdc = NewPersonDialogController.create(true, text, author);
 
-          Ternary isInFileName = Ternary.Unset;
-          Author author = curWork.getAuthors().getAuthor(new PersonName(text));
-          if (author != null)
-            isInFileName = author.getInFileName();
-
-          HDT_Person otherPerson = otherPersonToUse(text);
-
-          if (otherPerson != null)
-          {
-            htAuthors.selectID(1, row, otherPerson.getID());
-            saveToRecord(false);
-            curWork.setPersonIsInFileName(otherPerson, isInFileName);
-            ui.update();
-            return;
-          }
-
-          NewPersonDialogController npdc = NewPersonDialogController.create(true, text, author);
-
-          if (npdc.showModal())
-          {
-            Populator pop = htAuthors.getPopulator(1);
-            pop.setChanged(row);                      // A new record has been created so force it to repopulate
-            htAuthors.selectID(1, row, npdc.getPerson().getID());
-            saveToRecord(false);
-            curWork.setPersonIsInFileName(npdc.getPerson(), isInFileName);
-            ui.update();
-          }
-        });
+        if (npdc.showModal())
+        {
+          Populator pop = htAuthors.getPopulator(1);
+          pop.setChanged(row);                      // A new record has been created so force it to repopulate
+          htAuthors.selectID(1, row, npdc.getPerson().getID());
+          saveToRecord(false);
+          curWork.setPersonIsInFileName(npdc.getPerson(), isInFileName);
+          ui.update();
+        }
+      });
 
     htLabels = new HyperTable(tvLabels, 2, true, PREF_KEY_HT_WORK_LABELS);
 
@@ -254,7 +253,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     htSubworks.addContextMenuItem("Go to work record", HDT_Work.class,
       work -> ui.goToRecord(work, true));
 
-    RecordListView.addDefaultMenuItems(htSubworks);
+    htSubworks.addDefaultMenuItems();
 
     htSubworks.addChangeOrderMenuItem(false, () -> curWork.subWorks.reorder(htSubworks.saveToList(1, hdtWork), true));
 
@@ -264,7 +263,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     htKeyMentioners.addCol(hdtNone, ctNone);
     htKeyMentioners.addCol(hdtNone, ctNone);
 
-    RecordListView.addDefaultMenuItems(htKeyMentioners);
+    htKeyMentioners.addDefaultMenuItems();
 
     htInvestigations = new HyperTable(tvInvestigations, 2, true, PREF_KEY_HT_WORK_INV);
 
@@ -322,52 +321,52 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     htWorkFiles.setTooltip(0, ButtonAction.baEdit, "Update or rename this work file");
     htWorkFiles.setTooltip(0, ButtonAction.baNew, "Add a new work file");
 
-    htWorkFiles.addCondContextMenuItem("Launch file", HDT_WorkFile.class,
-        workFile -> workFile.getPath().isEmpty() == false,
-        workFile -> launchWorkFile(workFile.getPath().getFilePath(), getCurPageNum(curWork, workFile, true)));
+    htWorkFiles.addContextMenuItem("Launch file", HDT_WorkFile.class,
+      workFile -> workFile.getPath().isEmpty() == false,
+      workFile -> launchWorkFile(workFile.getPath().getFilePath(), getCurPageNum(curWork, workFile, true)));
 
-    htWorkFiles.addCondContextMenuItem("Show in system explorer", HDT_WorkFile.class,
-        workFile -> workFile.getPath().isEmpty() == false,
-        workFile -> highlightFileInExplorer(workFile.getPath().getFilePath()));
+    htWorkFiles.addContextMenuItem("Show in system explorer", HDT_WorkFile.class,
+      workFile -> workFile.getPath().isEmpty() == false,
+      workFile -> highlightFileInExplorer(workFile.getPath().getFilePath()));
 
-    htWorkFiles.addCondContextMenuItem("Show in File Manager", HDT_WorkFile.class,
-        workFile -> workFile.getPath().isEmpty() == false,
-        workFile -> ui.goToFileInManager(workFile.getPath().getFilePath()));
+    htWorkFiles.addContextMenuItem("Show in File Manager", HDT_WorkFile.class,
+      workFile -> workFile.getPath().isEmpty() == false,
+      workFile -> ui.goToFileInManager(workFile.getPath().getFilePath()));
 
-    htWorkFiles.addCondContextMenuItem("Copy path to clipboard", HDT_WorkFile.class,
-        workFile -> workFile.getPath().isEmpty() == false,
-        workFile -> copyToClipboard(workFile.getPath().toString()));
+    htWorkFiles.addContextMenuItem("Copy path to clipboard", HDT_WorkFile.class,
+      workFile -> workFile.getPath().isEmpty() == false,
+      workFile -> copyToClipboard(workFile.getPath().toString()));
 
-    htWorkFiles.addCondContextMenuItem("Update or rename this work file", HDT_WorkFile.class,
-        workFile -> workFile.getPath().isEmpty() == false,
-        this::showWorkDialog);
+    htWorkFiles.addContextMenuItem("Update or rename this work file", HDT_WorkFile.class,
+      workFile -> workFile.getPath().isEmpty() == false,
+      this::showWorkDialog);
 
-    htWorkFiles.addCondContextMenuItemOkayIfBlank("Select parent work file",
-        record ->
-        {
-          if ((curWork == null) || curWork.largerWork.isNull()) return false;
-          return curWork.largerWork.get().workFiles.stream().anyMatch(workFile -> curWork.workFiles.contains(workFile) == false);
-        },
-        record ->
-        {
-          ChooseParentWorkFileDialogController ctrlr = ChooseParentWorkFileDialogController.create("Choose Work File", curWork);
+    htWorkFiles.addContextMenuItem("Select parent work file",
+      row ->
+      {
+        if ((curWork == null) || curWork.largerWork.isNull()) return false;
+        return curWork.largerWork.get().workFiles.stream().anyMatch(workFile -> curWork.workFiles.contains(workFile) == false);
+      },
+      row ->
+      {
+        ChooseParentWorkFileDialogController ctrlr = ChooseParentWorkFileDialogController.create("Choose Work File", curWork);
 
-          if (ctrlr.showModal() == false) return;
+        if (ctrlr.showModal() == false) return;
 
-          HDT_WorkFile workFile = ctrlr.getWorkFile();
-          if (workFile == null) return;
+        HDT_WorkFile workFile = ctrlr.getWorkFile();
+        if (workFile == null) return;
 
-          HDT_WorkFile oldWorkFile = htWorkFiles.selectedRecord();
+        HDT_WorkFile oldWorkFile = htWorkFiles.selectedRecord();
 
-          if (oldWorkFile == null)
-            curWork.addWorkFile(workFile.getID(), true, true);
-          else
-            curWork.replaceWorkFile(oldWorkFile, workFile);
+        if (oldWorkFile == null)
+          curWork.addWorkFile(workFile.getID(), true, true);
+        else
+          curWork.replaceWorkFile(oldWorkFile, workFile);
 
-          refreshFiles();
-        });
+        refreshFiles();
+      });
 
-    CondRecordHandler<HDT_WorkFile> condHandler = workFile ->
+    Predicate<HDT_WorkFile> condHandler = workFile ->
     {
       if (inNormalMode || workFile.getPath().isEmpty()) return false;
 
@@ -377,22 +376,22 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
       return curWork.getWorkTypeValue() == wtUnenteredSet;
     };
 
-    htWorkFiles.addCondContextMenuItem("Move to an existing work record", HDT_WorkFile.class, condHandler, this::moveFileToDifferentWork);
+    htWorkFiles.addContextMenuItem("Move to an existing work record", HDT_WorkFile.class, condHandler, this::moveFileToDifferentWork);
 
-    htWorkFiles.addCondContextMenuItem("Move to a new work record", HDT_WorkFile.class, condHandler, this::moveFileToNewWork);
+    htWorkFiles.addContextMenuItem("Move to a new work record", HDT_WorkFile.class, condHandler, this::moveFileToNewWork);
 
-    htWorkFiles.addCondContextMenuItem("Remove file", HDT_WorkFile.class,
-        workFile -> workFile.getPath().isEmpty() == false,
-        workFile ->
-        {
-          if (ui.cantSaveRecord(true)) return;
+    htWorkFiles.addContextMenuItem("Remove file", HDT_WorkFile.class,
+      workFile -> workFile.getPath().isEmpty() == false,
+      workFile ->
+      {
+        if (ui.cantSaveRecord(true)) return;
 
-          if (confirmDialog("Are you sure you want to remove this file from the work record?") == false) return;
+        if (confirmDialog("Are you sure you want to remove this file from the work record?") == false) return;
 
-          db.getObjectList(rtWorkFileOfWork, curWork, true).remove(workFile);
-          fileManagerDlg.setNeedRefresh();
-          ui.update();
-        });
+        db.getObjectList(rtWorkFileOfWork, curWork, true).remove(workFile);
+        fileManagerDlg.setNeedRefresh();
+        ui.update();
+      });
 
     htWorkFiles.addChangeOrderMenuItem(true, () ->
     {
@@ -428,7 +427,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     htMiscFiles.addActionCol(ctGoNewBtn, 1);
     htMiscFiles.addCol(hdtMiscFile, ctNone);
 
-    htMiscFiles.addCondContextMenuItem("Launch file", HDT_MiscFile.class,
+    htMiscFiles.addContextMenuItem("Launch file", HDT_MiscFile.class,
       miscFile -> miscFile.getPath().isEmpty() == false,
       miscFile -> launchFile(miscFile.getPath().getFilePath()));
 
@@ -439,18 +438,18 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 
     htISBN.addTextEditCol(hdtWork, true, false);
 
-    htISBN.addCondRowBasedContextMenuItem("WorldCat",
+    htISBN.addContextMenuItem("WorldCat",
       row -> row.getText(0).length() > 0,
       row -> searchWorldCatISBN(row.getText(0)));
 
-    htISBN.addCondRowBasedContextMenuItem("Google Books query",
-        row -> row.getText(0).length() > 0,
-        row ->
-        {
-          List<String> list = BibUtils.matchISBN(row.getText(0));
-          if (collEmpty(list) == false)
-            retrieveBibData(false, list.get(0));
-        });
+    htISBN.addContextMenuItem("Google Books query",
+      row -> row.getText(0).length() > 0,
+      row ->
+      {
+        List<String> list = BibUtils.matchISBN(row.getText(0));
+        if (collEmpty(list) == false)
+          retrieveBibData(false, list.get(0));
+      });
 
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), null);
     hcbLargerWork = new HyperCB(cbLargerWork, ctDropDownList, new StandardPopulator(hdtWork), null);
@@ -574,7 +573,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
       safeFocus(tfTitle);
     });
 
-    UnaryOperator<TextFormatter.Change> filter = change ->
+    tfTitle.setTextFormatter(new TextFormatter<>(change ->
     {
       if (alreadyChangingTitle) return change;
 
@@ -588,9 +587,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
       }
 
       return change;
-    };
-
-    tfTitle.setTextFormatter(new TextFormatter<>(filter));
+    }));
 
     crossrefBD.addListener((observable, oldBD, newBD) -> updateMergeButton());
     pdfBD     .addListener((observable, oldBD, newBD) -> updateMergeButton());
@@ -1060,11 +1057,11 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     htArguments.addContextMenuItem("Argument Record...", HDT_Argument.class,
       arg -> ui.goToRecord(arg, true));
 
-    htArguments.addCondContextMenuItem("Position Record...", HDT_Argument.class,
+    htArguments.addContextMenuItem("Position Record...", HDT_Argument.class,
       arg -> arg.positions.size() > 0,
       arg -> ui.goToRecord(arg.positions.get(0), true));
 
-    htArguments.addCondContextMenuItem("Debate Record...", HDT_Argument.class,
+    htArguments.addContextMenuItem("Debate Record...", HDT_Argument.class,
       arg -> arg.positions.size() == 0 ? false : arg.positions.get(0).getDebate() != null,
       arg -> ui.goToRecord(arg.positions.get(0).getDebate(), true));
   }

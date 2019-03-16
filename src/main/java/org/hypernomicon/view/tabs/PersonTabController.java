@@ -52,14 +52,12 @@ import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.dialogs.NewInstDialogController;
 import org.hypernomicon.view.dialogs.NewPersonDialogController;
 import org.hypernomicon.view.dialogs.PictureDialogController;
-import org.hypernomicon.view.populators.Populator.PopulatorFilter;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.SubjectPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.RecordListView;
 import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
 
 import static java.util.Collections.*;
@@ -72,7 +70,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
+import java.util.function.Predicate;
 
 import javafx.application.Platform;
 import javafx.event.Event;
@@ -709,7 +707,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     this.tabEnum = tabEnum;
     mainText = new MainTextWrapper(apOverview);
 
-    PopulatorFilter popFilter = record ->
+    Predicate<HDT_Base> popFilter = record ->
     {
       HDT_Institution inst = (HDT_Institution)record;
 
@@ -777,7 +775,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       updateSearchKey(new PersonName(newValue, tfLast.getText()), false);
     });
 
-    UnaryOperator<TextFormatter.Change> filter = change ->
+    tfLast.setTextFormatter(new TextFormatter<>(change ->
     {
       if (alreadyChangingName) return change;
 
@@ -805,9 +803,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
         updateSearchKey(new PersonName(tfFirst.getText(), change.getControlNewText()), false);
 
       return change;
-    };
-
-    tfLast.setTextFormatter(new TextFormatter<>(filter));
+    }));
 
     cbField.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
@@ -923,7 +919,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
   private void initArgContextMenu()
   {
-    RecordListView.addDefaultMenuItems(htArguments);
+    htArguments.addDefaultMenuItems();
 
     EnumSet.of(hdtArgument, hdtPosition, hdtDebate, hdtTerm, hdtNote, hdtWork, hdtMiscFile, hdtInvestigation, hdtPerson).forEach(type ->
       htArguments.addContextMenuItem(db.getTypeName(type) + " Record...", type.getRecordClass(), record -> ui.goToRecord(record, true)));
@@ -934,7 +930,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
   private void initWorkContextMenu()
   {
-    RecordListView.addDefaultMenuItems(htWorks);
+    htWorks.addDefaultMenuItems();
 
     htWorks.addContextMenuItem("Go to work record", HDT_Work.class,
       work -> ui.goToRecord(work, true));

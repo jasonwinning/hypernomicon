@@ -33,7 +33,6 @@ import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.RecordListView;
 import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
 
 import com.google.common.collect.ImmutableSet;
@@ -206,7 +205,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
   private void initArgContextMenu()
   {
-    RecordListView.addDefaultMenuItems(htArguments);
+    htArguments.addDefaultMenuItems();
 
     htArguments.addContextMenuItem("Go to work record", HDT_Work.class,
       work -> ui.goToRecord(work, true));

@@ -25,7 +25,6 @@ import org.hypernomicon.view.dialogs.SelectConceptDialogController;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.RecordListView;
 
 import javafx.scene.control.TabPane;
 import javafx.scene.Node;
@@ -231,7 +230,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     htDisplayers.addCol(hdtNone, ctNone);
     htDisplayers.addCol(hdtNone, ctNone);
 
-    RecordListView.addDefaultMenuItems(htDisplayers);
+    htDisplayers.addDefaultMenuItems();
   }
 
 //---------------------------------------------------------------------------

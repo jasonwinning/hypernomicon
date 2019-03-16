@@ -26,6 +26,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 import org.apache.http.client.methods.HttpUriRequest;
 import org.json.simple.parser.ParseException;
@@ -64,8 +65,6 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
   //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface KeyChangeHandler { void handle(String oldKey, String newKey); }
-
   public static abstract class SyncTask extends HyperTask
   {
     protected boolean changed = false;
@@ -77,7 +76,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
   protected SyncTask syncTask = null;
   protected HttpUriRequest request = null;
-  private KeyChangeHandler keyChangeHndlr;
+  private BiConsumer<String, String> keyChangeHndlr;
 
   public abstract SyncTask createNewSyncTask();
   public abstract void saveToDisk(FilePath filePath);
@@ -90,13 +89,14 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
   public abstract EnumHashBiMap<EntryType, String> getEntryTypeMap();
   public abstract String getHtml(BibEntryRow row);
 
-  public final Set<BibCollection_T> getColls()                  { return new LinkedHashSet<>(keyToColl.values()); }
-  public final Set<BibEntry_T> getTrash()                       { return new LinkedHashSet<>(keyToTrashEntry.values()); }
-  public final Set<BibEntry_T> getAllEntries()                  { return new LinkedHashSet<>(keyToAllEntry.values()); }
-  public final Map<String, BibCollection> getKeyToColl()        { return Collections.unmodifiableMap(keyToColl); }
-  public final void setKeyChangeHandler(KeyChangeHandler hndlr) { this.keyChangeHndlr = hndlr; }
+  public final Set<BibCollection_T> getColls()           { return new LinkedHashSet<>(keyToColl.values()); }
+  public final Set<BibEntry_T> getTrash()                { return new LinkedHashSet<>(keyToTrashEntry.values()); }
+  public final Set<BibEntry_T> getAllEntries()           { return new LinkedHashSet<>(keyToAllEntry.values()); }
+  public final Map<String, BibCollection> getKeyToColl() { return Collections.unmodifiableMap(keyToColl); }
 
-  public BibEntry_T getEntryByKey(String key)                   { return keyToAllEntry.get(key); }
+  public BibEntry_T getEntryByKey(String key)            { return keyToAllEntry.get(key); }
+
+  public final void setKeyChangeHandler(BiConsumer<String, String> hndlr) { this.keyChangeHndlr = hndlr; }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -126,7 +126,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
     nullSwitch(db.getWorkByBibEntryKey(oldKey), work -> work.setBibEntryKey(newKey));
 
-    keyChangeHndlr.handle(oldKey, newKey);
+    keyChangeHndlr.accept(oldKey, newKey);
   }
 
   //---------------------------------------------------------------------------

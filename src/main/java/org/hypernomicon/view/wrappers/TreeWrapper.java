@@ -27,7 +27,6 @@ import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.UnaryOperator;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -42,28 +41,24 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.dialogs.ChangeParentDialogController;
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.tabs.TreeTabController;
-import org.hypernomicon.view.wrappers.DragNDropHoverHelper.DragNDropContainer;
-import org.hypernomicon.view.wrappers.HyperTable.HyperMenuItem;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeSortMode;
 import javafx.scene.control.TreeTableColumn;
+import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.control.TreeTableColumn.SortType;
 
-public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordListView, DragNDropContainer<TreeRow>
+public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 {
   private final TreeTableView<TreeRow> ttv;
   private final boolean hasTerms;
   private final TreeCB tcb;
-  private final List<HyperMenuItem<? extends HDT_Base>> contextMenuItems = new ArrayList<>();
   private boolean searchingDown = true;
   private boolean searchingNameOnly = false;
   private TreeRow draggingRow = null;
@@ -87,7 +82,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TreeWrapper(TreeTableView<TreeRow> ttv, boolean hasTerms, ComboBox<TreeRow> comboBox)
+  public TreeWrapper(TreeTableView<TreeRow> ttv, boolean hasTerms, ComboBox<TreeRow> comboBox, boolean limitedControl)
   {
     this.ttv = ttv;
     this.hasTerms = hasTerms;
@@ -118,6 +113,19 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 
       if (selectingFromCB == false)
         tcb.clearSelection();
+    });
+
+    if (limitedControl) return;
+
+    ttv.setRowFactory(tTV ->
+    {
+      TreeTableRow<TreeRow> row = new TreeTableRow<>();
+
+      DragNDropHoverHelper.setupHandlers(row, this);
+
+      row.itemProperty().addListener((o, ov, nv) -> row.setContextMenu(nullSwitch(nv, null, this::createContextMenu)));
+
+      return row;
     });
   }
 
@@ -209,22 +217,6 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
 
     if (hasTerms)
       termTree.reset(db.glossaries.getByID(1));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addContextMenuItem(String caption, Class<HDT_T> klass, RecordHandler<HDT_T> handler)
-  {
-    return addCondContextMenuItem(caption, klass, record -> true, handler);
-  }
-
-  @Override public <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addCondContextMenuItem(String caption, Class<HDT_T> klass, CondRecordHandler<HDT_T> condHandler, RecordHandler<HDT_T> handler)
-  {
-    HyperMenuItem<HDT_T> mnu = new HyperMenuItem<>(caption, HDT_RecordType.typeByRecordClass(klass), condHandler, handler, null, null, false);
-
-    contextMenuItems.add(mnu);
-    return mnu;
   }
 
 //---------------------------------------------------------------------------
@@ -592,64 +584,6 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow> implements RecordL
   {
     draggingRow = null;
     ddHoverHelper.reset();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @SuppressWarnings("unchecked")
-  private <HDT_T extends HDT_Base> MenuItem createContextMenuItem(HyperMenuItem<HDT_T> hItem, HDT_Base record, ContextMenu rowMenu)
-  {
-    MenuItem newItem = new MenuItem(hItem.caption);
-
-    rowMenu.getItems().add(newItem);
-
-    newItem.setOnAction(event ->
-    {
-      rowMenu.hide();
-      hItem.recordHandler.handle((HDT_T) record);
-    });
-
-    boolean visible = false;
-
-    if ((hItem.recordType == hdtNone) || ((record != null) && (record.getType() == hItem.recordType)))
-      visible = hItem.condRecordHandler.handle((HDT_T) record);
-
-    newItem.setVisible(visible);
-
-    return newItem;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public ContextMenu createContextMenu(TreeRow treeRow)
-  {
-    boolean noneVisible = true;
-    ContextMenu rowMenu = new ContextMenu();
-    HDT_Base record = treeRow.getRecord();
-
-    for (HyperMenuItem<? extends HDT_Base> hItem : contextMenuItems)
-      if (createContextMenuItem(hItem, record, rowMenu).isVisible()) noneVisible = false;
-
-    if (treeRow.treeItem.isLeaf() == false)
-    {
-      noneVisible = false;
-
-      MenuItem newItem = new MenuItem("Expand/Collapse");
-      rowMenu.getItems().add(newItem);
-      newItem.setOnAction(event -> treeRow.treeItem.setExpanded(!treeRow.treeItem.isExpanded()));
-
-      newItem = new MenuItem("Expand All");
-      rowMenu.getItems().add(newItem);
-      newItem.setOnAction(event -> setAllExpanded(getTreeItem(treeRow), true));
-
-      newItem = new MenuItem("Collapse All");
-      rowMenu.getItems().add(newItem);
-      newItem.setOnAction(event -> setAllExpanded(getTreeItem(treeRow), false));
-    }
-
-    return noneVisible ? null : rowMenu;
   }
 
 //---------------------------------------------------------------------------

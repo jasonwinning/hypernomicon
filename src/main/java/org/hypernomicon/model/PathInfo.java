@@ -130,8 +130,8 @@ public class PathInfo
   private HDT_Folder getParentFolderOfPath(FilePath filePath)
   {
     return (HDT_Folder) findFirst(HyperPath.getHyperPathSetForFilePath(filePath.getParent()),
-                                                                       hyperPath -> hyperPath.getRecordType() == hdtFolder,
-                                                                       HyperPath::getRecord);
+                                  hyperPath -> hyperPath.getRecordType() == hdtFolder,
+                                  HyperPath::getRecord);
   }
 
 //---------------------------------------------------------------------------

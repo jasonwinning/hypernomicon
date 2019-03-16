@@ -269,7 +269,7 @@ public final class MainController
 
     htFind.setOnShowMore(() -> tfOmniGoToChange(tfOmniGoTo.getText(), true));
 
-    RecordListView.addDefaultMenuItems(htFind);
+    htFind.addDefaultMenuItems();
 
     omniFinder = new OmniFinder(htFind);
 
@@ -1652,19 +1652,19 @@ public final class MainController
 
   public void initPositionContextMenu(HyperTable ht)
   {
-    ht.addCondContextMenuItem("Launch work file", HDT_Position.class,
+    ht.addContextMenuItem("Launch work file", HDT_Position.class,
       pos -> pos.getLaunchableWork() != null,
       pos -> pos.getLaunchableWork().work.launch(-1));
 
-    ht.addCondContextMenuItem("Go to work record", HDT_Position.class,
+    ht.addContextMenuItem("Go to work record", HDT_Position.class,
       pos -> pos.getWork() != null,
       pos -> goToRecord(nullSwitch(pos.getLaunchableWork(), pos.getWork()).work, true));
 
-    ht.addCondContextMenuItem("Go to person record", HDT_Position.class,
+    ht.addContextMenuItem("Go to person record", HDT_Position.class,
       pos -> pos.getWorkWithAuthor() != null,
       pos -> goToRecord(pos.getWorkWithAuthor().author, true));
 
-    ht.addCondContextMenuItem("Go to argument record", HDT_Position.class,
+    ht.addContextMenuItem("Go to argument record", HDT_Position.class,
       pos -> pos.arguments.size() > 0,
       pos -> goToRecord(nullSwitch(pos.getLaunchableWork(), nullSwitch(pos.getWork(), pos.getArgument())).argument, true));
 
@@ -2500,7 +2500,7 @@ public final class MainController
       return;
     }
 
-    HDT_Base record = nullSwitch(getTree().selectedItem(), null, treeItem ->
+    HDT_Base record = nullSwitch(getTree().selectedItem(), (HDT_Base)null, treeItem ->
                       nullSwitch(treeItem.getValue(), null, TreeRow::getRecord));
 
     if (record == null) return;

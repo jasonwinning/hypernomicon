@@ -20,8 +20,6 @@ package org.hypernomicon.view.wrappers;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 
-import java.util.function.UnaryOperator;
-
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import javafx.scene.control.TableCell;
@@ -72,17 +70,6 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void cancelEdit()
-  {
-    super.cancelEdit();
-
-    setText(getItem().getText());
-    setGraphic(null);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public void updateItem(HyperTableCell item, boolean empty)
   {
     super.updateItem(item, empty);
@@ -91,23 +78,21 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
     {
       setText(null);
       setGraphic(null);
+      return;
+    }
+
+    if (isEditing())
+    {
+      if (textField != null)
+        textField.setText(getString());
+
+      setText(null);
+      setGraphic(textField);
     }
     else
     {
-      if (isEditing())
-      {
-        if (textField != null)
-        {
-          textField.setText(getString());
-        }
-        setText(null);
-        setGraphic(textField);
-      }
-      else
-      {
-        setText(getString());
-        setGraphic(null);
-      }
+      setText(getString());
+      setGraphic(null);
     }
   }
 
@@ -130,7 +115,7 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
   private void createTextField()
   {
     textField = new TextField(getString());
-    textField.setMinWidth(this.getWidth() - this.getGraphicTextGap() * 2);
+    textField.setMinWidth(getWidth() - getGraphicTextGap() * 2);
     textField.focusedProperty().addListener((observable, oldValue, newValue) ->
     {
       if (newValue == false)
@@ -139,21 +124,13 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
 
     if (isNumeric.isTrue())
     {
-      UnaryOperator<TextFormatter.Change> filter = change ->
+      textField.setTextFormatter(new TextFormatter<>(change ->
       {
-        if (change.isReplaced())
-          if (change.getText().matches("[^0-9]"))
-            change.setText(change.getControlText().substring(change.getRangeStart(), change.getRangeEnd()));
-
-
-        if (change.isAdded())
-          if (change.getText().matches("[^0-9]"))
-            change.setText("");
+        if (change.getText().matches(".*[^0-9].*") && change.isAdded())
+          change.setText("");
 
         return change;
-      };
-
-      textField.setTextFormatter(new TextFormatter<>(filter));
+      }));
     }
 
     textField.setOnKeyPressed(event ->
@@ -176,9 +153,10 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
 
   @Override public void commit()
   {
-    HyperTableCell oldItem = getItem(),
-                   newItem = new HyperTableCell(getCellID(oldItem), textField.getText(), getCellType(oldItem));
-    commitEdit(newItem);
+    if (getGraphic() != textField) return;
+
+    HyperTableCell oldItem = getItem();
+    commitEdit(new HyperTableCell(getCellID(oldItem), textField.getText(), getCellType(oldItem)));
   }
 
 //---------------------------------------------------------------------------

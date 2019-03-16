@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import com.teamdev.jxbrowser.chromium.Browser;
 import com.teamdev.jxbrowser.chromium.BrowserPreferences;
@@ -62,7 +63,7 @@ public class PDFJSWrapper
 {
   private boolean ready = false, opened = false, pdfjsMode = true;
   private final PDFJSDoneHandler doneHndlr;
-  private final PDFJSPageChangeHandler pageChangeHndlr;
+  private final Consumer<Integer> pageChangeHndlr;
   private final PDFJSRetrievedDataHandler retrievedDataHndlr;
   private int numPages = -1;
   private final JavascriptToJava javascriptToJava;
@@ -96,12 +97,6 @@ public class PDFJSWrapper
 
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface interface PDFJSPageChangeHandler {
-    void handle(int newPage);
-  }
-
-//---------------------------------------------------------------------------
-
   @FunctionalInterface interface PDFJSRetrievedDataHandler {
     void handle(Map<String, Integer> labelToPage, Map<Integer, String> pageToLabel, List<Integer> hilitePages);
   }
@@ -109,7 +104,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  PDFJSWrapper(AnchorPane apBrowser, PDFJSDoneHandler doneHndlr, PDFJSPageChangeHandler pageChangeHndlr, PDFJSRetrievedDataHandler retrievedDataHndlr)
+  PDFJSWrapper(AnchorPane apBrowser, PDFJSDoneHandler doneHndlr, Consumer<Integer> pageChangeHndlr, PDFJSRetrievedDataHandler retrievedDataHndlr)
   {
     this.doneHndlr = doneHndlr;
     this.pageChangeHndlr = pageChangeHndlr;
@@ -390,7 +385,7 @@ public class PDFJSWrapper
   {
     public void pageChange(int newPage)
     {
-      pageChangeHndlr.handle(newPage);
+      pageChangeHndlr.accept(newPage);
     }
 
 //---------------------------------------------------------------------------

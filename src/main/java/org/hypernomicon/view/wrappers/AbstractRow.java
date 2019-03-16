@@ -17,26 +17,36 @@
 
 package org.hypernomicon.view.wrappers;
 
+import static org.hypernomicon.model.records.HDT_RecordType.*;
+
 import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_RecordType;
+
+import static org.hypernomicon.util.Util.*;
+
 import javafx.scene.control.TreeItem;
-import javafx.scene.image.ImageView;
 
-public abstract class AbstractTreeRow<HDT_T extends HDT_Base, RowType extends AbstractTreeRow<HDT_T, RowType>>
-  extends AbstractRow<HDT_T, RowType>
-  implements Comparable<RowType>
+public abstract class AbstractRow<HDT_T extends HDT_Base, RowType extends AbstractRow<HDT_T, RowType>>
 {
-  protected TreeItem<RowType> treeItem = null;
-  protected ImageView graphic = null;
-  protected final TreeModel<RowType> treeModel;
-
-  protected AbstractTreeRow(TreeModel<RowType> treeModel) { this.treeModel = treeModel; }
 
 //---------------------------------------------------------------------------
 
-  public abstract ImageView getGraphic();
+  public abstract <HDT_T1 extends HDT_T> HDT_T1 getRecord();
 
-  public final TreeModel<RowType> getTreeModel()         { return treeModel; }
-  @Override public final TreeItem<RowType> getTreeItem() { return treeItem; }
+  public HDT_RecordType    getRecordType() { return nullSwitch(getRecord(), hdtNone, HDT_Base::getType); }
+  public int               getRecordID()   { return nullSwitch(getRecord(), -1, HDT_Base::getID); }
+  public TreeItem<RowType> getTreeItem()   { return null; }
+
+//---------------------------------------------------------------------------
+
+  <HDT_T1 extends HDT_T> HDT_T1 getRecordByType(HDT_RecordType recordType)
+  {
+    HDT_T1 record = getRecord();
+
+    if (recordType == hdtNone) return record;
+
+    return (record == null) || (record.getType() != recordType) ? null : record;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

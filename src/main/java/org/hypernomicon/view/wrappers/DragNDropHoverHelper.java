@@ -32,7 +32,9 @@ import javafx.scene.input.TransferMode;
 
 import static org.hypernomicon.util.Util.*;
 
-public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
+import org.hypernomicon.model.records.HDT_Base;
+
+public class DragNDropHoverHelper<RowType extends AbstractTreeRow<? extends HDT_Base, RowType>>
 {
   private long ctr;
   private double lastX, lastY;
@@ -123,7 +125,7 @@ public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static interface DragNDropContainer<RowType extends AbstractTreeRow<RowType>>
+  public static interface DragNDropContainer<RowType extends AbstractTreeRow<? extends HDT_Base, RowType>>
   {
     void startDrag(RowType row);
     void dragDone();
@@ -134,7 +136,7 @@ public class DragNDropHoverHelper<RowType extends AbstractTreeRow<RowType>>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <RowType extends AbstractTreeRow<RowType>> void setupHandlers(Cell<RowType> cell, DragNDropContainer<RowType> container)
+  public static <RowType extends AbstractTreeRow<? extends HDT_Base, RowType>> void setupHandlers(Cell<RowType> cell, DragNDropContainer<RowType> container)
   {
     cell.setOnDragDetected(event ->
     {

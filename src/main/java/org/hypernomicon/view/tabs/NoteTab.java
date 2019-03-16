@@ -47,7 +47,6 @@ import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.RecordListView;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -269,8 +268,8 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     btnFolder.setOnAction(event -> launchFile(folderPath));
     btnBrowse.setOnAction(event -> browseClick());
 
-    RecordListView.addDefaultMenuItems(htMentioners);
-    RecordListView.addDefaultMenuItems(htSubnotes);
+    htMentioners.addDefaultMenuItems();
+    htSubnotes.addDefaultMenuItems();
 
     htSubnotes.addContextMenuItem("Go to subnote", HDT_Note.class,
       note -> ui.goToRecord(note, true));
@@ -301,19 +300,19 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     FilePath filePath = new FilePath(dirChooser.showDialog(app.getPrimaryStage()));
 
-    if (FilePath.isEmpty(filePath) == false)
+    if (FilePath.isEmpty(filePath)) return;
+
+    HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, true);
+
+    if (folder == null)
     {
-      HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, true);
-
-      if (folder == null)
-      {
-        messageDialog("You must choose a subfolder of the main database folder.", mtError);
-        return;
-      }
-
-      curNote.folder.set(folder);
-      ui.update();
+      messageDialog("You must choose a subfolder of the main database folder.", mtError);
+      return;
     }
+
+    curNote.folder.set(folder.getID() == TOPICAL_FOLDER_ID ? null : folder);
+
+    ui.update();
   }
 
 //---------------------------------------------------------------------------

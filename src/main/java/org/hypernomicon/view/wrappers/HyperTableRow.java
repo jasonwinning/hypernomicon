@@ -35,7 +35,7 @@ import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
 
 //---------------------------------------------------------------------------
 
-public class HyperTableRow
+public class HyperTableRow extends AbstractRow<HDT_Base, HyperTableRow>
 {
   final private ObservableList<HyperTableCell> cells;
   final private HyperTable table;
@@ -49,8 +49,11 @@ public class HyperTableRow
   public HDT_RecordType getType(int ndx)      { return cells.size() > ndx ? HyperTableCell.getCellType(cells.get(ndx)) : hdtNone; }
   public boolean getCheckboxValue(int colNdx) { return getID(colNdx) == HyperTableCell.trueCell.getID(); }
 
-  public <HDT_T extends HDT_Base> HDT_T getRecord()        { return HyperTableCell.getRecord(cells.get(table.getMainColNdx())); }
-  public <HDT_T extends HDT_Base> HDT_T getRecord(int ndx) { return HyperTableCell.getRecord(cells.get(ndx)); }
+  @Override public HDT_RecordType getRecordType() { return getType(table.getMainColNdx()); }
+  @Override public int getRecordID()              { return getID(table.getMainColNdx()); }
+
+  @Override public <HDT_T extends HDT_Base> HDT_T getRecord() { return HyperTableCell.getRecord(cells.get(table.getMainColNdx())); }
+  public <HDT_T extends HDT_Base> HDT_T getRecord(int ndx)    { return HyperTableCell.getRecord(cells.get(ndx)); }
 
 //---------------------------------------------------------------------------
 
@@ -83,7 +86,7 @@ public class HyperTableRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  <HDT_T extends HDT_Base> HDT_T getRecordByType(HDT_RecordType type)
+  @Override <HDT_T extends HDT_Base> HDT_T getRecordByType(HDT_RecordType type)
   {
     if (type == hdtNone)
       return getRecord();

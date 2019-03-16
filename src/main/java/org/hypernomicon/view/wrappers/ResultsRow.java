@@ -20,6 +20,7 @@ package org.hypernomicon.view.wrappers;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Record.HDT_DateType;
+import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.wrappers.ResultsTable.ResultCellValue;
 
 import static org.hypernomicon.model.HyperDB.*;
@@ -29,7 +30,7 @@ import static org.hypernomicon.model.records.HDT_Record.HDT_DateType.*;
 
 import java.time.Instant;
 
-public final class ResultsRow
+public final class ResultsRow extends AbstractRow<HDT_Base, ResultsRow>
 {
   private final HDT_Base record;
   private final String cbText;
@@ -43,14 +44,21 @@ public final class ResultsRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public  HDT_Base getRecord() { return record; }
   String getTagText(Tag tag)   { return record == null ? "" : record.getResultTextForTag(tag); }
-  String getRecordID()         { return record == null ? "" : String.valueOf(record.getID()); }
+  String getRecordIDStr()      { return record == null ? "" : String.valueOf(record.getID()); }
   String getRecordName()       { return record == null ? "" : record.listName(); }
   String getSearchKey()        { return record == null ? "" : record.getSearchKey(); }
   String getSortKey()          { return record == null ? "" : record.getSortKey(); }
-  String getRecordType()       { return nullSwitch(record.getType(), "", type -> type == hdtNone ? "" : db.getTypeName(type)); }
-  public  String getCBText()   { return record == null ? cbText : record.listName(); }
+  public String getCBText()    { return record == null ? cbText : record.listName(); }
+
+  @SuppressWarnings("unchecked")
+  @Override public <HDT_T extends HDT_Base> HDT_T getRecord() { return (HDT_T) record; }
+
+  String getRecordTypeStr()
+  {
+    HDT_RecordType type = getRecordType();
+    return type == hdtNone ? "" : db.getTypeName(type);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

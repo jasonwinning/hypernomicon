@@ -64,13 +64,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseButton;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
@@ -276,26 +274,11 @@ public class BibManager extends HyperDialog
 
     tableView.getSelectionModel().selectedItemProperty().addListener((o, ov, nv) -> refresh());
 
-    tableView.setRowFactory(thisTV ->
-    {
-      TableRow<BibEntryRow> row = new TableRow<>();
+    entryTable.addContextMenuItem("View this entry on the web", row -> row.getURL().length() > 0, row -> openWebLink(row.getURL()));
 
-      row.itemProperty().addListener((o, ov, nv) -> row.setContextMenu(nv == null ? null : BibEntryRow.createContextMenu(nv, entryTable.contextMenuSchemata)));
+    entryTable.addContextMenuItem("Go to work record", row -> nonNull(row.getWork()), row -> ui.goToRecord(row.getWork(), true));
 
-      row.setOnMouseClicked(mouseEvent ->
-      {
-        if ((mouseEvent.getButton().equals(MouseButton.PRIMARY)) && (mouseEvent.getClickCount() == 2))
-          nullSwitch(row.getItem(), item -> nullSwitch(item.getWork(), work -> ui.goToRecord(work, true)));
-      });
-
-      return row;
-    });
-
-    entryTable.addCondContextMenuItem("View this entry on the web", row -> row.getURL().length() > 0, row -> openWebLink(row.getURL()));
-
-    entryTable.addCondContextMenuItem("Go to work record", row -> nonNull(row.getWork()), row -> ui.goToRecord(row.getWork(), true));
-
-    entryTable.addCondContextMenuItem("Unassign work record", row -> nonNull(row.getWork()), row ->
+    entryTable.addContextMenuItem("Unassign work record", row -> nonNull(row.getWork()), row ->
     {
       if (confirmDialog("Are you sure you want to unassign the work record?") == false) return;
       if (ui.cantSaveRecord(true)) return;
@@ -314,7 +297,7 @@ public class BibManager extends HyperDialog
       ui.update();
     });
 
-    entryTable.addCondContextMenuItem("Create new work record for this entry", row -> isNull(row.getWork()), row ->
+    entryTable.addContextMenuItem("Create new work record for this entry", row -> isNull(row.getWork()), row ->
     {
       if (ui.cantSaveRecord(true)) return;
 
@@ -327,7 +310,7 @@ public class BibManager extends HyperDialog
       ui.goToRecord(work, false);
     });
 
-    entryTable.addCondContextMenuItem("Assign this entry to an existing work", row -> isNull(row.getWork()), row ->
+    entryTable.addContextMenuItem("Assign this entry to an existing work", row -> isNull(row.getWork()), row ->
     {
       if (ui.cantSaveRecord(true)) return;
 
@@ -339,20 +322,20 @@ public class BibManager extends HyperDialog
         assignEntryToWork(dlg.getWork(), row.getEntry());
     });
 
-    entryTable.addCondContextMenuItem("Launch work file",
-        row -> nullSwitch(row.getWork(), false, HDT_Work::canLaunch),
-        row -> row.getWork().launch(-1));
+    entryTable.addContextMenuItem("Launch work file",
+      row -> nullSwitch(row.getWork(), false, HDT_Work::canLaunch),
+      row -> row.getWork().launch(-1));
 
-    entryTable.addCondContextMenuItem("Show in Preview Window",
-        row -> nullSwitch(row.getWork(), false, HDT_Work::canLaunch),
-        row ->
-        {
-          HDT_Work work = row.getWork();
+    entryTable.addContextMenuItem("Show in Preview Window",
+      row -> nullSwitch(row.getWork(), false, HDT_Work::canLaunch),
+      row ->
+      {
+        HDT_Work work = row.getWork();
 
-          PreviewSource src = ui.determinePreviewContext();
-          previewWindow.setPreview(src, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
-          ui.openPreviewWindow(src);
-        });
+        PreviewSource src = ui.determinePreviewContext();
+        previewWindow.setPreview(src, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+        ui.openPreviewWindow(src);
+      });
 
     webView.getEngine().titleProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
     {

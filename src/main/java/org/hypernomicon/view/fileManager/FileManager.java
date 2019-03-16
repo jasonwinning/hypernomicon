@@ -56,7 +56,6 @@ import org.hypernomicon.util.filePath.FilePathSet;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.dialogs.HyperDialog;
 import org.hypernomicon.view.dialogs.RenameDialogController;
-import org.hypernomicon.view.fileManager.FileTable.FileRowMenuItemSchema;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.tabs.FileTabController;
 import org.hypernomicon.view.tabs.HyperTab;
@@ -66,8 +65,8 @@ import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+import org.hypernomicon.view.wrappers.MenuItemSchema;
 import org.hypernomicon.view.wrappers.ReadOnlyCell;
-import org.hypernomicon.view.wrappers.RecordListView;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
@@ -174,7 +173,7 @@ public class FileManager extends HyperDialog
   private List<MarkedRowInfo> markedRows = null, dragRows = null;
   private FilePath srcPathToHilite = null;
   private boolean clipboardCopying, needRefresh = false, suppressNeedRefresh = false;
-  private FileRowMenuItemSchema pasteMenuItem;
+  private MenuItemSchema<HDT_RecordWithPath, FileRow> pasteMenuItem;
   private HDT_Folder curFolder;
 
   public FolderTreeWrapper folderTree;
@@ -723,12 +722,12 @@ public class FileManager extends HyperDialog
   {
     initContainers();
 
-    fileTable.addCondContextMenuItem("Launch", fileRow -> fileRow.isDirectory() == false, fileRow -> launchFile(fileRow.getFilePath()));
+    fileTable.addContextMenuItem("Launch", fileRow -> fileRow.isDirectory() == false, fileRow -> launchFile(fileRow.getFilePath()));
     fileTable.addContextMenuItem("Show in system explorer", fileRow -> highlightFileInExplorer(fileRow.getFilePath()));
     fileTable.addContextMenuItem("Copy path to clipboard", fileRow -> copyToClipboard(fileRow.getFilePath().toString()));
     fileTable.addContextMenuItem("Rename", this::rename);
 
-    fileTable.addCondContextMenuItem("New misc. file record", fileRow -> fileRow.getRecord() == null, fileRow ->
+    fileTable.addContextMenuItem("New misc. file record", fileRow -> fileRow.getRecord() == null, fileRow ->
     {
       HDT_MiscFile miscFile = db.createNewBlankRecord(hdtMiscFile);
 
@@ -747,7 +746,7 @@ public class FileManager extends HyperDialog
 
     fileTable.addContextMenuItem("Cut", fileRow -> cutCopy(fileRow, false));
     fileTable.addContextMenuItem("Copy", fileRow -> cutCopy(fileRow, true));
-    pasteMenuItem = fileTable.addCondContextMenuItem("Paste into this folder", FileRow::isDirectory, dirRow -> paste(dirRow, clipboardCopying, false));
+    pasteMenuItem = fileTable.addContextMenuItem("Paste into this folder", FileRow::isDirectory, dirRow -> paste(dirRow, clipboardCopying, false));
     fileTable.addContextMenuItem("Delete", this::delete);
 
     btnCut.setOnAction(event -> cutCopy(null, false));
@@ -792,7 +791,7 @@ public class FileManager extends HyperDialog
 
     dialogStage.setOnHidden(event -> ui.windows.focusStage(app.getPrimaryStage()));
 
-    RecordListView.addDefaultMenuItems(recordTable);
+    recordTable.addDefaultMenuItems();
 
     btnBack         .setTooltip(new Tooltip("Previous folder in history"));
     btnForward      .setTooltip(new Tooltip("Next folder in history"));
@@ -1341,7 +1340,7 @@ public class FileManager extends HyperDialog
         if (newValue == null)
           row.setContextMenu(null);
         else
-          row.setContextMenu(FileRow.createContextMenu(newValue, fileTable.contextMenuSchemata));
+          row.setContextMenu(fileTable.createContextMenu(newValue, fileTable.getContextMenuSchemata()));
       });
 
       return row;
@@ -1494,7 +1493,7 @@ public class FileManager extends HyperDialog
   private void setCurrentFileRow(FileRow fileRow, boolean showingMore)
   {
     HDT_Folder folderRecord = null;
-    Set<HDT_Base> relatives = new LinkedHashSet<>();
+    LinkedHashSet<HDT_Base> relatives = new LinkedHashSet<>();
     boolean hasMore;
 
     recordTable.clear();

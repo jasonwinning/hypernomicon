@@ -22,6 +22,7 @@ import static org.hypernomicon.util.Util.*;
 import org.hypernomicon.model.Exceptions.*;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -29,7 +30,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 
 public class AsyncHttpClient
 {
-  @FunctionalInterface public interface ExHandler     { void handle(Exception e); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -37,9 +37,9 @@ public class AsyncHttpClient
   public class RequestThread extends Thread
   {
     private ResponseHandler<? extends Boolean> responseHandler;
-    private ExHandler failHndlr;
+    private Consumer<Exception> failHndlr;
 
-    public RequestThread(ResponseHandler<? extends Boolean> responseHandler, ExHandler failHndlr)
+    public RequestThread(ResponseHandler<? extends Boolean> responseHandler, Consumer<Exception> failHndlr)
     {
       super();
 
@@ -62,9 +62,9 @@ public class AsyncHttpClient
       catch (IOException e)
       {
         if (cancelledByUser)
-          runInFXThread(() -> failHndlr.handle(new TerminateTaskException()));
+          runInFXThread(() -> failHndlr.accept(new TerminateTaskException()));
         else
-          runInFXThread(() -> failHndlr.handle(e));
+          runInFXThread(() -> failHndlr.accept(e));
       }
 
       stopped = true;
@@ -83,7 +83,7 @@ public class AsyncHttpClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void doRequest(HttpUriRequest request, ResponseHandler<? extends Boolean> responseHandler, ExHandler failHndlr)
+  public void doRequest(HttpUriRequest request, ResponseHandler<? extends Boolean> responseHandler, Consumer<Exception> failHndlr)
   {
     stop();
 

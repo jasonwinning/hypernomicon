@@ -135,7 +135,7 @@ public class ChooseParentDialogController extends HyperDialog
 
   private void init(HDT_Base child, EnumSet<HDT_RecordType> types)
   {
-    popupTree = new TreeWrapper(ttv, false, new ComboBox<TreeRow>());
+    popupTree = new TreeWrapper(ttv, false, new ComboBox<TreeRow>(), true);
     this.types = types;
     this.child = child;
     int ctr = 1;

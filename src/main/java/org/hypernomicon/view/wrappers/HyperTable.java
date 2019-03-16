@@ -56,6 +56,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -70,8 +71,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
@@ -83,7 +82,7 @@ import javafx.stage.Modality;
 
 //---------------------------------------------------------------------------
 
-public class HyperTable implements RecordListView
+public class HyperTable extends HasRightClickableRows<HyperTableRow>
 {
   final private int mainCol;
   final private TableView<HyperTableRow> tv;
@@ -92,9 +91,8 @@ public class HyperTable implements RecordListView
   final private SortedList<HyperTableRow> sortedRows;
   final private FilteredList<HyperTableRow> filteredRows;
   final ArrayList<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
-  final private List<HyperMenuItem<? extends HDT_Base>> contextMenuItems = new ArrayList<>();
 
-  RecordHandler<? extends HDT_Base> dblClickHandler = null;
+  Consumer<? extends HDT_Base> dblClickHandler = null;
   Runnable onShowMore = null;
   HyperTableRow showMoreRow = null;
   private boolean canAddRows;
@@ -128,7 +126,7 @@ public class HyperTable implements RecordListView
   public int getDataRowCount()                                     { return canAddRows ? Math.max(rows.size() - 1, 0) : rows.size(); }
 
   @SuppressWarnings("unused")
-  public <HDT_T extends HDT_Base> void setDblClickHandler(Class<HDT_T> klass, RecordHandler<HDT_T> hndlr)    { this.dblClickHandler = hndlr; }
+  public <HDT_T extends HDT_Base> void setDblClickHandler(Class<HDT_T> klass, Consumer<HDT_T> hndlr)    { this.dblClickHandler = hndlr; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -327,78 +325,6 @@ public class HyperTable implements RecordListView
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private ContextMenu createContextMenu(HyperTableRow row)
-  {
-    boolean noneVisible = true;
-    ContextMenu rowMenu = new ContextMenu();
-
-    for (HyperMenuItem<? extends HDT_Base> hItem : contextMenuItems)
-    {
-      MenuItem newItem = createContextMenuItem(hItem, row, rowMenu);
-      rowMenu.getItems().add(newItem);
-
-      if (newItem.isVisible()) noneVisible = false;
-    }
-
-    return noneVisible ? null : rowMenu;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private <HDT_T extends HDT_Base> MenuItem createContextMenuItem(HyperMenuItem<HDT_T> hItem, HyperTableRow row, ContextMenu rowMenu)
-  {
-    MenuItem newItem = new MenuItem(hItem.caption);
-
-    newItem.setOnAction(event ->
-    {
-      HDT_T record;
-
-      if (hItem.recordType == hdtNone)
-        record = row.getRecord();
-      else
-        record = row.getRecordByType(hItem.recordType);
-
-      rowMenu.hide();
-
-      if (hItem.okayIfBlank)
-      {
-        if (hItem.recordHandler == null)
-          hItem.rowHandler.handle(row);
-        else
-          hItem.recordHandler.handle(record);
-      }
-      else if (record != null)
-        hItem.recordHandler.handle(record);
-    });
-
-    boolean visible = false;
-
-    HDT_T record;
-
-    if (hItem.recordType == hdtNone)
-      record = row.getRecord();
-    else
-      record = row.getRecordByType(hItem.recordType);
-
-    if (hItem.okayIfBlank)
-    {
-      if (hItem.condRecordHandler == null)
-        visible = hItem.condRowHandler.handle(row);
-      else
-        visible = hItem.condRecordHandler.handle(record);
-    }
-    else if (record != null)
-      visible = hItem.condRecordHandler.handle(record);
-
-    newItem.setVisible(visible);
-
-    return newItem;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static <RowType> void preventMovingColumns(TableView<RowType> tv, ArrayList<TableColumn<RowType, ?>> colList)
   {
     // This handsome block of code is the only way within JavaFX to prevent the user from moving columns around
@@ -421,76 +347,6 @@ public class HyperTable implements RecordListView
 
   @FunctionalInterface
   public interface CellUpdateHandler { void handle(HyperTableRow row, HyperTableCell cellVal, int nextColNdx, Populator nextPopulator); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FunctionalInterface public interface RowHandler     { void handle(HyperTableRow row); }
-  @FunctionalInterface public interface CondRowHandler { boolean handle(HyperTableRow row); }
-
-  public static class HyperMenuItem<HDT_T extends HDT_Base>
-  {
-    final HDT_RecordType recordType;
-    final CondRecordHandler<HDT_T> condRecordHandler;
-    final RecordHandler<HDT_T> recordHandler;
-    final private CondRowHandler condRowHandler;
-    final private RowHandler rowHandler;
-    final String caption;
-    final private boolean okayIfBlank;
-
-    HyperMenuItem(String caption, HDT_RecordType recordType, CondRecordHandler<HDT_T> condRecordHandler, RecordHandler<HDT_T> recordHandler,
-                  CondRowHandler condRowHandler, RowHandler rowHandler, boolean okayIfBlank)
-    {
-      this.caption = caption;
-      this.recordType = recordType;
-      this.condRecordHandler = condRecordHandler;
-      this.recordHandler = recordHandler;
-      this.condRowHandler = condRowHandler;
-      this.rowHandler = rowHandler;
-      this.okayIfBlank = okayIfBlank;
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HyperMenuItem<HDT_Base> addCondRowBasedContextMenuItem(String caption, CondRowHandler condRowHandler, RowHandler rowHandler)
-  {
-    HyperMenuItem<HDT_Base> mnu = new HyperMenuItem<>(caption, hdtNone, null, null, condRowHandler, rowHandler, true);
-
-    contextMenuItems.add(mnu);
-    return mnu;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HyperMenuItem<HDT_Base> addCondContextMenuItemOkayIfBlank(String caption, CondRecordHandler<HDT_Base> condRecordHandler, RecordHandler<HDT_Base> recordHandler)
-  {
-    HyperMenuItem<HDT_Base> mnu = new HyperMenuItem<>(caption, hdtNone, condRecordHandler, recordHandler, null, null, true);
-
-    contextMenuItems.add(mnu);
-    return mnu;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addContextMenuItem(String caption, Class<HDT_T> klass, RecordHandler<HDT_T> recordHandler)
-  {
-    return addCondContextMenuItem(caption, klass, record -> true, recordHandler);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public <HDT_T extends HDT_Base> HyperMenuItem<HDT_T> addCondContextMenuItem(String caption, Class<HDT_T> klass, CondRecordHandler<HDT_T> condRecordHandler, RecordHandler<HDT_T> recordHandler)
-  {
-    HyperMenuItem<HDT_T> mnu = new HyperMenuItem<>(caption, HDT_RecordType.typeByRecordClass(klass), condRecordHandler, recordHandler, null, null, false);
-
-    contextMenuItems.add(mnu);
-    return mnu;
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -822,7 +678,7 @@ public class HyperTable implements RecordListView
 
   public void addRemoveMenuItem(Runnable handler)
   {
-    addCondContextMenuItem("Remove this row", cols.get(mainCol).getObjType().getRecordClass(), record -> canAddRows, record ->
+    addContextMenuItem("Remove this row", cols.get(mainCol).getObjType().getRecordClass(), record -> canAddRows, record ->
     {
       rows.remove(tv.getSelectionModel().getSelectedItem());
       if (handler != null) handler.run();
@@ -836,7 +692,7 @@ public class HyperTable implements RecordListView
 
   public void addChangeOrderMenuItem(boolean onlyIfCanAddRows, Runnable handler)
   {
-    addCondRowBasedContextMenuItem("Change order",
+    addContextMenuItem("Change order",
       row ->
       {
         if ((row.getRecord() == null) && (row.getText(mainCol).length() == 0)) return false;

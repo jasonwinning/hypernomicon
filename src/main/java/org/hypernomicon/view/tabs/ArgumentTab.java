@@ -274,7 +274,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
   private void initContextMenus()
   {
-    RecordListView.addDefaultMenuItems(htWhereMade);
+    htWhereMade.addDefaultMenuItems();
 
     htWhereMade.addContextMenuItem("Go to work record", HDT_Work.class,
       work -> ui.goToRecord(work, true));
@@ -282,11 +282,11 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
     htWhereMade.addContextMenuItem("Go to person record", HDT_Person.class,
       person -> ui.goToRecord(person, true));
 
-    htCounters.addCondContextMenuItem("Launch work file", HDT_Argument.class,
+    htCounters.addContextMenuItem("Launch work file", HDT_Argument.class,
       arg -> arg.works.stream().anyMatch(work -> work.getPath().isEmpty() == false),
       arg -> findFirst(arg.works, work -> work.getPath().isEmpty() == false).launch(-1));
 
-    htCounters.addCondContextMenuItem("Go to work record", HDT_Argument.class,
+    htCounters.addContextMenuItem("Go to work record", HDT_Argument.class,
       arg -> arg.works.size() > 0,
       arg -> ui.goToRecord(nullSwitch(findFirst(arg.works, work -> work.getPath().isEmpty() == false), arg.works.get(0)), true));
 

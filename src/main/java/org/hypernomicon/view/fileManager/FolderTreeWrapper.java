@@ -35,7 +35,6 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import org.hypernomicon.view.wrappers.AbstractTreeWrapper;
 import org.hypernomicon.view.wrappers.DragNDropHoverHelper;
 import org.hypernomicon.view.wrappers.TreeModel;
-import org.hypernomicon.view.wrappers.DragNDropHoverHelper.DragNDropContainer;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -43,7 +42,7 @@ import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 
-public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements DragNDropContainer<FileRow>
+public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 {
   private final TreeView<FileRow> tv;
   private final TreeModel<FileRow> treeModel;
@@ -105,7 +104,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow> implements D
           if (row.getGraphic() == null)
             row.setGraphic(openImage);
 
-          row.setContextMenu(FileRow.createContextMenu(newValue, fileTable.contextMenuSchemata));
+          row.setContextMenu(createContextMenu(newValue, fileTable.getContextMenuSchemata()));
         }
       });
 

@@ -27,7 +27,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -44,11 +43,12 @@ import org.hypernomicon.view.wrappers.HyperTable;
 import com.google.common.collect.Lists;
 
 import org.hypernomicon.view.wrappers.DragNDropHoverHelper.DragNDropContainer;
+import org.hypernomicon.view.wrappers.HasRightClickableRows;
+
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -57,36 +57,8 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.input.DragEvent;
 import javafx.scene.text.Text;
 
-public class FileTable implements DragNDropContainer<FileRow>
+public class FileTable extends HasRightClickableRows<FileRow> implements DragNDropContainer<FileRow>
 {
-  @FunctionalInterface interface FileRowHandler     { void handle(FileRow fileRow); }
-  @FunctionalInterface interface CondFileRowHandler { boolean handle(FileRow fileRow); }
-
-//---------------------------------------------------------------------------
-
-  static class FileRowMenuItemSchema
-  {
-    CondFileRowHandler condHandler;
-    FileRowHandler handler;
-    final String caption;
-    boolean visible = true;
-    boolean disabled = false;
-
-    FileRowMenuItemSchema(String caption) { this.caption = caption; }
-  }
-
-//---------------------------------------------------------------------------
-
-  static class FileRowMenuItem extends MenuItem
-  {
-    FileRowMenuItem(String caption, FileRowMenuItemSchema schema)
-    {
-      super(caption);
-      this.schema = schema;
-    }
-
-    final FileRowMenuItemSchema schema;
-  }
 
 //---------------------------------------------------------------------------
 
@@ -114,7 +86,6 @@ public class FileTable implements DragNDropContainer<FileRow>
 
   private final TableView<FileRow> fileTV;
   private final ObservableList<FileRow> rows;
-  final List<FileRowMenuItemSchema> contextMenuSchemata;
   List<MarkedRowInfo> draggingRows;
   private final DragNDropHoverHelper<FileRow> ddHoverHelper;
 
@@ -127,7 +98,6 @@ public class FileTable implements DragNDropContainer<FileRow>
   {
     this.fileTV = fileTV;
     rows = FXCollections.observableArrayList();
-    contextMenuSchemata = new ArrayList<>();
     ddHoverHelper = new DragNDropHoverHelper<>(fileTV);
 
     if (prefID.length() > 0)
@@ -263,22 +233,6 @@ public class FileTable implements DragNDropContainer<FileRow>
       }
     }
     catch (DirectoryIteratorException | IOException ex) { noOp(); }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  FileRowMenuItemSchema addContextMenuItem(String caption, FileRowHandler handler)
-  {
-    return FileRow.addCondContextMenuItem(caption, fileRow -> true, handler, contextMenuSchemata);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  FileRowMenuItemSchema addCondContextMenuItem(String caption, CondFileRowHandler condHandler, FileRowHandler handler)
-  {
-    return FileRow.addCondContextMenuItem(caption, condHandler, handler, contextMenuSchemata);
   }
 
 //---------------------------------------------------------------------------

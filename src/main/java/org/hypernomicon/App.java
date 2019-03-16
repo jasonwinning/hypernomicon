@@ -357,7 +357,6 @@ public final class App extends Application
         @Override public void handle(DragEvent event)
         {
           Dragboard board = event.getDragboard();
-          boolean success = false;
 
           if (board.hasImage())
             if (isDebugging)
@@ -365,10 +364,11 @@ public final class App extends Application
 
           if (board.hasFiles())
           {
-            success = true;
-            Platform.runLater(() -> ui.handleArgs(board.getFiles().stream().map(File::getAbsolutePath).collect(Collectors.toList())));
+            List<String> args = board.getFiles().stream().map(File::getAbsolutePath).collect(Collectors.toList());
+            Platform.runLater(() -> ui.handleArgs(args));
+            event.setDropCompleted(true);
           }
-          event.setDropCompleted(success);
+
           event.consume();
         }
       });

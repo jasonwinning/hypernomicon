@@ -31,7 +31,6 @@ import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.RecordListView;
 
 import com.google.common.collect.Lists;
 
@@ -219,7 +218,7 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     htKeyMentioners = new HyperTable(tvKeyMentions, 1, false, PREF_KEY_HT_FILE_MENTIONERS);
 
-    RecordListView.addDefaultMenuItems(htKeyMentioners);
+    htKeyMentioners.addDefaultMenuItems();
 
     htKeyMentioners.addCol(hdtNone, ctNone);
     htKeyMentioners.addCol(hdtNone, ctNone);

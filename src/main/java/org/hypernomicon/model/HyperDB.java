@@ -48,10 +48,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.InvalidPreferencesFormatException;
 import java.util.prefs.Preferences;
@@ -81,6 +83,7 @@ import com.google.common.collect.Sets;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
+import org.hypernomicon.App;
 import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.lib.BibCollection;
@@ -101,6 +104,7 @@ import org.hypernomicon.util.BidiOneToManyMainTextMap;
 import org.hypernomicon.util.CryptoUtil;
 import org.hypernomicon.util.FilenameMap;
 import org.hypernomicon.util.PopupDialog.DialogResult;
+import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperFavorites;
 
@@ -118,11 +122,11 @@ public final class HyperDB
   final private EnumMap<Tag, EnumSet<HDT_RecordType>> tagToSubjType = new EnumMap<>(Tag.class);
   final private EnumMap<Tag, String> tagToHeader = new EnumMap<>(Tag.class);
 
-  final private ArrayList<RecordDeleteHandler> recordDeleteHandlers          = new ArrayList<>();
-  final private ArrayList<DatabaseEvent>       dbCloseHandlers               = new ArrayList<>(),
-                                               dbPreChangeHandlers           = new ArrayList<>(),
-                                               dbMentionsNdxCompleteHandlers = new ArrayList<>(),
-                                               bibChangedHandlers            = new ArrayList<>();
+  final private List<Consumer<HDT_Base>> recordDeleteHandlers          = new ArrayList<>();
+  final private List<Runnable>           dbCloseHandlers               = new ArrayList<>(),
+                                         dbPreChangeHandlers           = new ArrayList<>(),
+                                         dbMentionsNdxCompleteHandlers = new ArrayList<>(),
+                                         bibChangedHandlers            = new ArrayList<>();
 
   final private EnumBiMap<HDT_RecordType, Tag> typeToTag = EnumBiMap.create(HDT_RecordType.class, Tag.class);
   final private EnumHashBiMap<Tag, String> tagToStr = EnumHashBiMap.create(Tag.class);
@@ -156,9 +160,6 @@ public final class HyperDB
 
 //---------------------------------------------------------------------------
   @FunctionalInterface public interface RelationChangeHandler { void handle(HDT_Base subject, HDT_Base object, boolean affirm); }
-  @FunctionalInterface public interface RecordDeleteHandler   { void handle(HDT_Base record); }
-  @FunctionalInterface public interface RecordAddHandler      { void handle(HDT_Base record); }
-  @FunctionalInterface public interface DatabaseEvent         { void handle(); }
 //---------------------------------------------------------------------------
 
   public boolean isDeletionInProgress()                       { return deletionInProgress; }
@@ -190,14 +191,14 @@ public final class HyperDB
   { searchKeys.setSearchKey(record, newKey, noMod, dontRebuildMentions); }
 
   public LibraryWrapper<? extends BibEntry, ? extends BibCollection> getBibLibrary()        { return bibLibrary; }
-  public List<RecordDeleteHandler> getRecordDeleteHandlers()                                { return unmodifiableList(recordDeleteHandlers); }
+  public List<Consumer<HDT_Base>> getRecordDeleteHandlers()                                 { return unmodifiableList(recordDeleteHandlers); }
   public void addRelationChangeHandler(RelationType relType, RelationChangeHandler handler) { relationSets.get(relType).addChangeHandler(handler); }
   public void addKeyWorkHandler(HDT_RecordType recordType, RelationChangeHandler handler)   { keyWorkHandlers.put(recordType, handler); }
-  public void addCloseDBHandler(DatabaseEvent handler)                                      { dbCloseHandlers.add(handler); }
-  public void addPreDBChangeHandler(DatabaseEvent handler)                                  { dbPreChangeHandlers.add(handler); }
-  public void addMentionsNdxCompleteHandler(DatabaseEvent handler)                          { dbMentionsNdxCompleteHandlers.add(handler); }
-  public void addBibChangedHandler(DatabaseEvent handler)                                   { bibChangedHandlers.add(handler); }
-  public void addDeleteHandler(RecordDeleteHandler handler)                                 { recordDeleteHandlers.add(handler); }
+  public void addCloseDBHandler(Runnable handler)                                           { dbCloseHandlers.add(handler); }
+  public void addPreDBChangeHandler(Runnable handler)                                       { dbPreChangeHandlers.add(handler); }
+  public void addMentionsNdxCompleteHandler(Runnable handler)                               { dbMentionsNdxCompleteHandlers.add(handler); }
+  public void addBibChangedHandler(Runnable handler)                                        { bibChangedHandlers.add(handler); }
+  public void addDeleteHandler(Consumer<HDT_Base> handler)                                  { recordDeleteHandlers.add(handler); }
   public void rebuildMentions()                                                             { if (loaded) mentionsIndex.startRebuild(); }
   public void updateMentioner(HDT_Base record)                                              { if (loaded) mentionsIndex.updateMentioner(record); }
   public boolean waitUntilRebuildIsDone()                                                   { return mentionsIndex.waitUntilRebuildIsDone(); }
@@ -532,7 +533,7 @@ public final class HyperDB
     prefsFilePath = rootFilePath.resolve(appPrefs.get(PREF_KEY_SOURCE_FILENAME, PREFS_DEFAULT_FILENAME));
 
     if (dbChanged)
-      dbPreChangeHandlers.forEach(DatabaseEvent::handle);
+      dbPreChangeHandlers.forEach(Runnable::run);
 
     final ArrayList<FilePath> xmlFileList = new ArrayList<>();
 
@@ -696,7 +697,7 @@ public final class HyperDB
 
     works.forEach(work -> work.setBibEntryKey(""));
 
-    bibChangedHandlers.forEach(DatabaseEvent::handle);
+    bibChangedHandlers.forEach(Runnable::run);
 
     if (startWatcher)
       folderTreeWatcher.createNewWatcherAndStart();
@@ -756,7 +757,7 @@ public final class HyperDB
     prefs.put(PREF_KEY_BIB_USER_ID, bibUserID);
     prefs.put(PREF_KEY_BIB_LIBRARY_TYPE, libType.getDescriptor());
 
-    bibChangedHandlers.forEach(DatabaseEvent::handle);
+    bibChangedHandlers.forEach(Runnable::run);
   }
 
 //---------------------------------------------------------------------------
@@ -921,6 +922,43 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final String recordsTag = "records", versionAttr = "version";
+
+  private VersionNumber getVersionNumber(XMLEventReader eventReader) throws XMLStreamException
+  {
+    while (eventReader.hasNext())
+    {
+      XMLEvent event = eventReader.nextEvent();
+
+      if (event.isStartElement() == false)
+        continue;
+
+      StartElement startElement = event.asStartElement();
+
+      if (startElement.getName().getLocalPart().equals(tagToStr.get(tagRecord)))
+        return null;
+
+      if (startElement.getName().getLocalPart().equals(recordsTag) == false)
+        continue;
+
+      @SuppressWarnings("unchecked")
+      Iterator<Attribute> attributes = startElement.getAttributes();
+
+      while (attributes.hasNext())
+      {
+        Attribute attribute = attributes.next();
+
+        if (attribute.getName().toString().equals(versionAttr))
+          return new VersionNumber(2, attribute.getValue());
+      }
+    }
+
+    return new VersionNumber(2, 1);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private HDT_RecordState getNextRecordFromXML(XMLEventReader eventReader) throws XMLStreamException
   {
     while (eventReader.hasNext())
@@ -1045,6 +1083,14 @@ public final class HyperDB
     try (InputStream in = new FileInputStream(filePath.toFile()))
     {
       XMLEventReader eventReader = XMLInputFactory.newInstance().createXMLEventReader(in);
+
+      VersionNumber versionNumber = getVersionNumber(eventReader);
+
+      if (versionNumber == null)
+        throw new HyperDataException("XML data version number not found.");
+      else if (versionNumber.equals(RECORDS_XML_VERSION) == false)
+        throw new HyperDataException("The XML data is not compatible with this version of " + App.appTitle + ".");
+
       HDT_RecordState xmlRecord = getNextRecordFromXML(eventReader);
 
       while (xmlRecord != null)
@@ -1353,7 +1399,7 @@ public final class HyperDB
     if (bibLibrary != null)
     {
       bibLibrary = null;
-      bibChangedHandlers.forEach(DatabaseEvent::handle);
+      bibChangedHandlers.forEach(Runnable::run);
 
       prefs.remove(PREF_KEY_BIB_API_KEY);
       prefs.remove(PREF_KEY_BIB_USER_ID);
@@ -1389,7 +1435,7 @@ public final class HyperDB
       HDI_OfflineBoolean.class.cast(recordState.items.get(tagActive)).set(true);
       createNewRecordFromState(recordState, bringOnline);
 
-      dbCloseHandlers.forEach(DatabaseEvent::handle);
+      dbCloseHandlers.forEach(Runnable::run);
 
     } catch (DuplicateRecordException | RelationCycleException | SearchKeyException | HubChangedException e) { noOp(); }
   }
@@ -2004,52 +2050,43 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean getRelatives(HDT_Base record, Set<HDT_Base> set, int max)
+  public boolean getRelatives(HDT_Base record, LinkedHashSet<HDT_Base> set, int max)
   {
     set.clear();
-    boolean hasMore = false;
 
     for (RelationType relType : getRelationsForSubjType(record.getType()))
     {
-      switch (relType)
+      if (relType != rtParentFolderOfFolder)
       {
-        case rtParentFolderOfFolder: break;
-        default:
-          HyperObjList<HDT_Base, HDT_Base> list = getObjectList(relType, record, false);
+        HyperObjList<HDT_Base, HDT_Base> list = getObjectList(relType, record, false);
 
-          if ((max > 0) && (list.size() > max))
-          {
-            for (int ndx = 0; ndx < max; ndx++)
-              set.add(list.get(ndx));
+        for (HDT_Base obj : list)
+        {
+          if (set.size() == max)
+            return true;
 
-            hasMore = true;
-          }
-          else
-            set.addAll(getObjectList(relType, record, false));
+          set.add(obj);
+        }
       }
     }
 
     for (RelationType relType : getRelationsForObjType(record.getType()))
     {
-      switch (relType)
+      if (relType != rtParentFolderOfFolder)
       {
-        case rtParentFolderOfFolder: break;
-        default:
+        HyperSubjList<HDT_Base, HDT_Base> list = getSubjectList(relType, record);
 
-          HyperSubjList<HDT_Base, HDT_Base> list = getSubjectList(relType, record);
-          if ((max > 0) && (list.size() > max))
-          {
-            for (int ndx = 0; ndx < max; ndx++)
-              set.add(list.get(ndx));
+        for (HDT_Base subj : list)
+        {
+          if (set.size() == max)
+            return true;
 
-            hasMore = true;
-          }
-          else
-            set.addAll(getSubjectList(relType, record));
+          set.add(subj);
+        }
       }
     }
 
-    return hasMore;
+    return false;
   }
 
 //---------------------------------------------------------------------------
