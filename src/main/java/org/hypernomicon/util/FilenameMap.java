@@ -80,8 +80,7 @@ public class FilenameMap<T> implements Map<String, T>
 
     T oldVal = remove(key);
 
-    List<String> list = lowerToList.get(key.toLowerCase());
-    list.add(key);
+    lowerToList.get(key.toLowerCase()).add(key);
     nameToObject.put(key, value);
 
     return oldVal;

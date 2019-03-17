@@ -153,7 +153,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void removeRecord(HDT_Base record)
+  public void removeRecord(HDT_Base record)
   {
     debateTree.removeRecord(record);
     noteTree.removeRecord(record);

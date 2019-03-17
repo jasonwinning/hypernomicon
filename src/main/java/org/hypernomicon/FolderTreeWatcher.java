@@ -68,8 +68,8 @@ public class FolderTreeWatcher
       wekModify
     }
 
-    private WatcherEventKind kind;
-    private PathInfo oldPathInfo, newPathInfo;
+    private final WatcherEventKind kind;
+    private final PathInfo oldPathInfo, newPathInfo;
 
     private WatcherEventKind getKind() { return kind; }
     private PathInfo getOldPathInfo()  { return oldPathInfo; }
@@ -84,12 +84,7 @@ public class FolderTreeWatcher
 
     private boolean isDirectory()
     {
-      if (oldPathInfo != null)
-        if (oldPathInfo.isDirectory()) return true;
-      if (newPathInfo != null)
-        if (newPathInfo.isDirectory()) return true;
-
-      return false;
+      return ((oldPathInfo != null) && oldPathInfo.isDirectory()) || ((newPathInfo != null) && newPathInfo.isDirectory());
     }
   }
 
@@ -99,8 +94,8 @@ public class FolderTreeWatcher
   private class WatcherThread extends Thread
   {
     private boolean done = false;
-    private WatchService watcher;
-    private HashMap<WatchKey, HDT_Folder> watchKeyToDir;
+    private final WatchService watcher;
+    private final HashMap<WatchKey, HDT_Folder> watchKeyToDir;
     private boolean sentResponse = false;
     private HDB_MessageType requestType;
 
@@ -130,11 +125,6 @@ public class FolderTreeWatcher
 
     @Override public void run()
     {
-      WatchKey watchKey = null;
-      List<WatcherEvent> eventList = null, shortList = null;
-      PathInfo oldPathInfo = null, newPathInfo;
-      WatcherEvent watcherEvent = null;
-
       clearKeyQueue();
 
       try
@@ -161,7 +151,8 @@ public class FolderTreeWatcher
           return;
         }
 
-        eventList = null;
+        List<WatcherEvent> eventList = null;
+        WatchKey watchKey = null;
 
         if (handleInterComputerMessage() == false)
         {
@@ -170,16 +161,11 @@ public class FolderTreeWatcher
         }
 
         if (watchKey != null)
-        {
           eventList = new ArrayList<>();
-          newPathInfo = null;
-        }
 
         while (watchKey != null)
         {
-          int ndx = 0;
-
-          shortList = new ArrayList<>();
+          List<WatcherEvent> shortList = new ArrayList<>();
 
           for (final WatchEvent<?> event : watchKey.pollEvents())
           {
@@ -197,41 +183,36 @@ public class FolderTreeWatcher
             if (folder.getID() > 0)
             {
               FilePath filePath = folder.getPath().getFilePath().resolve(new FilePath(watchEvent.context())); // This is what actually changed
-              newPathInfo = new PathInfo(filePath);
+              PathInfo newPathInfo = new PathInfo(filePath);
+              WatcherEvent watcherEvent = null;
 
-              if (watchEvent.kind() == ENTRY_CREATE)
-                watcherEvent = new WatcherEvent(wekCreate, null, newPathInfo);
-              else if (watchEvent.kind() == ENTRY_DELETE)
-                watcherEvent = new WatcherEvent(wekDelete, newPathInfo, null);
-              else if (watchEvent.kind() == ENTRY_MODIFY)
-                watcherEvent = new WatcherEvent(wekModify, newPathInfo, newPathInfo);
+              if      (watchEvent.kind() == ENTRY_CREATE)  watcherEvent = new WatcherEvent(wekCreate, null,        newPathInfo);
+              else if (watchEvent.kind() == ENTRY_DELETE)  watcherEvent = new WatcherEvent(wekDelete, newPathInfo, null       );
+              else if (watchEvent.kind() == ENTRY_MODIFY)  watcherEvent = new WatcherEvent(wekModify, newPathInfo, newPathInfo);
 
-              shortList.add(watcherEvent);
-              ndx++;
+              if (watcherEvent != null)
+                shortList.add(watcherEvent);
             }
           }
 
-          int deleteNdx = -1, createNdx = -1; ndx = 0;
-          for (ndx = 0; ndx < shortList.size(); ndx++)
+          int deleteNdx = -1, createNdx = -1;
+          for (int ndx = 0; ndx < shortList.size(); ndx++)
           {
-            watcherEvent = shortList.get(ndx);
+            WatcherEvent watcherEvent = shortList.get(ndx);
 
-            if (watcherEvent.getKind() == wekDelete)
-              deleteNdx = ndx;
-            else if (watcherEvent.getKind() == wekCreate)
-              createNdx = ndx;
+            if      (watcherEvent.getKind() == wekDelete) deleteNdx = ndx;
+            else if (watcherEvent.getKind() == wekCreate) createNdx = ndx;
           }
 
           if ((deleteNdx >= 0) && (createNdx >= 0))
           {
-            oldPathInfo = shortList.get(deleteNdx).getOldPathInfo();
-            newPathInfo = shortList.get(createNdx).getNewPathInfo();
+            PathInfo oldPathInfo = shortList.get(deleteNdx).getOldPathInfo(),
+                     newPathInfo = shortList.get(createNdx).getNewPathInfo();
 
             if (oldPathInfo.getParentFolder() == newPathInfo.getParentFolder())
             {
-              watcherEvent = new WatcherEvent(wekRename, oldPathInfo, newPathInfo);
-              shortList.add(watcherEvent);
-              watcherEvent = shortList.get(createNdx);
+              shortList.add(new WatcherEvent(wekRename, oldPathInfo, newPathInfo));
+              WatcherEvent watcherEvent = shortList.get(createNdx);
               shortList.remove(deleteNdx);
               shortList.remove(watcherEvent);
             }
@@ -263,11 +244,6 @@ public class FolderTreeWatcher
 
     private void processEventList(List<WatcherEvent> eventList) throws IOException
     {
-      HDT_Folder folder;
-      FilePath filePath;
-      String relStr;
-      HyperPath hyperPath;
-
       if (app.debugging())
       {
         System.out.println("---------------------------");
@@ -277,18 +253,15 @@ public class FolderTreeWatcher
 
       for (WatcherEvent watcherEvent : eventList)
       {
-        PathInfo oldPathInfo = watcherEvent.getOldPathInfo();
-        PathInfo newPathInfo = watcherEvent.getNewPathInfo();
+        PathInfo oldPathInfo = watcherEvent.getOldPathInfo(),
+                 newPathInfo = watcherEvent.getNewPathInfo();
 
         switch (watcherEvent.getKind())
         {
           case wekCreate:
 
             if (watcherEvent.isDirectory())
-            {
-              filePath = newPathInfo.getFilePath();
-              registerTree(filePath);
-            }
+              registerTree(newPathInfo.getFilePath());
 
             Platform.runLater(fileManagerDlg::refresh);
 
@@ -296,12 +269,11 @@ public class FolderTreeWatcher
 
           case wekDelete:
 
-            hyperPath = oldPathInfo.getHyperPath();
+            HyperPath hyperPath = oldPathInfo.getHyperPath();
 
             if (hyperPath != null)
             {
-              relStr = hyperPath.getRecordsString();
-              if (relStr.length() > 0)
+              if (hyperPath.getRecordsString().length() > 0)
               {
                 if (watcherEvent.isDirectory())
                   messageDialog("There has been a change to a folder that is in use by the database. This may or may not cause a data integrity problem. Changes to database folders should be made using the Hypernomicon File Manager instead.", mtWarning);
@@ -318,14 +290,8 @@ public class FolderTreeWatcher
                   });
                 }
               }
-              else
-              {
-                if (watcherEvent.isDirectory())
-                {
-                  folder = (HDT_Folder) hyperPath.getRecord();
-                  HDT_Folder.deleteFolderRecordTree(folder);
-                }
-              }
+              else if (watcherEvent.isDirectory())
+                HDT_Folder.deleteFolderRecordTree((HDT_Folder) hyperPath.getRecord());
             }
 
             Platform.runLater(fileManagerDlg::refresh);
@@ -341,8 +307,7 @@ public class FolderTreeWatcher
 
             if (hyperPath != null)
             {
-              relStr = hyperPath.getRecordsString();
-              if (relStr.length() > 0)
+              if (hyperPath.getRecordsString().length() > 0)
               {
                 if (watcherEvent.isDirectory())
                   messageDialog("There has been a change to a folder that is in use by the database. This may or may not cause a data integrity problem. Changes to database folders should be made using the Hypernomicon File Manager instead.", mtWarning);
@@ -378,10 +343,8 @@ public class FolderTreeWatcher
                                 if (workFile.works.contains(ui.activeRecord()))
                                 {
                                   WorkTabController tabWorks = (WorkTabController) ui.currentTab();
-                                  if (tabWorks.wdc != null)
-                                    tabWorks.wdc.btnCancel.fire();
-                                  else if (tabWorks.fdc != null)
-                                    tabWorks.fdc.btnCancel.fire();
+                                  if      (tabWorks.wdc != null)  tabWorks.wdc.btnCancel.fire();
+                                  else if (tabWorks.fdc != null)  tabWorks.fdc.btnCancel.fire();
 
                                   tabWorks.refreshFiles();
                                 }
@@ -473,9 +436,8 @@ public class FolderTreeWatcher
       receivedMsg = InterComputerMsg.checkForMessage(db.getRequestMessageFilePath());
       requestType = hmtNone;
 
-      if (receivedMsg != null)
-        if (receivedMsg.getDest().equals(compName))
-          requestType = receivedMsg.getType();
+      if ((receivedMsg != null) && receivedMsg.getDest().equals(compName))
+        requestType = receivedMsg.getType();
 
       switch (requestType)
       {
@@ -505,9 +467,9 @@ public class FolderTreeWatcher
   private WatcherThread watcherThread;
   private HashMap<WatchKey, HDT_Folder> watchKeyToDir;
   public static final int FOLDER_TREE_WATCHER_POLL_TIME_MS = 100;
-  private boolean stopRequested = false;
-  private boolean stopped = true;
-  private boolean disabled = false;
+  private boolean stopRequested = false,
+                  stopped = true,
+                  disabled = false;
 
   public void disable()       { stop(); disabled = true; }
   public void enable()        { disabled = false; }

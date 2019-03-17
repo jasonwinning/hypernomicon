@@ -42,7 +42,6 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
   public abstract ArrayList<RowType> getRowsForRecord(HDT_Base record); // should never return null
   public abstract void focusOnTreeCtrl();
   public abstract void expandMainBranches();
-  public abstract void removeRecord(HDT_Base record);
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

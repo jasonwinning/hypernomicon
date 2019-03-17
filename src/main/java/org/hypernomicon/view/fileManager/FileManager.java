@@ -1180,29 +1180,28 @@ public class FileManager extends HyperDialog
     if (HDT_Record.isEmpty(curFolder))
       curFolder = null;
 
-    if (curFolder != null)
-    {
-      FileRow fileRow = fileTV.getSelectionModel().getSelectedItem();
-      FilePath filePath = fileRow == null ? null : fileRow.getFilePath();
-
-      fileTable.update(curFolder, folderTree.selectedItem());
-
-      if (FilePath.isEmpty(filePath))
-        setCurrentFileRow(null, false);
-
-      getStage().setTitle(dialogTitle + " - " + curFolder.getPath().getFilePath());
-
-      fileTV.sort();
-
-      if (FilePath.isEmpty(filePath) == false)
-        fileTable.selectByFileName(filePath);
-    }
-    else
+    if (curFolder == null)
     {
       fileTable.clear();
       recordTable.clear();
       getStage().setTitle(dialogTitle);
+      return;
     }
+
+    FileRow fileRow = fileTV.getSelectionModel().getSelectedItem();
+    FilePath filePath = fileRow == null ? null : fileRow.getFilePath();
+
+    fileTable.update(curFolder, folderTree.selectedItem());
+
+    if (FilePath.isEmpty(filePath))
+      setCurrentFileRow(null, false);
+
+    getStage().setTitle(dialogTitle + " - " + curFolder.getPath().getFilePath());
+
+    fileTV.sort();
+
+    if (FilePath.isEmpty(filePath) == false)
+      fileTable.selectByFileName(filePath);
   }
 
 //---------------------------------------------------------------------------

@@ -924,7 +924,7 @@ public final class HyperDB
 
   private static final String recordsTag = "records", versionAttr = "version";
 
-  private VersionNumber getVersionNumber(XMLEventReader eventReader) throws XMLStreamException
+  private VersionNumber getVersionNumberFromXML(XMLEventReader eventReader) throws XMLStreamException
   {
     while (eventReader.hasNext())
     {
@@ -1084,12 +1084,12 @@ public final class HyperDB
     {
       XMLEventReader eventReader = XMLInputFactory.newInstance().createXMLEventReader(in);
 
-      VersionNumber versionNumber = getVersionNumber(eventReader);
+      VersionNumber versionNumber = getVersionNumberFromXML(eventReader);
 
       if (versionNumber == null)
-        throw new HyperDataException("XML data version number not found.");
+        throw new HyperDataException("XML record data version number not found.");
       else if (versionNumber.equals(RECORDS_XML_VERSION) == false)
-        throw new HyperDataException("The XML data is not compatible with this version of " + App.appTitle + ".");
+        throw new HyperDataException("The XML record data is not compatible with this version of " + App.appTitle + ".");
 
       HDT_RecordState xmlRecord = getNextRecordFromXML(eventReader);
 
@@ -1195,13 +1195,11 @@ public final class HyperDB
     }
     catch (XMLStreamException e)
     {
-      String msg = "File: " + filePath + System.lineSeparator() + e.getMessage();
-      throw new HyperDataException(msg, e);
+      throw new HyperDataException("File: " + filePath + System.lineSeparator() + e.getMessage(), e);
     }
     catch (HubChangedException e)
     {
-      String msg = "Internal error #42837";
-      throw new HyperDataException(msg, e);
+      throw new HyperDataException("Internal error #42837", e);
     }
   }
 
@@ -2125,9 +2123,8 @@ public final class HyperDB
 
     RelationChangeHandler handler = keyWorkHandlers.get(record.getType());
 
-    if (handler == null) return;
-
-    runInFXThread(() -> handler.handle(keyWorkRecord, record, affirm));
+    if (handler != null)
+      runInFXThread(() -> handler.handle(keyWorkRecord, record, affirm));
   }
 
 //---------------------------------------------------------------------------
@@ -2170,25 +2167,8 @@ public final class HyperDB
 
   public Set<HDT_RecordWithConnector> getKeyWorkMentioners(HDT_RecordWithPath record)
   {
-    HashSet<HDT_RecordWithConnector> set = new HashSet<>();
-
-    if (keyWorkIndex.get(record) == null) return set;
-
-    keyWorkIndex.get(record).forEach(mentioner ->
-    {
-      boolean added = false;
-
-      if (mentioner.isLinked())
-      {
-        set.add(mentioner.getHub());
-        added = true;
-      }
-
-      if (added == false)
-        set.add(mentioner);
-    });
-
-    return set;
+    return nullSwitch(keyWorkIndex.get(record), new HashSet<>(), set -> set.stream().map(mentioner -> mentioner.isLinked() ? mentioner.getHub() : mentioner)
+                                                                                    .collect(Collectors.toCollection(HashSet::new)));
   }
 
 //---------------------------------------------------------------------------

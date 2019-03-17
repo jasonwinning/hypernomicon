@@ -1672,7 +1672,7 @@ public final class Util
 
   public static <T1, T2> T1 findFirstHaving(Iterable<T2> iterable, Function<T2, T1> func, Predicate<T1> pred)
   {
-    return StreamSupport.stream(iterable.spliterator(), false).map(func).filter(pred).findFirst().orElse(null);
+    return StreamSupport.stream(iterable.spliterator(), false).map(func).filter(obj -> (obj != null) && pred.test(obj)).findFirst().orElse(null);
   }
 
   public static <T1, T2> T1 findFirst(Iterable<T2> iterable, Predicate<T2> pred, T1 def, Function<T2, T1> func)

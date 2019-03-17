@@ -56,7 +56,6 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 
   @Override public TreeItem<FileRow> getRoot()                           { return tv.getRoot(); }
   @Override public void expandMainBranches()                             { treeModel.expandMainBranch(); }
-  @Override public void removeRecord(HDT_Base record)                    { treeModel.removeRecord(record); }
   @Override public SelectionModel<TreeItem<FileRow>> getSelectionModel() { return tv.getSelectionModel(); }
   @Override public void focusOnTreeCtrl()                                { safeFocus(tv); }
   @Override public void scrollToNdx(int ndx)                             { tv.scrollTo(ndx); }

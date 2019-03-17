@@ -30,6 +30,7 @@ import org.hypernomicon.util.BidiOneToManyRecordMap;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
+import com.google.common.collect.ImmutableSet;
 
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
@@ -131,8 +132,8 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Base, RowTy
 
   public void removeRecord(HDT_Base record)
   {
-    parentToChildren.getForwardSet(record).forEach(child  -> unassignParent(child , record));
-    parentToChildren.getReverseSet(record).forEach(parent -> unassignParent(record, parent));
+    ImmutableSet.<HDT_Base>copyOf(parentToChildren.getForwardSet(record)).forEach(child  -> unassignParent(child , record));
+    ImmutableSet.<HDT_Base>copyOf(parentToChildren.getForwardSet(record)).forEach(parent -> unassignParent(record, parent));
   }
 
 //---------------------------------------------------------------------------

@@ -42,10 +42,10 @@ import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
 
 class MentionsIndex
 {
-  private final BidiOneToManyRecordMap mentionedInDescToMentioners;
-  private final BidiOneToManyRecordMap mentionedAnywhereToMentioners;
+  private final BidiOneToManyRecordMap mentionedInDescToMentioners   = new BidiOneToManyRecordMap(),
+                                       mentionedAnywhereToMentioners = new BidiOneToManyRecordMap();
   private final List<Runnable> ndxCompleteHandlers;
-  private final KeywordLinkList linkList;
+  private final KeywordLinkList linkList = new KeywordLinkList();
   private final EnumSet<HDT_RecordType> types;
   private final ArrayList<String> strList = new ArrayList<>();
 
@@ -61,13 +61,8 @@ class MentionsIndex
   {
     this.ndxCompleteHandlers = ndxCompleteHandlers;
 
-    mentionedInDescToMentioners = new BidiOneToManyRecordMap();
-    mentionedAnywhereToMentioners = new BidiOneToManyRecordMap();
-
     types = EnumSet.allOf(HDT_RecordType.class);
     types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
-
-    linkList = new KeywordLinkList();
   }
 
 //---------------------------------------------------------------------------

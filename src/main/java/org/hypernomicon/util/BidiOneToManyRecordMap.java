@@ -20,6 +20,7 @@ package org.hypernomicon.util;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.hypernomicon.model.records.HDT_Hub;
@@ -29,6 +30,7 @@ import org.hypernomicon.model.records.HDT_Base;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 public class BidiOneToManyRecordMap
@@ -41,8 +43,17 @@ public class BidiOneToManyRecordMap
 
   public void clear() { forwardMap.clear(); reverseMap.clear(); }
 
-  @SuppressWarnings("unchecked") public <HDT_T extends HDT_Base> Set<HDT_T> getForwardSet(HDT_Base fromRecord) { return (Set<HDT_T>) getSet(forwardMap, fromRecord); }
-  @SuppressWarnings("unchecked") public <HDT_T extends HDT_Base> Set<HDT_T> getReverseSet(HDT_Base fromRecord) { return (Set<HDT_T>) getSet(reverseMap, fromRecord); }
+  @SuppressWarnings("unchecked")
+  public <HDT_T extends HDT_Base> Set<HDT_T> getForwardSet(HDT_Base fromRecord)
+  {
+    return (Set<HDT_T>) Collections.unmodifiableSet(getSet(forwardMap, fromRecord));
+  }
+
+  @SuppressWarnings("unchecked")
+  public <HDT_T extends HDT_Base> Set<HDT_T> getReverseSet(HDT_Base fromRecord)
+  {
+    return (Set<HDT_T>) Collections.unmodifiableSet(getSet(reverseMap, fromRecord));
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -146,15 +157,15 @@ public class BidiOneToManyRecordMap
 
   public Set<HDT_Base> getAllHeads()
   {
-    Set<HDT_Base> heads = Sets.newConcurrentHashSet();
+    ImmutableSet.Builder<HDT_Base> builder = ImmutableSet.builder();
 
     forwardMap.forEach((head, set) ->
     {
       if ((head.getID() != -1) && (set.isEmpty() == false))
-        heads.add(head);
+        builder.add(head);
     });
 
-    return heads;
+    return builder.build();
   }
 
 //---------------------------------------------------------------------------
