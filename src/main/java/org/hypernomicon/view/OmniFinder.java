@@ -41,6 +41,8 @@ import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+import com.google.common.collect.ImmutableSet;
+
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -52,7 +54,7 @@ public class OmniFinder
   private final ArrayList<ObservableList<HyperTableCell>> cellLists = new ArrayList<>();
   private final ArrayList<HyperTableRow> rows = new ArrayList<>();
   private final EnumSet<TierEnum> tierSet;
-  private final EnumMap<TierEnum, EnumSet<HDT_RecordType>> tierToTypeSet = new EnumMap<>(TierEnum.class);
+  private final EnumMap<TierEnum, ImmutableSet<HDT_RecordType>> tierToTypeSet = new EnumMap<>(TierEnum.class);
   private final HashSet<HDT_Base> records = new HashSet<>();
 
   private String query = "";
@@ -77,13 +79,13 @@ public class OmniFinder
 
   OmniFinder(HyperTable htFind)
   {
-    EnumSet<HDT_RecordType> typeSet = EnumSet.of
+    ImmutableSet<HDT_RecordType> typeSet = ImmutableSet.of
     (
       hdtTerm,      hdtPosition,    hdtDebate, hdtPerson,    hdtPersonGroup, hdtWork,
       hdtWorkLabel, hdtMiscFile,    hdtNote,   hdtGlossary,  hdtArgument,    hdtInstitution, hdtInvestigation
-    ),
+    );
 
-    authoredSet = EnumSet.of(hdtWork, hdtMiscFile);
+    ImmutableSet<HDT_RecordType> authoredSet = ImmutableSet.of(hdtWork, hdtMiscFile);
 
     this.htFind = htFind;
 
@@ -505,7 +507,7 @@ public class OmniFinder
         if (finalShowingMore)
         {
           htFind.selectRow(ROWS_TO_SHOW - 1);
-          htFind.getTV().refresh();
+          htFind.refresh();
           runDelayedInFXThread(1, 30, event -> htFind.scrollToSelection());
         }
         else if (finalFirstBuffer)

@@ -25,10 +25,10 @@ import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import com.melloware.jintellitype.JIntellitype;
 import com.teamdev.jxbrowser.chromium.BrowserCore;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
 
-import org.hypernomicon.App;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -444,7 +444,7 @@ public class PreviewWindow extends HyperDialog
 
   public void setPreview(PreviewSource src, FilePath filePath, int startPageNum, int endPageNum, HDT_Base record)
   {
-    if (App.jxBrowserDisabled || disablePreviewUpdating) return;
+    if (jxBrowserDisabled || disablePreviewUpdating) return;
 
     boolean previewAlreadySet = false;
 
@@ -702,6 +702,10 @@ public class PreviewWindow extends HyperDialog
       Platform.runLater(() ->
       {
         app.getPrimaryStage().close();
+
+        if (JIntellitype.isJIntellitypeSupported())
+          //JIntellitype.getInstance().cleanUp();   // This causes the VM to crash in Java 11
+          System.exit(0);
 
         if (Environment.isMac())
           Platform.exit();

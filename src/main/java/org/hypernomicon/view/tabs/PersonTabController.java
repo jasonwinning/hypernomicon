@@ -33,17 +33,16 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.HyperDB;
-import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.MainText;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.PopupDialog;
-import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.dialogs.InvestigationsDialogController;
@@ -125,6 +124,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
   private HDT_Person curPerson;
   private boolean alreadyChangingName = false;
 
+  @Override public String getRecordName()               { return new PersonName(tfFirst.getText(), tfLast.getText()).getLastFirst(); }
   @Override HDT_RecordType getType()                    { return hdtPerson; }
   @Override public void enable(boolean enabled)         { ui.tabPersons.getContent().setDisable(enabled == false); }
   @Override void focusOnSearchKey()                     { safeFocus(tfSearchKey); }
@@ -565,9 +565,6 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
   @Override public boolean saveToRecord(boolean showMessage)
   {
-    int ndx, subfieldID;
-    HDT_Subfield subfield;
-
     if (!saveSearchKey(curPerson, tfSearchKey, showMessage)) return false;
 
     if (FilePath.isEmpty(curPicture))
@@ -634,34 +631,27 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
  // save subfield
 
-    subfieldID = hcbSubfield.selectedID();
+    int subfieldID = hcbSubfield.selectedID();
     if ((subfieldID < 1) && (hcbField.selectedID() > 0))
     {
       if (hcbSubfield.getText().length() > 0)
       {
-        subfield = db.createNewBlankRecord(hdtSubfield);
+        HDT_Subfield subfield = db.createNewBlankRecord(hdtSubfield);
         subfieldID = subfield.getID();
         subfield.setName(hcbSubfield.getText());
         subfield.field.setID(hcbField.selectedID());
       }
     }
 
+    HDT_Subfield oldSubfield = curPerson.subfield.get();
+
     if ((subfieldID > 0) && (hcbField.selectedID() > 0))
       curPerson.subfield.setID(subfieldID);
     else
       curPerson.subfield.setID(-1);
 
-  // Now delete the unused subfields
-
-    for (ndx = 0; ndx < db.subfields.size(); ndx++)
-    {
-      subfield = db.subfields.getByIDNdx(ndx);
-      if (subfield.persons.isEmpty())
-      {
-        db.deleteRecord(hdtSubfield, subfield.getID());
-        ndx--;
-      }
-    }
+    if ((oldSubfield != null) && oldSubfield.persons.isEmpty())
+      db.deleteRecord(hdtSubfield, oldSubfield.getID());
 
     return true;
   }
@@ -882,9 +872,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
     dlg.addButton(first3 + " " + last, mrOk);
     dlg.addButton("Cancel", mrCancel);
 
-    DialogResult result = dlg.showModal();
-
-    switch (result)
+    switch (dlg.showModal())
     {
       case mrYes : searchScholar(first1 + " " + last, "", ""); break;
       case mrNo  : searchScholar(first2 + " " + last, "", ""); break;
@@ -947,7 +935,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
   public void showInvSelectDialog(HyperTableRow row)
   {
-    if (row.getRecord().getType() != hdtWork) return;
+    if (row.getRecordType() != hdtWork) return;
 
     HDT_Work work = row.getRecord();
     HDT_Person curPerson = (HDT_Person) ui.activeRecord();
@@ -973,7 +961,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
       inv.setName(dlg.newName());
       work.investigations.add(inv);
 
-      PersonTabController personTabCtrlr = HyperTab.getHyperTab(TabEnum.personTab);
+      PersonTabController personTabCtrlr = getHyperTab(personTab);
       personTabCtrlr.addInvView(inv);
     }
 
@@ -1239,7 +1227,7 @@ public class PersonTabController extends HyperTab<HDT_Person, HDT_Person>
 
     ui.goToRecord(work, false);
 
-    WorkTabController workCtrlr = HyperTab.getHyperTab(workTab);
+    WorkTabController workCtrlr = getHyperTab(workTab);
 
     if (workCtrlr.showWorkDialog(null) == false)
       ui.deleteCurrentRecord(false);

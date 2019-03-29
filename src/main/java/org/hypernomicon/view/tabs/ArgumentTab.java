@@ -187,12 +187,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
     verdictPopulator = new RecordByTypePopulator();
 
-    RecordTypePopulator rtp = new RecordTypePopulator();
-    EnumSet<HDT_RecordType> types = EnumSet.noneOf(HDT_RecordType.class);
-
-    types.addAll(EnumSet.of(hdtPosition, hdtArgument));
-
-    rtp.setTypes(types);
+    RecordTypePopulator rtp = new RecordTypePopulator(EnumSet.of(hdtPosition, hdtArgument));
 
     htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
     {

@@ -39,6 +39,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -193,7 +194,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
       curConcept = ConceptTab.class.cast(newTab).concept;
 
-      ui.viewSequence.updateCurrentView(new HyperView<>(TabEnum.termTab, curConcept, getMainTextInfo()));
+      ui.viewSequence.updateCurrentView(new HyperView<>(termTab, curConcept, getMainTextInfo()));
 
       HDT_Glossary glossary = curConcept.glossary.get();
       if (glossary.getID() > 1) glossary.viewNow();

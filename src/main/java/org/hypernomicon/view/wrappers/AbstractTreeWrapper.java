@@ -20,16 +20,14 @@ package org.hypernomicon.view.wrappers;
 import java.util.ArrayList;
 
 import org.hypernomicon.model.records.HDT_Base;
-import org.hypernomicon.view.wrappers.DragNDropHoverHelper.DragNDropContainer;
 
+import javafx.scene.control.Control;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TreeItem;
 
 import static org.hypernomicon.util.Util.*;
 
-public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? extends HDT_Base, RowType>>
-  extends HasRightClickableRows<RowType>
-  implements DragNDropContainer<RowType>
+public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? extends HDT_Base, RowType>> extends DragNDropContainer<RowType>
 {
   protected boolean selectingFromCB = false;
 
@@ -45,6 +43,8 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  public AbstractTreeWrapper(Control ctrl) { super(ctrl); }
 
   public void reset()                           { clear(); }
   public final TreeItem<RowType> selectedItem() { return getSelectionModel().getSelectedItem(); }

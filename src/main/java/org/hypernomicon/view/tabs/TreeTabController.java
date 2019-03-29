@@ -84,6 +84,7 @@ public class TreeTabController extends HyperTab<HDT_Base, HDT_Base>
   @Override void focusOnSearchKey()                 { return; }
   @Override public void setRecord(HDT_Base ar)      { return; }
   @Override public HDT_Base activeRecord()          { return tree.selectedRecord(); }
+  @Override public String getRecordName()           { return nullSwitch(activeRecord(), "", HDT_Base::getCBText); }
   @Override public TextViewInfo getMainTextInfo()   { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
   @Override public void setDividerPositions()       { return; }
   @Override public void getDividerPositions()       { return; }

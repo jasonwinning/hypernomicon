@@ -17,10 +17,8 @@
 
 package org.hypernomicon.view.tabs;
 
-import java.util.Collection;
 import java.util.EnumSet;
 
-import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
@@ -122,13 +120,13 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
     {
       row.setCellValue(1, subPos, subPos.getCBText());
 
-      Collection<Author> authors = subPos.getPeople().stream().map(ArgumentAuthor::getAuthObj).collect(ImmutableSet.toImmutableSet());
-
+      String authStr = Authors.getShortAuthorsStr(subPos.getPeople().stream().map(ArgumentAuthor::getAuthObj)
+                                                                             .collect(ImmutableSet.toImmutableSet()), true, true);
       PositionSource ps = subPos.getWorkWithAuthor();
       if (ps != null)
-        row.setCellValue(2, ps.author, Authors.getShortAuthorsStr(authors, true, true));
+        row.setCellValue(2, ps.author, authStr);
       else
-        row.setCellValue(2, -1, Authors.getShortAuthorsStr(authors, true, true), hdtPerson);
+        row.setCellValue(2, -1, authStr, hdtPerson);
     });
 
     return true;
@@ -163,8 +161,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
     htParents.addActionCol(ctGoBtn, 3);
     htParents.addActionCol(ctBrowseBtn, 3);
 
-    RecordTypePopulator rtp = new RecordTypePopulator();
-    rtp.setTypes(EnumSet.of(hdtDebate, hdtPosition));
+    RecordTypePopulator rtp = new RecordTypePopulator(EnumSet.of(hdtDebate, hdtPosition));
 
     htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
     {

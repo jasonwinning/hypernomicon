@@ -212,7 +212,7 @@ public class MergeWorksDialogController extends HyperDialog
         else if (rbTitle3.isSelected()) tf = tfTitle3;
         else                            tf = tfTitle4;
 
-        tf.setText(titleCase(tf.getText()));
+        tf.setText(HDT_Work.fixCase(tf.getText()));
       });
 
       onShown = () -> safeFocus(rbTitle1);

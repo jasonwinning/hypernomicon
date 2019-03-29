@@ -50,6 +50,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.dialogs.RenameDialogController.NameType.*;
 import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
@@ -59,8 +60,6 @@ import org.hypernomicon.view.dialogs.RenameDialogController;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.tabs.FileTabController;
 import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.HyperTab.TabEnum;
-import org.hypernomicon.view.wrappers.DragNDropHoverHelper;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
@@ -734,7 +733,7 @@ public class FileManager extends HyperDialog
       miscFile.getPath().assign(fileRow.getFolder(), fileRow.getFilePath().getNameOnly());
       ui.goToRecord(miscFile, true);
 
-      FileTabController fileCtrlr = HyperTab.getHyperTab(TabEnum.miscFileTab);
+      FileTabController fileCtrlr = HyperTab.getHyperTab(miscFileTab);
       if (fileCtrlr.btnManageClick() == false)
       {
         miscFile.getPath().clear(false);
@@ -1332,7 +1331,7 @@ public class FileManager extends HyperDialog
         }
       });
 
-      DragNDropHoverHelper.setupHandlers(row, fileTable);
+      fileTable.setupDragHandlers(row);
 
       row.itemProperty().addListener((observable, oldValue, newValue) ->
       {

@@ -33,7 +33,6 @@ import org.hypernomicon.util.filePath.FilePath;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import org.hypernomicon.view.wrappers.AbstractTreeWrapper;
-import org.hypernomicon.view.wrappers.DragNDropHoverHelper;
 import org.hypernomicon.view.wrappers.TreeModel;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TreeCell;
@@ -46,7 +45,6 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 {
   private final TreeView<FileRow> tv;
   private final TreeModel<FileRow> treeModel;
-  private final DragNDropHoverHelper<FileRow> ddHoverHelper;
   private final FileTable fileTable;
 
 //---------------------------------------------------------------------------
@@ -67,11 +65,12 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 
   FolderTreeWrapper(TreeView<FileRow> tv, FileTable fileTable)
   {
+    super(tv);
+
     this.tv = tv;
     this.fileTable = fileTable;
 
     treeModel = new TreeModel<>(this, null);
-    ddHoverHelper = new DragNDropHoverHelper<>(tv);
 
     clear();
 
@@ -107,7 +106,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
         }
       });
 
-      DragNDropHoverHelper.setupHandlers(row, this);
+      setupDragHandlers(row);
 
       return row;
     });
@@ -199,7 +198,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
   @Override public void dragDone()
   {
     fileTable.dragDone();
-    ddHoverHelper.reset();
+    dragReset();
   }
 
   @Override public void startDrag(FileRow row)
@@ -217,7 +216,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 
   @Override public boolean acceptDrag(FileRow targetRow, DragEvent dragEvent, TreeItem<FileRow> treeItem)
   {
-    ddHoverHelper.scroll(dragEvent);
+    scroll(dragEvent);
 
     if (fileTable.draggingRows == null) return false;
     if (targetRow.isDirectory() == false) return false;
@@ -228,7 +227,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
       if (srcPath.getDirOnly().equals(targetRow.getFilePath())) return false;
     }
 
-    ddHoverHelper.expand(treeItem);
+    expand(treeItem);
 
     return true;
   }

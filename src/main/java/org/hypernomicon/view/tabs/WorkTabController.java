@@ -23,12 +23,12 @@ import org.hypernomicon.bib.PdfMetadata;
 import org.hypernomicon.bib.lib.BibEntry;
 import org.hypernomicon.model.SearchKeys;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
-import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.HyperPath;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
@@ -153,6 +153,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   public HyperTable htAuthors;
   public HyperCB hcbType;
 
+  @Override public String getRecordName()               { return tfTitle.getText(); }
   @Override HDT_RecordType getType()                    { return hdtWork; }
   @Override public void enable(boolean enabled)         { ui.tabWorks.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text)     { mainText.hilite(text); }
@@ -277,6 +278,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
 
     htInvestigations.addRemoveMenuItem();
     htInvestigations.addChangeOrderMenuItem(true);
+    htInvestigations.addRefreshHandler(() -> tabPane.requestLayout());
 
     htArguments = new HyperTable(tvArguments, 2, false, PREF_KEY_HT_WORK_ARG);
 
@@ -285,6 +287,8 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     htArguments.addCol(hdtArgument, ctNone);
 
     htWorkFiles = new HyperTable(tvWorkFiles, 2, true, PREF_KEY_HT_WORK_FILES);
+
+    htWorkFiles.addRefreshHandler(() -> tabPane.requestLayout());
 
     htWorkFiles.addActionColWithButtonHandler(ctEditNewBtn, 2, (row, colNdx) -> showWorkDialog(row.getRecord(colNdx)));
 
@@ -501,8 +505,8 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     {
       if (newValue == null) return;
 
-      WorkTypeEnum workTypeEnumVal = HDT_WorkType.workTypeIDToEnumVal(HyperTableCell.getCellID(newValue));
-      WorkTypeEnum oldEnumVal = curWork.getWorkTypeValue();
+      WorkTypeEnum workTypeEnumVal = HDT_WorkType.workTypeIDToEnumVal(HyperTableCell.getCellID(newValue)),
+                   oldEnumVal = curWork.getWorkTypeValue();
 
       if (workTypeEnumVal != wtUnenteredSet)
       {
@@ -528,8 +532,8 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
       }
     });
 
-    Divider div1 = spHoriz1.getDividers().get(0);
-    Divider div2 = spHoriz2.getDividers().get(0);
+    Divider div1 = spHoriz1.getDividers().get(0),
+            div2 = spHoriz2.getDividers().get(0);
 
     div1.positionProperty().bindBidirectional(div2.positionProperty());
 
@@ -564,7 +568,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     {
       String title = tfTitle.getText();
 
-      title = titleCase(convertToSingleLine(ultraTrim(title)));
+      title = HDT_Work.fixCase(convertToSingleLine(ultraTrim(title)));
 
       alreadyChangingTitle = true;
       tfTitle.setText(title);
@@ -582,7 +586,7 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
         alreadyChangingTitle = true;
         String newText = change.getControlNewText();
         change.setRange(0, change.getControlText().length());
-        change.setText(ultraTrim(titleCase(convertToSingleLine(newText))));
+        change.setText(ultraTrim(HDT_Work.fixCase(convertToSingleLine(newText))));
         alreadyChangingTitle = false;
       }
 
@@ -613,6 +617,8 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
   private void updateMergeButton()
   {
     btnMergeBib.setDisable((crossrefBD.get() == null) && (pdfBD.get() == null) && (googleBD.get() == null));
+
+    tabPane.requestLayout();
   }
 
 //---------------------------------------------------------------------------
@@ -1775,6 +1781,8 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     btnUseDOI.setDisable(getDoiFromBibTab().length() == 0);
 
     btnUseISBN.setDisable(getIsbnsFromBibTab().size() == 0);
+
+    tabPane.requestLayout();
   }
 
 //---------------------------------------------------------------------------
@@ -1947,6 +1955,8 @@ public class WorkTabController extends HyperTab<HDT_Work, HDT_Work>
     ta.clear();
     btnStop.setVisible(true);
     progressBar.setVisible(true);
+
+    tabPane.requestLayout();
 
     JsonHttpClient.getObjAsync(url, httpClient, jsonObj ->
     {

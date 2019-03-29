@@ -25,8 +25,8 @@ import java.util.function.Function;
 import static javafx.scene.input.MouseButton.*;
 
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
-import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_RecordType;
@@ -39,7 +39,6 @@ import org.hypernomicon.view.dialogs.RecordSelectDialogController;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 import org.hypernomicon.view.tabs.PersonTabController;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
@@ -47,6 +46,7 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -456,7 +456,7 @@ public class HyperCB implements CommitableWrapper
         }
         else if ((populator.getRecordType(row) == hdtInstitution) && (dontCreateNewRecord == false))
         {
-          PersonTabController.class.cast(HyperTab.getHyperTab(TabEnum.personTab)).newInstClick(row, cb.getEditor().getText(), colNdx);
+          PersonTabController.class.cast(HyperTab.getHyperTab(personTab)).newInstClick(row, cb.getEditor().getText(), colNdx);
         }
       }
     }
@@ -484,7 +484,7 @@ public class HyperCB implements CommitableWrapper
     if (cell != null)
       cb.getSelectionModel().select(cell);
 
-    if ((choices.size() > 0) && ((cell == null) || (cell.equals(HyperTableCell.blankCell))))
+    if ((choices.size() > 0) && HyperTableCell.isEmpty(cell))
     {
       ListView<HyperTableCell> lv = getCBListView(cb);
       if (lv != null) lv.scrollTo(0);

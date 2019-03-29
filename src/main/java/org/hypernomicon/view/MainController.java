@@ -30,16 +30,16 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.queryEngines.QueryEngine.QueryType.*;
 import static org.hypernomicon.view.tabs.HyperTab.getHyperTab;
+import static org.hypernomicon.view.tabs.HyperTab.getTabEnumByRecordType;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.tabs.QueriesTabController.*;
 import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 
-import org.hypernomicon.App;
 import org.hypernomicon.bib.BibData;
 import org.hypernomicon.bib.lib.BibEntry;
-import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
@@ -232,11 +232,13 @@ public final class MainController
     InstitutionTabController.addHyperTab(institutionTab, tabInstitutions, "InstitutionTab.fxml");
     WorkTabController       .addHyperTab(workTab       , tabWorks       , "WorkTab.fxml");
     FileTabController       .addHyperTab(miscFileTab   , tabFiles       , "FileTab.fxml");
-    DebateTab               .addHyperTab(debateTab     , tabDebates     , new DebateTab());
-    PositionTab             .addHyperTab(positionTab   , tabPositions   , new PositionTab());
-    ArgumentTab             .addHyperTab(argumentTab   , tabArguments   , new ArgumentTab());
-    NoteTab                 .addHyperTab(noteTab       , tabNotes       , new NoteTab());
-    TermTab                 .addHyperTab(termTab       , tabTerms       , new TermTab());
+
+    new DebateTab()         .baseInit   (debateTab     , tabDebates);
+    new PositionTab()       .baseInit   (positionTab   , tabPositions);
+    new ArgumentTab()       .baseInit   (argumentTab   , tabArguments);
+    new NoteTab()           .baseInit   (noteTab       , tabNotes);
+    new TermTab()           .baseInit   (termTab       , tabTerms);
+
     QueriesTabController    .addHyperTab(queryTab      , tabQueries     , "QueriesTab.fxml");
     TreeTabController       .addHyperTab(treeTab       , tabTree        , "TreeTab.fxml");
 
@@ -342,10 +344,10 @@ public final class MainController
 
     favorites = new HyperFavorites(mnuFavorites, mnuQueries);
 
-    HyperTab.getHyperTabs().forEach(hyperTab ->
+    forEachHyperTab(hyperTab ->
     {
       TabEnum hyperTabEnum = hyperTab.getTabEnum();
-      String path = getGraphicRelativePathByType(HyperTab.getRecordTypeByTabEnum(hyperTabEnum));
+      String path = getGraphicRelativePathByType(getRecordTypeByTabEnum(hyperTabEnum));
 
       ImageView graphic = getImageViewForRelativePath(path);
       if (graphic == null) return;
@@ -372,8 +374,8 @@ public final class MainController
       });
     }
 
-    if (JIntellitype.isJIntellitypeSupported())
-    {
+    if (JIntellitype.isJIntellitypeSupported())  // In JavaFX 12, support will exist for forward and back mouse buttons so that
+    {                                            // JIntellitype can be removed. See https://bugs.openjdk.java.net/browse/JDK-8090930
       JIntellitype.getInstance().addIntellitypeListener(code ->
       {
         switch (code)
@@ -405,12 +407,12 @@ public final class MainController
     {
       if (record.getType() == hdtPerson)
       {
-        PersonTabController personHyperTab = HyperTab.getHyperTab(personTab);
+        PersonTabController personHyperTab = getHyperTab(personTab);
         if (personHyperTab.activeRecord() == record)
           personHyperTab.curPicture = null;  // User has already been asked if they want to delete the picture; don't ask again
       }
 
-      QueriesTabController.class.cast(HyperTab.getHyperTab(queryTab)).queryViews.forEach(qv ->
+      QueriesTabController.class.cast(getHyperTab(queryTab)).queryViews.forEach(qv ->
         qv.resultsTable.getTV().getItems().removeIf(row -> row.getRecord() == record));
 
       int ndx = favorites.indexOfRecord(record);
@@ -506,18 +508,20 @@ public final class MainController
 
     tfRecord.setOnAction(event ->
     {
-      if ((activeTab() == treeTab) || (activeTab() == queryTab)) return;
+      if ((activeTabEnum() == treeTab) || (activeTabEnum() == queryTab)) return;
       if (activeRecord() == null)
       {
         tfRecord.setText("");
         return;
       }
 
-      int curRecordNdx = db.records(activeType()).getKeyNdxByID(activeRecord().getID()),
+      HDT_RecordType type = activeType();
+
+      int curRecordNdx = db.records(type).getKeyNdxByID(activeRecord().getID()),
           newRecordNdx = parseInt(tfRecord.getText(), 0) - 1;
 
-      if ((newRecordNdx != curRecordNdx) && (newRecordNdx >= 0) && (newRecordNdx < db.records(activeType()).size()))
-        goToRecord(db.records(activeType()).getByKeyNdx(newRecordNdx), true);
+      if ((newRecordNdx != curRecordNdx) && (newRecordNdx >= 0) && (newRecordNdx < db.records(type).size()))
+        goToRecord(db.records(type).getByKeyNdx(newRecordNdx), true);
       else
         tfRecord.setText("");
     });
@@ -528,7 +532,7 @@ public final class MainController
     {
       PreviewSource src = determinePreviewContext();
 
-      if (activeTab() == TabEnum.miscFileTab)
+      if (activeTabEnum() == miscFileTab)
       {
         HDT_MiscFile miscFile = (HDT_MiscFile) activeRecord();
 
@@ -545,7 +549,7 @@ public final class MainController
 
     tfID.setOnAction(event ->
     {
-      if ((activeTab() == treeTab) || (activeTab() == queryTab)) return;
+      if ((activeTabEnum() == treeTab) || (activeTabEnum() == queryTab)) return;
 
       HDT_Base record = activeRecord();
       if (record == null)
@@ -608,7 +612,7 @@ public final class MainController
   {
     if (primaryStage().isFocused())
     {
-      switch (activeTab())
+      switch (activeTabEnum())
       {
         case personTab : return pvsPersonTab;
         case workTab   : return pvsWorkTab;
@@ -649,7 +653,7 @@ public final class MainController
 
   public void openPreviewWindow(PreviewSource src)
   {
-    if (App.jxBrowserDisabled) return;
+    if (jxBrowserDisabled) return;
 
     if (src != null)
       previewWindow.switchTo(src);
@@ -723,7 +727,7 @@ public final class MainController
 
     hideFindTable();
 
-    currentTab().findWithinDesc(selectorTF.getText());
+    activeTab().findWithinDesc(selectorTF.getText());
   }
 
 //---------------------------------------------------------------------------
@@ -741,14 +745,12 @@ public final class MainController
       return;
     }
 
-    TabEnum curTab = activeTab();
+    TabEnum tabEnum = activeTabEnum();
 
-    if (curTab == queryTab)
-    {
+    if (tabEnum == queryTab)
       curQV.resultsTable.dblClick(curQV.resultsTable.getTV().getSelectionModel().getSelectedItem());
-      return;
-    }
-    else if (curTab != treeTab) return;
+
+    if (tabEnum != treeTab) return;
 
     if (fromMenu)
     {
@@ -829,7 +831,7 @@ public final class MainController
   {
     HDT_RecordType type = selectorType();
     String query = selectorTF.getText();
-    boolean backClick = activeTab() != queryTab;
+    boolean backClick = activeTabEnum() != queryTab;
 
     lblStatus.setText("");
 
@@ -860,7 +862,7 @@ public final class MainController
   //
   private void discardLastQuery(boolean backClick)
   {
-    QueriesTabController.class.cast(HyperTab.getHyperTab(queryTab)).closeCurrentView();
+    QueriesTabController.class.cast(getHyperTab(queryTab)).closeCurrentView();
 
     if (backClick) btnBackClick();
   }
@@ -894,7 +896,7 @@ public final class MainController
         saveAllToDisk(false, false, false);
       }
 
-      HyperTab.getHyperTabs().forEach(HyperTab::clear);
+      forEachHyperTab(HyperTab::clear);
 
       folderTreeWatcher.stop();
 
@@ -907,14 +909,11 @@ public final class MainController
 
     closeWindows(true);
 
-    if (JIntellitype.isJIntellitypeSupported())
-      JIntellitype.getInstance().cleanUp();
-
     Stage stage = primaryStage();
 
     if (savePrefs)
     {
-      getHyperTabs().forEach(HyperTab::getDividerPositions);
+      forEachHyperTab(HyperTab::getDividerPositions);
       fileManagerDlg.getDividerPositions();
       bibManagerDlg.getDividerPositions();
 
@@ -973,7 +972,16 @@ public final class MainController
     if (browserCoreInitialized)
       Platform.runLater(previewWindow::cleanup); // This eventually closes the application main window
     else
+    {
       stage.close();
+
+      if (JIntellitype.isJIntellitypeSupported())
+        //JIntellitype.getInstance().cleanUp();   // This causes the VM to crash in Java 11
+        System.exit(0);
+      
+      if (Environment.isMac())
+        Platform.exit();
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -1006,25 +1014,14 @@ public final class MainController
 
     apStatus.setDisable(false);
 
-    getHyperTabs().forEach(hyperTab -> hyperTab.enable(enabled));
+    forEachHyperTab(hyperTab -> hyperTab.enable(enabled));
 
-    mnuNewDatabase      .setDisable(disabled);
-    mnuCloseDatabase    .setDisable(disabled);
-    mnuExitNoSave       .setDisable(disabled);
-    mnuChangeID         .setDisable(disabled);
-    mnuNewField         .setDisable(disabled);
-    mnuNewCountry       .setDisable(disabled);
-    mnuNewRank          .setDisable(disabled);
-    mnuNewPersonStatus  .setDisable(disabled);
-    mnuSaveReloadAll    .setDisable(disabled);
-    mnuRevertToDiskCopy .setDisable(disabled);
-    mnuAddToQueryResults.setDisable(disabled);
-    btnFileMgr          .setDisable(disabled);
-    btnBibMgr           .setDisable(disabled);
-    btnPreviewWindow    .setDisable(disabled);
-    btnMentions         .setDisable(disabled);
-    btnAdvancedSearch   .setDisable(disabled);
-    btnSaveAll          .setDisable(disabled);
+    List.of(mnuNewDatabase, mnuCloseDatabase,   mnuExitNoSave,    mnuChangeID,         mnuNewField, mnuNewCountry,
+            mnuNewRank,     mnuNewPersonStatus, mnuSaveReloadAll, mnuRevertToDiskCopy, mnuAddToQueryResults)
+      .forEach(mnu -> mnu.setDisable(disabled));
+
+    List.of(btnFileMgr, btnBibMgr, btnPreviewWindow, btnMentions, btnAdvancedSearch, btnSaveAll)
+      .forEach(btn -> btn.setDisable(disabled));
 
     if (disabled)
       getTree().clear();
@@ -1064,7 +1061,7 @@ public final class MainController
 
     copyRegionLayout(cbGoTo, cbResultGoTo);
 
-    QueriesTabController queriesTab = HyperTab.getHyperTab(queryTab);
+    QueriesTabController queriesTab = getHyperTab(queryTab);
     queriesTab.setCB(cbResultGoTo);
 
     cbResultGoTo.setConverter(new StringConverter<ResultsRow>()
@@ -1090,19 +1087,20 @@ public final class MainController
   private void updateDatesTooltip(HDT_Base record)
   {
     if (record == null)
-      ttDates.setText("No dates to show.");
-    else
     {
-      try
-      {
-        ttDates.setText("Created: " + dateTimeToUserReadableStr(record.getCreationDate()) +
-                        "\nModified: " + dateTimeToUserReadableStr(record.getModifiedDate()) +
-                        "\nAccessed: " + dateTimeToUserReadableStr(record.getViewDate()));
-      }
-      catch(Exception e)
-      {
-        ttDates.setText("No dates to show.");
-      }
+      ttDates.setText("No dates to show.");
+      return;
+    }
+
+    try
+    {
+      ttDates.setText("Created: "    + dateTimeToUserReadableStr(record.getCreationDate()) +
+                      "\nModified: " + dateTimeToUserReadableStr(record.getModifiedDate()) +
+                      "\nAccessed: " + dateTimeToUserReadableStr(record.getViewDate()));
+    }
+    catch(Exception e)
+    {
+      ttDates.setText("No dates to show.");
     }
   }
 
@@ -1155,27 +1153,15 @@ public final class MainController
 
     if (loadDataFromDisk())
     {
-      viewSequence.refresh();
+      viewSequence.refreshAll();
 
-      HyperTab.getHyperTabs().forEach(this::refreshTab);
+      forEachHyperTab(HyperTab::refresh);
 
-      if (activeTab() == queryTab)
-        HyperTab.getHyperTab(queryTab).clear();
+      if (activeTabEnum() == queryTab)
+        activeTab().clear();
 
       update();
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private <HDT_RT extends HDT_Base, HDT_CT extends HDT_Base> void refreshTab(HyperTab<HDT_RT, HDT_CT> hyperTab)
-  {
-    nullSwitch(hyperTab.getView(), view ->
-    {
-      view.refresh();
-      nullSwitch(view.getViewRecord(), hyperTab::setRecord);
-    });
   }
 
 //---------------------------------------------------------------------------
@@ -1282,25 +1268,6 @@ public final class MainController
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void clearAllTabsAndViews()
-  {
-    HyperTab.getHyperTabs().forEach(this::clearTab);
-
-    previewWindow.clearAll();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private <HDT_RT extends HDT_Base, HDT_CT extends HDT_Base> void clearTab(HyperTab<HDT_RT, HDT_CT> hyperTab)
-  {
-    HyperTab.setTabView(new HyperView<HDT_CT>(hyperTab.getTabEnum(), null));
-    hyperTab.clear();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @FXML public void btnSaveClick()
   {
     if (btnSave.getText().equals(TREE_SELECT_BTN_CAPTION))
@@ -1333,8 +1300,10 @@ public final class MainController
 
         try { person.setSearchKey(searchKey.toString()); } catch (SearchKeyException e) { noOp(); }
       }
+      else if (type == hdtWork)
+        record.setName(HDT_Work.fixCase(name.trim()));
       else
-        record.setName(titleCase(name).trim());
+        record.setName(titleCase(name.trim()));
     }
 
     if (type == hdtTerm)
@@ -1362,7 +1331,7 @@ public final class MainController
     {
       case hdtGlossary :
 
-        if (activeTab() != treeTab)
+        if (activeTabEnum() != treeTab)
           return falseWithErrorMessage("Glossary records can only be deleted from the tree tab.");
 
         HDT_Glossary glossary = (HDT_Glossary) record;
@@ -1389,14 +1358,18 @@ public final class MainController
       else
         msg = "Are you sure you want to delete this record?";
 
+      String name = record.getCBText();
+      if (ultraTrim(name).length() == 0)
+        name = activeTab().getRecordName();
+
       if (confirmDialog("Type: " + db.getTypeName(type) + "\n" +
-                        "Name: " + record.getCBText() + "\n" +
+                        "Name: " + name + "\n" +
                         "ID: " + record.getID() + "\n\n" + msg) == false) return false;
     }
 
     db.deleteRecord(type, record.getID());
 
-    viewSequence.activateCurrentSlot();
+    viewSequence.activateCurrentView();
     fileManagerDlg.setNeedRefresh();
     return true;
   }
@@ -1615,7 +1588,7 @@ public final class MainController
 
     mnuFavorites.setDisable(false);
 
-    if ((activeTab() != treeTab) && (activeTab() != queryTab) && viewRecord() != null)
+    if ((activeTabEnum() != treeTab) && (activeTabEnum() != queryTab) && (viewRecord() != null))
     {
       mnuToggleFavorite.setDisable(false);
 
@@ -1631,7 +1604,7 @@ public final class MainController
 
   @FXML private void mnuToggleFavoriteClick()
   {
-    if ((activeTab() == treeTab) || (activeTab() == queryTab)) return;
+    if ((activeTabEnum() == treeTab) || (activeTabEnum() == queryTab)) return;
     if (cantSaveRecord(true)) return;
 
     HDT_Base record = viewRecord();
@@ -1704,7 +1677,7 @@ public final class MainController
 
   private void searchForMentions(HDT_Base record, boolean descOnly)
   {
-    boolean noneFound = false, didSearch = false, backClick = activeTab() != queryTab;
+    boolean noneFound = false, didSearch = false, backClick = activeTabEnum() != queryTab;
 
     if (record == null) return;
 
@@ -1751,7 +1724,7 @@ public final class MainController
 
     HDT_Base record = null;
 
-    if (activeTab() == termTab)
+    if (activeTabEnum() == termTab)
     {
       HDT_Term term = (HDT_Term) activeRecord();
       record = viewRecord();
@@ -1805,7 +1778,7 @@ public final class MainController
     HDT_Base viewRecord = viewRecord();
 
     if (revertToDiskCopy(record) && (viewRecord != null) && (viewRecord != record))
-      if ((activeTab() != treeTab) && (activeTab() != queryTab))
+      if ((activeTabEnum() != treeTab) && (activeTabEnum() != queryTab))
         revertToDiskCopy(viewRecord);
 
     update();
@@ -1874,28 +1847,25 @@ public final class MainController
       return;
     }
 
-    HyperTab.setTabView(new HyperView<>(personTab     , db.persons     .getByID(db.prefs.getInt(PREF_KEY_PERSON_ID     , -1))));
-    HyperTab.setTabView(new HyperView<>(institutionTab, db.institutions.getByID(db.prefs.getInt(PREF_KEY_INSTITUTION_ID, -1))));
-    HyperTab.setTabView(new HyperView<>(debateTab     , db.debates     .getByID(db.prefs.getInt(PREF_KEY_DEBATE_ID     , -1))));
-    HyperTab.setTabView(new HyperView<>(positionTab   , db.positions   .getByID(db.prefs.getInt(PREF_KEY_POSITION_ID   , -1))));
-    HyperTab.setTabView(new HyperView<>(argumentTab   , db.arguments   .getByID(db.prefs.getInt(PREF_KEY_ARGUMENT_ID   , -1))));
-    HyperTab.setTabView(new HyperView<>(workTab       , db.works       .getByID(db.prefs.getInt(PREF_KEY_WORK_ID       , -1))));
+    setTabView(new HyperView<>(personTab     , db.persons     .getByID(db.prefs.getInt(PREF_KEY_PERSON_ID     , -1))));
+    setTabView(new HyperView<>(institutionTab, db.institutions.getByID(db.prefs.getInt(PREF_KEY_INSTITUTION_ID, -1))));
+    setTabView(new HyperView<>(debateTab     , db.debates     .getByID(db.prefs.getInt(PREF_KEY_DEBATE_ID     , -1))));
+    setTabView(new HyperView<>(positionTab   , db.positions   .getByID(db.prefs.getInt(PREF_KEY_POSITION_ID   , -1))));
+    setTabView(new HyperView<>(argumentTab   , db.arguments   .getByID(db.prefs.getInt(PREF_KEY_ARGUMENT_ID   , -1))));
+    setTabView(new HyperView<>(workTab       , db.works       .getByID(db.prefs.getInt(PREF_KEY_WORK_ID       , -1))));
 
-    HDT_Term term = db.terms.getByID(db.prefs.getInt(PREF_KEY_TERM_ID, -1));
-    HDT_Concept concept = term != null ? term.concepts.get(0) : null;
-    HyperTab.setTabView(new HyperView<>(termTab,        concept));
+    HDT_Concept concept = nullSwitch(db.terms.getByID(db.prefs.getInt(PREF_KEY_TERM_ID, -1)), null, term -> term.concepts.get(0));
 
-    HyperTab.setTabView(new HyperView<>(miscFileTab   , db.miscFiles   .getByID(db.prefs.getInt(PREF_KEY_FILE_ID       , -1))));
-    HyperTab.setTabView(new HyperView<>(noteTab       , db.notes       .getByID(db.prefs.getInt(PREF_KEY_NOTE_ID       , -1))));
-    HyperTab.setTabView(new HyperView<>(queryTab      , null));
-    HyperTab.setTabView(new HyperView<>(treeTab       , null));
+    setTabView(new HyperView<>(termTab,        concept));
+
+    setTabView(new HyperView<>(miscFileTab   , db.miscFiles   .getByID(db.prefs.getInt(PREF_KEY_FILE_ID       , -1))));
+    setTabView(new HyperView<>(noteTab       , db.notes       .getByID(db.prefs.getInt(PREF_KEY_NOTE_ID       , -1))));
+    setTabView(new HyperView<>(queryTab      , null));
+    setTabView(new HyperView<>(treeTab       , null));
 
     enableAll(db.isLoaded());
 
-    TabEnum tabEnum = HyperTab.getTabEnumByRecordType(db.parseTypeTagStr(db.prefs.get(PREF_KEY_RECORD_TYPE, "")));
-
-    viewSequence.init();
-    viewSequence.forwardToNewSlot(tabEnum);
+    viewSequence.init(getTabEnumByRecordType(db.parseTypeTagStr(db.prefs.get(PREF_KEY_RECORD_TYPE, ""))));
   }
 
 //---------------------------------------------------------------------------
@@ -1972,12 +1942,12 @@ public final class MainController
 
   public boolean cantSaveRecord(boolean showMessage)
   {
-    if ((db.isLoaded() == false) || (activeTab() == queryTab) || (activeTab() == treeTab) || (activeRecord() == null))
+    if ((db.isLoaded() == false) || (activeTabEnum() == queryTab) || (activeTabEnum() == treeTab) || (activeRecord() == null))
       return false;
 
     CommitableWrapper.commitWrapper(primaryStage().getScene().getFocusOwner());
 
-    return currentTab().saveToRecord(showMessage) == false;
+    return activeTab().saveToRecord(showMessage) == false;
   }
 
 //---------------------------------------------------------------------------
@@ -2002,12 +1972,12 @@ public final class MainController
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TabEnum activeTab()                       { return viewSequence.isEmpty() ? personTab : viewSequence.curTabEnum(); }
+  public TabEnum activeTabEnum()                  { return viewSequence.isEmpty() ? personTab : viewSequence.curTabEnum(); }
   public HyperTab<? extends HDT_Base,
-                  ? extends HDT_Base> currentTab() { return viewSequence.isEmpty() ? null : viewSequence.curHyperTab(); }
-  public HDT_RecordType activeType()               { return viewSequence.isEmpty() ? hdtPerson : viewSequence.curHyperView().getTabRecordType(); }
-  public HDT_Base activeRecord()                   { return viewSequence.isEmpty() ? null : currentTab().activeRecord(); }
-  public HDT_Base viewRecord()                     { return viewSequence.isEmpty() ? null : currentTab().viewRecord(); }
+                  ? extends HDT_Base> activeTab() { return viewSequence.isEmpty() ? null : viewSequence.curHyperTab(); }
+  public HDT_RecordType activeType()              { return viewSequence.isEmpty() ? hdtPerson : viewSequence.curHyperView().getTabRecordType(); }
+  public HDT_Base activeRecord()                  { return viewSequence.isEmpty() ? null : activeTab().activeRecord(); }
+  public HDT_Base viewRecord()                    { return viewSequence.isEmpty() ? null : activeTab().viewRecord(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -2107,7 +2077,7 @@ public final class MainController
       default : break;
     }
 
-    if (HyperTab.getTabEnumByRecordType(record.getType()) == personTab)
+    if (getTabEnumByRecordType(record.getType()) == personTab)
       if (record.getType() != hdtPerson) return;
 
     if (windows.getOutermostStage() != primaryStage())
@@ -2115,10 +2085,10 @@ public final class MainController
 
     if (save && cantSaveRecord(true)) return;
 
-    viewSequence.forwardToNewSlotAndView(HyperViewSequence.createViewForRecord(record));
+    viewSequence.forwardToNewSlotAndView(new HyperView<>(record));
 
     if (inv != null)
-      PersonTabController.class.cast(currentTab()).showInvestigation(inv.getID());
+      PersonTabController.class.cast(activeTab()).showInvestigation(inv.getID());
   }
 
 //---------------------------------------------------------------------------
@@ -2134,10 +2104,14 @@ public final class MainController
       return;
     }
 
-    switch (activeTab())
+    TabEnum tabEnum = activeTabEnum();
+    HyperTab<? extends HDT_Base, ? extends HDT_Base> tab = activeTab();
+    HDT_Base record = activeRecord();
+
+    switch (tabEnum)
     {
       case queryTab : case treeTab :
-        HyperTab.getHyperTab(activeTab()).update();
+        tab.update();
         updateBottomPanel(true);
         return;
 
@@ -2145,15 +2119,15 @@ public final class MainController
         break;
     }
 
-    int count = currentTab().getRecordCount();
+    int count = tab.getRecordCount();
 
     treeSubjRecord = null;
 
     if (count > 0)
     {
-      if (HDT_Record.isEmpty(activeRecord()))
+      if (HDT_Record.isEmpty(record))
       {
-        int ndx = HyperTab.getHyperTab(activeTab()).getView().getTabRecordKeyNdx();
+        int ndx = tab.getView().getTabRecordKeyNdx();
 
         if (ndx >= count)
           ndx = count - 1;
@@ -2161,35 +2135,29 @@ public final class MainController
         if (ndx < 0)
           ndx = 0;
 
-        if (activeTab() == termTab)
-          viewSequence.updateCurrentView(HyperViewSequence.createViewForRecord(termTab, db.terms.getByKeyNdx(ndx).concepts.get(0)));
+        record = db.records(activeType()).getByKeyNdx(ndx);
+
+        if (tabEnum == termTab)
+          viewSequence.updateCurrentView(new HyperView<>(termTab, HDT_Term.class.cast(record).concepts.get(0)));
         else
-        {
-          HDT_Base record = db.records(activeType()).getByKeyNdx(ndx);
-          viewSequence.updateCurrentView(HyperViewSequence.createViewForRecord(activeTab(), record));
-        }
+          viewSequence.updateCurrentView(new HyperView<>(tabEnum, record));
       }
     }
     else
-      viewSequence.updateCurrentView(HyperViewSequence.createViewForRecord(activeTab(), null));
+      viewSequence.updateCurrentView(new HyperView<>(tabEnum, null));
 
-    if (currentTab() == null)
-      messageDialog("Internal error #38273", mtError);
-    else
+    updateBottomPanel(true);
+    tab.clear();
+
+    if (record == null)
     {
-      updateBottomPanel(true);
-      currentTab().clear();
-
-      if (activeRecord() == null)
-      {
-        currentTab().enable(false);
-        return;
-      }
-
-      currentTab().enable(true);
-      if (currentTab().update())
-        activeRecord().viewNow();
+      tab.enable(false);
+      return;
     }
+
+    tab.enable(true);
+    if (tab.update())
+      record.viewNow();
   }
 
 //---------------------------------------------------------------------------
@@ -2205,10 +2173,10 @@ public final class MainController
   {
     TabEnum tabEnum = selectorTabEnum();
 
-    if (EnumSet.of(listTab, omniTab).contains(selectorTabEnum()))
+    if ((tabEnum == listTab) || (tabEnum == omniTab))
       return activeType();
 
-    return HyperTab.getRecordTypeByTabEnum(tabEnum);
+    return getRecordTypeByTabEnum(tabEnum);
   }
 
 //---------------------------------------------------------------------------
@@ -2216,25 +2184,25 @@ public final class MainController
 
   private void updateSelectorTab(boolean setFocus)
   {
-    TabEnum tabEnum = selectorTabEnum();
-    HyperTab<? extends HDT_Base, ? extends HDT_Base> hyperTab = nullSwitch(HyperTab.getHyperTab(tabEnum), currentTab());
+    TabEnum selectorTabEnum = selectorTabEnum(), activeTabEnum = activeTabEnum();
+    HyperTab<? extends HDT_Base, ? extends HDT_Base> hyperTab = nullSwitch(getHyperTab(selectorTabEnum), activeTab());
     selectorTF = null;
 
     int count = hyperTab == null ? 0 : hyperTab.getRecordCount();
 
-    mnuRecordSelect.setVisible(true);
-    mnuFindNextInName.setVisible(false);
-    mnuFindNextAll.setVisible(false);
-    mnuFindPreviousAll.setVisible(false);
-    mnuFindWithinName.setVisible(false);
+    mnuRecordSelect      .setVisible(true);
+    mnuFindNextInName    .setVisible(false);
+    mnuFindNextAll       .setVisible(false);
+    mnuFindPreviousAll   .setVisible(false);
+    mnuFindWithinName    .setVisible(false);
     mnuFindWithinAnyField.setVisible(false);
     mnuFindPreviousInName.setVisible(false);
 
-    switch (tabEnum)
+    switch (selectorTabEnum)
     {
       case listTab :
 
-        if (activeTab() == queryTab)
+        if (activeTabEnum == queryTab)
         {
           if (cbResultGoTo == null) initResultCB();
 
@@ -2242,12 +2210,12 @@ public final class MainController
           selectorTF = cbResultGoTo.getEditor();
         }
 
-        if (activeTab() == treeTab)
+        if (activeTabEnum == treeTab)
         {
-          mnuFindNextAll.setVisible(true);
-          mnuFindPreviousAll.setVisible(true);
+          mnuFindNextAll       .setVisible(true);
+          mnuFindPreviousAll   .setVisible(true);
           mnuFindPreviousInName.setVisible(true);
-          mnuFindNextInName.setVisible(true);
+          mnuFindNextInName    .setVisible(true);
 
           copyRegionLayout(cbGoTo, cbTreeGoTo);
           apListGoTo.getChildren().setAll(cbTreeGoTo);
@@ -2260,13 +2228,13 @@ public final class MainController
 
       case omniTab :
 
-        mnuRecordSelect.setVisible(false);
+        mnuRecordSelect      .setVisible(false);
         mnuFindWithinAnyField.setVisible(true);
-        mnuFindWithinName.setVisible(true);
+        mnuFindWithinName    .setVisible(true);
 
         selectorTF = tfOmniGoTo;
 
-        btnCreateNew.setDisable((activeTab() == queryTab) || (activeTab() == treeTab));
+        btnCreateNew.setDisable((activeTabEnum == queryTab) || (activeTabEnum == treeTab));
 
         break;
 
@@ -2326,12 +2294,12 @@ public final class MainController
     ttDates.setText("No dates to show.");
     if (db.isLoaded() == false) return;
 
-    HyperTab<? extends HDT_Base, ? extends HDT_Base> curTab = currentTab();
+    HyperTab<? extends HDT_Base, ? extends HDT_Base> curTab = activeTab();
     if (curTab == null) return;
 
     int count = curTab.getRecordCount(), ndx = curTab.getRecordNdx();
     HDT_Base activeRec = activeRecord();
-    TabEnum activeTabEnum = activeTab();
+    TabEnum activeTabEnum = activeTabEnum();
 
     attachOrphansToRoots();
 
@@ -2425,7 +2393,7 @@ public final class MainController
   {
     if (cantSaveRecord(true)) return false;
 
-    QueriesTabController queriesTab = (QueriesTabController) HyperTab.getHyperTab(queryTab);
+    QueriesTabController queriesTab = (QueriesTabController) getHyperTab(queryTab);
 
     viewSequence.forwardToNewSlotAndView(new HyperView<>(queryTab, queriesTab.activeRecord(), queriesTab.getMainTextInfo()));
 
@@ -2465,7 +2433,7 @@ public final class MainController
 
   private void incDecClick(boolean increment)
   {
-    if (activeTab() == treeTab)
+    if (activeTabEnum() == treeTab)
     {
       getTree().selectNextInstance(increment);
       return;
@@ -2696,7 +2664,7 @@ public final class MainController
 
       goToRecord(work, false);
 
-      WorkTabController workCtrlr = HyperTab.getHyperTab(workTab);
+      WorkTabController workCtrlr = getHyperTab(workTab);
 
       if (workCtrlr.showWorkDialog(null, filePath) == false)
         deleteCurrentRecord(false);

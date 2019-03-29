@@ -62,7 +62,6 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   private boolean searchingDown = true;
   private boolean searchingNameOnly = false;
   private TreeRow draggingRow = null;
-  private final DragNDropHoverHelper<TreeRow> ddHoverHelper;
   public final TreeModel<TreeRow> debateTree, termTree, labelTree, noteTree;
 
 //---------------------------------------------------------------------------
@@ -84,11 +83,12 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   public TreeWrapper(TreeTableView<TreeRow> ttv, boolean hasTerms, ComboBox<TreeRow> comboBox, boolean limitedControl)
   {
+    super(ttv);
+
     this.ttv = ttv;
     this.hasTerms = hasTerms;
 
     tcb = new TreeCB(comboBox, this);
-    ddHoverHelper = new DragNDropHoverHelper<>(ttv);
 
     debateTree = new TreeModel<>(this, tcb);
     noteTree = new TreeModel<>(this, tcb);
@@ -121,7 +121,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     {
       TreeTableRow<TreeRow> row = new TreeTableRow<>();
 
-      DragNDropHoverHelper.setupHandlers(row, this);
+      setupDragHandlers(row);
 
       row.itemProperty().addListener((o, ov, nv) -> row.setContextMenu(nullSwitch(nv, null, this::createContextMenu)));
 
@@ -345,7 +345,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   @Override public boolean acceptDrag(TreeRow targetRow, DragEvent dragEvent, TreeItem<TreeRow> treeItem)
   {
-    ddHoverHelper.scroll(dragEvent);
+    scroll(dragEvent);
 
     HDT_Base source = nullSwitch(draggingRow, null, TreeRow::getRecord),
              target = nullSwitch(targetRow, null, TreeRow::getRecord);
@@ -357,7 +357,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
         nullSwitch(parent.getValue(), true, value -> value.getRecord() == null)))
       return false;
 
-    ddHoverHelper.expand(treeItem);
+    expand(treeItem);
 
     if (targetRow.getTreeModel().hasParentChildRelation(target.getType(), source.getType()) == false)
       return false;
@@ -370,7 +370,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   @Override public void dragDroppedOnto(TreeRow targetRow)
   {
-    ddHoverHelper.reset();
+    dragReset();
 
     HDT_Base subjRecord, objRecord,
              oldParent = draggingRow.treeItem.getParent().getValue().getRecord(),
@@ -583,7 +583,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   @Override public void dragDone()
   {
     draggingRow = null;
-    ddHoverHelper.reset();
+    dragReset();
   }
 
 //---------------------------------------------------------------------------

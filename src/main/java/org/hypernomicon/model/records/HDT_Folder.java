@@ -29,7 +29,6 @@ import static org.hypernomicon.Const.*;
 import java.io.IOException;
 import java.util.List;
 
-import org.hypernomicon.App;
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.HyperPath;
@@ -104,7 +103,7 @@ public class HDT_Folder extends HDT_Record implements HDT_RecordWithPath
     {
       if (srcFilePath.anyOpenFilesInDir())
       {
-        App.folderTreeWatcher.createNewWatcherAndStart();
+        folderTreeWatcher.createNewWatcherAndStart();
         return false;
       }
 
@@ -161,7 +160,7 @@ public class HDT_Folder extends HDT_Record implements HDT_RecordWithPath
     {
       if (filePath.anyOpenFilesInDir())
       {
-        App.folderTreeWatcher.createNewWatcherAndStart();
+        folderTreeWatcher.createNewWatcherAndStart();
         return false;
       }
 

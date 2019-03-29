@@ -30,20 +30,16 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
-import org.hypernomicon.App;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.fileManager.FileManager.MarkedRowInfo;
-import org.hypernomicon.view.wrappers.DragNDropHoverHelper;
+import org.hypernomicon.view.wrappers.DragNDropContainer;
 import org.hypernomicon.view.wrappers.HyperTable;
 
 import com.google.common.collect.Lists;
-
-import org.hypernomicon.view.wrappers.DragNDropHoverHelper.DragNDropContainer;
-import org.hypernomicon.view.wrappers.HasRightClickableRows;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -57,7 +53,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.input.DragEvent;
 import javafx.scene.text.Text;
 
-public class FileTable extends HasRightClickableRows<FileRow> implements DragNDropContainer<FileRow>
+public class FileTable extends DragNDropContainer<FileRow>
 {
 
 //---------------------------------------------------------------------------
@@ -87,24 +83,34 @@ public class FileTable extends HasRightClickableRows<FileRow> implements DragNDr
   private final TableView<FileRow> fileTV;
   private final ObservableList<FileRow> rows;
   List<MarkedRowInfo> draggingRows;
-  private final DragNDropHoverHelper<FileRow> ddHoverHelper;
 
   void clear() { rows.clear(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private boolean refreshing = false;
+
   @SuppressWarnings("unchecked") FileTable(TableView<FileRow> fileTV, String prefID)
   {
+    super(fileTV);
+
     this.fileTV = fileTV;
     rows = FXCollections.observableArrayList();
-    ddHoverHelper = new DragNDropHoverHelper<>(fileTV);
 
     if (prefID.length() > 0)
       HyperTable.registerTable(fileTV, prefID, fileManagerDlg);
 
     fileTV.setItems(rows);
     fileTV.setPlaceholder(new Text("This folder is empty."));
+
+    fileTV.setOnSort(event ->
+    {
+      if (refreshing) return;
+      refreshing = true;
+      fileManagerDlg.refresh();
+      refreshing = false;
+    });
 
     fileTV.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
@@ -127,7 +133,7 @@ public class FileTable extends HasRightClickableRows<FileRow> implements DragNDr
 
     nameCol.setCellFactory(col ->
     {
-      TableCell<FileRow, FileRow> cell = new TableCell<FileRow, FileRow>()
+      TableCell<FileRow, FileRow> cell = new TableCell<>()
       {
         @Override public void updateItem(FileRow item, boolean empty)
         {
@@ -254,7 +260,7 @@ public class FileTable extends HasRightClickableRows<FileRow> implements DragNDr
 
   @Override public void startDrag(FileRow fileRow)
   {
-    draggingRows = App.fileManagerDlg.getMarkedRows(fileRow);
+    draggingRows = fileManagerDlg.getMarkedRows(fileRow);
   }
 
 //---------------------------------------------------------------------------
@@ -271,7 +277,7 @@ public class FileTable extends HasRightClickableRows<FileRow> implements DragNDr
   @Override public void dragDone()
   {
     draggingRows = null;
-    ddHoverHelper.reset();
+    dragReset();
   }
 
 //---------------------------------------------------------------------------
@@ -279,13 +285,13 @@ public class FileTable extends HasRightClickableRows<FileRow> implements DragNDr
 
   @Override public boolean acceptDrag(FileRow targetRow, DragEvent dragEvent, TreeItem<FileRow> treeItem)
   {
-    ddHoverHelper.scroll(dragEvent);
+    scroll(dragEvent);
 
     if (draggingRows == null) return false;
     if (targetRow == null)
-      targetRow = App.fileManagerDlg.getFolderRow();
+      targetRow = fileManagerDlg.getFolderRow();
     else if (targetRow.isDirectory() == false)
-      targetRow = App.fileManagerDlg.getFolderRow();
+      targetRow = fileManagerDlg.getFolderRow();
 
     if (targetRow == null) return false;
 
@@ -316,9 +322,9 @@ public class FileTable extends HasRightClickableRows<FileRow> implements DragNDr
 
     boolean copying = (result == mrCopy);
 
-    if (!App.fileManagerDlg.moveCopy(draggingRows, copying, true)) return;
+    if (!fileManagerDlg.moveCopy(draggingRows, copying, true)) return;
 
-    App.fileManagerDlg.paste(targetRow, copying, true);
+    fileManagerDlg.paste(targetRow, copying, true);
   }
 
 //---------------------------------------------------------------------------

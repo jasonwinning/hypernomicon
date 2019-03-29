@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.model;
+package org.hypernomicon.model.items;
 
 import static org.hypernomicon.util.Util.*;
 
@@ -30,7 +30,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final PersonName EMPTY = new PersonName("", "");
+  static final PersonName EMPTY = new PersonName("", "");
 
   private final String first, last;
 
@@ -129,23 +129,17 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
   public PersonName toLowerCase() { return new PersonName(first.toLowerCase(), last.toLowerCase()); }
   public String getFull()         { return String.valueOf(first + " " + last).trim(); }
   public String getSingle()       { return getLast().length() > 0 ? getLast() : getFirst(); }
-  public PersonName toEngChar()   { return new PersonName(convertToEnglishChars(first), convertToEnglishChars(last)); }
+  PersonName toEngChar()          { return new PersonName(convertToEnglishChars(first), convertToEnglishChars(last)); }
 
   @Override public PersonName clone()
   { try { return (PersonName) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }}
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public int compareTo(PersonName o)
-  {
-    return getSortKey().compareTo(o.getSortKey());
-  }
+  @Override public int compareTo(PersonName o) { return getSortKey().compareTo(o.getSortKey()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private String getSortKey()
+  String getSortKey()
   {
     if ((last.length() == 0) || (first.length() == 0))
       return last + first;
@@ -202,7 +196,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public String getBibName()
+  String getBibName()
   {
     List<String> initialList = new ArrayList<>();
     String nameStr, firstName = getFirst();
@@ -235,16 +229,11 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
       }
     }
 
-    if (initialList.size() == 0)
-    {
-      if (getLast().length() > 0)
-        return getLast();
-      else
-        return getFirst();
-    }
-
     if (getLast().length() == 0)
       return getFirst();
+
+    if (initialList.size() == 0)
+      return getLast();
 
     String bibName = getLast() + ", ";
 

@@ -66,6 +66,7 @@ public class InstitutionTabController extends HyperTab<HDT_Institution, HDT_Inst
   @FXML private Hyperlink hlGoogleMaps;
   @FXML private SplitPane spHoriz;
 
+  @Override public String getRecordName()                       { return tfName.getText(); }
   @Override HDT_RecordType getType()                            { return hdtInstitution; }
   @Override public void enable(boolean enabled)                 { ui.tabInstitutions.getContent().setDisable(enabled == false); }
   @Override void focusOnSearchKey()                             { return; }

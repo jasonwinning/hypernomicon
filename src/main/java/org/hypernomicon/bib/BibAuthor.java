@@ -18,8 +18,8 @@
 package org.hypernomicon.bib;
 
 import org.hypernomicon.bib.BibData.AuthorType;
-import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Person;
 
 import static org.hypernomicon.util.Util.*;

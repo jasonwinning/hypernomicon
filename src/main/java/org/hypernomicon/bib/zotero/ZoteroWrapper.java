@@ -30,7 +30,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -38,7 +37,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.apache.http.Header;
+import static java.nio.charset.StandardCharsets.*;
+
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
@@ -46,7 +47,6 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.StringEntity;
 import org.json.simple.parser.ParseException;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.EnumHashBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -60,9 +60,9 @@ import org.hypernomicon.bib.BibData.EntryType;
 import org.hypernomicon.bib.BibEntryRow;
 import org.hypernomicon.bib.lib.LibraryWrapper;
 import org.hypernomicon.bib.zotero.ZoteroEntity.ZoteroEntityType;
-import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.JsonHttpClient;
 
@@ -262,11 +262,10 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unused")
   private JsonArray doHttpRequest(String url, boolean isPost, String postJsonData) throws IOException, UnsupportedOperationException, ParseException, TerminateTaskException
   {
-    String apiVersion = "";
-    int totalResults = -1;
+    StringBuilder apiVersion = new StringBuilder();
+    MutableInt totalResults = new MutableInt(-1);
     JsonArray jsonArray = null;
     RequestBuilder rb;
 
@@ -287,7 +286,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     if (isPost)
       rb = RequestBuilder.post()
           .setHeader("Zotero-Write-Token", generateWriteToken())
-          .setEntity(new StringEntity(postJsonData, Charsets.UTF_8));
+          .setEntity(new StringEntity(postJsonData, UTF_8));
     else
       rb = RequestBuilder.get();
 
@@ -316,14 +315,14 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       throw e;
     }
 
-    if (jsonClient.getHeaders() != null) for (Header header : jsonClient.getHeaders())
+    nullSwitch(jsonClient.getHeaders(), headers -> headers.forEach(header ->
     {
       int sec;
 
       switch (header.getName())
       {
-        case "Zotero-API-Version"    : apiVersion = header.getValue(); break;
-        case "Total-Results"         : totalResults = parseInt(header.getValue(), -1); break;
+        case "Zotero-API-Version"    : assignSB(apiVersion, header.getValue()); break;
+        case "Total-Results"         : totalResults.setValue(parseInt(header.getValue(), -1)); break;
         case "Last-Modified-Version" : onlineLibVersion = parseInt(header.getValue(), -1); break;
         case "Backoff":
 
@@ -341,7 +340,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
           break;
       }
-    }
+    }));
 
     request = null;
     return jsonArray;
@@ -870,7 +869,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
     try (InputStream in = new FileInputStream(filePath.toFile()))
     {
-      jMainObj = parseJsonObj(new InputStreamReader(in, StandardCharsets.UTF_8));
+      jMainObj = parseJsonObj(new InputStreamReader(in, UTF_8));
     }
     catch (FileNotFoundException e) { noOp(); }
 

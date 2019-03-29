@@ -26,6 +26,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.input.KeyCode;
+
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
 class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements CommitableWrapper
@@ -53,18 +54,18 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
 
   @Override public void startEdit()
   {
-    if (!isEmpty())
-    {
-      if (canEditIfEmpty.isFalse())
-        if (table.getDataRowCount() <= getTableRow().getIndex()) return;
+    if (isEmpty()) return;
 
-      super.startEdit();
-      createTextField();
-      setText(null);
-      setGraphic(textField);
-      safeFocus(textField);
-      textField.selectAll();
-    }
+    if (canEditIfEmpty.isFalse())
+      if (table.getDataRowCount() <= getTableRow().getIndex()) return;
+
+    super.startEdit();
+    createTextField();
+    setText(null);
+    setGraphic(textField);
+    safeFocus(textField);
+    textField.selectAll();
+    table.doExternalRefresh();
   }
 
 //---------------------------------------------------------------------------
@@ -104,9 +105,7 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
     super.cancelEdit();
     setGraphic(null);
 
-    HyperTableRow row = (HyperTableRow) getTableRow().getItem();
-
-    row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), newValue);
+    getTableRow().getItem().setCellValue(getTableView().getColumns().indexOf(getTableColumn()), newValue);
   }
 
 //---------------------------------------------------------------------------

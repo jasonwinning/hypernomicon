@@ -21,6 +21,7 @@ import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 
@@ -157,7 +158,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
         cellButton.setGraphic(null);
 
-        setOnAction((row, colNdx) -> ui.currentTab().newClick(ht.getTypeByCol(colNdx), row));
+        setOnAction((row, colNdx) -> ui.activeTab().newClick(ht.getTypeByCol(colNdx), row));
 
         break;
 
@@ -195,8 +196,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
     if (colNdxOfTarget < 0) return;
 
-    if (getTableRow() == null) return;
-    HyperTableRow row = (HyperTableRow)getTableRow().getItem();
+    HyperTableRow row = nullSwitch(getTableRow(), null, TableRow::getItem);
     if (row == null) return;
 
     if (row.getID(ht.getMainColNdx()) > 0) // That's not a typo, it should be the main column ndx for the table, not the target ndx

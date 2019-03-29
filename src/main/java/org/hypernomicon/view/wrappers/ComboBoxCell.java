@@ -88,6 +88,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     safeFocus(cB);
     AutoCompleteCB.scrollToValue(cB);
     cB.show();
+    table.doExternalRefresh();
   }
 
 //---------------------------------------------------------------------------
@@ -98,7 +99,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     super.cancelEdit();
     setGraphic(null);
 
-    HyperTableRow row = (HyperTableRow) getTableRow().getItem();
+    HyperTableRow row = getTableRow().getItem();
     int colNdx = getTableView().getColumns().indexOf(getTableColumn());
 
     if (hCB.somethingWasTyped)
@@ -150,7 +151,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     cB.setPrefHeight(18.0 * displayScale);
     cB.setMaxHeight(18.0 * displayScale);
 
-    HyperTableRow row = (HyperTableRow) getTableRow().getItem();
+    HyperTableRow row = getTableRow().getItem();
 
     if (populator.getValueType() == cvtVaries)
     {
@@ -179,6 +180,8 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
         commitEdit(item);
       }
     });
+
+    cB.selectionModelProperty().addListener((obs, ov, nv) -> table.doExternalRefresh());
   }
 
 //---------------------------------------------------------------------------

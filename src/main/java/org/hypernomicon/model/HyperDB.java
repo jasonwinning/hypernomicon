@@ -18,6 +18,7 @@
 package org.hypernomicon.model;
 
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_Record.HyperDataCategory.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
@@ -59,6 +60,8 @@ import java.util.prefs.InvalidPreferencesFormatException;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
+import static java.nio.charset.StandardCharsets.*;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -83,7 +86,6 @@ import com.google.common.collect.Sets;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
-import org.hypernomicon.App;
 import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.lib.BibCollection;
@@ -941,7 +943,6 @@ public final class HyperDB
       if (startElement.getName().getLocalPart().equals(recordsTag) == false)
         continue;
 
-      @SuppressWarnings("unchecked")
       Iterator<Attribute> attributes = startElement.getAttributes();
 
       while (attributes.hasNext())
@@ -976,7 +977,6 @@ public final class HyperDB
       HDT_RecordType type = hdtNone;
       String sortKeyAttr = "", listName = "", searchKey = "";
 
-      @SuppressWarnings("unchecked")
       Iterator<Attribute> attributes = startElement.getAttributes();
 
       while (attributes.hasNext())
@@ -1042,7 +1042,6 @@ public final class HyperDB
 
   //---------------------------------------------------------------------------
 
-    @SuppressWarnings("unchecked")
     private HDX_Element(StartElement startElement, HDT_RecordState xmlRecord) throws InvalidItemException
     {
       tag = tagToStr.inverse().getOrDefault(startElement.getName().getLocalPart(), tagNone);
@@ -1053,7 +1052,7 @@ public final class HyperDB
       objType = tagToObjType.getOrDefault(tag, hdtNone);
       objID = -1;
 
-      ((Iterator<Attribute>)startElement.getAttributes()).forEachRemaining(attribute ->
+      startElement.getAttributes().forEachRemaining(attribute ->
       {
         switch (attribute.getName().toString())
         {
@@ -1089,7 +1088,7 @@ public final class HyperDB
       if (versionNumber == null)
         throw new HyperDataException("XML record data version number not found.");
       else if (versionNumber.equals(RECORDS_XML_VERSION) == false)
-        throw new HyperDataException("The XML record data is not compatible with this version of " + App.appTitle + ".");
+        throw new HyperDataException("The XML record data is not compatible with this version of " + appTitle + ".");
 
       HDT_RecordState xmlRecord = getNextRecordFromXML(eventReader);
 
@@ -1340,7 +1339,7 @@ public final class HyperDB
     {
       List<String> s;
 
-      try { s = FileUtils.readLines(filePath.toFile(), "UTF-8"); }
+      try { s = FileUtils.readLines(filePath.toFile(), UTF_8); }
       catch (IOException e) { return "whatevervolleyball"; }
 
       if (s.get(0).equals(getComputerName()) == false)

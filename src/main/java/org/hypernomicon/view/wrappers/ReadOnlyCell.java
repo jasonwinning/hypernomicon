@@ -89,9 +89,9 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
     }
     else
     {
-      if ((incremental) && (col.wasMoreButtonClicked() == false))
+      if (incremental && (col.wasMoreButtonClicked() == false))
       {
-        HyperTableRow row = (HyperTableRow) getTableRow().getItem();
+        HyperTableRow row = getTableRow().getItem();
 
         if (row == null)
         {

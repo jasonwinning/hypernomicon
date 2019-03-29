@@ -83,6 +83,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
+import javafx.scene.robot.Robot;
 import javafx.scene.web.HTMLEditor;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -145,13 +146,12 @@ public class MainTextController
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("restriction") void init()
+  void init()
   {
     final WebView webview = getWebView();
     GridPane.setHgrow(webview, Priority.ALWAYS);
     GridPane.setVgrow(webview, Priority.ALWAYS);
 
-    RecordTypePopulator rtp = new RecordTypePopulator();
     EnumSet<HDT_RecordType> typeSet = EnumSet.noneOf(HDT_RecordType.class);
 
     EnumSet.allOf(HDT_RecordType.class).forEach(type ->
@@ -160,7 +160,7 @@ public class MainTextController
         typeSet.add(type);
     });
 
-    rtp.setTypes(typeSet);
+    RecordTypePopulator rtp = new RecordTypePopulator(typeSet);
 
     hcbType = new HyperCB(cbType, ctDropDownList, rtp, null);
     hcbName = new HyperCB(cbName, ctDropDownList, new RecordByTypePopulator(), null);
@@ -182,8 +182,7 @@ public class MainTextController
       }
     });
 
-    rtp = new RecordTypePopulator();
-    rtp.setTypes(EnumSet.of(hdtWork, hdtMiscFile));
+    rtp = new RecordTypePopulator(EnumSet.of(hdtWork, hdtMiscFile));
 
     hcbKeyType = new HyperCB(cbKeyType, ctDropDownList, rtp, null);
     hcbKeyName = new HyperCB(cbKeyName, ctDropDownList, new RecordByTypePopulator(), null);
@@ -205,8 +204,8 @@ public class MainTextController
       {
         hsPane.setPinnedSide(null);
 
-        com.sun.glass.ui.Robot robot = com.sun.glass.ui.Application.GetApplication().createRobot();
-        int x = robot.getMouseX(), y = robot.getMouseY();
+        Robot robot = new Robot();
+        double x = robot.getMouseX(), y = robot.getMouseY();
 
         Bounds bounds = hsPane.getBoundsInLocal();
         Bounds screenBounds = hsPane.localToScreen(bounds);
@@ -230,13 +229,13 @@ public class MainTextController
       }
     });
 
-    lvRecords.setCellFactory(listView -> new ListCell<DisplayItem>()
+    lvRecords.setCellFactory(listView -> new ListCell<>()
     {
       @Override protected void updateItem(DisplayItem item, boolean empty)
       {
         super.updateItem(item, empty);
 
-        if (empty || item == null)
+        if (empty || (item == null))
         {
           setText(null);
           return;

@@ -1292,6 +1292,7 @@ public class QueriesTabController extends HyperTab<HDT_Base, HDT_Base>
   @Override public void getDividerPositions()       { return; }
   @Override public boolean saveToRecord(boolean sm) { return false; }
   @Override public HDT_Base activeRecord()          { return curQV == null ? null : curQV.curResult; }
+  @Override public String getRecordName()           { return nullSwitch(activeRecord(), "", HDT_Base::getCBText); }
   @Override public int getRecordNdx()               { return getRecordCount() > 0 ? curQV.tvResults.getSelectionModel().getSelectedIndex() : -1; }
   @Override public void findWithinDesc(String text) { if (activeRecord() != null) MainTextWrapper.hiliteText(text, webView.getEngine()); }
 

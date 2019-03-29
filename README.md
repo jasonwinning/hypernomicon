@@ -36,22 +36,19 @@ Issues can be reported to the [Issue tracker](https://github.com/jasonwinning/hy
 
 Contributions can be submitted via [Pull requests](https://github.com/jasonwinning/hypernomicon/pulls/)
 
-
 ## Building Hypernomicon ##
 
 ### Prerequisites
 
-* A recent version of [Oracle Java 8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) for building 'master' branch
+* A recent version of [Java 11](https://www.oracle.com/technetwork/java/javase/downloads/jdk11-downloads-5066655.html) for building 'master' branch
 * A recent version of [Git](https://git-scm.com/downloads)
-* [Maven](https://maven.apache.org/download.cgi) version 3 or greater
+* [Maven](https://maven.apache.org/download.cgi) version 3.0.5 or greater
 
 ### How to build Hypernomicon ###
 
 Use Git to get a copy of the source code onto your computer.
 
 `$ git clone git@github.com:jasonwinning/hypernomicon.git`
-
-You will likely need to edit the javafx dependency in the pom.xml so that it points to the correct location and version of javafx.
 
 On the project's root, run:
 

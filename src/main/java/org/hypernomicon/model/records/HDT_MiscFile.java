@@ -17,9 +17,11 @@
 
 package org.hypernomicon.model.records;
 
+import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -86,6 +88,14 @@ public class HDT_MiscFile extends HDT_RecordWithConnector implements HDT_RecordW
   @Override public void expire()
   {
     path.clear();
+
+    nullSwitch(fileType.get(), oldFileType ->
+    {
+      fileType.setID(-1);
+      if (oldFileType.miscFiles.isEmpty())
+        db.deleteRecord(hdtFileType, oldFileType.getID());
+    });
+
     super.expire();
   }
 

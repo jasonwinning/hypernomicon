@@ -41,8 +41,9 @@
                      <children>
                         <GridPane prefHeight="320.0" prefWidth="887.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <columnConstraints>
-                              <ColumnConstraints hgrow="ALWAYS" />
+                              <ColumnConstraints hgrow="ALWAYS" maxWidth="949.0" minWidth="908.0" prefWidth="908.0" />
                               <ColumnConstraints hgrow="NEVER" maxWidth="31.0" minWidth="31.0" prefWidth="31.0" />
+                              <ColumnConstraints hgrow="NEVER" maxWidth="75.0" minWidth="75.0" prefWidth="75.0" />
                            </columnConstraints>
                            <rowConstraints>
                               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -130,6 +131,17 @@
                                  <children>
                                     <CheckBox fx:id="chkAutoRetrieveBib" layoutY="4.0" mnemonicParsing="false" text="Automatically retrieve bibliographic info for selected file internet in Work File dialog" />
                                  </children></AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="9" />
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                 <children>
+                                    <Button fx:id="btnImgEditorAdvanced" layoutY="1.0" mnemonicParsing="false" text="Advanced" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                 </children>
+                              </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                                 <children>
+                                    <Button fx:id="btnPdfViewerAdvanced" layoutY="1.0" mnemonicParsing="false" text="Advanced" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                 </children>
+                              </AnchorPane>
                            </children>
                            <padding>
                               <Insets left="4.0" right="4.0" />
@@ -139,18 +151,56 @@
                   </AnchorPane>
               </content>
             </Tab>
+            <Tab fx:id="tabDBSpecific" text="Database-Specific">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0">
+                  <children>
+                    <GridPane prefHeight="320.0" prefWidth="887.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                      <columnConstraints>
+                         <ColumnConstraints hgrow="ALWAYS" />
+                         <ColumnConstraints hgrow="NEVER" maxWidth="31.0" minWidth="31.0" prefWidth="31.0" />
+                      </columnConstraints>
+                      <rowConstraints>
+                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      </rowConstraints>
+                      <children>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                                 <children>
+                                    <CheckBox fx:id="chkUseSentenceCase" layoutY="4.0" mnemonicParsing="false" text="Use sentence case instead of title case for titles" />
+                                 </children>
+                        </AnchorPane>
+                      </children>
+                      <padding>
+                        <Insets left="4.0" right="4.0" />
+                      </padding>                      
+                    </GridPane> 
+                  </children>
+                </AnchorPane>
+              </content>
+            </Tab>
             <Tab fx:id="tabNaming" text="Work File Naming">
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
                         <GridPane hgap="4.0" layoutX="31.0" layoutY="69.0" minWidth="869.0" prefHeight="144.0" prefWidth="869.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                           <columnConstraints>
-                              <ColumnConstraints hgrow="NEVER" maxWidth="25.0" minWidth="25.0" prefWidth="25.0" />
+                            <ColumnConstraints hgrow="NEVER" maxWidth="25.0" minWidth="25.0" prefWidth="25.0" />
                             <ColumnConstraints hgrow="NEVER" maxWidth="301.0" minWidth="176.0" prefWidth="176.0" />
-                              <ColumnConstraints hgrow="NEVER" maxWidth="394.0" minWidth="159.0" prefWidth="159.0" />
                             <ColumnConstraints hgrow="NEVER" maxWidth="394.0" minWidth="159.0" prefWidth="159.0" />
-                              <ColumnConstraints hgrow="NEVER" maxWidth="324.0" minWidth="156.0" prefWidth="156.0" />
-                              <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="337.0" prefWidth="337.0" />
+                            <ColumnConstraints hgrow="NEVER" maxWidth="394.0" minWidth="159.0" prefWidth="159.0" />
+                            <ColumnConstraints hgrow="NEVER" maxWidth="324.0" minWidth="156.0" prefWidth="156.0" />
+                            <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="337.0" prefWidth="337.0" />
                           </columnConstraints>
                           <rowConstraints>
                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />

@@ -27,7 +27,7 @@ import static org.hypernomicon.util.Util.*;
 import com.google.common.collect.Iterators;
 
 import org.hypernomicon.bib.BibData.AuthorType;
-import org.hypernomicon.model.PersonName;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.SplitString;
 
 //---------------------------------------------------------------------------

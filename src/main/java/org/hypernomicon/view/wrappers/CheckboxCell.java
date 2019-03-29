@@ -20,6 +20,8 @@ package org.hypernomicon.view.wrappers;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TableCell;
 
+import static org.hypernomicon.util.Util.*;
+
 class CheckboxCell extends TableCell<HyperTableRow, Boolean>
 {
   final private HyperTable table;
@@ -39,7 +41,7 @@ class CheckboxCell extends TableCell<HyperTableRow, Boolean>
 
     chk.selectedProperty().addListener((ov, oldValue, newValue) ->
     {
-      HyperTableRow row = (HyperTableRow) getTableRow().getItem();
+      HyperTableRow row = getTableRow().getItem();
       if (row == null) return;
 
       HyperTableCell cell = newValue.booleanValue() ? HyperTableCell.trueCell : HyperTableCell.falseCell;
@@ -52,29 +54,22 @@ class CheckboxCell extends TableCell<HyperTableRow, Boolean>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  //Display check box if the row is not empty
   @Override protected void updateItem(Boolean val, boolean empty)
   {
     super.updateItem(val, empty);
 
-    if (empty) return;
-
-    setGraphic(chk);
-    boolean disable = true;
-    chk.setSelected(val);
-
-    if (getTableRow() != null)
+    if (empty)
     {
-      HyperTableRow row = (HyperTableRow)getTableRow().getItem();
-      if (row != null)
-      {
-        int colNdx = table.getMainColNdx();
-        if ((row.getID(colNdx) > 0) || (row.getText(colNdx).length() > 0))
-          disable = false;
-      }
+      setGraphic(null);
+      return;
     }
 
-    chk.setDisable(disable);
+    setGraphic(chk);
+    chk.setSelected(val);
+
+    chk.setDisable(HyperTableCell.isEmpty((HyperTableCell)nullSwitch(getTableRow(), null, tableRow ->
+                                          nullSwitch(tableRow.getItem(), null, row ->
+                                          row.getCell(table.getMainColNdx())))));
   }
 
 //---------------------------------------------------------------------------

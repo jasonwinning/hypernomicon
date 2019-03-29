@@ -27,7 +27,7 @@ import org.hypernomicon.bib.BibAuthor;
 import org.hypernomicon.bib.BibAuthors;
 import org.hypernomicon.bib.BibData.AuthorType;
 import org.hypernomicon.bib.BibData.EntryType;
-import org.hypernomicon.model.PersonName;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 

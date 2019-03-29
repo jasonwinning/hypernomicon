@@ -56,7 +56,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
 
   public static final KeywordLinkList linkList = new KeywordLinkList();
   private static final SearchKeys dummySearchKeys = new SearchKeys();
-  private static HDT_Base searchDummy;
+  private static HDT_Base searchDummy = null;
   private static final MutableBoolean choseNotToWait = new MutableBoolean();
 
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
@@ -163,11 +163,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
           catch (SearchKeyException e)
           {
             messageDialog(e.getMessage(), mtError);
-
-            db.deleteRecord(hdtPerson, searchDummy.getID());
-            searchDummy = null;
-            dummySearchKeys.removeAll();
-
+            cleanupSearchDummy();
             return false;
           }
         }
@@ -317,7 +313,9 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
             HDT_RecordType specifiedType = getCellType(op1);
             int specifiedID = getCellID(op2);
             if ((specifiedType == hdtNone) || (specifiedID == -1)) return;
-            list.add(db.records(specifiedType).getByID(specifiedID));
+            HDT_Base record = db.records(specifiedType).getByID(specifiedID);
+            if (record != null)
+              list.add(db.records(specifiedType).getByID(specifiedID));
           }
         };
 

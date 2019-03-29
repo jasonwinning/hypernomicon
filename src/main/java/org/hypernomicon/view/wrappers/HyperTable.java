@@ -27,8 +27,8 @@ import static org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Record.HyperDataCategory;
@@ -95,6 +95,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   Consumer<? extends HDT_Base> dblClickHandler = null;
   Runnable onShowMore = null;
   HyperTableRow showMoreRow = null;
+  private Runnable refreshHandler = null;
   private boolean canAddRows;
   public boolean disableRefreshAfterCellUpdate = false,
                  autoCommitListSelections = false;
@@ -124,6 +125,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public Iterable<HyperTableRow> getDataRows()                     { return new DataRowIterator(); }
   public Stream<HyperTableRow> dataRowStream()                     { return StreamSupport.stream(new DataRowIterator().spliterator(), false); }
   public int getDataRowCount()                                     { return canAddRows ? Math.max(rows.size() - 1, 0) : rows.size(); }
+  public void addRefreshHandler(Runnable hndlr)                    { refreshHandler = hndlr; }
 
   @SuppressWarnings("unused")
   public <HDT_T extends HDT_Base> void setDblClickHandler(Class<HDT_T> klass, Consumer<HDT_T> hndlr)    { this.dblClickHandler = hndlr; }
@@ -154,6 +156,27 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   @FunctionalInterface public static interface RowBuilder<T> { void buildRow(HyperTableRow row, T object); }
 
   public <T> void buildRows(Iterable<T> objs, RowBuilder<T> bldr) { objs.forEach(obj -> bldr.buildRow(newDataRow(), obj)); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // If the tableview is embedded in a context where layout requests aren't getting propagated correctly,
+  // this method can be used with a user-supplied handler to manually trigger parent layout requests
+
+  void doExternalRefresh()
+  {
+    if (refreshHandler != null)
+      refreshHandler.run();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void refresh()
+  {
+    tv.refresh();
+    doExternalRefresh();
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -665,15 +688,6 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void refreshCol(int colNdx)
-  {
-    tv.getColumns().get(colNdx).setVisible(false);  // Necessary workaround; tableview does not automatically refresh
-    tv.getColumns().get(colNdx).setVisible(true);   // when you change values in the cell objects, just the row objects
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public void addRemoveMenuItem() { addRemoveMenuItem(null); }
 
   public void addRemoveMenuItem(Runnable handler)
@@ -681,6 +695,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     addContextMenuItem("Remove this row", cols.get(mainCol).getObjType().getRecordClass(), record -> canAddRows, record ->
     {
       rows.remove(tv.getSelectionModel().getSelectedItem());
+      doExternalRefresh();
       if (handler != null) handler.run();
     });
   }

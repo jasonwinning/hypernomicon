@@ -37,7 +37,7 @@ import com.adobe.internal.xmp.XMPException;
 import com.google.common.collect.EnumHashBiMap;
 
 import org.hypernomicon.bib.BibData.EntryType;
-import org.hypernomicon.model.PersonName;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.filePath.FilePath;
@@ -74,11 +74,9 @@ public class BibUtils
       pdfStripper.setStartPage(1);
       pdfStripper.setEndPage(7);
 
-      String parsedText = pdfStripper.getText(pdfDoc);
+      String parsedText = pdfStripper.getText(pdfDoc).replace('\u0002', '/'); // sometimes slash in DOI is encoded as STX control character
 
       BibData bd = new BibDataStandalone();
-
-      parsedText = parsedText.replace('\u0002', '/'); // sometimes slash in DOI is encoded as STX control character
 
       bd.extractDOIandISBNs(parsedText);
 
@@ -89,8 +87,7 @@ public class BibUtils
       }
 
       md.bd.setStr(bfDOI, bd.getStr(bfDOI));
-      if (md.bd.getMultiStr(bfISBNs).isEmpty())
-        md.bd.setMultiStr(bfISBNs, bd.getMultiStr(bfISBNs));
+      bd.getMultiStr(bfISBNs).forEach(isbn -> md.bd.addStr(bfISBNs, isbn));
 
       return md;
     }
@@ -146,7 +143,7 @@ public class BibUtils
         char c = found.charAt(x);
         int n = c == 'X' ? 10 : parseInt(String.valueOf(c), -1);
 
-        sum = sum + (n * (8 - x));
+        sum += (n * (8 - x));
       }
 
       if ((sum > 0) && ((sum % 11) == 0))
@@ -209,7 +206,7 @@ public class BibUtils
       {
         int coeff = ((x % 2) * 2) + 1;
         n = parseInt(String.valueOf(found.charAt(x)), -1);
-        sum = sum + (coeff * n);
+        sum += (coeff * n);
       }
 
       n = parseInt(StringUtils.right(found, 1), -1);
@@ -234,8 +231,8 @@ public class BibUtils
         char c = found.charAt(x);
         int n = c == 'X' ? 10 : parseInt(String.valueOf(c), -1);
 
-        sum1 = sum1 + (n * (10 - x));
-        sum2 = sum2 + (n * (x + 1));
+        sum1 += (n * (10 - x));
+        sum2 += (n * (x + 1));
       }
 
       if ((sum1 > 0) && (sum2 > 0) && ((sum1 % 11) == 0) && ((sum2 % 11) == 0) && (list.contains(found) == false))
@@ -291,7 +288,7 @@ public class BibUtils
 
     yearStr = safeStr(yearStr);
 
-    if (yearStr.length() > 0)
+    if ((yearStr.length() > 0) && StringUtils.isNumeric(yearStr))
     {
       int year = parseInt(yearStr, -1);
       if (year > 1929)
@@ -416,34 +413,34 @@ public class BibUtils
   {
     switch (crType)
     {
-      case "book" : return etBook;
-      case "book-chapter" : return etBookChapter;
-      case "book-part" : return etBookPart;
-      case "book-section" : return etBookSection;
-      case "book-series" : return etBookSeries;
-      case "book-set" : return etBookSet;
-      case "book-track" : return etBookTrack;
-      case "component" : return etComponent;
-      case "dataset" : return etDataSet;
-      case "dissertation" : return etThesis;
-      case "edited-book" : return etEditedBook;
-      case "journal" : return etJournal;
-      case "journal-article" : return etJournalArticle;
-      case "journal-issue" : return etJournalIssue;
-      case "journal-volume" : return etJournalVolume;
-      case "monograph" : return etMonograph;
-      case "other" : return etOther;
-      case "posted-content" : return etPostedContent;
-      case "proceedings" : return etConferenceProceedings;
+      case "book"                : return etBook;
+      case "book-chapter"        : return etBookChapter;
+      case "book-part"           : return etBookPart;
+      case "book-section"        : return etBookSection;
+      case "book-series"         : return etBookSeries;
+      case "book-set"            : return etBookSet;
+      case "book-track"          : return etBookTrack;
+      case "component"           : return etComponent;
+      case "dataset"             : return etDataSet;
+      case "dissertation"        : return etThesis;
+      case "edited-book"         : return etEditedBook;
+      case "journal"             : return etJournal;
+      case "journal-article"     : return etJournalArticle;
+      case "journal-issue"       : return etJournalIssue;
+      case "journal-volume"      : return etJournalVolume;
+      case "monograph"           : return etMonograph;
+      case "other"               : return etOther;
+      case "posted-content"      : return etPostedContent;
+      case "proceedings"         : return etConferenceProceedings;
       case "proceedings-article" : return etConferencePaper;
-      case "reference-book" : return etReferenceBook;
-      case "reference-entry" : return etReferenceEntry;
-      case "report" : return etReport;
-      case "report-series" : return etReportSeries;
-      case "standard" : return etStandard;
-      case "standard-series": return etStandardSeries;
+      case "reference-book"      : return etReferenceBook;
+      case "reference-entry"     : return etReferenceEntry;
+      case "report"              : return etReport;
+      case "report-series"       : return etReportSeries;
+      case "standard"            : return etStandard;
+      case "standard-series"     : return etStandardSeries;
 
-      default : return etOther;
+      default                    : return etOther;
     }
   }
 
@@ -454,63 +451,63 @@ public class BibUtils
   {
     switch (risType)
     {
-      case "ABST" : return etAbstract;
-      case "ADVS" : return etAudiovisualMaterial;
-      case "AGGR" : return etAggregatedDatabase;
+      case "ABST"    : return etAbstract;
+      case "ADVS"    : return etAudiovisualMaterial;
+      case "AGGR"    : return etAggregatedDatabase;
       case "ANCIENT" : return etAncientText;
-      case "ART" : return etArtwork;
-      case "BILL" : return etBill;
-      case "BLOG" : return etBlogPost;
-      case "BOOK" : return etBook;
-      case "CASE" : return etCase;
-      case "CHAP" : return etBookChapter;
-      case "CHART" : return etChart;
-      case "CLSWK" : return etClassicalWork;
-      case "COMP" : return etSoftware;
-      case "CONF" : return etConferenceProceedings;
-      case "CPAPER" : return etConferencePaper;
-      case "CTLG" : return etCatalog;
-      case "DATA" : return etDataFile;
-      case "DBASE" : return etOnlineDatabase;
-      case "DICT" : return etDictionaryEntry;
-      case "EBOOK" : return etElectronicBook;
-      case "ECHAP" : return etElectronicBookSection;
-      case "EDBOOK" : return etEditedBook;
-      case "EJOUR" : return etElectronicArticle;
-      case "ELEC" : return etWebPage;
-      case "ENCYC" : return etEncyclopediaArticle;
-      case "EQUA" : return etEquation;
-      case "FIGURE" : return etFigure;
-      case "GEN" : return etUnentered;
-      case "GOVDOC" : return etGovernmentDocument;
-      case "GRANT" : return etGrant;
-      case "HEAR" : return etHearing;
-      case "ICOMM" : return etInternetCommunication;
-      case "INPR" : return etInPress;
-      case "JFULL" : return etJournal;
-      case "JOUR" : return etJournalArticle;
-      case "LEGAL" : return etRuling;
+      case "ART"     : return etArtwork;
+      case "BILL"    : return etBill;
+      case "BLOG"    : return etBlogPost;
+      case "BOOK"    : return etBook;
+      case "CASE"    : return etCase;
+      case "CHAP"    : return etBookChapter;
+      case "CHART"   : return etChart;
+      case "CLSWK"   : return etClassicalWork;
+      case "COMP"    : return etSoftware;
+      case "CONF"    : return etConferenceProceedings;
+      case "CPAPER"  : return etConferencePaper;
+      case "CTLG"    : return etCatalog;
+      case "DATA"    : return etDataFile;
+      case "DBASE"   : return etOnlineDatabase;
+      case "DICT"    : return etDictionaryEntry;
+      case "EBOOK"   : return etElectronicBook;
+      case "ECHAP"   : return etElectronicBookSection;
+      case "EDBOOK"  : return etEditedBook;
+      case "EJOUR"   : return etElectronicArticle;
+      case "ELEC"    : return etWebPage;
+      case "ENCYC"   : return etEncyclopediaArticle;
+      case "EQUA"    : return etEquation;
+      case "FIGURE"  : return etFigure;
+      case "GEN"     : return etUnentered;
+      case "GOVDOC"  : return etGovernmentDocument;
+      case "GRANT"   : return etGrant;
+      case "HEAR"    : return etHearing;
+      case "ICOMM"   : return etInternetCommunication;
+      case "INPR"    : return etInPress;
+      case "JFULL"   : return etJournal;
+      case "JOUR"    : return etJournalArticle;
+      case "LEGAL"   : return etRuling;
       case "MANSCPT" : return etManuscript;
-      case "MAP" : return etMap;
-      case "MGZN" : return etMagazineArticle;
-      case "MPCT" : return etFilm;
-      case "MULTI" : return etOnlineMultimedia;
-      case "MUSIC" : return etMusicScore;
-      case "NEWS" : return etNewspaperArticle;
-      case "PAMP" : return etPamphlet;
-      case "PAT" : return etPatent;
-      case "PCOMM" : return etPersonalCommunication;
-      case "RPRT" : return etReport;
-      case "SER" : return etSerialPublication;
-      case "SLIDE" : return etSlide;
-      case "SOUND" : return etAudioRecording;
-      case "STAND" : return etStandard;
-      case "STAT" : return etStatute;
-      case "THES" : return etThesis;
-      case "UNPB" : return etUnpublishedWork;
-      case "VIDEO" : return etVideoRecording;
+      case "MAP"     : return etMap;
+      case "MGZN"    : return etMagazineArticle;
+      case "MPCT"    : return etFilm;
+      case "MULTI"   : return etOnlineMultimedia;
+      case "MUSIC"   : return etMusicScore;
+      case "NEWS"    : return etNewspaperArticle;
+      case "PAMP"    : return etPamphlet;
+      case "PAT"     : return etPatent;
+      case "PCOMM"   : return etPersonalCommunication;
+      case "RPRT"    : return etReport;
+      case "SER"     : return etSerialPublication;
+      case "SLIDE"   : return etSlide;
+      case "SOUND"   : return etAudioRecording;
+      case "STAND"   : return etStandard;
+      case "STAT"    : return etStatute;
+      case "THES"    : return etThesis;
+      case "UNPB"    : return etUnpublishedWork;
+      case "VIDEO"   : return etVideoRecording;
 
-      default : return etOther;
+      default        : return etOther;
     }
   }
 
@@ -521,22 +518,22 @@ public class BibUtils
   {
     switch (btType.toLowerCase())
     {
-      case "article" : return etJournalArticle;
-      case "book" : return etBook;
-      case "booklet" : return etBooklet;
-      case "conference" : return etConferencePaper;
-      case "inbook" : return etBookChapter;
-      case "incollection" : return etBookChapter;
+      case "article"       : return etJournalArticle;
+      case "book"          : return etBook;
+      case "booklet"       : return etBooklet;
+      case "conference"    : return etConferencePaper;
+      case "inbook"        : return etBookChapter;
+      case "incollection"  : return etBookChapter;
       case "inproceedings" : return etConferencePaper;
-      case "manual" : return etManual;
+      case "manual"        : return etManual;
       case "mastersthesis" : return etMastersThesis;
-      case "misc" : return etOther;
-      case "phdthesis" : return etDoctoralThesis;
-      case "proceedings" : return etConferenceProceedings;
-      case "techreport" : return etTechnicalReport;
-      case "unpublished" : return etUnpublishedWork;
+      case "misc"          : return etOther;
+      case "phdthesis"     : return etDoctoralThesis;
+      case "proceedings"   : return etConferenceProceedings;
+      case "techreport"    : return etTechnicalReport;
+      case "unpublished"   : return etUnpublishedWork;
 
-      default : return etOther;
+      default              : return etOther;
     }
   }
 
@@ -549,119 +546,119 @@ public class BibUtils
   {
     EnumHashBiMap<EntryType, String> map = EnumHashBiMap.create(EntryType.class);
 
-    map.put(etJournal, "Journal");
-    map.put(etJournalVolume, "Journal Volume");
-    map.put(etJournalArticle, "Journal Article");
-    map.put(etJournalIssue, "Journal Issue");
-    map.put(etJournalSection, "Journal Section");
-    map.put(etElectronicArticle, "Electronic Article");
-    map.put(etInPress, "In Press");
-    map.put(etBook, "Book");
-    map.put(etMonograph, "Monograph");
-    map.put(etBookVolume, "Book Volume");
-    map.put(etBookSection, "Book Section");
-    map.put(etBookChapter, "Book Chapter");
-    map.put(etBookPart, "Book Part");
-    map.put(etBookSet, "Book Set");
-    map.put(etBookTrack, "Book Track");
-    map.put(etEditedBook, "Edited Book");
-    map.put(etBookSeries, "Book Series");
-    map.put(etMultiVolumeWork, "Multi-volume Work");
-    map.put(etBooklet, "Booklet");
-    map.put(etElectronicBook, "Electronic Book");
+    map.put(etJournal              , "Journal");
+    map.put(etJournalVolume        , "Journal Volume");
+    map.put(etJournalArticle       , "Journal Article");
+    map.put(etJournalIssue         , "Journal Issue");
+    map.put(etJournalSection       , "Journal Section");
+    map.put(etElectronicArticle    , "Electronic Article");
+    map.put(etInPress              , "In Press");
+    map.put(etBook                 , "Book");
+    map.put(etMonograph            , "Monograph");
+    map.put(etBookVolume           , "Book Volume");
+    map.put(etBookSection          , "Book Section");
+    map.put(etBookChapter          , "Book Chapter");
+    map.put(etBookPart             , "Book Part");
+    map.put(etBookSet              , "Book Set");
+    map.put(etBookTrack            , "Book Track");
+    map.put(etEditedBook           , "Edited Book");
+    map.put(etBookSeries           , "Book Series");
+    map.put(etMultiVolumeWork      , "Multi-volume Work");
+    map.put(etBooklet              , "Booklet");
+    map.put(etElectronicBook       , "Electronic Book");
     map.put(etElectronicBookSection, "Electronic Book Section");
-    map.put(etSerialPublication, "Serial Publication");
-    map.put(etMagazine, "Magazine");
-    map.put(etMagazineArticle, "Magazine Article");
-    map.put(etNewspaper, "Newspaper");
-    map.put(etNewspaperArticle, "Newspaper Article");
-    map.put(etLetterToTheEditor, "Letter to the Editor");
-    map.put(etNewsletter, "Newsletter");
-    map.put(etNewsletterArticle, "Newsletter Article");
-    map.put(etWebPage, "Web Page");
-    map.put(etPostedContent, "Posted Content");
-    map.put(etTwitterPost, "Twitter Post");
-    map.put(etFacebookPost, "Facebook Post");
-    map.put(etForumPost, "Forum Post");
-    map.put(etInstantMessage, "Instant Message");
-    map.put(etBlogPost, "Blog Post");
-    map.put(etEmail, "Email");
-    map.put(etFeedItem, "Feed Item");
+    map.put(etSerialPublication    , "Serial Publication");
+    map.put(etMagazine             , "Magazine");
+    map.put(etMagazineArticle      , "Magazine Article");
+    map.put(etNewspaper            , "Newspaper");
+    map.put(etNewspaperArticle     , "Newspaper Article");
+    map.put(etLetterToTheEditor    , "Letter to the Editor");
+    map.put(etNewsletter           , "Newsletter");
+    map.put(etNewsletterArticle    , "Newsletter Article");
+    map.put(etWebPage              , "Web Page");
+    map.put(etPostedContent        , "Posted Content");
+    map.put(etTwitterPost          , "Twitter Post");
+    map.put(etFacebookPost         , "Facebook Post");
+    map.put(etForumPost            , "Forum Post");
+    map.put(etInstantMessage       , "Instant Message");
+    map.put(etBlogPost             , "Blog Post");
+    map.put(etEmail                , "Email");
+    map.put(etFeedItem             , "Feed Item");
     map.put(etInternetCommunication, "Internet Communication");
-    map.put(etConference, "Conference");
-    map.put(etConferencePaper, "Conference Paper");
+    map.put(etConference           , "Conference");
+    map.put(etConferencePaper      , "Conference Paper");
     map.put(etConferenceProceedings, "Conference Proceedings");
-    map.put(etPoster, "Poster");
-    map.put(etSymposium, "Symposium");
-    map.put(etSymposiumPaper, "Symposium Paper");
-    map.put(etSymposiumProceedings, "Symposium Proceedings");
-    map.put(etPresentation, "Presentation");
-    map.put(etReferenceBook, "Reference Book");
-    map.put(etReferenceEntry, "Reference Entry");
-    map.put(etDictionaryEntry, "Dictionary Entry");
-    map.put(etEncyclopediaArticle, "Encyclopedia Article");
-    map.put(etCatalog, "Catalog");
-    map.put(etCatalogItem, "Catalog Item");
-    map.put(etAncientText, "Ancient Text");
-    map.put(etClassicalWork, "Classical Work");
-    map.put(etCase, "Case");
-    map.put(etHearing, "Hearing");
-    map.put(etStatute, "Statute");
-    map.put(etBill, "Bill");
-    map.put(etRegulation, "Regulation");
-    map.put(etRuling, "Ruling");
-    map.put(etGrant, "Grant");
-    map.put(etGovernmentDocument, "Government Document");
-    map.put(etAudiovisualMaterial, "Audiovisual Material");
-    map.put(etOnlineMultimedia, "Online Multimedia");
-    map.put(etMusicScore, "Music Score");
-    map.put(etAudioRecording, "Audio Recording");
-    map.put(etRadioBroadcast, "Radio Broadcast");
-    map.put(etTVBroadcast, "TV Broadcast");
-    map.put(etFilm, "Film");
-    map.put(etVideoRecording, "Video Recording");
-    map.put(etPodcast, "Podcast");
-    map.put(etPortfolio, "Portfolio");
-    map.put(etArtwork, "Artwork");
-    map.put(etIssueBrief, "Issue Brief");
-    map.put(etReportSeries, "Report Series");
-    map.put(etReport, "Report");
-    map.put(etTechnicalReport, "Technical Report");
-    map.put(etApparatus, "Apparatus");
+    map.put(etPoster               , "Poster");
+    map.put(etSymposium            , "Symposium");
+    map.put(etSymposiumPaper       , "Symposium Paper");
+    map.put(etSymposiumProceedings , "Symposium Proceedings");
+    map.put(etPresentation         , "Presentation");
+    map.put(etReferenceBook        , "Reference Book");
+    map.put(etReferenceEntry       , "Reference Entry");
+    map.put(etDictionaryEntry      , "Dictionary Entry");
+    map.put(etEncyclopediaArticle  , "Encyclopedia Article");
+    map.put(etCatalog              , "Catalog");
+    map.put(etCatalogItem          , "Catalog Item");
+    map.put(etAncientText          , "Ancient Text");
+    map.put(etClassicalWork        , "Classical Work");
+    map.put(etCase                 , "Case");
+    map.put(etHearing              , "Hearing");
+    map.put(etStatute              , "Statute");
+    map.put(etBill                 , "Bill");
+    map.put(etRegulation           , "Regulation");
+    map.put(etRuling               , "Ruling");
+    map.put(etGrant                , "Grant");
+    map.put(etGovernmentDocument   , "Government Document");
+    map.put(etAudiovisualMaterial  , "Audiovisual Material");
+    map.put(etOnlineMultimedia     , "Online Multimedia");
+    map.put(etMusicScore           , "Music Score");
+    map.put(etAudioRecording       , "Audio Recording");
+    map.put(etRadioBroadcast       , "Radio Broadcast");
+    map.put(etTVBroadcast          , "TV Broadcast");
+    map.put(etFilm                 , "Film");
+    map.put(etVideoRecording       , "Video Recording");
+    map.put(etPodcast              , "Podcast");
+    map.put(etPortfolio            , "Portfolio");
+    map.put(etArtwork              , "Artwork");
+    map.put(etIssueBrief           , "Issue Brief");
+    map.put(etReportSeries         , "Report Series");
+    map.put(etReport               , "Report");
+    map.put(etTechnicalReport      , "Technical Report");
+    map.put(etApparatus            , "Apparatus");
     map.put(etMeasurementInstrument, "Measurement Instrument");
-    map.put(etStandard, "Standard");
-    map.put(etStandardSeries, "Standard Series");
-    map.put(etManual, "Manual");
-    map.put(etPatent, "Patent");
-    map.put(etThesis, "Thesis");
-    map.put(etMastersThesis, "Masters Thesis");
-    map.put(etDoctoralThesis, "Doctoral Thesis");
-    map.put(etManuscript, "Manuscript");
-    map.put(etUnpublishedWork, "Unpublished Work");
-    map.put(etWorkingPaper, "Working Paper");
-    map.put(etUnpublishedRawData, "Unpublished Raw Data");
+    map.put(etStandard             , "Standard");
+    map.put(etStandardSeries       , "Standard Series");
+    map.put(etManual               , "Manual");
+    map.put(etPatent               , "Patent");
+    map.put(etThesis               , "Thesis");
+    map.put(etMastersThesis        , "Masters Thesis");
+    map.put(etDoctoralThesis       , "Doctoral Thesis");
+    map.put(etManuscript           , "Manuscript");
+    map.put(etUnpublishedWork      , "Unpublished Work");
+    map.put(etWorkingPaper         , "Working Paper");
+    map.put(etUnpublishedRawData   , "Unpublished Raw Data");
     map.put(etPersonalCommunication, "Personal Communication");
-    map.put(etDocument, "Document");
-    map.put(etMap, "Map");
-    map.put(etChart, "Chart");
-    map.put(etEquation, "Equation");
-    map.put(etFigure, "Figure");
-    map.put(etSlide, "Slide");
-    map.put(etDataSet, "Data Set");
-    map.put(etDataFile, "Data File");
-    map.put(etOnlineDatabase, "Online Database");
-    map.put(etAggregatedDatabase, "Aggregated Database");
-    map.put(etSoftware, "Software");
-    map.put(etComponent, "Component");
-    map.put(etAbstract, "Abstract");
-    map.put(etCommentary, "Commentary");
-    map.put(etInterview, "Interview");
-    map.put(etArchivalDocument, "Archival Document");
-    map.put(etArchivalCollection, "Archival Collection");
-    map.put(etLetter, "Letter");
-    map.put(etPamphlet, "Pamphlet");
-    map.put(etBrochure, "Brochure");
-    map.put(etOther, "Other");
+    map.put(etDocument             , "Document");
+    map.put(etMap                  , "Map");
+    map.put(etChart                , "Chart");
+    map.put(etEquation             , "Equation");
+    map.put(etFigure               , "Figure");
+    map.put(etSlide                , "Slide");
+    map.put(etDataSet              , "Data Set");
+    map.put(etDataFile             , "Data File");
+    map.put(etOnlineDatabase       , "Online Database");
+    map.put(etAggregatedDatabase   , "Aggregated Database");
+    map.put(etSoftware             , "Software");
+    map.put(etComponent            , "Component");
+    map.put(etAbstract             , "Abstract");
+    map.put(etCommentary           , "Commentary");
+    map.put(etInterview            , "Interview");
+    map.put(etArchivalDocument     , "Archival Document");
+    map.put(etArchivalCollection   , "Archival Collection");
+    map.put(etLetter               , "Letter");
+    map.put(etPamphlet             , "Pamphlet");
+    map.put(etBrochure             , "Brochure");
+    map.put(etOther                , "Other");
 
     return map;
   }

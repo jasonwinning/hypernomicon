@@ -170,7 +170,7 @@ public class BibField
     {
       case bfISBNs : matchISBN(newStr, strList); break;
       case bfISSNs : matchISSN(newStr, strList); break;
-      default :      strList.add(newStr);        break;
+      default      : strList.add(newStr);        break;
     }
   }
 

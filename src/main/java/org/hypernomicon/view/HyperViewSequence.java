@@ -18,18 +18,27 @@
 package org.hypernomicon.view;
 
 import org.hypernomicon.model.records.*;
-
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.tabs.TreeTabController;
+import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 import org.hypernomicon.view.wrappers.ClickHoldButton;
+
+import com.google.common.collect.Iterators;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import static org.hypernomicon.view.tabs.HyperTab.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
+import javafx.collections.ObservableList;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TabPane;
 
 public class HyperViewSequence
@@ -38,8 +47,9 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private int curNdx = -1;
+  private final List<HyperView<? extends HDT_Base>> viewList = new ArrayList<>();
   private final TabPane tabPane;
-  private final ViewList viewList;
   private boolean alreadyChangingTab = false;
   private final ClickHoldButton chbBack, chbForward;
 
@@ -51,7 +61,6 @@ public class HyperViewSequence
     this.tabPane = tabPane;
     this.chbForward = chbForward;
     this.chbBack = chbBack;
-    viewList = new ViewList(this);
 
     tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) ->
     {
@@ -66,83 +75,29 @@ public class HyperViewSequence
         return;
       }
 
-      TabEnum tabEnum = getHyperTabByTab(newTab).getTabEnum();
+      HyperTab<? extends HDT_Base, ? extends HDT_Base> hyperTab = getHyperTabByTab(newTab);
 
-      if (tabEnum != TabEnum.workTab)
+      if (hyperTab.getTabEnum() != workTab)
         bibManagerDlg.workRecordToAssign.set(null);
 
-      forwardToNewSlot(tabEnum);
+      forwardToNewSlotAndView(hyperTab.getView());
     });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  HyperTab<? extends HDT_Base, ? extends HDT_Base> curHyperTab()    { return getHyperTab(curTabEnum()); }
-  HyperView<? extends HDT_Base> curHyperView()                      { return viewList.getView(); }
+  HyperView<? extends HDT_Base> curHyperView()                      { return viewList.get(curNdx); }
+  HyperTab<? extends HDT_Base, ? extends HDT_Base> curHyperTab()    { return curHyperView().getHyperTab(); }
+  TabEnum curTabEnum()                                              { return curHyperView().getTabEnum();  }
+  public void updateCurrentView(HyperView<? extends HDT_Base> view) { setView(view); setTabView(view); }
   boolean isEmpty()                                                 { return viewList.isEmpty(); }
-  HyperTab.TabEnum curTabEnum()                                     { return curHyperView().getTabEnum();  }
-  public void updateCurrentView(HyperView<? extends HDT_Base> view) { viewList.setView(view); setTabView(view); }
-  void stepForward()                                                { saveViewToSequence(false); viewList.goForward(false); update(); }
-  void stepBack()                                                   { saveViewToSequence(false); viewList.goBack(); update(); }
-  void removeRecord(HDT_Base record)                                { viewList.removeRecord(record); }
-  void refresh()                                                    { viewList.refreshAll(); }
+  void refreshAll()                                                 { viewList.forEach(HyperView::refresh); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void activateCurrentSlot()
-  {
-    if (viewList.isEmpty())
-    {
-      forwardToNewSlot(HyperTab.getHyperTabByTab(tabPane.getSelectionModel().getSelectedItem()).getTabEnum());
-      return;
-    }
-
-    saveViewToSequence(true);
-    update();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void forwardToNewSlot(TabEnum tabEnum)
-  {
-    forwardToNewSlotAndView(getHyperTab(tabEnum).getView());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void forwardToNewSlotAndView(HyperView<? extends HDT_Base> hyperView)
-  {
-    saveViewToSequence(false);
-    HyperTab.setTabView(hyperView);
-
-    boolean advance = true;
-
-    if (viewList.isEmpty() == false)
-    {
-      HyperView<? extends HDT_Base> view = viewList.getView();
-
-      if ((view.getTabEnum() != queryTab) && (view.getTabEnum() != treeTab) && (view.getViewRecord() == null))
-        advance = false;
-    }
-
-    viewList.clearFollowingViews();
-
-    if (advance)
-      viewList.goForward(true);
-
-    viewList.setView(getHyperTab(hyperView.getTabEnum()).getView());
-
-    update();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void saveViewToSequence(boolean okToInsert)
+  private void saveViewToSequence(boolean okToInsert)
   {
     if (viewList.isEmpty() && (okToInsert == false)) return;
 
@@ -162,7 +117,75 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void update()
+  void stepForward()
+  {
+    saveViewToSequence(false);
+    goForward(false);
+    update();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void stepBack()
+  {
+    saveViewToSequence(false);
+
+    curNdx--;
+    if (curNdx < 0)
+      curNdx = 0;
+
+    update();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void activateCurrentView()
+  {
+    if (viewList.isEmpty())
+    {
+      forwardToNewSlotAndView(getHyperTabByTab(tabPane.getSelectionModel().getSelectedItem()).getView());
+      return;
+    }
+
+    saveViewToSequence(true);
+    update();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void forwardToNewSlotAndView(HyperView<? extends HDT_Base> hyperView)
+  {
+    saveViewToSequence(false);
+    setTabView(hyperView);
+
+    boolean advance = true;
+
+    if (viewList.isEmpty() == false)
+    {
+      HyperView<? extends HDT_Base> view = curHyperView();
+
+      if ((view.getTabEnum() != queryTab) && (view.getTabEnum() != treeTab) && (view.getViewRecord() == null))
+        advance = false;
+    }
+
+    while (viewList.size() > (curNdx + 1))
+      viewList.remove(curNdx + 1);
+
+    if (advance)
+      goForward(true);
+
+    setView(hyperView.getHyperTab().getView());
+
+    update();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void update()
   {
     HyperView<? extends HDT_Base> curView = curHyperView();
     HyperTab<? extends HDT_Base, ? extends HDT_Base> curHyperTab = setTabView(curView);
@@ -173,11 +196,11 @@ public class HyperViewSequence
 
     ui.setSelectorTab(ui.tabOmniSelector);
 
-    chbBack.setDisable(viewList.canGoBack() == false);
-    chbForward.setDisable(viewList.canGoForward() == false);
+    chbBack.setDisable(curNdx < 1);
+    chbForward.setDisable(curNdx >= (viewList.size() - 1));
 
-    viewList.refreshNavMenu(chbBack.getMenu(), false);
-    viewList.refreshNavMenu(chbForward.getMenu(), true);
+    refreshNavMenu(chbBack.getMenu(), false);
+    refreshNavMenu(chbForward.getMenu(), true);
 
     ui.update();
 
@@ -196,15 +219,16 @@ public class HyperViewSequence
       bibManagerDlg.workRecordToAssign.set(null);
 
     if (curHyperTab.getTabEnum() == treeTab)
-      TreeTabController.class.cast(HyperTab.getHyperTab(treeTab)).selectRecord(curView.getViewRecord(), true);
+      TreeTabController.class.cast(getHyperTab(treeTab)).selectRecord(curView.getViewRecord(), true);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void init()
+  void init(TabEnum activeTabEnum)
   {
     viewList.clear();
+    curNdx = -1;
 
     db.getInitialNavList().forEach(record ->
     {
@@ -215,24 +239,149 @@ public class HyperViewSequence
 
       if (record == null) return;
 
-      HyperView<? extends HDT_Base> view = record.getType() == hdtWorkLabel ? new HyperView<>(treeTab, record) : createViewForRecord(record);
-
-      viewList.goForward(true);
-      viewList.setView(view);
+      goForward(true);
+      setView(new HyperView<>(record));
     });
+
+    forwardToNewSlotAndView(getHyperTab(activeTabEnum).getView());
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static <HDT_RT extends HDT_Base> HyperView<HDT_RT> createViewForRecord(HDT_RT record)
+  private void goForward(boolean canAdd)
   {
-    return createViewForRecord(getTabEnumByRecordType(record.getType()), record);
+    curNdx++;
+
+    if ((canAdd == false) && (curNdx >= viewList.size()))
+      curNdx = viewList.size() - 1;
   }
 
-  static <HDT_RT extends HDT_Base> HyperView<HDT_RT> createViewForRecord(TabEnum tabEnum, HDT_RT record)
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  private void refreshNavMenu(ObservableList<MenuItem> menu, boolean isForward)
   {
-    return new HyperView<>(tabEnum, record);
+    if (db.isLoaded() == false) return;
+
+    menu.clear();
+
+    if (isForward)
+    {
+      for (int ndx = curNdx + 1; ndx < viewList.size(); ndx++)
+        if (addMenuItem(menu, ndx)) return;
+    }
+    else
+    {
+      for (int ndx = curNdx - 1; ndx >= 0; ndx--)
+        if (addMenuItem(menu, ndx)) return;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private boolean addMenuItem(ObservableList<MenuItem> menu, int ndx)
+  {
+    MenuItem item;
+    HyperView<? extends HDT_Base> view = viewList.get(ndx);
+    HDT_Base record = view.getViewRecord();
+
+    if (record == null)
+    {
+      item = new MenuItem("(" + view.getHyperTab().getTab().getText() + " tab)");
+    }
+    else
+    {
+      String beforePart = "";
+
+      switch (view.getTabEnum())
+      {
+        case queryTab : beforePart = "(Queries tab) "; break;
+        case treeTab  : beforePart = "(Tree tab) "; break;
+        default       : break;
+      }
+
+      String typeName = db.getTypeName(record.getType());
+
+      if (record.getType() == hdtWork)
+      {
+        HDT_Work work = (HDT_Work) record;
+        if (work.workType.isNotNull())
+          typeName = work.workType.get().listName();
+      }
+      item = new MenuItem(beforePart + typeName + ": " + record.getCBText());
+    }
+
+    item.setOnAction(event ->
+    {
+      if (ui.cantSaveRecord(true)) return;
+
+      saveViewToSequence(false);
+      curNdx = ndx;
+      update();
+    });
+
+    menu.add(0, item);
+    return menu.size() == 20;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void setView(HyperView<? extends HDT_Base> view)
+  {
+    if (curNdx == -1) curNdx = 0;
+
+    if (curNdx == viewList.size())
+      viewList.add(view);
+    else
+      viewList.set(curNdx, view);
+
+    // This next part prevents duplicate adjacent entries
+
+    Iterator<HyperView<? extends HDT_Base>> it = viewList.iterator();
+    HyperView<? extends HDT_Base> lastView = null;
+
+    int ndx = 0;
+    while (it.hasNext())
+    {
+      view = it.next();
+
+      if (lastView != null)
+      {
+        if (view.getTabEnum() == lastView.getTabEnum())
+          if (view.getViewRecord() == lastView.getViewRecord())
+          {
+            it.remove();
+            if (ndx <= curNdx) curNdx--;
+            view = null;
+          }
+      }
+
+      if (view != null)
+      {
+        lastView = view;
+        ndx++;
+      }
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void removeRecord(HDT_Base record)
+  {
+    // Do not change the following code to use ArrayList.removeIf. The line that checks whether curNdx should be decremented will not work
+    // because the ArrayList does not actually get modified until all of the removeIf checks are completed.
+
+    Iterators.removeIf(viewList.iterator(), view ->
+    {
+      if (view.getViewRecord() != record) return false;
+
+      if (curNdx >= viewList.indexOf(view)) curNdx--;
+      return true;
+    });
   }
 
 //---------------------------------------------------------------------------

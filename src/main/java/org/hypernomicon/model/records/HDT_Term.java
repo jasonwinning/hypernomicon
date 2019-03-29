@@ -23,7 +23,6 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,14 +57,8 @@ public class HDT_Term extends HDT_Record implements HDT_RecordWithDescription
 
   @Override public void expire()
   {
-    Iterator<HDT_Concept> it = concepts.iterator();
-
-    while (it.hasNext())
-    {
-      HDT_Concept concept = it.next();
-      it.remove();
-      db.deleteRecord(hdtConcept, concept.getID());
-    }
+    while (concepts.isEmpty() == false)
+      db.deleteRecord(hdtConcept, concepts.get(0).getID());
 
     super.expire();
   }

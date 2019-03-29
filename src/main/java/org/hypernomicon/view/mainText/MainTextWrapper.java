@@ -34,8 +34,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 
-import com.google.common.collect.ImmutableList;
-
 import org.hypernomicon.App;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
@@ -387,7 +385,7 @@ public final class MainTextWrapper
         return bibAuthors1.compareTo(bibAuthors2);
       });
     else
-      sortedKeys.sort(KeyWork::compareTo);
+      sortedKeys.sort(null);
 
     sortedKeys.forEach(key ->
     {
@@ -1452,7 +1450,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static List<Integer> zoomFactors = ImmutableList.of(25, 33, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500);
+  private static final List<Integer> zoomFactors = List.of(25, 33, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500);
 
   public static void webViewAddZoom(WebView view, String prefID)
   {

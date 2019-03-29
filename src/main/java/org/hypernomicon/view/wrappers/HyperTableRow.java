@@ -125,7 +125,7 @@ public class HyperTableRow extends AbstractRow<HDT_Base, HyperTableRow>
     if ((cell != null) && (newCell != null))
       if (cell.equals(newCell))
       {
-        table.refreshCol(colNdx);
+        table.refresh();
         return false;
       }
 
@@ -151,7 +151,7 @@ public class HyperTableRow extends AbstractRow<HDT_Base, HyperTableRow>
           newCell = matchedCell;
         else if (HyperTableCell.getCellText(newCell).length() > 0)
         {
-          table.refreshCol(colNdx);
+          table.refresh();
           return false;
         }
       }
@@ -165,8 +165,7 @@ public class HyperTableRow extends AbstractRow<HDT_Base, HyperTableRow>
     }
 
     if (table.disableRefreshAfterCellUpdate == false)
-      table.refreshCol(colNdx);                 // Necessary workaround; tableview does not automatically refresh
-                                                // when you change values in the cell objects, just the row objects
+      table.refresh();
 
     CellUpdateHandler handler = col.updateHandler;
 
@@ -179,8 +178,8 @@ public class HyperTableRow extends AbstractRow<HDT_Base, HyperTableRow>
       handler.handle(this, newCell, colNdx + 1, nextPop);
 
       if (table.getColumns().size() > (colNdx + 1))
-        table.refreshCol(colNdx + 1);           // Necessary workaround; tableview does not automatically refresh
-    }                                           // when you change values in the cell objects, just the row objects
+        table.refresh();
+    }
 
     return true;
   }

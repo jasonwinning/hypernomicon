@@ -338,11 +338,11 @@ public class FolderTreeWatcher
                             {
                               HDT_WorkFile workFile = (HDT_WorkFile) record;
 
-                              if (ui.activeTab() == workTab)
+                              if (ui.activeTabEnum() == workTab)
                               {
                                 if (workFile.works.contains(ui.activeRecord()))
                                 {
-                                  WorkTabController tabWorks = (WorkTabController) ui.currentTab();
+                                  WorkTabController tabWorks = (WorkTabController) ui.activeTab();
                                   if      (tabWorks.wdc != null)  tabWorks.wdc.btnCancel.fire();
                                   else if (tabWorks.fdc != null)  tabWorks.fdc.btnCancel.fire();
 
@@ -352,9 +352,9 @@ public class FolderTreeWatcher
                             }
                             else if (record.getType() == hdtMiscFile)
                             {
-                              if (ui.activeTab() == miscFileTab)
+                              if (ui.activeTabEnum() == miscFileTab)
                               {
-                                FileTabController tabFiles = (FileTabController) ui.currentTab();
+                                FileTabController tabFiles = (FileTabController) ui.activeTab();
                                 if (tabFiles.fdc != null)
                                   tabFiles.fdc.btnCancel.fire();
 

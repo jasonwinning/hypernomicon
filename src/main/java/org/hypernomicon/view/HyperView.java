@@ -45,7 +45,7 @@ public class HyperView<HDT_CT extends HDT_Base>
   private HDT_CT viewRecord;
   private final int tabRecordKeyNdx;
   private final HDT_RecordType tabRecordType;
-  private final HyperTab.TabEnum tabEnum;
+  private final TabEnum tabEnum;
   private final TextViewInfo textInfo;
 
   int getTabRecordKeyNdx()          { return tabRecordKeyNdx; }
@@ -57,15 +57,10 @@ public class HyperView<HDT_CT extends HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  HyperView(HyperTab.TabEnum tabEnum, HDT_CT record)
-  {
-    this(tabEnum, record, new TextViewInfo());
-  }
+  public HyperView(HDT_CT record)                  { this(getTabEnumByRecordType(record.getType()), record); }
+  public HyperView(TabEnum tabEnum, HDT_CT record) { this(tabEnum, record, new TextViewInfo()); }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HyperView(HyperTab.TabEnum tabEnum, HDT_CT record, TextViewInfo textInfo)
+  public HyperView(TabEnum tabEnum, HDT_CT record, TextViewInfo textInfo)
   {
     if (record == null)
       tabRecordKeyNdx = 0;
@@ -84,7 +79,17 @@ public class HyperView<HDT_CT extends HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked") void refresh()
+  @SuppressWarnings("unchecked")
+  public <HyperTabType extends HyperTab<? extends HDT_Base, HDT_CT>> HyperTabType getHyperTab()
+  {
+    return (HyperTabType) HyperTab.getHyperTab(tabEnum);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked")
+  public void refresh()
   {
     if (viewRecord == null) return;
 

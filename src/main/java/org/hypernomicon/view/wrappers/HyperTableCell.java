@@ -164,7 +164,7 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
         if ((ndx >= thisWork.getAuthors().size()) || (ndx >= otherWork.getAuthors().size()))
           return thisWork.getAuthors().size() - otherWork.getAuthors().size();
 
-        cResult = thisWork.getAuthors().get(ndx).getSortKey().compareTo(otherWork.getAuthors().get(ndx).getSortKey());
+        cResult = thisWork.getAuthors().get(ndx).compareTo(otherWork.getAuthors().get(ndx));
 
         if (cResult != 0) return cResult;
       }
@@ -203,6 +203,14 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
 
     HDT_RecordType type = getCellType(cell);
     return type == hdtNone ? null : (HDT_T)db.records(type).getByID(id);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static boolean isEmpty(HyperTableCell cell)
+  {
+    return cell == null ? true : cell.equals(HyperTableCell.blankCell);
   }
 
 //---------------------------------------------------------------------------

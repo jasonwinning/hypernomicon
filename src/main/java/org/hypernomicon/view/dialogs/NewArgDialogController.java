@@ -56,7 +56,7 @@ public class NewArgDialogController extends HyperDialog
   @FXML private TextField tfArgName1, tfArgName2, tfArgName3, tfArgName4, tfArgName5, tfArgName6, tfArgName7, tfArgName8, tfPosition, tfTitle;
   @FXML private WebView view;
 
-  private HDT_Position curPosition;
+  private HDT_Position position;
   private HDT_Argument argument;
   private HyperCB hcbPerson, hcbPositionVerdict, hcbWork;
   private boolean revising = false;
@@ -78,9 +78,9 @@ public class NewArgDialogController extends HyperDialog
 
   private boolean changingWorkProgrammatically = false;
 
-  private void init(HDT_Position curPosition)
+  private void init(HDT_Position position)
   {
-    this.curPosition = curPosition;
+    this.position = position;
 
     hcbPerson = new HyperCB(cbPerson, ctDropDownList, new StandardPopulator(hdtPerson), null, false);
     hcbPositionVerdict = new HyperCB(cbPositionVerdict, ctDropDownList, new StandardPopulator(hdtPositionVerdict), null);
@@ -125,16 +125,16 @@ public class NewArgDialogController extends HyperDialog
     hcbPositionVerdict.populate(false);
     hcbWork.addBlankEntry();
 
-    tfPosition.setText(curPosition.name());
+    tfPosition.setText(position.name());
 
-    MainTextWrapper.setReadOnlyHTML(getHtmlEditorText(curPosition.getMainText().getHtml()), view.getEngine(), new TextViewInfo(), null);
+    MainTextWrapper.setReadOnlyHTML(getHtmlEditorText(position.getMainText().getHtml()), view.getEngine(), new TextViewInfo(), null);
 
     reviseSuggestions();
 
     rbExisting.setSelected(false);
     rbNew.setSelected(true);
 
-    tfTitle.setText(curPosition.name() + " Argument Stem");
+    tfTitle.setText(position.name() + " Argument Stem");
 
     addListeners(tfArgName1, rbArgName1, true);  addListeners(tfArgName2, rbArgName2, true);
     addListeners(tfArgName3, rbArgName3, true);  addListeners(tfArgName4, rbArgName4, true);
@@ -175,17 +175,8 @@ public class NewArgDialogController extends HyperDialog
 
   private void argNameSelect(Boolean newSelected, boolean proArg)
   {
-    {
-      if (newSelected == null) return;
-
-      if (newSelected.booleanValue())
-      {
-        if (proArg)
-          hcbPositionVerdict.selectID(1);
-        else
-          hcbPositionVerdict.selectID(2);
-      }
-    }
+    if ((newSelected != null) && newSelected.booleanValue())
+      hcbPositionVerdict.selectID(proArg ? 1 : 2);
   }
 
 //---------------------------------------------------------------------------
@@ -206,14 +197,14 @@ public class NewArgDialogController extends HyperDialog
 
     String part2 = part1.length() == 0 ? "Argument " : "argument ";
 
-    tfArgName1.setText(part1 + part2 + "for " + curPosition.name());
-    tfArgName2.setText(part1 + part2 + "for the " + curPosition.name());
-    tfArgName3.setText(part1 + part2 + "that " + curPosition.name());
-    tfArgName4.setText(part1 + part2 + "for the view that " + curPosition.name());
-    tfArgName5.setText(part1 + part2 + "against " + curPosition.name());
-    tfArgName6.setText(part1 + part2 + "against the " + curPosition.name());
-    tfArgName7.setText(part1 + part2 + "that it is false that " + curPosition.name());
-    tfArgName8.setText(part1 + part2 + "against the view that " + curPosition.name());
+    tfArgName1.setText(part1 + part2 + "for " + position.name());
+    tfArgName2.setText(part1 + part2 + "for the " + position.name());
+    tfArgName3.setText(part1 + part2 + "that " + position.name());
+    tfArgName4.setText(part1 + part2 + "for the view that " + position.name());
+    tfArgName5.setText(part1 + part2 + "against " + position.name());
+    tfArgName6.setText(part1 + part2 + "against the " + position.name());
+    tfArgName7.setText(part1 + part2 + "that it is false that " + position.name());
+    tfArgName8.setText(part1 + part2 + "against the view that " + position.name());
 
     revising = false;
   }
@@ -224,7 +215,7 @@ public class NewArgDialogController extends HyperDialog
   @Override protected boolean isValid()
   {
     argument = db.createNewBlankRecord(hdtArgument);
-    argument.addPosition(curPosition, hcbPositionVerdict.selectedRecord());
+    argument.addPosition(position, hcbPositionVerdict.selectedRecord());
 
     if      (rbArgName1.isSelected()) argument.setName(tfArgName1.getText());
     else if (rbArgName2.isSelected()) argument.setName(tfArgName2.getText());

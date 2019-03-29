@@ -21,13 +21,12 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.util.Util.*;
 
-import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.ObjectGroup;
 
-public final class Author implements Cloneable
+public final class Author implements Cloneable, Comparable<Author>
 {
   private final HDT_Person person;
   private final HDT_Work work;
@@ -64,12 +63,6 @@ public final class Author implements Cloneable
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  @Override public Author clone()
-  { try { return (Author) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }}
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
   public PersonName getName()                     { return getName(false); }
   public String getLastName()                     { return getLastName(false); }
   public String getLastName(boolean engChar)      { return getName(engChar).getLast(); }
@@ -81,12 +74,15 @@ public final class Author implements Cloneable
   public String getNameLastFirst()                { return getNameLastFirst(false); }
   public HDT_Person getPerson()                   { return person; }
   public HDT_Work getWork()                       { return work; }
+  public boolean outOfDate()                      { return work.getAuthors().stream().noneMatch(this::equals); }
   String getBibName()                             { return getName().getBibName(); }
   private PersonName getName(boolean engChar)     { return person == null ? (engChar ? nameEngChar : name) : person.getName(engChar); }
-  public boolean outOfDate()                      { return work.getAuthors().stream().noneMatch(this::equals); }
+  private String getSortKey()                     { return person == null ? nameEngChar.getSortKey() : person.getSortKey(); }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+  @Override public int compareTo(Author o)        { return getSortKey().compareTo(o.getSortKey()); }
+
+  @Override public Author clone()
+  { try { return (Author) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }}
 
   public boolean getIsEditor()   { return person == null ? isEditor   : (work == null ? false         : db.getNestedBoolean(work, person, tagEditor)); }
   public boolean getIsTrans()    { return person == null ? isTrans    : (work == null ? false         : db.getNestedBoolean(work, person, tagTranslator)); }
@@ -117,9 +113,7 @@ public final class Author implements Cloneable
 
     Author other = (Author)obj;
 
-    if (person != other.person) return false;
-
-    if (work != other.work) return false;
+    if ((person != other.person) || (work != other.work)) return false;
 
     if ((person == null) && (other.person == null))
       if (name.equals(other.name) == false)
@@ -143,21 +137,6 @@ public final class Author implements Cloneable
     return nullSwitch(objGroup.getValue(tagInFileName), true, val -> val.ternary == getInFileName()) &&
            nullSwitch(objGroup.getValue(tagEditor    ), true, val -> val.bool    == getIsEditor  ()) &&
            nullSwitch(objGroup.getValue(tagTranslator), true, val -> val.bool    == getIsTrans   ());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public String getSortKey()
-  {
-    if (person != null) return person.getSortKey();
-
-    String last = getLastName(true), first = getFirstName(true);
-
-    if ((last.length() == 0) || (first.length() == 0))
-      return last + first;
-
-    return last + '\u0000' + first;
   }
 
   //---------------------------------------------------------------------------

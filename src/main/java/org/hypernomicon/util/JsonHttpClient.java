@@ -21,8 +21,10 @@ import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.function.Consumer;
+
+import static java.nio.charset.StandardCharsets.*;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -40,7 +42,7 @@ import org.hypernomicon.util.json.JsonObj;
 
 public class JsonHttpClient
 {
-  private Header[] headers;
+  private List<Header> headers;
   private int statusCode;
   private String reasonPhrase = "";
   private JsonArray jsonArray = null;
@@ -48,9 +50,9 @@ public class JsonHttpClient
   private Exception lastException = null;
   private String lastUrl = "";
 
-  public int getStatusCode()      { return statusCode; }
-  public Header[] getHeaders()    { return headers; }
-  public String getReasonPhrase() { return reasonPhrase; }
+  public int getStatusCode()       { return statusCode; }
+  public List<Header> getHeaders() { return headers; }
+  public String getReasonPhrase()  { return reasonPhrase; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -85,9 +87,7 @@ public class JsonHttpClient
       lastUrl = "";
     }
 
-    ResponseHandler<Boolean> responseHndlr = getResponseHndlr(successHndlr, failHndlr);
-
-    httpClient.doRequest(request, responseHndlr, failHndlr);
+    httpClient.doRequest(request, getResponseHndlr(successHndlr, failHndlr), failHndlr);
   }
 
 //---------------------------------------------------------------------------
@@ -158,7 +158,7 @@ public class JsonHttpClient
 
     HttpEntity entity = response.getEntity();
 
-    headers = response.getAllHeaders();
+    headers = List.of(response.getAllHeaders());
     String contentType = "";
 
     for (Header header : headers)
@@ -173,7 +173,7 @@ public class JsonHttpClient
     {
       try
       {
-        Object obj = jsonParser.parse(new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8));
+        Object obj = jsonParser.parse(new InputStreamReader(entity.getContent(), UTF_8));
 
         if (obj instanceof JSONObject)
         {

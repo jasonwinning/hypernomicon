@@ -18,10 +18,10 @@
 package org.hypernomicon.model.records;
 
 import org.hypernomicon.model.HyperDataset;
-import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.SearchKeys;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.HyperPath;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Field;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PersonStatus;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Rank;
@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import javafx.geometry.Rectangle2D;
 
@@ -163,12 +162,14 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 
     picture.clear();
 
+    nullSwitch(subfield.get(), oldSubfield ->
+    {
+      subfield.setID(-1);
+      if (oldSubfield.persons.isEmpty())
+        db.deleteRecord(hdtSubfield, oldSubfield.getID());
+    });
+
     super.expire();
-
-    // Delete unused subfields
-
-    db.subfields.stream().filter(subfield -> subfield.persons.isEmpty()).map(HDT_Subfield::getID).collect(Collectors.toList()).forEach(subfieldID ->
-      db.deleteRecord(hdtSubfield, subfieldID));
   }
 
 //---------------------------------------------------------------------------

@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.HyperDataset;
-import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;

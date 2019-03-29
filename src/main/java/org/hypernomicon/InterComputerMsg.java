@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
+import static java.nio.charset.StandardCharsets.*;
+
 import org.apache.commons.io.FileUtils;
 
 public class InterComputerMsg
@@ -85,7 +87,7 @@ public class InterComputerMsg
 
     List<String> s;
 
-    try { s = FileUtils.readLines(filePath.toFile(), "UTF-8"); }
+    try { s = FileUtils.readLines(filePath.toFile(), UTF_8); }
     catch (IOException e) { return null; }
 
     if ((s.size() != 3) || s.get(0).equals(getComputerName()))

@@ -276,7 +276,7 @@ public class BibManager extends HyperDialog
 
     entryTable.addContextMenuItem("View this entry on the web", row -> row.getURL().length() > 0, row -> openWebLink(row.getURL()));
 
-    entryTable.addContextMenuItem("Go to work record", row -> nonNull(row.getWork()), row -> ui.goToRecord(row.getWork(), true));
+    entryTable.addContextMenuItem("Go to work record", HDT_Work.class, work -> ui.goToRecord(work, true));
 
     entryTable.addContextMenuItem("Unassign work record", row -> nonNull(row.getWork()), row ->
     {
@@ -322,20 +322,14 @@ public class BibManager extends HyperDialog
         assignEntryToWork(dlg.getWork(), row.getEntry());
     });
 
-    entryTable.addContextMenuItem("Launch work file",
-      row -> nullSwitch(row.getWork(), false, HDT_Work::canLaunch),
-      row -> row.getWork().launch(-1));
+    entryTable.addContextMenuItem("Launch work file", HDT_Work.class, HDT_Work::canLaunch, work -> work.launch(-1));
 
-    entryTable.addContextMenuItem("Show in Preview Window",
-      row -> nullSwitch(row.getWork(), false, HDT_Work::canLaunch),
-      row ->
-      {
-        HDT_Work work = row.getWork();
-
-        PreviewSource src = ui.determinePreviewContext();
-        previewWindow.setPreview(src, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
-        ui.openPreviewWindow(src);
-      });
+    entryTable.addContextMenuItem("Show in Preview Window", HDT_Work.class, HDT_Work::canLaunch, work ->
+    {
+      PreviewSource src = ui.determinePreviewContext();
+      previewWindow.setPreview(src, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+      ui.openPreviewWindow(src);
+    });
 
     webView.getEngine().titleProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
     {

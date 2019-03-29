@@ -32,7 +32,6 @@ import org.jbibtex.BibTeXDatabase;
 import org.jbibtex.BibTeXEntry;
 import org.jbibtex.BibTeXParser;
 import org.jbibtex.Key;
-import org.jbibtex.LaTeXObject;
 import org.jbibtex.LaTeXParser;
 import org.jbibtex.LaTeXPrinter;
 import org.jbibtex.ParseException;
@@ -41,7 +40,7 @@ import org.jbibtex.Value;
 
 import com.google.common.collect.Lists;
 
-import org.hypernomicon.model.PersonName;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
@@ -442,10 +441,7 @@ public abstract class BibData
       String val = mapping.getValue().toUserString();
 
       if (val.indexOf('\\') > -1 || val.indexOf('{') > -1)
-      {
-        List<LaTeXObject> latexObjects = latexParser.parse(val);
-        val = latexPrinter.print(latexObjects);
-      }
+        val = latexPrinter.print(latexParser.parse(val));
 
       bd.extractDOIandISBNs(val);
 

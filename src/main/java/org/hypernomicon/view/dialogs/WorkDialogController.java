@@ -41,9 +41,9 @@ import org.hypernomicon.bib.BibData.EntryType;
 import org.hypernomicon.bib.BibDataStandalone;
 import org.hypernomicon.bib.BibUtils;
 import org.hypernomicon.bib.PdfMetadata;
-import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.HyperPath;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Person;
@@ -298,7 +298,7 @@ public class WorkDialogController extends HyperDialog
     lblCase.setOnMouseClicked(event ->
     {
       alreadyChangingTitle = true;
-      tfTitle.setText(titleCase(tfTitle.getText()));
+      tfTitle.setText(HDT_Work.fixCase(tfTitle.getText()));
       alreadyChangingTitle = false;
     });
 
@@ -313,7 +313,7 @@ public class WorkDialogController extends HyperDialog
         String title = convertToSingleLine(change.getControlNewText());
 
         if ((title.equals(title.toUpperCase())) || (title.equals(title.toLowerCase())))
-          title = titleCase(title);
+          title = HDT_Work.fixCase(title);
 
         change.setRange(0, change.getControlText().length());
         change.setText(ultraTrim(title));
@@ -622,8 +622,7 @@ public class WorkDialogController extends HyperDialog
     BibData bd = null;
     boolean dontLaunchPdf = true;
 
-    if (FilePath.isEmpty(origFilePath)) return false;
-    if (origFilePath.exists() == false) return false;
+    if (FilePath.isEmpty(origFilePath) || origFilePath.exists() == false) return false;
     if (getMediaType(origFilePath).toString().contains("pdf") == false) return false;
 
     httpClient.stop();
@@ -643,8 +642,7 @@ public class WorkDialogController extends HyperDialog
 
     List<String> isbns = md.bd.getMultiStr(bfISBNs);
 
-    String doi = md.bd.getStr(bfDOI);
-    String isbn = "";
+    String doi = md.bd.getStr(bfDOI), isbn = "";
 
     if (isbns.size() > 0)
       isbn = isbns.get(0);

@@ -19,7 +19,7 @@ package org.hypernomicon.view.wrappers;
 
 import org.hypernomicon.util.Util;
 
-import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
+import javafx.scene.control.skin.ComboBoxListViewSkin;
 
 import org.hypernomicon.view.wrappers.CheckBoxOrCommandListCell.CheckBoxOrCommand;
 
@@ -35,7 +35,6 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.Skin;
 import javafx.util.StringConverter;
 
-@SuppressWarnings("restriction")
 public class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
 {
   //---------------------------------------------------------------------------
@@ -62,22 +61,20 @@ public class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
 
     public static ComboBox<CheckBoxOrCommand> createComboBox(ObservableList<CheckBoxOrCommand> items, String caption)
     {
-      ComboBox<CheckBoxOrCommand> cb = new ComboBox<CheckBoxOrCommand>(items)
+      ComboBox<CheckBoxOrCommand> cb = new ComboBox<>(items)
       {
         @Override protected Skin<?> createDefaultSkin()
         {
-          return new ComboBoxListViewSkin<CheckBoxOrCommand>(this)
-          {
-            // overridden to prevent the popup from disappearing
-            @Override protected boolean isHideOnClickEnabled() { return false; }
-          };
+          ComboBoxListViewSkin<CheckBoxOrCommand> skin = new ComboBoxListViewSkin<>(this);
+          skin.setHideOnClick(false);
+          return skin;
         }
       };
 
       cb.setConverter(new StringConverter<CheckBoxOrCommand>()
       {
         @Override public String toString(CheckBoxOrCommand object)   { return caption; }
-        @Override public CheckBoxOrCommand fromString(String string) { return new CheckBoxOrCommand("", Util::noOp); }
+        @Override public CheckBoxOrCommand fromString(String string) { return new CheckBoxOrCommand(caption, Util::noOp); }
       });
 
       cb.setCellFactory(listView -> new CheckBoxOrCommandListCell());
@@ -86,7 +83,7 @@ public class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
       {
         if (newValue.text.length() == 0) return;
 
-        Platform.runLater(() -> cb.getSelectionModel().select(new CheckBoxOrCommand("", Util::noOp)));
+        Platform.runLater(() -> cb.getSelectionModel().select(new CheckBoxOrCommand(caption, Util::noOp)));
       });
 
       cb.getSelectionModel().select(items.get(0));

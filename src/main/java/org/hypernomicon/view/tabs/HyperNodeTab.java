@@ -31,17 +31,18 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_R
   NodeTabController<HDT_RT, HDT_CT> ctrlr;
 
   @Override public final MainTextWrapper getMainTextWrapper() { return ctrlr.getMainTextWrapper(); }
+  @Override public String getRecordName()                     { return ctrlr.getRecordName(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final <HDT_RT extends HDT_Base, HDT_CT extends HDT_RecordWithConnector> void addHyperTab(TabEnum tabEnum, Tab tab, HyperNodeTab<HDT_RT, HDT_CT> hyperTab) throws IOException
+  @Override public void baseInit(TabEnum tabEnum, Tab tab) throws IOException
   {
     FXMLLoader loader = new FXMLLoader(App.class.getResource("view/tabs/NodeTab.fxml"));
     tab.setContent(loader.load());
-    hyperTab.ctrlr = loader.getController();
+    ctrlr = loader.getController();
 
-    HyperTab.baseInit(tabEnum, tab, hyperTab);
+    super.baseInit(tabEnum, tab);
   }
 
 //---------------------------------------------------------------------------

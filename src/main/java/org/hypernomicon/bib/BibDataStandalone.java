@@ -93,12 +93,9 @@ public class BibDataStandalone extends BibData
 
   void setYear(String text, YearType yearType)
   {
-    if (this.yearType != null)
-      if (this.yearType.ordinal() > yearType.ordinal()) return;
+    if ((this.yearType != null) && (this.yearType.ordinal() > yearType.ordinal())) return;
 
-    String year = extractYear(text);
-
-    setStr(bfYear, year);
+    setStr(bfYear, extractYear(text));
   }
 
 //---------------------------------------------------------------------------

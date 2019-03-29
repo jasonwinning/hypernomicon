@@ -49,7 +49,6 @@ import org.hypernomicon.bib.BibAuthors;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.PersonName;
 
 public final class Authors implements Iterable<Author>
 {
@@ -423,7 +422,7 @@ public final class Authors implements Iterable<Author>
     }
 
     if (sort)
-      authors.sort((x, y) -> x.getNameLastFirst(true).compareTo(y.getNameLastFirst(true)));
+      authors.sort(null);
 
     for (int ndx = 0; ndx < authors.size(); ndx++)
     {
@@ -435,10 +434,7 @@ public final class Authors implements Iterable<Author>
           peopleStr = peopleStr.trim() + " & ";
       }
 
-      if (firstInitials)
-        peopleStr = peopleStr + authors.get(ndx).getBibName();
-      else
-        peopleStr = peopleStr + authors.get(ndx).getNameLastFirst();
+      peopleStr = peopleStr + (firstInitials ? authors.get(ndx).getBibName() : authors.get(ndx).getNameLastFirst());
     }
 
     return peopleStr;

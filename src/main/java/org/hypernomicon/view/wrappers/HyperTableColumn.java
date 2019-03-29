@@ -22,6 +22,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -34,12 +35,12 @@ import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 import org.hypernomicon.view.tabs.PersonTabController;
 import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
+
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
@@ -182,7 +183,7 @@ public class HyperTableColumn
 
         tc.setEditable(false);
         tc.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
-        tc.setCellFactory(tableCol -> new TableCell<HyperTableRow, HyperTableCell>()
+        tc.setCellFactory(tableCol -> new TableCell<>()
         {
           @Override public void updateItem(HyperTableCell cell, boolean empty)
           {
@@ -232,12 +233,15 @@ public class HyperTableColumn
       case ctInvSelect :
 
         tc.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
-        tc.setCellFactory(tableCol -> new TableCell<HyperTableRow, HyperTableCell>()
+        tc.setCellFactory(tableCol -> new TableCell<>()
         {
           @Override public void startEdit()
           {
-            PersonTabController personTabCtrlr = HyperTab.getHyperTab(TabEnum.personTab);
-            personTabCtrlr.showInvSelectDialog((HyperTableRow) getTableRow().getItem());
+            super.startEdit();
+            super.cancelEdit();
+
+            PersonTabController personTabCtrlr = HyperTab.getHyperTab(personTab);
+            personTabCtrlr.showInvSelectDialog(getTableRow().getItem());
           }
 
           @Override public void updateItem(HyperTableCell item, boolean empty)

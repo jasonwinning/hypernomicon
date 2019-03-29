@@ -25,17 +25,11 @@ import java.util.LinkedList;
 
 import org.apache.commons.lang3.SystemUtils;
 
-import com.sun.glass.ui.Window;
-
-import static java.util.Objects.*;
-
-import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-@SuppressWarnings("restriction")
 public final class WindowStack
 {
 
@@ -126,24 +120,7 @@ public final class WindowStack
 
     stage.toFront();
 
-    if (SystemUtils.IS_OS_WINDOWS) Platform.runLater(() ->
-    {
-      for (int ndx = 0; ndx < 6; ndx++)
-      {
-        if (Window.getWindows().stream().anyMatch(window -> nonNull(window.getOwner())))
-        {
-          cyclingFocus = false;
-          return;
-        }
-
-        sleepForMillis(50);
-        stage.toFront();
-      }
-
-      cyclingFocus = false;
-    });
-    else
-      cyclingFocus = false;
+    cyclingFocus = false;
   }
 
 //---------------------------------------------------------------------------

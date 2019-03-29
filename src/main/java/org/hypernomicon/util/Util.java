@@ -25,6 +25,8 @@ import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.WindowStack;
 import org.hypernomicon.view.dialogs.InternetCheckDialogController;
+import org.hypernomicon.view.dialogs.LaunchCommandsDialogController;
+import org.hypernomicon.view.dialogs.LaunchCommandsDialogController.LaunchCommandTypeEnum;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -39,7 +41,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Constructor;
 
 import static java.nio.charset.StandardCharsets.*;
 import static java.util.Collections.binarySearch;
@@ -63,7 +65,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -76,6 +77,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -117,6 +119,7 @@ import javafx.scene.input.DataFormat;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -138,13 +141,12 @@ import org.jsoup.Jsoup;
 import com.google.common.escape.Escaper;
 import com.google.common.html.HtmlEscapers;
 import com.ibm.icu.text.Transliterator;
-import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
-import com.sun.javafx.scene.control.skin.ContextMenuContent;
+
+import javafx.scene.control.skin.ComboBoxListViewSkin;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 //---------------------------------------------------------------------------
 
-@SuppressWarnings("restriction")
 public final class Util
 {
   static final JSONParser jsonParser = new JSONParser();
@@ -396,9 +398,7 @@ public final class Util
     if (removeParen)
       url = removeFirstParenthetical(url);
 
-    try { url = URLEncoder.encode(url.trim(), "UTF-8"); } catch (UnsupportedEncodingException e) { url = ""; }
-
-    return url;
+    return URLEncoder.encode(url.trim(), UTF_8);
   }
 
 //---------------------------------------------------------------------------
@@ -409,7 +409,15 @@ public final class Util
     String param = "";
 
     if (title.length() > 0)
-      param = "allintitle:\"" + title + "\"";
+    {
+      String[] array = title.split("[.;:!?()]|--");
+
+      if (array.length > 1)
+        if (confirmDialog("Should the subtitle be omitted? It often works better to omit subtitles when searching Google Scholar."))
+          title = array[0];
+
+      param = "allintitle:\"" + ultraTrim(title) + "\"";
+    }
 
     if (author.length() > 0)
     {
@@ -441,7 +449,7 @@ public final class Util
     if (lastName.length() > 0)
       lastName = "au%3A" + escapeURL(lastName, true);
 
-    if (year.length() > 0)
+    if ((year.length() > 0) && StringUtils.isNumeric(year))
       openWebLink("http://www.worldcat.org/search?q=" + lastName + "+ti%3A" + escapeURL(title, true) + "&fq=yr%3A" + year + ".." + year + "+%3E&qt=advanced");
     else
       openWebLink("http://www.worldcat.org/search?q=" + lastName + "+ti%3A" + escapeURL(title, true) + "&qt=advanced");
@@ -495,24 +503,52 @@ public final class Util
   {
     if (FilePath.isEmpty(filePath)) return;
 
-    if (filePath.getExtensionOnly().toLowerCase().equals("pdf"))
+    String readerPath = appPrefs.get(PREF_KEY_PDF_READER, "");
+
+    if ((filePath.getExtensionOnly().toLowerCase().equals("pdf") == false) || (readerPath.length() == 0))
     {
-      String readerPath = appPrefs.get(PREF_KEY_PDF_READER, "");
-
-      if (readerPath.length() == 0)
-        DesktopApi.open(filePath);
-      else
-      {
-        if ((pageNum < 0) || (SystemUtils.IS_OS_WINDOWS == false))
-          launchExplicit(appPrefs.get(PREF_KEY_PDF_READER, ""), filePath.toString());
-        else
-          launchExplicit(appPrefs.get(PREF_KEY_PDF_READER, ""), "/A", "page=" + pageNum, filePath.toString());
-      }
-
+      DesktopApi.open(filePath);
       return;
     }
 
-    DesktopApi.open(filePath);
+    if (pageNum < 1) pageNum = 1;
+    String[] argz;
+    String commands = appPrefs.get(PREF_KEY_PDF_READER_COMMANDS, "");
+    LaunchCommandTypeEnum commandType = LaunchCommandTypeEnum.getByPrefVal(appPrefs.get(PREF_KEY_PDF_READER_COMMAND_TYPE, ""));
+
+    if ((commandType != null) && (commands.length() > 0))
+    {
+      if ((commandType == LaunchCommandTypeEnum.appleScript) && SystemUtils.IS_OS_MAC)
+      {
+        argz = new String[] { "osascript",
+                              "-e",
+                              LaunchCommandsDialogController.resolve(commands, readerPath, filePath, pageNum) };
+        try
+        {
+          Runtime.getRuntime().exec(argz);
+        }
+        catch (IOException e)
+        {
+          messageDialog("An error occurred while trying to start application: " + e.getMessage(), mtError);
+        }
+
+        return;
+      }
+
+      if (commandType == LaunchCommandTypeEnum.opSysCmdAndArgs)
+      {
+        List<String> list = convertMultiLineStrToStrList(LaunchCommandsDialogController.resolve(commands, readerPath, filePath, pageNum), false);
+
+        if (list.size() > 1)
+        {
+          String execPathStr = list.remove(0);
+          launchExplicit(execPathStr, list.toArray(new String[0]));
+          return;
+        }
+      }
+    }
+
+    launchExplicit(readerPath, filePath.toString());
   }
 
 //---------------------------------------------------------------------------
@@ -707,7 +743,7 @@ public final class Util
 
   public static boolean parseBoolean(String s)
   {
-    if (Boolean.parseBoolean(s)) return true;  // in case they change how this works
+    if (Boolean.parseBoolean(s)) return true;
 
     s = s.trim().toLowerCase();
 
@@ -1008,6 +1044,22 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static String sentenceCase(String str)
+  {
+    if (safeStr(str).length() == 0) return "";
+
+    str = str.toLowerCase();
+
+    Pattern p = Pattern.compile("([\\.:?!]\\h)(\\p{IsAlphabetic})");
+
+    str = p.matcher(str).replaceAll(match -> match.group(1) + match.group(2).toUpperCase());
+
+    return str.substring(0, 1).toUpperCase() + str.substring(1);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static String titleCase(String str)
   {
     MutableInt pos = new MutableInt(0);
@@ -1237,9 +1289,9 @@ public final class Util
 //---------------------------------------------------------------------------
 
   private static final String NORMALIZE_ID = "NFD; [:Nonspacing Mark:] Remove; NFC";
-  private static Transliterator transliterator1 = Transliterator.getInstance("NFD; Any-Latin; NFC; " + NORMALIZE_ID),
-                                transliterator2 = Transliterator.getInstance("NFD; Latin-ASCII; NFC; " + NORMALIZE_ID);
-  private static HashMap<Character, String> charMap = new HashMap<>();
+  private static final Transliterator transliterator1 = Transliterator.getInstance("NFD; Any-Latin; NFC; " + NORMALIZE_ID),
+                                      transliterator2 = Transliterator.getInstance("NFD; Latin-ASCII; NFC; " + NORMALIZE_ID);
+  private static final HashMap<Character, String> charMap = new HashMap<>();
 
   public static String convertToEnglishChars(String input)
   {
@@ -1317,35 +1369,41 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // The hacky nature of this function is due to the fact that the webview context menu is not publicly accessible
+  // See https://bugs.openjdk.java.net/browse/JDK-8090931
+
   public static void setHTMLContextMenu(MenuItem... items)
   {
-    @SuppressWarnings("deprecation")
-    final Iterator<Window> windows = Window.impl_getWindows(); // In Java 9 should be able to call Window.getWindows()
-    Window window;
+    Parent parent = nullSwitch(nullSwitch(findFirst(Window.getWindows(), window -> window instanceof ContextMenu),
+                                          null, Window::getScene), null, Scene::getRoot);
+    if (parent == null) return;
 
-    do
-    {
-      if (windows.hasNext() == false) return;
-
-      window = windows.next();
-
-    } while ((window instanceof ContextMenu) == false);
-
-    Scene scene = window.getScene();
-    if ((scene == null) || (scene.getRoot() == null)) return;
-
-    ObservableList<Node> rootChildren = scene.getRoot().getChildrenUnmodifiable();
+    ObservableList<Node> rootChildren = parent.getChildrenUnmodifiable();
     if (rootChildren.size() == 0) return;
 
     Node bridge = rootChildren.get(0).lookup(".context-menu");
     if (bridge == null) return;
 
-    ContextMenuContent cmc = (ContextMenuContent)((Parent)bridge).getChildrenUnmodifiable().get(0);
+    Class<? extends Object> contextMenuContentClass, menuItemContainerClass;
 
-    ObservableList<Node> menuChildren = cmc.getItemsContainer().getChildren();
-    menuChildren.clear();
+    try
+    {
+      contextMenuContentClass = Class.forName("com.sun.javafx.scene.control.ContextMenuContent");
+      menuItemContainerClass = Class.forName("com.sun.javafx.scene.control.ContextMenuContent$MenuItemContainer");
 
-    Arrays.asList(items).forEach(item -> menuChildren.add(cmc.new MenuItemContainer(item)));
+      Node contextMenuContent = ((Parent)bridge).getChildrenUnmodifiable().get(0);
+      Constructor<?> ctor = menuItemContainerClass.getDeclaredConstructor(contextMenuContentClass, MenuItem.class);
+
+      ObservableList<Node> list = VBox.class.cast(contextMenuContentClass.getMethod("getItemsContainer").invoke(contextMenuContent)).getChildren();
+
+      list.clear();
+      for (MenuItem item : items)
+        list.add((Node) ctor.newInstance(contextMenuContent, item));
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -1368,7 +1426,7 @@ public final class Util
   @SuppressWarnings("unchecked")
   public static <T> ListView<T> getCBListView(ComboBox<T> cb)
   {
-    return nullSwitch((ComboBoxListViewSkin<T>)cb.getSkin(), null, ComboBoxListViewSkin::getListView);
+    return nullSwitch((ComboBoxListViewSkin<T>)cb.getSkin(), null, skin -> (ListView<T>) skin.getPopupContent());
   }
 
 //---------------------------------------------------------------------------

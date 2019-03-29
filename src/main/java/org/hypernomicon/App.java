@@ -35,7 +35,6 @@ import org.hypernomicon.view.previewWindow.ContentsWindow;
 import org.hypernomicon.view.previewWindow.PreviewWindow;
 import org.hypernomicon.view.tabs.PersonTabController;
 import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 import org.hypernomicon.view.tabs.QueriesTabController.QueryView;
 
 import java.io.BufferedReader;
@@ -49,7 +48,6 @@ import java.net.Socket;
 import static java.lang.management.ManagementFactory.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
@@ -123,22 +121,14 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void main(String[] args)
+  @Override public void init()
   {
+    app = this;
+
     Logger.getLogger("org.apache").setLevel(Level.WARN);
 
     String rtArgs = getRuntimeMXBean().getInputArguments().toString();
     isDebugging = rtArgs.contains("-agentlib:jdwp") || rtArgs.contains("-Xrunjdwp");
-
-    launch(args);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void init()
-  {
-    app = this;
 
     try (Socket clientSocket = new Socket("localhost", InterProcDaemon.PORT);
          PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -240,8 +230,8 @@ public final class App extends Application
 
   private void testUpdatingAllRecords()
   {
-    List<HDT_RecordType> types = Arrays.asList(hdtPerson,   hdtInstitution, hdtInvestigation, hdtDebate,   hdtPosition,
-                                               hdtArgument, hdtWork,        hdtTerm,          hdtMiscFile, hdtNote);
+    List<HDT_RecordType> types = List.of(hdtPerson,   hdtInstitution, hdtInvestigation, hdtDebate,   hdtPosition,
+                                         hdtArgument, hdtWork,        hdtTerm,          hdtMiscFile, hdtNote);
 
     total = 0; ctr = 0; lastPercent = 0;
     types.forEach(type -> total += db.records(type).size());
@@ -265,7 +255,7 @@ public final class App extends Application
         if (record.getType() == hdtInvestigation)
           mainText = PersonTabController.class.cast(getHyperTab(personTab)).getInvMainTextWrapper(record.getID());
         else
-          mainText = ui.currentTab().getMainTextWrapper();
+          mainText = ui.activeTab().getMainTextWrapper();
 
         if (mainText != null)
           mainText.beginEditing(false);
@@ -409,7 +399,7 @@ public final class App extends Application
 
       rescale();
 
-      getHyperTabs().forEach(HyperTab::setDividerPositions);
+      forEachHyperTab(HyperTab::setDividerPositions);
 
       bibManagerDlg = BibManager.create();
 
@@ -494,7 +484,7 @@ public final class App extends Application
 
     MainTextWrapper.rescale();
 
-    getHyperTab(TabEnum.personTab).rescale();
+    getHyperTab(personTab).rescale();
   }
 
 //---------------------------------------------------------------------------

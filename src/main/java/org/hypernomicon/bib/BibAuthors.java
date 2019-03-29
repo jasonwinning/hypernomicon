@@ -27,8 +27,8 @@ import com.google.common.collect.Iterators;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.BibData.AuthorType;
-import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;

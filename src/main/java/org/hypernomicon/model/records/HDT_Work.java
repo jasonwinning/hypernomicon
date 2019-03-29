@@ -362,8 +362,9 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
   public String getInvText(HDT_Person person)
   {
-    return person.investigations.stream().map(HDT_Investigation::listName)
-                                         .reduce((s1, s2) -> s1 + ", " + s2).orElse("");
+    return investigations.stream().filter(inv -> inv.person.get() == person)
+                                  .map(HDT_Investigation::listName)
+                                  .reduce((s1, s2) -> s1 + ", " + s2).orElse("");
   }
 
 //---------------------------------------------------------------------------
@@ -376,7 +377,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     String indicator = "";
 
     if (work.workFiles.isEmpty() == false)
-      indicator = work.workFiles.get(0).getPath().getFilePath().getExtensionOnly();
+      indicator = work.workFiles.get(0).getPath().getFilePath().getExtensionOnly().toLowerCase();
     else if (safeStr(work.getWebLink()).length() > 0)
       indicator = "web";
 
@@ -448,6 +449,17 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     }
 
     return new WorkBibData(this);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String fixCase(String title)
+  {
+    if (db.prefs.getBoolean(PREF_KEY_SENTENCE_CASE, false))
+      return sentenceCase(title);
+
+    return titleCase(title);
   }
 
 //---------------------------------------------------------------------------

@@ -18,11 +18,11 @@
 package org.hypernomicon.view.dialogs;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.model.PersonName;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Person.PotentialKeySet;
 import org.hypernomicon.model.records.HDT_Work;

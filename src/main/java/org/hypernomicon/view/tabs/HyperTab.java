@@ -29,6 +29,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.hypernomicon.App;
 import org.hypernomicon.model.records.HDT_Base;
@@ -71,6 +72,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
   abstract void focusOnSearchKey();
   abstract HDT_RecordType getType();
 
+  public abstract String getRecordName();
   public abstract boolean update();
   public abstract void clear();
   public abstract boolean saveToRecord(boolean showMessage);
@@ -83,7 +85,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
   public TextViewInfo getMainTextInfo()       { return new TextViewInfo(); }
   public MainTextWrapper getMainTextWrapper() { return null; }
   public void rescale()                       { return; }
-  public int getRecordCount()                 { return db.records(getRecordTypeByTabEnum(tabEnum)).size(); }
+  public int getRecordCount()                 { return db.records(getType()).size(); }
   public final int getActiveID()              { return nullSwitch(activeRecord(), -1, HDT_Base::getID); }
   public final HyperView<HDT_CT> getView()    { return view; }
   public final HDT_CT viewRecord()            { return getView().getViewRecord(); }
@@ -92,36 +94,28 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
 
   public void newClick(HDT_RecordType objType, HyperTableRow row) { }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static final Collection<HyperTab<? extends HDT_Base, ? extends HDT_Base>> getHyperTabs()
-  {
-    return Collections.unmodifiableCollection(enumToHyperTab.values());
-  }
+  public static void forEachHyperTab(Consumer<HyperTab<? extends HDT_Base, ? extends HDT_Base>> action) { enumToHyperTab.values().forEach(action); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <HDT_RT extends HDT_Base, HDT_CT extends HDT_Base> void addHyperTab(TabEnum tabEnum, Tab tab, String ctrlrFilename) throws IOException
+  public static void addHyperTab(TabEnum tabEnum, Tab tab, String ctrlrFilename) throws IOException
   {
     FXMLLoader loader = new FXMLLoader(App.class.getResource("view/tabs/" + ctrlrFilename));
     tab.setContent(loader.load());
-    HyperTab<HDT_RT, HDT_CT> hyperTab = loader.getController();
-
-    baseInit(tabEnum, tab, hyperTab);
+    HyperTab.class.cast(loader.getController()).baseInit(tabEnum, tab);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static final <HDT_RT extends HDT_Base, HDT_CT extends HDT_Base> void baseInit(TabEnum tabEnum, Tab tab, HyperTab<HDT_RT, HDT_CT> hyperTab)
+  void baseInit(TabEnum tabEnum, Tab tab) throws IOException
   {
-    hyperTab.tab = tab;
-    hyperTab.init(tabEnum);
+    this.tab = tab;
+    init(tabEnum);
 
-    enumToHyperTab.put(tabEnum, hyperTab);
-    tabToHyperTab.put(tab, hyperTab);
+    enumToHyperTab.put(tabEnum, this);
+    tabToHyperTab.put(tab, this);
 
     if ((tabEnum != treeTab) && (tabEnum != queryTab))
       ui.addSelectorTab(tabEnum);
@@ -187,6 +181,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
       case hdtWork        : return workTab;
       case hdtMiscFile    : return miscFileTab;
       case hdtNote        : return noteTab;
+      case hdtWorkLabel   : return treeTab;
 
       default             : return personTab;
     }
@@ -195,9 +190,9 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final <HDT_RT extends HDT_Base, HDT_CT extends HDT_Base> HyperTab<HDT_RT, HDT_CT> setTabView(HyperView<HDT_CT> hyperView)
+  public static final <HDT_CT extends HDT_Base> HyperTab<? extends HDT_Base, HDT_CT> setTabView(HyperView<HDT_CT> hyperView)
   {
-    HyperTab<HDT_RT, HDT_CT> hyperTab = getHyperTab(hyperView.getTabEnum());
+    HyperTab<? extends HDT_Base, HDT_CT> hyperTab = hyperView.getHyperTab();
     hyperTab.setView(hyperView);
     return hyperTab;
   }
@@ -249,6 +244,36 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
 
     HDT_RT record = activeRecord();
     return db.records(record.getType()).getKeyNdxByID(record.getID());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void refresh()
+  {
+    nullSwitch(getView(), view ->
+    {
+      view.refresh();
+      nullSwitch(view.getViewRecord(), this::setRecord);
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void clearTabAndView()
+  {
+    setView(new HyperView<>(tabEnum, null));
+    clear();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void clearAllTabsAndViews()
+  {
+    enumToHyperTab.values().forEach(HyperTab::clearTabAndView);
+    previewWindow.clearAll();
   }
 
 //---------------------------------------------------------------------------

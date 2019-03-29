@@ -68,6 +68,7 @@ public class NodeTabController<HDT_RT extends HDT_Base, HDT_CT extends HDT_Recor
 
 //---------------------------------------------------------------------------
 
+  String getRecordName()               { return tfName.getText(); }
   void focusOnSearchKey()              { safeFocus(tfSearchKey); }
   void hilite(String text)             { mainText.hilite(text); }
   TextViewInfo getMainTextInfo()       { return mainText.getViewInfo(); }

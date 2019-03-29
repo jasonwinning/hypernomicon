@@ -32,8 +32,6 @@ import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import com.google.common.collect.Lists;
-
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -77,6 +75,7 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   public FileDialogController fdc = null;
   private HDT_MiscFile curMiscFile;
 
+  @Override public String getRecordName()                    { return tfName.getText(); }
   @Override HDT_RecordType getType()                         { return hdtMiscFile; }
   @Override public void enable(boolean enabled)              { ui.tabFiles.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text)          { mainText.hilite(text); }
@@ -293,13 +292,11 @@ public class FileTabController extends HyperTab<HDT_MiscFile, HDT_MiscFile>
       fileType.setName(hcbFileType.getText());
     }
 
+    HDT_FileType oldFileType = curMiscFile.fileType.get();
     curMiscFile.fileType.setID(fileTypeID);
 
-    Lists.newArrayList(db.fileTypes).forEach(fileType ->
-    {
-      if (fileType.miscFiles.isEmpty())
-        db.deleteRecord(hdtFileType, fileType.getID());
-    });
+    if ((oldFileType != null) && oldFileType.miscFiles.isEmpty())
+      db.deleteRecord(hdtFileType, oldFileType.getID());
 
   // End file type
 

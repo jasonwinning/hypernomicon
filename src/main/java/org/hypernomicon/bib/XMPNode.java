@@ -21,13 +21,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 
+import org.hypernomicon.model.items.PersonName;
+
 import com.adobe.internal.xmp.XMPException;
 import com.adobe.internal.xmp.XMPIterator;
 import com.adobe.internal.xmp.XMPMeta;
 import com.adobe.internal.xmp.XMPMetaFactory;
 import com.adobe.internal.xmp.properties.XMPPropertyInfo;
-
-import org.hypernomicon.model.PersonName;
 
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.bib.BibData.*;
@@ -250,14 +250,27 @@ public class XMPNode
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private boolean nameIsNotExcluded(String nameStr)
+  {
+    nameStr = safeStr(nameStr).toLowerCase();
+
+    return ! (nameStr.contains("journaldoi") || nameStr.contains("instanceid") || nameStr.contains("documentid"));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void extractDOIandISBNs(BibData bd)
   {
-    if (safeStr(name).toLowerCase().contains("journaldoi") == false)
+    if (nameIsNotExcluded(name))
       bd.extractDOIandISBNs(value);
 
     prefixToNameToChild.values().forEach(nameToChild ->
-      nameToChild.values().forEach(child ->
-        child.extractDOIandISBNs(bd)));
+      nameToChild.forEach((childName, child) ->
+      {
+        if (nameIsNotExcluded(childName))
+          child.extractDOIandISBNs(bd);
+      }));
 
     elements.forEach(child -> child.extractDOIandISBNs(bd));
   }

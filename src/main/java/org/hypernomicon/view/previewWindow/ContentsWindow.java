@@ -22,6 +22,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.util.ArrayList;
 import org.hypernomicon.model.records.HDT_Work;
@@ -29,7 +30,6 @@ import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.view.dialogs.HyperDialog;
 import org.hypernomicon.view.tabs.WorkTabController;
-import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -157,8 +157,8 @@ public class ContentsWindow extends HyperDialog
 
   private void setPageNum(HDT_Work work, int num, boolean isStart)
   {
-    if ((ui.currentTab().getTabEnum() == TabEnum.workTab) && (ui.currentTab().activeRecord() == work))
-      WorkTabController.class.cast(ui.currentTab()).setPageNum(curWorkFile, num, isStart);
+    if ((ui.activeTab().getTabEnum() == workTab) && (ui.activeTab().activeRecord() == work))
+      WorkTabController.class.cast(ui.activeTab()).setPageNum(curWorkFile, num, isStart);
     else
     {
       if (isStart)
@@ -210,10 +210,10 @@ public class ContentsWindow extends HyperDialog
       if (work.authorRecords.size() > 0)
         authorID = work.authorRecords.get(0).getID();
 
-      if (ui.activeTab() == TabEnum.workTab)
-        if (ui.currentTab().activeRecord() == work)
+      if (ui.activeTabEnum() == workTab)
+        if (ui.activeTab().activeRecord() == work)
         {
-          wtc = (WorkTabController) ui.currentTab();
+          wtc = (WorkTabController) ui.activeTab();
 
           title = wtc.getTitle();
           year = wtc.tfYear.getText();

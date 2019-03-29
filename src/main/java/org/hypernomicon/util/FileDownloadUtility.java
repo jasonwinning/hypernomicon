@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.HttpResponseException;
@@ -34,12 +35,12 @@ import org.apache.http.client.methods.RequestBuilder;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
 
-import org.hypernomicon.App;
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.util.filePath.FilePath;
 
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.App.*;
 
 public class FileDownloadUtility
 {
@@ -152,7 +153,6 @@ public class FileDownloadUtility
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings({ "unused" })
   private static void downloadFile(String fileURL, FilePath dirPath, String fileNameStr, boolean saveToBuffer, StringBuilder fileName,
                                    boolean assumeIsImage, AsyncHttpClient httpClient, Consumer<Buffer> successHndlr, Consumer<Exception> failHndlr)
   {
@@ -161,7 +161,7 @@ public class FileDownloadUtility
     ResponseHandler<Boolean> responseHndlr = response ->
     {
       String contentType = "", disposition = "";
-      int contentLength = -1;
+      MutableInt contentLength = new MutableInt(-1);
       FilePath saveFilePath;
 
       int statusCode = response.getStatusLine().getStatusCode();
@@ -182,7 +182,7 @@ public class FileDownloadUtility
         switch (header.getName())
         {
           case "Content-Type" : contentType = header.getValue(); break;
-          case "Content-Length" : contentLength = parseInt(header.getValue(), -1); break;
+          case "Content-Length" : contentLength.setValue(parseInt(header.getValue(), -1)); break;
           case "Content-Disposition" :
 
             if (fileName.length() == 0)
@@ -221,7 +221,7 @@ public class FileDownloadUtility
             MimeType mimeType;
             try
             {
-              mimeType = App.tika.getMimeRepository().forName(contentType);
+              mimeType = tika.getMimeRepository().forName(contentType);
               ext = mimeType.getExtension();
             }
             catch (MimeTypeException e) { noOp(); }
@@ -291,9 +291,9 @@ public class FileDownloadUtility
     try
     {
       request =  RequestBuilder.get()
-          .setUri(fileURL)
-          .setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:63.0) Gecko/20100101 Firefox/63.0")
-          .build();
+        .setUri(fileURL)
+        .setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:66.0) Gecko/20100101 Firefox/66.0")
+        .build();
     }
     catch (Exception e)
     {

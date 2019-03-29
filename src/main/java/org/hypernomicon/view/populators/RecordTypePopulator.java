@@ -37,6 +37,9 @@ public class RecordTypePopulator extends Populator
   private boolean changed = true;
   final List<HyperTableCell> choices = new ArrayList<>();
 
+  public RecordTypePopulator()                           { this(null); }
+  public RecordTypePopulator(Set<HDT_RecordType> set)    { setTypes(set); }
+
   public Set<HDT_RecordType> getTypes()                  { return types; }
   public void setTypes(Set<HDT_RecordType> set)          { types = set; changed = true; }
 

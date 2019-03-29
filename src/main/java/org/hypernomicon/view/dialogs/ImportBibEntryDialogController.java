@@ -36,8 +36,6 @@ import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
-import com.google.common.base.Charsets;
-
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -45,6 +43,8 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
+
+import static java.nio.charset.StandardCharsets.*;
 
 public class ImportBibEntryDialogController extends HyperDialog
 {
@@ -111,7 +111,7 @@ public class ImportBibEntryDialogController extends HyperDialog
 
     try
     {
-      lines = FileUtils.readLines(filePath.toFile(), Charsets.UTF_8);
+      lines = FileUtils.readLines(filePath.toFile(), UTF_8);
     }
     catch (IOException e)
     {

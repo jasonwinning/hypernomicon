@@ -20,6 +20,7 @@ package org.hypernomicon.view.previewWindow;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,7 +31,6 @@ import java.util.Map;
 import org.zwobble.mammoth.DocumentConverter;
 import org.zwobble.mammoth.Result;
 
-import org.hypernomicon.App;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -39,7 +39,6 @@ import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.previewWindow.PDFJSWrapper.PDFJSCommand;
 import org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource;
-import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 import org.hypernomicon.view.tabs.WorkTabController;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -188,12 +187,12 @@ public class PreviewWrapper
 
   private void initJS()
   {
-    if (App.jxBrowserDisabled)
+    if (jxBrowserDisabled)
       return;
 
     jsWrapper = new PDFJSWrapper(ap, this::doneHndlr, this::pageChangeHndlr, this::retrievedDataHndlr);
 
-    if (App.jxBrowserDisabled)
+    if (jxBrowserDisabled)
       return;
 
     initialized = true;
@@ -662,9 +661,9 @@ public class PreviewWrapper
     else
       work.setEndPageNum(workFile, pageNum);
 
-    if (ui.currentTab().getTabEnum() == TabEnum.workTab)
-      if (ui.currentTab().activeRecord() == curPrevFile.record)
-        WorkTabController.class.cast(ui.currentTab()).setPageNum(workFile, pageNum, isStart);
+    if (ui.activeTab().getTabEnum() == workTab)
+      if (ui.activeTab().activeRecord() == curPrevFile.record)
+        WorkTabController.class.cast(ui.activeTab()).setPageNum(workFile, pageNum, isStart);
 
     contentsWindow.update(workFile, pageNum, true);
 

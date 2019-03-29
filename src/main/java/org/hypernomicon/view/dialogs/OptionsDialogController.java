@@ -53,6 +53,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
+import javafx.stage.Window;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -65,18 +66,20 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 public class OptionsDialogController extends HyperDialog
 {
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
-  @FXML private Button btnAuthorize, btnImageEditorBrowse, btnPDFReaderBrowse, btnUnlink, btnVerify;
-  @FXML private CheckBox chkAddInitial, chkAutoOpenPDF, chkAutoRetrieveBib, chkInternet, chkLowercase, chkPosix, chkTreatEdAsAuthor, chkYearLetter;
+  @FXML private Button btnAuthorize, btnImageEditorBrowse, btnPDFReaderBrowse, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced;
+  @FXML private CheckBox chkAddInitial, chkAutoOpenPDF, chkAutoRetrieveBib, chkInternet, chkLowercase,
+                         chkPosix, chkTreatEdAsAuthor, chkYearLetter, chkUseSentenceCase;
   @FXML private ComboBox<String> cbComponent1, cbComponent2, cbComponent3, cbComponent4, cbComponent5;
   @FXML private Label lblCurrentlyLinked, lblExample, lblRedirect, lblStep2, lblStep2Instructions,
                       lblStep3, lblStep3Instructions, lblStep4, lblStep4Instructions;
   @FXML private Slider sliderFontSize;
-  @FXML private Tab tabLinkToExtBibMgr, tabNaming, tabUnlinkFromExtBibMgr;
+  @FXML private Tab tabLinkToExtBibMgr, tabDBSpecific, tabNaming, tabUnlinkFromExtBibMgr;
   @FXML private TabPane tabPane;
   @FXML private TextField tfExample, tfImageEditor, tfMaxChar, tfPDFReader, tfVerificationCode, tfTest1, tfTest2, tfTest3, tfTest4, tfTest5,
                           tfSepAfter1, tfSepAfter2, tfSepAfter3, tfSepAfter4, tfSepAfter5,
                           tfSepBefore1, tfSepBefore2, tfSepBefore3, tfSepBefore4, tfSepBefore5,
                           tfSepWithin1, tfSepWithin2, tfSepWithin3, tfSepWithin4, tfSepWithin5;
+
   private static HashMap<String, Integer> componentMap;
   private StringProperty authUrl;
   private OAuth1RequestToken requestToken;
@@ -85,13 +88,13 @@ public class OptionsDialogController extends HyperDialog
 //---------------------------------------------------------------------------
 
   @Override protected boolean isValid()          { return true; }
-  @FXML private void btnImageEditorBrowseClick() { browseClick(tfImageEditor); }
-  @FXML private void btnPDFReaderClick()         { browseClick(tfPDFReader); }
+  @FXML private void btnImageEditorBrowseClick() { browseClick(dialogStage, tfImageEditor); }
+  @FXML private void btnPDFReaderClick()         { browseClick(dialogStage, tfPDFReader); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void browseClick(TextField tf)
+  static void browseClick(Window owner, TextField tf)
   {
     FileChooser fileChooser = new FileChooser();
 
@@ -100,7 +103,7 @@ public class OptionsDialogController extends HyperDialog
     fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
 
     // Show save file dialog
-    File file = fileChooser.showOpenDialog(dialogStage);
+    File file = fileChooser.showOpenDialog(owner);
 
     if (file == null) return;
 
@@ -162,11 +165,28 @@ public class OptionsDialogController extends HyperDialog
     initAppTextField(tfImageEditor, PREF_KEY_IMAGE_EDITOR);
     initAppTextField(tfPDFReader, PREF_KEY_PDF_READER);
 
+    btnImgEditorAdvanced.setOnAction(event ->
+    {
+      LaunchCommandsDialogController lcdc = LaunchCommandsDialogController.create
+          ("Modify Image Editor Command(s)", PREF_KEY_IMAGE_EDITOR, PREF_KEY_IMAGE_EDITOR_COMMANDS, PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE);
+
+      if (lcdc.showModal())
+        tfImageEditor.setText(appPrefs.get(PREF_KEY_IMAGE_EDITOR, ""));
+    });
+
+    btnPdfViewerAdvanced.setOnAction(event ->
+    {
+      LaunchCommandsDialogController lcdc = LaunchCommandsDialogController.create
+          ("Modify PDF Viewer Command(s)", PREF_KEY_PDF_READER, PREF_KEY_PDF_READER_COMMANDS, PREF_KEY_PDF_READER_COMMAND_TYPE);
+
+      if (lcdc.showModal())
+        tfPDFReader.setText(appPrefs.get(PREF_KEY_PDF_READER, ""));
+    });
+
     sliderFontSize.setValue(appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE));
     sliderFontSize.valueProperty().addListener((ChangeListener<Number>)(observable, oldValue, newValue) ->
     {
-      if (oldValue == null) return;
-      if (newValue == null) return;
+      if ((oldValue == null) || (newValue == null)) return;
       if ((oldValue.doubleValue() == newValue.doubleValue())) return;
       if (appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE) == newValue.doubleValue()) return;
 
@@ -181,10 +201,13 @@ public class OptionsDialogController extends HyperDialog
 
     boolean disable = (db == null) || (db.prefs == null) || (db.isLoaded() == false);
 
+    tabDBSpecific.setDisable(disable);
     tabNaming.setDisable(disable);
 
     if (disable == false)
     {
+      initDBCheckBox(chkUseSentenceCase, PREF_KEY_SENTENCE_CASE, false);
+
       initDBTextField(tfSepWithin1, PREF_KEY_FN_WITHIN_SEP_1);
       initDBTextField(tfSepWithin2, PREF_KEY_FN_WITHIN_SEP_2);
       initDBTextField(tfSepWithin3, PREF_KEY_FN_WITHIN_SEP_3);
@@ -466,12 +489,9 @@ public class OptionsDialogController extends HyperDialog
 
     if (success == false) return;
 
-    String encApiKey;
-
     try
     {
-      encApiKey = CryptoUtil.encrypt("", accessToken.getTokenSecret());
-      db.linkBibLibrary(LibraryType.ltZotero, encApiKey, accessToken.getParameter("userID"));
+      db.linkBibLibrary(LibraryType.ltZotero, CryptoUtil.encrypt("", accessToken.getTokenSecret()), accessToken.getParameter("userID"));
     }
     catch (Exception e)
     {
