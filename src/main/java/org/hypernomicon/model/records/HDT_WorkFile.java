@@ -35,7 +35,7 @@ import static org.hypernomicon.util.Util.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HDT_WorkFile extends HDT_Record implements HDT_RecordWithPath
+public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 {
   private final HyperPath path;
   public final List<HDT_Work> works;

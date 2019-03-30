@@ -20,10 +20,10 @@ package org.hypernomicon.model.relations;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import static org.hypernomicon.model.relations.HyperSubjList.*;
 
-public class HyperSubjListIterator<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> implements ListIterator<HDT_SubjType>
+public class HyperSubjListIterator<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> implements ListIterator<HDT_SubjType>
 {
   private final HyperSubjList<HDT_SubjType, HDT_ObjType> list;
   private int nextNdx;

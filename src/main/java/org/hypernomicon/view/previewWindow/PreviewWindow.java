@@ -30,7 +30,7 @@ import com.teamdev.jxbrowser.chromium.BrowserCore;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
@@ -102,7 +102,7 @@ public class PreviewWindow extends HyperDlg
 
   public static class PreviewSetting
   {
-    public PreviewSetting(FilePath filePath, int startPageNum, int endPageNum, HDT_Base record)
+    public PreviewSetting(FilePath filePath, int startPageNum, int endPageNum, HDT_Record record)
     {
       this.filePath = filePath;
       this.startPageNum = startPageNum;
@@ -112,7 +112,7 @@ public class PreviewWindow extends HyperDlg
 
     public final FilePath filePath;
     public final int startPageNum, endPageNum;
-    public final HDT_Base record;
+    public final HDT_Record record;
   }
 
 //---------------------------------------------------------------------------
@@ -442,7 +442,7 @@ public class PreviewWindow extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setPreview(PreviewSource src, FilePath filePath, int startPageNum, int endPageNum, HDT_Base record)
+  public void setPreview(PreviewSource src, FilePath filePath, int startPageNum, int endPageNum, HDT_Record record)
   {
     if (jxBrowserDisabled || disablePreviewUpdating) return;
 

@@ -23,7 +23,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.ctDropDownList;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
@@ -133,7 +133,7 @@ public class ChangeIDDlgCtrlr extends HyperDlg
       return false;
     }
 
-    HDT_Base record = db.records(hcbRecord.selectedType()).getByID(parseInt(tfOldID.getText(), -1));
+    HDT_Record record = db.records(hcbRecord.selectedType()).getByID(parseInt(tfOldID.getText(), -1));
 
     if ((record == null) || (record.changeID(parseInt(tfNewID.getText(), -1)) == false))
       return falseWithErrorMessage("Unable to change record ID.");

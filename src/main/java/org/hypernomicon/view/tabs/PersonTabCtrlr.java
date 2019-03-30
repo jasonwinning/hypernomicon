@@ -160,14 +160,14 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     viewPort = curPerson.getViewPort();
     refreshPicture();
 
-    hcbRank.addAndSelectEntry(curPerson.rank, HDT_Base::name);
-    hcbStatus.addAndSelectEntry(curPerson.status,  HDT_Base::name);
+    hcbRank.addAndSelectEntry(curPerson.rank, HDT_Record::name);
+    hcbStatus.addAndSelectEntry(curPerson.status,  HDT_Record::name);
 
     mainText.loadFromRecord(curPerson, true, getView().getTextInfo());
 
     if (curPerson.field.isNotNull())
     {
-      hcbField.addAndSelectEntry(curPerson.field, HDT_Base::name);
+      hcbField.addAndSelectEntry(curPerson.field, HDT_Record::name);
       hcbSubfield.selectID(curPerson.subfield.getID());
     }
 
@@ -179,7 +179,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       row.setCellValue(2, inst, inst.name());
     });
 
-    HashSet<HDT_Base> topicRecordsAdded = new HashSet<>();
+    HashSet<HDT_Record> topicRecordsAdded = new HashSet<>();
 
     curPerson.works.forEach(work ->
     {
@@ -263,7 +263,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     Set<MainText> displayers = db.getDisplayers(curPerson.getMainText());
     LinkedHashSet<HDT_Argument> argsToAdd = new LinkedHashSet<>();
     LinkedHashSet<HDT_Position> posToAdd = new LinkedHashSet<>();
-    LinkedHashSet<HDT_Base> otherToAdd = new LinkedHashSet<>();
+    LinkedHashSet<HDT_Record> otherToAdd = new LinkedHashSet<>();
 
     displayers.forEach(displayerText ->
     {
@@ -373,7 +373,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addMentioners(HDT_RecordWithPath mentioned, Set<HDT_Argument> argsToAdd, Set<HDT_Position> posToAdd, Set<HDT_Base> otherToAdd, HashSet<HDT_Base> topicRecordsAdded)
+  private void addMentioners(HDT_RecordWithPath mentioned, Set<HDT_Argument> argsToAdd, Set<HDT_Position> posToAdd, Set<HDT_Record> otherToAdd, HashSet<HDT_Record> topicRecordsAdded)
   {
     Consumer<HDT_WorkLabel> consumer = label ->
     {
@@ -413,7 +413,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean addArgToTopicTable(HDT_Argument argument, HashSet<HDT_Base> topicRecordsAdded, Set<HDT_Position> posToAdd, Set<HDT_Base> otherToAdd)
+  private boolean addArgToTopicTable(HDT_Argument argument, HashSet<HDT_Record> topicRecordsAdded, Set<HDT_Position> posToAdd, Set<HDT_Record> otherToAdd)
   {
     if (topicRecordsAdded.contains(argument)) return false;
 
@@ -465,7 +465,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addPosToTopicTable(HDT_Position position, HyperTableRow row, Set<HDT_Base> otherToAdd)
+  private void addPosToTopicTable(HDT_Position position, HyperTableRow row, Set<HDT_Record> otherToAdd)
   {
     row.setCellValue(2, position, position.listName());
 
@@ -479,7 +479,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addOtherToTopicTable(HDT_Base displayer, HyperTableRow row)
+  private void addOtherToTopicTable(HDT_Record displayer, HyperTableRow row)
   {
     if (displayer.getType() == hdtWorkLabel)
       row.setCellValue(1, displayer, HDT_WorkLabel.class.cast(displayer).getExtendedText());
@@ -697,7 +697,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     this.tabEnum = tabEnum;
     mainText = new MainTextWrapper(apOverview);
 
-    Predicate<HDT_Base> popFilter = record ->
+    Predicate<HDT_Record> popFilter = record ->
     {
       HDT_Institution inst = (HDT_Institution)record;
 
@@ -1120,7 +1120,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
       htWorks.setFilter(row ->
       {
-        HDT_Base record = row.getRecord();
+        HDT_Record record = row.getRecord();
         if ((record == null) || (record.getType() != hdtWork)) return false;
 
         return HDT_Work.class.cast(record).investigations.contains(inv);

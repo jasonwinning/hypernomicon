@@ -31,7 +31,7 @@ import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.HDI_OfflineConnector;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordState;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -54,7 +54,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 
     if (record.getType() != hdtHub)                 // MainText reference should be reset when creating a new Online Item, in case it points to
       connector.mainText = new MainText(connector); // an existing MainText of a linked Hub. If that is the case, it will be pointed back to the
-  }                                                 // Hub MainText later in HDT_Record.restoreTo, after the main loop of that procedure
+  }                                                 // Hub MainText later in HDT_RecordBase.restoreTo, after the main loop of that procedure
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -134,7 +134,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 
         break;
 
-      case tagHub : return; // this gets taken care of in HDT_Record.restoreTo
+      case tagHub : return; // this gets taken care of in HDT_RecordBase.restoreTo
 
       default :
 
@@ -182,7 +182,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 
         for (KeyWork keyWork : mainText.keyWorks)
         {
-          HDT_Base record = keyWork.getRecord();
+          HDT_Record record = keyWork.getRecord();
 
           if ((record.getType() != hdtWork) && (record.getType() != hdtMiscFile))
           {

@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.hypernomicon.bib.BibData;
 import org.hypernomicon.bib.BibData.BibFieldEnum;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -101,7 +101,7 @@ public class WorkToMerge
   {
     if (creatingNewWork)
     {
-      hcbType.addAndSelectEntryOrBlank(workRecord.workType, HDT_Base::name);
+      hcbType.addAndSelectEntryOrBlank(workRecord.workType, HDT_Record::name);
       rbType.setSelected(true);
     }
 
@@ -134,7 +134,7 @@ public class WorkToMerge
   {
     nullSwitch(bibData.getWorkType(), workType ->
     {
-      hcbType.addAndSelectEntry(workType, HDT_Base::name);
+      hcbType.addAndSelectEntry(workType, HDT_Record::name);
       rbType.setSelected(true);
     });
 

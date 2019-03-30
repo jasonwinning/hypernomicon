@@ -19,7 +19,7 @@ package org.hypernomicon.view.dialogs;
 
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
@@ -44,7 +44,7 @@ public class VerdictDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static VerdictDlgCtrlr create(String title, HDT_Base parent)
+  public static VerdictDlgCtrlr create(String title, HDT_Record parent)
   {
     VerdictDlgCtrlr vdc = HyperDlg.create("VerdictDlg.fxml", title, false);
     vdc.init(parent);
@@ -54,7 +54,7 @@ public class VerdictDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_Base parent)
+  private void init(HDT_Record parent)
   {
     lblParentName.setText(parent.getCBText());
 

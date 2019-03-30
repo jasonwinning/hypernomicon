@@ -22,13 +22,13 @@ import java.util.ArrayList;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
 public class HDI_OnlineTernary extends HDI_OnlineBase<HDI_OfflineTernary>
 {
   private Ternary value;
 
-  public HDI_OnlineTernary(HDI_Schema newSchema, HDT_Base newRecord) { super(newSchema, newRecord); }
+  public HDI_OnlineTernary(HDI_Schema newSchema, HDT_Record newRecord) { super(newSchema, newRecord); }
 
   public Ternary get()           { return value; }
   public void set(Ternary value) { this.value = value; }

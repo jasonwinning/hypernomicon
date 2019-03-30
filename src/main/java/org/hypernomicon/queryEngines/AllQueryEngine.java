@@ -43,7 +43,7 @@ import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-public class AllQueryEngine extends QueryEngine<HDT_Base>
+public class AllQueryEngine extends QueryEngine<HDT_Record>
 {
   private static final int QUERY_RECORD_TYPE            = QUERY_FIRST_NDX + 1,
                            QUERY_RECORD_EQUALS          = QUERY_FIRST_NDX + 2,
@@ -56,7 +56,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
 
   public static final KeywordLinkList linkList = new KeywordLinkList();
   private static final SearchKeys dummySearchKeys = new SearchKeys();
-  private static HDT_Base searchDummy = null;
+  private static HDT_Record searchDummy = null;
   private static final MutableBoolean choseNotToWait = new MutableBoolean();
 
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
@@ -131,7 +131,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Base record, boolean firstCall, boolean lastCall)
+  @Override public boolean evaluate(HDT_Record record, boolean firstCall, boolean lastCall)
   {
     boolean add = false;
 
@@ -186,8 +186,8 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
 
       case QUERY_LINKING_TO_RECORD : case QUERY_MENTIONED_BY :
 
-        HDT_Base specifiedRecord = HyperTableCell.getRecord(param2);
-        if (HDT_Record.isEmpty(specifiedRecord)) return false;
+        HDT_Record specifiedRecord = HyperTableCell.getRecord(param2);
+        if (HDT_RecordBase.isEmpty(specifiedRecord)) return false;
 
         boolean result;
 
@@ -270,8 +270,8 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
         {
           @Override protected void runFilter()
           {
-            HDT_Base specifiedRecord = HyperTableCell.getRecord(op2);
-            if (HDT_Record.isEmpty(specifiedRecord)) return;
+            HDT_Record specifiedRecord = HyperTableCell.getRecord(op2);
+            if (HDT_RecordBase.isEmpty(specifiedRecord)) return;
 
             MutableBoolean choseNotToWait = new MutableBoolean();
             list.addAll(db.getMentionerSet(specifiedRecord, false, choseNotToWait));
@@ -313,7 +313,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Base>
             HDT_RecordType specifiedType = getCellType(op1);
             int specifiedID = getCellID(op2);
             if ((specifiedType == hdtNone) || (specifiedID == -1)) return;
-            HDT_Base record = db.records(specifiedType).getByID(specifiedID);
+            HDT_Record record = db.records(specifiedType).getByID(specifiedID);
             if (record != null)
               list.add(db.records(specifiedType).getByID(specifiedID));
           }

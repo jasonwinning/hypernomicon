@@ -225,7 +225,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
     htWhereMade.addActionCol(ctGoNewBtn, 2);
     HyperTableColumn col = htWhereMade.addColWithUpdateHandler(hdtPerson, ctDropDownList, (row, cellVal, nextColNdx, nextPopulator) ->
     {
-      HDT_Base obj = HyperTableCell.getRecord(cellVal);
+      HDT_Record obj = HyperTableCell.getRecord(cellVal);
       HybridSubjectPopulator hsPop = (HybridSubjectPopulator)nextPopulator;
 
       if (hsPop.getObj(row) == obj) return;

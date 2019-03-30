@@ -21,13 +21,13 @@ import java.util.ArrayList;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
 public class HDI_OnlineBoolean extends HDI_OnlineBase<HDI_OfflineBoolean>
 {
   private boolean boolValue;
 
-  public HDI_OnlineBoolean(HDI_Schema newSchema, HDT_Base newRecord)
+  public HDI_OnlineBoolean(HDI_Schema newSchema, HDT_Record newRecord)
   {
     super(newSchema, newRecord);
   }

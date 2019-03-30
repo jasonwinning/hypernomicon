@@ -25,14 +25,14 @@ import java.util.ArrayList;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Concept;
 
 public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 {
   private String strValue = "";
 
-  public HDI_OnlineString(HDI_Schema newSchema, HDT_Base newRecord)
+  public HDI_OnlineString(HDI_Schema newSchema, HDT_Record newRecord)
   {
     super(newSchema, newRecord);
   }

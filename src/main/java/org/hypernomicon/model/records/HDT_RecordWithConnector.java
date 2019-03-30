@@ -30,7 +30,7 @@ import org.hypernomicon.model.items.Connector;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 
-public abstract class HDT_RecordWithConnector extends HDT_Record implements HDT_RecordWithDescription
+public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements HDT_RecordWithDescription
 {
   protected Connector connector; // If you set it to null here, this line executes immediately AFTER super constructor is called, and problems ensue.
   private boolean alreadyModifying;

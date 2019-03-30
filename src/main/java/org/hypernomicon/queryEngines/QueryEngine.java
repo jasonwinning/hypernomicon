@@ -21,7 +21,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.querySources.QuerySource;
 import org.hypernomicon.view.populators.QueryPopulator;
@@ -33,7 +33,7 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.queryEngines.QueryEngine.QueryType.*;
 
 @SuppressWarnings("unused")
-public abstract class QueryEngine<HDT_T extends HDT_Base>
+public abstract class QueryEngine<HDT_T extends HDT_Record>
 {
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

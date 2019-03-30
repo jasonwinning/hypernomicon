@@ -38,7 +38,7 @@ import org.hypernomicon.model.Exceptions.HubChangedException;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.HyperDB;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_RecordState;
 import org.hypernomicon.model.records.HDT_RecordType;
@@ -397,7 +397,7 @@ public class HyperPath
       });
     }
 
-    LinkedHashSet<HDT_Base> set = new LinkedHashSet<>();
+    LinkedHashSet<HDT_Record> set = new LinkedHashSet<>();
     db.getRelatives(getRecord(), set, 10);
 
     set.forEach(relative ->

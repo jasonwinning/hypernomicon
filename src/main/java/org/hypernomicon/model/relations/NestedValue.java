@@ -24,9 +24,9 @@ import org.hypernomicon.model.items.HDI_OnlineBoolean;
 import org.hypernomicon.model.items.HDI_OnlineNestedPointer;
 import org.hypernomicon.model.items.HDI_OnlineString;
 import org.hypernomicon.model.items.HDI_OnlineTernary;
-import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_Record.HyperDataCategory;
+import org.hypernomicon.model.records.HDT_RecordBase;
+import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 
 import static org.hypernomicon.util.Util.*;
 
@@ -35,7 +35,7 @@ public class NestedValue
   public String str = "";
   public boolean bool = false;
   public Ternary ternary = Ternary.Unset;
-  public HDT_Base target = null;
+  public HDT_Record target = null;
   public final HyperDataCategory hdc;
 
 //---------------------------------------------------------------------------
@@ -104,11 +104,11 @@ public class NestedValue
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean isEmpty(String str)      { return safeStr(str).length() == 0; }
-  public static boolean isEmpty(boolean bool)    { return !bool; }
-  public static boolean isEmpty(Ternary ternary) { return ternary == Ternary.Unset; }
-  public static boolean isEmpty(int id)          { return id < 1; }
-  public static boolean isEmpty(HDT_Base target) { return HDT_Record.isEmpty(target); }
+  public static boolean isEmpty(String str)        { return safeStr(str).length() == 0; }
+  public static boolean isEmpty(boolean bool)      { return !bool; }
+  public static boolean isEmpty(Ternary ternary)   { return ternary == Ternary.Unset; }
+  public static boolean isEmpty(int id)            { return id < 1; }
+  public static boolean isEmpty(HDT_Record target) { return HDT_RecordBase.isEmpty(target); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -120,7 +120,7 @@ public class NestedValue
       case hdcString        : return isEmpty(str);
       case hdcBoolean       : return isEmpty(bool);
       case hdcTernary       : return isEmpty(ternary);
-      case hdcNestedPointer : return HDT_Record.isEmpty(target);
+      case hdcNestedPointer : return HDT_RecordBase.isEmpty(target);
       default               : return true;
     }
   }

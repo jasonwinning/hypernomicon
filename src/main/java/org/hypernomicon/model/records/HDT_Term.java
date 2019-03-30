@@ -31,7 +31,7 @@ import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.relations.HyperObjList;
 
-public class HDT_Term extends HDT_Record implements HDT_RecordWithDescription
+public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescription
 {
   public final HyperObjList<HDT_Term, HDT_Concept> concepts;
 

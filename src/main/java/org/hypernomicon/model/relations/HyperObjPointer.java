@@ -22,9 +22,9 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import org.hypernomicon.model.Exceptions.RelationCycleException;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
-public class HyperObjPointer<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base>
+public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record>
 {
   final RelationSet<HDT_SubjType, HDT_ObjType> relSet;
   final HDT_SubjType subj;
@@ -44,7 +44,7 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
 //---------------------------------------------------------------------------
 
   public HDT_ObjType get()            { return relSet.getObjectCount(subj) == 0 ? null : relSet.getObject(subj, 0); }
-  public int getID()                  { return nullSwitch(get(), -1, HDT_Base::getID); }
+  public int getID()                  { return nullSwitch(get(), -1, HDT_Record::getID); }
   public boolean isNull()             { return get() == null; }
   public boolean isNotNull()          { return get() != null; }
   public Exception getLastException() { return lastException; }

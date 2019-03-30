@@ -22,7 +22,7 @@ import java.util.HashMap;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -34,7 +34,7 @@ import javafx.util.StringConverter;
 class TreeCB
 {
   private final ComboBox<TreeRow> cb;
-  private final HashMap<HDT_Base, TreeRow> recordToRow;
+  private final HashMap<HDT_Record, TreeRow> recordToRow;
   private final ObservableList<TreeRow> rows;
   private boolean sorted = false;
   private final TreeWrapper tree;
@@ -55,7 +55,7 @@ class TreeCB
     {
       if (sorted) return;
 
-      HDT_Base record = tree.selectedRecord();
+      HDT_Record record = tree.selectedRecord();
 
       comboBox.setItems(null);
       rows.sort((row1, row2) -> row1.getCBText().toLowerCase().compareTo(row2.getCBText().toLowerCase()));
@@ -117,7 +117,7 @@ class TreeCB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void add(HDT_Base record)
+  void add(HDT_Record record)
   {
     if (recordToRow.containsKey(record)) return;
 
@@ -129,7 +129,7 @@ class TreeCB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void checkIfShouldBeRemoved(HDT_Base record)
+  void checkIfShouldBeRemoved(HDT_Record record)
   {
     if (tree.getRowsForRecord(record).isEmpty() == false) return;
 
@@ -159,7 +159,7 @@ class TreeCB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void select(HDT_Base record)
+  void select(HDT_Record record)
   {
     clearSelection();
 

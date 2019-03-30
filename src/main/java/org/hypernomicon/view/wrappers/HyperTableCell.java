@@ -18,12 +18,12 @@
 package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_Record.makeSortKeyByType;
+import static org.hypernomicon.model.records.HDT_RecordBase.makeSortKeyByType;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod.*;
 import static org.hypernomicon.util.Util.*;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 
@@ -59,10 +59,10 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
 
 //---------------------------------------------------------------------------
 
-  public HyperTableCell(int newID, String newText, HDT_RecordType newType) { this(newID, newText, newType, hsmStandard); }
-  public HyperTableCell(HDT_Base record, String newText)                   { this(record.getID(), newText, record.getType(), hsmStandard); }
+  public HyperTableCell(int newID, String newText, HDT_RecordType newType)  { this(newID, newText, newType, hsmStandard); }
+  public HyperTableCell(HDT_Record record, String newText)                  { this(record.getID(), newText, record.getType(), hsmStandard); }
 
-  HyperTableCell(HDT_Base record, String newText, HyperCellSortMethod sm)  { this(record.getID(), newText, record.getType(), sm); }
+  HyperTableCell(HDT_Record record, String newText, HyperCellSortMethod sm) { this(record.getID(), newText, record.getType(), sm); }
 
   public HyperTableCell(int newID, String newText, HDT_RecordType newType, HyperCellSortMethod newSortMethod)
   {
@@ -196,7 +196,7 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public static <HDT_T extends HDT_Base> HDT_T getRecord(HyperTableCell cell)
+  public static <HDT_T extends HDT_Record> HDT_T getRecord(HyperTableCell cell)
   {
     int id = getCellID(cell);
     if (id < 1) return null;

@@ -23,13 +23,13 @@ import java.util.Set;
 
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.model.HyperDB;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.queryEngines.QueryEngine.QueryType;
 
 public abstract class FilteredQuerySource implements QuerySource
 {
-  protected final List<HDT_Base> list = new ArrayList<>();
+  protected final List<HDT_Record> list = new ArrayList<>();
   protected final HyperTableCell op1, op2, op3;
   protected final int query;
   protected final QueryType queryType;
@@ -57,17 +57,17 @@ public abstract class FilteredQuerySource implements QuerySource
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int count()                             { ensureGenerated(); return list.size(); }
-  @Override public HDT_Base getRecord(int ndx)             { ensureGenerated(); return list.get(ndx); }
-  @Override public QuerySourceType sourceType()            { return QuerySourceType.QST_filteredRecords; }
-  @Override public boolean containsRecord(HDT_Base record) { ensureGenerated(); return list.contains(record); }
+  @Override public int count()                               { ensureGenerated(); return list.size(); }
+  @Override public HDT_Record getRecord(int ndx)             { ensureGenerated(); return list.get(ndx); }
+  @Override public QuerySourceType sourceType()              { return QuerySourceType.QST_filteredRecords; }
+  @Override public boolean containsRecord(HDT_Record record) { ensureGenerated(); return list.contains(record); }
 
   protected abstract void runFilter();
 
-  public HDT_RecordType recordType()                  { return queryType.getRecordType(); }
-  public boolean containsCell(HyperTableCell cell)    { ensureGenerated(); return list.contains(HyperTableCell.getRecord(cell)); }
-  public void addAllTo(Set<HDT_Base> filteredRecords) { ensureGenerated(); filteredRecords.addAll(list); }
-  protected void ensureGenerated()                    { if (!generated) { runFilter(); generated = true; }}
+  public HDT_RecordType recordType()                    { return queryType.getRecordType(); }
+  public boolean containsCell(HyperTableCell cell)      { ensureGenerated(); return list.contains(HyperTableCell.getRecord(cell)); }
+  public void addAllTo(Set<HDT_Record> filteredRecords) { ensureGenerated(); filteredRecords.addAll(list); }
+  protected void ensureGenerated()                      { if (!generated) { runFilter(); generated = true; }}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

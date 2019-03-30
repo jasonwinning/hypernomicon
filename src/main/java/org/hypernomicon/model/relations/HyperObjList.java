@@ -25,11 +25,11 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
 import org.hypernomicon.model.Exceptions.RelationCycleException;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
 import static org.hypernomicon.util.Util.*;
 
-public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> implements List<HDT_ObjType>
+public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> implements List<HDT_ObjType>
 {
   final RelationSet<HDT_SubjType, HDT_ObjType> relSet;
   final HDT_SubjType subj;
@@ -77,8 +77,8 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
   {
     lastException = null;
 
-    if (o instanceof HDT_Base)
-      if (HDT_Base.class.cast(o).getType() == relSet.getObjType())
+    if (o instanceof HDT_Record)
+      if (HDT_Record.class.cast(o).getType() == relSet.getObjType())
         return relSet.alreadyHasAsObject(subj, (HDT_ObjType) o);
 
     return false;
@@ -118,7 +118,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
     }
 
     if (a.length < objList.size())
-      a = (T[]) new HDT_Base[objList.size()];
+      a = (T[]) new HDT_Record[objList.size()];
 
     for (int ndx = 0; ndx < objList.size(); ndx++)
       a[ndx] = (T) objList.get(ndx);
@@ -192,10 +192,10 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
   {
     lastException = null;
 
-    if ((o instanceof HDT_Base) == false)
+    if ((o instanceof HDT_Record) == false)
       return false;
 
-    if (HDT_Base.class.cast(o).getType() != relSet.getObjType())
+    if (HDT_Record.class.cast(o).getType() != relSet.getObjType())
       return false;
 
     HDT_ObjType obj = (HDT_ObjType)o;
@@ -222,10 +222,10 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
 
     for (Object o : c)
     {
-      if ((o instanceof HDT_Base) == false)
+      if ((o instanceof HDT_Record) == false)
         return false;
 
-      if (HDT_Base.class.cast(o).getType() != relSet.getObjType())
+      if (HDT_Record.class.cast(o).getType() != relSet.getObjType())
         return false;
 
       HDT_ObjType obj = (HDT_ObjType)o;
@@ -439,9 +439,9 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
   {
     lastException = null;
 
-    if ((o instanceof HDT_Base) == false) return -1;
+    if ((o instanceof HDT_Record) == false) return -1;
 
-    if (HDT_Base.class.cast(o).getType() != relSet.getObjType()) return -1;
+    if (HDT_Record.class.cast(o).getType() != relSet.getObjType()) return -1;
 
     return relSet.getObjectNdx(subj, (HDT_ObjType)o);
   }
@@ -454,9 +454,9 @@ public class HyperObjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT
   {
     lastException = null;
 
-    if ((o instanceof HDT_Base) == false) return -1;
+    if ((o instanceof HDT_Record) == false) return -1;
 
-    if (HDT_Base.class.cast(o).getType() != relSet.getObjType()) return -1;
+    if (HDT_Record.class.cast(o).getType() != relSet.getObjType()) return -1;
 
     return relSet.getObjectNdx(subj, (HDT_ObjType)o);
   }

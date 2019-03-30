@@ -34,7 +34,7 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import java.util.Iterator;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Person;
 
 //---------------------------------------------------------------------------
@@ -150,7 +150,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
       if (match == false)
       {
-        HDT_Base record = HyperTableCell.getRecord(cell);
+        HDT_Record record = HyperTableCell.getRecord(cell);
 
         if (record != null)
         {

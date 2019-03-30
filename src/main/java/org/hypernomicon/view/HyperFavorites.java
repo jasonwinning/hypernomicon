@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.MainCtrlr.FavMenuItem;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -161,7 +161,7 @@ public class HyperFavorites
         int id = node.node("ids").getInt("" + ndx, -1);
         HDT_RecordType type = db.parseTypeTagStr(node.node("types").get("" + ndx, ""));
 
-        nullSwitch((HDT_Base)db.records(type).getByID(id), record -> mainList.add(ui.new FavMenuItem(record)));
+        nullSwitch((HDT_Record)db.records(type).getByID(id), record -> mainList.add(ui.new FavMenuItem(record)));
       }
       else if (node.node("favTypes").get("" + ndx, "").equals("query"))
       {
@@ -212,7 +212,7 @@ public class HyperFavorites
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  int indexOfRecord(HDT_Base record)
+  int indexOfRecord(HDT_Record record)
   {
     for (int ndx = FIRST_FAV_MENU_ITEM_NDX; ndx < mainList.size(); ndx++)
     {

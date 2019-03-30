@@ -22,7 +22,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.function.Predicate;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Institution;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_InstitutionType;
 
@@ -61,7 +61,7 @@ public class NewInstDlgCtrlr extends HyperDlg
 
   private void init(HDT_Institution parent, String newName, boolean isParent)
   {
-    Predicate<HDT_Base> popFilter = record -> HDT_Institution.class.cast(record).subInstitutions.size() > 0;
+    Predicate<HDT_Record> popFilter = record -> HDT_Institution.class.cast(record).subInstitutions.size() > 0;
 
     hcbParent = new HyperCB(cbParent, ctDropDownList, new StandardPopulator(hdtInstitution, popFilter, true), null, false);
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType), null, false);
@@ -72,7 +72,7 @@ public class NewInstDlgCtrlr extends HyperDlg
 
     tfNewParentName.textProperty().addListener((observable, oldValue, newValue) -> rbNew.setSelected(true));
 
-    hcbParent.addAndSelectEntryOrBlank(parent, HDT_Base::name);
+    hcbParent.addAndSelectEntryOrBlank(parent, HDT_Record::name);
 
     if (newName.length() > 0)
     {

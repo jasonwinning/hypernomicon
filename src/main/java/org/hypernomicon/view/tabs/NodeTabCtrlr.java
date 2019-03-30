@@ -48,7 +48,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 
-public class NodeTabCtrlr<HDT_RT extends HDT_Base, HDT_CT extends HDT_RecordWithConnector>
+public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWithConnector>
 {
   @FXML AnchorPane apDescription, apLowerPane;
   @FXML GridPane gpToolBar;
@@ -359,7 +359,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Base, HDT_CT extends HDT_RecordWith
     {
       if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
       {
-        HDT_Base source = ui.viewRecord();
+        HDT_Record source = ui.viewRecord();
 
         ui.treeSubjRecord = source;
         ui.treeObjRecord = null;

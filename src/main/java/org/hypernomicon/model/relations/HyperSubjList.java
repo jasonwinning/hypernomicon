@@ -24,9 +24,9 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
-public class HyperSubjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> implements List<HDT_SubjType>
+public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> implements List<HDT_SubjType>
 {
   final RelationSet<HDT_SubjType, HDT_ObjType> relSet;
   final HDT_ObjType obj;
@@ -69,8 +69,8 @@ public class HyperSubjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HD
   @SuppressWarnings("unchecked")
   @Override public boolean contains(Object o)
   {
-    if (o instanceof HDT_Base)
-      if (HDT_Base.class.cast(o).getType() == relSet.getSubjType())
+    if (o instanceof HDT_Record)
+      if (HDT_Record.class.cast(o).getType() == relSet.getSubjType())
         return relSet.alreadyHasAsObject((HDT_SubjType)o, obj);
 
     return false;
@@ -100,7 +100,7 @@ public class HyperSubjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HD
     List<HDT_SubjType> subjList = relSet.getUnmodifiableSubjectList(obj);
 
     if (a.length < subjList.size())
-      a = (T[]) new HDT_Base[subjList.size()];
+      a = (T[]) new HDT_Record[subjList.size()];
 
     for (int ndx = 0; ndx < subjList.size(); ndx++)
       a[ndx] = (T) subjList.get(ndx);
@@ -119,10 +119,10 @@ public class HyperSubjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HD
   {
     for (Object o : c)
     {
-      if ((o instanceof HDT_Base) == false)
+      if ((o instanceof HDT_Record) == false)
         return false;
 
-      if (HDT_Base.class.cast(o).getType() != relSet.getSubjType())
+      if (HDT_Record.class.cast(o).getType() != relSet.getSubjType())
         return false;
 
       HDT_SubjType subj = (HDT_SubjType)o;
@@ -139,9 +139,9 @@ public class HyperSubjList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HD
   @SuppressWarnings("unchecked")
   @Override public int indexOf(Object o)
   {
-    if ((o instanceof HDT_Base) == false) return -1;
+    if ((o instanceof HDT_Record) == false) return -1;
 
-    if (HDT_Base.class.cast(o).getType() != relSet.getSubjType()) return -1;
+    if (HDT_Record.class.cast(o).getType() != relSet.getSubjType()) return -1;
 
     return relSet.getSubjectNdx(obj, (HDT_SubjType)o);
   }

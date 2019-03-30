@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
 
-public class HDT_PersonGroup extends HDT_Record
+public class HDT_PersonGroup extends HDT_RecordBase
 {
   public final List<HDT_PersonGroup> parentGroups;
   public final List<HDT_PersonGroup> subGroups;

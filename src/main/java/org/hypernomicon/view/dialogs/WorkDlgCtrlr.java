@@ -44,7 +44,7 @@ import org.hypernomicon.bib.PdfMetadata;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -1059,7 +1059,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     HDT_WorkType workType = curBD.getWorkType();
 
-    hcbType.selectID(nullSwitch(workType, -1, HDT_Base::getID));
+    hcbType.selectID(nullSwitch(workType, -1, HDT_Record::getID));
 
     tfDOI.setText(curBD.getStr(bfDOI));
 

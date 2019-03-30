@@ -24,21 +24,21 @@ import java.util.Map.Entry;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
 public final class ObjectGroup
 {
-  private final HDT_Base primary;
+  private final HDT_Record primary;
   private final String primaryStr;
   private final Map<Tag, NestedValue> map = new HashMap<>();
 
-  public ObjectGroup(HDT_Base primary)  { this.primary = primary; this.primaryStr = null;       }
-  public ObjectGroup(String primaryStr) { this.primary = null;    this.primaryStr = primaryStr; }
+  public ObjectGroup(HDT_Record primary) { this.primary = primary; this.primaryStr = null;       }
+  public ObjectGroup(String primaryStr)  { this.primary = null;    this.primaryStr = primaryStr; }
 
   public final void addNestedEntry(Tag tag, NestedValue val) { map.put(tag, val); }
 
   @SuppressWarnings("unchecked")
-  public final <HDT_T extends HDT_Base> HDT_T getPrimary()   { return (HDT_T)primary; }
+  public final <HDT_T extends HDT_Record> HDT_T getPrimary() { return (HDT_T)primary; }
   public final String getPrimaryStr()                        { return primaryStr; }
   public final NestedValue getValue(Tag tag)                 { return map.get(tag); }
 
@@ -49,8 +49,8 @@ public final class ObjectGroup
   {
     final int prime = 31;
     int result = 1;
-    result = prime * result + (map == null ? 0 : map.hashCode());
-    result = prime * result + (primary == null ? 0 : primary.hashCode());
+    result = prime * result + (map        == null ? 0 : map       .hashCode());
+    result = prime * result + (primary    == null ? 0 : primary   .hashCode());
     result = prime * result + (primaryStr == null ? 0 : primaryStr.hashCode());
     return result;
   }

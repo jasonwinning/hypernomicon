@@ -28,7 +28,7 @@ import java.util.ArrayList;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperObjList;
@@ -74,7 +74,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
     {
       case tagParentFolder : case tagFolder :
 
-        HyperObjList<HDT_Base, HDT_Base> objList = db.getObjectList(relType, record, false);
+        HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
         objList.clear();
 
         if (val.folderID > 0)

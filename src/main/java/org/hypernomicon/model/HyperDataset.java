@@ -37,7 +37,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public final class HyperDataset<HDT_DT extends HDT_Base>
+public final class HyperDataset<HDT_DT extends HDT_Record>
 {
 
 //---------------------------------------------------------------------------
@@ -117,7 +117,7 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
   private final ArrayList<HDT_DT> needIDs = new ArrayList<>();
   private final LinkedHashMap<Tag, HDI_Schema> tagToSchema = new LinkedHashMap<>();
   private boolean online = false;
-  private HDT_Base recordToAssign = null;
+  private HDT_Record recordToAssign = null;
   private int idToAssign = -1;
 
 //---------------------------------------------------------------------------
@@ -127,7 +127,7 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
     this.type = type;
   }
 
-  // This should ONLY ever be called by HDT_Record.updateSortKey!!!
+  // This should ONLY ever be called by HDT_RecordBase.updateSortKey!!!
   public void updateSortKey(String newKey, int id) { core.setKey(id, newKey); }
 
   HDT_RecordType getType()                         { return type; }
@@ -145,7 +145,7 @@ public final class HyperDataset<HDT_DT extends HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public int recordIDtoAssign(HDT_Base record) throws HDB_InternalError
+  public int recordIDtoAssign(HDT_Record record) throws HDB_InternalError
   {
     if ((record == null) || (record != recordToAssign) || (idToAssign < 1))
       throw new HDB_InternalError(63869);

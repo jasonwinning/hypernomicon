@@ -21,15 +21,14 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -43,6 +42,7 @@ import java.time.Instant;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.view.fileManager.FileManager;
@@ -265,22 +265,13 @@ public class FilePath implements Comparable<FilePath>
       ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "RD /S /Q \"" + filePath + "\"");
       pb.redirectErrorStream(true);
 
-      Process process = pb.start();
-      try (BufferedReader inStreamReader = new BufferedReader(new InputStreamReader(process.getInputStream())))
-      {
-        String errStr = "", line = inStreamReader.readLine();
-        while (line != null)
-        {
-          errStr = errStr + line;
-          line = inStreamReader.readLine();
-        }
+      String errStr = IOUtils.toString(pb.start().getInputStream(), StandardCharsets.UTF_8);
 
-        if (errStr.length() > 0)
-        {
-          if ((errStr.toLowerCase().contains("denied") || (errStr.toLowerCase().contains("access"))))
-            errStr = errStr + System.lineSeparator() + System.lineSeparator() + "It may work to restart Hypernomicon and try again.";
-          throw new IOException(errStr);
-        }
+      if (errStr.length() > 0)
+      {
+        if ((errStr.toLowerCase().contains("denied") || (errStr.toLowerCase().contains("access"))))
+          errStr = errStr + "\n\nIt may work to restart Hypernomicon and try again.";
+        throw new IOException(errStr);
       }
     }
     else
@@ -303,22 +294,13 @@ public class FilePath implements Comparable<FilePath>
       ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "ren \"" + srcFilePath + "\" \"" + destFilePath.getNameOnly() + "\"");
       pb.redirectErrorStream(true);
 
-      Process process = pb.start();
-      try (BufferedReader inStreamReader = new BufferedReader(new InputStreamReader(process.getInputStream())))
-      {
-        String errStr = "", line = inStreamReader.readLine();
-        while (line != null)
-        {
-          errStr = errStr + line;
-          line = inStreamReader.readLine();
-        }
+      String errStr = IOUtils.toString(pb.start().getInputStream(), StandardCharsets.UTF_8);
 
-        if (errStr.length() > 0)
-        {
-          if (errStr.toLowerCase().contains("denied"))
-            errStr = errStr + System.lineSeparator() + System.lineSeparator() + "It may work to restart Hypernomicon and try again.";
-          throw new IOException(errStr);
-        }
+      if (errStr.length() > 0)
+      {
+        if (errStr.toLowerCase().contains("denied"))
+          errStr = errStr + "\n\nIt may work to restart Hypernomicon and try again.";
+        throw new IOException(errStr);
       }
     }
     else

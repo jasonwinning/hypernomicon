@@ -19,7 +19,7 @@ package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.util.Util.*;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
@@ -35,7 +35,7 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 
-public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? extends HDT_Base, RowType>> extends HasRightClickableRows<RowType>
+public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? extends HDT_Record, RowType>> extends HasRightClickableRows<RowType>
 {
 
 //---------------------------------------------------------------------------

@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_Record.HyperDataCategory;
+import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 
 public class HDI_Base
 {

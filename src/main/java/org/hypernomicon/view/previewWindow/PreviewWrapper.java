@@ -32,7 +32,7 @@ import org.zwobble.mammoth.DocumentConverter;
 import org.zwobble.mammoth.Result;
 
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
@@ -389,7 +389,7 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void setPreview(FilePath filePath, int pageNum, HDT_Base record)
+  void setPreview(FilePath filePath, int pageNum, HDT_Record record)
   {
     setPreview(filePath, pageNum, record, true, null);
   }
@@ -399,7 +399,7 @@ public class PreviewWrapper
     setPreview(getFilePath(), pageNum, getRecord(), incrementNav, null);
   }
 
-  private void setPreview(FilePath filePath, int pageNum, HDT_Base record, boolean incrementNav, PreviewFile prevFile)
+  private void setPreview(FilePath filePath, int pageNum, HDT_Record record, boolean incrementNav, PreviewFile prevFile)
   {
     boolean fileChanged = true;
 

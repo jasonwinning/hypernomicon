@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view.tabs;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Institution;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_RecordType;
@@ -86,10 +86,10 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
     tfCity.setText(curInstitution.getCity());
     tfLink.setText(curInstitution.getWebLink());
 
-    hcbState     .addAndSelectEntryOrBlank(curInstitution.state     , HDT_Base::name);
-    hcbCountry   .addAndSelectEntryOrBlank(curInstitution.country   , HDT_Base::name);
-    hcbType      .addAndSelectEntryOrBlank(curInstitution.instType  , HDT_Base::name);
-    hcbParentInst.addAndSelectEntryOrBlank(curInstitution.parentInst, HDT_Base::name);
+    hcbState     .addAndSelectEntryOrBlank(curInstitution.state     , HDT_Record::name);
+    hcbCountry   .addAndSelectEntryOrBlank(curInstitution.country   , HDT_Record::name);
+    hcbType      .addAndSelectEntryOrBlank(curInstitution.instType  , HDT_Record::name);
+    hcbParentInst.addAndSelectEntryOrBlank(curInstitution.parentInst, HDT_Record::name);
 
  // Populate departments and people
  // -------------------------------

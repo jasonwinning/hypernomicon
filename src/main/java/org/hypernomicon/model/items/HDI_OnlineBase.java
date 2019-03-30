@@ -23,13 +23,13 @@ import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
 public abstract class HDI_OnlineBase<HDI_Derived extends HDI_OfflineBase> extends HDI_Base
 {
-  protected final HDT_Base record;
+  protected final HDT_Record record;
 
-  public HDI_OnlineBase(HDI_Schema newSchema, HDT_Base newRecord)
+  public HDI_OnlineBase(HDI_Schema newSchema, HDT_Record newRecord)
   {
     super(newSchema);
     record = newRecord;

@@ -42,7 +42,7 @@ import org.hypernomicon.model.items.KeyWork;
 import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.MainText.DisplayItem;
 import org.hypernomicon.model.items.MainText.DisplayItemType;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -599,7 +599,7 @@ public class MainTextCtrlr
 
     list.getLinks().forEach(link ->
     {
-      HDT_Base record = link.key.record;
+      HDT_Record record = link.key.record;
 
       if ((record.getType() == hdtWork) || (record.getType() == hdtMiscFile))
       {

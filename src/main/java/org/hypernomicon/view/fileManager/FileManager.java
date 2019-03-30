@@ -91,9 +91,9 @@ public class FileManager extends HyperDlg
   {
     private final HDT_Folder folder;
     private final FilePath fileName;
-    private final HDT_Base record;
+    private final HDT_Record record;
 
-    private HistoryItem(FileRow folderRow, FileRow fileRow, HDT_Base record)
+    private HistoryItem(FileRow folderRow, FileRow fileRow, HDT_Record record)
     {
       folder = (HDT_Folder) folderRow.getRecord();
       fileName = fileRow == null ? null : fileRow.getFilePath().getNameOnly();
@@ -1176,7 +1176,7 @@ public class FileManager extends HyperDlg
 
     treeView.refresh();
 
-    if (HDT_Record.isEmpty(curFolder))
+    if (HDT_RecordBase.isEmpty(curFolder))
       curFolder = null;
 
     if (curFolder == null)
@@ -1350,7 +1350,7 @@ public class FileManager extends HyperDlg
 
       if (newValue != null)
       {
-        HDT_Base record = HyperTableCell.getRecord(newValue.getCell(1));
+        HDT_Record record = HyperTableCell.getRecord(newValue.getCell(1));
         history.updateCurrent(new HistoryItem(folderTree.selectedItem().getValue(), fileTV.getSelectionModel().getSelectedItem(), record));
 
         if (record != null)
@@ -1381,7 +1381,7 @@ public class FileManager extends HyperDlg
 
     webView.getEngine().titleProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
     {
-      HDT_Base record = recordTable.selectedRecord();
+      HDT_Record record = recordTable.selectedRecord();
       if (record == null) return;
 
       String mainText = "";
@@ -1405,7 +1405,7 @@ public class FileManager extends HyperDlg
 
     for (HyperTableRow row : recordTable.getDataRows())
     {
-      HDT_Base record = row.getRecord();
+      HDT_Record record = row.getRecord();
       if (record != null)
       {
         if (record.hasDesc())
@@ -1438,7 +1438,7 @@ public class FileManager extends HyperDlg
   private void setPreviewFromRecordTable()
   {
     FilePath filePath = null;
-    HDT_Base record = recordTable.selectedRecord();
+    HDT_Record record = recordTable.selectedRecord();
 
     if (record instanceof HDT_RecordWithPath)
       filePath = HDT_RecordWithPath.class.cast(record).getPath().getFilePath();
@@ -1491,7 +1491,7 @@ public class FileManager extends HyperDlg
   private void setCurrentFileRow(FileRow fileRow, boolean showingMore)
   {
     HDT_Folder folderRecord = null;
-    LinkedHashSet<HDT_Base> relatives = new LinkedHashSet<>();
+    LinkedHashSet<HDT_Record> relatives = new LinkedHashSet<>();
     boolean hasMore;
 
     recordTable.clear();
@@ -1523,11 +1523,11 @@ public class FileManager extends HyperDlg
       row.setCellValue(1, fileRecord, fileRecord.listName());
     }
 
-    Iterator<HDT_Base> relIt = relatives.iterator();
+    Iterator<HDT_Record> relIt = relatives.iterator();
 
     while (relIt.hasNext())
     {
-      HDT_Base relative = relIt.next();
+      HDT_Record relative = relIt.next();
 
       if ((hasMore) && (relIt.hasNext() == false))
       {

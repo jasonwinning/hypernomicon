@@ -31,7 +31,7 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod.*;
 
 import org.hypernomicon.model.HyperDB;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -43,17 +43,17 @@ public class RecordByTypePopulator extends Populator
   private final HashMap<HyperTableRow, HDT_RecordType> rowToRecordType = new HashMap<>();
   private final HashMap<HyperTableRow, Boolean> rowToChanged = new HashMap<>();
   private final HashMap<HyperTableRow, List<HyperTableCell>> rowToChoices = new HashMap<>();
-  private final Predicate<HDT_Base> filter;
+  private final Predicate<HDT_Record> filter;
   private final boolean nameOnly;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public RecordByTypePopulator()                           { this(null, false); }
-  public RecordByTypePopulator(boolean nameOnly)           { this(null, nameOnly); }
-  public RecordByTypePopulator(Predicate<HDT_Base> filter) { this(filter, false); }
+  public RecordByTypePopulator()                             { this(null, false); }
+  public RecordByTypePopulator(boolean nameOnly)             { this(null, nameOnly); }
+  public RecordByTypePopulator(Predicate<HDT_Record> filter) { this(filter, false); }
 
-  public RecordByTypePopulator(Predicate<HDT_Base> filter, boolean nameOnly)
+  public RecordByTypePopulator(Predicate<HDT_Record> filter, boolean nameOnly)
   {
     this.filter = filter;
     this.nameOnly = nameOnly;
@@ -75,11 +75,11 @@ public class RecordByTypePopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HDT_Base getNextRecord(Iterator<? extends HDT_Base> it)
+  private HDT_Record getNextRecord(Iterator<? extends HDT_Record> it)
   {
     while (it.hasNext())
     {
-      HDT_Base record = it.next();
+      HDT_Record record = it.next();
 
       if ((filter == null) || (filter.test(record)))
         if (HyperDB.isUnstoredRecord(record.getID(), record.getType()) == false)
@@ -107,8 +107,8 @@ public class RecordByTypePopulator extends Populator
       revPos[ndx] = ndx;
     }
 
-    Iterator<? extends HDT_Base> it = db.records(recordType).keyIterator();
-    HDT_Base record = getNextRecord(it);
+    Iterator<? extends HDT_Record> it = db.records(recordType).keyIterator();
+    HDT_Record record = getNextRecord(it);
 
     while (record != null)
     {
@@ -189,7 +189,7 @@ public class RecordByTypePopulator extends Populator
     {
       for (Integer id : getRecent(recordType, 5))
       {
-        HDT_Base record = db.records(recordType).getByID(id.intValue());
+        HDT_Record record = db.records(recordType).getByID(id.intValue());
 
         if (firstAdd)
         {
@@ -203,7 +203,7 @@ public class RecordByTypePopulator extends Populator
       }
     }
 
-    for (HDT_Base record : db.records(recordType).keyIterable())
+    for (HDT_Record record : db.records(recordType).keyIterable())
     {
       if (map.containsKey(record.getID()) == false)
       {
@@ -239,7 +239,7 @@ public class RecordByTypePopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HyperTableCell getCell(HDT_Base record)
+  private HyperTableCell getCell(HDT_Record record)
   {
     if ((filter != null) && (filter.test(record) == false))
       return null;

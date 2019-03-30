@@ -561,7 +561,7 @@ public class PictureDlgCtrlr extends HyperDlg
     if (execPath.length() == 0)
       DesktopApi.edit(picturePath);
     else
-      configuredLaunch(execPath, picturePath, PREF_KEY_IMAGE_EDITOR_COMMANDS, PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE, -1);
+      LaunchCommandsDlgCtrlr.launch(execPath, picturePath, PREF_KEY_IMAGE_EDITOR_COMMANDS, PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE, -1);
   }
 
 //---------------------------------------------------------------------------

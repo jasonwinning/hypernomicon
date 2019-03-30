@@ -23,7 +23,7 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import java.util.HashMap;
 import java.util.List;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -59,7 +59,7 @@ public class HybridSubjectPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Base getObj(HyperTableRow row)
+  public HDT_Record getObj(HyperTableRow row)
   {
     if (row == null) row = dummyRow;
 
@@ -71,7 +71,7 @@ public class HybridSubjectPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setObj(HyperTableRow row, HDT_Base obj)
+  public void setObj(HyperTableRow row, HDT_Record obj)
   {
     if (row == null) row = dummyRow;
 

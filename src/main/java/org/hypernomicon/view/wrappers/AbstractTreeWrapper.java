@@ -19,7 +19,7 @@ package org.hypernomicon.view.wrappers;
 
 import java.util.ArrayList;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
 import javafx.scene.control.Control;
 import javafx.scene.control.SelectionModel;
@@ -27,17 +27,17 @@ import javafx.scene.control.TreeItem;
 
 import static org.hypernomicon.util.Util.*;
 
-public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? extends HDT_Base, RowType>> extends DragNDropContainer<RowType>
+public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? extends HDT_Record, RowType>> extends DragNDropContainer<RowType>
 {
   protected boolean selectingFromCB = false;
 
-  public abstract RowType newRow(HDT_Base rootRecord, TreeModel<RowType> treeModel);
+  public abstract RowType newRow(HDT_Record rootRecord, TreeModel<RowType> treeModel);
   public abstract TreeItem<RowType> getTreeItem(RowType treeRow);
   public abstract TreeItem<RowType> getRoot();
   public abstract SelectionModel<TreeItem<RowType>> getSelectionModel();
   public abstract void scrollToNdx(int ndx);
   public abstract void clear();
-  public abstract ArrayList<RowType> getRowsForRecord(HDT_Base record); // should never return null
+  public abstract ArrayList<RowType> getRowsForRecord(HDT_Record record); // should never return null
   public abstract void focusOnTreeCtrl();
   public abstract void expandMainBranches();
 
@@ -52,7 +52,7 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final HDT_Base selectedRecord()
+  public final HDT_Record selectedRecord()
   {
     return nullSwitch(selectedItem(), null, item -> item.getValue().getRecord());
   }
@@ -60,7 +60,7 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final void selectRecord(HDT_Base record, int ndx, boolean fromCB)
+  public final void selectRecord(HDT_Record record, int ndx, boolean fromCB)
   {
     if (record == null) return;
 

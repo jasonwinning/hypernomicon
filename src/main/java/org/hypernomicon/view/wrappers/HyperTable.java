@@ -30,8 +30,8 @@ import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
-import org.hypernomicon.model.records.HDT_Base;
-import org.hypernomicon.model.records.HDT_Record.HyperDataCategory;
+import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.NestedValue;
@@ -92,7 +92,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   final private FilteredList<HyperTableRow> filteredRows;
   final ArrayList<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
 
-  Consumer<? extends HDT_Base> dblClickHandler = null;
+  Consumer<? extends HDT_Record> dblClickHandler = null;
   Runnable onShowMore = null;
   HyperTableRow showMoreRow = null;
   private Runnable refreshHandler = null;
@@ -128,7 +128,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public void addRefreshHandler(Runnable hndlr)                    { refreshHandler = hndlr; }
 
   @SuppressWarnings("unused")
-  public <HDT_T extends HDT_Base> void setDblClickHandler(Class<HDT_T> klass, Consumer<HDT_T> hndlr)    { this.dblClickHandler = hndlr; }
+  public <HDT_T extends HDT_Record> void setDblClickHandler(Class<HDT_T> klass, Consumer<HDT_T> hndlr) { this.dblClickHandler = hndlr; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -312,7 +312,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public <HDT_T extends HDT_Base> HDT_T selectedRecord()
+  public <HDT_T extends HDT_Record> HDT_T selectedRecord()
   {
     return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, HyperTableRow::getRecord);
   }
@@ -608,7 +608,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean containsRecord(HDT_Base record)
+  public boolean containsRecord(HDT_Record record)
   {
     return getRowByRecord(record) != null;
   }
@@ -616,7 +616,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperTableRow getRowByRecord(HDT_Base record)
+  public HyperTableRow getRowByRecord(HDT_Record record)
   {
     return mainCol < 0 ? null : findFirst(rows, row -> row.getRecord() == record);
   }
@@ -664,7 +664,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
       if (pop.getRecordType(row) == hdtWorkLabel)
       {
         List<HyperTableCell> choices = pop.populate(row, false);
-        HDT_Base record = null;
+        HDT_Record record = null;
 
         if (choices != null)
           if (choices.size() > 0)
@@ -773,7 +773,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public List<ObjectGroup> getObjectGroupList(HDT_Base subj, RelationType relType, int primaryColNdx, Map<Integer, Tag> colNdxToTag)
+  public List<ObjectGroup> getObjectGroupList(HDT_Record subj, RelationType relType, int primaryColNdx, Map<Integer, Tag> colNdxToTag)
   {
     ArrayList<ObjectGroup> list = new ArrayList<>();
     HDT_RecordType objType = db.getObjType(relType);
@@ -791,7 +791,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
         int id = row.getID(primaryColNdx);
         if ((id > 0) || row.getText(primaryColNdx).length() > 0)
         {
-          HDT_Base obj;
+          HDT_Record obj;
           ObjectGroup group;
 
           if (id < 1)
@@ -860,7 +860,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public <HDT_T extends HDT_Base> ArrayList<HDT_T> saveToList(int colNdx, HDT_RecordType objType)
+  public <HDT_T extends HDT_Record> ArrayList<HDT_T> saveToList(int colNdx, HDT_RecordType objType)
   {
     ArrayList<HDT_T> list = new ArrayList<>();
 
@@ -930,10 +930,8 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
            y1 = ndx * rHeight,
            y2 = (ndx + 1) * rHeight;
 
-    if (y1 < vpTop)
-      sb.setValue(y1 / (dataRowsHeight - vpHeight));
-    else if (y2 > vpBottom)
-      sb.setValue((y2 - vpHeight) / (dataRowsHeight - vpHeight));
+    if      (y1 < vpTop)    sb.setValue(y1 / (dataRowsHeight - vpHeight));
+    else if (y2 > vpBottom) sb.setValue((y2 - vpHeight) / (dataRowsHeight - vpHeight));
   }
 
 //---------------------------------------------------------------------------

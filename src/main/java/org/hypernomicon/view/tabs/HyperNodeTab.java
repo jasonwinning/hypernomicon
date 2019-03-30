@@ -20,13 +20,13 @@ package org.hypernomicon.view.tabs;
 import java.io.IOException;
 
 import org.hypernomicon.App;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Tab;
 
-public abstract class HyperNodeTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_RecordWithConnector> extends HyperTab<HDT_RT, HDT_CT>
+public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWithConnector> extends HyperTab<HDT_RT, HDT_CT>
 {
   NodeTabCtrlr<HDT_RT, HDT_CT> ctrlr;
 

@@ -21,9 +21,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
-public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> extends HyperObjList<HDT_SubjType, HDT_ObjType>
+public class HyperObjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> extends HyperObjList<HDT_SubjType, HDT_ObjType>
 {
   private final HyperObjList<HDT_SubjType, HDT_ObjType> parentList;
   private final int startNdx;
@@ -99,7 +99,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends 
     }
 
     if (a.length < objList.size())
-      a = (T[]) new HDT_Base[objList.size()];
+      a = (T[]) new HDT_Record[objList.size()];
 
     for (int ndx = 0; ndx < objList.size(); ndx++)
       a[ndx] = (T) objList.get(ndx);

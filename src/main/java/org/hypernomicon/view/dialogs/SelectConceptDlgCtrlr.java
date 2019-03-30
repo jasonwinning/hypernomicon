@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hypernomicon.model.Exceptions.SearchKeyException;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_Term;
@@ -70,7 +70,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
     CustomRecordPopulator pop = new CustomRecordPopulator(hdtGlossary, (row, force) ->
     {
-      List<HDT_Base> glossaries = new ArrayList<>();
+      List<HDT_Record> glossaries = new ArrayList<>();
 
       HDT_Term term = hcbTerm.selectedRecord();
       if (term == null) return glossaries;

@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Hub;
 
 public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
@@ -68,7 +68,7 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
   @Override public void getToOfflineValue(HDI_OfflineHubSpokes val, Tag tag)
   {
     StrongLink link = hub.getLink();
-    HDT_Base record;
+    HDT_Record record;
 
     record = link.getDebate();   if (record != null) val.debateID   = record.getID();
     record = link.getPosition(); if (record != null) val.positionID = record.getID();

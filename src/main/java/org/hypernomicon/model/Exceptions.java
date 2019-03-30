@@ -17,7 +17,7 @@
 
 package org.hypernomicon.model;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -72,7 +72,7 @@ public class Exceptions
   {
     private final boolean tooShort;
 
-    SearchKeyException(boolean tooShort, HDT_Base record, String key)
+    SearchKeyException(boolean tooShort, HDT_Record record, String key)
     {
       super(tooShort ? "Search key: \"" + key + "\" is too short. Record type: " + db.getTypeName(record.getType()) + " ID : " + record.getID() :
                        "Duplicate search key: \"" + key + "\". Record type: " + db.getTypeName(record.getType()) + " ID : " + record.getID());
@@ -100,7 +100,7 @@ public class Exceptions
 
   public static class RelationCycleException extends Exception
   {
-    public RelationCycleException(HDT_Base child, HDT_Base parent)
+    public RelationCycleException(HDT_Record child, HDT_Record parent)
     {
       super("Unable to assign " + db.getTypeName(child.getType()) + " ID " + child.getID() + " as child of " +
             db.getTypeName(parent.getType()) + " ID " + parent.getID() + ": A cycle would result.");

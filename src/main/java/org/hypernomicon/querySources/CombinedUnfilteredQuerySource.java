@@ -21,7 +21,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Set;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
@@ -32,7 +32,7 @@ public class CombinedUnfilteredQuerySource implements QuerySource
   private int firstNdxThisType = 0, lastNdxThisType = 0, total = 0;
   HDT_RecordType lastType = hdtNone;
   private final EnumMap<HDT_RecordType, Integer> firstNdxForType = new EnumMap<>(HDT_RecordType.class),
-                                                 lastNdxForType = new EnumMap<>(HDT_RecordType.class);
+                                                 lastNdxForType  = new EnumMap<>(HDT_RecordType.class);
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -69,14 +69,14 @@ public class CombinedUnfilteredQuerySource implements QuerySource
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int count()                             { return total; }
-  @Override public QuerySourceType sourceType()            { return QuerySourceType.QST_combinedUnfilteredRecords; }
-  @Override public boolean containsRecord(HDT_Base record) { return types.contains(record.getType()); }
+  @Override public int count()                               { return total; }
+  @Override public QuerySourceType sourceType()              { return QuerySourceType.QST_combinedUnfilteredRecords; }
+  @Override public boolean containsRecord(HDT_Record record) { return types.contains(record.getType()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public HDT_Base getRecord(int ndx)
+  @Override public HDT_Record getRecord(int ndx)
   {
     if ((lastType != hdtNone) && (ndx >= firstNdxThisType) && (ndx <= lastNdxThisType))
       return db.records(lastType).getByIDNdx(ndx - firstNdxThisType);

@@ -27,7 +27,7 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.util.Util.*;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
@@ -35,7 +35,7 @@ import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
 
 //---------------------------------------------------------------------------
 
-public class HyperTableRow extends AbstractRow<HDT_Base, HyperTableRow>
+public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 {
   final private ObservableList<HyperTableCell> cells;
   final private HyperTable table;
@@ -52,8 +52,8 @@ public class HyperTableRow extends AbstractRow<HDT_Base, HyperTableRow>
   @Override public HDT_RecordType getRecordType() { return getType(table.getMainColNdx()); }
   @Override public int getRecordID()              { return getID(table.getMainColNdx()); }
 
-  @Override public <HDT_T extends HDT_Base> HDT_T getRecord() { return HyperTableCell.getRecord(cells.get(table.getMainColNdx())); }
-  public <HDT_T extends HDT_Base> HDT_T getRecord(int ndx)    { return HyperTableCell.getRecord(cells.get(ndx)); }
+  @Override public <HDT_T extends HDT_Record> HDT_T getRecord() { return HyperTableCell.getRecord(cells.get(table.getMainColNdx())); }
+  public <HDT_T extends HDT_Record> HDT_T getRecord(int ndx)    { return HyperTableCell.getRecord(cells.get(ndx)); }
 
 //---------------------------------------------------------------------------
 
@@ -86,7 +86,7 @@ public class HyperTableRow extends AbstractRow<HDT_Base, HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override <HDT_T extends HDT_Base> HDT_T getRecordByType(HDT_RecordType type)
+  @Override <HDT_T extends HDT_Record> HDT_T getRecordByType(HDT_RecordType type)
   {
     if (type == hdtNone)
       return getRecord();
@@ -100,13 +100,13 @@ public class HyperTableRow extends AbstractRow<HDT_Base, HyperTableRow>
   public void setCheckboxValue(int colNdx, boolean boolVal) {
     setCellValue(colNdx, HyperTableCell.fromBoolean(boolVal)); }
 
-  public boolean setCellValue(int colNdx, HDT_Base record, String text) {
+  public boolean setCellValue(int colNdx, HDT_Record record, String text) {
     return setCellValue(colNdx, new HyperTableCell(record, text)); }
 
   public boolean setCellValue(int colNdx, int id, String text, HDT_RecordType type) {
     return setCellValue(colNdx, new HyperTableCell(id, text, type)); }
 
-  public boolean setCellValue(int colNdx, HDT_Base record, String text, HyperCellSortMethod newSortMethod) {
+  public boolean setCellValue(int colNdx, HDT_Record record, String text, HyperCellSortMethod newSortMethod) {
     return setCellValue(colNdx, new HyperTableCell(record, text, newSortMethod)); }
 
   public boolean setCellValue(int colNdx, int id, String text, HDT_RecordType type, HyperCellSortMethod newSortMethod) {

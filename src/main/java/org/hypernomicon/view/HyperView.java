@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.tabs.HyperTab;
@@ -30,7 +30,7 @@ import java.util.HashSet;
 
 import static org.hypernomicon.model.HyperDB.*;
 
-public class HyperView<HDT_CT extends HDT_Base>
+public class HyperView<HDT_CT extends HDT_Record>
 {
   public static class TextViewInfo
   {
@@ -80,7 +80,7 @@ public class HyperView<HDT_CT extends HDT_Base>
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public <HyperTabType extends HyperTab<? extends HDT_Base, HDT_CT>> HyperTabType getHyperTab()
+  public <HyperTabType extends HyperTab<? extends HDT_Record, HDT_CT>> HyperTabType getHyperTab()
   {
     return (HyperTabType) HyperTab.getHyperTab(tabEnum);
   }

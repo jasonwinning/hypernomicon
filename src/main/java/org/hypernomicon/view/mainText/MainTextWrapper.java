@@ -553,7 +553,7 @@ public final class MainTextWrapper
 
   private static enum LinkKind { none, web, keyword }
 
-  private static void addLinks(Element element, HDT_Base recordToHilite)
+  private static void addLinks(Element element, HDT_Record recordToHilite)
   {
     if (element.tagName().equalsIgnoreCase("summary") || // Don't create any keyword links within collapsible headings
         element.tagName().equalsIgnoreCase("a")       || // Don't create any keyword links within anchor tags (they already link to somewhere)
@@ -647,7 +647,7 @@ public final class MainTextWrapper
 
   private static String getKeywordLink(String text, KeywordLink link, String style)
   {
-    HDT_Base record = link.key.record;
+    HDT_Record record = link.key.record;
 
     if (record == null) return text;
 
@@ -674,7 +674,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getOpenRecordParms(HDT_Base record)
+  private static String getOpenRecordParms(HDT_Record record)
   {
     return String.valueOf(record.getType().ordinal()) + "," + record.getID();
   }
@@ -682,7 +682,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getGoToRecordAnchor(HDT_Base record, String style, String content)
+  private static String getGoToRecordAnchor(HDT_Record record, String style, String content)
   {
     String parms = getOpenRecordParms(record);
 
@@ -698,7 +698,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String recordTooltip(HDT_Base record)
+  private static String recordTooltip(HDT_Record record)
   {
     String typeName = db.getTypeName(record.getType());
 
@@ -748,7 +748,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, TextViewInfo viewInfo, HDT_Base recordToHilite)
+  public static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, TextViewInfo viewInfo, HDT_Record recordToHilite)
   {
     if (textToHilite.length() == 0)
       lastTextToHilite = "";
@@ -1302,7 +1302,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String makeElementID(HDT_Base record)
+  private static String makeElementID(HDT_Record record)
   {
     return db.getTypeTagStr(record.getType()) + String.valueOf(record.getID());
   }

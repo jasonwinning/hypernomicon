@@ -28,7 +28,7 @@ import javafx.application.Platform;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.StrongLink;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -68,7 +68,7 @@ class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void removeRecord(HDT_Base record)
+  void removeRecord(HDT_Record record)
   {
     if ((thread != null) && thread.isAlive())
     {
@@ -83,7 +83,7 @@ class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void updateMentioner(HDT_Base record)
+  void updateMentioner(HDT_Record record)
   {
     if ((thread != null) && thread.isAlive())
     {
@@ -113,7 +113,7 @@ class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void reindexMentioner(HDT_Base record)
+  private void reindexMentioner(HDT_Record record)
   {
     if (record == null) return;
 
@@ -228,7 +228,7 @@ class MentionsIndex
         ctr = -1.0; total = 0.0;
         types.forEach(type -> total += db.records(type).size());
 
-        for (HDT_RecordType type : types) for (HDT_Base record : db.records(type))
+        for (HDT_RecordType type : types) for (HDT_Record record : db.records(type))
         {
           ctr++;
 
@@ -287,12 +287,12 @@ class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  Set<HDT_Base> getMentionerSet(HDT_Base target, boolean descOnly)
+  Set<HDT_Record> getMentionerSet(HDT_Record target, boolean descOnly)
   {
     return getMentionerSet(target, descOnly, new MutableBoolean(false));
   }
 
-  Set<HDT_Base> getMentionerSet(HDT_Base target, boolean descOnly, MutableBoolean choseNotToWait)
+  Set<HDT_Record> getMentionerSet(HDT_Record target, boolean descOnly, MutableBoolean choseNotToWait)
   {
     choseNotToWait.setValue(!waitUntilRebuildIsDone());
     if (choseNotToWait.isTrue())
@@ -307,7 +307,7 @@ class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean firstMentionsSecond(HDT_Base mentioner, HDT_Base target, boolean descOnly, MutableBoolean choseNotToWait)
+  boolean firstMentionsSecond(HDT_Record mentioner, HDT_Record target, boolean descOnly, MutableBoolean choseNotToWait)
   {
     choseNotToWait.setValue(!waitUntilRebuildIsDone());
     if (choseNotToWait.isTrue())

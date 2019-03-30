@@ -45,11 +45,11 @@ import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
-import static org.hypernomicon.model.records.HDT_Record.HyperDataCategory.*;
+import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 
 //---------------------------------------------------------------------------
 
-public abstract class HDT_Record implements HDT_Base
+public abstract class HDT_RecordBase implements HDT_Record
 {
 //---------------------------------------------------------------------------
 
@@ -68,7 +68,7 @@ public abstract class HDT_Record implements HDT_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final HyperDataset<? extends HDT_Base> dataset;
+  private final HyperDataset<? extends HDT_Record> dataset;
   protected final Tag nameTag;
   private final NameItem name;
   private final LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items;
@@ -115,25 +115,25 @@ public abstract class HDT_Record implements HDT_Base
   { db.setSearchKey(this, newKey, noMod, dontRebuildMentions); }
 
   @SuppressWarnings("unchecked")
-  protected final <HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> HyperObjList<HDT_SubjType, HDT_ObjType> getObjList(RelationType relType)
+  protected final <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> HyperObjList<HDT_SubjType, HDT_ObjType> getObjList(RelationType relType)
   { return (HyperObjList<HDT_SubjType, HDT_ObjType>) db.getObjectList(relType, this, true); }
 
   @SuppressWarnings("unchecked")
-  protected final <HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> HyperSubjList<HDT_SubjType, HDT_ObjType> getSubjList(RelationType relType)
+  protected final <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> HyperSubjList<HDT_SubjType, HDT_ObjType> getSubjList(RelationType relType)
   { return (HyperSubjList<HDT_SubjType, HDT_ObjType>) db.getSubjectList(relType, this); }
 
   @SuppressWarnings("unchecked")
-  protected final <HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> HyperObjPointer<HDT_SubjType, HDT_ObjType> getObjPointer(RelationType relType)
+  protected final <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> HyperObjPointer<HDT_SubjType, HDT_ObjType> getObjPointer(RelationType relType)
   { return (HyperObjPointer<HDT_SubjType, HDT_ObjType>) db.getObjPointer(relType, this); }
 
   @SuppressWarnings("unchecked")
-  protected final <HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> HyperSubjPointer<HDT_SubjType, HDT_ObjType> getSubjPointer(RelationType relType)
+  protected final <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> HyperSubjPointer<HDT_SubjType, HDT_ObjType> getSubjPointer(RelationType relType)
   { return (HyperSubjPointer<HDT_SubjType, HDT_ObjType>) db.getSubjPointer(relType, this); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  HDT_Record(HDT_RecordState xmlState, HyperDataset<? extends HDT_Base> dataset, Tag nameTag)
+  HDT_RecordBase(HDT_RecordState xmlState, HyperDataset<? extends HDT_Record> dataset, Tag nameTag)
   {
     name = new NameItem();
 
@@ -458,9 +458,9 @@ public abstract class HDT_Record implements HDT_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected final <HDT_T extends HDT_Record> void updateObjectsFromList(RelationType relType, List<HDT_T> list)
+  protected final <HDT_T extends HDT_RecordBase> void updateObjectsFromList(RelationType relType, List<HDT_T> list)
   {
-    HyperObjList<HDT_Base, HDT_Base> objList = getObjList(relType);
+    HyperObjList<HDT_Record, HDT_Record> objList = getObjList(relType);
     if (objList.equals(list)) return;
 
     objList.clear();
@@ -590,7 +590,7 @@ public abstract class HDT_Record implements HDT_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean isEmptyThrowsException(HDT_Base record) throws HDB_InternalError
+  public static boolean isEmptyThrowsException(HDT_Record record) throws HDB_InternalError
   {
     if ((record == null) || (record.isExpired())) return true;
 
@@ -603,7 +603,7 @@ public abstract class HDT_Record implements HDT_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean isEmpty(HDT_Base record)
+  public static boolean isEmpty(HDT_Record record)
   {
     try { return isEmptyThrowsException(record); }
     catch (HDB_InternalError e) { messageDialog(e.getMessage(), mtError); }
@@ -628,12 +628,12 @@ public abstract class HDT_Record implements HDT_Base
   {
     Instant dbCreationDate = db.getCreationDate();
 
-    HDT_Record.class.cast(db.folders     .getByID(1)).setDates(dbCreationDate);
-    HDT_Record.class.cast(db.debates     .getByID(1)).setDates(dbCreationDate);
-    HDT_Record.class.cast(db.notes       .getByID(1)).setDates(dbCreationDate);
-    HDT_Record.class.cast(db.workLabels  .getByID(1)).setDates(dbCreationDate);
-    HDT_Record.class.cast(db.personGroups.getByID(1)).setDates(dbCreationDate);
-    HDT_Record.class.cast(db.glossaries  .getByID(1)).setDates(dbCreationDate);
+    HDT_RecordBase.class.cast(db.folders     .getByID(1)).setDates(dbCreationDate);
+    HDT_RecordBase.class.cast(db.debates     .getByID(1)).setDates(dbCreationDate);
+    HDT_RecordBase.class.cast(db.notes       .getByID(1)).setDates(dbCreationDate);
+    HDT_RecordBase.class.cast(db.workLabels  .getByID(1)).setDates(dbCreationDate);
+    HDT_RecordBase.class.cast(db.personGroups.getByID(1)).setDates(dbCreationDate);
+    HDT_RecordBase.class.cast(db.glossaries  .getByID(1)).setDates(dbCreationDate);
   }
 
 //---------------------------------------------------------------------------

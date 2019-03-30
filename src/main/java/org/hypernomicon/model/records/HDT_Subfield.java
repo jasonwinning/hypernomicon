@@ -27,7 +27,7 @@ import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Field;
 import org.hypernomicon.model.relations.HyperObjPointer;
 
-public class HDT_Subfield extends HDT_Record
+public class HDT_Subfield extends HDT_RecordBase
 {
   public final List<HDT_Person> persons;
 

@@ -38,7 +38,7 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
 {
   private final RelationType relType;
 
-  public HDI_OnlinePointerSingle(HDI_Schema newSchema, HDT_Base newRecord)
+  public HDI_OnlinePointerSingle(HDI_Schema newSchema, HDT_Record newRecord)
   {
     super(newSchema, newRecord);
     relType = schema.getRelType();
@@ -66,12 +66,12 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
 
   @Override public void setFromOfflineValue(HDI_OfflinePointerSingle val, Tag tag) throws RelationCycleException
   {
-    HyperObjList<HDT_Base, HDT_Base> objList = db.getObjectList(relType, record, false);
+    HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
     HDT_RecordType objType = db.getObjType(relType);
 
     int objID = val.getObjID(); if (objID < 1) return;
 
-    HDT_Base obj = db.records(objType).getByID(objID); if (obj == null) return;
+    HDT_Record obj = db.records(objType).getByID(objID); if (obj == null) return;
 
     if (objList.contains(obj)) return;
 
@@ -100,7 +100,7 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
 
   @Override public String getResultTextForTag(Tag tag)
   {
-    HyperObjList<HDT_Base, HDT_Base> objList = db.getObjectList(relType, record, false);
+    HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
 
     return objList.isEmpty() ? "" : objList.get(0).listName();
   }
@@ -110,7 +110,7 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
 
   @Override public void getToOfflineValue(HDI_OfflinePointerSingle val, Tag tag)
   {
-    HyperObjList<HDT_Base, HDT_Base> objList = db.getObjectList(relType, record, false);
+    HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
 
     if (objList.isEmpty())
     {

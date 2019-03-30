@@ -143,7 +143,7 @@ public final class MainCtrlr
   private ClickHoldButton chbBack, chbForward;
   private TextField selectorTF = null;
 
-  public HDT_Base treeSubjRecord = null, treeObjRecord = null;
+  public HDT_Record treeSubjRecord = null, treeObjRecord = null;
   public final List<TreeTargetType> treeTargetTypes = new ArrayList<>();
 
   public Tooltip ttDates;
@@ -551,7 +551,7 @@ public final class MainCtrlr
     {
       if ((activeTabEnum() == treeTab) || (activeTabEnum() == queryTab)) return;
 
-      HDT_Base record = activeRecord();
+      HDT_Record record = activeRecord();
       if (record == null)
       {
         tfID.setText("");
@@ -766,7 +766,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getGraphicRelativePath(HDT_Base record)
+  public String getGraphicRelativePath(HDT_Record record)
   {
     switch (record.getType())
     {
@@ -978,7 +978,7 @@ public final class MainCtrlr
       if (JIntellitype.isJIntellitypeSupported())
         //JIntellitype.getInstance().cleanUp();   // This causes the VM to crash in Java 11
         System.exit(0);
-      
+
       if (Environment.isMac())
         Platform.exit();
     }
@@ -1084,7 +1084,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void updateDatesTooltip(HDT_Base record)
+  private void updateDatesTooltip(HDT_Record record)
   {
     if (record == null)
     {
@@ -1286,7 +1286,7 @@ public final class MainCtrlr
     HDT_RecordType type = selectorType();
     String name = hcbGoTo.selectedID() == -1 ? cbGoTo.getEditor().getText() : "";
 
-    HDT_Base record = db.createNewBlankRecord(type);
+    HDT_Record record = db.createNewBlankRecord(type);
     if (name.length() > 0)
     {
       if (type == hdtPerson)
@@ -1321,7 +1321,7 @@ public final class MainCtrlr
 
   public boolean deleteCurrentRecord(boolean confirm)
   {
-    HDT_Base record = activeRecord();
+    HDT_Record record = activeRecord();
 
     if (record == null) return false;
 
@@ -1551,7 +1551,7 @@ public final class MainCtrlr
 
   public class FavMenuItem extends MenuItem
   {
-    public FavMenuItem(HDT_Base record)
+    public FavMenuItem(HDT_Record record)
     {
       super(db.getTypeName(record.getType()) + ": " + record.getCBText());
       isQuery = false;
@@ -1607,7 +1607,7 @@ public final class MainCtrlr
     if ((activeTabEnum() == treeTab) || (activeTabEnum() == queryTab)) return;
     if (cantSaveRecord(true)) return;
 
-    HDT_Base record = viewRecord();
+    HDT_Record record = viewRecord();
     if (record == null) return;
 
     int ndx = favorites.indexOfRecord(record);
@@ -1675,7 +1675,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void searchForMentions(HDT_Base record, boolean descOnly)
+  private void searchForMentions(HDT_Record record, boolean descOnly)
   {
     boolean noneFound = false, didSearch = false, backClick = activeTabEnum() != queryTab;
 
@@ -1722,7 +1722,7 @@ public final class MainCtrlr
       return;
     }
 
-    HDT_Base record = null;
+    HDT_Record record = null;
 
     if (activeTabEnum() == termTab)
     {
@@ -1765,7 +1765,7 @@ public final class MainCtrlr
     if (db.isLoaded() == false)
       return falseWithErrorMessage("No database is currently loaded.");
 
-    HDT_Base record = activeRecord();
+    HDT_Record record = activeRecord();
 
     if (record == null)
       return falseWithErrorMessage("No record is currently selected.");
@@ -1775,7 +1775,7 @@ public final class MainCtrlr
 
     if (confirmDialog("Are you sure you want to revert this record to the last version saved to disk?") == false) return false;
 
-    HDT_Base viewRecord = viewRecord();
+    HDT_Record viewRecord = viewRecord();
 
     if (revertToDiskCopy(record) && (viewRecord != null) && (viewRecord != record))
       if ((activeTabEnum() != treeTab) && (activeTabEnum() != queryTab))
@@ -1788,7 +1788,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean revertToDiskCopy(HDT_Base record)
+  private boolean revertToDiskCopy(HDT_Record record)
   {
     boolean success = true;
     String recordStr = db.getTypeName(record.getType()) + " \"" + record.getCBText() + "\"";
@@ -1953,7 +1953,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void goToTreeRecord(HDT_Base record)
+  public void goToTreeRecord(HDT_Record record)
   {
     if (db.isLoaded() == false) return;
 
@@ -1972,12 +1972,12 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TabEnum activeTabEnum()                  { return viewSequence.isEmpty() ? personTab : viewSequence.curTabEnum(); }
-  public HyperTab<? extends HDT_Base,
-                  ? extends HDT_Base> activeTab() { return viewSequence.isEmpty() ? null : viewSequence.curHyperTab(); }
-  public HDT_RecordType activeType()              { return viewSequence.isEmpty() ? hdtPerson : viewSequence.curHyperView().getTabRecordType(); }
-  public HDT_Base activeRecord()                  { return viewSequence.isEmpty() ? null : activeTab().activeRecord(); }
-  public HDT_Base viewRecord()                    { return viewSequence.isEmpty() ? null : activeTab().viewRecord(); }
+  public TabEnum activeTabEnum()                    { return viewSequence.isEmpty() ? personTab : viewSequence.curTabEnum(); }
+  public HyperTab<? extends HDT_Record,
+                  ? extends HDT_Record> activeTab() { return viewSequence.isEmpty() ? null : viewSequence.curHyperTab(); }
+  public HDT_RecordType activeType()                { return viewSequence.isEmpty() ? hdtPerson : viewSequence.curHyperView().getTabRecordType(); }
+  public HDT_Record activeRecord()                  { return viewSequence.isEmpty() ? null : activeTab().activeRecord(); }
+  public HDT_Record viewRecord()                    { return viewSequence.isEmpty() ? null : activeTab().viewRecord(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -2018,7 +2018,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void goToRecord(HDT_Base record, boolean save)
+  public void goToRecord(HDT_Record record, boolean save)
   {
     if ((record == null) || (db.isLoaded() == false)) return;
 
@@ -2105,8 +2105,8 @@ public final class MainCtrlr
     }
 
     TabEnum tabEnum = activeTabEnum();
-    HyperTab<? extends HDT_Base, ? extends HDT_Base> tab = activeTab();
-    HDT_Base record = activeRecord();
+    HyperTab<? extends HDT_Record, ? extends HDT_Record> tab = activeTab();
+    HDT_Record record = activeRecord();
 
     switch (tabEnum)
     {
@@ -2125,7 +2125,7 @@ public final class MainCtrlr
 
     if (count > 0)
     {
-      if (HDT_Record.isEmpty(record))
+      if (HDT_RecordBase.isEmpty(record))
       {
         int ndx = tab.getView().getTabRecordKeyNdx();
 
@@ -2185,7 +2185,7 @@ public final class MainCtrlr
   private void updateSelectorTab(boolean setFocus)
   {
     TabEnum selectorTabEnum = selectorTabEnum(), activeTabEnum = activeTabEnum();
-    HyperTab<? extends HDT_Base, ? extends HDT_Base> hyperTab = nullSwitch(getHyperTab(selectorTabEnum), activeTab());
+    HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = nullSwitch(getHyperTab(selectorTabEnum), activeTab());
     selectorTF = null;
 
     int count = hyperTab == null ? 0 : hyperTab.getRecordCount();
@@ -2251,8 +2251,8 @@ public final class MainCtrlr
 
         if (count > 0)
         {
-          HDT_Base record = nullSwitch(hyperTab, null, HyperTab::activeRecord);  // Save to variable to avoid Maven compile errors
-          hcbGoTo.addAndSelectEntryOrBlank(record, HDT_Base::listName);
+          HDT_Record record = nullSwitch(hyperTab, null, HyperTab::activeRecord);  // Save to variable to avoid Maven compile errors
+          hcbGoTo.addAndSelectEntryOrBlank(record, HDT_Record::listName);
         }
 
         break;
@@ -2294,11 +2294,11 @@ public final class MainCtrlr
     ttDates.setText("No dates to show.");
     if (db.isLoaded() == false) return;
 
-    HyperTab<? extends HDT_Base, ? extends HDT_Base> curTab = activeTab();
+    HyperTab<? extends HDT_Record, ? extends HDT_Record> curTab = activeTab();
     if (curTab == null) return;
 
     int count = curTab.getRecordCount(), ndx = curTab.getRecordNdx();
-    HDT_Base activeRec = activeRecord();
+    HDT_Record activeRec = activeRecord();
     TabEnum activeTabEnum = activeTabEnum();
 
     attachOrphansToRoots();
@@ -2439,7 +2439,7 @@ public final class MainCtrlr
       return;
     }
 
-    HyperDataset<? extends HDT_Base>.CoreAccessor records = db.records(activeType());
+    HyperDataset<? extends HDT_Record>.CoreAccessor records = db.records(activeType());
 
     int ndx = records.getKeyNdxByID(activeRecord().getID());
 
@@ -2468,7 +2468,7 @@ public final class MainCtrlr
       return;
     }
 
-    HDT_Base record = nullSwitch(getTree().selectedItem(), (HDT_Base)null, treeItem ->
+    HDT_Record record = nullSwitch(getTree().selectedItem(), (HDT_Record)null, treeItem ->
                       nullSwitch(treeItem.getValue(), null, TreeRow::getRecord));
 
     if (record == null) return;
@@ -2502,7 +2502,7 @@ public final class MainCtrlr
     if (treeObjRecord != null)
       db.getObjectList(getRelation(treeSubjRecord.getType(), treeObjRecord.getType()), treeSubjRecord, true).remove(treeObjRecord);
 
-    HyperObjList<HDT_Base, HDT_Base> objList = db.getObjectList(relType, treeSubjRecord, true);
+    HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, treeSubjRecord, true);
 
     objList.add(record);
     try { objList.throwLastException(); }

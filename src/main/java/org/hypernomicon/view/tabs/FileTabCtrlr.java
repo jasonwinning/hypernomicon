@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view.tabs;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_Work;
@@ -101,7 +101,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     mainText.loadFromRecord(curMiscFile, true, getView().getTextInfo());
 
-    hcbFileType.addAndSelectEntry(curMiscFile.fileType, HDT_Base::getCBText);
+    hcbFileType.addAndSelectEntry(curMiscFile.fileType, HDT_Record::getCBText);
 
   // Populate key mentioners
   // -----------------------
@@ -111,7 +111,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
  // populate authors
  // ----------------
 
-   hcbWork.addAndSelectEntry(curMiscFile.work, HDT_Base::getCBText);
+   hcbWork.addAndSelectEntry(curMiscFile.work, HDT_Record::getCBText);
 
    cbWorkChange();
 

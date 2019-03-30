@@ -26,7 +26,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Argument;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_Work;
@@ -121,7 +121,7 @@ public class NewArgDlgCtrlr extends HyperDlg
     cbIncludeAuth.selectedProperty().addListener((observable, oldSelected, newSelected) -> reviseSuggestions());
 
     hcbPerson.addBlankEntry();
-    hcbPositionVerdict.addAndSelectEntry(db.positionVerdicts.getByID(1), HDT_Base::getCBText);
+    hcbPositionVerdict.addAndSelectEntry(db.positionVerdicts.getByID(1), HDT_Record::getCBText);
     hcbPositionVerdict.populate(false);
     hcbWork.addBlankEntry();
 

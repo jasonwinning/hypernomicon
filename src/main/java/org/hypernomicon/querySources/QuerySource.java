@@ -17,7 +17,7 @@
 
 package org.hypernomicon.querySources;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
 public interface QuerySource
 {
@@ -32,6 +32,6 @@ public interface QuerySource
 
   int count();
   QuerySourceType sourceType();
-  boolean containsRecord(HDT_Base record);
-  HDT_Base getRecord(int ndx);
+  boolean containsRecord(HDT_Record record);
+  HDT_Record getRecord(int ndx);
 }

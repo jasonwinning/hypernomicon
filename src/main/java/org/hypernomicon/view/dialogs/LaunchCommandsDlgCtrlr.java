@@ -18,13 +18,17 @@
 package org.hypernomicon.view.dialogs;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.hypernomicon.util.DesktopApi;
 import org.hypernomicon.util.filePath.FilePath;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.dialogs.LaunchCommandsDlgCtrlr.LaunchCommandTypeEnum.*;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -202,6 +206,49 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
     appPrefs.put(commandTypePrefKey, nullSwitch(cbCommandType.getSelectionModel().getSelectedItem(), "", typeEnum -> typeEnum.prefVal));
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void launch(String appPath, FilePath filePath, String commandsPrefKey, String commandTypePrefKey, int pageNum)
+  {
+    String[] argz;
+    String commands = appPrefs.get(commandsPrefKey, "");
+    LaunchCommandTypeEnum commandType = getByPrefVal(appPrefs.get(commandTypePrefKey, ""));
+
+    if ((commandType != null) && (commands.length() > 0))
+    {
+      if ((commandType == appleScript) && SystemUtils.IS_OS_MAC)
+      {
+        argz = new String[] { "osascript",
+                              "-e",
+                              resolve(commands, appPath, filePath, pageNum) };
+        try
+        {
+          Runtime.getRuntime().exec(argz);
+        }
+        catch (IOException e)
+        {
+          messageDialog("An error occurred while trying to start application: " + e.getMessage(), mtError);
+        }
+
+        return;
+      }
+
+      if (commandType == opSysCmdAndArgs)
+      {
+        ArrayList<String> list = convertMultiLineStrToStrList(resolve(commands, appPath, filePath, pageNum), false);
+
+        if (list.size() > 1)
+        {
+          DesktopApi.exec(true, false, list);
+          return;
+        }
+      }
+    }
+
+    DesktopApi.exec(true, false, appPath, filePath.toString());
   }
 
 //---------------------------------------------------------------------------

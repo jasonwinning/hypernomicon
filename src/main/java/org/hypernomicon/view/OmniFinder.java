@@ -55,7 +55,7 @@ public class OmniFinder
   private final ArrayList<HyperTableRow> rows = new ArrayList<>();
   private final EnumSet<TierEnum> tierSet;
   private final EnumMap<TierEnum, ImmutableSet<HDT_RecordType>> tierToTypeSet = new EnumMap<>(TierEnum.class);
-  private final HashSet<HDT_Base> records = new HashSet<>();
+  private final HashSet<HDT_Record> records = new HashSet<>();
 
   private String query = "";
   private FinderThread finderThread = null;
@@ -118,13 +118,13 @@ public class OmniFinder
   private class FinderThread extends Thread
   {
     private final HyperTable htFind;
-    private final ArrayList<HDT_Base> buffer = new ArrayList<>();
+    private final ArrayList<HDT_Record> buffer = new ArrayList<>();
 
     private TierEnum curTier;
     private boolean done = false, lastShowingMore, firstBuffer = true;
     private String lastQuery = "", queryLC;
     private Iterator<TierEnum> tierIt;
-    private Iterator<? extends HDT_Base> recordIt;
+    private Iterator<? extends HDT_Record> recordIt;
     private Iterator<HDT_RecordType> typeIt;
     int rowNdx = 0, runLaters = 0;
     long startTime, nextInterval;
@@ -171,7 +171,7 @@ public class OmniFinder
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    private HDT_Base nextRecord()
+    private HDT_Record nextRecord()
     {
       if (curTier == tierKeywordStart)
       {
@@ -225,7 +225,7 @@ public class OmniFinder
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    private HDT_Base getResultRecord(HDT_Base input)
+    private HDT_Record getResultRecord(HDT_Record input)
     {
       if (input.getType() != hdtHub)
         return input;
@@ -308,7 +308,7 @@ public class OmniFinder
 
     // Similar to HyperCB.cbOnAction
 
-    private boolean isMatch(HDT_Base record)
+    private boolean isMatch(HDT_Record record)
     {
       if (records.contains(record)) return false;
 
@@ -374,7 +374,7 @@ public class OmniFinder
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    private boolean addRecord(HDT_Base record)
+    private boolean addRecord(HDT_Record record)
     {
       buffer.add(record);
       records.add(record);
@@ -400,7 +400,7 @@ public class OmniFinder
       ArrayList<HyperTableRow> curRows = new ArrayList<>();
       ObservableList<HyperTableCell> cells;
 
-      for (HDT_Base record : buffer)
+      for (HDT_Record record : buffer)
       {
         if (showingMore)
           cells = FXCollections.observableArrayList(new HyperTableCell(-1, "", hdtWork),
@@ -522,7 +522,7 @@ public class OmniFinder
 
     @Override public void run()
     {
-      HDT_Base record = null;
+      HDT_Record record = null;
 
       startOver();
 

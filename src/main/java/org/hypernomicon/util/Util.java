@@ -26,7 +26,6 @@ import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.WindowStack;
 import org.hypernomicon.view.dialogs.InternetCheckDlgCtrlr;
 import org.hypernomicon.view.dialogs.LaunchCommandsDlgCtrlr;
-import org.hypernomicon.view.dialogs.LaunchCommandsDlgCtrlr.LaunchCommandTypeEnum;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -512,51 +511,7 @@ public final class Util
 
     if (pageNum < 1) pageNum = 1;
 
-    configuredLaunch(readerPath, filePath, PREF_KEY_PDF_READER_COMMANDS, PREF_KEY_PDF_READER_COMMAND_TYPE, pageNum);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void configuredLaunch(String appPath, FilePath filePath, String commandsPrefKey, String commandTypePrefKey, int pageNum)
-  {
-    String[] argz;
-    String commands = appPrefs.get(commandsPrefKey, "");
-    LaunchCommandTypeEnum commandType = LaunchCommandTypeEnum.getByPrefVal(appPrefs.get(commandTypePrefKey, ""));
-
-    if ((commandType != null) && (commands.length() > 0))
-    {
-      if ((commandType == LaunchCommandTypeEnum.appleScript) && SystemUtils.IS_OS_MAC)
-      {
-        argz = new String[] { "osascript",
-                              "-e",
-                              LaunchCommandsDlgCtrlr.resolve(commands, appPath, filePath, pageNum) };
-        try
-        {
-          Runtime.getRuntime().exec(argz);
-        }
-        catch (IOException e)
-        {
-          messageDialog("An error occurred while trying to start application: " + e.getMessage(), mtError);
-        }
-
-        return;
-      }
-
-      if (commandType == LaunchCommandTypeEnum.opSysCmdAndArgs)
-      {
-        List<String> list = convertMultiLineStrToStrList(LaunchCommandsDlgCtrlr.resolve(commands, appPath, filePath, pageNum), false);
-
-        if (list.size() > 1)
-        {
-          String execPathStr = list.remove(0);
-          DesktopApi.launchExplicit(execPathStr, list.toArray(new String[0]));
-          return;
-        }
-      }
-    }
-
-    DesktopApi.launchExplicit(appPath, filePath.toString());
+    LaunchCommandsDlgCtrlr.launch(readerPath, filePath, PREF_KEY_PDF_READER_COMMANDS, PREF_KEY_PDF_READER_COMMAND_TYPE, pageNum);
   }
 
 //---------------------------------------------------------------------------
@@ -576,7 +531,7 @@ public final class Util
 
       else if (SystemUtils.IS_OS_LINUX)
       {
-        if (DesktopApi.runCommand("nautilus", "%s", filePath.toString()) == false)
+        if (DesktopApi.exec(false, true, "nautilus", filePath.toString()) == false)
           launchFile(filePath.getDirOnly());  // this won't highlight the file in the folder
       }
 
@@ -1783,7 +1738,7 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static List<String> convertMultiLineStrToStrList(String str, boolean emptiesOK)
+  public static ArrayList<String> convertMultiLineStrToStrList(String str, boolean emptiesOK)
   {
     ArrayList<String> list = new ArrayList<>(Arrays.asList(str.split("\\r?\\n")));
 

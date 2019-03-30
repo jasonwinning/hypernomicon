@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -39,11 +39,11 @@ public class SubjectPopulator extends Populator
 {
   private final HashMap<HyperTableRow, Boolean> rowToChanged;
   private final HashMap<HyperTableRow, List<HyperTableCell>> rowToChoices;
-  private final HashMap<HyperTableRow, HDT_Base> rowToObj;
+  private final HashMap<HyperTableRow, HDT_Record> rowToObj;
   private final RelationType relType;
   private final boolean trackObjByRow, nameOnly;
 
-  private HDT_Base obj = null;
+  private HDT_Record obj = null;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -72,7 +72,7 @@ public class SubjectPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  HDT_Base getObj(HyperTableRow row)
+  HDT_Record getObj(HyperTableRow row)
   {
     if (trackObjByRow)
       return rowToObj.get(nullSwitch(row, dummyRow));
@@ -83,9 +83,9 @@ public class SubjectPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setObj(HyperTableRow row, HDT_Base newObj)
+  public void setObj(HyperTableRow row, HDT_Record newObj)
   {
-    HDT_Base oldObj;
+    HDT_Record oldObj;
 
     if (row == null) row = dummyRow;
 
@@ -118,7 +118,7 @@ public class SubjectPopulator extends Populator
     choices.clear();
     choices.add(HyperTableCell.blankCell);
 
-    HDT_Base curObj;
+    HDT_Record curObj;
 
     if (trackObjByRow)
     {
@@ -132,7 +132,7 @@ public class SubjectPopulator extends Populator
     }
 
     boolean noneYet = true;
-    for (HDT_Base subj : db.getSubjectList(relType, curObj))
+    for (HDT_Record subj : db.getSubjectList(relType, curObj))
     {
       if (noneYet)
       {

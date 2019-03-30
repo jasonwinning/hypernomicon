@@ -48,7 +48,7 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 
   private int curNdx = -1;
-  private final List<HyperView<? extends HDT_Base>> viewList = new ArrayList<>();
+  private final List<HyperView<? extends HDT_Record>> viewList = new ArrayList<>();
   private final TabPane tabPane;
   private boolean alreadyChangingTab = false;
   private final ClickHoldButton chbBack, chbForward;
@@ -75,7 +75,7 @@ public class HyperViewSequence
         return;
       }
 
-      HyperTab<? extends HDT_Base, ? extends HDT_Base> hyperTab = getHyperTabByTab(newTab);
+      HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = getHyperTabByTab(newTab);
 
       if (hyperTab.getTabEnum() != workTab)
         bibManagerDlg.workRecordToAssign.set(null);
@@ -87,12 +87,12 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  HyperView<? extends HDT_Base> curHyperView()                      { return viewList.get(curNdx); }
-  HyperTab<? extends HDT_Base, ? extends HDT_Base> curHyperTab()    { return curHyperView().getHyperTab(); }
-  TabEnum curTabEnum()                                              { return curHyperView().getTabEnum();  }
-  public void updateCurrentView(HyperView<? extends HDT_Base> view) { setView(view); setTabView(view); }
-  boolean isEmpty()                                                 { return viewList.isEmpty(); }
-  void refreshAll()                                                 { viewList.forEach(HyperView::refresh); }
+  HyperView<? extends HDT_Record> curHyperView()                        { return viewList.get(curNdx); }
+  HyperTab<? extends HDT_Record, ? extends HDT_Record> curHyperTab()    { return curHyperView().getHyperTab(); }
+  TabEnum curTabEnum()                                                  { return curHyperView().getTabEnum();  }
+  public void updateCurrentView(HyperView<? extends HDT_Record> view)   { setView(view); setTabView(view); }
+  boolean isEmpty()                                                     { return viewList.isEmpty(); }
+  void refreshAll()                                                     { viewList.forEach(HyperView::refresh); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -101,14 +101,14 @@ public class HyperViewSequence
   {
     if (viewList.isEmpty() && (okToInsert == false)) return;
 
-    HyperTab<? extends HDT_Base, ? extends HDT_Base> hyperTab = curHyperTab();
+    HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = curHyperTab();
 
-    HDT_Base record = hyperTab.activeRecord();
-    if ((record != null) && HDT_Record.isEmpty(record)) // Make sure active record was not just deleted
+    HDT_Record record = hyperTab.activeRecord();
+    if ((record != null) && HDT_RecordBase.isEmpty(record)) // Make sure active record was not just deleted
       return;
 
     record = hyperTab.viewRecord();                     // Make sure view record was not just deleted
-    if ((record != null) && HDT_Record.isEmpty(record)) // If concept was just deleted, active record (term) will be null
+    if ((record != null) && HDT_RecordBase.isEmpty(record)) // If concept was just deleted, active record (term) will be null
       return;                                           // so we also have to check view record (concept)
 
     updateCurrentView(new HyperView<>(curTabEnum(), record, hyperTab.getMainTextInfo()));
@@ -156,7 +156,7 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void forwardToNewSlotAndView(HyperView<? extends HDT_Base> hyperView)
+  void forwardToNewSlotAndView(HyperView<? extends HDT_Record> hyperView)
   {
     saveViewToSequence(false);
     setTabView(hyperView);
@@ -165,7 +165,7 @@ public class HyperViewSequence
 
     if (viewList.isEmpty() == false)
     {
-      HyperView<? extends HDT_Base> view = curHyperView();
+      HyperView<? extends HDT_Record> view = curHyperView();
 
       if ((view.getTabEnum() != queryTab) && (view.getTabEnum() != treeTab) && (view.getViewRecord() == null))
         advance = false;
@@ -187,8 +187,8 @@ public class HyperViewSequence
 
   private void update()
   {
-    HyperView<? extends HDT_Base> curView = curHyperView();
-    HyperTab<? extends HDT_Base, ? extends HDT_Base> curHyperTab = setTabView(curView);
+    HyperView<? extends HDT_Record> curView = curHyperView();
+    HyperTab<? extends HDT_Record, ? extends HDT_Record> curHyperTab = setTabView(curView);
 
     alreadyChangingTab = true;
     tabPane.getSelectionModel().select(curHyperTab.getTab());
@@ -284,8 +284,8 @@ public class HyperViewSequence
   private boolean addMenuItem(ObservableList<MenuItem> menu, int ndx)
   {
     MenuItem item;
-    HyperView<? extends HDT_Base> view = viewList.get(ndx);
-    HDT_Base record = view.getViewRecord();
+    HyperView<? extends HDT_Record> view = viewList.get(ndx);
+    HDT_Record record = view.getViewRecord();
 
     if (record == null)
     {
@@ -329,7 +329,7 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setView(HyperView<? extends HDT_Base> view)
+  private void setView(HyperView<? extends HDT_Record> view)
   {
     if (curNdx == -1) curNdx = 0;
 
@@ -340,8 +340,8 @@ public class HyperViewSequence
 
     // This next part prevents duplicate adjacent entries
 
-    Iterator<HyperView<? extends HDT_Base>> it = viewList.iterator();
-    HyperView<? extends HDT_Base> lastView = null;
+    Iterator<HyperView<? extends HDT_Record>> it = viewList.iterator();
+    HyperView<? extends HDT_Record> lastView = null;
 
     int ndx = 0;
     while (it.hasNext())
@@ -370,7 +370,7 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void removeRecord(HDT_Base record)
+  void removeRecord(HDT_Record record)
   {
     // Do not change the following code to use ArrayList.removeIf. The line that checks whether curNdx should be decremented will not work
     // because the ArrayList does not actually get modified until all of the removeIf checks are completed.

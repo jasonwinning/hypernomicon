@@ -25,7 +25,7 @@ import java.util.Map;
 
 import org.hypernomicon.model.records.HDT_Hub;
 import org.hypernomicon.model.items.StrongLink;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,7 +35,7 @@ import com.google.common.collect.Sets;
 
 public class BidiOneToManyRecordMap
 {
-  private final Map<HDT_Base, Set<HDT_Base>> forwardMap = new ConcurrentHashMap<>(),
+  private final Map<HDT_Record, Set<HDT_Record>> forwardMap = new ConcurrentHashMap<>(),
                                              reverseMap = new ConcurrentHashMap<>();
 
 //---------------------------------------------------------------------------
@@ -44,13 +44,13 @@ public class BidiOneToManyRecordMap
   public void clear() { forwardMap.clear(); reverseMap.clear(); }
 
   @SuppressWarnings("unchecked")
-  public <HDT_T extends HDT_Base> Set<HDT_T> getForwardSet(HDT_Base fromRecord)
+  public <HDT_T extends HDT_Record> Set<HDT_T> getForwardSet(HDT_Record fromRecord)
   {
     return (Set<HDT_T>) Collections.unmodifiableSet(getSet(forwardMap, fromRecord));
   }
 
   @SuppressWarnings("unchecked")
-  public <HDT_T extends HDT_Base> Set<HDT_T> getReverseSet(HDT_Base fromRecord)
+  public <HDT_T extends HDT_Record> Set<HDT_T> getReverseSet(HDT_Record fromRecord)
   {
     return (Set<HDT_T>) Collections.unmodifiableSet(getSet(reverseMap, fromRecord));
   }
@@ -58,7 +58,7 @@ public class BidiOneToManyRecordMap
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addForward(HDT_Base fromRecord, HDT_Base toRecord)
+  public void addForward(HDT_Record fromRecord, HDT_Record toRecord)
   {
     if (toRecord.getType() == hdtHub)
     {
@@ -87,7 +87,7 @@ public class BidiOneToManyRecordMap
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addForwardMapping(HDT_Base fromRecord, HDT_Base toRecord)
+  private void addForwardMapping(HDT_Record fromRecord, HDT_Record toRecord)
   {
     getSet(forwardMap, fromRecord).add(toRecord);
     getSet(reverseMap, toRecord).add(fromRecord);
@@ -96,7 +96,7 @@ public class BidiOneToManyRecordMap
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void removeForward(HDT_Base fromRecord, HDT_Base toRecord)
+  public void removeForward(HDT_Record fromRecord, HDT_Record toRecord)
   {
     getSet(forwardMap, fromRecord).remove(toRecord);
     getSet(reverseMap, toRecord).remove(fromRecord);
@@ -105,11 +105,11 @@ public class BidiOneToManyRecordMap
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Set<HDT_Base> getSet(Map<HDT_Base, Set<HDT_Base>> map1, HDT_Base record1)
+  private Set<HDT_Record> getSet(Map<HDT_Record, Set<HDT_Record>> map1, HDT_Record record1)
   {
     if (map1.containsKey(record1)) return map1.get(record1);
 
-    Set<HDT_Base> set = Sets.newConcurrentHashSet();
+    Set<HDT_Record> set = Sets.newConcurrentHashSet();
 
     map1.put(record1, set);
     return set;
@@ -118,7 +118,7 @@ public class BidiOneToManyRecordMap
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void removeRecord(HDT_Base record)
+  public void removeRecord(HDT_Record record)
   {
     removeForwardKey(record);
     removeReverseKey(record);
@@ -127,7 +127,7 @@ public class BidiOneToManyRecordMap
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void removeForwardKey(HDT_Base key)
+  private void removeForwardKey(HDT_Record key)
   {
     if (forwardMap.containsKey(key) == false) return;
 
@@ -141,7 +141,7 @@ public class BidiOneToManyRecordMap
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void removeReverseKey(HDT_Base key)
+  public void removeReverseKey(HDT_Record key)
   {
     if (reverseMap.containsKey(key) == false) return;
 
@@ -155,9 +155,9 @@ public class BidiOneToManyRecordMap
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Set<HDT_Base> getAllHeads()
+  public Set<HDT_Record> getAllHeads()
   {
-    ImmutableSet.Builder<HDT_Base> builder = ImmutableSet.builder();
+    ImmutableSet.Builder<HDT_Record> builder = ImmutableSet.builder();
 
     forwardMap.forEach((head, set) ->
     {

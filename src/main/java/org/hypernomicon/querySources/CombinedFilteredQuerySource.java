@@ -19,29 +19,29 @@ package org.hypernomicon.querySources;
 
 import java.util.Set;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
 public class CombinedFilteredQuerySource implements QuerySource
 {
-  private final HDT_Base[] records;
-  private final Set<HDT_Base> recordSet;
+  private final HDT_Record[] records;
+  private final Set<HDT_Record> recordSet;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public CombinedFilteredQuerySource(Set<HDT_Base> records)
+  public CombinedFilteredQuerySource(Set<HDT_Record> records)
   {
     this.recordSet = records;
-    this.records = records.toArray(new HDT_Base[0]);
+    this.records = records.toArray(new HDT_Record[0]);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int count()                             { return records.length; }
-  @Override public QuerySourceType sourceType()            { return QuerySourceType.QST_combinedFilteredRecords; }
-  @Override public boolean containsRecord(HDT_Base record) { return recordSet.contains(record); }
-  @Override public HDT_Base getRecord(int ndx)             { return records[ndx]; }
+  @Override public int count()                               { return records.length; }
+  @Override public QuerySourceType sourceType()              { return QuerySourceType.QST_combinedFilteredRecords; }
+  @Override public boolean containsRecord(HDT_Record record) { return recordSet.contains(record); }
+  @Override public HDT_Record getRecord(int ndx)             { return records[ndx]; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -21,7 +21,7 @@ import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 //
-//   All HDT_Record objects hold a reference to an object of this kind
+//   All HDT_RecordBase objects hold a reference to an object of this kind
 //
 //---------------------------------------------------------------------------
 

@@ -28,7 +28,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.*;
 
 public enum HDT_RecordType
 {
-  hdtNone           (HDT_Base.class),
+  hdtNone           (HDT_Record         .class),
 
   hdtFolder         (HDT_Folder         .class),  // Folders must be brought online first. See HyperPath.assignNameInternal
   hdtPerson         (HDT_Person         .class),
@@ -58,20 +58,20 @@ public enum HDT_RecordType
   hdtNote           (HDT_Note           .class),
   hdtGlossary       (HDT_Glossary       .class),
 
-  hdtAuxiliary      (HDT_Base           .class),
+  hdtAuxiliary      (HDT_Record         .class),
 
   hdtHub            (HDT_Hub            .class);
 
 //---------------------------------------------------------------------------
 
-  private final Class<? extends HDT_Base> klass;
+  private final Class<? extends HDT_Record> klass;
   private final boolean simple, gotConnector, disregardDates;
-  private final static Map<Class<? extends HDT_Base>, HDT_RecordType> classToType;
+  private final static Map<Class<? extends HDT_Record>, HDT_RecordType> classToType;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private <T extends HDT_Base> HDT_RecordType(Class<T> klass)
+  private <T extends HDT_Record> HDT_RecordType(Class<T> klass)
   {
     this.klass = klass;
     simple = HDT_SimpleRecord.class.isAssignableFrom(klass);
@@ -86,18 +86,18 @@ public enum HDT_RecordType
   {
     classToType = new HashMap<>();
     EnumSet.allOf(HDT_RecordType.class).forEach(type -> classToType.put(type.klass, type));
-    classToType.put(HDT_Base.class, hdtNone);
+    classToType.put(HDT_Record.class, hdtNone);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Class<? extends HDT_Base> getRecordClass() { return klass; }
-  public boolean isSimple()                         { return simple; }
-  public boolean hasConnector()                     { return gotConnector; }
-  public boolean getDisregardDates()                { return disregardDates; }
+  public Class<? extends HDT_Record> getRecordClass() { return klass; }
+  public boolean isSimple()                           { return simple; }
+  public boolean hasConnector()                       { return gotConnector; }
+  public boolean getDisregardDates()                  { return disregardDates; }
 
-  public static HDT_RecordType typeByRecordClass(Class<? extends HDT_Base> klass) { return classToType.getOrDefault(klass, hdtNone); }
+  public static HDT_RecordType typeByRecordClass(Class<? extends HDT_Record> klass) { return classToType.getOrDefault(klass, hdtNone); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

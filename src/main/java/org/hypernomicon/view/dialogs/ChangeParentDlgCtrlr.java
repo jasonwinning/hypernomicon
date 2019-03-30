@@ -19,7 +19,7 @@ package org.hypernomicon.view.dialogs;
 
 import static org.hypernomicon.model.HyperDB.*;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -37,7 +37,7 @@ public class ChangeParentDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ChangeParentDlgCtrlr create(String title, HDT_Base oldParent, HDT_Base newParent, HDT_Base child, boolean copyIsOK)
+  public static ChangeParentDlgCtrlr create(String title, HDT_Record oldParent, HDT_Record newParent, HDT_Record child, boolean copyIsOK)
   {
     ChangeParentDlgCtrlr cpd = HyperDlg.create("ChangeParentDlg.fxml", title, true);
     cpd.init(oldParent, newParent, child, copyIsOK);
@@ -47,7 +47,7 @@ public class ChangeParentDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_Base oldParent, HDT_Base newParent, HDT_Base child, boolean copyIsOK)
+  private void init(HDT_Record oldParent, HDT_Record newParent, HDT_Record child, boolean copyIsOK)
   {
     label1.setText("The " + db.getTypeName(child.getType()) + " record:");
     label2.setText("will be attached under the " + db.getTypeName(newParent.getType()) + " record:");

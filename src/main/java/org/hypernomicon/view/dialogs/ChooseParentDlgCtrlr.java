@@ -52,10 +52,10 @@ public class ChooseParentDlgCtrlr extends HyperDlg
   private TreeWrapper popupTree;
   private static String title;
   private EnumSet<HDT_RecordType> types;
-  private HDT_Base parent;
-  private HDT_Base child;
+  private HDT_Record parent;
+  private HDT_Record child;
 
-  public HDT_Base getParent() { return parent; }
+  public HDT_Record getParent() { return parent; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -123,7 +123,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ChooseParentDlgCtrlr create(String title, HDT_Base child, EnumSet<HDT_RecordType> types)
+  public static ChooseParentDlgCtrlr create(String title, HDT_Record child, EnumSet<HDT_RecordType> types)
   {
     ChooseParentDlgCtrlr cpd = HyperDlg.create("ChooseParentDlg.fxml", title, true);
     cpd.init(child, types);
@@ -133,7 +133,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_Base child, EnumSet<HDT_RecordType> types)
+  private void init(HDT_Record child, EnumSet<HDT_RecordType> types)
   {
     popupTree = new TreeWrapper(ttv, false, new ComboBox<TreeRow>(), true);
     this.types = types;

@@ -20,7 +20,7 @@ package org.hypernomicon.view.dialogs;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.HyperDB.*;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 
 import static org.hypernomicon.util.Util.*;
@@ -33,7 +33,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 
-public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Base> extends HyperDlg
+public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
 {
   @FXML private ComboBox<HyperTableCell> cbRecord;
   @FXML private Button btnOK, btnCancel;
@@ -49,7 +49,7 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Base> extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <HDT_T2 extends HDT_Base> RecordDropdownDlgCtrlr<HDT_T2> create(String title, HDT_RecordType recordType)
+  public static <HDT_T2 extends HDT_Record> RecordDropdownDlgCtrlr<HDT_T2> create(String title, HDT_RecordType recordType)
   {
     RecordDropdownDlgCtrlr<HDT_T2> rdd = HyperDlg.create("RecordDropdownDlg.fxml", title, true);
     rdd.init(recordType);

@@ -22,7 +22,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
@@ -32,15 +32,15 @@ import javafx.scene.image.ImageView;
 
 //---------------------------------------------------------------------------
 
-public class TreeRow extends AbstractTreeRow<HDT_Base, TreeRow>
+public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 {
   private final String text;
-  private final HDT_Base record;
+  private final HDT_Record record;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  TreeRow(HDT_Base record, TreeModel<TreeRow> treeModel)
+  TreeRow(HDT_Record record, TreeModel<TreeRow> treeModel)
   {
     super(treeModel);
 
@@ -80,7 +80,7 @@ public class TreeRow extends AbstractTreeRow<HDT_Base, TreeRow>
   @Override public int compareTo(TreeRow o)        { return record.getSortKey().compareTo(o.record.getSortKey()); }
 
   @SuppressWarnings("unchecked")
-  @Override public HDT_Base getRecord()            { return record; }
+  @Override public HDT_Record getRecord()          { return record; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -110,10 +110,10 @@ public class TreeRow extends AbstractTreeRow<HDT_Base, TreeRow>
 
     switch (workType.getEnumVal())
     {
-      case wtPaper     : typeName = "Paper"; break;
-      case wtBook      : typeName = "Book"; break;
-      case wtChapter   : typeName = "Chapter"; break;
-      case wtRecording : typeName = "Lecture"; break;
+      case wtPaper     : typeName = "Paper"   ; break;
+      case wtBook      : typeName = "Book"    ; break;
+      case wtChapter   : typeName = "Chapter" ; break;
+      case wtRecording : typeName = "Lecture" ; break;
       case wtWebPage   : typeName = "Web Page"; break;
       default          : typeName = "Work";
     }

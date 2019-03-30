@@ -25,7 +25,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.EnumSet;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
@@ -93,7 +93,7 @@ public class NewCategoryDlgCtrlr extends HyperDlg
         return;
       }
 
-      HDT_Base record = db.records(hcbRecordType.selectedType()).getByID(newID);
+      HDT_Record record = db.records(hcbRecordType.selectedType()).getByID(newID);
       tfCompareID.setText("" + newID);
       tfCompareKey.setText(record.getSortKeyAttr());
     });

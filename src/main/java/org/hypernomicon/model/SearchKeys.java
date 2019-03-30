@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hypernomicon.model.Exceptions.SearchKeyException;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.util.SplitString;
 
 import static org.hypernomicon.util.Util.*;
@@ -42,11 +42,11 @@ public final class SearchKeys
   {
     public final String text;
     public final boolean startOnly, endOnly;
-    public final HDT_Base record;
+    public final HDT_Record record;
 
   //---------------------------------------------------------------------------
 
-    public SearchKeyword(String newKeyword, HDT_Base newRecord)
+    public SearchKeyword(String newKeyword, HDT_Record newRecord)
     {
       record = newRecord;
 
@@ -82,7 +82,7 @@ public final class SearchKeys
 
     @Override public String toString()  { return (startOnly ? "^" + text : text) + (endOnly ? "$" : ""); }
     public String getPrefix()           { return text.substring(0, 3).toLowerCase(); }
-    public HDT_Base getRecord()         { return record; }
+    public HDT_Record getRecord()         { return record; }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -90,7 +90,7 @@ public final class SearchKeys
   }
 
   private final Map<String, Map<String, SearchKeyword>> prefixStrToKeywordStrToKeywordObj;
-  private final Map<HDT_Base, Map<String, SearchKeyword>> recordToKeywordStrToKeywordObj;
+  private final Map<HDT_Record, Map<String, SearchKeyword>> recordToKeywordStrToKeywordObj;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -134,7 +134,7 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setSearchKey(HDT_Base record, String newKey, boolean noMod, boolean dontRebuildMentions) throws SearchKeyException
+  public void setSearchKey(HDT_Record record, String newKey, boolean noMod, boolean dontRebuildMentions) throws SearchKeyException
   {
     newKey = prepSearchKey(newKey);
 
@@ -161,7 +161,7 @@ public final class SearchKeys
         throw new SearchKeyException(true, record, keyword.text);
       }
 
-      HDT_Base existingRecord = nullSwitch(getKeywordObjByKeywordStr(keyword.text), null, SearchKeyword::getRecord);
+      HDT_Record existingRecord = nullSwitch(getKeywordObjByKeywordStr(keyword.text), null, SearchKeyword::getRecord);
 
   // If the substring was already a key for a different record, error out
   // --------------------------------------------------------------------
@@ -186,7 +186,7 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  List<SearchKeyword> getKeysByRecord(HDT_Base record)
+  List<SearchKeyword> getKeysByRecord(HDT_Record record)
   {
     return nullSwitch(recordToKeywordStrToKeywordObj.get(record), new ArrayList<>(), map -> new ArrayList<>(map.values()));
   }
@@ -206,7 +206,7 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  String getFirstActiveKeyword(HDT_Base record)
+  String getFirstActiveKeyword(HDT_Record record)
   {
     Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.get(record);
     if (keywordStrToKeywordObj == null) return "";
@@ -221,7 +221,7 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  String getStringForRecord(HDT_Base record)
+  String getStringForRecord(HDT_Record record)
   {
     Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.get(record);
     if (keywordStrToKeywordObj == null) return "";
@@ -261,7 +261,7 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void assignKeywordsToRecord(HDT_Base record, LinkedHashSet<SearchKeyword> oldKeywordObjs)
+  private void assignKeywordsToRecord(HDT_Record record, LinkedHashSet<SearchKeyword> oldKeywordObjs)
   {
     unassignKeywordsFromRecord(record);
     oldKeywordObjs.forEach(this::addKeyword);
@@ -270,7 +270,7 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private LinkedHashSet<SearchKeyword> unassignKeywordsFromRecord(HDT_Base record)
+  private LinkedHashSet<SearchKeyword> unassignKeywordsFromRecord(HDT_Record record)
   {
     LinkedHashSet<SearchKeyword> oldKeywordObjs = new LinkedHashSet<>();
 

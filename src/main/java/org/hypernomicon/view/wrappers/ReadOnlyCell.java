@@ -22,7 +22,7 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import java.util.function.Consumer;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
@@ -54,7 +54,7 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
         HyperTableCell cellItem = getItem();
         if (cellItem == null) return;
 
-        HDT_Base record = HyperTableCell.getRecord(cellItem);
+        HDT_Record record = HyperTableCell.getRecord(cellItem);
         if (record == null) return;
 
         if (table.dblClickHandler != null)
@@ -69,7 +69,7 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private static <HDT_T extends HDT_Base> void handleRecord(Consumer<HDT_T> handler, HDT_Base record)
+  private static <HDT_T extends HDT_Record> void handleRecord(Consumer<HDT_T> handler, HDT_Record record)
   {
     handler.accept((HDT_T) record);
   }

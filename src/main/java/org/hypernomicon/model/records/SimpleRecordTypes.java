@@ -39,10 +39,10 @@ public class SimpleRecordTypes
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public interface HDT_RecordWithDescription extends HDT_Base { MainText getDesc(); }
-  public interface HDT_RecordWithPath extends HDT_Base        { HyperPath getPath(); }
+  public interface HDT_RecordWithDescription extends HDT_Record { MainText getDesc(); }
+  public interface HDT_RecordWithPath extends HDT_Record        { HyperPath getPath(); }
 
-  static abstract class HDT_SimpleRecord extends HDT_Record
+  static abstract class HDT_SimpleRecord extends HDT_RecordBase
   {
     HDT_SimpleRecord(HDT_RecordState xmlState, HyperDataset<? extends HDT_SimpleRecord> dataset)
     {

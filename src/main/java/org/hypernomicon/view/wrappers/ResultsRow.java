@@ -18,27 +18,27 @@
 package org.hypernomicon.view.wrappers;
 
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_Base;
-import org.hypernomicon.model.records.HDT_Record.HDT_DateType;
+import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.HDT_RecordBase.HDT_DateType;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.wrappers.ResultsTable.ResultCellValue;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.model.records.HDT_Record.HDT_DateType.*;
+import static org.hypernomicon.model.records.HDT_RecordBase.HDT_DateType.*;
 
 import java.time.Instant;
 
-public final class ResultsRow extends AbstractRow<HDT_Base, ResultsRow>
+public final class ResultsRow extends AbstractRow<HDT_Record, ResultsRow>
 {
-  private final HDT_Base record;
+  private final HDT_Record record;
   private final String cbText;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ResultsRow(HDT_Base record) { this.record = record; this.cbText = ""; }
+  public ResultsRow(HDT_Record record) { this.record = record; this.cbText = ""; }
   public ResultsRow(String cbText)   { this.record = null;   this.cbText = cbText; }
 
 //---------------------------------------------------------------------------
@@ -52,7 +52,7 @@ public final class ResultsRow extends AbstractRow<HDT_Base, ResultsRow>
   public String getCBText()    { return record == null ? cbText : record.listName(); }
 
   @SuppressWarnings("unchecked")
-  @Override public <HDT_T extends HDT_Base> HDT_T getRecord() { return (HDT_T) record; }
+  @Override public <HDT_T extends HDT_Record> HDT_T getRecord() { return (HDT_T) record; }
 
   String getRecordTypeStr()
   {

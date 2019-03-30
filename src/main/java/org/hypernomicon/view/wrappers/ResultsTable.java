@@ -24,14 +24,14 @@ import java.util.Set;
 import java.util.function.Function;
 
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.view.dialogs.SelectColumnsDlgCtrlr;
 import org.hypernomicon.view.dialogs.SelectColumnsDlgCtrlr.TypeCheckBox;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_Record.*;
+import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -338,7 +338,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Base selectedRecord()
+  public HDT_Record selectedRecord()
   {
     return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, ResultsRow::getRecord);
   }

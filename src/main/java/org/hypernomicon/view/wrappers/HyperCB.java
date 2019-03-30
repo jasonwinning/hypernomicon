@@ -27,7 +27,7 @@ import static javafx.scene.input.MouseButton.*;
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_Work;
@@ -281,7 +281,7 @@ public class HyperCB implements CommitableWrapper
 
         for (HyperTableCell cell : cb.getItems())
         {
-          HDT_Base record = HyperTableCell.getRecord(cell);
+          HDT_Record record = HyperTableCell.getRecord(cell);
           boolean added = false;
 
           if (record != null)
@@ -501,7 +501,7 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addAndSelectEntry(HyperObjPointer<? extends HDT_Base, ? extends HDT_Base> pntr, Function<HDT_Base, String> rs)
+  public void addAndSelectEntry(HyperObjPointer<? extends HDT_Record, ? extends HDT_Record> pntr, Function<HDT_Record, String> rs)
   {
     if (pntr.isNotNull())
       addAndSelectEntry(pntr.get(), rs);
@@ -510,7 +510,7 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addAndSelectEntryOrBlank(HyperObjPointer<? extends HDT_Base, ? extends HDT_Base> pntr, Function<HDT_Base, String> rs)
+  public void addAndSelectEntryOrBlank(HyperObjPointer<? extends HDT_Record, ? extends HDT_Record> pntr, Function<HDT_Record, String> rs)
   {
     if (pntr.isNotNull())
       addAndSelectEntry(pntr.get(), rs);
@@ -521,7 +521,7 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addAndSelectEntry(HDT_Base record, Function<HDT_Base, String> rs)
+  public void addAndSelectEntry(HDT_Record record, Function<HDT_Record, String> rs)
   {
     if (record != null)
       addEntry(record.getID(), rs.apply(record), true);
@@ -530,7 +530,7 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addAndSelectEntryOrBlank(HDT_Base record, Function<HDT_Base, String> rs)
+  public void addAndSelectEntryOrBlank(HDT_Record record, Function<HDT_Record, String> rs)
   {
     if (record != null)
       addEntry(record.getID(), rs.apply(record), true);
@@ -565,7 +565,7 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public <HDT_T extends HDT_Base> HDT_T selectedRecord()
+  public <HDT_T extends HDT_Record> HDT_T selectedRecord()
   {
     return HyperTableCell.getRecord(cb.getValue());
   }

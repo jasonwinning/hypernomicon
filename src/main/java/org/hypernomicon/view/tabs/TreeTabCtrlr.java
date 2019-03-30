@@ -60,7 +60,7 @@ import javafx.scene.web.WebView;
 
 //---------------------------------------------------------------------------
 
-public class TreeTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
+public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 {
   @FXML private TreeTableView<TreeRow> ttv;
   @FXML private TextField tfPath;
@@ -82,9 +82,9 @@ public class TreeTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
   @Override public void clear()                     { tree.clear(); }
   @Override public boolean saveToRecord(boolean sm) { return true; }
   @Override void focusOnSearchKey()                 { return; }
-  @Override public void setRecord(HDT_Base ar)      { return; }
-  @Override public HDT_Base activeRecord()          { return tree.selectedRecord(); }
-  @Override public String getRecordName()           { return nullSwitch(activeRecord(), "", HDT_Base::getCBText); }
+  @Override public void setRecord(HDT_Record ar)    { return; }
+  @Override public HDT_Record activeRecord()        { return tree.selectedRecord(); }
+  @Override public String getRecordName()           { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
   @Override public TextViewInfo getMainTextInfo()   { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
   @Override public void setDividerPositions()       { return; }
   @Override public void getDividerPositions()       { return; }
@@ -131,15 +131,15 @@ public class TreeTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
     tcType.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getValue().getTypeString()));
     tcDesc.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getValue().getDescString()));
 
-    tree.addContextMenuItem("Select", HDT_Base.class,
+    tree.addContextMenuItem("Select", HDT_Record.class,
       record -> (ui.treeSubjRecord != null) && (record != null) && db.isLoaded(),
       record -> ui.treeSelect());
 
-    tree.addContextMenuItem("Go to this record", HDT_Base.class,
+    tree.addContextMenuItem("Go to this record", HDT_Record.class,
       record -> (record != null) && db.isLoaded(),
       record -> ui.goToRecord(record, false));
 
-    tree.addContextMenuItem("Choose parent to assign", HDT_Base.class,
+    tree.addContextMenuItem("Choose parent to assign", HDT_Record.class,
       record ->
       {
         if ((db.isLoaded() == false) || (record == null)) return false;
@@ -147,7 +147,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
       },
       this::chooseParent);
 
-    tree.addContextMenuItem("Detach from this parent", HDT_Base.class,
+    tree.addContextMenuItem("Detach from this parent", HDT_Record.class,
       record -> tree.canDetach(false),
       record -> tree.canDetach(true));
 
@@ -208,7 +208,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
       textToHilite = lastTextHilited;
       String mainText = "";
 
-      HDT_Base record = tree.selectedRecord();
+      HDT_Record record = tree.selectedRecord();
       if (record == null) return;
 
       if (record.hasDesc())
@@ -244,7 +244,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
 
         TreeRow row = newValue.getValue();
 
-        HDT_Base record = row.getRecord();
+        HDT_Record record = row.getRecord();
         if (record != null)
         {
           switch (record.getType())
@@ -329,9 +329,9 @@ public class TreeTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void createChild(HDT_Base parent, RelationType relType)
+  private void createChild(HDT_Record parent, RelationType relType)
   {
-    HDT_Base child = db.createNewBlankRecord(db.getSubjType(relType));
+    HDT_Record child = db.createNewBlankRecord(db.getSubjType(relType));
 
     db.getObjectList(relType, child, true).add(parent);
 
@@ -376,7 +376,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void renameRecord(HDT_Base record)
+  private void renameRecord(HDT_Record record)
   {
     String typeName = db.getTypeName(record.getType());
 
@@ -398,7 +398,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void chooseParent(HDT_Base child)
+  private void chooseParent(HDT_Record child)
   {
     EnumSet<HDT_RecordType> types = null;
 
@@ -419,7 +419,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
 
     if (dlg.showModal() == false) return;
 
-    HDT_Base parent = dlg.getParent();
+    HDT_Record parent = dlg.getParent();
 
     switch (child.getType())
     {
@@ -534,7 +534,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void selectRecord(HDT_Base record, boolean useViewInfo)
+  public void selectRecord(HDT_Record record, boolean useViewInfo)
   {
     this.useViewInfo = useViewInfo;
     tree.selectRecord(record, record == null ? 0 : db.records(record.getType()).getKeyNdxByID(record.getID()), false);

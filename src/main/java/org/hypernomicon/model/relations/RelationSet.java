@@ -26,7 +26,7 @@ import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.HDT_Record.*;
+import org.hypernomicon.model.records.HDT_RecordBase.*;
 import org.hypernomicon.util.EnumBasedTable;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -55,14 +55,14 @@ import javafx.application.Platform;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
-import static org.hypernomicon.model.records.HDT_Record.HyperDataCategory.*;
+import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 //---------------------------------------------------------------------------
 
-public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Base>
+public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_Record>
 {
   private final HashSet<HDT_Subj> orphans = new HashSet<>();
   private ArrayListMultimap<HDT_Obj, HDT_Subj> objToSubjList = ArrayListMultimap.create();
@@ -72,7 +72,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   private final Map<Tag, HDT_RecordType> tagToTargetType = new EnumMap<>(Tag.class);
   private final ArrayList<RelationChangeHandler> changeHandlers = new ArrayList<>();
 
-  private static final EnumMap<HDT_RecordType, Set<RelationSet<? extends HDT_Base, ? extends HDT_Base>>> orphanTypeToRelSets = new EnumMap<>(HDT_RecordType.class);
+  private static final EnumMap<HDT_RecordType, Set<RelationSet<? extends HDT_Record, ? extends HDT_Record>>> orphanTypeToRelSets = new EnumMap<>(HDT_RecordType.class);
   private static final EnumBasedTable<HDT_RecordType, HDT_RecordType, RelationType> typeMappings = new EnumBasedTable<>(HDT_RecordType.class, HDT_RecordType.class);
 
   private final RelationType type;
@@ -111,75 +111,75 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 
     switch (type)
     {
-      case rtParentWorkOfWork :         hasNestedItems = false; subjType = hdtWork;          objType = hdtWork;            break;
-      case rtParentGroupOfGroup :       hasNestedItems = false; subjType = hdtPersonGroup;   objType = hdtPersonGroup;     break;
-      case rtParentLabelOfLabel :       hasNestedItems = false; subjType = hdtWorkLabel;     objType = hdtWorkLabel;
+      case rtParentWorkOfWork         : hasNestedItems = false; subjType = hdtWork;          objType = hdtWork;            break;
+      case rtParentGroupOfGroup       : hasNestedItems = false; subjType = hdtPersonGroup;   objType = hdtPersonGroup;     break;
+      case rtParentLabelOfLabel       : hasNestedItems = false; subjType = hdtWorkLabel;     objType = hdtWorkLabel;
 
         trackOrphans = true; break;
 
-      case rtCounterOfArgument :        hasNestedItems = true;  subjType = hdtArgument;      objType = hdtArgument;
+      case rtCounterOfArgument        : hasNestedItems = true;  subjType = hdtArgument;      objType = hdtArgument;
 
         addNestedItem(hdcNestedPointer, tagArgumentVerdict, hdtArgumentVerdict);                   break;
 
-      case rtParentDebateOfDebate :     hasNestedItems = false; subjType = hdtDebate;        objType = hdtDebate;
+      case rtParentDebateOfDebate     : hasNestedItems = false; subjType = hdtDebate;        objType = hdtDebate;
 
         trackOrphans = true; break;
 
-      case rtParentNoteOfNote :         hasNestedItems = false; subjType = hdtNote;          objType = hdtNote;
+      case rtParentNoteOfNote         : hasNestedItems = false; subjType = hdtNote;          objType = hdtNote;
 
         trackOrphans = true; break;
 
-      case rtParentPosOfPos :           hasNestedItems = false; subjType = hdtPosition;      objType = hdtPosition;
+      case rtParentPosOfPos           : hasNestedItems = false; subjType = hdtPosition;      objType = hdtPosition;
 
         trackOrphans = true; break;
 
-      case rtWorkOfArgument :           hasNestedItems = false; subjType = hdtArgument;      objType = hdtWork;            break;
-      case rtDebateOfPosition :         hasNestedItems = false; subjType = hdtPosition;      objType = hdtDebate;
+      case rtWorkOfArgument           : hasNestedItems = false; subjType = hdtArgument;      objType = hdtWork;            break;
+      case rtDebateOfPosition         : hasNestedItems = false; subjType = hdtPosition;      objType = hdtDebate;
 
         trackOrphans = true; break;
 
-      case rtPositionOfArgument :       hasNestedItems = true;  subjType = hdtArgument;      objType = hdtPosition;
+      case rtPositionOfArgument       : hasNestedItems = true;  subjType = hdtArgument;      objType = hdtPosition;
 
         addNestedItem(hdcNestedPointer, tagPositionVerdict, hdtPositionVerdict);                   break;
 
-      case rtAuthorOfWork :             hasNestedItems = true;  subjType = hdtWork;          objType = hdtPerson;
+      case rtAuthorOfWork             : hasNestedItems = true;  subjType = hdtWork;          objType = hdtPerson;
 
         addNestedItem(hdcTernary, tagInFileName);
         addNestedItem(hdcBoolean, tagEditor);
         addNestedItem(hdcBoolean, tagTranslator);                                                  break;
 
-      case rtAuthorOfFile :             hasNestedItems = false; subjType = hdtMiscFile;      objType = hdtPerson;          break;
-      case rtStatusOfPerson :           hasNestedItems = false; subjType = hdtPerson;        objType = hdtPersonStatus;    break;
-      case rtFieldOfPerson :            hasNestedItems = false; subjType = hdtPerson;        objType = hdtField;           break;
-      case rtSubfieldOfPerson :         hasNestedItems = false; subjType = hdtPerson;        objType = hdtSubfield;        break;
-      case rtFieldOfSubfield :          hasNestedItems = false; subjType = hdtSubfield;      objType = hdtField;           break;
-      case rtRankOfPerson :             hasNestedItems = false; subjType = hdtPerson;        objType = hdtRank;            break;
-      case rtInvestigationOfWork :      hasNestedItems = false; subjType = hdtWork;          objType = hdtInvestigation;   break;
-      case rtPersonOfInv :              hasNestedItems = false; subjType = hdtInvestigation; objType = hdtPerson;          break;
-      case rtInstOfPerson :             hasNestedItems = false; subjType = hdtPerson;        objType = hdtInstitution;     break;
-      case rtTypeOfInst :               hasNestedItems = false; subjType = hdtInstitution;   objType = hdtInstitutionType; break;
-      case rtParentInstOfInst :         hasNestedItems = false; subjType = hdtInstitution;   objType = hdtInstitution;     break;
-      case rtStateOfInst :              hasNestedItems = false; subjType = hdtInstitution;   objType = hdtState;           break;
-      case rtCountryOfInst :            hasNestedItems = false; subjType = hdtInstitution;   objType = hdtCountry;         break;
-      case rtTypeOfWork :               hasNestedItems = false; subjType = hdtWork;          objType = hdtWorkType;        break;
-      case rtTypeOfFile :               hasNestedItems = false; subjType = hdtMiscFile;      objType = hdtFileType;        break;
-      case rtConceptOfTerm :            hasNestedItems = false; subjType = hdtTerm;          objType = hdtConcept;         break;
-      case rtGlossaryOfConcept :        hasNestedItems = false; subjType = hdtConcept;       objType = hdtGlossary;        break;
+      case rtAuthorOfFile             : hasNestedItems = false; subjType = hdtMiscFile;      objType = hdtPerson;          break;
+      case rtStatusOfPerson           : hasNestedItems = false; subjType = hdtPerson;        objType = hdtPersonStatus;    break;
+      case rtFieldOfPerson            : hasNestedItems = false; subjType = hdtPerson;        objType = hdtField;           break;
+      case rtSubfieldOfPerson         : hasNestedItems = false; subjType = hdtPerson;        objType = hdtSubfield;        break;
+      case rtFieldOfSubfield          : hasNestedItems = false; subjType = hdtSubfield;      objType = hdtField;           break;
+      case rtRankOfPerson             : hasNestedItems = false; subjType = hdtPerson;        objType = hdtRank;            break;
+      case rtInvestigationOfWork      : hasNestedItems = false; subjType = hdtWork;          objType = hdtInvestigation;   break;
+      case rtPersonOfInv              : hasNestedItems = false; subjType = hdtInvestigation; objType = hdtPerson;          break;
+      case rtInstOfPerson             : hasNestedItems = false; subjType = hdtPerson;        objType = hdtInstitution;     break;
+      case rtTypeOfInst               : hasNestedItems = false; subjType = hdtInstitution;   objType = hdtInstitutionType; break;
+      case rtParentInstOfInst         : hasNestedItems = false; subjType = hdtInstitution;   objType = hdtInstitution;     break;
+      case rtStateOfInst              : hasNestedItems = false; subjType = hdtInstitution;   objType = hdtState;           break;
+      case rtCountryOfInst            : hasNestedItems = false; subjType = hdtInstitution;   objType = hdtCountry;         break;
+      case rtTypeOfWork               : hasNestedItems = false; subjType = hdtWork;          objType = hdtWorkType;        break;
+      case rtTypeOfFile               : hasNestedItems = false; subjType = hdtMiscFile;      objType = hdtFileType;        break;
+      case rtConceptOfTerm            : hasNestedItems = false; subjType = hdtTerm;          objType = hdtConcept;         break;
+      case rtGlossaryOfConcept        : hasNestedItems = false; subjType = hdtConcept;       objType = hdtGlossary;        break;
       case rtParentGlossaryOfGlossary : hasNestedItems = false; subjType = hdtGlossary;      objType = hdtGlossary;        break;
-      case rtLabelOfWork :              hasNestedItems = false; subjType = hdtWork;          objType = hdtWorkLabel;       break;
-      case rtLabelOfFile :              hasNestedItems = false; subjType = hdtMiscFile;      objType = hdtWorkLabel;       break;
-      case rtWorkOfMiscFile :           hasNestedItems = false; subjType = hdtMiscFile;      objType = hdtWork;            break;
-      case rtWorkFileOfWork :           hasNestedItems = true;  subjType = hdtWork;          objType = hdtWorkFile;
+      case rtLabelOfWork              : hasNestedItems = false; subjType = hdtWork;          objType = hdtWorkLabel;       break;
+      case rtLabelOfFile              : hasNestedItems = false; subjType = hdtMiscFile;      objType = hdtWorkLabel;       break;
+      case rtWorkOfMiscFile           : hasNestedItems = false; subjType = hdtMiscFile;      objType = hdtWork;            break;
+      case rtWorkFileOfWork           : hasNestedItems = true;  subjType = hdtWork;          objType = hdtWorkFile;
 
         addNestedItem(hdcString, tagStartPageNum);
         addNestedItem(hdcString, tagEndPageNum);                                                   break;
 
-      case rtFolderOfWorkFile :         hasNestedItems = false; subjType = hdtWorkFile;      objType = hdtFolder;          break;
-      case rtFolderOfMiscFile :         hasNestedItems = false; subjType = hdtMiscFile;      objType = hdtFolder;          break;
-      case rtParentFolderOfFolder :     hasNestedItems = false; subjType = hdtFolder;        objType = hdtFolder;          break;
-      case rtFolderOfNote :             hasNestedItems = false; subjType = hdtNote;          objType = hdtFolder;          break;
+      case rtFolderOfWorkFile         : hasNestedItems = false; subjType = hdtWorkFile;      objType = hdtFolder;          break;
+      case rtFolderOfMiscFile         : hasNestedItems = false; subjType = hdtMiscFile;      objType = hdtFolder;          break;
+      case rtParentFolderOfFolder     : hasNestedItems = false; subjType = hdtFolder;        objType = hdtFolder;          break;
+      case rtFolderOfNote             : hasNestedItems = false; subjType = hdtNote;          objType = hdtFolder;          break;
 
-      default :                         hasNestedItems = false; subjType = hdtNone;          objType = hdtNone;
+      default                         : hasNestedItems = false; subjType = hdtNone;          objType = hdtNone;
 
         messageDialog("Internal error #84723", mtError);                                           break;
 
@@ -190,7 +190,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 
     if (trackOrphans)
     {
-      Set<RelationSet<? extends HDT_Base, ? extends HDT_Base>> relSets = orphanTypeToRelSets.get(subjType);
+      Set<RelationSet<? extends HDT_Record, ? extends HDT_Record>> relSets = orphanTypeToRelSets.get(subjType);
       if (relSets == null)
       {
         relSets = new HashSet<>();
@@ -204,9 +204,9 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void addOrphanToAll(HDT_Base orphan)
+  public static void addOrphanToAll(HDT_Record orphan)
   {
-    Set<RelationSet<? extends HDT_Base, ? extends HDT_Base>> relSets = orphanTypeToRelSets.get(orphan.getType());
+    Set<RelationSet<? extends HDT_Record, ? extends HDT_Record>> relSets = orphanTypeToRelSets.get(orphan.getType());
 
     if (relSets == null) return;
 
@@ -214,7 +214,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   }
 
   @SuppressWarnings("unchecked")
-  private void addOrphan(HDT_Base orphan)
+  private void addOrphan(HDT_Record orphan)
   {
     if ((subjToObjList.containsKey(orphan) == false) && (HyperDB.isUnstoredRecord(orphan.getID(), subjType) == false))
       orphans.add((HDT_Subj) orphan);
@@ -274,7 +274,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
                                   offlineItem = new HDI_OfflineTernary(schema, recordState);
           break;
 
-        case hdcNestedPointer : if (HDT_Record.isEmpty(HDI_OnlineNestedPointer.class.cast(onlineItem).get()) == false)
+        case hdcNestedPointer : if (HDT_RecordBase.isEmpty(HDI_OnlineNestedPointer.class.cast(onlineItem).get()) == false)
                                   offlineItem = new HDI_OfflineNestedPointer(schema, recordState);
           break;
 
@@ -376,11 +376,11 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 
   // Returns true if changed
 
-  public boolean setNestedPointer(HDT_Subj subj, HDT_Obj obj, Tag tag, HDT_Base target)
+  public boolean setNestedPointer(HDT_Subj subj, HDT_Obj obj, Tag tag, HDT_Record target)
   {
     if (hasNestedItems == false) return falseWithErrorMessage("Internal error #49223");
 
-    boolean isEmpty = HDT_Record.isEmpty(target);
+    boolean isEmpty = HDT_RecordBase.isEmpty(target);
     if (isEmpty == false) addObjAndMod(subj, obj);
 
     HDI_OnlineNestedPointer item = getNestedItem(subj, obj, tag, isEmpty);
@@ -496,7 +496,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Base getNestedPointer(HDT_Subj subj, HDT_Obj obj, Tag tag)
+  public HDT_Record getNestedPointer(HDT_Subj subj, HDT_Obj obj, Tag tag)
   {
     if (hasNestedItems == false) { falseWithErrorMessage("Internal error #49228"); return null; }
 
@@ -590,12 +590,12 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
       {
         objToSubjList.remove(obj, subj);
 
-        if (HDT_Record.isEmpty(subj) == false) // skip if record is in the process of being deleted
+        if (HDT_RecordBase.isEmpty(subj) == false) // skip if record is in the process of being deleted
         {
           if (trackOrphans && objList.isEmpty() && (HyperDB.isUnstoredRecord(subj.getID(), subjType) == false))
             orphans.add(subj);
 
-          if ((HDT_Record.isEmpty(subj) == false) && (HDT_Record.isEmpty(obj) == false))  // Only run change handlers if the record is not in the process of being deleted
+          if ((HDT_RecordBase.isEmpty(subj) == false) && (HDT_RecordBase.isEmpty(obj) == false))  // Only run change handlers if the record is not in the process of being deleted
             Platform.runLater(() -> changeHandlers.forEach(handler -> handler.handle(subj, obj, false)));
         }
       }
@@ -639,7 +639,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private <HDT_Key extends HDT_Base, HDT_Value extends HDT_Base> ArrayListMultimap<HDT_Key, HDT_Value> rebuildMultimap(ArrayListMultimap<HDT_Key, HDT_Value> oldMap) throws HDB_InternalError
+  private <HDT_Key extends HDT_Record, HDT_Value extends HDT_Record> ArrayListMultimap<HDT_Key, HDT_Value> rebuildMultimap(ArrayListMultimap<HDT_Key, HDT_Value> oldMap) throws HDB_InternalError
   {
     ArrayListMultimap<HDT_Key, HDT_Value> newMap = ArrayListMultimap.create();
 
@@ -647,10 +647,10 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
     {
       HDT_Key key = entry.getKey();
 
-      if (HDT_Record.isEmptyThrowsException(key) == false)
+      if (HDT_RecordBase.isEmptyThrowsException(key) == false)
       {
         HDT_Value value = entry.getValue();
-        if (HDT_Record.isEmptyThrowsException(value) == false)
+        if (HDT_RecordBase.isEmptyThrowsException(value) == false)
           newMap.put(key, value);
       }
     }
@@ -669,7 +669,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
     Iterator<HDT_Subj> orphanIt = orphans.iterator();
     while (orphanIt.hasNext())
     {
-      if (HDT_Record.isEmptyThrowsException(orphanIt.next())) orphanIt.remove();
+      if (HDT_RecordBase.isEmptyThrowsException(orphanIt.next())) orphanIt.remove();
     }
 
     if (hasNestedItems == false) return;
@@ -680,8 +680,8 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
     {
       Cell<HDT_Subj, HDT_Obj, LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> cell = cellIt.next();
 
-      if      (HDT_Record.isEmptyThrowsException(cell.getRowKey()))    cellIt.remove();
-      else if (HDT_Record.isEmptyThrowsException(cell.getColumnKey())) cellIt.remove();
+      if      (HDT_RecordBase.isEmptyThrowsException(cell.getRowKey()))    cellIt.remove();
+      else if (HDT_RecordBase.isEmptyThrowsException(cell.getColumnKey())) cellIt.remove();
       else
       {
         Iterator<Entry<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> targetIt = cell.getValue().entrySet().iterator();
@@ -691,7 +691,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
           HDI_OnlineBase<? extends HDI_OfflineBase> item = targetIt.next().getValue();
 
           if (item.getCategory() == hdcNestedPointer)
-            if (HDT_Record.isEmptyThrowsException(HDI_OnlineNestedPointer.class.cast(item).get())) targetIt.remove();
+            if (HDT_RecordBase.isEmptyThrowsException(HDI_OnlineNestedPointer.class.cast(item).get())) targetIt.remove();
         }
       }
     }
@@ -708,7 +708,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
     {
       HDT_Obj obj = list.get(ndx);
 
-      if (HDT_Record.isEmptyThrowsException(obj))
+      if (HDT_RecordBase.isEmptyThrowsException(obj))
       {
         try { setObject(subj, obj, ndx, false); } catch (RelationCycleException e) { noOp(); }
         ndx--;
@@ -821,7 +821,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
   void reorderObjects (HDT_Subj subj, ArrayList<HDT_Obj>  newObjList)  { reorderList(subj, newObjList,  subjToObjList); }
   void reorderSubjects(HDT_Obj   obj, ArrayList<HDT_Subj> newSubjList) { reorderList(obj,  newSubjList, objToSubjList); }
 
-  private <HDT_Key extends HDT_Base, HDT_Value extends HDT_Base> void reorderList(HDT_Key key, ArrayList<HDT_Value> newValueList, ArrayListMultimap<HDT_Key, HDT_Value> map)
+  private <HDT_Key extends HDT_Record, HDT_Value extends HDT_Record> void reorderList(HDT_Key key, ArrayList<HDT_Value> newValueList, ArrayListMultimap<HDT_Key, HDT_Value> map)
   {
     if (key == null) throw new NullPointerException();
 
@@ -842,7 +842,7 @@ public final class RelationSet<HDT_Subj extends HDT_Base, HDT_Obj extends HDT_Ba
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static RelationSet<HDT_Base, HDT_Base> createSet(RelationType relType) throws HDB_InternalError
+  public static RelationSet<HDT_Record, HDT_Record> createSet(RelationType relType) throws HDB_InternalError
   {
     if ((relType == rtNone) || (relType == rtUnited))
       return null;

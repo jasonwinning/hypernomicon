@@ -20,12 +20,12 @@ package org.hypernomicon.model.relations;
 import java.util.Collection;
 import java.util.List;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-public class HyperSubjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> extends HyperSubjList<HDT_SubjType, HDT_ObjType>
+public class HyperSubjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> extends HyperSubjList<HDT_SubjType, HDT_ObjType>
 {
   private final HyperSubjList<HDT_SubjType, HDT_ObjType> parentList;
   private final int startNdx, endNdx;
@@ -92,7 +92,7 @@ public class HyperSubjSubList<HDT_SubjType extends HDT_Base, HDT_ObjType extends
     List<HDT_SubjType> subjList = relSet.getUnmodifiableSubjectList(obj).subList(startNdx, endNdx);
 
     if (a.length < subjList.size())
-      a = (T[]) new HDT_Base[subjList.size()];
+      a = (T[]) new HDT_Record[subjList.size()];
 
     for (int ndx = 0; ndx < subjList.size(); ndx++)
       a[ndx] = (T) subjList.get(ndx);

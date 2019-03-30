@@ -27,9 +27,9 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
-final class HyperCore<HDT_DT extends HDT_Base>
+final class HyperCore<HDT_DT extends HDT_Record>
 {
 
 //---------------------------------------------------------------------------

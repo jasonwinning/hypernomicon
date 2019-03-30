@@ -23,12 +23,12 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import static org.hypernomicon.util.Util.*;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 
 import org.hypernomicon.util.filePath.FilePath;
@@ -43,7 +43,7 @@ public class DesktopApi
   @SuppressWarnings("unused")
   static boolean browse(String url)
   {
-    if ((SystemUtils.IS_OS_WINDOWS) || (SystemUtils.IS_OS_MAC))
+    if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC)
       return browseDesktop(url);
 
     try
@@ -65,7 +65,7 @@ public class DesktopApi
   {
     if (FilePath.isEmpty(filePath)) return true;
 
-    if ((SystemUtils.IS_OS_WINDOWS) || (SystemUtils.IS_OS_MAC))
+    if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC)
       return openDesktop(filePath);
 
     return openSystemSpecific(filePath.toString());
@@ -76,7 +76,7 @@ public class DesktopApi
 
   public static boolean edit(FilePath filePath)
   {
-    if ((SystemUtils.IS_OS_WINDOWS) || (SystemUtils.IS_OS_MAC))
+    if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC)
       return editDesktop(filePath);
 
     return openSystemSpecific(filePath.toString());
@@ -89,26 +89,14 @@ public class DesktopApi
   {
     if (SystemUtils.IS_OS_LINUX)
     {
-      if (runCommand("kde-open", "%s", pathStr)) return true;
-      if (runCommand("gnome-open", "%s", pathStr)) return true;
-      if (runCommand("xdg-open", "%s", pathStr)) return true;
-      //if (runCommand("exo-open", "%s", path)) return true;
-      //if (runCommand("gvfs-open", "%s", path)) return true;
-
-      messageDialog("Unable to open the file: " + pathStr + ".", mtError);
+      if (exec(false, true, "kde-open"  , pathStr)) return true;
+      if (exec(false, true, "gnome-open", pathStr)) return true;
+      if (exec(false, true, "xdg-open"  , pathStr)) return true;
+//      if (exec(false, true, "exo-open"  , pathStr)) return true;
+//      if (exec(false, true, "gvfs-open" , pathStr)) return true;
     }
 
-    if (SystemUtils.IS_OS_MAC)
-    {
-      if (runCommand("open", "%s", pathStr)) return true;
-    }
-
-    if (SystemUtils.IS_OS_WINDOWS)
-    {
-      if (runCommand("explorer", "%s", pathStr)) return true;
-    }
-
-    return false;
+    return falseWithErrorMessage("Unable to open the file: " + pathStr + ".");
   }
 
 //---------------------------------------------------------------------------
@@ -180,89 +168,49 @@ public class DesktopApi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static boolean runCommand(String command, String args, String pathStr)
+  public static boolean exec(boolean showErrMsg, boolean wait, String... parts)
   {
-    String[] parts = prepareCommand(command, args, pathStr);
+    return exec(showErrMsg, wait, Lists.newArrayList(parts));
+  }
+
+  public static boolean exec(boolean showErrMsg, boolean wait, ArrayList<String> command)
+  {
+    if (SystemUtils.IS_OS_MAC)
+    {
+      command.set(0, "-a");
+      command.set(0, "open");
+    }
+
+    ProcessBuilder pb = new ProcessBuilder(command);
+    Process proc;
+    int retVal = 0;
+    String output = "";
 
     try
     {
-      Process p = Runtime.getRuntime().exec(parts);
-      if (p == null) return false;
+      proc = pb.start();
 
-      try { p.waitFor(); } catch(Exception e) { noOp(); }
-
-      try
+      if (wait)
       {
-        return p.exitValue() == 0;
-      }
-      catch (IllegalThreadStateException itse)
-      {
-        // Process is running.
-        return false;
-      }
-    }
-    catch (IOException e)
-    {
-      // Error running command.
-      return false;
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String[] prepareCommand(String command, String args, String pathStr)
-  {
-    List<String> parts = Lists.newArrayList(command);
-
-    if (args != null)
-    {
-      for (String s : args.split(" "))
-      {
-        s = String.format(s, pathStr); // put in the filename thing
-
-        parts.add(s.trim());
-      }
-    }
-
-    return parts.toArray(new String[parts.size()]);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void launchExplicit(String execPathStr, String ... params)
-  {
-    ArrayList<String> command = new ArrayList<>();
-
-    try
-    {
-      if (SystemUtils.IS_OS_MAC)
-      {
-        Collections.addAll(command, "open", "-a", execPathStr);
-        Collections.addAll(command, params);
-
-        Runtime.getRuntime().exec(command.toArray(new String[0])).waitFor();
-      }
-      else
-      {
-        command.add(execPathStr);
-        Collections.addAll(command, params);
-
-        ProcessBuilder pb = new ProcessBuilder(command.toArray(new String[0]));
-        pb.start();
+        retVal = proc.waitFor();
+        output = IOUtils.toString(proc.getErrorStream(), StandardCharsets.UTF_8);
       }
     }
     catch (IOException | InterruptedException e)
     {
-      messageDialog("An error occurred while trying to start application: " + e.getMessage(), mtError);
-    }
-  }
+      if (showErrMsg)
+        messageDialog("An error occurred while trying to start application: " + e.getMessage(), mtError);
 
+      return false;
+    }
+
+    if (retVal != 0)
+      messageDialog("An error occurred while trying to start application: " + output, mtError);
+
+    return retVal == 0;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
 }
-
-

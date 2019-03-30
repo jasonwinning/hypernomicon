@@ -17,11 +17,11 @@
 
 package org.hypernomicon.view.wrappers;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.ImageView;
 
-public abstract class AbstractTreeRow<HDT_T extends HDT_Base, RowType extends AbstractTreeRow<HDT_T, RowType>>
+public abstract class AbstractTreeRow<HDT_T extends HDT_Record, RowType extends AbstractTreeRow<HDT_T, RowType>>
   extends AbstractRow<HDT_T, RowType>
   implements Comparable<RowType>
 {

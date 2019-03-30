@@ -20,7 +20,7 @@ package org.hypernomicon.view.dialogs;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 
@@ -79,7 +79,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
       }
     });
 
-    hcbAuthor.addAndSelectEntryOrBlank(author, HDT_Base::getCBText);
+    hcbAuthor.addAndSelectEntryOrBlank(author, HDT_Record::getCBText);
 
     hcbWork.addBlankEntry();
   }

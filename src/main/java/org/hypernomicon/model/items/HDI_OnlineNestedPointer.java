@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.HDT_RecordBase;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 
 import static org.hypernomicon.util.Util.*;
@@ -33,9 +33,9 @@ import static org.hypernomicon.util.Util.*;
 public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPointer>
 {
   private final RelationType relType;
-  private HDT_Base target;
+  private HDT_Record target;
 
-  public HDI_OnlineNestedPointer(HDI_Schema newSchema, HDT_Base newRecord)
+  public HDI_OnlineNestedPointer(HDI_Schema newSchema, HDT_Record newRecord)
   {
     super(newSchema, newRecord);
     relType = schema.getRelType();
@@ -45,10 +45,10 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Base get()            { return target; }
-  public void set(HDT_Base target) { this.target = target; }
+  public HDT_Record get()            { return target; }
+  public void set(HDT_Record target) { this.target = target; }
 
-  @Override public String getResultTextForTag(Tag tag) { return nullSwitch(target, "", HDT_Base::listName); }
+  @Override public String getResultTextForTag(Tag tag) { return nullSwitch(target, "", HDT_Record::listName); }
   @Override public void expire()                       { target = null; }
 
 //---------------------------------------------------------------------------
@@ -56,7 +56,7 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
 
   @Override public void resolvePointers()
   {
-    if (HDT_Record.isEmpty(target))
+    if (HDT_RecordBase.isEmpty(target))
       target = null;
   }
 
@@ -75,7 +75,7 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
   {
     val.objID = -1;
 
-    if (HDT_Record.isEmpty(target) == false)
+    if (HDT_RecordBase.isEmpty(target) == false)
       val.objID = target.getID();
   }
 

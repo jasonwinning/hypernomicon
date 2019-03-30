@@ -32,7 +32,7 @@ import java.util.Map.Entry;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -41,7 +41,7 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 {
   private final RelationType relType;
 
-  public HDI_OnlinePointerMulti(HDI_Schema newSchema, HDT_Base newRecord)
+  public HDI_OnlinePointerMulti(HDI_Schema newSchema, HDT_Record newRecord)
   {
     super(newSchema, newRecord);
     relType = schema.getRelType();
@@ -69,14 +69,14 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 
   @Override public void setFromOfflineValue(HDI_OfflinePointerMulti val, Tag tag) throws RelationCycleException
   {
-    HyperObjList<HDT_Base, HDT_Base> objList = db.getObjectList(relType, record, false);
-    ArrayList<HDT_Base> newList = new ArrayList<>();
+    HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
+    ArrayList<HDT_Record> newList = new ArrayList<>();
 
     HDT_RecordType objType = db.getObjType(relType);
 
-    val.objIDs.forEach(objID -> nullSwitch((HDT_Base)db.records(objType).getByID(objID.intValue()), newList::add));
+    val.objIDs.forEach(objID -> nullSwitch((HDT_Record)db.records(objType).getByID(objID.intValue()), newList::add));
 
-    for (HDT_Base obj : newList)
+    for (HDT_Record obj : newList)
     {
       if (objList.contains(obj) == false)
       {
@@ -90,7 +90,7 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
           db.setNestedItemFromOfflineValue(record, obj, entry.getKey(), entry.getValue());
     }
 
-    for (HDT_Base obj : objList)
+    for (HDT_Record obj : objList)
       if (newList.contains(obj) == false)
       {
         objList.remove(obj);

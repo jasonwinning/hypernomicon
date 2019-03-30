@@ -22,7 +22,7 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -32,7 +32,7 @@ public class CustomRecordPopulator extends Populator
 
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface PopulateHandler { List<HDT_Base> handle(HyperTableRow row, boolean force); }
+  @FunctionalInterface public static interface PopulateHandler { List<HDT_Record> handle(HyperTableRow row, boolean force); }
 
 //---------------------------------------------------------------------------
 

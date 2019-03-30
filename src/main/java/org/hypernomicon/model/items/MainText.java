@@ -97,7 +97,7 @@ public class MainText
   public String getHtml()                         { return htmlText; }
   public HDT_RecordWithConnector getRecord()      { return connector.getSpoke(); }
   public String getPlain()                        { return plainText; }
-  private boolean hasKeyWork(HDT_Base rec)        { return getKeyWork(rec) != null; }
+  private boolean hasKeyWork(HDT_Record rec)        { return getKeyWork(rec) != null; }
   public List<DisplayItem> getDisplayItemsUnmod() { return Collections.unmodifiableList(displayItems); }
   public List<KeyWork> getKeyWorks()              { return Collections.unmodifiableList(keyWorks); }
   public List<DisplayItem> getDisplayItemsCopy()  { return new ArrayList<>(displayItems); }
@@ -173,7 +173,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public KeyWork getKeyWork(HDT_Base child)
+  public KeyWork getKeyWork(HDT_Record child)
   {
     synchronized (keyWorks)
     {
@@ -364,7 +364,7 @@ public class MainText
 
   void resolvePointers()
   {
-    displayItems.removeIf(item -> (item.type == diRecord) && (HDT_Record.isEmpty(item.record)));
+    displayItems.removeIf(item -> (item.type == diRecord) && (HDT_RecordBase.isEmpty(item.record)));
 
     Iterator<KeyWork> keyWorkIT = keyWorks.iterator();
 

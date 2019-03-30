@@ -31,7 +31,7 @@ import org.hypernomicon.model.relations.HyperSubjList;
 
 //---------------------------------------------------------------------------
 
-public class HDT_Institution extends HDT_Record
+public class HDT_Institution extends HDT_RecordBase
 {
   public final HyperSubjList<HDT_Person, HDT_Institution> persons;
   public final HyperSubjList<HDT_Institution, HDT_Institution> subInstitutions;

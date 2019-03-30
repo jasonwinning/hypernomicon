@@ -32,7 +32,7 @@ import java.util.function.UnaryOperator;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import org.hypernomicon.model.Exceptions.RelationCycleException;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Debate;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_RecordType;
@@ -138,7 +138,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   @Override public SelectionModel<TreeItem<TreeRow>> getSelectionModel() { return ttv.getSelectionModel(); }
   @Override public void scrollToNdx(int ndx)                             { ttv.scrollTo(ndx); }
 
-  @Override public TreeRow newRow(HDT_Base record, TreeModel<TreeRow> treeModel) { return new TreeRow(record, treeModel); }
+  @Override public TreeRow newRow(HDT_Record record, TreeModel<TreeRow> treeModel) { return new TreeRow(record, treeModel); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -153,7 +153,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void removeRecord(HDT_Base record)
+  public void removeRecord(HDT_Record record)
   {
     debateTree.removeRecord(record);
     noteTree.removeRecord(record);
@@ -166,7 +166,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public ArrayList<TreeRow> getRowsForRecord(HDT_Base record)
+  @Override public ArrayList<TreeRow> getRowsForRecord(HDT_Record record)
   {
     ArrayList<TreeRow> rows = new ArrayList<>();
 
@@ -347,7 +347,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   {
     scroll(dragEvent);
 
-    HDT_Base source = nullSwitch(draggingRow, null, TreeRow::getRecord),
+    HDT_Record source = nullSwitch(draggingRow, null, TreeRow::getRecord),
              target = nullSwitch(targetRow, null, TreeRow::getRecord);
 
     if ((source == null) || (target == null) || (source == target) ||
@@ -372,7 +372,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   {
     dragReset();
 
-    HDT_Base subjRecord, objRecord,
+    HDT_Record subjRecord, objRecord,
              oldParent = draggingRow.treeItem.getParent().getValue().getRecord(),
              newParent = targetRow.getRecord(),
              child = draggingRow.getRecord();
@@ -419,7 +419,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     {
       try
       {
-        HyperObjList<HDT_Base, HDT_Base> objList = db.getObjectList(newRelType, subjRecord, true);
+        HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(newRelType, subjRecord, true);
         objList.add(objRecord);
         objList.throwLastException();
 
@@ -454,7 +454,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
     TreeRow parentRow = nullSwitch(nullSwitch(item, null, TreeItem::getParent), null, TreeItem::getValue);
 
-    HDT_Base parent = nullSwitch(parentRow, null, TreeRow::getRecord),
+    HDT_Record parent = nullSwitch(parentRow, null, TreeRow::getRecord),
              child = nullSwitch(nullSwitch(item, null, TreeItem::getValue), null, TreeRow::getRecord),
              subjRecord, objRecord, objToAdd = null;
 

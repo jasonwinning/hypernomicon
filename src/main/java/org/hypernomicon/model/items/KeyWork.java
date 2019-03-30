@@ -22,9 +22,9 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
-import org.hypernomicon.model.records.HDT_Base;
-import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.HDT_MiscFile;
+import org.hypernomicon.model.records.HDT_RecordBase;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -41,7 +41,7 @@ public class KeyWork implements Comparable<KeyWork>
   {
     abstract int getID();
     abstract HDT_RecordType getType();
-    abstract HDT_Base getRecord();
+    abstract HDT_Record getRecord();
 
     boolean isExpired() { return false; }
 
@@ -87,7 +87,7 @@ public class KeyWork implements Comparable<KeyWork>
 
     @Override int getID()              { return id; }
     @Override HDT_RecordType getType() { return type; }
-    @Override HDT_Base getRecord()     { return db.records(getType()).getByID(getID()); }
+    @Override HDT_Record getRecord()     { return db.records(getType()).getByID(getID()); }
 
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
@@ -96,18 +96,18 @@ public class KeyWork implements Comparable<KeyWork>
 
   private class OnlineRecordPointer extends RecordPointer
   {
-    private final HDT_Base record;
+    private final HDT_Record record;
 
-    private OnlineRecordPointer(HDT_Base record)
+    private OnlineRecordPointer(HDT_Record record)
     {
       this.record = record;
     }
 
     @Override int getID()              { return record.getID(); }
     @Override HDT_RecordType getType() { return record.getType(); }
-    @Override HDT_Base getRecord()     { return record; }
+    @Override HDT_Record getRecord()     { return record; }
 
-    @Override boolean isExpired()      { return HDT_Record.isEmpty(record); }
+    @Override boolean isExpired()      { return HDT_RecordBase.isEmpty(record); }
   }
 
   //---------------------------------------------------------------------------

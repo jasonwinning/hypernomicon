@@ -17,11 +17,11 @@
 
 package org.hypernomicon.model.relations;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 
 import static org.hypernomicon.util.Util.*;
 
-public class HyperSubjPointer<HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base>
+public class HyperSubjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record>
 {
   final RelationSet<HDT_SubjType, HDT_ObjType> relSet;
   final HDT_ObjType obj;
@@ -38,7 +38,7 @@ public class HyperSubjPointer<HDT_SubjType extends HDT_Base, HDT_ObjType extends
   public HDT_SubjType get()       { return relSet.getSubjectCount(obj) == 0 ? null : relSet.getSubject(obj, 0); }
   public boolean isNull()         { return get() == null; }
   public boolean isNotNull()      { return get() != null; }
-  public int getID()              { return nullSwitch(get(), -1, HDT_Base::getID); }
+  public int getID()              { return nullSwitch(get(), -1, HDT_Record::getID); }
 
   @Override public int hashCode()           { return super.hashCode(); }
   @Override public boolean equals(Object o) { return o instanceof HyperSubjPointer<?, ?> ? ((HyperSubjPointer<?, ?>) o).get() == get() : false; }

@@ -21,7 +21,7 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import java.util.EnumSet;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 
 public class AllQuerySource implements QuerySource
@@ -42,10 +42,10 @@ public class AllQuerySource implements QuerySource
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int count()                             { return source.count(); }
-  @Override public QuerySourceType sourceType()            { return QuerySourceType.QST_allRecords; }
-  @Override public boolean containsRecord(HDT_Base record) { return true; }
-  @Override public HDT_Base getRecord(int ndx)             { return source.getRecord(ndx); }
+  @Override public int count()                               { return source.count(); }
+  @Override public QuerySourceType sourceType()              { return QuerySourceType.QST_allRecords; }
+  @Override public boolean containsRecord(HDT_Record record) { return true; }
+  @Override public HDT_Record getRecord(int ndx)             { return source.getRecord(ndx); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

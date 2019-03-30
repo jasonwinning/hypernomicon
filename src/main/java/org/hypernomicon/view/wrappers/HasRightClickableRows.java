@@ -33,7 +33,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 
-public abstract class HasRightClickableRows<RowType extends AbstractRow<? extends HDT_Base, RowType>>
+public abstract class HasRightClickableRows<RowType extends AbstractRow<? extends HDT_Record, RowType>>
 {
 
 //---------------------------------------------------------------------------
@@ -41,21 +41,21 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 
   final private class RowMenuItem extends MenuItem
   {
-    RowMenuItem(MenuItemSchema<? extends HDT_Base, RowType> schema)
+    RowMenuItem(MenuItemSchema<? extends HDT_Record, RowType> schema)
     {
       super(schema.getCaption());
       this.schema = schema;
     }
 
-    final private MenuItemSchema<? extends HDT_Base, RowType> schema;
+    final private MenuItemSchema<? extends HDT_Record, RowType> schema;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final private List<MenuItemSchema<? extends HDT_Base, RowType>> contextMenuSchemata = new ArrayList<>();
+  final private List<MenuItemSchema<? extends HDT_Record, RowType>> contextMenuSchemata = new ArrayList<>();
 
-  final public List<MenuItemSchema<? extends HDT_Base, RowType>> getContextMenuSchemata() { return Collections.unmodifiableList(contextMenuSchemata); }
+  final public List<MenuItemSchema<? extends HDT_Record, RowType>> getContextMenuSchemata() { return Collections.unmodifiableList(contextMenuSchemata); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -65,12 +65,12 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
     return createContextMenu(row, contextMenuSchemata);
   }
 
-  final public ContextMenu createContextMenu(RowType row, List<MenuItemSchema<? extends HDT_Base, RowType>> schemata)
+  final public ContextMenu createContextMenu(RowType row, List<MenuItemSchema<? extends HDT_Record, RowType>> schemata)
   {
     boolean noneVisible = true;
     ContextMenu rowMenu = new ContextMenu();
 
-    for (MenuItemSchema<? extends HDT_Base, RowType> schema : schemata)
+    for (MenuItemSchema<? extends HDT_Record, RowType> schema : schemata)
     {
       RowMenuItem newItem = createContextMenuItem(schema, row, rowMenu);
       rowMenu.getItems().add(newItem);
@@ -124,7 +124,7 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final private <HDT_T extends HDT_Base> RowMenuItem createContextMenuItem(MenuItemSchema<HDT_T, RowType> schema, RowType row, ContextMenu rowMenu)
+  final private <HDT_T extends HDT_Record> RowMenuItem createContextMenuItem(MenuItemSchema<HDT_T, RowType> schema, RowType row, ContextMenu rowMenu)
   {
     RowMenuItem newItem = new RowMenuItem(schema);
 
@@ -141,22 +141,22 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final public <HDT_T extends HDT_Base> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Consumer<RowType> rowHandler)
+  final public <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Consumer<RowType> rowHandler)
   { return addSchema(new MenuItemSchema<>(caption, rowHandler)); }
 
-  final public <HDT_T extends HDT_Base> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Predicate<RowType> condRowHandler, Consumer<RowType> rowHandler)
+  final public <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Predicate<RowType> condRowHandler, Consumer<RowType> rowHandler)
   { return addSchema(new MenuItemSchema<>(caption, condRowHandler, rowHandler)); }
 
-  final public <HDT_T extends HDT_Base> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Class<HDT_T> klass, Consumer<HDT_T> recordHandler)
+  final public <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Class<HDT_T> klass, Consumer<HDT_T> recordHandler)
   { return addSchema(new MenuItemSchema<>(caption, klass, recordHandler)); }
 
-  final public <HDT_T extends HDT_Base> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Class<HDT_T> klass, Predicate<HDT_T> condRecordHandler, Consumer<HDT_T> recordHandler)
+  final public <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addContextMenuItem(String caption, Class<HDT_T> klass, Predicate<HDT_T> condRecordHandler, Consumer<HDT_T> recordHandler)
   { return addSchema(new MenuItemSchema<>(caption, klass, condRecordHandler, recordHandler)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final private <HDT_T extends HDT_Base> MenuItemSchema<HDT_T, RowType> addSchema(MenuItemSchema<HDT_T, RowType> schema)
+  final private <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addSchema(MenuItemSchema<HDT_T, RowType> schema)
   {
     contextMenuSchemata.add(schema);
     return schema;

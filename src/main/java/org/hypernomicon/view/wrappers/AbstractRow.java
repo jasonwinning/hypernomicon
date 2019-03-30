@@ -19,22 +19,22 @@ package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 
 import static org.hypernomicon.util.Util.*;
 
 import javafx.scene.control.TreeItem;
 
-public abstract class AbstractRow<HDT_T extends HDT_Base, RowType extends AbstractRow<HDT_T, RowType>>
+public abstract class AbstractRow<HDT_T extends HDT_Record, RowType extends AbstractRow<HDT_T, RowType>>
 {
 
 //---------------------------------------------------------------------------
 
   public abstract <HDT_T1 extends HDT_T> HDT_T1 getRecord();
 
-  public HDT_RecordType    getRecordType() { return nullSwitch(getRecord(), hdtNone, HDT_Base::getType); }
-  public int               getRecordID()   { return nullSwitch(getRecord(), -1, HDT_Base::getID); }
+  public HDT_RecordType    getRecordType() { return nullSwitch(getRecord(), hdtNone, HDT_Record::getType); }
+  public int               getRecordID()   { return nullSwitch(getRecord(), -1, HDT_Record::getID); }
   public TreeItem<RowType> getTreeItem()   { return null; }
 
 //---------------------------------------------------------------------------

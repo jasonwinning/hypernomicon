@@ -23,13 +23,13 @@ import java.util.ArrayList;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Person;
 
 public class HDI_OnlinePersonName extends HDI_OnlineBase<HDI_OfflinePersonName>
 {
 
-  public HDI_OnlinePersonName(HDI_Schema newSchema, HDT_Base newRecord)
+  public HDI_OnlinePersonName(HDI_Schema newSchema, HDT_Record newRecord)
   {
     super(newSchema, newRecord);
   }

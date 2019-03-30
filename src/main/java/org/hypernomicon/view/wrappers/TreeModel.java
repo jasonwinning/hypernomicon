@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.util.BidiOneToManyRecordMap;
@@ -39,7 +39,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
-public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Base, RowType>>
+public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, RowType>>
 {
   final private BidiOneToManyRecordMap parentToChildren;
   final private MappingFromRecordToRows recordToRows;
@@ -56,21 +56,21 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Base, RowTy
 
   private class MappingFromRecordToRows
   {
-    final private SetMultimap<HDT_Base, RowType> recordToRows = LinkedHashMultimap.create();
+    final private SetMultimap<HDT_Record, RowType> recordToRows = LinkedHashMultimap.create();
     final private TreeCB tcb;
 
     //---------------------------------------------------------------------------
 
-    private MappingFromRecordToRows(TreeCB tcb)            { this.tcb = tcb; }
-    private Set<RowType> getRowsForRecord(HDT_Base record) { return recordToRows.get(record); }
-    private void clear()                                   { recordToRows.clear(); }
+    private MappingFromRecordToRows(TreeCB tcb)              { this.tcb = tcb; }
+    private Set<RowType> getRowsForRecord(HDT_Record record) { return recordToRows.get(record); }
+    private void clear()                                     { recordToRows.clear(); }
 
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
     private void addRow(RowType row)
     {
-      HDT_Base record = row.getRecord();
+      HDT_Record record = row.getRecord();
 
       if (recordToRows.containsKey(record) == false)
         if (tcb != null) tcb.add(record);
@@ -83,7 +83,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Base, RowTy
 
     private void removeRow(RowType row)
     {
-      HDT_Base record = row.getRecord();
+      HDT_Record record = row.getRecord();
 
       if (recordToRows.remove(record, row) == false) return;
 
@@ -118,7 +118,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Base, RowTy
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void reset(HDT_Base rootRecord)
+  public void reset(HDT_Record rootRecord)
   {
     clear();
 
@@ -130,10 +130,10 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Base, RowTy
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void removeRecord(HDT_Base record)
+  public void removeRecord(HDT_Record record)
   {
-    ImmutableSet.<HDT_Base>copyOf(parentToChildren.getForwardSet(record)).forEach(child  -> unassignParent(child , record));
-    ImmutableSet.<HDT_Base>copyOf(parentToChildren.getForwardSet(record)).forEach(parent -> unassignParent(record, parent));
+    ImmutableSet.<HDT_Record>copyOf(parentToChildren.getForwardSet(record)).forEach(child  -> unassignParent(child , record));
+    ImmutableSet.<HDT_Record>copyOf(parentToChildren.getForwardSet(record)).forEach(parent -> unassignParent(record, parent));
   }
 
 //---------------------------------------------------------------------------
@@ -149,7 +149,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Base, RowTy
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void unassignParent(HDT_Base child, HDT_Base parent)
+  private void unassignParent(HDT_Record child, HDT_Record parent)
   {
     if (parentToChildren.getForwardSet(parent).contains(child) == false) return;
 
@@ -187,7 +187,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Base, RowTy
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void assignParent(HDT_Base child, HDT_Base parent)
+  private void assignParent(HDT_Record child, HDT_Record parent)
   {
     if (parentToChildren.getForwardSet(parent).contains(child)) return;
 
@@ -228,7 +228,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Base, RowTy
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Set<RowType> getRowsForRecord(HDT_Base record)
+  public Set<RowType> getRowsForRecord(HDT_Record record)
   {
     return recordToRows.getRowsForRecord(record);
   }

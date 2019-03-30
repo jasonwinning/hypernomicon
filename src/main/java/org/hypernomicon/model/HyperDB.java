@@ -20,7 +20,7 @@ package org.hypernomicon.model;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_Record.HyperDataCategory.*;
+import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
@@ -98,7 +98,7 @@ import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.HDT_Record.HyperDataCategory;
+import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.*;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -116,26 +116,26 @@ public final class HyperDB
 {
   public static final HyperDB db = new HyperDB();
 
-  final private EnumMap<HDT_RecordType, HyperDataset<? extends HDT_Base>> datasets = new EnumMap<>(HDT_RecordType.class);
-  final private EnumMap<HDT_RecordType, HyperDataset<? extends HDT_Base>.CoreAccessor> accessors = new EnumMap<>(HDT_RecordType.class);
-  final private EnumMap<RelationType, RelationSet<HDT_Base, HDT_Base>> relationSets = new EnumMap<>(RelationType.class);
+  final private EnumMap<HDT_RecordType, HyperDataset<? extends HDT_Record>> datasets = new EnumMap<>(HDT_RecordType.class);
+  final private EnumMap<HDT_RecordType, HyperDataset<? extends HDT_Record>.CoreAccessor> accessors = new EnumMap<>(HDT_RecordType.class);
+  final private EnumMap<RelationType, RelationSet<HDT_Record, HDT_Record>> relationSets = new EnumMap<>(RelationType.class);
   final private EnumMap<RelationType, Boolean> relTypeToIsMulti = new EnumMap<>(RelationType.class);
   final private EnumMap<Tag, HDT_RecordType> tagToObjType = new EnumMap<>(Tag.class);
   final private EnumMap<Tag, EnumSet<HDT_RecordType>> tagToSubjType = new EnumMap<>(Tag.class);
   final private EnumMap<Tag, String> tagToHeader = new EnumMap<>(Tag.class);
 
-  final private List<Consumer<HDT_Base>> recordDeleteHandlers          = new ArrayList<>();
-  final private List<Runnable>           dbCloseHandlers               = new ArrayList<>(),
-                                         dbPreChangeHandlers           = new ArrayList<>(),
-                                         dbMentionsNdxCompleteHandlers = new ArrayList<>(),
-                                         bibChangedHandlers            = new ArrayList<>();
+  final private List<Consumer<HDT_Record>> recordDeleteHandlers          = new ArrayList<>();
+  final private List<Runnable>             dbCloseHandlers               = new ArrayList<>(),
+                                           dbPreChangeHandlers           = new ArrayList<>(),
+                                           dbMentionsNdxCompleteHandlers = new ArrayList<>(),
+                                           bibChangedHandlers            = new ArrayList<>();
 
   final private EnumBiMap<HDT_RecordType, Tag> typeToTag = EnumBiMap.create(HDT_RecordType.class, Tag.class);
   final private EnumHashBiMap<Tag, String> tagToStr = EnumHashBiMap.create(Tag.class);
   final private EnumHashBiMap<HDT_RecordType, String> typeToTagStr = EnumHashBiMap.create(HDT_RecordType.class);
   final private SearchKeys searchKeys = new SearchKeys();
   final private MentionsIndex mentionsIndex = new MentionsIndex(dbMentionsNdxCompleteHandlers);
-  final private ArrayList<HDT_Base> initialNavList = new ArrayList<>();
+  final private ArrayList<HDT_Record> initialNavList = new ArrayList<>();
   final private EnumMap<HDT_RecordType, RelationChangeHandler> keyWorkHandlers = new EnumMap<>(HDT_RecordType.class);
   final private HashMap<HDT_RecordWithPath, Set<HDT_RecordWithConnector>> keyWorkIndex = new HashMap<>();
   final private BidiOneToManyMainTextMap displayedAtIndex = new BidiOneToManyMainTextMap();
@@ -161,122 +161,122 @@ public final class HyperDB
                  viewTestingInProgress = false;
 
 //---------------------------------------------------------------------------
-  @FunctionalInterface public interface RelationChangeHandler { void handle(HDT_Base subject, HDT_Base object, boolean affirm); }
+  @FunctionalInterface public interface RelationChangeHandler { void handle(HDT_Record subject, HDT_Record object, boolean affirm); }
 //---------------------------------------------------------------------------
 
-  public boolean isDeletionInProgress()                       { return deletionInProgress; }
-  public boolean resolvingPointers()                          { return pointerResolutionInProgress; }
-  public FilePath getRootFilePath()                           { return rootFilePath; }
-  public int getNextID(HDT_RecordType type)                   { return datasets.get(type).getNextID(); }
-  public boolean idAvailable(HDT_RecordType type, int id)     { return datasets.get(type).idAvailable(id); }
-  public String getTypeTagStr(HDT_RecordType type)            { return typeToTagStr.get(type); }
-  public HDT_RecordType parseTypeTagStr(String tag)           { return typeToTagStr.inverse().getOrDefault(tag, hdtNone); }
-  public boolean isLoaded()                                   { return loaded; }
-  public boolean bibLibraryIsLinked()                         { return bibLibrary != null; }
-  public Instant getCreationDate()                            { return dbCreationDate; }
-  public HDT_RecordType getSubjType(RelationType relType)     { return relationSets.get(relType).getSubjType(); }
-  public HDT_RecordType getObjType(RelationType relType)      { return relationSets.get(relType).getObjType(); }
-  public boolean relationIsMulti(RelationType relType)        { return relTypeToIsMulti.get(relType).booleanValue(); }
-  public String getTagStr(Tag tag)                            { return tagToStr.get(tag); }
-  public String getTagHeader(Tag tag)                         { return tagToHeader.getOrDefault(tag, ""); }
-  public List<HDT_Base> getInitialNavList()                   { return unmodifiableList(initialNavList); }
-  public String getSearchKey(HDT_Base record)                 { return searchKeys.getStringForRecord(record); }
-  public SearchKeyword getKeyByKeyword(String keyword)        { return searchKeys.getKeywordObjByKeywordStr(keyword); }
-  public String getFirstActiveKeyWord(HDT_Base record)        { return searchKeys.getFirstActiveKeyword(record); }
-  public List<SearchKeyword> getKeysByPrefix(String prefix)   { return searchKeys.getKeywordsByPrefix(prefix); }
-  public List<SearchKeyword> getKeysByRecord(HDT_Base record) { return searchKeys.getKeysByRecord(record); }
-  public HDT_Work getWorkByBibEntryKey(String key)            { return bibEntryKeyToWork.get(key); }
-  public boolean reindexingMentioners()                       { return mentionsIndex.isRebuilding(); }
-  public BibEntry getBibEntryByKey(String key)                { return bibLibrary.getEntryByKey(key); }
+  public boolean isDeletionInProgress()                         { return deletionInProgress; }
+  public boolean resolvingPointers()                            { return pointerResolutionInProgress; }
+  public FilePath getRootFilePath()                             { return rootFilePath; }
+  public int getNextID(HDT_RecordType type)                     { return datasets.get(type).getNextID(); }
+  public boolean idAvailable(HDT_RecordType type, int id)       { return datasets.get(type).idAvailable(id); }
+  public String getTypeTagStr(HDT_RecordType type)              { return typeToTagStr.get(type); }
+  public HDT_RecordType parseTypeTagStr(String tag)             { return typeToTagStr.inverse().getOrDefault(tag, hdtNone); }
+  public boolean isLoaded()                                     { return loaded; }
+  public boolean bibLibraryIsLinked()                           { return bibLibrary != null; }
+  public Instant getCreationDate()                              { return dbCreationDate; }
+  public HDT_RecordType getSubjType(RelationType relType)       { return relationSets.get(relType).getSubjType(); }
+  public HDT_RecordType getObjType(RelationType relType)        { return relationSets.get(relType).getObjType(); }
+  public boolean relationIsMulti(RelationType relType)          { return relTypeToIsMulti.get(relType).booleanValue(); }
+  public String getTagStr(Tag tag)                              { return tagToStr.get(tag); }
+  public String getTagHeader(Tag tag)                           { return tagToHeader.getOrDefault(tag, ""); }
+  public List<HDT_Record> getInitialNavList()                   { return unmodifiableList(initialNavList); }
+  public String getSearchKey(HDT_Record record)                 { return searchKeys.getStringForRecord(record); }
+  public SearchKeyword getKeyByKeyword(String keyword)          { return searchKeys.getKeywordObjByKeywordStr(keyword); }
+  public String getFirstActiveKeyWord(HDT_Record record)        { return searchKeys.getFirstActiveKeyword(record); }
+  public List<SearchKeyword> getKeysByPrefix(String prefix)     { return searchKeys.getKeywordsByPrefix(prefix); }
+  public List<SearchKeyword> getKeysByRecord(HDT_Record record) { return searchKeys.getKeysByRecord(record); }
+  public HDT_Work getWorkByBibEntryKey(String key)              { return bibEntryKeyToWork.get(key); }
+  public boolean reindexingMentioners()                         { return mentionsIndex.isRebuilding(); }
+  public BibEntry getBibEntryByKey(String key)                  { return bibLibrary.getEntryByKey(key); }
 
-  public void setSearchKey(HDT_Base record, String newKey, boolean noMod, boolean dontRebuildMentions) throws SearchKeyException
+  public void setSearchKey(HDT_Record record, String newKey, boolean noMod, boolean dontRebuildMentions) throws SearchKeyException
   { searchKeys.setSearchKey(record, newKey, noMod, dontRebuildMentions); }
 
   public LibraryWrapper<? extends BibEntry, ? extends BibCollection> getBibLibrary()        { return bibLibrary; }
-  public List<Consumer<HDT_Base>> getRecordDeleteHandlers()                                 { return unmodifiableList(recordDeleteHandlers); }
+  public List<Consumer<HDT_Record>> getRecordDeleteHandlers()                               { return unmodifiableList(recordDeleteHandlers); }
   public void addRelationChangeHandler(RelationType relType, RelationChangeHandler handler) { relationSets.get(relType).addChangeHandler(handler); }
   public void addKeyWorkHandler(HDT_RecordType recordType, RelationChangeHandler handler)   { keyWorkHandlers.put(recordType, handler); }
   public void addCloseDBHandler(Runnable handler)                                           { dbCloseHandlers.add(handler); }
   public void addPreDBChangeHandler(Runnable handler)                                       { dbPreChangeHandlers.add(handler); }
   public void addMentionsNdxCompleteHandler(Runnable handler)                               { dbMentionsNdxCompleteHandlers.add(handler); }
   public void addBibChangedHandler(Runnable handler)                                        { bibChangedHandlers.add(handler); }
-  public void addDeleteHandler(Consumer<HDT_Base> handler)                                  { recordDeleteHandlers.add(handler); }
+  public void addDeleteHandler(Consumer<HDT_Record> handler)                                { recordDeleteHandlers.add(handler); }
   public void rebuildMentions()                                                             { if (loaded) mentionsIndex.startRebuild(); }
-  public void updateMentioner(HDT_Base record)                                              { if (loaded) mentionsIndex.updateMentioner(record); }
+  public void updateMentioner(HDT_Record record)                                            { if (loaded) mentionsIndex.updateMentioner(record); }
   public boolean waitUntilRebuildIsDone()                                                   { return mentionsIndex.waitUntilRebuildIsDone(); }
 
-  public boolean firstMentionsSecond(HDT_Base mentioner, HDT_Base target, boolean descOnly, MutableBoolean choseNotToWait) {
+  public boolean firstMentionsSecond(HDT_Record mentioner, HDT_Record target, boolean descOnly, MutableBoolean choseNotToWait) {
     return mentionsIndex.firstMentionsSecond(mentioner, target, descOnly, choseNotToWait); }
-  public Set<HDT_Base> getMentionerSet(HDT_Base target, boolean descOnly, MutableBoolean choseNotToWait) {
+  public Set<HDT_Record> getMentionerSet(HDT_Record target, boolean descOnly, MutableBoolean choseNotToWait) {
     return mentionsIndex.getMentionerSet(target, descOnly, choseNotToWait); }
-  public Set<HDT_Base> getMentionerSet(HDT_Base target, boolean descOnly) {
+  public Set<HDT_Record> getMentionerSet(HDT_Record target, boolean descOnly) {
     return mentionsIndex.getMentionerSet(target, descOnly); }
 
 //---------------------------------------------------------------------------
 
-  public String getNestedString(HDT_Base subj, HDT_Base obj, Tag tag)    { return getRelSet(subj, obj).getNestedString(subj, obj, tag);  }
-  public boolean getNestedBoolean(HDT_Base subj, HDT_Base obj, Tag tag)  { return getRelSet(subj, obj).getNestedBoolean(subj, obj, tag); }
-  public Ternary getNestedTernary(HDT_Base subj, HDT_Base obj, Tag tag)  { return getRelSet(subj, obj).getNestedTernary(subj, obj, tag); }
-  public HDT_Base getNestedPointer(HDT_Base subj, HDT_Base obj, Tag tag) { return getRelSet(subj, obj).getNestedPointer(subj, obj, tag); }
-  public boolean relationHasNestedValues(RelationType relType)           { return relationSets.get(relType).getHasNestedItems(); }
-  public HDI_Schema getNestedSchema(RelationType relType, Tag tag)       { return relationSets.get(relType).getSchema(tag); }
-  public Set<Tag> getNestedTags(RelationType relType)                    { return relationSets.get(relType).getNestedTags(); }
+  public String getNestedString(HDT_Record subj, HDT_Record obj, Tag tag)      { return getRelSet(subj, obj).getNestedString(subj, obj, tag);  }
+  public boolean getNestedBoolean(HDT_Record subj, HDT_Record obj, Tag tag)    { return getRelSet(subj, obj).getNestedBoolean(subj, obj, tag); }
+  public Ternary getNestedTernary(HDT_Record subj, HDT_Record obj, Tag tag)    { return getRelSet(subj, obj).getNestedTernary(subj, obj, tag); }
+  public HDT_Record getNestedPointer(HDT_Record subj, HDT_Record obj, Tag tag) { return getRelSet(subj, obj).getNestedPointer(subj, obj, tag); }
+  public boolean relationHasNestedValues(RelationType relType)                 { return relationSets.get(relType).getHasNestedItems(); }
+  public HDI_Schema getNestedSchema(RelationType relType, Tag tag)             { return relationSets.get(relType).getSchema(tag); }
+  public Set<Tag> getNestedTags(RelationType relType)                          { return relationSets.get(relType).getNestedTags(); }
 
   @SuppressWarnings("unchecked")
-  private <HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> RelationSet<HDT_SubjType, HDT_ObjType> getRelSet(HDT_SubjType subj, HDT_ObjType obj)
+  private <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> RelationSet<HDT_SubjType, HDT_ObjType> getRelSet(HDT_SubjType subj, HDT_ObjType obj)
   { return (RelationSet<HDT_SubjType, HDT_ObjType>) relationSets.get(getRelation(subj.getType(), obj.getType())); }
 
   @SuppressWarnings("unchecked")
-  private <HDT_SubjType extends HDT_Base, HDT_ObjType extends HDT_Base> RelationSet<HDT_SubjType, HDT_ObjType> getRelSet(RelationType relType)
+  private <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> RelationSet<HDT_SubjType, HDT_ObjType> getRelSet(RelationType relType)
   { return (RelationSet<HDT_SubjType, HDT_ObjType>) relationSets.get(relType); }
 
-  public void setNestedItemFromOfflineValue(HDT_Base subj, HDT_Base obj, Tag tag, HDI_OfflineBase value) throws RelationCycleException
+  public void setNestedItemFromOfflineValue(HDT_Record subj, HDT_Record obj, Tag tag, HDI_OfflineBase value) throws RelationCycleException
   { getRelSet(subj, obj).setNestedItemFromOfflineValue(subj, obj, tag, value); }
 
-  public void saveNestedValuesToOfflineMap(HDT_Base subj, HDT_Base obj, Map<Tag, HDI_OfflineBase> tagToNestedItem, HDT_RecordState recordState)
+  public void saveNestedValuesToOfflineMap(HDT_Record subj, HDT_Record obj, Map<Tag, HDI_OfflineBase> tagToNestedItem, HDT_RecordState recordState)
   { getRelSet(subj, obj).saveNestedValuesToOfflineMap(subj, obj, tagToNestedItem, recordState); }
 
-  public <HDT_ObjType extends HDT_Base, HDT_SubjType extends HDT_Base> HyperObjList<HDT_SubjType, HDT_ObjType> getObjectList(RelationType relType, HDT_SubjType subj, boolean modTracking)
+  public <HDT_ObjType extends HDT_Record, HDT_SubjType extends HDT_Record> HyperObjList<HDT_SubjType, HDT_ObjType> getObjectList(RelationType relType, HDT_SubjType subj, boolean modTracking)
   { return new HyperObjList<>(getRelSet(relType), subj, modTracking); }
 
-  public <HDT_ObjType extends HDT_Base, HDT_SubjType extends HDT_Base> HyperSubjList<HDT_SubjType, HDT_ObjType> getSubjectList(RelationType relType, HDT_ObjType obj)
+  public <HDT_ObjType extends HDT_Record, HDT_SubjType extends HDT_Record> HyperSubjList<HDT_SubjType, HDT_ObjType> getSubjectList(RelationType relType, HDT_ObjType obj)
   { return new HyperSubjList<>(getRelSet(relType), obj); }
 
-  public <HDT_ObjType extends HDT_Base, HDT_SubjType extends HDT_Base> HyperObjPointer<HDT_SubjType, HDT_ObjType> getObjPointer(RelationType relType, HDT_SubjType subj)
+  public <HDT_ObjType extends HDT_Record, HDT_SubjType extends HDT_Record> HyperObjPointer<HDT_SubjType, HDT_ObjType> getObjPointer(RelationType relType, HDT_SubjType subj)
   { return new HyperObjPointer<>(getRelSet(relType), subj, true); }
 
-  public <HDT_ObjType extends HDT_Base, HDT_SubjType extends HDT_Base> HyperSubjPointer<HDT_SubjType, HDT_ObjType> getSubjPointer(RelationType relType, HDT_ObjType obj)
+  public <HDT_ObjType extends HDT_Record, HDT_SubjType extends HDT_Record> HyperSubjPointer<HDT_SubjType, HDT_ObjType> getSubjPointer(RelationType relType, HDT_ObjType obj)
   { return new HyperSubjPointer<>(getRelSet(relType), obj); }
 
   public HDT_RecordType getNestedTargetType(RelationType relType, Tag mainTag)
   { return relationSets.get(relType).getTargetType(mainTag); }
 
-  public <HDT_SubjType extends HDT_Base> List<ObjectGroup> getObjectGroupList(RelationType relType, HDT_SubjType subj, Collection<Tag> tags)
+  public <HDT_SubjType extends HDT_Record> List<ObjectGroup> getObjectGroupList(RelationType relType, HDT_SubjType subj, Collection<Tag> tags)
   { return getRelSet(relType).getObjectGroupList(subj, tags); }
 
-  public <HDT_SubjType extends HDT_Base> void updateObjectGroups(RelationType relType, HDT_SubjType subj, List<ObjectGroup> groups)
+  public <HDT_SubjType extends HDT_Record> void updateObjectGroups(RelationType relType, HDT_SubjType subj, List<ObjectGroup> groups)
   { getRelSet(relType).updateObjectGroups(subj, groups); subj.modifyNow(); }
 
-  public void updateNestedString(HDT_Base subj, HDT_Base obj, Tag tag, String str)
+  public void updateNestedString(HDT_Record subj, HDT_Record obj, Tag tag, String str)
   { if (getRelSet(subj, obj).setNestedString(subj, obj, tag, str)) subj.modifyNow(); }
 
-  public void updateNestedBoolean(HDT_Base subj, HDT_Base obj, Tag tag, boolean bool)
+  public void updateNestedBoolean(HDT_Record subj, HDT_Record obj, Tag tag, boolean bool)
   { if (getRelSet(subj, obj).setNestedBoolean(subj, obj, tag, bool)) subj.modifyNow(); }
 
-  public void updateNestedTernary(HDT_Base subj, HDT_Base obj, Tag tag, Ternary ternary)
+  public void updateNestedTernary(HDT_Record subj, HDT_Record obj, Tag tag, Ternary ternary)
   { if (getRelSet(subj, obj).setNestedTernary(subj, obj, tag, ternary)) subj.modifyNow(); }
 
-  public void updateNestedPointer(HDT_Base subj, HDT_Base obj, Tag tag, HDT_Base target)
+  public void updateNestedPointer(HDT_Record subj, HDT_Record obj, Tag tag, HDT_Record target)
   { if (getRelSet(subj, obj).setNestedPointer(subj, obj, tag, target)) subj.modifyNow(); }
 
-  public <HDT_SubjType extends HDT_Base> void resolvePointersByRelation(RelationType relType, HDT_SubjType subj) throws HDB_InternalError
+  public <HDT_SubjType extends HDT_Record> void resolvePointersByRelation(RelationType relType, HDT_SubjType subj) throws HDB_InternalError
   { getRelSet(relType).resolvePointers(subj); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @SuppressWarnings({ "unused", "unchecked" })
-  public <HDT_T extends HDT_Base> Set<HDT_T> getOrphans(RelationType relType, Class<HDT_T> klazz)
+  public <HDT_T extends HDT_Record> Set<HDT_T> getOrphans(RelationType relType, Class<HDT_T> klazz)
   {
     return (Set<HDT_T>) relationSets.get(relType).getOrphans();
   }
@@ -297,7 +297,7 @@ public final class HyperDB
 
   private void cleanupRelations() throws HDB_InternalError
   {
-    for (RelationSet<? extends HDT_Base, ? extends HDT_Base> relationSet : relationSets.values())
+    for (RelationSet<? extends HDT_Record, ? extends HDT_Record> relationSet : relationSets.values())
       relationSet.cleanup();
   }
 
@@ -344,9 +344,9 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperDataset<? extends HDT_Base>.CoreAccessor records(HDT_RecordType type)
+  public HyperDataset<? extends HDT_Record>.CoreAccessor records(HDT_RecordType type)
   {
-    HyperDataset<? extends HDT_Base>.CoreAccessor accessor = accessors.get(type);
+    HyperDataset<? extends HDT_Record>.CoreAccessor accessor = accessors.get(type);
 
     if (accessor == null)
     {
@@ -582,7 +582,7 @@ public final class HyperDB
 
       curTaskCount = 0;
 
-      for (HyperDataset<? extends HDT_Base> dataset : datasets.values())
+      for (HyperDataset<? extends HDT_Record> dataset : datasets.values())
         dataset.assignIDs();
 
       bringAllRecordsOnline();
@@ -667,7 +667,7 @@ public final class HyperDB
 
     worksToUnlink.forEach(work -> work.setBibEntryKey(""));
 
-    HDT_Record.setRootRecordDates();
+    HDT_RecordBase.setRootRecordDates();
 
     folders.getByID(ROOT_FOLDER_ID).checkExists();
 
@@ -802,7 +802,7 @@ public final class HyperDB
       return;
     }
 
-    HDT_Base record = records(type).getByID(id);
+    HDT_Record record = records(type).getByID(id);
 
     if (record == null)
     {
@@ -876,7 +876,7 @@ public final class HyperDB
     do
     {
       resolveAgain = false;
-      for (HyperDataset<? extends HDT_Base> dataset : datasets.values())
+      for (HyperDataset<? extends HDT_Record> dataset : datasets.values())
         dataset.resolvePointers();
     } while (resolveAgain);
 
@@ -890,7 +890,7 @@ public final class HyperDB
   {
     try
     {
-      for (HyperDataset<? extends HDT_Base> dataset : datasets.values()) // Folders must be brought online first. See HyperPath.assignNameInternal
+      for (HyperDataset<? extends HDT_Record> dataset : datasets.values()) // Folders must be brought online first. See HyperPath.assignNameInternal
         dataset.bringAllRecordsOnline();
 
       addRootFolder();
@@ -1005,7 +1005,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public <T extends HDT_Record> T createNewRecordFromState(HDT_RecordState recordState, boolean bringOnline) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException
+  public <T extends HDT_RecordBase> T createNewRecordFromState(HDT_RecordState recordState, boolean bringOnline) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException
   {
     return (T) datasets.get(recordState.type).createNewRecord(recordState, bringOnline);
   }
@@ -1014,7 +1014,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public <T extends HDT_Record> T createNewBlankRecord(HDT_RecordType type)
+  public <T extends HDT_RecordBase> T createNewBlankRecord(HDT_RecordType type)
   {
     HDT_RecordState recordState = new HDT_RecordState(type, -1, "", "", "", "");
 
@@ -1284,7 +1284,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void addToInitialNavList(HDT_Base record)
+  void addToInitialNavList(HDT_Record record)
   {
     if (isUnstoredRecord(record.getID(), record.getType())) return;
 
@@ -1475,7 +1475,7 @@ public final class HyperDB
 
     addRootFolder();
 
-    HDT_Record.setRootRecordDates();
+    HDT_RecordBase.setRootRecordDates();
 
     try
     {
@@ -1610,7 +1610,7 @@ public final class HyperDB
     addTag(tagString, tag, tagHeader, null);
   }
 
-  private <HDT_T extends HDT_Base> HyperDataset<HDT_T>.CoreAccessor addTag(String tagStr, Tag tag, String tagHeader, Class<HDT_T> klass) throws HDB_InternalError
+  private <HDT_T extends HDT_Record> HyperDataset<HDT_T>.CoreAccessor addTag(String tagStr, Tag tag, String tagHeader, Class<HDT_T> klass) throws HDB_InternalError
   {
     int hashCode = Math.abs(stringHash(tagStr));
     if (tagToNum.containsValue(hashCode))
@@ -2047,7 +2047,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean getRelatives(HDT_Base record, LinkedHashSet<HDT_Base> set, int max)
+  public boolean getRelatives(HDT_Record record, LinkedHashSet<HDT_Record> set, int max)
   {
     set.clear();
 
@@ -2055,9 +2055,9 @@ public final class HyperDB
     {
       if (relType != rtParentFolderOfFolder)
       {
-        HyperObjList<HDT_Base, HDT_Base> list = getObjectList(relType, record, false);
+        HyperObjList<HDT_Record, HDT_Record> list = getObjectList(relType, record, false);
 
-        for (HDT_Base obj : list)
+        for (HDT_Record obj : list)
         {
           if (set.size() == max)
             return true;
@@ -2071,9 +2071,9 @@ public final class HyperDB
     {
       if (relType != rtParentFolderOfFolder)
       {
-        HyperSubjList<HDT_Base, HDT_Base> list = getSubjectList(relType, record);
+        HyperSubjList<HDT_Record, HDT_Record> list = getSubjectList(relType, record);
 
-        for (HDT_Base subj : list)
+        for (HDT_Record subj : list)
         {
           if (set.size() == max)
             return true;
@@ -2147,7 +2147,7 @@ public final class HyperDB
     set.removeIf(mainText ->
     {
       HDT_RecordWithConnector record = mainText.getRecord();
-      return HDT_Record.isEmpty(record) || (record.getMainText() != mainText);
+      return HDT_RecordBase.isEmpty(record) || (record.getMainText() != mainText);
     });
 
     return unmodifiableSet(set);

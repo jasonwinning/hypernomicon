@@ -58,7 +58,7 @@ import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.HDT_Record.HyperDataCategory;
+import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperSubjList;
@@ -87,7 +87,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_Record.HyperDataCategory.*;
+import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
@@ -104,7 +104,7 @@ import static org.hypernomicon.view.populators.BooleanPopulator.*;
 
 //---------------------------------------------------------------------------
 
-public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
+public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 {
   public class QueryView
   {
@@ -123,13 +123,13 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
 
     private Tab tab;
     private QueryFavorite fav = null;
-    private HDT_Base curResult = null;
+    private HDT_Record curResult = null;
 
     private boolean programmaticFavNameChange = false,
                     programmaticFieldChange = false,
                     inRecordMode = true;
 
-    private void setRecord(HDT_Base record)           { curResult = record; }
+    private void setRecord(HDT_Record record)         { curResult = record; }
     private QueryType getQueryType(HyperTableRow row) { return QueryType.codeToVal(row.getID(0)); }
 
   //---------------------------------------------------------------------------
@@ -264,7 +264,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
 
       resultsTable.addDefaultMenuItems();
 
-      resultsTable.addContextMenuItem("Remove from query results", HDT_Base.class, record ->
+      resultsTable.addContextMenuItem("Remove from query results", HDT_Record.class, record ->
       {
         new ArrayList<>(resultsTable.getTV().getSelectionModel().getSelectedItems()).forEach(row -> resultsTable.getTV().getItems().remove(row));
       });
@@ -706,7 +706,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
 
       QuerySource combinedSource;
       HDT_RecordType singleType = null;
-      Set<HDT_Base> filteredRecords = new LinkedHashSet<>();
+      Set<HDT_Record> filteredRecords = new LinkedHashSet<>();
 
       if (hasUnfiltered)
       {
@@ -741,7 +741,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
       task = new HyperTask() { @Override protected Boolean call() throws Exception
       {
         boolean firstCall = true;
-        HDT_Base record;
+        HDT_Record record;
 
         resultTags = EnumSet.noneOf(Tag.class);
         resultsBackingList.clear();
@@ -823,7 +823,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    public void addRecord(HDT_Base record, boolean addToObsList)
+    public void addRecord(HDT_Record record, boolean addToObsList)
     {
       HDT_RecordType recordType = record.getType();
 
@@ -862,7 +862,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    private boolean queryNeedsMentionsIndex(int query, QueryEngine<? extends HDT_Base> engine)
+    private boolean queryNeedsMentionsIndex(int query, QueryEngine<? extends HDT_Record> engine)
     {
       switch (query)
       {
@@ -889,7 +889,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    private HDT_Base getRecordToHilite()
+    private HDT_Record getRecordToHilite()
     {
       for (HyperTableRow row : htFields.getDataRows())
       {
@@ -899,7 +899,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
           {
             case AllQueryEngine.QUERY_LINKING_TO_RECORD : case AllQueryEngine.QUERY_MATCHING_RECORD :
 
-              HDT_Base record = HyperTableCell.getRecord(row.getCell(3));
+              HDT_Record record = HyperTableCell.getRecord(row.getCell(3));
               if (record != null) return record;
               break;
 
@@ -1262,7 +1262,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
   @FXML private WebView webView;
 
   private ComboBox<CheckBoxOrCommand> fileBtn = null;
-  private static final EnumMap<QueryType, QueryEngine<? extends HDT_Base>> typeToEngine = new EnumMap<>(QueryType.class);
+  private static final EnumMap<QueryType, QueryEngine<? extends HDT_Record>> typeToEngine = new EnumMap<>(QueryType.class);
 
   private static boolean noScroll = false;
   private boolean clearingViews = false;
@@ -1285,14 +1285,14 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
   @Override HDT_RecordType getType()                { return hdtNone; }
   @Override public boolean update()                 { return true; }
   @Override void focusOnSearchKey()                 { return; }
-  @Override public void setRecord(HDT_Base rec)     { if (curQV != null) curQV.setRecord(rec); }
+  @Override public void setRecord(HDT_Record rec)   { if (curQV != null) curQV.setRecord(rec); }
   @Override public int getRecordCount()             { return results().size(); }
   @Override public TextViewInfo getMainTextInfo()   { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
   @Override public void setDividerPositions()       { return; }
   @Override public void getDividerPositions()       { return; }
   @Override public boolean saveToRecord(boolean sm) { return false; }
-  @Override public HDT_Base activeRecord()          { return curQV == null ? null : curQV.curResult; }
-  @Override public String getRecordName()           { return nullSwitch(activeRecord(), "", HDT_Base::getCBText); }
+  @Override public HDT_Record activeRecord()        { return curQV == null ? null : curQV.curResult; }
+  @Override public String getRecordName()           { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
   @Override public int getRecordNdx()               { return getRecordCount() > 0 ? curQV.tvResults.getSelectionModel().getSelectedIndex() : -1; }
   @Override public void findWithinDesc(String text) { if (activeRecord() != null) MainTextWrapper.hiliteText(text, webView.getEngine()); }
 
@@ -1312,7 +1312,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addToEngineMap(QueryEngine<? extends HDT_Base> queryEngine)
+  private void addToEngineMap(QueryEngine<? extends HDT_Record> queryEngine)
   {
     typeToEngine.put(queryEngine.getQueryType(), queryEngine);
   }
@@ -1350,7 +1350,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
         return;
       }
 
-      HDT_Base record = curQV.resultsTable.selectedRecord();
+      HDT_Record record = curQV.resultsTable.selectedRecord();
       if (record == null) return;
 
       textToHilite = curQV.getTextToHilite();
@@ -1509,7 +1509,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private <HDT_T extends HDT_Base> boolean evaluate(HDT_T record, HyperTableRow row, boolean searchLinkedRecords, boolean firstCall, boolean lastCall)
+  private <HDT_T extends HDT_Record> boolean evaluate(HDT_T record, HyperTableRow row, boolean searchLinkedRecords, boolean firstCall, boolean lastCall)
   {
     switch (curQuery)
     {
@@ -1537,13 +1537,13 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
 
         int opID = getCellID(param2);
 
-        HyperSubjList<HDT_Base, HDT_Base> subjList = db.getSubjectList(relType, record);
+        HyperSubjList<HDT_Record, HDT_Record> subjList = db.getSubjectList(relType, record);
         int subjCount = subjList.size();
 
         if ((opID == IS_EMPTY_OPERAND_ID) || (opID == IS_NOT_EMPTY_OPERAND_ID))
           return (subjCount == 0) == (opID == IS_EMPTY_OPERAND_ID);
 
-        for (HDT_Base subjRecord : subjList)
+        for (HDT_Record subjRecord : subjList)
         {
           switch (opID)
           {
@@ -1592,7 +1592,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
             {
               case cvtRecord :
 
-                for (HDT_Base objRecord : db.getObjectList(schema.getRelType(), record, true))
+                for (HDT_Record objRecord : db.getObjectList(schema.getRelType(), record, true))
                 {
                   if ((objRecord.getID() == getCellID(param3)) && (objRecord.getType() == getCellType(param3)))
                     return getCellID(param2) == EQUAL_TO_OPERAND_ID;
@@ -1721,7 +1721,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Base, HDT_Base>
 
       int ndx = 0; for (ResultsRow row : resultRowList)
       {
-        HDT_Base record = row.getRecord();
+        HDT_Record record = row.getRecord();
         if (record instanceof HDT_RecordWithPath)
           fileList.addRecord((HDT_RecordWithPath)record, includeEdited.getValue());
 

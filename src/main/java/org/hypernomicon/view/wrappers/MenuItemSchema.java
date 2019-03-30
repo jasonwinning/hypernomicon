@@ -22,10 +22,10 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 
-public final class MenuItemSchema<HDT_T extends HDT_Base, RowType extends AbstractRow<? extends HDT_Base, RowType>>
+public final class MenuItemSchema<HDT_T extends HDT_Record, RowType extends AbstractRow<? extends HDT_Record, RowType>>
 {
 
 //---------------------------------------------------------------------------

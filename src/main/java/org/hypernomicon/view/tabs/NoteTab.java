@@ -34,7 +34,7 @@ import static javafx.scene.control.Control.*;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.hypernomicon.model.records.HDT_Base;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_Note;
 import org.hypernomicon.model.items.HyperPath;
@@ -119,7 +119,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
       return;
     }
 
-    Set<HDT_Base> mentioners = removeDupMentioners(db.getMentionerSet(curNote, true));
+    Set<HDT_Record> mentioners = removeDupMentioners(db.getMentionerSet(curNote, true));
 
     htMentioners.buildRows(mentioners, (row, mentioner) ->
     {
@@ -142,9 +142,9 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Set<HDT_Base> removeDupMentioners(Set<HDT_Base> mentioners)
+  private Set<HDT_Record> removeDupMentioners(Set<HDT_Record> mentioners)
   {
-    Set<HDT_Base> output = new HashSet<>();
+    Set<HDT_Record> output = new HashSet<>();
     Set<StrongLink> usedLinks = new HashSet<>();
 
     mentioners.forEach(mentioner ->

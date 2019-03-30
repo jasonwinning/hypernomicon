@@ -36,7 +36,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.util.filePath.FilePath;
 
-public class HDT_Folder extends HDT_Record implements HDT_RecordWithPath
+public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 {
   public final List<HDT_Folder> childFolders;
   public final List<HDT_MiscFile> miscFiles;
