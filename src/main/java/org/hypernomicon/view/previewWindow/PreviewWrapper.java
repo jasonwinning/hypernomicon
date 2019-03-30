@@ -39,7 +39,7 @@ import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.previewWindow.PDFJSWrapper.PDFJSCommand;
 import org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource;
-import org.hypernomicon.view.tabs.WorkTabController;
+import org.hypernomicon.view.tabs.WorkTabCtrlr;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.MenuItem;
@@ -663,7 +663,7 @@ public class PreviewWrapper
 
     if (ui.activeTab().getTabEnum() == workTab)
       if (ui.activeTab().activeRecord() == curPrevFile.record)
-        WorkTabController.class.cast(ui.activeTab()).setPageNum(workFile, pageNum, isStart);
+        WorkTabCtrlr.class.cast(ui.activeTab()).setPageNum(workFile, pageNum, isStart);
 
     contentsWindow.update(workFile, pageNum, true);
 

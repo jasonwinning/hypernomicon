@@ -19,7 +19,7 @@ package org.hypernomicon.view;
 
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.TreeTabController;
+import org.hypernomicon.view.tabs.TreeTabCtrlr;
 import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 import org.hypernomicon.view.wrappers.ClickHoldButton;
 
@@ -219,7 +219,7 @@ public class HyperViewSequence
       bibManagerDlg.workRecordToAssign.set(null);
 
     if (curHyperTab.getTabEnum() == treeTab)
-      TreeTabController.class.cast(getHyperTab(treeTab)).selectRecord(curView.getViewRecord(), true);
+      TreeTabCtrlr.class.cast(getHyperTab(treeTab)).selectRecord(curView.getViewRecord(), true);
   }
 
 //---------------------------------------------------------------------------

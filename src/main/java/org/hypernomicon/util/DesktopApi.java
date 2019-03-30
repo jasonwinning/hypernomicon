@@ -23,6 +23,8 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hypernomicon.util.Util.*;
@@ -225,6 +227,38 @@ public class DesktopApi
 
     return parts.toArray(new String[parts.size()]);
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void launchExplicit(String execPathStr, String ... params)
+  {
+    ArrayList<String> command = new ArrayList<>();
+
+    try
+    {
+      if (SystemUtils.IS_OS_MAC)
+      {
+        Collections.addAll(command, "open", "-a", execPathStr);
+        Collections.addAll(command, params);
+
+        Runtime.getRuntime().exec(command.toArray(new String[0])).waitFor();
+      }
+      else
+      {
+        command.add(execPathStr);
+        Collections.addAll(command, params);
+
+        ProcessBuilder pb = new ProcessBuilder(command.toArray(new String[0]));
+        pb.start();
+      }
+    }
+    catch (IOException | InterruptedException e)
+    {
+      messageDialog("An error occurred while trying to start application: " + e.getMessage(), mtError);
+    }
+  }
+
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

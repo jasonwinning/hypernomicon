@@ -19,7 +19,7 @@ package org.hypernomicon.view;
 
 import org.hypernomicon.model.records.HDT_Base;
 import org.hypernomicon.model.records.HDT_RecordType;
-import org.hypernomicon.view.MainController.FavMenuItem;
+import org.hypernomicon.view.MainCtrlr.FavMenuItem;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import static org.hypernomicon.App.*;

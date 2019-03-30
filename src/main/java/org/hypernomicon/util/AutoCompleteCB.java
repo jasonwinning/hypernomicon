@@ -25,6 +25,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -128,8 +129,8 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
       return;
     }
 
-    TextField cbEditor = cb.getEditor();
-    String typed = cbEditor.getText().substring(0, cbEditor.getSelection().getStart()); // Get unselected text
+    TextField editor = cb.getEditor();
+    String typed = editor.getText().substring(0, editor.getSelection().getStart()); // Get unselected text
     String typedLC = typed.toLowerCase();
     boolean match = false;
 
@@ -144,7 +145,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
       if (cellText.toLowerCase().startsWith(typedLC))
       {
         match = true;
-        cbEditor.setText(typed + cellText.substring(typed.length()));
+        editor.setText(typed + cellText.substring(typed.length()));
       }
 
       if (match == false)
@@ -159,13 +160,13 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
             if (person.getFullName(true).toLowerCase().startsWith(typedLC))
             {
               match = true;
-              cbEditor.setText(typed + person.getFullName(true).substring(typed.length()));
+              editor.setText(typed + person.getFullName(true).substring(typed.length()));
             }
           }
           else if (record.getNameEngChar().toLowerCase().startsWith(typedLC))
           {
             match = true;
-            cbEditor.setText(typed + record.getNameEngChar().substring(typed.length()));
+            editor.setText(typed + record.getNameEngChar().substring(typed.length()));
           }
         }
       }
@@ -174,8 +175,8 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
       {
         hcb.typedMatch = cell;
 
-        cbEditor.positionCaret(typed.length());
-        cbEditor.selectEnd();
+        editor.positionCaret(typed.length());
+        editor.selectEnd();
       }
     }
 
@@ -238,29 +239,31 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
  */
   private void selectClosestResultBasedOnTextFieldValue(boolean affect, boolean inFocus)
   {
-    String editorText = cb.getEditor().getText();
+    SingleSelectionModel<HyperTableCell> selectionModel = cb.getSelectionModel();
+    TextField editor = cb.getEditor();
+    String editorText = editor.getText();
     boolean found = scrollToValue(cb);
 
-    if (!found && affect)
+    if ((found == false) && affect)
     {
-      cb.getSelectionModel().clearSelection();
-      cb.getEditor().setText(editorText);
-      cb.getEditor().end();
+      selectionModel.clearSelection();
+      editor.setText(editorText);
+      editor.end();
     }
 
-    if (!inFocus && (editorText.trim().length() > 0))
+    if ((inFocus == false) && (editorText.trim().length() > 0))
     {
-      // press enter key programmatically to have this entry added
       if (limitToChoices)
       {
         if (!found)
         {
-          cb.getSelectionModel().clearSelection();
-          cb.getSelectionModel().select(startValue);
+          selectionModel.clearSelection();
+          selectionModel.select(startValue);
           return;
         }
       }
 
+      // press enter key programmatically to have this entry added
       KeyEvent ke = new KeyEvent(null, cb, KeyEvent.KEY_RELEASED, KeyCode.ENTER.toString(), KeyCode.ENTER.getName(), KeyCode.ENTER, false, false, false, false);
       cb.fireEvent(ke);
     }

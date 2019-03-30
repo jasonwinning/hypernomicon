@@ -25,8 +25,8 @@ import java.util.function.Function;
 
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_Base;
-import org.hypernomicon.view.dialogs.SelectColumnsDialogController;
-import org.hypernomicon.view.dialogs.SelectColumnsDialogController.TypeCheckBox;
+import org.hypernomicon.view.dialogs.SelectColumnsDlgCtrlr;
+import org.hypernomicon.view.dialogs.SelectColumnsDlgCtrlr.TypeCheckBox;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -269,7 +269,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
     if (showHideColumnsButton != null)
       showHideColumnsButton.addEventFilter(MouseEvent.MOUSE_PRESSED, event ->
       {
-        SelectColumnsDialogController.create("Select Columns").showModal();
+        SelectColumnsDlgCtrlr.create("Select Columns").showModal();
         event.consume();
       });
   }

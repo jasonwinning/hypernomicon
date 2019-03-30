@@ -34,7 +34,7 @@ import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.json.JsonArray;
-import org.hypernomicon.view.dialogs.NewPersonDialogController;
+import org.hypernomicon.view.dialogs.NewPersonDlgCtrlr;
 
 import static org.hypernomicon.model.HyperDB.Tag.tagEditor;
 import static org.hypernomicon.model.HyperDB.Tag.tagTranslator;
@@ -251,7 +251,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
     {
       List<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
 
-      HyperTask task = NewPersonDialogController.createDupCheckTask(nonRecordNames, nonRecordAuthors, matchedAuthorsList, null);
+      HyperTask task = NewPersonDlgCtrlr.createDupCheckTask(nonRecordNames, nonRecordAuthors, matchedAuthorsList, null);
 
       if (!HyperTask.performTaskWithProgressDialog(task)) return;
 
@@ -263,7 +263,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
         {
           int nameListNdx = nameListIndices.get(ndx);
 
-          NewPersonDialogController npdc = NewPersonDialogController.create(nonRecordAuthors.get(ndx).getName(), null, false, null, null, matchedAuthors);
+          NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.create(nonRecordAuthors.get(ndx).getName(), null, false, null, null, matchedAuthors);
 
           if (npdc.showModal() == false) return;
 

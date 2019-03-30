@@ -38,9 +38,9 @@ import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
-import org.hypernomicon.view.dialogs.ChangeParentDialogController;
+import org.hypernomicon.view.dialogs.ChangeParentDlgCtrlr;
 import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.TreeTabController;
+import org.hypernomicon.view.tabs.TreeTabCtrlr;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
@@ -276,7 +276,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       if (row.getName().toLowerCase().contains(text) ||
           ((searchingNameOnly == false) && (row.getDescString().toLowerCase().contains(text))))
       {
-        TreeTabController.class.cast(HyperTab.getHyperTab(treeTab)).textToHilite = text;
+        TreeTabCtrlr.class.cast(HyperTab.getHyperTab(treeTab)).textToHilite = text;
         selectRecord(row.getRecord(), getRowsForRecord(row.getRecord()).indexOf(row), true);
         return;
       }
@@ -412,7 +412,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       return;
     }
 
-    ChangeParentDialogController cpdc = ChangeParentDialogController.create("Copy or move record to destination",
+    ChangeParentDlgCtrlr cpdc = ChangeParentDlgCtrlr.create("Copy or move record to destination",
         draggingRow.treeItem.getParent().getValue().getRecord(), targetRow.getRecord(), draggingRow.getRecord(), db.relationIsMulti(newRelType));
 
     if (cpdc.showModal())

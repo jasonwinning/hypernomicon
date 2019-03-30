@@ -50,7 +50,7 @@ import javafx.scene.layout.AnchorPane;
 
 public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 {
-  private ArgumentLowerPaneController lowerCtrlr;
+  private ArgumentLowerPaneCtrlr lowerCtrlr;
   private HyperTable htParents, htWhereMade, htCounters;
   private RecordByTypePopulator verdictPopulator;
   private HDT_Argument curArgument;

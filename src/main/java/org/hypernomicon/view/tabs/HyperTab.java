@@ -159,10 +159,11 @@ public abstract class HyperTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_Base>
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public static final <HDT_RT extends HDT_Base, HDT_CT extends HDT_Base, HyperTabType extends HyperTab<HDT_RT, HDT_CT>> HyperTabType getHyperTab(TabEnum tabEnum)
-  {
-    return (HyperTabType) enumToHyperTab.get(tabEnum);
-  }
+  public static final <HDT_RT extends HDT_Base,
+                       HDT_CT extends HDT_Base,
+                       HyperTabType extends HyperTab<HDT_RT, HDT_CT>>
+
+    HyperTabType getHyperTab(TabEnum tabEnum) { return (HyperTabType) enumToHyperTab.get(tabEnum); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

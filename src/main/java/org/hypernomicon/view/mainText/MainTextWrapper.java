@@ -75,7 +75,7 @@ public final class MainTextWrapper
 {
   private AnchorPane parentPane;
   private static BorderPane bpEditorRoot;
-  private static MainTextController editCtrlr;
+  private static MainTextCtrlr editCtrlr;
   private static WebView view;
   private static WebEngine we;
   private static KeywordLinkList list = new KeywordLinkList();

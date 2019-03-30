@@ -50,8 +50,8 @@ import org.hypernomicon.model.PathInfo;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.tabs.FileTabController;
-import org.hypernomicon.view.tabs.WorkTabController;
+import org.hypernomicon.view.tabs.FileTabCtrlr;
+import org.hypernomicon.view.tabs.WorkTabCtrlr;
 import javafx.application.Platform;
 
 //---------------------------------------------------------------------------
@@ -342,7 +342,7 @@ public class FolderTreeWatcher
                               {
                                 if (workFile.works.contains(ui.activeRecord()))
                                 {
-                                  WorkTabController tabWorks = (WorkTabController) ui.activeTab();
+                                  WorkTabCtrlr tabWorks = (WorkTabCtrlr) ui.activeTab();
                                   if      (tabWorks.wdc != null)  tabWorks.wdc.btnCancel.fire();
                                   else if (tabWorks.fdc != null)  tabWorks.fdc.btnCancel.fire();
 
@@ -354,7 +354,7 @@ public class FolderTreeWatcher
                             {
                               if (ui.activeTabEnum() == miscFileTab)
                               {
-                                FileTabController tabFiles = (FileTabController) ui.activeTab();
+                                FileTabCtrlr tabFiles = (FileTabCtrlr) ui.activeTab();
                                 if (tabFiles.fdc != null)
                                   tabFiles.fdc.btnCancel.fire();
 

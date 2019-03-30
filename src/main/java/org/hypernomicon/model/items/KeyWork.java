@@ -29,7 +29,7 @@ import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.util.SplitString;
-import org.hypernomicon.view.tabs.WorkTabController;
+import org.hypernomicon.view.tabs.WorkTabCtrlr;
 
 public class KeyWork implements Comparable<KeyWork>
 {
@@ -161,7 +161,7 @@ public class KeyWork implements Comparable<KeyWork>
     if (record.getType() == hdtWork)
     {
       HDT_Work work = (HDT_Work) record.getRecord();
-      searchKey = WorkTabController.makeWorkSearchKey(work.getAuthors(), work.getYear(), work);
+      searchKey = WorkTabCtrlr.makeWorkSearchKey(work.getAuthors(), work.getYear(), work);
 
       if (searchKey.length() == 0)
       {
@@ -170,7 +170,7 @@ public class KeyWork implements Comparable<KeyWork>
           String lwSearchKey = new SplitString(work.largerWork.get().getSearchKey(), ';').next();
 
           if (lwSearchKey.length() == 0)
-            lwSearchKey = WorkTabController.makeWorkSearchKey(work.largerWork.get().getAuthors(), work.largerWork.get().getYear(), work);
+            lwSearchKey = WorkTabCtrlr.makeWorkSearchKey(work.largerWork.get().getAuthors(), work.largerWork.get().getYear(), work);
 
           if (lwSearchKey.length() == 0)
             lwSearchKey = (work.largerWork.get().getYear() + " " + work.largerWork.get().name()).trim();

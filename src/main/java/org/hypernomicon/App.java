@@ -28,14 +28,14 @@ import static org.hypernomicon.view.tabs.HyperTab.*;
 import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.MainController;
+import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.fileManager.FileManager;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.previewWindow.ContentsWindow;
 import org.hypernomicon.view.previewWindow.PreviewWindow;
-import org.hypernomicon.view.tabs.PersonTabController;
+import org.hypernomicon.view.tabs.PersonTabCtrlr;
 import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.QueriesTabController.QueryView;
+import org.hypernomicon.view.tabs.QueriesTabCtrlr.QueryView;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -104,7 +104,7 @@ public final class App extends Application
   public static BibManager bibManagerDlg = null;
   public static ContentsWindow contentsWindow = null;
   public static FileManager fileManagerDlg = null;
-  public static MainController ui;
+  public static MainCtrlr ui;
   public static Preferences appPrefs;
   public static PreviewWindow previewWindow = null;
   public static QueryView curQV;
@@ -253,7 +253,7 @@ public final class App extends Application
         MainTextWrapper mainText;
 
         if (record.getType() == hdtInvestigation)
-          mainText = PersonTabController.class.cast(getHyperTab(personTab)).getInvMainTextWrapper(record.getID());
+          mainText = PersonTabCtrlr.class.cast(getHyperTab(personTab)).getInvMainTextWrapper(record.getID());
         else
           mainText = ui.activeTab().getMainTextWrapper();
 

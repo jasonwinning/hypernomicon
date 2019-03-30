@@ -32,7 +32,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="775.0" prefWidth="1103.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.NodeTabController">
+<AnchorPane prefHeight="775.0" prefWidth="1103.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.NodeTabCtrlr">
    <children>
       <SplitPane fx:id="spMain" dividerPositions="0.2910737386804657, 0.7089262613195343" layoutX="472.0" layoutY="270.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>

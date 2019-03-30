@@ -18,7 +18,7 @@
 package org.hypernomicon.view.workMerge;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.view.dialogs.WorkDialogController.createAuthorRecordHandler;
+import static org.hypernomicon.view.dialogs.WorkDlgCtrlr.createAuthorRecordHandler;
 import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.util.Util.*;
@@ -32,7 +32,7 @@ import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.relations.ObjectGroup;
-import org.hypernomicon.view.dialogs.WorkDialogController;
+import org.hypernomicon.view.dialogs.WorkDlgCtrlr;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
@@ -140,7 +140,7 @@ public class WorkToMerge
 
     htAuthors.getPopulator(0).populate(null, false);
 
-    WorkDialogController.loadFromBibAuthors(bibData.getAuthors(), htAuthors, false, destWork);
+    WorkDlgCtrlr.loadFromBibAuthors(bibData.getAuthors(), htAuthors, false, destWork);
   }
 
 //---------------------------------------------------------------------------

@@ -28,8 +28,8 @@ import java.util.ArrayList;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
-import org.hypernomicon.view.dialogs.HyperDialog;
-import org.hypernomicon.view.tabs.WorkTabController;
+import org.hypernomicon.view.dialogs.HyperDlg;
+import org.hypernomicon.view.tabs.WorkTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -43,7 +43,7 @@ import javafx.scene.control.TableView;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
 
-public class ContentsWindow extends HyperDialog
+public class ContentsWindow extends HyperDlg
 {
   @FXML private TableView<HyperTableRow> tvContents;
 
@@ -57,7 +57,7 @@ public class ContentsWindow extends HyperDialog
 
   public static ContentsWindow create()
   {
-    ContentsWindow contentsWindow = HyperDialog.createUsingFullPath("view/previewWindow/ContentsWindow.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
+    ContentsWindow contentsWindow = HyperDlg.createUsingFullPath("view/previewWindow/ContentsWindow.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
     contentsWindow.init();
     return contentsWindow;
   }
@@ -158,7 +158,7 @@ public class ContentsWindow extends HyperDialog
   private void setPageNum(HDT_Work work, int num, boolean isStart)
   {
     if ((ui.activeTab().getTabEnum() == workTab) && (ui.activeTab().activeRecord() == work))
-      WorkTabController.class.cast(ui.activeTab()).setPageNum(curWorkFile, num, isStart);
+      WorkTabCtrlr.class.cast(ui.activeTab()).setPageNum(curWorkFile, num, isStart);
     else
     {
       if (isStart)
@@ -205,7 +205,7 @@ public class ContentsWindow extends HyperDialog
       String authStr = work.getShortAuthorsStr(true), title = work.name(), year = work.getYear();
       HDT_WorkType workType = work.workType.get();
       int authorID = -1;
-      WorkTabController wtc = null;
+      WorkTabCtrlr wtc = null;
 
       if (work.authorRecords.size() > 0)
         authorID = work.authorRecords.get(0).getID();
@@ -213,7 +213,7 @@ public class ContentsWindow extends HyperDialog
       if (ui.activeTabEnum() == workTab)
         if (ui.activeTab().activeRecord() == work)
         {
-          wtc = (WorkTabController) ui.activeTab();
+          wtc = (WorkTabCtrlr) ui.activeTab();
 
           title = wtc.getTitle();
           year = wtc.tfYear.getText();

@@ -34,12 +34,12 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.queryEngines.AllQueryEngine;
 import org.hypernomicon.util.AutoCompleteCB;
-import org.hypernomicon.view.dialogs.NewPersonDialogController;
-import org.hypernomicon.view.dialogs.RecordSelectDialogController;
+import org.hypernomicon.view.dialogs.NewPersonDlgCtrlr;
+import org.hypernomicon.view.dialogs.RecordSelectDlgCtrlr;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.PersonTabController;
+import org.hypernomicon.view.tabs.PersonTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
@@ -385,7 +385,7 @@ public class HyperCB implements CommitableWrapper
 
         if ((cells.size() > 1) && atLeastOneRealMatch)
         {
-          RecordSelectDialogController ctrlr = RecordSelectDialogController.create("Choose a record", cells);
+          RecordSelectDlgCtrlr ctrlr = RecordSelectDlgCtrlr.create("Choose a record", cells);
 
           if (ctrlr.showModal())
           {
@@ -428,7 +428,7 @@ public class HyperCB implements CommitableWrapper
               }
           }
 
-          NewPersonDialogController npdc = NewPersonDialogController.create(false, cb.getEditor().getText(), null);
+          NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.create(false, cb.getEditor().getText(), null);
 
           if (npdc.showModal())
           {
@@ -456,7 +456,7 @@ public class HyperCB implements CommitableWrapper
         }
         else if ((populator.getRecordType(row) == hdtInstitution) && (dontCreateNewRecord == false))
         {
-          PersonTabController.class.cast(HyperTab.getHyperTab(personTab)).newInstClick(row, cb.getEditor().getText(), colNdx);
+          PersonTabCtrlr.class.cast(HyperTab.getHyperTab(personTab)).newInstClick(row, cb.getEditor().getText(), colNdx);
         }
       }
     }

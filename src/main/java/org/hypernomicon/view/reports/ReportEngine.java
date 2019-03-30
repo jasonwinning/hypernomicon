@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view.reports;
 
-import static org.hypernomicon.view.tabs.QueriesTabController.QUERY_FIRST_NDX;
+import static org.hypernomicon.view.tabs.QueriesTabCtrlr.QUERY_FIRST_NDX;
 
 import java.util.List;
 

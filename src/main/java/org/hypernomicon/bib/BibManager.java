@@ -44,11 +44,11 @@ import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.HyperView.TextViewInfo;
-import org.hypernomicon.view.dialogs.HyperDialog;
-import org.hypernomicon.view.dialogs.SelectWorkDialogController;
+import org.hypernomicon.view.dialogs.HyperDlg;
+import org.hypernomicon.view.dialogs.SelectWorkDlgCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource;
-import org.hypernomicon.view.workMerge.MergeWorksDialogController;
+import org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr;
 
 import javafx.animation.Animation;
 import javafx.animation.Interpolator;
@@ -75,7 +75,7 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
-public class BibManager extends HyperDialog
+public class BibManager extends HyperDlg
 {
   @FXML private Button btnCreateNew, btnDelete, btnMainWindow, btnPreviewWindow, btnSelect, btnStop, btnSync;
   @FXML private ComboBox<EntryType> cbNewType;
@@ -128,7 +128,7 @@ public class BibManager extends HyperDialog
 
   public static BibManager create()
   {
-    BibManager bibManager = HyperDialog.createUsingFullPath("bib/BibManager.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
+    BibManager bibManager = HyperDlg.createUsingFullPath("bib/BibManager.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
     bibManager.init();
     return bibManager;
   }
@@ -316,7 +316,7 @@ public class BibManager extends HyperDialog
 
       HDT_Person person = findFirstHaving(row.getEntry().getAuthors(), bibAuthor -> HDT_Person.lookUpByName(bibAuthor.getName()));
 
-      SelectWorkDialogController dlg = SelectWorkDialogController.create("Select a work record", person);
+      SelectWorkDlgCtrlr dlg = SelectWorkDlgCtrlr.create("Select a work record", person);
 
       if (dlg.showModal())
         assignEntryToWork(dlg.getWork(), row.getEntry());
@@ -460,11 +460,11 @@ public class BibManager extends HyperDialog
   {
     if ((work == null) || (entry == null)) return;
 
-    MergeWorksDialogController mwd = null;
+    MergeWorksDlgCtrlr mwd = null;
 
     try
     {
-      mwd = MergeWorksDialogController.create("Import Into Existing Work Record", work.getBibData(), entry, null, null, work, false, false);
+      mwd = MergeWorksDlgCtrlr.create("Import Into Existing Work Record", work.getBibData(), entry, null, null, work, false, false);
     }
     catch (IOException e)
     {

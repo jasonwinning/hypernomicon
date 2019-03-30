@@ -48,17 +48,17 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
-import static org.hypernomicon.view.dialogs.RenameDialogController.NameType.*;
+import static org.hypernomicon.view.dialogs.RenameDlgCtrlr.NameType.*;
 import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
 import org.hypernomicon.view.HyperView.TextViewInfo;
-import org.hypernomicon.view.dialogs.HyperDialog;
-import org.hypernomicon.view.dialogs.RenameDialogController;
+import org.hypernomicon.view.dialogs.HyperDlg;
+import org.hypernomicon.view.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
-import org.hypernomicon.view.tabs.FileTabController;
+import org.hypernomicon.view.tabs.FileTabCtrlr;
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -81,7 +81,7 @@ import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
 
-public class FileManager extends HyperDialog
+public class FileManager extends HyperDlg
 {
 
 //---------------------------------------------------------------------------
@@ -709,7 +709,7 @@ public class FileManager extends HyperDialog
 
   public static FileManager create()
   {
-    FileManager managerDlg = HyperDialog.createUsingFullPath("view/fileManager/FileManager.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
+    FileManager managerDlg = HyperDlg.createUsingFullPath("view/fileManager/FileManager.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
     managerDlg.init();
     return managerDlg;
   }
@@ -733,7 +733,7 @@ public class FileManager extends HyperDialog
       miscFile.getPath().assign(fileRow.getFolder(), fileRow.getFilePath().getNameOnly());
       ui.goToRecord(miscFile, true);
 
-      FileTabController fileCtrlr = HyperTab.getHyperTab(miscFileTab);
+      FileTabCtrlr fileCtrlr = HyperTab.getHyperTab(miscFileTab);
       if (fileCtrlr.btnManageClick() == false)
       {
         miscFile.getPath().clear(false);
@@ -1037,7 +1037,7 @@ public class FileManager extends HyperDialog
   {
     if (curFolder == null) return;
 
-    RenameDialogController dlg = RenameDialogController.create("Create folder in: " + curFolder.getPath().getFilePath(), ntFolder, "");
+    RenameDlgCtrlr dlg = RenameDlgCtrlr.create("Create folder in: " + curFolder.getPath().getFilePath(), ntFolder, "");
 
     if (dlg.showModal() == false) return;
 
@@ -1089,7 +1089,7 @@ public class FileManager extends HyperDialog
       return;
     }
 
-    RenameDialogController dlg = RenameDialogController.create("Rename " + noun + ": " + fileRow.getFilePath(), ntFolder, fileRow.getFileName());
+    RenameDlgCtrlr dlg = RenameDlgCtrlr.create("Rename " + noun + ": " + fileRow.getFilePath(), ntFolder, fileRow.getFileName());
 
     if (dlg.showModal() == false) return;
 

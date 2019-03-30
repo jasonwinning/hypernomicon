@@ -275,7 +275,6 @@ public class FilePath implements Comparable<FilePath>
           line = inStreamReader.readLine();
         }
 
-
         if (errStr.length() > 0)
         {
           if ((errStr.toLowerCase().contains("denied") || (errStr.toLowerCase().contains("access"))))

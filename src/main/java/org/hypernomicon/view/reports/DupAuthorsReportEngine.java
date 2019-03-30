@@ -22,7 +22,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
-import static org.hypernomicon.view.dialogs.NewPersonDialogController.*;
+import static org.hypernomicon.view.dialogs.NewPersonDlgCtrlr.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.util.ArrayList;
@@ -34,10 +34,10 @@ import java.util.List;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.Author;
-import org.hypernomicon.view.dialogs.NewPersonDialogController;
-import org.hypernomicon.view.dialogs.NewPersonDialogController.PersonForDupCheck;
+import org.hypernomicon.view.dialogs.NewPersonDlgCtrlr;
+import org.hypernomicon.view.dialogs.NewPersonDlgCtrlr.PersonForDupCheck;
 import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.QueriesTabController;
+import org.hypernomicon.view.tabs.QueriesTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -169,12 +169,12 @@ public class DupAuthorsReportEngine extends ReportEngine
         return;
       }
 
-      NewPersonDialogController npdc = NewPersonDialogController.create(author1.getName(), null, false, author1.getPerson(),
+      NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.create(author1.getName(), null, false, author1.getPerson(),
                                                                         author1, Lists.newArrayList(author2));
 
       if (npdc.showModal() == false) return;
 
-      QueriesTabController queriesTab = (QueriesTabController) HyperTab.getHyperTab(queryTab);
+      QueriesTabCtrlr queriesTab = (QueriesTabCtrlr) HyperTab.getHyperTab(queryTab);
       queriesTab.btnExecuteClick();
     });
 

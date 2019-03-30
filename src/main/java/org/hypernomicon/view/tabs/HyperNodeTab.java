@@ -28,7 +28,7 @@ import javafx.scene.control.Tab;
 
 public abstract class HyperNodeTab<HDT_RT extends HDT_Base, HDT_CT extends HDT_RecordWithConnector> extends HyperTab<HDT_RT, HDT_CT>
 {
-  NodeTabController<HDT_RT, HDT_CT> ctrlr;
+  NodeTabCtrlr<HDT_RT, HDT_CT> ctrlr;
 
   @Override public final MainTextWrapper getMainTextWrapper() { return ctrlr.getMainTextWrapper(); }
   @Override public String getRecordName()                     { return ctrlr.getRecordName(); }

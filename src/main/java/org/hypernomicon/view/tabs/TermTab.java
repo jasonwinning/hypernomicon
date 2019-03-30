@@ -19,9 +19,9 @@ package org.hypernomicon.view.tabs;
 
 import org.hypernomicon.view.HyperView;
 import org.hypernomicon.view.HyperView.TextViewInfo;
-import org.hypernomicon.view.dialogs.MergeTermDialogController;
-import org.hypernomicon.view.dialogs.RecordDropdownDialogController;
-import org.hypernomicon.view.dialogs.SelectConceptDialogController;
+import org.hypernomicon.view.dialogs.MergeTermDlgCtrlr;
+import org.hypernomicon.view.dialogs.RecordDropdownDlgCtrlr;
+import org.hypernomicon.view.dialogs.SelectConceptDlgCtrlr;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -284,7 +284,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   {
     if (ui.cantSaveRecord(true)) return;
 
-    RecordDropdownDialogController<HDT_Term> rdd = RecordDropdownDialogController.create("Select a Term Record to Merge With", hdtTerm);
+    RecordDropdownDlgCtrlr<HDT_Term> rdd = RecordDropdownDlgCtrlr.create("Select a Term Record to Merge With", hdtTerm);
     if (rdd.showModal() == false) return;
 
     HDT_Term otherTerm = rdd.getRecord();
@@ -300,7 +300,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
         return;
       }
 
-    MergeTermDialogController mtd = MergeTermDialogController.create("Specify How to Merge Fields", curTerm, otherTerm);
+    MergeTermDlgCtrlr mtd = MergeTermDlgCtrlr.create("Specify How to Merge Fields", curTerm, otherTerm);
     if (mtd.showModal() == false) return;
 
     String oldKey1 = curTerm.getSearchKey();
@@ -355,7 +355,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     HDT_Concept concept = curConcept;
 
-    SelectConceptDialogController frmSelectConcept = SelectConceptDialogController.create("Term select", concept);
+    SelectConceptDlgCtrlr frmSelectConcept = SelectConceptDlgCtrlr.create("Term select", concept);
 
     if (frmSelectConcept.showModal())
     {

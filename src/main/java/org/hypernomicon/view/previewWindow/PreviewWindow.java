@@ -35,7 +35,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.dialogs.HyperDialog;
+import org.hypernomicon.view.dialogs.HyperDlg;
 import org.hypernomicon.view.wrappers.ClickHoldButton;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -59,7 +59,7 @@ import javafx.stage.StageStyle;
 
 //---------------------------------------------------------------------------
 
-public class PreviewWindow extends HyperDialog
+public class PreviewWindow extends HyperDlg
 {
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -180,7 +180,7 @@ public class PreviewWindow extends HyperDialog
 
   public static PreviewWindow create()
   {
-    PreviewWindow previewWindow = HyperDialog.createUsingFullPath("view/previewWindow/PreviewWindow.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
+    PreviewWindow previewWindow = HyperDlg.createUsingFullPath("view/previewWindow/PreviewWindow.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
     previewWindow.init();
     return previewWindow;
   }

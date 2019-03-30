@@ -24,9 +24,9 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.WindowStack;
-import org.hypernomicon.view.dialogs.InternetCheckDialogController;
-import org.hypernomicon.view.dialogs.LaunchCommandsDialogController;
-import org.hypernomicon.view.dialogs.LaunchCommandsDialogController.LaunchCommandTypeEnum;
+import org.hypernomicon.view.dialogs.InternetCheckDlgCtrlr;
+import org.hypernomicon.view.dialogs.LaunchCommandsDlgCtrlr;
+import org.hypernomicon.view.dialogs.LaunchCommandsDlgCtrlr.LaunchCommandTypeEnum;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -61,7 +61,6 @@ import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -512,9 +511,18 @@ public final class Util
     }
 
     if (pageNum < 1) pageNum = 1;
+
+    configuredLaunch(readerPath, filePath, PREF_KEY_PDF_READER_COMMANDS, PREF_KEY_PDF_READER_COMMAND_TYPE, pageNum);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void configuredLaunch(String appPath, FilePath filePath, String commandsPrefKey, String commandTypePrefKey, int pageNum)
+  {
     String[] argz;
-    String commands = appPrefs.get(PREF_KEY_PDF_READER_COMMANDS, "");
-    LaunchCommandTypeEnum commandType = LaunchCommandTypeEnum.getByPrefVal(appPrefs.get(PREF_KEY_PDF_READER_COMMAND_TYPE, ""));
+    String commands = appPrefs.get(commandsPrefKey, "");
+    LaunchCommandTypeEnum commandType = LaunchCommandTypeEnum.getByPrefVal(appPrefs.get(commandTypePrefKey, ""));
 
     if ((commandType != null) && (commands.length() > 0))
     {
@@ -522,7 +530,7 @@ public final class Util
       {
         argz = new String[] { "osascript",
                               "-e",
-                              LaunchCommandsDialogController.resolve(commands, readerPath, filePath, pageNum) };
+                              LaunchCommandsDlgCtrlr.resolve(commands, appPath, filePath, pageNum) };
         try
         {
           Runtime.getRuntime().exec(argz);
@@ -537,49 +545,18 @@ public final class Util
 
       if (commandType == LaunchCommandTypeEnum.opSysCmdAndArgs)
       {
-        List<String> list = convertMultiLineStrToStrList(LaunchCommandsDialogController.resolve(commands, readerPath, filePath, pageNum), false);
+        List<String> list = convertMultiLineStrToStrList(LaunchCommandsDlgCtrlr.resolve(commands, appPath, filePath, pageNum), false);
 
         if (list.size() > 1)
         {
           String execPathStr = list.remove(0);
-          launchExplicit(execPathStr, list.toArray(new String[0]));
+          DesktopApi.launchExplicit(execPathStr, list.toArray(new String[0]));
           return;
         }
       }
     }
 
-    launchExplicit(readerPath, filePath.toString());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void launchExplicit(String execPathStr, String ... params)
-  {
-    ArrayList<String> command = new ArrayList<>();
-
-    try
-    {
-      if (SystemUtils.IS_OS_MAC)
-      {
-        Collections.addAll(command, "open", "-a", execPathStr);
-        Collections.addAll(command, params);
-
-        Runtime.getRuntime().exec(command.toArray(new String[0])).waitFor();
-      }
-      else
-      {
-        command.add(execPathStr);
-        Collections.addAll(command, params);
-
-        ProcessBuilder pb = new ProcessBuilder(command.toArray(new String[0]));
-        pb.start();
-      }
-    }
-    catch (IOException | InterruptedException e)
-    {
-      messageDialog("An error occurred while trying to start application: " + e.getMessage(), mtError);
-    }
+    DesktopApi.launchExplicit(appPath, filePath.toString());
   }
 
 //---------------------------------------------------------------------------
@@ -1178,7 +1155,7 @@ public final class Util
 
   public static boolean checkInternetConnection()
   {
-    return InternetCheckDialogController.create(appTitle).checkInternet("https://www.dropbox.com/");
+    return InternetCheckDlgCtrlr.create(appTitle).checkInternet("https://www.dropbox.com/");
   }
 
 //---------------------------------------------------------------------------

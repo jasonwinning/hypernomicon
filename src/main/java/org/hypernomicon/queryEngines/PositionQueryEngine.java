@@ -25,7 +25,7 @@ import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.view.tabs.QueriesTabController.*;
+import static org.hypernomicon.view.tabs.QueriesTabCtrlr.*;
 
 import org.hypernomicon.model.records.HDT_Position;
 

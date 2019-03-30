@@ -37,8 +37,8 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.NestedValue;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
-import org.hypernomicon.view.dialogs.HyperDialog;
-import org.hypernomicon.view.dialogs.ObjectOrderDialogController;
+import org.hypernomicon.view.dialogs.HyperDlg;
+import org.hypernomicon.view.dialogs.ObjectOrderDlgCtrlr;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
@@ -104,7 +104,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   private static final HashBasedTable<TableView<?>, Orientation, ScrollBar> sbMap = HashBasedTable.create();
 
   private static final HashMap<String, TableView<?>> registry = new HashMap<>();
-  private static final HashMap<String, HyperDialog> dialogs = new HashMap<>();
+  private static final HashMap<String, HyperDlg> dialogs = new HashMap<>();
 
 //---------------------------------------------------------------------------
 
@@ -185,7 +185,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   {
     registry.forEach((prefID, tv) ->
     {
-      HyperDialog dialog = dialogs.get(prefID);
+      HyperDlg dialog = dialogs.get(prefID);
 
       if ((dialog != null) && (dialog.shownAlready() == false))
         return;
@@ -241,7 +241,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <RowType> void registerTable(TableView<RowType> tv, String prefID, HyperDialog dialog)
+  public static <RowType> void registerTable(TableView<RowType> tv, String prefID, HyperDlg dialog)
   {
     if (prefID.length() < 1) return;
 
@@ -263,7 +263,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   private static final EnumSet<HyperCtrlType> editableCtrlTypes = EnumSet.of(ctCheckbox, ctDropDown, ctDropDownList, ctEdit);
 
-  public HyperTable(TableView<HyperTableRow> tv, int mainCol, boolean canAddRows, String prefID, HyperDialog dialog)
+  public HyperTable(TableView<HyperTableRow> tv, int mainCol, boolean canAddRows, String prefID, HyperDlg dialog)
   {
     this.tv = tv;
     this.mainCol = mainCol;
@@ -729,7 +729,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
         if (ui.windows.getOutermostModality() == Modality.NONE)
           ui.update();
 
-        ObjectOrderDialogController.create("Change order of rows", this, rows).showModal();
+        ObjectOrderDlgCtrlr.create("Change order of rows", this, rows).showModal();
 
         if (handler != null)
           handler.run();

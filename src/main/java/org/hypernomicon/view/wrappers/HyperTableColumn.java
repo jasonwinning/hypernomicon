@@ -35,7 +35,7 @@ import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.PersonTabController;
+import org.hypernomicon.view.tabs.PersonTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
@@ -240,7 +240,7 @@ public class HyperTableColumn
             super.startEdit();
             super.cancelEdit();
 
-            PersonTabController personTabCtrlr = HyperTab.getHyperTab(personTab);
+            PersonTabCtrlr personTabCtrlr = HyperTab.getHyperTab(personTab);
             personTabCtrlr.showInvSelectDialog(getTableRow().getItem());
           }
 

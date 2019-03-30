@@ -25,7 +25,7 @@ import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 import org.hypernomicon.model.records.HDT_Position.PositionSource;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.view.HyperView.TextViewInfo;
-import org.hypernomicon.view.dialogs.NewArgDialogController;
+import org.hypernomicon.view.dialogs.NewArgDlgCtrlr;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -272,7 +272,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
   private void newArgumentClick()
   {
-    NewArgDialogController newArgDialog = NewArgDialogController.create("New Argument", curPosition);
+    NewArgDlgCtrlr newArgDialog = NewArgDlgCtrlr.create("New Argument", curPosition);
 
     if (newArgDialog.showModal())
       ui.goToRecord(newArgDialog.getArgument(), false);

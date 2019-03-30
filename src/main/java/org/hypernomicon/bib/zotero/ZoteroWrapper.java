@@ -54,7 +54,7 @@ import com.google.common.collect.Lists;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
-import org.hypernomicon.view.workMerge.MergeWorksDialogController;
+import org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.bib.BibData;
 import org.hypernomicon.bib.BibData.EntryType;
 import org.hypernomicon.bib.BibEntryRow;
@@ -615,11 +615,11 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
     runInFXThread(() ->
     {
-      MergeWorksDialogController mwd = null;
+      MergeWorksDlgCtrlr mwd = null;
 
       try
       {
-        mwd = MergeWorksDialogController.create("Merge Remote Changes with Local Changes", item, new ZoteroItem(this, jObj, true),
+        mwd = MergeWorksDlgCtrlr.create("Merge Remote Changes with Local Changes", item, new ZoteroItem(this, jObj, true),
                                                 null, null, item.getWork(), false, false);
       }
       catch (IOException e)

@@ -23,7 +23,7 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
-import org.hypernomicon.view.dialogs.ProgressDialogController;
+import org.hypernomicon.view.dialogs.ProgressDlgCtrlr;
 import javafx.concurrent.Task;
 
 public abstract class HyperTask extends Task<Boolean>
@@ -62,7 +62,7 @@ public abstract class HyperTask extends Task<Boolean>
 
   public static boolean performTaskWithProgressDialog(HyperTask task)
   {
-    ProgressDialogController.create(appTitle).performTask(task);
+    ProgressDlgCtrlr.create(appTitle).performTask(task);
 
     if ((task.getState() == State.FAILED) || (task.getState() == State.CANCELLED))
     {
