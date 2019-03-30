@@ -30,7 +30,7 @@ import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 
-public interface HDT_Base
+public interface HDT_Record
 {
   int getID();
   HDT_RecordType getType();
