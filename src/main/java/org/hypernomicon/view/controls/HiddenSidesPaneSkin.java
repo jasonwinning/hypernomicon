@@ -108,11 +108,11 @@ public class HiddenSidesPaneSkin extends SkinBase<HiddenSidesPane> {
                 {
                   switch (side)
                   {
-                    case BOTTOM: doShow = (pane.getBottom() != null); break;
-                    case LEFT:   doShow = (pane.getLeft  () != null); break;
-                    case RIGHT:  doShow = (pane.getRight () != null); break;
-                    case TOP:    doShow = (pane.getTop   () != null); break;
-                    default:     doShow = false; break;
+                    case BOTTOM : doShow = (pane.getBottom() != null); break;
+                    case LEFT   : doShow = (pane.getLeft  () != null); break;
+                    case RIGHT  : doShow = (pane.getRight () != null); break;
+                    case TOP    : doShow = (pane.getTop   () != null); break;
+                    default     : doShow = false;                      break;
                   }
                 }
 

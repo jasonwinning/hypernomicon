@@ -66,7 +66,7 @@ public class PathInfo
     {
       fileKind = fkFolderRecord;
       parentFolder = null;
-      hyperPath = db.folders.getByID(HyperDB.ROOT_FOLDER_ID).getPath();
+      hyperPath = db.folders.getByID(ROOT_FOLDER_ID).getPath();
       return;
     }
 

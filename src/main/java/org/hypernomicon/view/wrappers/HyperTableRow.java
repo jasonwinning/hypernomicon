@@ -119,13 +119,13 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
   {
     HyperTableCell cell = cells.get(colNdx);
     VariablePopulator vp;
-    boolean restricted;
     HyperTableColumn col = table.getColumn(colNdx);
+    boolean restricted, isNotCheckBox = col.getCtrlType() != ctCheckbox;
 
     if ((cell != null) && (newCell != null))
       if (cell.equals(newCell))
       {
-        table.refresh();
+        if (isNotCheckBox) table.refresh();
         return false;
       }
 
@@ -151,7 +151,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
           newCell = matchedCell;
         else if (HyperTableCell.getCellText(newCell).length() > 0)
         {
-          table.refresh();
+          if (isNotCheckBox) table.refresh();
           return false;
         }
       }
@@ -164,7 +164,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
         table.newRow(false);
     }
 
-    if (table.disableRefreshAfterCellUpdate == false)
+    if ((table.disableRefreshAfterCellUpdate == false) && isNotCheckBox)
       table.refresh();
 
     CellUpdateHandler handler = col.updateHandler;
@@ -177,7 +177,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 
       handler.handle(this, newCell, colNdx + 1, nextPop);
 
-      if (table.getColumns().size() > (colNdx + 1))
+      if ((table.getColumns().size() > (colNdx + 1)) && isNotCheckBox)
         table.refresh();
     }
 

@@ -118,9 +118,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
     matchedAuthorsList.add(matchedAuthors);
 
-    lblStatus.setVisible(false);
-    progressIndicator.setVisible(false);
-    tabPane.setVisible(false);
+    setAllVisible(false, lblStatus, progressIndicator, tabPane);
 
     tabPane.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
     {
@@ -536,13 +534,9 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
     if (noMatches) rbMerge.setSelected(false);
 
-    rbUseName   .setDisable(notMerging);
-    rbUseDupName.setDisable(notMerging);
+    disableAllIff(notMerging, rbUseName, rbUseDupName);
 
-    rbMerge       .setDisable(noMatches);
-    tfDupFirstName.setDisable(noMatches);
-    tfDupLastName .setDisable(noMatches);
-    tfDupSearchKey.setDisable(noMatches);
+    disableAllIff(noMatches, rbMerge, tfDupFirstName, tfDupLastName, tfDupSearchKey);
   }
 
 //---------------------------------------------------------------------------

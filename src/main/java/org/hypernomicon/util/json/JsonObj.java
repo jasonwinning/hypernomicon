@@ -72,7 +72,7 @@ public class JsonObj implements Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public JsonObj clone()
+  @Override public final JsonObj clone()
   {
     JsonObj otherObj = null;
 

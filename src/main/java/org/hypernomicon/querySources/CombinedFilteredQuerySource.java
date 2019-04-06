@@ -17,31 +17,30 @@
 
 package org.hypernomicon.querySources;
 
+import java.util.List;
 import java.util.Set;
 
 import org.hypernomicon.model.records.HDT_Record;
 
 public class CombinedFilteredQuerySource implements QuerySource
 {
-  private final HDT_Record[] records;
-  private final Set<HDT_Record> recordSet;
+  private final List<HDT_Record> records;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public CombinedFilteredQuerySource(Set<HDT_Record> records)
+  public CombinedFilteredQuerySource(Set<HDT_Record> recordSet)
   {
-    this.recordSet = records;
-    this.records = records.toArray(new HDT_Record[0]);
+    records = List.copyOf(recordSet);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int count()                               { return records.length; }
+  @Override public int count()                               { return records.size(); }
   @Override public QuerySourceType sourceType()              { return QuerySourceType.QST_combinedFilteredRecords; }
-  @Override public boolean containsRecord(HDT_Record record) { return recordSet.contains(record); }
-  @Override public HDT_Record getRecord(int ndx)             { return records[ndx]; }
+  @Override public boolean containsRecord(HDT_Record record) { return records.contains(record); }
+  @Override public HDT_Record getRecord(int ndx)             { return records.get(ndx); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

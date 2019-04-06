@@ -331,10 +331,10 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   {
     switch (HDT_WorkType.workTypeIDToEnumVal(workTypeID))
     {
-      case wtBook:    return db.getPath(PREF_KEY_BOOKS_PATH);
-      case wtChapter: return db.getPath(PREF_KEY_BOOKS_PATH);
-      case wtPaper:   return db.getPath(PREF_KEY_PAPERS_PATH);
-      default:        return db.getPath(PREF_KEY_MISC_FILES_PATH);
+      case wtBook    : return db.getPath(PREF_KEY_BOOKS_PATH);
+      case wtChapter : return db.getPath(PREF_KEY_BOOKS_PATH);
+      case wtPaper   : return db.getPath(PREF_KEY_PAPERS_PATH);
+      default        : return db.getPath(PREF_KEY_MISC_FILES_PATH);
     }
   }
 

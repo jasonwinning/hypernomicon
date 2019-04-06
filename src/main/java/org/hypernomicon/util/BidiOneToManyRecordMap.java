@@ -36,7 +36,7 @@ import com.google.common.collect.Sets;
 public class BidiOneToManyRecordMap
 {
   private final Map<HDT_Record, Set<HDT_Record>> forwardMap = new ConcurrentHashMap<>(),
-                                             reverseMap = new ConcurrentHashMap<>();
+                                                 reverseMap = new ConcurrentHashMap<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

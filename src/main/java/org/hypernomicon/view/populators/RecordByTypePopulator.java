@@ -30,7 +30,6 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod.*;
 
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -82,7 +81,7 @@ public class RecordByTypePopulator extends Populator
       HDT_Record record = it.next();
 
       if ((filter == null) || (filter.test(record)))
-        if (HyperDB.isUnstoredRecord(record.getID(), record.getType()) == false)
+        if (isUnstoredRecord(record.getID(), record.getType()) == false)
           return record;
     }
 

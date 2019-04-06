@@ -71,10 +71,6 @@ public class FolderTreeWatcher
     private final WatcherEventKind kind;
     private final PathInfo oldPathInfo, newPathInfo;
 
-    private WatcherEventKind getKind() { return kind; }
-    private PathInfo getOldPathInfo()  { return oldPathInfo; }
-    private PathInfo getNewPathInfo()  { return newPathInfo; }
-
     private WatcherEvent(WatcherEventKind kind, PathInfo oldPathInfo, PathInfo newPathInfo)
     {
       this.kind = kind;
@@ -186,9 +182,9 @@ public class FolderTreeWatcher
               PathInfo newPathInfo = new PathInfo(filePath);
               WatcherEvent watcherEvent = null;
 
-              if      (watchEvent.kind() == ENTRY_CREATE)  watcherEvent = new WatcherEvent(wekCreate, null,        newPathInfo);
-              else if (watchEvent.kind() == ENTRY_DELETE)  watcherEvent = new WatcherEvent(wekDelete, newPathInfo, null       );
-              else if (watchEvent.kind() == ENTRY_MODIFY)  watcherEvent = new WatcherEvent(wekModify, newPathInfo, newPathInfo);
+              if      (watchEvent.kind() == ENTRY_CREATE) watcherEvent = new WatcherEvent(wekCreate, null,        newPathInfo);
+              else if (watchEvent.kind() == ENTRY_DELETE) watcherEvent = new WatcherEvent(wekDelete, newPathInfo, null       );
+              else if (watchEvent.kind() == ENTRY_MODIFY) watcherEvent = new WatcherEvent(wekModify, newPathInfo, newPathInfo);
 
               if (watcherEvent != null)
                 shortList.add(watcherEvent);
@@ -200,14 +196,14 @@ public class FolderTreeWatcher
           {
             WatcherEvent watcherEvent = shortList.get(ndx);
 
-            if      (watcherEvent.getKind() == wekDelete) deleteNdx = ndx;
-            else if (watcherEvent.getKind() == wekCreate) createNdx = ndx;
+            if      (watcherEvent.kind == wekDelete) deleteNdx = ndx;
+            else if (watcherEvent.kind == wekCreate) createNdx = ndx;
           }
 
           if ((deleteNdx >= 0) && (createNdx >= 0))
           {
-            PathInfo oldPathInfo = shortList.get(deleteNdx).getOldPathInfo(),
-                     newPathInfo = shortList.get(createNdx).getNewPathInfo();
+            PathInfo oldPathInfo = shortList.get(deleteNdx).oldPathInfo,
+                     newPathInfo = shortList.get(createNdx).newPathInfo;
 
             if (oldPathInfo.getParentFolder() == newPathInfo.getParentFolder())
             {
@@ -253,10 +249,10 @@ public class FolderTreeWatcher
 
       for (WatcherEvent watcherEvent : eventList)
       {
-        PathInfo oldPathInfo = watcherEvent.getOldPathInfo(),
-                 newPathInfo = watcherEvent.getNewPathInfo();
+        PathInfo oldPathInfo = watcherEvent.oldPathInfo,
+                 newPathInfo = watcherEvent.newPathInfo;
 
-        switch (watcherEvent.getKind())
+        switch (watcherEvent.kind)
         {
           case wekCreate:
 
@@ -343,8 +339,8 @@ public class FolderTreeWatcher
                                 if (workFile.works.contains(ui.activeRecord()))
                                 {
                                   WorkTabCtrlr tabWorks = (WorkTabCtrlr) ui.activeTab();
-                                  if      (tabWorks.wdc != null)  tabWorks.wdc.btnCancel.fire();
-                                  else if (tabWorks.fdc != null)  tabWorks.fdc.btnCancel.fire();
+                                  if      (tabWorks.wdc != null) tabWorks.wdc.btnCancel.fire();
+                                  else if (tabWorks.fdc != null) tabWorks.fdc.btnCancel.fire();
 
                                   tabWorks.refreshFiles();
                                 }
@@ -389,15 +385,15 @@ public class FolderTreeWatcher
 
         if (app.debugging())
         {
-          switch (watcherEvent.getKind())
+          switch (watcherEvent.kind)
           {
-            case wekCreate: System.out.println("Created: \"" + watcherEvent.getNewPathInfo() + "\"");  break;
-            case wekDelete: System.out.println("Deleted: \"" + watcherEvent.getOldPathInfo() + "\"");  break;
-            case wekModify: System.out.println("Modified: \"" + watcherEvent.getNewPathInfo() + "\""); break;
-            case wekRename: System.out.println("Renamed: \"" + watcherEvent.getOldPathInfo() +
-                                               "\" to: \"" + watcherEvent.getNewPathInfo().getFilePath().getNameOnly() + "\""); break;
+            case wekCreate : System.out.println("Created: \""       + watcherEvent.newPathInfo + "\""); break;
+            case wekDelete : System.out.println("Deleted: \""       + watcherEvent.oldPathInfo + "\""); break;
+            case wekModify : System.out.println("Modified: \""      + watcherEvent.newPathInfo + "\""); break;
+            case wekRename : System.out.println("Renamed: \""       + watcherEvent.oldPathInfo +
+                                                "\" to: \""         + watcherEvent.newPathInfo.getFilePath().getNameOnly() + "\""); break;
 
-            default:        System.out.println("Unknown event: \"" + watcherEvent.getNewPathInfo() + "\""); break;
+            default        : System.out.println("Unknown event: \"" + watcherEvent.newPathInfo + "\""); break;
           }
         }
       }
@@ -409,7 +405,7 @@ public class FolderTreeWatcher
     private boolean handleInterComputerMessage()
     {
       String compName = getComputerName();
-      InterComputerMsg sentMsg, receivedMsg;
+      InterComputerMsg receivedMsg;
 
       if (sentResponse)
       {
@@ -443,29 +439,25 @@ public class FolderTreeWatcher
       {
         case hmtEchoRequest :
 
-          sentMsg = new InterComputerMsg(compName, receivedMsg.getSource(), hmtEchoReply);
-          sentMsg.writeToDisk();
+          new InterComputerMsg(compName, receivedMsg.getSource(), hmtEchoReply).writeToDisk();
           sentResponse = true;
-          break;
+          return true;
 
         case hmtUnlockRequest :
 
-          sentMsg = new InterComputerMsg(compName, receivedMsg.getSource(), hmtUnlockComplete);
-          sentMsg.writeToDisk();
+          new InterComputerMsg(compName, receivedMsg.getSource(), hmtUnlockComplete).writeToDisk();
           sentResponse = true;
-          break;
+          return true;
 
         default :
-          break;
+          return true;
       }
-
-      return true;
     }
   }
 
   private WatchService watcher;
   private WatcherThread watcherThread;
-  private HashMap<WatchKey, HDT_Folder> watchKeyToDir;
+  private final HashMap<WatchKey, HDT_Folder> watchKeyToDir = new HashMap<>();
   public static final int FOLDER_TREE_WATCHER_POLL_TIME_MS = 100;
   private boolean stopRequested = false,
                   stopped = true,
@@ -484,7 +476,7 @@ public class FolderTreeWatcher
 
     if (disabled || db.isLoaded() == false) return false;
 
-    watchKeyToDir = new HashMap<>();
+    watchKeyToDir.clear();
 
     try
     {

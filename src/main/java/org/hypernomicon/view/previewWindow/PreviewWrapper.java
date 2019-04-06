@@ -348,7 +348,7 @@ public class PreviewWrapper
 
     PreviewFile prevFile = fileList.get(fileNdx);
 
-    int pageNum =  prevFile.navNdx < 0 ? 1 : prevFile.navList.get(prevFile.navNdx);
+    int pageNum = prevFile.navNdx < 0 ? 1 : prevFile.navList.get(prevFile.navNdx);
 
     setPreview(prevFile.filePath, pageNum, prevFile.record, false, prevFile);
   }

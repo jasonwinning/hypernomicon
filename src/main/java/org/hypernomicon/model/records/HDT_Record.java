@@ -17,6 +17,10 @@
 
 package org.hypernomicon.model.records;
 
+import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +33,9 @@ import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 public interface HDT_Record
 {
@@ -80,4 +87,32 @@ public interface HDT_Record
   void resolvePointers() throws HDB_InternalError;
   void updateSortKey();
   List<SearchKeyword> getSearchKeys();
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static boolean isEmpty(HDT_Record record)
+  {
+    try { return isEmptyThrowsException(record); }
+    catch (HDB_InternalError e) { messageDialog(e.getMessage(), mtError); }
+
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static boolean isEmptyThrowsException(HDT_Record record) throws HDB_InternalError
+  {
+    if ((record == null) || (record.isExpired())) return true;
+
+    if (record.getID() < 1)
+      throw new HDB_InternalError(28883);
+
+    return db.records(record.getType()).getByID(record.getID()) == null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

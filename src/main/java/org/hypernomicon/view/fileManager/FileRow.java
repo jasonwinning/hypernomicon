@@ -56,12 +56,12 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 
 //---------------------------------------------------------------------------
 
-  FilePath getFilePath()       { return hyperPath.getFilePath(); }
-  boolean isDirectory()        { return hyperPath.getFilePath().isDirectory(); }
-  HDT_Folder getFolder()       { return hyperPath.getParentFolder(); }
-  String getFileName()         { return hyperPath.getNameStr(); }
-  HyperPath getHyperPath()     { return hyperPath; }
-  private void determineType() { if (mimetype == null) mimetype = getMediaType(hyperPath.getFilePath()); }
+  public FilePath getFilePath() { return hyperPath.getFilePath(); }
+  boolean isDirectory()         { return hyperPath.getFilePath().isDirectory(); }
+  public HDT_Folder getFolder() { return hyperPath.getParentFolder(); }
+  String getFileName()          { return hyperPath.getNameStr(); }
+  HyperPath getHyperPath()      { return hyperPath; }
+  private void determineType()  { if (mimetype == null) mimetype = getMediaType(hyperPath.getFilePath()); }
 
   void setFolderTreeItem(TreeItem<FileRow> treeItem) { this.treeItem  = treeItem; }
 
@@ -140,17 +140,37 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override public boolean equals(Object obj)
+  {
+    if (this == obj) return true;
+    if ((obj == null) || ((obj instanceof FileRow) == false)) return false;
+
+    return compareTo((FileRow)obj) == 0;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public int hashCode()
+  {
+    return nullSwitch(hyperPath, 0, hyperPath ->
+           nullSwitch(hyperPath.getFileName(), 0, FilePath::hashCode));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public int compareTo(FileRow o)
   {
-    if (hyperPath == null) return 0;
-    if (o == null) return 0;
-    if (o.hyperPath == null) return 0;
+    if (o == null) return 1;
+    if (hyperPath == null) return o.hyperPath == null ? 0 : -1;
+    if (o.hyperPath == null) return 1;
 
-    FilePath fileName = hyperPath.getFileName();
-    if (FilePath.isEmpty(fileName)) return 0;
+    FilePath fileName  =   hyperPath.getFileName(),
+             oFileName = o.hyperPath.getFileName();
 
-    FilePath oFileName = o.hyperPath.getFileName();
-    if (FilePath.isEmpty(oFileName)) return 0;
+    if (FilePath.isEmpty(fileName)) return FilePath.isEmpty(oFileName) ? 0 : -1;
+    if (FilePath.isEmpty(oFileName)) return 1;
 
     return fileName.toPath().compareTo(oFileName.toPath());
   }

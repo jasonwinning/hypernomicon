@@ -63,8 +63,8 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
   {
     super(false);
 
-    this.jObj = new JsonObj();
-    this.jData = zWrapper.getTemplate(newType).clone();
+    jObj = new JsonObj();
+    jData = zWrapper.getTemplate(newType).clone();
     jData.put(getFieldKey(bfEntryType), ZoteroWrapper.entryTypeMap.getOrDefault(newType, ""));
     jObj.put("data", jData);
     this.zWrapper = zWrapper;
@@ -126,7 +126,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
   @Override public void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge)
   {
     this.jObj = jObj;
-    this.jData = jObj.getObj("data");
+    jData = jObj.getObj("data");
 
     jObj.remove("synced");
 
@@ -146,7 +146,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     else
       jBackupObj = jObj.clone();
 
-    this.backupItem = new ZoteroItem(zWrapper, jBackupObj, true);
+    backupItem = new ZoteroItem(zWrapper, jBackupObj, true);
 
     if ((updatingExistingDataFromServer == false) || (linkedToWork() == false)) return;
 

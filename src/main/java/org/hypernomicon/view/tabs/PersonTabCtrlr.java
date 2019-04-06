@@ -32,7 +32,6 @@ import static org.hypernomicon.model.Exceptions.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HyperPath;
@@ -285,7 +284,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
         {
           case hdtArgument : argsToAdd .add((HDT_Argument) displayer); break;
           case hdtPosition : posToAdd  .add((HDT_Position) displayer); break;
-          default :          otherToAdd.add(displayer); break;
+          default          : otherToAdd.add(displayer);                break;
         }
       }
     });
@@ -404,7 +403,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
         {
           case hdtArgument : argsToAdd .add((HDT_Argument) mentioner); break;
           case hdtPosition : posToAdd  .add((HDT_Position) mentioner); break;
-          default :          otherToAdd.add(mentioner); break;
+          default          : otherToAdd.add(mentioner);                break;
         }
       }
     });
@@ -568,9 +567,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     if (!saveSearchKey(curPerson, tfSearchKey, showMessage)) return false;
 
     if (FilePath.isEmpty(curPicture))
-      curPerson.getPath().assign(db.folders.getByID(HyperDB.PICTURES_FOLDER_ID), new FilePath(""));
+      curPerson.getPath().assign(db.folders.getByID(PICTURES_FOLDER_ID), new FilePath(""));
     else
-      curPerson.getPath().assign(db.folders.getByID(HyperDB.PICTURES_FOLDER_ID), curPicture.getNameOnly());
+      curPerson.getPath().assign(db.folders.getByID(PICTURES_FOLDER_ID), curPicture.getNameOnly());
 
     curPerson.setViewPort(viewPort);
 
@@ -1219,18 +1218,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
   @FXML private void btnNewWorkClick()
   {
-    if (ui.cantSaveRecord(true)) return;
-
-    HDT_Work work = db.createNewBlankRecord(hdtWork);
-
-    work.getAuthors().add(curPerson);
-
-    ui.goToRecord(work, false);
-
-    WorkTabCtrlr workCtrlr = getHyperTab(workTab);
-
-    if (workCtrlr.showWorkDialog(null) == false)
-      ui.deleteCurrentRecord(false);
+    ui.newWorkAndWorkFile(curPerson, null);
   }
 
 //---------------------------------------------------------------------------

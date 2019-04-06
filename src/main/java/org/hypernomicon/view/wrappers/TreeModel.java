@@ -133,7 +133,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
   public void removeRecord(HDT_Record record)
   {
     ImmutableSet.<HDT_Record>copyOf(parentToChildren.getForwardSet(record)).forEach(child  -> unassignParent(child , record));
-    ImmutableSet.<HDT_Record>copyOf(parentToChildren.getForwardSet(record)).forEach(parent -> unassignParent(record, parent));
+    ImmutableSet.<HDT_Record>copyOf(parentToChildren.getReverseSet(record)).forEach(parent -> unassignParent(record, parent));
   }
 
 //---------------------------------------------------------------------------

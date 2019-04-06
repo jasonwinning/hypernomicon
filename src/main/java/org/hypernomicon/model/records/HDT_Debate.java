@@ -27,8 +27,7 @@ import org.hypernomicon.model.HyperDataset;
 
 public class HDT_Debate extends HDT_RecordWithConnector
 {
-  public final List<HDT_Debate> largerDebates;
-  public final List<HDT_Debate> subDebates;
+  public final List<HDT_Debate> largerDebates, subDebates;
   public final List<HDT_Position> positions;
 
 //---------------------------------------------------------------------------

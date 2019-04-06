@@ -32,8 +32,8 @@ public final class ObjectGroup
   private final String primaryStr;
   private final Map<Tag, NestedValue> map = new HashMap<>();
 
-  public ObjectGroup(HDT_Record primary) { this.primary = primary; this.primaryStr = null;       }
-  public ObjectGroup(String primaryStr)  { this.primary = null;    this.primaryStr = primaryStr; }
+  public ObjectGroup(HDT_Record primary) { this.primary = primary; primaryStr = null;       }
+  public ObjectGroup(String primaryStr)  { primary = null;    this.primaryStr = primaryStr; }
 
   public final void addNestedEntry(Tag tag, NestedValue val) { map.put(tag, val); }
 

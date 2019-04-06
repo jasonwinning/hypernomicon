@@ -24,7 +24,6 @@ import static org.hypernomicon.util.Util.*;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_MiscFile;
-import org.hypernomicon.model.records.HDT_RecordBase;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -87,7 +86,7 @@ public class KeyWork implements Comparable<KeyWork>
 
     @Override int getID()              { return id; }
     @Override HDT_RecordType getType() { return type; }
-    @Override HDT_Record getRecord()     { return db.records(getType()).getByID(getID()); }
+    @Override HDT_Record getRecord()   { return db.records(getType()).getByID(getID()); }
 
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
@@ -105,9 +104,9 @@ public class KeyWork implements Comparable<KeyWork>
 
     @Override int getID()              { return record.getID(); }
     @Override HDT_RecordType getType() { return record.getType(); }
-    @Override HDT_Record getRecord()     { return record; }
+    @Override HDT_Record getRecord()   { return record; }
 
-    @Override boolean isExpired()      { return HDT_RecordBase.isEmpty(record); }
+    @Override boolean isExpired()      { return HDT_Record.isEmpty(record); }
   }
 
   //---------------------------------------------------------------------------

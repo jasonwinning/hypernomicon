@@ -290,7 +290,7 @@ public class FileDownloadUtility
 
     try
     {
-      request =  RequestBuilder.get()
+      request = RequestBuilder.get()
         .setUri(fileURL)
         .setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:66.0) Gecko/20100101 Firefox/66.0")
         .build();

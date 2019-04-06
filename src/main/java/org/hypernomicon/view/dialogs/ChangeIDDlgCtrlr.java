@@ -18,10 +18,10 @@
 package org.hypernomicon.view.dialogs;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.hdtNone;
+import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.ctDropDownList;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;

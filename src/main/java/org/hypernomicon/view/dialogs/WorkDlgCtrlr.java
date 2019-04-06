@@ -270,24 +270,14 @@ public class WorkDlgCtrlr extends HyperDlg
         }
 
         tfNewFile.disableProperty().unbind();
-        tfNewFile.setDisable(true);
-        tfFileTitle.setDisable(true);
-        tfYear.setDisable(true);
-        chkKeepFilenameUnchanged.setDisable(true);
-        btnRegenerateFilename.setDisable(true);
-        rbMove.setDisable(true);
-        rbCopy.setDisable(true);
-        rbCurrent.setDisable(true);
+
+        disableAll(tfNewFile, tfFileTitle, tfYear, chkKeepFilenameUnchanged, btnRegenerateFilename, rbMove, rbCopy, rbCurrent);
       }
       else if (workTypeEnumVal != wtNone)
       {
-        tfFileTitle.setDisable(false);
-        tfYear.setDisable(false);
-        chkKeepFilenameUnchanged.setDisable(false);
+        enableAll(tfFileTitle, tfYear, chkKeepFilenameUnchanged, btnRegenerateFilename, rbMove, rbCopy);
+
         tfNewFile.disableProperty().bind(chkKeepFilenameUnchanged.selectedProperty());
-        btnRegenerateFilename.setDisable(false);
-        rbMove.setDisable(false);
-        rbCopy.setDisable(false);
       }
     });
 
@@ -398,16 +388,8 @@ public class WorkDlgCtrlr extends HyperDlg
     curWork = workCtrlr.activeRecord();
     curBD = new BibDataStandalone(curWork.getBibData());
 
-    if (db.bibLibraryIsLinked() == false)
-    {
-      chkCreateBibEntry.setVisible(false);
-      cbEntryType.setVisible(false);
-    }
-    else if (curWork.getBibEntryKey().length() > 0)
-    {
-      chkCreateBibEntry.setVisible(false);
-      cbEntryType.setVisible(false);
-    }
+    if ((db.bibLibraryIsLinked() == false) || (curWork.getBibEntryKey().length() > 0))
+      setAllVisible(false, chkCreateBibEntry, cbEntryType);
 
     if (workFileToUse != null)
     {
@@ -449,9 +431,9 @@ public class WorkDlgCtrlr extends HyperDlg
 
       switch (isInFileName)
       {
-        case True :  boolVal = true; break;
+        case True  : boolVal = true; break;
         case False : boolVal = false; break;
-        default :    boolVal = !atLeastOneInFilename; atLeastOneInFilename = true; break;
+        default    : boolVal = !atLeastOneInFilename; atLeastOneInFilename = true; break;
       }
 
       newRow.setCheckboxValue(2, boolVal);
@@ -557,6 +539,12 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     if (FilePath.isEmpty(chosenFile)) return;
 
+    if (db.isProtectedFile(chosenFile))
+    {
+      messageDialog("That file cannot be assigned to a work record.", mtError);
+      return;
+    }
+
     // See if the chosen file is currently assigned to a file record
 
     HDT_RecordWithPath file = HyperPath.getFileFromFilePath(chosenFile);
@@ -626,8 +614,7 @@ public class WorkDlgCtrlr extends HyperDlg
     if (getMediaType(origFilePath).toString().contains("pdf") == false) return false;
 
     httpClient.stop();
-    btnStop.setVisible(false);
-    progressBar.setVisible(false);
+    setAllVisible(false, btnStop, progressBar);
 
     PdfMetadata md = new PdfMetadata();
 
@@ -724,8 +711,7 @@ public class WorkDlgCtrlr extends HyperDlg
   void queryCrossref(String doi)
   {
     lblAutoPopulated.setText("");
-    btnStop.setVisible(true);
-    progressBar.setVisible(true);
+    setAllVisible(true, btnStop, progressBar);
 
     JsonHttpClient.getObjAsync(getCrossrefUrl(doi), httpClient, jsonObj ->
     {
@@ -750,15 +736,13 @@ public class WorkDlgCtrlr extends HyperDlg
           btnLaunchClick();
       }
 
-      btnStop.setVisible(false);
-      progressBar.setVisible(false);
+      setAllVisible(false, btnStop, progressBar);
       pdfBD = null;
 
     }, e ->
     {
       lblAutoPopulated.setText("");
-      btnStop.setVisible(false);
-      progressBar.setVisible(false);
+      setAllVisible(false, btnStop, progressBar);
 
       if (e instanceof ParseException)
       {
@@ -790,8 +774,7 @@ public class WorkDlgCtrlr extends HyperDlg
     String isbn = it.next();
 
     lblAutoPopulated.setText("");
-    btnStop.setVisible(true);
-    progressBar.setVisible(true);
+    setAllVisible(true, btnStop, progressBar);
 
     JsonHttpClient.getObjAsync(getGoogleUrl(isbn), httpClient, jsonObj ->
     {
@@ -801,8 +784,7 @@ public class WorkDlgCtrlr extends HyperDlg
       {
         populateFieldsFromBibData(bibData, true);
         lblAutoPopulated.setText("Fields have been auto-populated from Google Books using isbn: " + isbn);
-        btnStop.setVisible(false);
-        progressBar.setVisible(false);
+        setAllVisible(false, btnStop, progressBar);
       }
       else
       {
@@ -821,8 +803,7 @@ public class WorkDlgCtrlr extends HyperDlg
             populateFieldsFromBibData(pdfBD, true);
           }
 
-          btnStop.setVisible(false);
-          progressBar.setVisible(false);
+          setAllVisible(false, btnStop, progressBar);
         }
       }
 
@@ -831,8 +812,7 @@ public class WorkDlgCtrlr extends HyperDlg
     }, e ->
     {
       lblAutoPopulated.setText("");
-      btnStop.setVisible(false);
-      progressBar.setVisible(false);
+      setAllVisible(false, btnStop, progressBar);
 
       if (e instanceof ParseException)
       {
@@ -865,15 +845,12 @@ public class WorkDlgCtrlr extends HyperDlg
     if (doi.length() == 0) return;
 
     lblAutoPopulated.setText("");
-    btnStop.setVisible(true);
-    progressBar.setVisible(true);
+    setAllVisible(true, btnStop, progressBar);
 
     JsonHttpClient.getObjAsync(getCrossrefUrl(doi), httpClient, jsonObj ->
     {
       BibData bd = BibData.createFromCrossrefJSON(jsonObj, doi);
-
-      btnStop.setVisible(false);
-      progressBar.setVisible(false);
+      setAllVisible(false, btnStop, progressBar);
 
       if (bd == null)
         lblAutoPopulated.setText("Crossref query yielded no results for doi: " + doi);
@@ -891,8 +868,7 @@ public class WorkDlgCtrlr extends HyperDlg
     }, e ->
     {
       lblAutoPopulated.setText("");
-      btnStop.setVisible(false);
-      progressBar.setVisible(false);
+      setAllVisible(false, btnStop, progressBar);
 
       if ((e instanceof ParseException) || (e instanceof TerminateTaskException))
         return;
@@ -910,15 +886,12 @@ public class WorkDlgCtrlr extends HyperDlg
   private void mnuISBNClick(String isbn)
   {
     lblAutoPopulated.setText("");
-    btnStop.setVisible(true);
-    progressBar.setVisible(true);
+    setAllVisible(true, btnStop, progressBar);
 
     JsonHttpClient.getObjAsync(getGoogleUrl(isbn), httpClient, jsonObj ->
     {
       BibData bd = BibData.createFromGoogleJSON(jsonObj, isbn);
-
-      btnStop.setVisible(false);
-      progressBar.setVisible(false);
+      setAllVisible(false, btnStop, progressBar);
 
       if (bd == null)
         lblAutoPopulated.setText("Google Books query yielded no results for isbn: " + isbn);
@@ -936,8 +909,7 @@ public class WorkDlgCtrlr extends HyperDlg
     }, e ->
     {
       lblAutoPopulated.setText("");
-      btnStop.setVisible(false);
-      progressBar.setVisible(false);
+      setAllVisible(false, btnStop, progressBar);
 
       if ((e instanceof ParseException) || (e instanceof TerminateTaskException))
         return;
@@ -957,8 +929,7 @@ public class WorkDlgCtrlr extends HyperDlg
     httpClient.stop();
 
     lblAutoPopulated.setText("");
-    btnStop.setVisible(false);
-    progressBar.setVisible(false);
+    setAllVisible(false, btnStop, progressBar);
   }
 
 //---------------------------------------------------------------------------

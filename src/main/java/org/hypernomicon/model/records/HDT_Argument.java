@@ -44,9 +44,8 @@ import com.google.common.collect.Sets;
 public class HDT_Argument extends HDT_RecordWithConnector
 {
   public final List<HDT_Position> positions;
-  public final List<HDT_Argument> counteredArgs;
+  public final List<HDT_Argument> counteredArgs, counterArgs;
   public final List<HDT_Work> works;
-  public final List<HDT_Argument> counterArgs;
 
   public HDT_Argument(HDT_RecordState xmlState, HyperDataset<HDT_Argument> dataset)
   {

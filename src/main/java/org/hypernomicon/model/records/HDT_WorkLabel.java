@@ -30,8 +30,7 @@ import org.hypernomicon.model.relations.HyperSubjList;
 
 public class HDT_WorkLabel extends HDT_RecordWithConnector
 {
-  public final List<HDT_WorkLabel> parentLabels;
-  public final List<HDT_WorkLabel> subLabels;
+  public final List<HDT_WorkLabel> parentLabels, subLabels;
   public final HyperSubjList<HDT_Work, HDT_WorkLabel> works;
   public final HyperSubjList<HDT_MiscFile, HDT_WorkLabel> miscFiles;
 

@@ -54,7 +54,7 @@ public final class Author implements Cloneable, Comparable<Author>
     this.work = work;
     this.person = person;
     this.name = name;
-    this.nameEngChar = name == null ? null : name.toEngChar();
+    nameEngChar = name == null ? null : name.toEngChar();
     this.isEditor = isEditor;
     this.isTrans = isTrans;
     this.inFileName = inFileName;

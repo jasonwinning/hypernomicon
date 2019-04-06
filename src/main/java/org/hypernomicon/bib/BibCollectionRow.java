@@ -62,10 +62,10 @@ public class BibCollectionRow
   {
     switch (type)
     {
-      case bctAll:      return "\u00001";
-      case bctUnsorted: return "\u00002";
-      case bctTrash:    return "\uffff";
-      default:          return coll.getName();
+      case bctAll      : return "\u00001";
+      case bctUnsorted : return "\u00002";
+      case bctTrash    : return "\uffff";
+      default          : return coll.getName();
     }
   }
 
@@ -76,10 +76,10 @@ public class BibCollectionRow
   {
     switch (type)
     {
-      case bctAll:      return "All Entries";
-      case bctUnsorted: return "Unsorted";
-      case bctTrash:    return "Trash";
-      default:          return coll.getName();
+      case bctAll      : return "All Entries";
+      case bctUnsorted : return "Unsorted";
+      case bctTrash    : return "Trash";
+      default          : return coll.getName();
     }
   }
 

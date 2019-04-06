@@ -7,3 +7,4 @@ sh.exe.stackdump
 target
 pom2.xml
 *.bak
+*.log

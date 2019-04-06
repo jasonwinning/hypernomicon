@@ -87,7 +87,7 @@ public class PreviewWindow extends HyperDlg
   private static final HashMap<Tab, PreviewWrapper> tabToWrapper = new HashMap<>();
   private ClickHoldButton chbBack, chbForward;
 
-  public void clearAll()                         { tabToWrapper.values().forEach(PreviewWrapper::reset); }
+  public void clearAll()                         { tabToWrapper.values().forEach(PreviewWrapper::reset); clearControls(); }
   public void clearPreview(PreviewSource src)    { srcToWrapper.get(src).clearPreview(); }
   public FilePath getFilePath(PreviewSource src) { return srcToWrapper.get(src).getFilePath(); }
   private PreviewWrapper curWrapper()            { return tabToWrapper.get(tpPreview.getSelectionModel().getSelectedItem()); }
@@ -166,11 +166,7 @@ public class PreviewWindow extends HyperDlg
     updateStartBtn(-1);
     updateEndBtn(-1);
 
-    btnSetStart .setDisable(true);
-    btnStartPage.setDisable(true);
-    btnSetEnd   .setDisable(true);
-    btnEndPage  .setDisable(true);
-    btnContents .setDisable(true);
+    disableAll(btnSetStart, btnStartPage, btnSetEnd, btnEndPage, btnContents);
 
     btnContents.setText("No other records...");
   }
@@ -196,6 +192,12 @@ public class PreviewWindow extends HyperDlg
     addWrapper(pvsManager  , apManager, tabManager, btnManager);
     addWrapper(pvsOther    , apOther  , tabOther  , btnOther  );
     addWrapper(pvsTreeTab  , apTree   , tabTree   , btnTree   );
+
+    btnPerson.getToggleGroup().selectedToggleProperty().addListener((observable, oldVal, newVal) ->
+    {
+      if (newVal == null)
+        oldVal.setSelected(true);
+    });
 
     tabToWrapper.values().forEach(PreviewWrapper::clearPreview);
 
@@ -260,31 +262,31 @@ public class PreviewWindow extends HyperDlg
 
     btnHilitePrev.setOnAction(event ->
     {
-      if (tfPreviewPage.isDisabled()) return;
-
-      int curPage = (int) sldPreview.getValue();
-
-      curPage = curWrapper().getPrevHilite(curPage);
-
-      curWrapper().setPreview(curPage, true);
+      if (tfPreviewPage.isDisabled() == false)
+        curWrapper().setPreview(curWrapper().getPrevHilite((int) sldPreview.getValue()), true);
     });
 
     btnHiliteNext.setOnAction(event ->
     {
-      if (tfPreviewPage.isDisabled()) return;
-
-      int curPage = (int) sldPreview.getValue();
-
-      curPage = curWrapper().getNextHilite(curPage);
-
-      curWrapper().setPreview(curPage, true);
+      if (tfPreviewPage.isDisabled() == false)
+        curWrapper().setPreview(curWrapper().getNextHilite((int) sldPreview.getValue()), true);
     });
 
-    chbBack = new ClickHoldButton(btnPreviewBack, Side.BOTTOM);
+    chbBack    = new ClickHoldButton(btnPreviewBack   , Side.BOTTOM);
     chbForward = new ClickHoldButton(btnPreviewForward, Side.BOTTOM);
 
-    btnPreviewBack.setTooltip(new Tooltip("Click to go back, hold to see history"));
+    btnLock          .setTooltip(new Tooltip("Don't change the current view when a different record is selected in another window"));
+    btnPreviewNext   .setTooltip(new Tooltip("Go forward 1 page"));
+    btnPreviewPrev   .setTooltip(new Tooltip("Go back 1 page"));
+    btnPreviewBack   .setTooltip(new Tooltip("Click to go back, hold to see history"));
     btnPreviewForward.setTooltip(new Tooltip("Click to go forward, hold to see history"));
+    btnFileBack      .setTooltip(new Tooltip("Go to the file that was viewed before this one"));
+    btnFileForward   .setTooltip(new Tooltip("Go to the file that was viewed after this one"));
+    btnHilitePrev    .setTooltip(new Tooltip("Go to previous annotated page"));
+    btnHiliteNext    .setTooltip(new Tooltip("Go to next annotated page"));
+    btnRefresh       .setTooltip(new Tooltip("Refresh current view"));
+    btnContents      .setTooltip(new Tooltip("Show list of works and page numbers assigned to this work file"));
+    sldPreview       .setTooltip(new Tooltip("Navigate to different page"));
 
     chbBack.setOnAction(event ->
     {
@@ -533,13 +535,9 @@ public class PreviewWindow extends HyperDlg
     updateFileNavButtons();
 
     tfPreviewPage.setText("");
-    tfPreviewPage.setDisable(true);
-    btnPreviewPrev.setDisable(true);
-    btnPreviewNext.setDisable(true);
-    btnHilitePrev.setDisable(true);
-    btnHiliteNext.setDisable(true);
-    btnPreviewBack.setDisable(true);
-    btnPreviewForward.setDisable(true);
+
+    disableAll(tfPreviewPage, btnPreviewPrev, btnPreviewNext, btnHilitePrev, btnHiliteNext, btnPreviewBack, btnPreviewForward);
+
     sldPreview.setValue(1);
     lblPreviewPages.setText("/ 0");
 
@@ -552,8 +550,8 @@ public class PreviewWindow extends HyperDlg
 
   private void updateFileNavButtons()
   {
-    btnFileBack.setDisable(curWrapper().enableFileNavButton(false) == false);
-    btnFileForward.setDisable(curWrapper().enableFileNavButton(true) == false);
+    btnFileBack   .setDisable(curWrapper().enableFileNavButton(false) == false);
+    btnFileForward.setDisable(curWrapper().enableFileNavButton(true ) == false);
   }
 
 //---------------------------------------------------------------------------
@@ -590,15 +588,11 @@ public class PreviewWindow extends HyperDlg
         String recStr = HDT_Work.class.cast(record).getCBText();
         lblRecord.setText(recStr);
         lblRecord.setTooltip(new Tooltip(recStr));
-        btnSetStart.setDisable(false);
-        btnStartPage.setDisable(false);
+
+        enableAll(btnSetStart, btnStartPage, btnSetEnd, btnEndPage);
 
         updateStartBtn(curWrapper().getWorkStartPageNum());
-
-        btnSetEnd.setDisable(false);
-        btnEndPage.setDisable(false);
-
-        updateEndBtn(curWrapper().getWorkEndPageNum());
+        updateEndBtn  (curWrapper().getWorkEndPageNum  ());
 
         HDT_WorkFile workFile = (HDT_WorkFile) HyperPath.getFileFromFilePath(curWrapper().getFilePath());
 
@@ -635,8 +629,8 @@ public class PreviewWindow extends HyperDlg
     btnPreviewPrev.setDisable(pageNum == 1);
     btnPreviewNext.setDisable(pageNum == numPages);
 
-    btnPreviewBack.setDisable(curWrapper().enableNavButton(false) == false);
-    btnPreviewForward.setDisable(curWrapper().enableNavButton(true) == false);
+    btnPreviewBack   .setDisable(curWrapper().enableNavButton(false) == false);
+    btnPreviewForward.setDisable(curWrapper().enableNavButton(true ) == false);
 
     updateFileNavButtons();
 

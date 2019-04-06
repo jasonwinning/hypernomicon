@@ -91,6 +91,7 @@ import javafx.beans.property.DoubleProperty;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.event.EventTarget;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -301,12 +302,9 @@ public final class Util
     for (int ndx = 0; ndx < list1.size(); ndx++)
     {
       String str1 = ultraTrim(list1.get(ndx)), str2 = ultraTrim(list2.get(ndx));
-      boolean equal;
 
-      if (ignoreCase) equal = str1.equalsIgnoreCase(str2);
-      else            equal = str1.equals(str2);
-
-      if (equal == false) return false;
+      if ((ignoreCase ? str1.equalsIgnoreCase(str2) : str1.equals(str2)) == false)
+        return false;
     }
 
     return true;
@@ -877,8 +875,8 @@ public final class Util
         Region region = Region.class.cast(node);
 
         scalePropertiesForDPI(region.prefHeightProperty(), region.prefWidthProperty(),
-                              region.maxHeightProperty(),  region.maxWidthProperty(),
-                              region.minHeightProperty(),  region.minWidthProperty());
+                              region.maxHeightProperty() , region.maxWidthProperty(),
+                              region.minHeightProperty() , region.minWidthProperty());
       }
 
       if (((node instanceof javafx.scene.shape.Path) == false) &&
@@ -1050,14 +1048,14 @@ public final class Util
           {
             case "\u00e0": // Latin small letter a with grave accent, as in 'vis a vis' or 'a la'
 
-            case "a":    case "also": case "amid": case "an":   case "and":
-            case "as":   case "at":   case "atop": case "but":  case "by":
-            case "for":  case "from": case "if" :  case "in":   case "into":
-            case "is":   case "it":   case "la" :  case "nor":  case "of":
-            case "off":  case "on":   case "onto": case "or":   case "out":
-            case "per":  case "qua":  case "sans": case "so":   case "than":
-            case "that": case "the":  case "then": case "to":   case "unto":
-            case "upon": case "via":  case "with": case "yet":
+            case "a"   : case "also": case "amid": case "an" : case "and" :
+            case "as"  : case "at"  : case "atop": case "but": case "by"  :
+            case "for" : case "from": case "if"  : case "in" : case "into":
+            case "is"  : case "it"  : case "la"  : case "nor": case "of"  :
+            case "off" : case "on"  : case "onto": case "or" : case "out" :
+            case "per" : case "qua" : case "sans": case "so" : case "than":
+            case "that": case "the" : case "then": case "to" : case "unto":
+            case "upon": case "via" : case "with": case "yet":
               break;
 
             default :
@@ -1138,7 +1136,7 @@ public final class Util
       throw new RuntimeException("Error while creating SSLContext", e);
     }
 
-    return HttpClientBuilder.create(). setSSLContext(sc).setSSLHostnameVerifier((hostname, session) -> true).build();
+    return HttpClientBuilder.create().setSSLContext(sc).setSSLHostnameVerifier((hostname, session) -> true).build();
   }
 
 //---------------------------------------------------------------------------
@@ -1171,7 +1169,7 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String safeStr(String s)  { return s == null ? "" : s; }
+  public static String safeStr(String s) { return s == null ? "" : s; }
 
   public static boolean collEmpty(Collection<?> c) { return c == null ? true : c.isEmpty(); }
 
@@ -1278,12 +1276,11 @@ public final class Util
 
   public static String manifestValue(String key)
   {
-    String value = "";
     Class<App> theClass = App.class;
-    String className = theClass.getSimpleName() + ".class";
-    String classPath = theClass.getResource(className).toString();
+    String className = theClass.getSimpleName() + ".class",
+           classPath = theClass.getResource(className).toString();
 
-    if (!classPath.startsWith("jar")) return value;   // Class not from JAR
+    if (!classPath.startsWith("jar")) return "";   // Class not from JAR
 
     String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) + "/META-INF/MANIFEST.MF";
 
@@ -1291,11 +1288,11 @@ public final class Util
     {
       Manifest manifest = new Manifest(new URL(manifestPath).openStream());
       Attributes attr = manifest.getMainAttributes();
-      value = attr.getValue(key);
+      return attr.getValue(key);
 
     } catch (IOException e) { noOp(); }
 
-    return value;
+    return "";
   }
 
 //---------------------------------------------------------------------------
@@ -1368,10 +1365,7 @@ public final class Util
 
   public static void removeFromAnchor(Node node)
   {
-    if (node.getParent() == null) return;
-
-    AnchorPane oldParent = (AnchorPane) node.getParent();
-    oldParent.getChildren().remove(node);
+    nullSwitch((AnchorPane)node.getParent(), ap -> ap.getChildren().remove(node));
   }
 
 //---------------------------------------------------------------------------
@@ -1472,7 +1466,7 @@ public final class Util
 
     try (TikaInputStream stream = TikaInputStream.get(filePath.toPath()))
     {
-      return  tika.getDetector().detect(stream, metadata);
+      return tika.getDetector().detect(stream, metadata);
     }
     catch (IOException e)
     {
@@ -1637,12 +1631,8 @@ public final class Util
       jArr.add(obj);
       return new JsonArray(jArr);
     }
-    else if (obj instanceof JSONArray)
-    {
-      return new JsonArray((JSONArray) obj);
-    }
 
-    return null;
+    return obj instanceof JSONArray ? new JsonArray((JSONArray) obj) : null;
   }
 
 //---------------------------------------------------------------------------
@@ -1809,6 +1799,34 @@ public final class Util
   public static FilePath getHomeDir()
   {
     return new FilePath(FileSystemView.getFileSystemView().getHomeDirectory());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void enableAllIff (boolean enable,  EventTarget... targets) { disableAllIff(enable == false, targets); }
+  public static void enableAll    (                 EventTarget... targets) { disableAllIff(false          , targets); }
+  public static void disableAll   (                 EventTarget... targets) { disableAllIff(true           , targets); }
+
+  public static void disableAllIff(boolean disable, EventTarget... targets)
+  {
+    List.of(targets).forEach(target ->
+    {
+      if      (target instanceof Node    ) Node    .class.cast(target).setDisable(disable);
+      else if (target instanceof MenuItem) MenuItem.class.cast(target).setDisable(disable);
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void setAllVisible(boolean visible, EventTarget... targets)
+  {
+    List.of(targets).forEach(target ->
+    {
+      if      (target instanceof Node    ) Node    .class.cast(target).setVisible(visible);
+      else if (target instanceof MenuItem) MenuItem.class.cast(target).setVisible(visible);
+    });
   }
 
 //---------------------------------------------------------------------------

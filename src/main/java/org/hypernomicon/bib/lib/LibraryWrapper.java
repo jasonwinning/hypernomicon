@@ -96,7 +96,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
   public BibEntry_T getEntryByKey(String key)            { return keyToAllEntry.get(key); }
 
-  public final void setKeyChangeHandler(BiConsumer<String, String> hndlr) { this.keyChangeHndlr = hndlr; }
+  public final void setKeyChangeHandler(BiConsumer<String, String> hndlr) { keyChangeHndlr = hndlr; }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------

@@ -187,7 +187,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
       case QUERY_LINKING_TO_RECORD : case QUERY_MENTIONED_BY :
 
         HDT_Record specifiedRecord = HyperTableCell.getRecord(param2);
-        if (HDT_RecordBase.isEmpty(specifiedRecord)) return false;
+        if (HDT_Record.isEmpty(specifiedRecord)) return false;
 
         boolean result;
 
@@ -271,7 +271,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
           @Override protected void runFilter()
           {
             HDT_Record specifiedRecord = HyperTableCell.getRecord(op2);
-            if (HDT_RecordBase.isEmpty(specifiedRecord)) return;
+            if (HDT_Record.isEmpty(specifiedRecord)) return;
 
             MutableBoolean choseNotToWait = new MutableBoolean();
             list.addAll(db.getMentionerSet(specifiedRecord, false, choseNotToWait));
@@ -320,7 +320,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
         };
 
       case QUERY_DUPLICATE_FOLDERS :
-        return new FilteredQuerySource(getQueryType(), query, op1, op2)
+        return new FilteredQuerySource(getQueryType(), query)
         {
           @Override protected void runFilter()
           {

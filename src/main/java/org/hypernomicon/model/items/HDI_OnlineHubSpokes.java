@@ -55,11 +55,11 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
   {
     StrongLink link = hub.getLink();
 
-    if (val.debateID   > 0)  link.debateSpoke   = db.debates   .getByID(val.debateID  ).getConnector();
-    if (val.positionID > 0)  link.positionSpoke = db.positions .getByID(val.positionID).getConnector();
-    if (val.noteID     > 0)  link.noteSpoke     = db.notes     .getByID(val.noteID    ).getConnector();
-    if (val.labelID    > 0)  link.labelSpoke    = db.workLabels.getByID(val.labelID   ).getConnector();
-    if (val.conceptID  > 0)  link.conceptSpoke  = db.concepts  .getByID(val.conceptID ).getConnector();
+    if (val.debateID   > 0) link.debateSpoke   = db.debates   .getByID(val.debateID  ).getConnector();
+    if (val.positionID > 0) link.positionSpoke = db.positions .getByID(val.positionID).getConnector();
+    if (val.noteID     > 0) link.noteSpoke     = db.notes     .getByID(val.noteID    ).getConnector();
+    if (val.labelID    > 0) link.labelSpoke    = db.workLabels.getByID(val.labelID   ).getConnector();
+    if (val.conceptID  > 0) link.conceptSpoke  = db.concepts  .getByID(val.conceptID ).getConnector();
   }
 
 //---------------------------------------------------------------------------
@@ -85,19 +85,19 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
     int spokeCount = 0;
     StrongLink link = hub.getLink();
 
-    if (Connector.isEmpty(link.noteSpoke    ))  link.noteSpoke     = null;  else  spokeCount++;
-    if (Connector.isEmpty(link.conceptSpoke ))  link.conceptSpoke  = null;  else  spokeCount++;
-    if (Connector.isEmpty(link.labelSpoke   ))  link.labelSpoke    = null;  else  spokeCount++;
-    if (Connector.isEmpty(link.debateSpoke  ))  link.debateSpoke   = null;  else  spokeCount++;
-    if (Connector.isEmpty(link.positionSpoke))  link.positionSpoke = null;  else  spokeCount++;
+    if (Connector.isEmpty(link.noteSpoke    )) link.noteSpoke     = null;  else  spokeCount++;
+    if (Connector.isEmpty(link.conceptSpoke )) link.conceptSpoke  = null;  else  spokeCount++;
+    if (Connector.isEmpty(link.labelSpoke   )) link.labelSpoke    = null;  else  spokeCount++;
+    if (Connector.isEmpty(link.debateSpoke  )) link.debateSpoke   = null;  else  spokeCount++;
+    if (Connector.isEmpty(link.positionSpoke)) link.positionSpoke = null;  else  spokeCount++;
 
     if (spokeCount == 1)  // If only one connector, no reason for hub to exist...
     {
-      if      (link.noteSpoke     != null)  link.disconnectRecord(hdtNote,      false);
-      else if (link.debateSpoke   != null)  link.disconnectRecord(hdtDebate,    false);
-      else if (link.positionSpoke != null)  link.disconnectRecord(hdtPosition,  false);
-      else if (link.conceptSpoke  != null)  link.disconnectRecord(hdtConcept,   false);
-      else if (link.labelSpoke    != null)  link.disconnectRecord(hdtWorkLabel, false);
+      if      (link.noteSpoke     != null) link.disconnectRecord(hdtNote,      false);
+      else if (link.debateSpoke   != null) link.disconnectRecord(hdtDebate,    false);
+      else if (link.positionSpoke != null) link.disconnectRecord(hdtPosition,  false);
+      else if (link.conceptSpoke  != null) link.disconnectRecord(hdtConcept,   false);
+      else if (link.labelSpoke    != null) link.disconnectRecord(hdtWorkLabel, false);
 
       spokeCount = 0;
     }

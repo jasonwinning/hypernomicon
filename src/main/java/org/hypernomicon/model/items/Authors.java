@@ -143,10 +143,10 @@ public final class Authors implements Iterable<Author>
       {
         switch (entry.getKey())
         {
-          case tagInFileName: inFileName = HDI_OfflineTernary.class.cast(entry.getValue()).get(); break;
-          case tagEditor:     editor     = HDI_OfflineBoolean.class.cast(entry.getValue()).get(); break;
-          case tagTranslator: translator = HDI_OfflineBoolean.class.cast(entry.getValue()).get(); break;
-          default : break;
+          case tagInFileName : inFileName = HDI_OfflineTernary.class.cast(entry.getValue()).get(); break;
+          case tagEditor     : editor     = HDI_OfflineBoolean.class.cast(entry.getValue()).get(); break;
+          case tagTranslator : translator = HDI_OfflineBoolean.class.cast(entry.getValue()).get(); break;
+          default            :                                                                     break;
         }
       }
     }
@@ -293,7 +293,7 @@ public final class Authors implements Iterable<Author>
       case tagInFileName : val.ternary = author.getInFileName(); break;
       case tagEditor     : val.bool    = author.getIsEditor  (); break;
       case tagTranslator : val.bool    = author.getIsTrans   (); break;
-      default : break;
+      default            :                                       break;
     }
 
     objGroup.addNestedEntry(tagInFileName, val);

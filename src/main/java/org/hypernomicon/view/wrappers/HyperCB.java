@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Function;
 
-import static javafx.scene.input.MouseButton.*;
-
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
@@ -101,7 +99,7 @@ public class HyperCB implements CommitableWrapper
   public void setInnerOnAction(EventHandler<ActionEvent> onAction)
   {
     if (onAction == null) return;
-    this.innerOnAction = onAction;
+    innerOnAction = onAction;
   }
 
 //---------------------------------------------------------------------------
@@ -120,7 +118,7 @@ public class HyperCB implements CommitableWrapper
     if (onAction == null) return;
 
     if (populator instanceof VariablePopulator)
-      this.innerOnAction = onAction;
+      innerOnAction = onAction;
     else
       this.onAction = onAction;
   }
@@ -218,13 +216,6 @@ public class HyperCB implements CommitableWrapper
 
       if (newText.equals(HyperTableCell.getCellText(preShowingValue)) == false)
         endEditModeIfInTable();
-    });
-
-    cb.getEditor().setOnMouseReleased(event ->
-    {
-      if (event.getButton() == PRIMARY)
-        if (cb.getEditor().getSelectedText().length() == 0)
-          cb.getEditor().selectAll();
     });
   }
 
@@ -541,7 +532,7 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addEntry(int id, String value, boolean select)
+  public void addEntry(int id, String value, boolean select)
   {
     HyperTableCell cell = populator.addEntry(row, id, value);
     if (select && (id > 0))

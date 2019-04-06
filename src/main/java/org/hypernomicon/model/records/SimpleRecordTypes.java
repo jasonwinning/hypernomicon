@@ -115,7 +115,7 @@ public class SimpleRecordTypes
       miscFiles = getSubjList(rtTypeOfFile);
     }
 
-    @Override public HDT_RecordType getType()  { return hdtFileType; }
+    @Override public HDT_RecordType getType() { return hdtFileType; }
   }
 
 //---------------------------------------------------------------------------
@@ -137,8 +137,8 @@ public class SimpleRecordTypes
     {
       EnumHashBiMap<WorkTypeEnum, Integer> map = EnumHashBiMap.create(WorkTypeEnum.class);
 
-      map.put(wtPaper, 1);      map.put(wtBook, 2);
-      map.put(wtWebPage, 3);    map.put(wtChapter, 4);
+      map.put(wtPaper    , 1);  map.put(wtBook        , 2);
+      map.put(wtWebPage  , 3);  map.put(wtChapter     , 4);
       map.put(wtRecording, 5);  map.put(wtUnenteredSet, 6);
 
       return map;

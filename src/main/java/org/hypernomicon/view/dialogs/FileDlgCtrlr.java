@@ -21,6 +21,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.ctDropDown;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import org.hypernomicon.model.items.HyperPath;
@@ -28,6 +29,9 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.populators.StandardPopulator;
+import org.hypernomicon.view.wrappers.HyperCB;
+import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import java.io.IOException;
 import java.util.Set;
@@ -37,6 +41,7 @@ import org.apache.commons.io.FilenameUtils;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
@@ -51,12 +56,14 @@ public class FileDlgCtrlr extends HyperDlg
   @FXML private RadioButton rbCopy, rbMove, rbNeither;
   @FXML private TextField tfCurrentPath, tfFileName, tfNewPath;
   @FXML public Button btnCancel;
+  @FXML public ComboBox<HyperTableCell> cbType;
   @FXML public TextField tfRecordName;
 
   private FilePath srcFilePath;
   private HDT_RecordWithPath curFileRecord;
   private HDT_RecordType recordType;
   private HDT_Work curWork;
+  private HyperCB hcbType;
   private boolean copyOnly;
 
 //---------------------------------------------------------------------------
@@ -70,6 +77,9 @@ public class FileDlgCtrlr extends HyperDlg
 
     rbNeither.setSelected(true);
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private void setRB_OtherLocationsOK()
   {
@@ -115,8 +125,10 @@ public class FileDlgCtrlr extends HyperDlg
     this.curFileRecord = curFileRecord;
     this.curWork = curWork;
     this.recordType = recordType;
-    this.srcFilePath = null;
+    srcFilePath = null;
     copyOnly = false;
+
+    hcbType = new HyperCB(cbType, ctDropDown, new StandardPopulator(hdtFileType), null);
 
     tfFileName.disableProperty().bind(chkDontChangeFilename.selectedProperty());
 
@@ -143,6 +155,8 @@ public class FileDlgCtrlr extends HyperDlg
 
     if (recordType == hdtWorkFile)
     {
+      cbType.setDisable(true);
+
       lblName.setText("This will be the description");
       btnUseRecord.setText("Use description");
 
@@ -172,6 +186,8 @@ public class FileDlgCtrlr extends HyperDlg
       }
 
       tfRecordName.setText(recordName);
+      if (curFileRecord != null)
+        hcbType.addAndSelectEntry(HDT_MiscFile.class.cast(curFileRecord).fileType, HDT_Record::getCBText);
     }
 
     if (FilePath.isEmpty(srcFilePath) == false)
@@ -234,6 +250,12 @@ public class FileDlgCtrlr extends HyperDlg
     FilePath chosenFilePath = new FilePath(fileChooser.showOpenDialog(getStage()));
 
     if (FilePath.isEmpty(chosenFilePath)) return;
+
+    if (db.isProtectedFile(chosenFilePath))
+    {
+      messageDialog("That file cannot be assigned to a record.", mtError);
+      return;
+    }
 
     srcFilePath = chosenFilePath;
     copyOnly = false;
@@ -394,6 +416,17 @@ public class FileDlgCtrlr extends HyperDlg
       messageDialog("You must enter a destination path.", mtError);
       safeFocus(tfNewPath);
       return false;
+    }
+
+    if (recordType == hdtMiscFile)
+    {
+      int fileTypeID = hcbType.selectedID();
+      if ((fileTypeID < 1) && (hcbType.getText().length() == 0))
+      {
+        messageDialog("You must enter a file type.", mtError);
+        safeFocus(cbType);
+        return false;
+      }
     }
 
     // check to see if destination file name currently points to a file in the database

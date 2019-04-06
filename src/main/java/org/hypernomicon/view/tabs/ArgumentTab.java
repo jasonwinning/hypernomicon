@@ -59,7 +59,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
   @Override public void enable(boolean enabled)     { ui.tabArguments.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
-  @Override public void setRecord(HDT_Argument arg) { this.curArgument = arg; }
+  @Override public void setRecord(HDT_Argument arg) { curArgument = arg; }
   @Override void focusOnSearchKey()                 { ctrlr.focusOnSearchKey(); }
 
 //---------------------------------------------------------------------------

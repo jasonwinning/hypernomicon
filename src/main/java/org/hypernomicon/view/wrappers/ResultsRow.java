@@ -38,18 +38,18 @@ public final class ResultsRow extends AbstractRow<HDT_Record, ResultsRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ResultsRow(HDT_Record record) { this.record = record; this.cbText = ""; }
-  public ResultsRow(String cbText)   { this.record = null;   this.cbText = cbText; }
+  public ResultsRow(HDT_Record record) { this.record = record; cbText = ""; }
+  public ResultsRow(String cbText)     { record = null;   this.cbText = cbText; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  String getTagText(Tag tag)   { return record == null ? "" : record.getResultTextForTag(tag); }
-  String getRecordIDStr()      { return record == null ? "" : String.valueOf(record.getID()); }
-  String getRecordName()       { return record == null ? "" : record.listName(); }
-  String getSearchKey()        { return record == null ? "" : record.getSearchKey(); }
-  String getSortKey()          { return record == null ? "" : record.getSortKey(); }
-  public String getCBText()    { return record == null ? cbText : record.listName(); }
+  String getTagText(Tag tag) { return record == null ? "" : record.getResultTextForTag(tag); }
+  String getRecordIDStr()    { return record == null ? "" : String.valueOf(record.getID()); }
+  String getRecordName()     { return record == null ? "" : record.listName(); }
+  String getSearchKey()      { return record == null ? "" : record.getSearchKey(); }
+  String getSortKey()        { return record == null ? "" : record.getSortKey(); }
+  public String getCBText()  { return record == null ? cbText : record.listName(); }
 
   @SuppressWarnings("unchecked")
   @Override public <HDT_T extends HDT_Record> HDT_T getRecord() { return (HDT_T) record; }

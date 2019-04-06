@@ -30,8 +30,8 @@ public class HDI_Base
 
   public HDI_Base(HDI_Schema newSchema)
   {
-    this.schema = newSchema;
-    this.mainTag = newSchema.getTag();
+    schema = newSchema;
+    mainTag = newSchema.getTag();
   }
 
   public List<Tag> getTags()             { return schema.getTags(); }

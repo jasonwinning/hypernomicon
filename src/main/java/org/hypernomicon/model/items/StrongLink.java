@@ -96,7 +96,7 @@ public class StrongLink
       case hdtConcept   : return conceptSpoke;
       case hdtWorkLabel : return labelSpoke;
 
-      default : return null;
+      default           : return null;
     }
   }
 
@@ -168,7 +168,7 @@ public class StrongLink
         case hdtConcept   : link.conceptSpoke  = spoke; break;
         case hdtWorkLabel : link.labelSpoke    = spoke; break;
 
-        default : break;
+        default           :                             break;
       }
     });
 
@@ -227,7 +227,7 @@ public class StrongLink
       case hdtConcept   : firstSpoke = getSpoke(hdtConcept  ); conceptSpoke  = null; break;
       case hdtWorkLabel : firstSpoke = getSpoke(hdtWorkLabel); labelSpoke    = null; break;
 
-      default :           return false;
+      default           : return false;
     }
 
     hub.modifyNow();

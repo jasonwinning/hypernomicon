@@ -45,7 +45,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 
-<BorderPane id="childrenOnly" fx:id="mainPane" prefHeight="746.0" prefWidth="1253.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.MainCtrlr">
+<BorderPane id="childrenOnly" fx:id="mainPane" prefHeight="746.0" prefWidth="1253.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.MainCtrlr">
    <top>
       <HBox fx:id="topHBox" style="-fx-background-color: linear-gradient(#F8F8F8 0%, #ECECEC 25%, #F0F0F0 75%, #F8F8F8 100%);">
          <children>
@@ -58,7 +58,10 @@
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <MenuItem fx:id="mnuCloseDatabase" mnemonicParsing="false" onAction="#mnuCloseClick" text="Close Database..." />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem fx:id="mnuImportBibFile" mnemonicParsing="false" text="Import Bibliographic Entry File..." />
+                        <MenuItem fx:id="mnuImportWork" mnemonicParsing="false" onAction="#importWorkFile" text="Import Work File" />
+                        <MenuItem fx:id="mnuImportFile" mnemonicParsing="false" onAction="#importMiscFile" text="Import Misc. File" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem fx:id="mnuImportBibFile" mnemonicParsing="false" text="Import Bibliographic Entry File" />
                         <MenuItem fx:id="mnuImportBibClipboard" mnemonicParsing="false" text="Import Bibliographic Entry from Clipboard" />
                         <SeparatorMenuItem fx:id="mnuBibImportSeparator" mnemonicParsing="false" />
                     <MenuItem mnemonicParsing="false" onAction="#mnuExitClick" text="Exit" />

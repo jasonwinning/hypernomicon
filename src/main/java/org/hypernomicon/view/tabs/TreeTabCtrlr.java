@@ -21,7 +21,6 @@ import java.util.EnumSet;
 
 import org.controlsfx.control.MasterDetailPane;
 
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -380,7 +379,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     String typeName = db.getTypeName(record.getType());
 
-    if (HyperDB.isUnstoredRecord(record.getID(), record.getType()))
+    if (isUnstoredRecord(record.getID(), record.getType()))
     {
       messageDialog("That " + typeName + " cannot be renamed.", mtError);
       return;

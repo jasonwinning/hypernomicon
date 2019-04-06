@@ -30,10 +30,8 @@ import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 public class HDT_Position extends HDT_RecordWithConnector
 {
   public final List<HDT_Debate> debates;
-  public final List<HDT_Position> largerPositions;
-
+  public final List<HDT_Position> largerPositions, subPositions;
   public final List<HDT_Argument> arguments;
-  public final List<HDT_Position> subPositions;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

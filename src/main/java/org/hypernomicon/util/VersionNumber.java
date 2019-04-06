@@ -52,7 +52,7 @@ public class VersionNumber implements Comparable<VersionNumber>
     while (tempParts.size() < minParts)
       tempParts.add(0);
 
-    this.parts = Collections.unmodifiableList(tempParts);
+    parts = Collections.unmodifiableList(tempParts);
   }
 
   public int numParts() { return parts.size(); }

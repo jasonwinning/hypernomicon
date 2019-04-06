@@ -35,10 +35,10 @@ public class HyperSubjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType exten
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_SubjType get()       { return relSet.getSubjectCount(obj) == 0 ? null : relSet.getSubject(obj, 0); }
-  public boolean isNull()         { return get() == null; }
-  public boolean isNotNull()      { return get() != null; }
-  public int getID()              { return nullSwitch(get(), -1, HDT_Record::getID); }
+  public HDT_SubjType get()  { return relSet.getSubjectCount(obj) == 0 ? null : relSet.getSubject(obj, 0); }
+  public boolean isNull()    { return get() == null; }
+  public boolean isNotNull() { return get() != null; }
+  public int getID()         { return nullSwitch(get(), -1, HDT_Record::getID); }
 
   @Override public int hashCode()           { return super.hashCode(); }
   @Override public boolean equals(Object o) { return o instanceof HyperSubjPointer<?, ?> ? ((HyperSubjPointer<?, ?>) o).get() == get() : false; }

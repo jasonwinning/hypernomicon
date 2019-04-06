@@ -206,7 +206,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
       else if (ctrlType == ctEditNewBtn)
         setAction(ButtonAction.baEdit);
     }
-    else
+    else if (ctrlType != ctBrowseBtn)
     {
       if ((ctrlType != ctGoNewBtn) && (ctrlType != ctEditNewBtn))
         cellButton.setDisable(true);

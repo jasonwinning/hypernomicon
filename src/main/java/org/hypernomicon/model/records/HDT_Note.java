@@ -31,8 +31,7 @@ import org.hypernomicon.model.relations.HyperObjPointer;
 
 public class HDT_Note extends HDT_RecordWithConnector
 {
-  public final List<HDT_Note> parentNotes;
-  public final List<HDT_Note> subNotes;
+  public final List<HDT_Note> parentNotes, subNotes;
   public final HyperObjPointer<HDT_Note, HDT_Folder> folder;
 
 //---------------------------------------------------------------------------

@@ -27,8 +27,7 @@ import org.hypernomicon.model.HyperDataset;
 
 public class HDT_PersonGroup extends HDT_RecordBase
 {
-  public final List<HDT_PersonGroup> parentGroups;
-  public final List<HDT_PersonGroup> subGroups;
+  public final List<HDT_PersonGroup> parentGroups, subGroups;
 
   public HDT_PersonGroup(HDT_RecordState xmlState, HyperDataset<HDT_PersonGroup> dataset)
   {

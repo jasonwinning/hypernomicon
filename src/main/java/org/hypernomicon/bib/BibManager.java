@@ -39,7 +39,6 @@ import org.hypernomicon.bib.lib.BibCollection;
 import org.hypernomicon.bib.lib.BibEntry;
 import org.hypernomicon.bib.lib.LibraryWrapper;
 import org.hypernomicon.bib.lib.LibraryWrapper.SyncTask;
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
@@ -98,7 +97,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void saveToDisk() { libraryWrapper.saveToDisk(db.getRootFilePath().resolve(HyperDB.BIB_FILE_NAME)); }
+  public void saveToDisk() { libraryWrapper.saveToDisk(db.getRootFilePath().resolve(BIB_FILE_NAME)); }
 
   @Override public boolean isValid() { return true; }
 
@@ -204,10 +203,7 @@ public class BibManager extends HyperDlg
 
   private void hideBottomControls()
   {
-    lblSelect   .setVisible(false);
-    btnSelect   .setVisible(false);
-    btnCreateNew.setVisible(false);
-    cbNewType   .setVisible(false);
+    setAllVisible(false, lblSelect, btnSelect, btnCreateNew, cbNewType);
   }
 
 //---------------------------------------------------------------------------
@@ -257,10 +253,7 @@ public class BibManager extends HyperDlg
       if ((newValue != null) && (newValue.getBibEntryKey().length() == 0))
       {
         lblSelect.setText("Assigning to work record: " + newValue.getCBText());
-        lblSelect.setVisible(true);
-        btnSelect.setVisible(true);
-        btnCreateNew.setVisible(true);
-        cbNewType.setVisible(true);
+        setAllVisible(true, lblSelect, btnSelect, btnCreateNew, cbNewType);
         return;
       }
 
@@ -495,10 +488,10 @@ public class BibManager extends HyperDlg
 
     switch (type)
     {
-      case bctAll      : return libraryWrapper.getNonTrashEntries();
-      case bctTrash    : return libraryWrapper.getTrash();
-      case bctUser     : return libraryWrapper.getCollectionEntries(row.getKey());
-      default          : return libraryWrapper.getUnsorted();
+      case bctAll   : return libraryWrapper.getNonTrashEntries();
+      case bctTrash : return libraryWrapper.getTrash();
+      case bctUser  : return libraryWrapper.getCollectionEntries(row.getKey());
+      default       : return libraryWrapper.getUnsorted();
     }
   }
 

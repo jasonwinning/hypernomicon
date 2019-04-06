@@ -243,18 +243,15 @@ public class MainTextCtrlr
 
         switch (item.type)
         {
-          case diDescription: setText("This record's description"); break;
-          case diKeyWorks:    setText("Key works"); break;
-          case diRecord:      setText(db.getTypeName(item.record.getType()) + ": " + item.record.getCBText()); break;
-          default:            setText(""); break;
+          case diDescription : setText("This record's description"); break;
+          case diKeyWorks    : setText("Key works"); break;
+          case diRecord      : setText(db.getTypeName(item.record.getType()) + ": " + item.record.getCBText()); break;
+          default            : setText(""); break;
         }
       }
     });
 
-    btnMoveUp.setDisable(true);
-    btnMoveDown.setDisable(true);
-    btnRemove.setDisable(true);
-    btnInsert.setDisable(true);
+    disableAll(btnMoveUp, btnMoveDown, btnRemove, btnInsert);
 
     cbName.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
     {
@@ -270,14 +267,11 @@ public class MainTextCtrlr
     {
       if (newValue == null)
       {
-        btnMoveUp.setDisable(true);
-        btnMoveDown.setDisable(true);
-        btnRemove.setDisable(true);
+        disableAll(btnMoveUp, btnMoveDown, btnRemove);
         return;
       }
 
-      btnMoveUp.setDisable(false);
-      btnMoveDown.setDisable(false);
+      enableAll(btnMoveUp, btnMoveDown);
 
       btnRemove.setDisable(newValue.type != diRecord);
     });
@@ -513,7 +507,7 @@ public class MainTextCtrlr
 
       if (text.length() == 0) return;
 
-      text =  htmlEscaper.escape(text);
+      text = htmlEscaper.escape(text);
 
       if (noCarriageReturns == false)
       {

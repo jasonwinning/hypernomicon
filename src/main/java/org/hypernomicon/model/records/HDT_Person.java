@@ -49,7 +49,6 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWithPath
 {
   public final List<HDT_Institution> institutions;
-
   public final List<HDT_Work> works;
   public final List<HDT_MiscFile> miscFiles;
   public final List<HDT_Investigation> investigations;

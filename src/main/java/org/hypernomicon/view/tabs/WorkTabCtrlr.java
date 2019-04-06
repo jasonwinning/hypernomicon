@@ -455,6 +455,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
           retrieveBibData(false, list.get(0));
       });
 
+    htISBN.addRefreshHandler(() -> tabPane.requestLayout());
+
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), null);
     hcbLargerWork = new HyperCB(cbLargerWork, ctDropDownList, new StandardPopulator(hdtWork), null);
 
@@ -980,13 +982,12 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     tfYear.setDisable(false);
     btnNewChapter.setText("New Chapter");
     cbLargerWork.setDisable(false);
-    cbLargerWork.setVisible(true);
     GridPane.setColumnSpan(apLowerMid, 1);
-    apLowerRight.setVisible(true);
     btnLargerWork.setText("Larger Work:");
 
     btnFolder.setVisible(false);
-    btnOpenLink.setVisible(true);
+
+    setAllVisible(true, cbLargerWork, apLowerRight, btnOpenLink);
 
     tfLink.setEditable(true);
     AnchorPane.setLeftAnchor(btnOpenLink, btnOpenLinkLeftAnchor);
@@ -1022,9 +1023,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     tfYear.setDisable(true);
     cbLargerWork.setDisable(true);
-    cbLargerWork.setVisible(false);
+
     btnNewChapter.setText("Add Multiple Files");
-    apLowerRight.setVisible(false);
     GridPane.setColumnSpan(apLowerMid, GridPane.REMAINING);
     btnLargerWork.setText("Move All Files");
 
@@ -1036,11 +1036,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     tfLink.setEditable(false);
 
-    apLowerRight.getChildren().remove(tfLink);
+    setAllVisible(false, cbLargerWork, apLowerRight, btnOpenLink);
 
+    apLowerRight.getChildren().remove(tfLink);
     apLowerMid.getChildren().add(tfLink);
 
-    btnOpenLink.setVisible(false);
     btnFolder.setVisible(true);
 
     Platform.runLater(() ->
@@ -1418,9 +1418,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   @Override public void clear()
   {
-    btnUseDOI.setDisable(true);
-    btnUseISBN.setDisable(true);
-    btnMergeBib.setDisable(true);
+    disableAll(btnUseDOI, btnUseISBN, btnMergeBib);
 
     tfYear.setText("");
 
@@ -1953,8 +1951,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     tpBib.getSelectionModel().select(tab);
 
     ta.clear();
-    btnStop.setVisible(true);
-    progressBar.setVisible(true);
+    setAllVisible(true, btnStop, progressBar);
 
     tabPane.requestLayout();
 
@@ -1975,8 +1972,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       ta.setText("Query URL: " + url + System.lineSeparator());
 
-      btnStop.setVisible(false);
-      progressBar.setVisible(false);
+      setAllVisible(false, btnStop, progressBar);
 
       if (bd == null)
       {
@@ -1987,8 +1983,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       ta.appendText(bd.createReport());
     }, e ->
     {
-      btnStop.setVisible(false);
-      progressBar.setVisible(false);
+      setAllVisible(false, btnStop, progressBar);
       ta.setText("Query URL: " + url + System.lineSeparator());
 
       if ((e instanceof ParseException) || (e instanceof TerminateTaskException))

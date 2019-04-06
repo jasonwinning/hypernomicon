@@ -39,7 +39,6 @@ import org.apache.commons.io.FileUtils;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.*;
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
@@ -50,7 +49,6 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.dialogs.RenameDlgCtrlr.NameType.*;
 import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
-import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
@@ -58,8 +56,6 @@ import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.dialogs.HyperDlg;
 import org.hypernomicon.view.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
-import org.hypernomicon.view.tabs.FileTabCtrlr;
-import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
@@ -115,6 +111,15 @@ public class FileManager extends HyperDlg
     {
       this.btnForward = btnForward;
       this.btnBack = btnBack;
+
+      clear();
+    }
+
+    private void clear()
+    {
+      history.clear();
+      ndx = -1;
+      updateButtons();
     }
 
     private void add(HistoryItem newItem)
@@ -182,7 +187,8 @@ public class FileManager extends HyperDlg
   private static HyperTask task;
   private static long totalTaskCount, curTaskCount;
 
-  FileRow getFolderRow() { return nullSwitch(curFolder, null, folder -> folderTree.getRowsForRecord(folder).get(0)); }
+  FileRow getFolderRow()     { return nullSwitch(curFolder, null, folder -> folderTree.getRowsForRecord(folder).get(0)); }
+  public void clearHistory() { history.clear(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -728,18 +734,13 @@ public class FileManager extends HyperDlg
 
     fileTable.addContextMenuItem("New misc. file record", fileRow -> fileRow.getRecord() == null, fileRow ->
     {
-      HDT_MiscFile miscFile = db.createNewBlankRecord(hdtMiscFile);
+      ui.newMiscFile(fileRow);
+      refresh();
+    });
 
-      miscFile.getPath().assign(fileRow.getFolder(), fileRow.getFilePath().getNameOnly());
-      ui.goToRecord(miscFile, true);
-
-      FileTabCtrlr fileCtrlr = HyperTab.getHyperTab(miscFileTab);
-      if (fileCtrlr.btnManageClick() == false)
-      {
-        miscFile.getPath().clear(false);
-        ui.deleteCurrentRecord(false);
-      }
-
+    fileTable.addContextMenuItem("New work record", fileRow -> fileRow.getRecord() == null, fileRow ->
+    {
+      ui.newWorkAndWorkFile(null, null);
       refresh();
     });
 
@@ -892,11 +893,11 @@ public class FileManager extends HyperDlg
 
         switch (hyperPath.getRecord().getType())
         {
-          case hdtPerson :   confirmMsg = confirmMsg + "is assigned as a picture file for a person record. Delete it anyway?"; break;
+          case hdtPerson   : confirmMsg = confirmMsg + "is assigned as a picture file for a person record. Delete it anyway?"; break;
           case hdtMiscFile : confirmMsg = confirmMsg + "is assigned to a misc. file record. Okay to delete the file as well as the associated record?"; break;
           case hdtWorkFile : confirmMsg = confirmMsg + "is assigned to a work file record. Delete it anyway?"; break;
-          case hdtFolder :   confirmMsg = confirmMsg + "is assigned to a note record. Delete it anyway?"; break;
-          default :          messageDialog("Internal error #21292", mtError); return;
+          case hdtFolder   : confirmMsg = confirmMsg + "is assigned to a note record. Delete it anyway?"; break;
+          default          : messageDialog("Internal error #21292", mtError); return;
         }
 
         if (confirmDialog(confirmMsg) == false) return;
@@ -1080,7 +1081,7 @@ public class FileManager extends HyperDlg
     boolean isDir = fileRow.isDirectory(), cantRename;
     String noun;
 
-    if (isDir) { noun = "folder"; cantRename = HyperDB.isUnstoredRecord(fileRecord.getID(), hdtFolder); }
+    if (isDir) { noun = "folder"; cantRename = isUnstoredRecord(fileRecord.getID(), hdtFolder); }
     else       { noun = "file";   cantRename = db.isProtectedFile(fileRow.getFilePath()); }
 
     if (cantRename)
@@ -1172,11 +1173,11 @@ public class FileManager extends HyperDlg
     needRefresh = false;
 
     if (folderTree.selectedRecord() == null)
-      folderTree.selectRecord(db.folders.getByID(HyperDB.ROOT_FOLDER_ID), -1, false);
+      folderTree.selectRecord(db.folders.getByID(ROOT_FOLDER_ID), -1, false);
 
     treeView.refresh();
 
-    if (HDT_RecordBase.isEmpty(curFolder))
+    if (HDT_Record.isEmpty(curFolder))
       curFolder = null;
 
     if (curFolder == null)

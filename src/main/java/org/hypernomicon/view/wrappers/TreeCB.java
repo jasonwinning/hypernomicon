@@ -43,7 +43,7 @@ class TreeCB
 
   TreeCB(ComboBox<TreeRow> comboBox, TreeWrapper tree)
   {
-    this.cb = comboBox;
+    cb = comboBox;
     this.tree = tree;
     recordToRow = new HashMap<>();
     rows = FXCollections.observableArrayList();

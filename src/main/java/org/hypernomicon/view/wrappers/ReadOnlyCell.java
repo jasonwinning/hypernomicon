@@ -86,45 +86,44 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
       setText(null);
       setGraphic(null);
       setTooltip(null);
+      return;
     }
-    else
+
+    if (incremental && (col.wasMoreButtonClicked() == false))
     {
-      if (incremental && (col.wasMoreButtonClicked() == false))
+      HyperTableRow row = getTableRow().getItem();
+
+      if (row == null)
       {
-        HyperTableRow row = getTableRow().getItem();
-
-        if (row == null)
-        {
-          setText("");
-          setGraphic(null);
-          setTooltip(null);
-          return;
-        }
-
-        if (HyperTableCell.getCellType(cell) == hdtAuxiliary)
-        {
-          setText("");
-          setTooltip(null);
-          Button cellButton = HyperTableColumn.makeButton(this);
-          cellButton.setText("Show more");
-          cellButton.setOnAction(event ->
-          {
-            if (table.onShowMore != null)
-              table.onShowMore.run();
-          });
-
-          setGraphic(cellButton);
-          table.showMoreRow = row;
-          return;
-        }
+        setText("");
+        setGraphic(null);
+        setTooltip(null);
+        return;
       }
 
-      String text = HyperTableCell.getCellText(cell);
+      if (HyperTableCell.getCellType(cell) == hdtAuxiliary)
+      {
+        setText("");
+        setTooltip(null);
+        Button cellButton = HyperTableColumn.makeButton(this);
+        cellButton.setText("Show more");
+        cellButton.setOnAction(event ->
+        {
+          if (table.onShowMore != null)
+            table.onShowMore.run();
+        });
 
-      setText(text);
-      setTooltip(text.length() == 0 ? null : new Tooltip(text));
-      setGraphic(null);
+        setGraphic(cellButton);
+        table.showMoreRow = row;
+        return;
+      }
     }
+
+    String text = HyperTableCell.getCellText(cell);
+
+    setText(text);
+    setTooltip(text.length() == 0 ? null : new Tooltip(text));
+    setGraphic(null);
   }
 
 //---------------------------------------------------------------------------

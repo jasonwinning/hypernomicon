@@ -49,17 +49,17 @@ public class HDT_Concept extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String name()                        { return term.get().name(); }
-  @Override public String getSearchKey()                { return term.get().getSearchKey(); }
-  @Override public List<SearchKeyword> getSearchKeys()  { return db.getKeysByRecord(term.get()); }
-  @Override public String getCBText()                   { return getExtendedName(); }
-  @Override public String getXMLObjectName()            { return getExtendedName(); }
-  @Override public String getNameEngChar()              { return term.get().getNameEngChar(); }
-  @Override public String getFirstActiveKeyWord()       { return term.get().getFirstActiveKeyWord(); }
-  @Override public void setName(String str)             { term.get().setName(str); }
-  @Override public String listName()                    { return name(); }
-  @Override public HDT_RecordType getType()             { return hdtConcept; }
-  @Override public boolean isUnitable()                 { return true; }
+  @Override public String name()                       { return term.get().name(); }
+  @Override public String getSearchKey()               { return term.get().getSearchKey(); }
+  @Override public List<SearchKeyword> getSearchKeys() { return db.getKeysByRecord(term.get()); }
+  @Override public String getCBText()                  { return getExtendedName(); }
+  @Override public String getXMLObjectName()           { return getExtendedName(); }
+  @Override public String getNameEngChar()             { return term.get().getNameEngChar(); }
+  @Override public String getFirstActiveKeyWord()      { return term.get().getFirstActiveKeyWord(); }
+  @Override public void setName(String str)            { term.get().setName(str); }
+  @Override public String listName()                   { return name(); }
+  @Override public HDT_RecordType getType()            { return hdtConcept; }
+  @Override public boolean isUnitable()                { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

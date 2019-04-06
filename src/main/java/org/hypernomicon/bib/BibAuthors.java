@@ -36,8 +36,7 @@ import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.view.dialogs.NewPersonDlgCtrlr;
 
-import static org.hypernomicon.model.HyperDB.Tag.tagEditor;
-import static org.hypernomicon.model.HyperDB.Tag.tagTranslator;
+import static org.hypernomicon.model.HyperDB.Tag.*;
 
 public abstract class BibAuthors implements Iterable<BibAuthor>
 {

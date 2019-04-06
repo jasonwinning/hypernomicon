@@ -85,10 +85,15 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
       cB.getSelectionModel().select(cell);
 
     setGraphic(cB);
-    safeFocus(cB);
-    AutoCompleteCB.scrollToValue(cB);
     cB.show();
-    table.doExternalRefresh();
+
+    runDelayedInFXThread(6, 50, event ->
+    {
+      cB.requestFocus();
+      AutoCompleteCB.scrollToValue(cB);
+
+      cB.getEditor().selectAll();
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -146,6 +151,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
   private void createComboBox()
   {
     cB = new ComboBox<>();
+    cB.setMaxWidth(Double.MAX_VALUE);
     cB.setPrefWidth(getWidth() - getGraphicTextGap() * 2);
     cB.setMinHeight(18.0 * displayScale);
     cB.setPrefHeight(18.0 * displayScale);
@@ -167,7 +173,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 
     cB.focusedProperty().addListener((observable, oldValue, newValue) ->
     {
-      if (newValue == false)
+      if (!cB.isFocused())
         commit();
     });
 
@@ -180,8 +186,6 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
         commitEdit(item);
       }
     });
-
-    cB.selectionModelProperty().addListener((obs, ov, nv) -> table.doExternalRefresh());
   }
 
 //---------------------------------------------------------------------------

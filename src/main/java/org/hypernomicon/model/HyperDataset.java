@@ -69,11 +69,8 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
     public Iterable<HDT_DT> keyIterable()        { return this::keyIterator; }
     public Iterator<HDT_DT> keyIterator()        { return new CoreIterator(this, true); }
-    public Iterator<HDT_DT> idIterator()         { return new CoreIterator(this, false); }
-
-    @Override public Iterator<HDT_DT> iterator() { return idIterator(); }
-
-    public Stream<HDT_DT> stream() { return StreamSupport.stream(spliterator(), false); }
+    @Override public Iterator<HDT_DT> iterator() { return new CoreIterator(this, false); }
+    public Stream<HDT_DT> stream()               { return StreamSupport.stream(spliterator(), false); }
   }
 
 //---------------------------------------------------------------------------

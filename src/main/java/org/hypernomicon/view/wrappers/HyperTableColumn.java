@@ -85,9 +85,9 @@ public class HyperTableColumn
   public int getColNdx()                             { return colNdx; }
   public String getHeader()                          { return tc.getText(); }
   HDT_RecordType getObjType()                        { return objType; }
-  void setCanEditIfEmpty(boolean newVal)             { this.canEditIfEmpty.setValue(newVal); }
-  void setNumeric(boolean newVal)                    { this.isNumeric.setValue(newVal); }
-  public void setDontCreateNewRecord(boolean newVal) { this.dontCreateNewRecord.setValue(newVal); }
+  void setCanEditIfEmpty(boolean newVal)             { canEditIfEmpty.setValue(newVal); }
+  void setNumeric(boolean newVal)                    { isNumeric.setValue(newVal); }
+  public void setDontCreateNewRecord(boolean newVal) { dontCreateNewRecord.setValue(newVal); }
   void setTooltip(ButtonAction ba, String text)      { tooltips.put(ba, text); }
 
   @SuppressWarnings("unchecked") <PopType extends Populator> PopType getPopulator()     { return (PopType) populator; }

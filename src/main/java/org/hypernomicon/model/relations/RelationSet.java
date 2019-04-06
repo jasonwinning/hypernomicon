@@ -18,7 +18,6 @@
 package org.hypernomicon.model.relations;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HyperDB.RelationChangeHandler;
@@ -216,7 +215,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   @SuppressWarnings("unchecked")
   private void addOrphan(HDT_Record orphan)
   {
-    if ((subjToObjList.containsKey(orphan) == false) && (HyperDB.isUnstoredRecord(orphan.getID(), subjType) == false))
+    if ((subjToObjList.containsKey(orphan) == false) && (isUnstoredRecord(orphan.getID(), subjType) == false))
       orphans.add((HDT_Subj) orphan);
   }
 
@@ -274,7 +273,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
                                   offlineItem = new HDI_OfflineTernary(schema, recordState);
           break;
 
-        case hdcNestedPointer : if (HDT_RecordBase.isEmpty(HDI_OnlineNestedPointer.class.cast(onlineItem).get()) == false)
+        case hdcNestedPointer : if (HDT_Record.isEmpty(HDI_OnlineNestedPointer.class.cast(onlineItem).get()) == false)
                                   offlineItem = new HDI_OfflineNestedPointer(schema, recordState);
           break;
 
@@ -303,7 +302,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case hdcTernary       : isEmpty = NestedValue.isEmpty(HDI_OfflineTernary      .class.cast(value).get     ()); break;
       case hdcString        : isEmpty = NestedValue.isEmpty(HDI_OfflineString       .class.cast(value).get     ()); break;
       case hdcNestedPointer : isEmpty = NestedValue.isEmpty(HDI_OfflineNestedPointer.class.cast(value).getObjID()); break;
-      default : return;
+      default               : return;
     }
 
     HDI_OnlineBase<HDI_Offline> item = getNestedItem(subj, obj, tag, isEmpty);
@@ -380,7 +379,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   {
     if (hasNestedItems == false) return falseWithErrorMessage("Internal error #49223");
 
-    boolean isEmpty = HDT_RecordBase.isEmpty(target);
+    boolean isEmpty = HDT_Record.isEmpty(target);
     if (isEmpty == false) addObjAndMod(subj, obj);
 
     HDI_OnlineNestedPointer item = getNestedItem(subj, obj, tag, isEmpty);
@@ -456,7 +455,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case hdcTernary       : item = new HDI_OnlineTernary      (getSchema(tag), subj); break;
       case hdcString        : item = new HDI_OnlineString       (getSchema(tag), subj); break;
       case hdcNestedPointer : item = new HDI_OnlineNestedPointer(getSchema(tag), subj); break;
-      default : return null;
+      default               : return null;
     }
 
     items.put(tag, item);
@@ -536,7 +535,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
           case hdcBoolean       : setNestedBoolean(subj, obj, tag, value.bool   ); break;
           case hdcTernary       : setNestedTernary(subj, obj, tag, value.ternary); break;
           case hdcNestedPointer : setNestedPointer(subj, obj, tag, value.target ); break;
-          default : break;
+          default               : break;
         }
       });
     });
@@ -590,12 +589,12 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       {
         objToSubjList.remove(obj, subj);
 
-        if (HDT_RecordBase.isEmpty(subj) == false) // skip if record is in the process of being deleted
+        if (HDT_Record.isEmpty(subj) == false) // skip if record is in the process of being deleted
         {
-          if (trackOrphans && objList.isEmpty() && (HyperDB.isUnstoredRecord(subj.getID(), subjType) == false))
+          if (trackOrphans && objList.isEmpty() && (isUnstoredRecord(subj.getID(), subjType) == false))
             orphans.add(subj);
 
-          if ((HDT_RecordBase.isEmpty(subj) == false) && (HDT_RecordBase.isEmpty(obj) == false))  // Only run change handlers if the record is not in the process of being deleted
+          if ((HDT_Record.isEmpty(subj) == false) && (HDT_Record.isEmpty(obj) == false))  // Only run change handlers if the record is not in the process of being deleted
             Platform.runLater(() -> changeHandlers.forEach(handler -> handler.handle(subj, obj, false)));
         }
       }
@@ -647,10 +646,10 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     {
       HDT_Key key = entry.getKey();
 
-      if (HDT_RecordBase.isEmptyThrowsException(key) == false)
+      if (HDT_Record.isEmptyThrowsException(key) == false)
       {
         HDT_Value value = entry.getValue();
-        if (HDT_RecordBase.isEmptyThrowsException(value) == false)
+        if (HDT_Record.isEmptyThrowsException(value) == false)
           newMap.put(key, value);
       }
     }
@@ -669,7 +668,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     Iterator<HDT_Subj> orphanIt = orphans.iterator();
     while (orphanIt.hasNext())
     {
-      if (HDT_RecordBase.isEmptyThrowsException(orphanIt.next())) orphanIt.remove();
+      if (HDT_Record.isEmptyThrowsException(orphanIt.next())) orphanIt.remove();
     }
 
     if (hasNestedItems == false) return;
@@ -680,8 +679,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     {
       Cell<HDT_Subj, HDT_Obj, LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> cell = cellIt.next();
 
-      if      (HDT_RecordBase.isEmptyThrowsException(cell.getRowKey()))    cellIt.remove();
-      else if (HDT_RecordBase.isEmptyThrowsException(cell.getColumnKey())) cellIt.remove();
+      if      (HDT_Record.isEmptyThrowsException(cell.getRowKey()))    cellIt.remove();
+      else if (HDT_Record.isEmptyThrowsException(cell.getColumnKey())) cellIt.remove();
       else
       {
         Iterator<Entry<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> targetIt = cell.getValue().entrySet().iterator();
@@ -691,7 +690,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
           HDI_OnlineBase<? extends HDI_OfflineBase> item = targetIt.next().getValue();
 
           if (item.getCategory() == hdcNestedPointer)
-            if (HDT_RecordBase.isEmptyThrowsException(HDI_OnlineNestedPointer.class.cast(item).get())) targetIt.remove();
+            if (HDT_Record.isEmptyThrowsException(HDI_OnlineNestedPointer.class.cast(item).get())) targetIt.remove();
         }
       }
     }
@@ -708,7 +707,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     {
       HDT_Obj obj = list.get(ndx);
 
-      if (HDT_RecordBase.isEmptyThrowsException(obj))
+      if (HDT_Record.isEmptyThrowsException(obj))
       {
         try { setObject(subj, obj, ndx, false); } catch (RelationCycleException e) { noOp(); }
         ndx--;

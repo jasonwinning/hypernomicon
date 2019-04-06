@@ -78,7 +78,7 @@
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <children>
                   <Label text="Type:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0" />
-                  <ComboBox fx:id="cbFileType" layoutX="48.0" layoutY="3.0" prefHeight="22.0" prefWidth="129.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0" />
+                  <ComboBox fx:id="cbType" layoutX="48.0" layoutY="3.0" prefHeight="22.0" prefWidth="129.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0" />
                   <Button fx:id="btnWork" layoutX="174.0" layoutY="3.0" maxWidth="83.0" minWidth="83.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="83.0" text="Work:" AnchorPane.leftAnchor="174.0" AnchorPane.topAnchor="5.0" />
                   <ComboBox fx:id="cbWork" layoutX="261.0" layoutY="5.0" prefHeight="22.0" prefWidth="404.0" AnchorPane.leftAnchor="261.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
                </children>

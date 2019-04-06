@@ -290,7 +290,7 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
       if (showMessage)
         messageDialog("You must select a type.", mtError);
 
-      safeFocus(this.cbType);
+      safeFocus(cbType);
       return false;
     }
 

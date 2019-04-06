@@ -24,7 +24,6 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.util.ArrayList;
 
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Folder;
@@ -50,15 +49,15 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  TreeModel<FileRow> getTreeModel()                                        { return treeModel; }
+  TreeModel<FileRow> getTreeModel()                                       { return treeModel; }
 
-  @Override public TreeItem<FileRow> getRoot()                             { return tv.getRoot(); }
-  @Override public void expandMainBranches()                               { treeModel.expandMainBranch(); }
-  @Override public SelectionModel<TreeItem<FileRow>> getSelectionModel()   { return tv.getSelectionModel(); }
-  @Override public void focusOnTreeCtrl()                                  { safeFocus(tv); }
-  @Override public void scrollToNdx(int ndx)                               { tv.scrollTo(ndx); }
-  @Override public TreeItem<FileRow> getTreeItem(FileRow treeRow)          { return treeRow.getTreeItem(); }
-  @Override public ArrayList<FileRow> getRowsForRecord(HDT_Record record)  { return new ArrayList<>(treeModel.getRowsForRecord(record)); }
+  @Override public TreeItem<FileRow> getRoot()                            { return tv.getRoot(); }
+  @Override public void expandMainBranches()                              { treeModel.expandMainBranch(); }
+  @Override public SelectionModel<TreeItem<FileRow>> getSelectionModel()  { return tv.getSelectionModel(); }
+  @Override public void focusOnTreeCtrl()                                 { safeFocus(tv); }
+  @Override public void scrollToNdx(int ndx)                              { tv.scrollTo(ndx); }
+  @Override public TreeItem<FileRow> getTreeItem(FileRow treeRow)         { return treeRow.getTreeItem(); }
+  @Override public ArrayList<FileRow> getRowsForRecord(HDT_Record record) { return new ArrayList<>(treeModel.getRowsForRecord(record)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -136,7 +135,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
   {
     super.reset();
 
-    treeModel.reset(db.folders.getByID(HyperDB.ROOT_FOLDER_ID));
+    treeModel.reset(db.folders.getByID(ROOT_FOLDER_ID));
   }
 
 //---------------------------------------------------------------------------

@@ -63,7 +63,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   @FXML private AnchorPane apDescription;
   @FXML private Button btnLaunch, btnManage, btnTree, btnWork;
   @FXML private CheckBox checkAnnotated;
-  @FXML private ComboBox<HyperTableCell> cbFileType, cbWork;
+  @FXML private ComboBox<HyperTableCell> cbType, cbWork;
   @FXML private SplitMenuButton btnShow;
   @FXML private SplitPane spBottomVert, spRightHoriz, spRightVert;
   @FXML private TableView<HyperTableRow> tvAuthors, tvKeyMentions, tvLabels;
@@ -71,7 +71,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   private MainTextWrapper mainText;
   private HyperTable htLabels, htAuthors, htKeyMentioners;
-  private HyperCB hcbWork, hcbFileType;
+  private HyperCB hcbWork, hcbType;
   public FileDlgCtrlr fdc = null;
   private HDT_MiscFile curMiscFile;
 
@@ -101,7 +101,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     mainText.loadFromRecord(curMiscFile, true, getView().getTextInfo());
 
-    hcbFileType.addAndSelectEntry(curMiscFile.fileType, HDT_Record::getCBText);
+    hcbType.addAndSelectEntry(curMiscFile.fileType, HDT_Record::getCBText);
 
   // Populate key mentioners
   // -----------------------
@@ -188,8 +188,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     tfFileName.setEditable(false);
 
     addShowMenuItem("Show in system explorer", event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.getPath().getFilePath()); });
-    addShowMenuItem("Show in file manager", event ->    { if (tfFileName.getText().length() > 0) ui.goToFileInManager(curMiscFile.getPath().getFilePath()); });
-    addShowMenuItem("Copy path to clipboard", event ->  { if (tfFileName.getText().length() > 0) copyToClipboard(curMiscFile.getPath().toString()); });
+    addShowMenuItem("Show in file manager"   , event -> { if (tfFileName.getText().length() > 0) ui.goToFileInManager(curMiscFile.getPath().getFilePath()); });
+    addShowMenuItem("Copy path to clipboard" , event -> { if (tfFileName.getText().length() > 0) copyToClipboard(curMiscFile.getPath().toString()); });
 
     addShowMenuItem("Unassign file", event ->
     {
@@ -223,7 +223,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     htKeyMentioners.addCol(hdtNone, ctNone);
     htKeyMentioners.addCol(hdtNone, ctNone);
 
-    hcbFileType = new HyperCB(cbFileType, ctDropDown, new StandardPopulator(hdtFileType), null);
+    hcbType = new HyperCB(cbType, ctDropDown, new StandardPopulator(hdtFileType), null);
     hcbWork = new HyperCB(cbWork, ctDropDownList, new StandardPopulator(hdtWork), null);
 
     hcbWork.getComboBox().getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
@@ -254,7 +254,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     htLabels.clear();
     htKeyMentioners.clear();
 
-    hcbFileType.clear();
+    hcbType.clear();
     hcbWork.clear();
   }
 
@@ -265,11 +265,11 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   {
     if (!saveSearchKey(curMiscFile, tfSearchKey, showMessage)) return false;
 
-    int fileTypeID = hcbFileType.selectedID();
-    if ((fileTypeID < 1) && (hcbFileType.getText().length() == 0))
+    int fileTypeID = hcbType.selectedID();
+    if ((fileTypeID < 1) && (hcbType.getText().length() == 0))
     {
       messageDialog("You must enter a file type.", mtError);
-      safeFocus(this.cbFileType);
+      safeFocus(cbType);
       return false;
     }
 
@@ -285,11 +285,11 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   // Start file type
 
-    if ((fileTypeID < 1) && (hcbFileType.getText().length() > 0))
+    if ((fileTypeID < 1) && (hcbType.getText().length() > 0))
     {
       HDT_FileType fileType = db.createNewBlankRecord(hdtFileType);
       fileTypeID = fileType.getID();
-      fileType.setName(hcbFileType.getText());
+      fileType.setName(hcbType.getText());
     }
 
     HDT_FileType oldFileType = curMiscFile.fileType.get();
@@ -323,6 +323,15 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
         tfFileName.setText(db.getRootFilePath().relativize(curMiscFile.getPath().getFilePath()).toString());
 
       tfName.setText(fdc.tfRecordName.getText());
+
+      hcbType.clear();
+      HyperTableCell cell = fdc.cbType.getValue();
+      if (HyperTableCell.isEmpty(cell) == false)
+      {
+        hcbType.addEntry(cell.getID(), cell.getText(), false);
+        cbType.setValue(cell);
+        cbType.getSelectionModel().select(cell);
+      }
     }
 
     fdc = null;
@@ -336,7 +345,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   {
     setDividerPosition(spBottomVert, PREF_KEY_FILE_BOTTOM_VERT, 0);
     setDividerPosition(spRightHoriz, PREF_KEY_FILE_RIGHT_HORIZ, 0);
-    setDividerPosition(spRightVert, PREF_KEY_FILE_RIGHT_VERT, 0);
+    setDividerPosition(spRightVert , PREF_KEY_FILE_RIGHT_VERT , 0);
   }
 
 //---------------------------------------------------------------------------
@@ -346,7 +355,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   {
     getDividerPosition(spBottomVert, PREF_KEY_FILE_BOTTOM_VERT, 0);
     getDividerPosition(spRightHoriz, PREF_KEY_FILE_RIGHT_HORIZ, 0);
-    getDividerPosition(spRightVert, PREF_KEY_FILE_RIGHT_VERT, 0);
+    getDividerPosition(spRightVert , PREF_KEY_FILE_RIGHT_VERT , 0);
   }
 
 //---------------------------------------------------------------------------

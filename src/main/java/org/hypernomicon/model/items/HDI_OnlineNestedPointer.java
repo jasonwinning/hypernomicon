@@ -25,7 +25,6 @@ import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordBase;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 
 import static org.hypernomicon.util.Util.*;
@@ -56,7 +55,7 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
 
   @Override public void resolvePointers()
   {
-    if (HDT_RecordBase.isEmpty(target))
+    if (HDT_Record.isEmpty(target))
       target = null;
   }
 
@@ -75,7 +74,7 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
   {
     val.objID = -1;
 
-    if (HDT_RecordBase.isEmpty(target) == false)
+    if (HDT_Record.isEmpty(target) == false)
       val.objID = target.getID();
   }
 

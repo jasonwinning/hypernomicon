@@ -128,7 +128,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public void addRefreshHandler(Runnable hndlr)                    { refreshHandler = hndlr; }
 
   @SuppressWarnings("unused")
-  public <HDT_T extends HDT_Record> void setDblClickHandler(Class<HDT_T> klass, Consumer<HDT_T> hndlr) { this.dblClickHandler = hndlr; }
+  public <HDT_T extends HDT_Record> void setDblClickHandler(Class<HDT_T> klass, Consumer<HDT_T> hndlr) { dblClickHandler = hndlr; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -27,7 +27,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.*;
@@ -175,20 +174,20 @@ public abstract class HDT_RecordBase implements HDT_Record
 
       switch (schema.getCategory())
       {
-        case hdcConnector:       item = new HDI_OnlineConnector    (schema, (HDT_RecordWithConnector) this); break;
-        case hdcPath:            item = new HDI_OnlinePath         (schema, (HDT_RecordWithPath     ) this); break;
-        case hdcBibEntryKey:     item = new HDI_OnlineBibEntryKey  (schema, (HDT_Work               ) this); break;
-        case hdcAuthors:         item = new HDI_OnlineAuthors      (schema, (HDT_Work               ) this); break;
-        case hdcHubSpokes:       item = new HDI_OnlineHubSpokes    (schema, (HDT_Hub                ) this); break;
+        case hdcConnector     : item = new HDI_OnlineConnector    (schema, (HDT_RecordWithConnector) this); break;
+        case hdcPath          : item = new HDI_OnlinePath         (schema, (HDT_RecordWithPath     ) this); break;
+        case hdcBibEntryKey   : item = new HDI_OnlineBibEntryKey  (schema, (HDT_Work               ) this); break;
+        case hdcAuthors       : item = new HDI_OnlineAuthors      (schema, (HDT_Work               ) this); break;
+        case hdcHubSpokes     : item = new HDI_OnlineHubSpokes    (schema, (HDT_Hub                ) this); break;
 
-        case hdcBoolean:         item = new HDI_OnlineBoolean      (schema, this); break;
-        case hdcTernary:         item = new HDI_OnlineTernary      (schema, this); break;
-        case hdcPersonName:      item = new HDI_OnlinePersonName   (schema, this); break;
-        case hdcPointerMulti:    item = new HDI_OnlinePointerMulti (schema, this); break;
-        case hdcPointerSingle:   item = new HDI_OnlinePointerSingle(schema, this); break;
-        case hdcString:          item = new HDI_OnlineString       (schema, this); break;
+        case hdcBoolean       : item = new HDI_OnlineBoolean      (schema, this); break;
+        case hdcTernary       : item = new HDI_OnlineTernary      (schema, this); break;
+        case hdcPersonName    : item = new HDI_OnlinePersonName   (schema, this); break;
+        case hdcPointerMulti  : item = new HDI_OnlinePointerMulti (schema, this); break;
+        case hdcPointerSingle : item = new HDI_OnlinePointerSingle(schema, this); break;
+        case hdcString        : item = new HDI_OnlineString       (schema, this); break;
 
-        case hdcNestedPointer:
+        case hdcNestedPointer :
           messageDialog("Internal error #78933", mtError); // Nested items are only created in RelationSet.getNestedItem
           return;
 
@@ -246,7 +245,7 @@ public abstract class HDT_RecordBase implements HDT_Record
     HDT_RecordType type = getType();
 
     if ((type == hdtNone) ||
-        HyperDB.isProtectedRecord(id, type) ||
+        isProtectedRecord(id, type) ||
         db.idAvailable(type, newID) == false)
       return false;
 
@@ -271,19 +270,16 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override @SuppressWarnings({ "unchecked", "rawtypes" })
   public final void restoreTo(HDT_RecordState backupState, boolean dontRebuildMentions) throws RelationCycleException, SearchKeyException, HubChangedException
   {
-    if (online)
+    if (online && isUnitable())
     {
-      if (isUnitable())
-      {
-        HDT_RecordWithConnector uRecord = (HDT_RecordWithConnector)this;
-        int curHubID = -1;
+      HDT_RecordWithConnector uRecord = (HDT_RecordWithConnector)this;
+      int curHubID = -1;
 
-        if (uRecord.getHub() != null)
-          curHubID = uRecord.getHub().getID();
+      if (uRecord.getHub() != null)
+        curHubID = uRecord.getHub().getID();
 
-        if (curHubID != HDI_OfflineConnector.class.cast(backupState.items.get(tagHub)).getHubID())
-          throw new HubChangedException(curHubID >= 1);
-      }
+      if (curHubID != HDI_OfflineConnector.class.cast(backupState.items.get(tagHub)).getHubID())
+        throw new HubChangedException(curHubID >= 1);
     }
 
     online = true;
@@ -585,30 +581,6 @@ public abstract class HDT_RecordBase implements HDT_Record
       return listName();
 
     return nullSwitch(items.get(tag), "", item -> item.getResultTextForTag(tag));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static boolean isEmptyThrowsException(HDT_Record record) throws HDB_InternalError
-  {
-    if ((record == null) || (record.isExpired())) return true;
-
-    if (record.getID() < 1)
-      throw new HDB_InternalError(28883);
-
-    return db.records(record.getType()).getByID(record.getID()) == null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static boolean isEmpty(HDT_Record record)
-  {
-    try { return isEmptyThrowsException(record); }
-    catch (HDB_InternalError e) { messageDialog(e.getMessage(), mtError); }
-
-    return true;
   }
 
 //---------------------------------------------------------------------------

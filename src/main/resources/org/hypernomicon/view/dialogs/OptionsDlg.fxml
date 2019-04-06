@@ -31,7 +31,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane maxHeight="356.0" minHeight="356.0" minWidth="1026.0" prefHeight="356.0" prefWidth="1026.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.OptionsDlgCtrlr">
+<AnchorPane maxHeight="356.0" minHeight="356.0" minWidth="1026.0" prefHeight="356.0" prefWidth="1026.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.OptionsDlgCtrlr">
    <children>
       <TabPane fx:id="tabPane" layoutX="56.0" layoutY="31.0" prefHeight="364.0" prefWidth="1104.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <tabs>
@@ -75,6 +75,11 @@
                                     <Button fx:id="btnImageEditorBrowse" layoutX="15.0" layoutY="-5.0" mnemonicParsing="false" onAction="#btnImageEditorBrowseClick" text="..." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                  </children>
                               </AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                 <children>
+                                    <Button fx:id="btnImgEditorAdvanced" layoutY="1.0" mnemonicParsing="false" text="Advanced" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                 </children>
+                              </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
                                  <children>
                                     <Label text="PDF viewer path" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
@@ -88,6 +93,11 @@
                                  <children>
                                     <Button fx:id="btnPDFReaderBrowse" layoutX="-9.0" layoutY="2.0" mnemonicParsing="false" onAction="#btnPDFReaderClick" text="..." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                  </children></AnchorPane>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                                 <children>
+                                    <Button fx:id="btnPdfViewerAdvanced" layoutY="1.0" mnemonicParsing="false" text="Advanced" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                 </children>
+                              </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
                                  <children>
                                     <CheckBox fx:id="chkInternet" layoutY="4.0" mnemonicParsing="false" text="Check for internet connection" />
@@ -132,16 +142,6 @@
                                     <CheckBox fx:id="chkAutoRetrieveBib" layoutY="4.0" mnemonicParsing="false" text="Automatically retrieve bibliographic info for selected file internet in Work File dialog" />
                                  </children></AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="9" />
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                                 <children>
-                                    <Button fx:id="btnImgEditorAdvanced" layoutY="1.0" mnemonicParsing="false" text="Advanced" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                 </children>
-                              </AnchorPane>
-                              <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
-                                 <children>
-                                    <Button fx:id="btnPdfViewerAdvanced" layoutY="1.0" mnemonicParsing="false" text="Advanced" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                 </children>
-                              </AnchorPane>
                            </children>
                            <padding>
                               <Insets left="4.0" right="4.0" />

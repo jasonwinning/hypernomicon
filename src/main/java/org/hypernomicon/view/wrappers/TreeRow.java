@@ -75,12 +75,12 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
     return (record != null) && record.hasDesc() ? HDT_RecordWithDescription.class.cast(record).getDesc().getPlainForDisplay() : "";
   }
 
-  @Override public String toString()               { return getCBText(); }
-  @Override public ImageView getGraphic()          { return graphic != null ? graphic : getImageViewForRelativePath(ui.getGraphicRelativePath(record)); }
-  @Override public int compareTo(TreeRow o)        { return record.getSortKey().compareTo(o.record.getSortKey()); }
+  @Override public String toString()        { return getCBText(); }
+  @Override public ImageView getGraphic()   { return graphic != null ? graphic : getImageViewForRelativePath(ui.getGraphicRelativePath(record)); }
+  @Override public int compareTo(TreeRow o) { return record.getSortKey().compareTo(o.record.getSortKey()); }
 
   @SuppressWarnings("unchecked")
-  @Override public HDT_Record getRecord()          { return record; }
+  @Override public HDT_Record getRecord()   { return record; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -279,7 +279,7 @@ public class PictureDlgCtrlr extends HyperDlg
     if (cantUseName(fileName)) fileName = makeFileName(person.listName(), ext);
     if (cantUseName(fileName)) return;
 
-    this.tfName.setText(fileName);
+    tfName.setText(fileName);
   }
 
 //---------------------------------------------------------------------------

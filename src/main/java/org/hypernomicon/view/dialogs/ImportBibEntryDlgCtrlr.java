@@ -144,9 +144,9 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void doImport(boolean createNew)
+  private void doImport(boolean createNewWork)
   {
-    this.createNewWork = createNew;
+    this.createNewWork = createNewWork;
 
     if (isValid() == false) return;
 

@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.HyperDB.RelationChangeHandler;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -46,8 +45,8 @@ public class MainText
 
   public static class DisplayItem
   {
-    DisplayItem(DisplayItemType type)                  { this.type = type; this.record = null; }
-    public DisplayItem(HDT_RecordWithConnector record) { this.type = diRecord; this.record = record; }
+    DisplayItem(DisplayItemType type)                  { this.type = type; record = null; }
+    public DisplayItem(HDT_RecordWithConnector record) { type = diRecord; this.record = record; }
 
     public final DisplayItemType type;
     public final HDT_RecordWithConnector record;
@@ -76,13 +75,9 @@ public class MainText
 
       DisplayItem other = (DisplayItem) obj;
 
-      if (type != other.type) return false;
-      if (type != diRecord)  return true;
+      if (type != diRecord) return type == other.type;
 
-      if ((record == null) && (other.record == null)) return true;
-      if ((record == null) || (other.record == null)) return false;
-
-      return record.equals(other.record);
+      return record == null ? other.record == null : record.equals(other.record);
     }
   }
 
@@ -90,17 +85,17 @@ public class MainText
 
   final List<DisplayItem> displayItems;
   final List<KeyWork> keyWorks;  // this can be works or miscFiles
-  private String plainText = "";
-  private String htmlText = "";
+  private String plainText = "", htmlText = "";
   final private Connector connector;
 
   public String getHtml()                         { return htmlText; }
   public HDT_RecordWithConnector getRecord()      { return connector.getSpoke(); }
   public String getPlain()                        { return plainText; }
-  private boolean hasKeyWork(HDT_Record rec)        { return getKeyWork(rec) != null; }
+  private boolean hasKeyWork(HDT_Record rec)      { return getKeyWork(rec) != null; }
   public List<DisplayItem> getDisplayItemsUnmod() { return Collections.unmodifiableList(displayItems); }
   public List<KeyWork> getKeyWorks()              { return Collections.unmodifiableList(keyWorks); }
   public List<DisplayItem> getDisplayItemsCopy()  { return new ArrayList<>(displayItems); }
+  void expire()                                   { removeKeyWorks(false); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -136,7 +131,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void init(HyperDB db) // called by DB constructor
+  public static void init() // called by DB constructor
   {
     RelationChangeHandler handler = (child, parent, affirm) ->
     {
@@ -344,40 +339,28 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void expire()
+  void resolvePointers()
   {
-    Iterator<KeyWork> keyWorkIT = keyWorks.iterator();
+    displayItems.removeIf(item -> (item.type == diRecord) && HDT_Record.isEmpty(item.record));
 
-    while (keyWorkIT.hasNext())
-    {
-      KeyWork keyWork = keyWorkIT.next();
-
-      keyWorkIT.remove();
-      HDT_RecordWithPath kwRecord = keyWork.getRecord();
-      if (kwRecord != null)
-        runKeyWorkHandler(kwRecord, false);
-    }
+    removeKeyWorks(true);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void resolvePointers()
+  private void removeKeyWorks(boolean onlyIfExpired)
   {
-    displayItems.removeIf(item -> (item.type == diRecord) && (HDT_RecordBase.isEmpty(item.record)));
-
     Iterator<KeyWork> keyWorkIT = keyWorks.iterator();
 
     while (keyWorkIT.hasNext())
     {
       KeyWork keyWork = keyWorkIT.next();
 
-      if (keyWork.isExpired())
+      if ((onlyIfExpired == false) || keyWork.isExpired())
       {
         keyWorkIT.remove();
-        HDT_RecordWithPath kwRecord = keyWork.getRecord();
-        if (kwRecord != null)
-          runKeyWorkHandler(kwRecord, false);
+        nullSwitch(keyWork.getRecord(), kwRecord -> runKeyWorkHandler(kwRecord, false));
       }
     }
   }

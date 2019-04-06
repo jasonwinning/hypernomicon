@@ -29,11 +29,9 @@ import static org.hypernomicon.Const.*;
 import java.io.IOException;
 import java.util.List;
 
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
-import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.util.filePath.FilePath;
 
 public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
@@ -57,8 +55,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     workFiles = getSubjList(rtFolderOfWorkFile);
     notes = getSubjList(rtFolderOfNote);
 
-    HyperObjPointer<HDT_Folder, HDT_Folder> parentFolder = getObjPointer(rtParentFolderOfFolder);
-    path = new HyperPath(parentFolder, this);
+    path = new HyperPath(getObjPointer(rtParentFolderOfFolder), this);
   }
 
 //---------------------------------------------------------------------------
@@ -76,7 +73,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
   public boolean renameTo(String newName)
   {
-    if (getID() == HyperDB.ROOT_FOLDER_ID)
+    if (getID() == ROOT_FOLDER_ID)
       return falseWithErrorMessage("Unable to rename the folder: Root folder cannot be renamed.");
 
     if (path.getParentFolder() == null)
@@ -121,14 +118,14 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
     switch (getID())
     {
-      case HyperDB.BOOKS_FOLDER_ID :     db.prefs.put(PREF_KEY_BOOKS_PATH,      newName); break;
-      case HyperDB.MISC_FOLDER_ID :      db.prefs.put(PREF_KEY_MISC_FILES_PATH, newName); break;
-      case HyperDB.PAPERS_FOLDER_ID :    db.prefs.put(PREF_KEY_PAPERS_PATH,     newName); break;
-      case HyperDB.PICTURES_FOLDER_ID :  db.prefs.put(PREF_KEY_PICTURES_PATH,   newName); break;
-      case HyperDB.RESULTS_FOLDER_ID :   db.prefs.put(PREF_KEY_RESULTS_PATH,    newName); break;
-      case HyperDB.TOPICAL_FOLDER_ID :   db.prefs.put(PREF_KEY_TOPICAL_PATH,    newName); break;
-      case HyperDB.UNENTERED_FOLDER_ID : db.prefs.put(PREF_KEY_UNENTERED_PATH,  newName); break;
-      default :                                                                           break;
+      case BOOKS_FOLDER_ID     : db.prefs.put(PREF_KEY_BOOKS_PATH,      newName); break;
+      case MISC_FOLDER_ID      : db.prefs.put(PREF_KEY_MISC_FILES_PATH, newName); break;
+      case PAPERS_FOLDER_ID    : db.prefs.put(PREF_KEY_PAPERS_PATH,     newName); break;
+      case PICTURES_FOLDER_ID  : db.prefs.put(PREF_KEY_PICTURES_PATH,   newName); break;
+      case RESULTS_FOLDER_ID   : db.prefs.put(PREF_KEY_RESULTS_PATH,    newName); break;
+      case TOPICAL_FOLDER_ID   : db.prefs.put(PREF_KEY_TOPICAL_PATH,    newName); break;
+      case UNENTERED_FOLDER_ID : db.prefs.put(PREF_KEY_UNENTERED_PATH,  newName); break;
+      default :                                                                   break;
     }
 
     folderTreeWatcher.createNewWatcherAndStart();
@@ -143,7 +140,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
   public boolean delete(boolean singleCall)
   {
-    if (HyperDB.isProtectedRecord(getID(), getType()))
+    if (isProtectedRecord(getID(), getType()))
       return falseWithErrorMessage("The folder \"" + path.getFilePath() + "\" cannot be deleted.");
 
     if (path.getParentFolder() == null)
@@ -207,9 +204,9 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
     checkedForExistence = true;
 
-    if (getID() != HyperDB.ROOT_FOLDER_ID)
+    if (getID() != ROOT_FOLDER_ID)
       if (path.getFilePath().exists() == false)
-        if ((getID() < HyperDB.FIRST_USER_FOLDER_ID) || (path.getRecordsString().length() > 0))
+        if ((getID() < FIRST_USER_FOLDER_ID) || (path.getRecordsString().length() > 0))
           messageDialog("The folder: \"" + path.getFilePath() + "\" is referred to by one or more database records but cannot be found." + System.lineSeparator() + System.lineSeparator() +
                         "Next time, only use the Hypernomicon File Manager to make changes to move, rename, or delete database folders.", mtWarning);
 

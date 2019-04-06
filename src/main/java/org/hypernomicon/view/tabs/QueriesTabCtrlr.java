@@ -252,6 +252,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       htFields.getColumns().forEach(col -> col.setDontCreateNewRecord(true));
 
+      htFields.addRefreshHandler(() -> tabPane.requestLayout());
+
       resultsTable = new ResultsTable(tvResults);
       resultsTable.getTV().setItems(FXCollections.observableList(resultsBackingList));
 

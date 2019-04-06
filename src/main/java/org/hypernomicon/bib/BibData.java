@@ -784,9 +784,9 @@ public abstract class BibData
 
     set.removeIf(bibFieldEnum -> { switch (bibFieldEnum)
     {
-      case bfAuthors:   case bfEditors:  case bfTranslators: case bfTitle:
-      case bfDOI:       case bfISBNs:    case bfMisc:        case bfYear:
-      case bfEntryType: case bfWorkType: case bfURL:
+      case bfAuthors   : case bfEditors  : case bfTranslators : case bfTitle:
+      case bfDOI       : case bfISBNs    : case bfMisc        : case bfYear:
+      case bfEntryType : case bfWorkType : case bfURL         :
 
         return true;
 

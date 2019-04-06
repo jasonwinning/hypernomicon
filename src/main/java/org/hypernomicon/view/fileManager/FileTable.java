@@ -19,6 +19,7 @@ package org.hypernomicon.view.fileManager;
 
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.App.*;
 
 import java.io.IOException;
@@ -76,6 +77,26 @@ public class FileTable extends DragNDropContainer<FileRow>
     {
       return sortVal.compareTo((Comp_T) other.sortVal);
     }
+
+    @Override public int hashCode()
+    {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((sortVal == null) ? 0 : sortVal.hashCode());
+      return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override public boolean equals(Object obj)
+    {
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
+      if (sortVal.getClass() != FileCellValue.class.cast(obj).sortVal.getClass()) return false;
+
+      FileCellValue<Comp_T> other = (FileCellValue<Comp_T>)obj;
+      return sortVal.equals(other.sortVal);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -131,36 +152,23 @@ public class FileTable extends DragNDropContainer<FileRow>
 
     recordsCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getHyperPath().getRecordsString()));
 
-    nameCol.setCellFactory(col ->
+    nameCol.setCellFactory(col -> new TableCell<>()
     {
-      TableCell<FileRow, FileRow> cell = new TableCell<>()
+      @Override public void updateItem(FileRow item, boolean empty)
       {
-        @Override public void updateItem(FileRow item, boolean empty)
+        super.updateItem(item, empty);
+
+        if (empty || (item == null))
         {
-          super.updateItem(item, empty);
-
-          if (empty)
-          {
-            setText(null);
-            setGraphic(null);
-          }
-          else
-          {
-            if (item == null)
-            {
-              setText(null);
-              setGraphic(null);
-            }
-            else
-            {
-              setText(item.getFileName());
-              setGraphic(item.getGraphic());
-            }
-          }
+          setText(null);
+          setGraphic(null);
         }
-      };
-
-      return cell;
+        else
+        {
+          setText(item.getFileName());
+          setGraphic(item.getGraphic());
+        }
+      }
     });
   }
 
@@ -171,29 +179,7 @@ public class FileTable extends DragNDropContainer<FileRow>
   {
     clear();
 
-    Path path = null;
-
-    if (folder != null)
-    {
-      HyperPath hyperPath = folder.getPath();
-      if (hyperPath != null)
-      {
-        FilePath hFilePath = hyperPath.getFilePath();
-        if (hFilePath != null)
-          path = hFilePath.toPath();
-      }
-    }
-
-    if (path == null)
-    {
-      System.out.println("***********************************");
-      System.out.println("File Manager Directory Stream Error");
-      System.out.println("***********************************");
-      Thread.dumpStack();
-      return;
-    }
-
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(path, "**"))
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(folder.getPath().getFilePath().toPath(), "**"))
     {
       int nextDirNdx = 0;
 
@@ -217,9 +203,7 @@ public class FileTable extends DragNDropContainer<FileRow>
               if (fileRow.getRecord().getID() > 0)  // a deleted folder might still be in the tree at this point; the delete recordHandler gets called
                                                     // in a Platform.runLater call
               {
-                FilePath rowPath = fileRow.getFilePath();
-
-                if (rowPath.equals(filePath))
+                if (fileRow.getFilePath().equals(filePath))
                 {
                   row.setFolderTreeItem(childTreeItem);
                   break;
@@ -238,7 +222,10 @@ public class FileTable extends DragNDropContainer<FileRow>
         }
       }
     }
-    catch (DirectoryIteratorException | IOException ex) { noOp(); }
+    catch (DirectoryIteratorException | IOException ex)
+    {
+      messageDialog("An error occurred while displaying the folder's contents: " + ex.getMessage(), mtError);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -288,9 +275,7 @@ public class FileTable extends DragNDropContainer<FileRow>
     scroll(dragEvent);
 
     if (draggingRows == null) return false;
-    if (targetRow == null)
-      targetRow = fileManagerDlg.getFolderRow();
-    else if (targetRow.isDirectory() == false)
+    if ((targetRow == null) || (targetRow.isDirectory() == false))
       targetRow = fileManagerDlg.getFolderRow();
 
     if (targetRow == null) return false;

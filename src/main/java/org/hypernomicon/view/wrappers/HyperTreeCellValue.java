@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view.wrappers;
 
-public class HyperTreeCellValue implements Comparable <HyperTreeCellValue>
+public class HyperTreeCellValue implements Comparable<HyperTreeCellValue>
 {
   final private TreeRow row;
   final private String key;
@@ -26,7 +26,7 @@ public class HyperTreeCellValue implements Comparable <HyperTreeCellValue>
 
   HyperTreeCellValue(TreeRow treeRow)
   {
-    this.row = treeRow;
+    row = treeRow;
     key = makeKey();
   }
 
@@ -34,6 +34,19 @@ public class HyperTreeCellValue implements Comparable <HyperTreeCellValue>
 
   @Override public String toString()                       { return row.getName(); }
   @Override public int compareTo(HyperTreeCellValue other) { return key.compareTo(other.key); }
+  @Override public int hashCode()                          { return key.hashCode(); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public boolean equals(Object obj)
+  {
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+
+    return compareTo((HyperTreeCellValue)obj) == 0;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

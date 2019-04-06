@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.hypernomicon.view.wrappers.HyperTableCell;
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.queryEngines.QueryEngine.QueryType;
@@ -33,7 +32,6 @@ public abstract class FilteredQuerySource implements QuerySource
   protected final HyperTableCell op1, op2, op3;
   protected final int query;
   protected final QueryType queryType;
-  protected final HyperDB db;
 
   private boolean generated = false;
 
@@ -51,7 +49,6 @@ public abstract class FilteredQuerySource implements QuerySource
     this.op1 = op1;
     this.op2 = op2;
     this.op3 = op3;
-    this.db = HyperDB.db;
   }
 
 //---------------------------------------------------------------------------

@@ -211,7 +211,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
   private final void setView(HyperView<HDT_CT> hyperView)
   {
-    this.view = hyperView;
+    view = hyperView;
     setRecord(view.getViewRecord());
   }
 
@@ -275,6 +275,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   {
     enumToHyperTab.values().forEach(HyperTab::clearTabAndView);
     previewWindow.clearAll();
+    fileManagerDlg.clearHistory();
   }
 
 //---------------------------------------------------------------------------

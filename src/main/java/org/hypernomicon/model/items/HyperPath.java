@@ -32,12 +32,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
 
-import org.hypernomicon.model.Exceptions.DuplicateRecordException;
-import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.Exceptions.HubChangedException;
-import org.hypernomicon.model.Exceptions.RelationCycleException;
-import org.hypernomicon.model.Exceptions.SearchKeyException;
-import org.hypernomicon.model.HyperDB;
+import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_RecordState;
@@ -106,7 +101,7 @@ public class HyperPath
   public boolean isEmpty()
   {
     if (record != null)
-      if ((record.getType() == hdtFolder) && (record.getID() == HyperDB.ROOT_FOLDER_ID))
+      if ((record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID))
         return false;
 
     return FilePath.isEmpty(getFileName());
@@ -118,7 +113,7 @@ public class HyperPath
   public String getNameStr()
   {
     if ((record != null) &&
-        (record.getID() == HyperDB.ROOT_FOLDER_ID) &&
+        (record.getID() == ROOT_FOLDER_ID) &&
         (record.getType() == hdtFolder))
       return "Root";
 
@@ -162,7 +157,7 @@ public class HyperPath
   public FilePath getFilePath()
   {
     if (record != null)
-      if ((record.getType() == hdtFolder) && (record.getID() == HyperDB.ROOT_FOLDER_ID))
+      if ((record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID))
         return db.getRootFilePath();
 
     if (FilePath.isEmpty(fileName)) return null;
@@ -386,7 +381,7 @@ public class HyperPath
 
     StringBuilder val = new StringBuilder();
 
-    if (getParentFolder() == db.folders.getByID(HyperDB.PICTURES_FOLDER_ID))
+    if (getParentFolder() == db.folders.getByID(PICTURES_FOLDER_ID))
     {
       HyperPath.getHyperPathSetForFilePath(getFilePath()).forEach(hyperPath ->
       {

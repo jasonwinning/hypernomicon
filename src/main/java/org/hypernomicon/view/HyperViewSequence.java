@@ -87,12 +87,12 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  HyperView<? extends HDT_Record> curHyperView()                        { return viewList.get(curNdx); }
-  HyperTab<? extends HDT_Record, ? extends HDT_Record> curHyperTab()    { return curHyperView().getHyperTab(); }
-  TabEnum curTabEnum()                                                  { return curHyperView().getTabEnum();  }
-  public void updateCurrentView(HyperView<? extends HDT_Record> view)   { setView(view); setTabView(view); }
-  boolean isEmpty()                                                     { return viewList.isEmpty(); }
-  void refreshAll()                                                     { viewList.forEach(HyperView::refresh); }
+  HyperView<? extends HDT_Record> curHyperView()                      { return viewList.get(curNdx); }
+  HyperTab<? extends HDT_Record, ? extends HDT_Record> curHyperTab()  { return curHyperView().getHyperTab(); }
+  TabEnum curTabEnum()                                                { return curHyperView().getTabEnum();  }
+  public void updateCurrentView(HyperView<? extends HDT_Record> view) { setView(view); setTabView(view); }
+  boolean isEmpty()                                                   { return viewList.isEmpty(); }
+  void refreshAll()                                                   { viewList.forEach(HyperView::refresh); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -104,11 +104,11 @@ public class HyperViewSequence
     HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = curHyperTab();
 
     HDT_Record record = hyperTab.activeRecord();
-    if ((record != null) && HDT_RecordBase.isEmpty(record)) // Make sure active record was not just deleted
+    if ((record != null) && HDT_Record.isEmpty(record)) // Make sure active record was not just deleted
       return;
 
     record = hyperTab.viewRecord();                     // Make sure view record was not just deleted
-    if ((record != null) && HDT_RecordBase.isEmpty(record)) // If concept was just deleted, active record (term) will be null
+    if ((record != null) && HDT_Record.isEmpty(record)) // If concept was just deleted, active record (term) will be null
       return;                                           // so we also have to check view record (concept)
 
     updateCurrentView(new HyperView<>(curTabEnum(), record, hyperTab.getMainTextInfo()));
@@ -298,8 +298,8 @@ public class HyperViewSequence
       switch (view.getTabEnum())
       {
         case queryTab : beforePart = "(Queries tab) "; break;
-        case treeTab  : beforePart = "(Tree tab) "; break;
-        default       : break;
+        case treeTab  : beforePart = "(Tree tab) ";    break;
+        default       :                                break;
       }
 
       String typeName = db.getTypeName(record.getType());

@@ -174,7 +174,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     rows.addAll(noteTree  .getRowsForRecord(record));
     rows.addAll(labelTree .getRowsForRecord(record));
 
-    if (this.hasTerms)
+    if (hasTerms)
       rows.addAll(termTree.getRowsForRecord(record));
 
     return rows;
@@ -348,7 +348,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     scroll(dragEvent);
 
     HDT_Record source = nullSwitch(draggingRow, null, TreeRow::getRecord),
-             target = nullSwitch(targetRow, null, TreeRow::getRecord);
+               target = nullSwitch(targetRow, null, TreeRow::getRecord);
 
     if ((source == null) || (target == null) || (source == target) ||
         (source.getType() == target.getType()) && (source.getID() == target.getID())) return false;
@@ -373,9 +373,9 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     dragReset();
 
     HDT_Record subjRecord, objRecord,
-             oldParent = draggingRow.treeItem.getParent().getValue().getRecord(),
-             newParent = targetRow.getRecord(),
-             child = draggingRow.getRecord();
+               oldParent = draggingRow.treeItem.getParent().getValue().getRecord(),
+               newParent = targetRow.getRecord(),
+               child = draggingRow.getRecord();
 
     if (oldParent == newParent)
     {
@@ -455,8 +455,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     TreeRow parentRow = nullSwitch(nullSwitch(item, null, TreeItem::getParent), null, TreeItem::getValue);
 
     HDT_Record parent = nullSwitch(parentRow, null, TreeRow::getRecord),
-             child = nullSwitch(nullSwitch(item, null, TreeItem::getValue), null, TreeRow::getRecord),
-             subjRecord, objRecord, objToAdd = null;
+               child = nullSwitch(nullSwitch(item, null, TreeItem::getValue), null, TreeRow::getRecord),
+               subjRecord, objRecord, objToAdd = null;
 
     if ((parent == null) || (child == null)) return false;
 

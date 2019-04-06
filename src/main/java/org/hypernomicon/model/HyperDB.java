@@ -70,7 +70,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
@@ -289,7 +288,7 @@ public final class HyperDB
     if ((deletionInProgress == false) && (pointerResolutionInProgress == false))
       messageDialog("Internal error #44928", mtError);
 
-    this.resolveAgain = true;
+    resolveAgain = true;
   }
 
 //---------------------------------------------------------------------------
@@ -323,10 +322,10 @@ public final class HyperDB
 
       switch (result)
       {
-        case mrYes :      break;
-        case mrNoToAll :  deleteFileAnswer = mrNoToAll;  break;
+        case mrYes      : break;
+        case mrNoToAll  : deleteFileAnswer = mrNoToAll;  break;
         case mrYesToAll : deleteFileAnswer = mrYesToAll; break;
-        default : return;
+        default         : return;
       }
     }
 
@@ -741,14 +740,9 @@ public final class HyperDB
 
     switch (libType)
     {
-      case ltZotero :
+      case ltZotero : bLibrary = new ZoteroWrapper(bibApiKey, bibUserID); break;
 
-        bLibrary = new ZoteroWrapper(bibApiKey, bibUserID);
-        break;
-
-      default :
-
-        throw new HDB_InternalError(21175);
+      default       : throw new HDB_InternalError(21175);
     }
 
     bLibrary.loadFromDisk(getRootFilePath().resolve(BIB_FILE_NAME));
@@ -918,7 +912,7 @@ public final class HyperDB
       filenameMap.put(rootFilePath.getNameOnly().toString(), set);
     }
 
-    set.add(folders.getByID(HyperDB.ROOT_FOLDER_ID).getPath());
+    set.add(folders.getByID(ROOT_FOLDER_ID).getPath());
   }
 
 //---------------------------------------------------------------------------
@@ -986,12 +980,12 @@ public final class HyperDB
 
         switch (tag)
         {
-          case tagID :        id = parseInt(attribute.getValue(), -1); break;
-          case tagType :      type = typeToTagStr.inverse().getOrDefault(attribute.getValue(), hdtNone); break;
-          case tagSortKey :   sortKeyAttr = attribute.getValue(); break;
+          case tagID        : id = parseInt(attribute.getValue(), -1); break;
+          case tagType      : type = typeToTagStr.inverse().getOrDefault(attribute.getValue(), hdtNone); break;
+          case tagSortKey   : sortKeyAttr = attribute.getValue(); break;
           case tagSearchKey : searchKey = attribute.getValue(); break;
-          case tagListName :  listName = attribute.getValue(); break;
-          default : break;
+          case tagListName  : listName = attribute.getValue(); break;
+          default           : break;
         }
       }
 
@@ -1146,9 +1140,9 @@ public final class HyperDB
                   {
                     case tagCreationDate : xmlRecord.creationDate = parseIso8601offset(nodeText); break;
                     case tagModifiedDate : xmlRecord.modifiedDate = parseIso8601offset(nodeText); break;
-                    case tagViewDate :     xmlRecord.viewDate =     parseIso8601offset(nodeText); break;
+                    case tagViewDate     : xmlRecord.viewDate =     parseIso8601offset(nodeText); break;
 
-                    default :              xmlRecord.loadItemFromXML(tag, nodeText, objType, objID, nestedItems);
+                    default              : xmlRecord.loadItemFromXML(tag, nodeText, objType, objID, nestedItems);
                   }
                 }
                 catch (DateTimeParseException e)
@@ -1216,10 +1210,10 @@ public final class HyperDB
     {
       switch (schema.getCategory())
       {
-        case hdcBoolean:       item.set(new HDI_OfflineBoolean(schema, xmlRecord)); break;
-        case hdcTernary:       item.set(new HDI_OfflineTernary(schema, xmlRecord)); break;
-        case hdcString:        item.set(new HDI_OfflineString(schema, xmlRecord)); break;
-        case hdcNestedPointer: item.set(new HDI_OfflineNestedPointer(schema, xmlRecord)); break;
+        case hdcBoolean       : item.set(new HDI_OfflineBoolean      (schema, xmlRecord)); break;
+        case hdcTernary       : item.set(new HDI_OfflineTernary      (schema, xmlRecord)); break;
+        case hdcString        : item.set(new HDI_OfflineString       (schema, xmlRecord)); break;
+        case hdcNestedPointer : item.set(new HDI_OfflineNestedPointer(schema, xmlRecord)); break;
 
         default :
           messageDialog("Internal error #78936", mtError);
@@ -1237,7 +1231,6 @@ public final class HyperDB
   {
     boolean notDone = eventReader.hasNext();
     String nodeText = "";
-    Characters chars;
 
     if (nestedItems.isEmpty())
       initNestedItems(xmlRecord, nestedItems, relationType);
@@ -1260,8 +1253,7 @@ public final class HyperDB
 
         case XMLStreamConstants.CHARACTERS :
 
-          chars = event.asCharacters();
-          nodeText = nodeText + chars.getData();
+          nodeText = nodeText + event.asCharacters().getData();
           break;
 
         case XMLStreamConstants.END_DOCUMENT :
@@ -1290,9 +1282,9 @@ public final class HyperDB
 
     switch (record.getType())
     {
-      case hdtArgument:     case hdtDebate:   case hdtPosition: case hdtInvestigation:
-      case hdtPersonGroup:  case hdtMiscFile: case hdtNote:     case hdtPerson:
-      case hdtInstitution:  case hdtConcept:  case hdtWork:     case hdtWorkLabel:
+      case hdtArgument    : case hdtDebate   : case hdtPosition : case hdtInvestigation :
+      case hdtPersonGroup : case hdtMiscFile : case hdtNote     : case hdtPerson        :
+      case hdtInstitution : case hdtConcept  : case hdtWork     : case hdtWorkLabel     :
         break;
       default:
         return;
@@ -1622,7 +1614,7 @@ public final class HyperDB
 
     if (klass == null) return null;
 
-    HDT_RecordType type = HDT_RecordType.typeByRecordClass(klass);
+    HDT_RecordType type = typeByRecordClass(klass);
 
     typeToTagStr.put(type, tagStr);
     typeToTag.put(type, tag);
@@ -1733,7 +1725,7 @@ public final class HyperDB
         if ((relType != rtUnited) && (relType != rtNone))
           relationSets.put(relType, RelationSet.createSet(relType));
 
-      MainText.init(this);
+      MainText.init();
 
       tagToObjType.put(tagAuthor, hdtPerson);
       tagToObjType.put(tagLargerDebate, hdtDebate);
@@ -2147,7 +2139,7 @@ public final class HyperDB
     set.removeIf(mainText ->
     {
       HDT_RecordWithConnector record = mainText.getRecord();
-      return HDT_RecordBase.isEmpty(record) || (record.getMainText() != mainText);
+      return HDT_Record.isEmpty(record) || (record.getMainText() != mainText);
     });
 
     return unmodifiableSet(set);
@@ -2166,8 +2158,10 @@ public final class HyperDB
 
   public Set<HDT_RecordWithConnector> getKeyWorkMentioners(HDT_RecordWithPath record)
   {
-    return nullSwitch(keyWorkIndex.get(record), new HashSet<>(), set -> set.stream().map(mentioner -> mentioner.isLinked() ? mentioner.getHub() : mentioner)
-                                                                                    .collect(Collectors.toCollection(HashSet::new)));
+    return nullSwitch(keyWorkIndex.get(record),
+                      new HashSet<>(),
+                      set -> set.stream().map(mentioner -> mentioner.isLinked() ? mentioner.getHub() : mentioner)
+                                         .collect(Collectors.toCollection(HashSet::new)));
   }
 
 //---------------------------------------------------------------------------

@@ -22,7 +22,7 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.records.HDT_Hub;
-import org.hypernomicon.model.records.HDT_RecordBase;
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 
@@ -55,7 +55,7 @@ public final class Connector
   public HDT_Hub getHub()                    { return link == null ? null : link.getHub(); }
   public HDT_RecordWithConnector getSpoke()  { return record; }
   public String listName()                   { return record == null ? "" : record.listName(); }
-  public static boolean isEmpty(Connector c) { return (c == null) || HDT_RecordBase.isEmpty(c.getSpoke()); }
+  public static boolean isEmpty(Connector c) { return (c == null) || HDT_Record.isEmpty(c.getSpoke()); }
 
   @Override public int hashCode()            { return 31 * (record == null ? 0 : record.hashCode()); }
 
@@ -81,7 +81,7 @@ public final class Connector
 
   void resolvePointers() throws HDB_InternalError
   {
-    if (HDT_RecordBase.isEmptyThrowsException(getHub()))
+    if (HDT_Record.isEmptyThrowsException(getHub()))
       link = null;
 
     mainText.resolvePointers();
