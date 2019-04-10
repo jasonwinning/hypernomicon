@@ -24,6 +24,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
+import javafx.util.Callback;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
@@ -51,28 +52,23 @@ public class FavOrderDlgCtrlr extends HyperDlg
 
   private void init()
   {
-    lvRecord.setCellFactory(listView -> new ListCell<MenuItem>()
+    Callback<ListView<MenuItem>, ListCell<MenuItem>> factory = listView -> new ListCell<>()
     {
       @Override public void updateItem(MenuItem item, boolean empty)
       {
         super.updateItem(item, empty);
         setText(item == null ? "" : item.getText());
       }
-    });
+    };
+
+    lvRecord.setCellFactory(factory);
 
     lvRecord.setItems(new FilteredList<>(ui.mnuFavorites.getItems(), item -> ui.mnuFavorites.getItems().indexOf(item) >= FIRST_FAV_MENU_ITEM_NDX));
 
     btnRecordUp.setOnAction(event -> moveRecord(-1));
     btnRecordDown.setOnAction(event -> moveRecord(1));
 
-    lvQuery.setCellFactory(listView -> new ListCell<MenuItem>()
-    {
-      @Override public void updateItem(MenuItem item, boolean empty)
-      {
-        super.updateItem(item, empty);
-        setText(item == null ? "" : item.getText());
-      }
-    });
+    lvQuery.setCellFactory(factory);
 
     lvQuery.setItems(new FilteredList<>(ui.mnuQueries.getItems(), item -> ui.mnuQueries.getItems().indexOf(item) >= 0));
 
@@ -85,8 +81,8 @@ public class FavOrderDlgCtrlr extends HyperDlg
 
   public void moveRecord(int diff)
   {
-    int oldNdx = lvRecord.getSelectionModel().getSelectedIndex() + FIRST_FAV_MENU_ITEM_NDX;
-    int newNdx = oldNdx + diff;
+    int oldNdx = lvRecord.getSelectionModel().getSelectedIndex() + FIRST_FAV_MENU_ITEM_NDX,
+        newNdx = oldNdx + diff;
     ObservableList<MenuItem> items = ui.mnuFavorites.getItems();
 
     if ((newNdx >= FIRST_FAV_MENU_ITEM_NDX) && (newNdx < items.size()))
@@ -104,8 +100,8 @@ public class FavOrderDlgCtrlr extends HyperDlg
 
   public void moveQuery(int diff)
   {
-    int oldNdx = lvQuery.getSelectionModel().getSelectedIndex();
-    int newNdx = oldNdx + diff;
+    int oldNdx = lvQuery.getSelectionModel().getSelectedIndex(),
+        newNdx = oldNdx + diff;
     ObservableList<MenuItem> items = ui.mnuQueries.getItems();
 
     if ((newNdx >= 0) && (newNdx < items.size()))

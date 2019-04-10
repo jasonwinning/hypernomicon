@@ -320,8 +320,8 @@ public class PictureDlgCtrlr extends HyperDlg
 
   private void updateCropRect()
   {
-    double width =  (cropEnd.getX() - cropStart.getX()) * picRect.getWidth();
-    double height = (cropEnd.getY() - cropStart.getY()) * picRect.getHeight();
+    double width =  (cropEnd.getX() - cropStart.getX()) * picRect.getWidth(),
+           height = (cropEnd.getY() - cropStart.getY()) * picRect.getHeight();
 
     if (cropRect == null)
     {
@@ -356,10 +356,10 @@ public class PictureDlgCtrlr extends HyperDlg
     if (changed == false)
       return origViewPort;
 
-    int x1 = Double.valueOf((cropStart.getX() * picture.getWidth ()) + 0.5).intValue();
-    int x2 = Double.valueOf((cropEnd  .getX() * picture.getWidth ()) + 0.5).intValue();
-    int y1 = Double.valueOf((cropStart.getY() * picture.getHeight()) + 0.5).intValue();
-    int y2 = Double.valueOf((cropEnd  .getY() * picture.getHeight()) + 0.5).intValue();
+    int x1 = Double.valueOf((cropStart.getX() * picture.getWidth ()) + 0.5).intValue(),
+        x2 = Double.valueOf((cropEnd  .getX() * picture.getWidth ()) + 0.5).intValue(),
+        y1 = Double.valueOf((cropStart.getY() * picture.getHeight()) + 0.5).intValue(),
+        y2 = Double.valueOf((cropEnd  .getY() * picture.getHeight()) + 0.5).intValue();
 
     if (x1 < 0) x1 = 0;
     if (x1 > (picture.getWidth() - 1)) x1 = (int) (picture.getWidth() - 1);
@@ -436,8 +436,8 @@ public class PictureDlgCtrlr extends HyperDlg
     {
       setPicRect(newWidth, newHeight);
 
-      double width =  (cropEnd.getX() - cropStart.getX()) * picRect.getWidth();
-      double height = (cropEnd.getY() - cropStart.getY()) * picRect.getHeight();
+      double width =  (cropEnd.getX() - cropStart.getX()) * picRect.getWidth(),
+             height = (cropEnd.getY() - cropStart.getY()) * picRect.getHeight();
 
       cropRect.setX(picRect.getMinX() + (cropStart.getX() * picRect.getWidth()));
       cropRect.setY(picRect.getMinY() + (cropStart.getY() * picRect.getHeight()));
@@ -453,9 +453,9 @@ public class PictureDlgCtrlr extends HyperDlg
   {
     if (picture == null) return;
 
-    double picRatio = picture.getWidth() / picture.getHeight();
-    double ivRatio = ivWidth / ivHeight;
-    double sizeRatio = 1.0;
+    double picRatio = picture.getWidth() / picture.getHeight(),
+           ivRatio = ivWidth / ivHeight,
+           sizeRatio = 1.0;
 
     if (ivRatio >= picRatio)
     {

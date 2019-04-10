@@ -75,7 +75,7 @@ public class NewCategoryDlgCtrlr extends HyperDlg
       ((RecordByTypePopulator) hcbCompare.getPopulator()).setRecordType(Populator.dummyRow, newType);
       hcbCompare.selectID(-1);
 
-      tfNewID.setText("" + (newType == hdtNone ? "" : db.getNextID(newType)));
+      tfNewID.setText(newType == hdtNone ? "" : String.valueOf(db.getNextID(newType)));
     });
 
     cbCompare.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
@@ -94,7 +94,7 @@ public class NewCategoryDlgCtrlr extends HyperDlg
       }
 
       HDT_Record record = db.records(hcbRecordType.selectedType()).getByID(newID);
-      tfCompareID.setText("" + newID);
+      tfCompareID.setText(String.valueOf(newID));
       tfCompareKey.setText(record.getSortKeyAttr());
     });
 

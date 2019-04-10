@@ -50,10 +50,9 @@ public class HDT_WorkLabel extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String listName()           { return name(); }
-  @Override public HDT_RecordType getType()    { return hdtWorkLabel; }
-  @Override public String getCBText()          { return getExtendedText(); }
-  @Override public boolean isUnitable()        { return true; }
+  @Override public String listName()    { return name(); }
+  @Override public String getCBText()   { return getExtendedText(); }
+  @Override public boolean isUnitable() { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

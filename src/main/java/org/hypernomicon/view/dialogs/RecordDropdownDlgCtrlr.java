@@ -70,14 +70,11 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if (hcbRecord.selectedID() < 1)
-    {
-      messageDialog("Select a " + typeName + " record.", mtInformation);
-      safeFocus(cbRecord);
-      return false;
-    }
+    if (hcbRecord.selectedID() >= 1) return true;
 
-    return true;
+    messageDialog("Select a " + typeName + " record.", mtInformation);
+    safeFocus(cbRecord);
+    return false;
   }
 
 //---------------------------------------------------------------------------

@@ -494,7 +494,7 @@ public final class MainCtrlr
     tfID.focusedProperty().addListener((observable, oldValue, newValue) ->
     {
       if ((newValue.booleanValue() == false) && (activeRecord() != null))
-        tfID.setText("" + activeRecord().getID());
+        tfID.setText(String.valueOf(activeRecord().getID()));
       else
         tfID.setText("");
     });
@@ -558,7 +558,7 @@ public final class MainCtrlr
       if ((record.getID() != newRecordID) && (newRecordID > 0) && (db.records(activeType()).getIDNdxByID(newRecordID) > -1))
         goToRecord(db.records(activeType()).getByID(newRecordID), true);
       else
-        tfID.setText("" + activeRecord().getID());
+        tfID.setText(String.valueOf(activeRecord().getID()));
     });
 
 //---------------------------------------------------------------------------
@@ -2616,13 +2616,13 @@ public final class MainCtrlr
 
   @FXML private void importMiscFile()
   {
-    newMiscFile(null);
+    newMiscFile(null, null);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void newMiscFile(FileRow fileRow)
+  public void newMiscFile(FileRow fileRow, FilePath filePath)
   {
     if (ui.cantSaveRecord(true)) return;
 
@@ -2634,7 +2634,7 @@ public final class MainCtrlr
     ui.goToRecord(miscFile, false);
 
     FileTabCtrlr fileCtrlr = HyperTab.getHyperTab(miscFileTab);
-    if (fileCtrlr.btnManageClick() == false)
+    if (fileCtrlr.showFileDialog(filePath) == false)
     {
       if (fileRow != null)
         miscFile.getPath().clear(false);
@@ -2689,9 +2689,26 @@ public final class MainCtrlr
     }
 
     if (mediaTypeStr.contains("text"))
+    {
       importBibFile(null, filePath);
-    else
-      messageDialog("Unable to import file: " + filePath.toString(), mtError);
+      return;
+    }
+
+    PopupDialog popup = new PopupDialog("What should the file be imported as?");
+
+    popup.addButton("Work", mrYes);
+    popup.addButton("Misc. file", mrNo);
+    popup.addButton("Bibliographic details", mrContinue);
+    popup.addButton("Cancel", mrCancel);
+
+    switch (popup.showModal())
+    {
+      case mrYes      : newWorkAndWorkFile(null, filePath); return;
+      case mrNo       : newMiscFile(null, filePath);        return;
+      case mrContinue : importBibFile(null, filePath);      return;
+
+      default         : return;
+    }
   }
 
 //---------------------------------------------------------------------------

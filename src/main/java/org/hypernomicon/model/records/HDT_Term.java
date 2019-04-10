@@ -48,9 +48,8 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String listName()        { return name(); }
-  @Override public HDT_RecordType getType() { return hdtTerm; }
-  @Override public MainText getDesc()       { return concepts.get(0).getMainText(); }
+  @Override public String listName()  { return name(); }
+  @Override public MainText getDesc() { return concepts.get(0).getMainText(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

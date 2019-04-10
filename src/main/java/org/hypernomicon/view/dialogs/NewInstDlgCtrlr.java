@@ -93,14 +93,11 @@ public class NewInstDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if (hcbType.selectedID() < 1)
-    {
-      messageDialog("You must select a type.", mtError);
-      cbType.requestFocus();
-      return false;
-    }
+    if (hcbType.selectedID() >= 1) return true;
 
-    return true;
+    messageDialog("You must select a type.", mtError);
+    cbType.requestFocus();
+    return false;
   }
 
 //---------------------------------------------------------------------------

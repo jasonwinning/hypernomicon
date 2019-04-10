@@ -689,11 +689,9 @@ public abstract class BibData
 
   private void addReportMultiStr(BibFieldEnum bibFieldEnum, List<String> list)
   {
-    StringBuilder line = new StringBuilder();
+    String line = getMultiStr(bibFieldEnum).stream().reduce((s1, s2) -> s1 + "; " + s2).orElse("");
 
-    getMultiStr(bibFieldEnum).forEach(str -> line.append((line.length() > 0 ? "; " : "") + str));
-
-    appendToReport(getFieldName(bibFieldEnum), line.toString(), list);
+    appendToReport(getFieldName(bibFieldEnum), line, list);
   }
 
 //---------------------------------------------------------------------------

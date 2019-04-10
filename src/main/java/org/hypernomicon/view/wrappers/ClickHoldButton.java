@@ -113,7 +113,7 @@ public class ClickHoldButton
       mouseDown = true;
       int curMouseDownCtr = mouseDownCtr;
 
-      runDelayedInFXThread(1, BUTTON_MENU_DELAY_MS, event ->
+      runDelayedInFXThread(1, BUTTON_MENU_DELAY_MS, () ->
       {
         if (mouseDown)
           if (mouseDownCtr == curMouseDownCtr) // Prevent popup from getting shown when user clicks in rapid succession

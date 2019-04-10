@@ -341,8 +341,8 @@ public final class MainTextWrapper
   {
     doc.getElementsByClass(className).forEach(span ->
     {
-      int recordID = parseInt(span.attr("hypnconID"), -1);
-      int recordTypeOrd = parseInt(span.attr("hypnconType"), -1);
+      int recordID = parseInt(span.attr("hypnconID"), -1),
+          recordTypeOrd = parseInt(span.attr("hypnconType"), -1);
       HDT_RecordType recordType = getEnumVal(recordTypeOrd, HDT_RecordType.class);
 
       HDT_RecordWithConnector record = (HDT_RecordWithConnector) db.records(recordType).getByID(recordID);
@@ -354,8 +354,7 @@ public final class MainTextWrapper
       else
         appendKeyWorkBody(record.getMainText().getKeyWorks(), innerHtml, sortByName);
 
-      String script = "document.getElementById(\"" + span.id() + "\").innerHTML = \"" + escapeEcmaScript(innerHtml.toString()) + "\";";
-      weToUse.executeScript(script);
+      weToUse.executeScript("document.getElementById(\"" + span.id() + "\").innerHTML = \"" + escapeEcmaScript(innerHtml.toString()) + "\";");
     });
   }
 
@@ -1059,6 +1058,7 @@ public final class MainTextWrapper
       case hdtPosition :
 
         HDT_Position position = link.getPosition();
+
         addLinkedTerms(position.debates, concepts);
         addLinkedTerms(position.largerPositions, concepts);
         addLinkedTerms(position.subPositions, concepts);
@@ -1067,6 +1067,7 @@ public final class MainTextWrapper
       case hdtNote :
 
         HDT_Note note = link.getNote();
+
         addLinkedTerms(note.parentNotes, concepts);
         addLinkedTerms(note.subNotes, concepts);
         break;
@@ -1074,6 +1075,7 @@ public final class MainTextWrapper
       case hdtWorkLabel :
 
         HDT_WorkLabel label = link.getLabel();
+
         addLinkedTerms(label.parentLabels, concepts);
         addLinkedTerms(label.subLabels, concepts);
         break;
@@ -1454,11 +1456,11 @@ public final class MainTextWrapper
 
   public static void webViewAddZoom(WebView view, String prefID)
   {
-    view.addEventFilter(ScrollEvent.SCROLL, (ScrollEvent e) ->
+    view.addEventFilter(ScrollEvent.SCROLL, event ->
     {
-      double deltaY = e.getDeltaY();
-      if ((e.isControlDown() == false) || (deltaY == 0)) return;
-      e.consume();
+      double deltaY = event.getDeltaY();
+      if ((event.isControlDown() == false) || (deltaY == 0)) return;
+      event.consume();
 
       int ndx = appPrefs.getInt(prefID, zoomFactors.indexOf(100)) + (deltaY > 0 ? 1 : -1);
 

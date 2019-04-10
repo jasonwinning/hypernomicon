@@ -131,7 +131,7 @@ public class MainTextCtrlr
 
   void focus()
   {
-    runDelayedInFXThread(5, 100, event ->
+    runDelayedInFXThread(5, 100, () ->
     {
       final WebView view = getWebView();
       Platform.runLater(() ->
@@ -317,7 +317,7 @@ public class MainTextCtrlr
     btnEditLayout.setOnAction(event ->
     {
       hsPane.show(Side.RIGHT, true);
-      runDelayedInFXThread(5, 100, e -> cbType.requestFocus());
+      runDelayedInFXThread(5, 100, cbType::requestFocus);
     });
 
     bar.getItems().addAll(btnLink, btnClear, btnEditLayout);
@@ -352,7 +352,7 @@ public class MainTextCtrlr
     {
       FileTabCtrlr fileCtrlr = HyperTab.getHyperTab(miscFileTab);
 
-      if (fileCtrlr.showFileDialog() == false)
+      if (fileCtrlr.showFileDialog(null) == false)
         ui.deleteCurrentRecord(false);
     }
   }

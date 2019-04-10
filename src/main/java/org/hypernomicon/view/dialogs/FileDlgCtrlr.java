@@ -207,7 +207,7 @@ public class FileDlgCtrlr extends HyperDlg
       }
       else
       {
-        if (curFileRecord.getPath().isEmpty())
+        if (FilePath.isEmpty(srcFilePath))
           btnBrowseOldClick();
       }
     };
@@ -224,45 +224,22 @@ public class FileDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void btnBrowseOldClick()
+  public void setSrcFilePath(FilePath newSrc)
   {
-    FileChooser fileChooser = new FileChooser();
+    if (FilePath.isEmpty(newSrc)) return;
 
-    if (recordType == hdtWorkFile)
-    {
-      WorkTypeEnum enumVal = curWork.getWorkTypeValue();
-
-      switch (enumVal)
-      {
-        case wtBook: case wtChapter: case wtNone: case wtPaper:
-
-          fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Adobe PDF file (*.pdf)", "*.pdf"));
-          break;
-
-        default :
-          break;
-      }
-    }
-
-    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
-    fileChooser.setInitialDirectory(db.getPath(PREF_KEY_UNENTERED_PATH).toFile());
-
-    FilePath chosenFilePath = new FilePath(fileChooser.showOpenDialog(getStage()));
-
-    if (FilePath.isEmpty(chosenFilePath)) return;
-
-    if (db.isProtectedFile(chosenFilePath))
+    if (db.isProtectedFile(newSrc))
     {
       messageDialog("That file cannot be assigned to a record.", mtError);
       return;
     }
 
-    srcFilePath = chosenFilePath;
+    srcFilePath = newSrc;
     copyOnly = false;
 
     // See if the chosen file is currently assigned to a file record
 
-    HDT_RecordWithPath existingRecord = getRecordFromFilePath(chosenFilePath);
+    HDT_RecordWithPath existingRecord = getRecordFromFilePath(newSrc);
 
     if (existingRecord != null)
     {
@@ -293,7 +270,7 @@ public class FileDlgCtrlr extends HyperDlg
     }
     else  // chosen file is not already attached to a record
     {
-      if (db.getRootFilePath().isSubpath(chosenFilePath))
+      if (db.getRootFilePath().isSubpath(newSrc))
       {
         rbNeither.setDisable(false);
       }
@@ -310,6 +287,35 @@ public class FileDlgCtrlr extends HyperDlg
 
     tfCurrentPath.setText(srcFilePath.toString());
     tfFileName.setText(srcFilePath.getNameOnly().toString());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnBrowseOldClick()
+  {
+    FileChooser fileChooser = new FileChooser();
+
+    if (recordType == hdtWorkFile)
+    {
+      WorkTypeEnum enumVal = curWork.getWorkTypeValue();
+
+      switch (enumVal)
+      {
+        case wtBook: case wtChapter: case wtNone: case wtPaper:
+
+          fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Adobe PDF file (*.pdf)", "*.pdf"));
+          break;
+
+        default :
+          break;
+      }
+    }
+
+    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
+    fileChooser.setInitialDirectory(db.getPath(PREF_KEY_UNENTERED_PATH).toFile());
+
+    setSrcFilePath(new FilePath(fileChooser.showOpenDialog(getStage())));
   }
 
 //---------------------------------------------------------------------------

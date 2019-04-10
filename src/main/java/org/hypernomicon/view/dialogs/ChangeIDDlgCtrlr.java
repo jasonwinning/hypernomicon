@@ -78,26 +78,25 @@ public class ChangeIDDlgCtrlr extends HyperDlg
     {
       int oldID = HyperTableCell.getCellID(oldValue),
           newID = HyperTableCell.getCellID(newValue);
-      HDT_RecordType type = hcbType.selectedType();
 
       if (oldID == newID) return;
 
       lblNotAvailable.setVisible(false);
       tfNewID.clear();
 
-      if ((newID < 1) || (type == hdtNone))
+      if ((newID < 1) || (hcbType.selectedType() == hdtNone))
       {
         tfOldID.clear();
         return;
       }
 
-      tfOldID.setText("" + newID);
+      tfOldID.setText(String.valueOf(newID));
     });
 
     btnNextID.setOnAction(event ->
     {
       if (hcbRecord.selectedID() > 0)
-        tfNewID.setText("" + db.getNextID(hcbRecord.selectedType()));
+        tfNewID.setText(String.valueOf(db.getNextID(hcbRecord.selectedType())));
     });
 
     tfNewID.textProperty().addListener((observable, oldValue, newValue) ->
@@ -105,10 +104,10 @@ public class ChangeIDDlgCtrlr extends HyperDlg
       int id = parseInt(newValue, -1);
 
       if ((id > 0) && (db.idAvailable(hcbRecord.selectedType(), id) == false))
-        {
-          lblNotAvailable.setVisible(true);
-          return;
-        }
+      {
+        lblNotAvailable.setVisible(true);
+        return;
+      }
 
       lblNotAvailable.setVisible(false);
     });
@@ -126,7 +125,7 @@ public class ChangeIDDlgCtrlr extends HyperDlg
       return false;
     }
 
-    if ((parseInt(tfNewID.getText(), -1) < 1) || (lblNotAvailable.isVisible()))
+    if ((parseInt(tfNewID.getText(), -1) < 1) || lblNotAvailable.isVisible())
     {
       messageDialog("You must enter a valid numeric ID.", mtError);
       safeFocus(tfNewID);

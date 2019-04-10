@@ -35,7 +35,9 @@ import javafx.scene.control.cell.CheckBoxListCell;
 
 public class InvestigationsDlgCtrlr extends HyperDlg
 {
+
 //---------------------------------------------------------------------------
+
   public static class InvestigationSetting
   {
     private final SimpleBooleanProperty selected;
@@ -62,6 +64,7 @@ public class InvestigationsDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid() { return true; }
   public String newName()               { return tfNew.getText(); }
+  public boolean hasNew()               { return tfNew.getText().trim().length() == 0 ? false : chkNew.isSelected(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -85,21 +88,9 @@ public class InvestigationsDlgCtrlr extends HyperDlg
     listView.setItems(data);
     listView.setCellFactory(CheckBoxListCell.forListView(InvestigationSetting::selectedProperty));
 
-    tfNew.textProperty().addListener((observable, oldValue, newValue) ->
-    {
-      chkNew.setSelected(newValue.trim().length() > 0);
-    });
+    tfNew.textProperty().addListener((obs, ov, nv) -> chkNew.setSelected(nv.trim().length() > 0));
 
     onShown = tfNew::requestFocus;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean hasNew()
-  {
-    if (tfNew.getText().trim().length() == 0) return false;
-    return chkNew.isSelected();
   }
 
 //---------------------------------------------------------------------------

@@ -19,7 +19,6 @@ package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
@@ -59,9 +58,8 @@ public class HDT_Note extends HDT_RecordWithConnector
 
   public void setParentNotes(List<HDT_Note> list) { updateObjectsFromList(rtParentNoteOfNote, list); }
 
-  @Override public String listName()        { return name(); }
-  @Override public HDT_RecordType getType() { return hdtNote; }
-  @Override public boolean isUnitable()     { return true; }
+  @Override public String listName()    { return name(); }
+  @Override public boolean isUnitable() { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

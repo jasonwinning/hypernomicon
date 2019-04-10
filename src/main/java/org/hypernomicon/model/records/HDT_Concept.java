@@ -19,7 +19,6 @@ package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
@@ -58,7 +57,6 @@ public class HDT_Concept extends HDT_RecordWithConnector
   @Override public String getFirstActiveKeyWord()      { return term.get().getFirstActiveKeyWord(); }
   @Override public void setName(String str)            { term.get().setName(str); }
   @Override public String listName()                   { return name(); }
-  @Override public HDT_RecordType getType()            { return hdtConcept; }
   @Override public boolean isUnitable()                { return true; }
 
 //---------------------------------------------------------------------------

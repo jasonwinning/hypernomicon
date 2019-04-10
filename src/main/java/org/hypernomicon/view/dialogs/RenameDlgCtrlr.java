@@ -111,9 +111,7 @@ public class RenameDlgCtrlr extends HyperDlg
 
     tfName.textProperty().addListener((observable, oldValue, newValue) ->
     {
-      if (newValue == null) return;
-      if (oldValue != null)
-        if (oldValue.equals(newValue)) return;
+      if ((newValue == null) || newValue.equals(oldValue)) return;
 
       if (newValue.length() == 0)
       {

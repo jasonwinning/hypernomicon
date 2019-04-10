@@ -19,7 +19,6 @@ package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import org.apache.commons.io.FilenameUtils;
@@ -48,9 +47,8 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
     path = new HyperPath(getObjPointer(rtFolderOfWorkFile), this);
   }
 
-  @Override public String listName()        { return path.getNameStr(); }
-  @Override public HDT_RecordType getType() { return hdtWorkFile; }
-  @Override public HyperPath getPath()      { return path; }
+  @Override public String listName()    { return path.getNameStr(); }
+  @Override public HyperPath getPath()  { return path; }
 
   public boolean getAnnotated()         { return getTagBoolean(tagAnnotated); }
   public void setAnnotated(boolean val) { updateTagBoolean(tagAnnotated, val); }
@@ -69,9 +67,8 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 
   public static class FileNameAuthor
   {
-    public String name;
-    public boolean isEditor;
-    public boolean isTrans;
+    public final String name;
+    public final boolean isEditor, isTrans;
 
     public FileNameAuthor(String name, boolean isEditor, boolean isTrans)
     {
@@ -85,8 +82,8 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 
   public static class FileNameComponentConfig
   {
-    public int code;
-    public String beforeSep, withinSep, afterSep;
+    public final int code;
+    public final String beforeSep, withinSep, afterSep;
 
     public FileNameComponentConfig(int code, String beforeSep, String withinSep, String afterSep)
     {
@@ -154,7 +151,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
           newName = newName + fileName.charAt(pos);
       }
 
-      fileName = "" + newName;
+      fileName = newName;
     }
 
     if (db.prefs.getBoolean(PREF_KEY_FN_LOWERCASE, false))
@@ -162,8 +159,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 
     fileName = FilePath.removeInvalidFileNameChars(fileName);
 
-    int maxLen = db.prefs.getInt(PREF_KEY_FN_MAX_CHAR, 255);
-    int extLen;
+    int maxLen = db.prefs.getInt(PREF_KEY_FN_MAX_CHAR, 255), extLen;
 
     if (ext.length() > 0)
     {
@@ -194,13 +190,13 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
           (author.isEditor && isEditor) ||
           (author.isTrans && isTrans))
       {
-        authorStr = "" + author.name;
+        authorStr = author.name;
         pos = authorStr.indexOf(',');
 
         if (pos >= 0)
           authorStr = authorStr.substring(0, pos);
 
-        comp = comp.length() == 0 ? ("" + authorStr) : (comp + " " + authorStr);
+        comp = comp.length() == 0 ? authorStr : (comp + " " + authorStr);
       }
     }
 
@@ -253,7 +249,6 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 
       default :
 
-        comp = "";
         break;
     }
 

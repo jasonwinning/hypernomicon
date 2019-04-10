@@ -54,31 +54,22 @@ public class ChooseParentWorkFileDlgCtrlr extends HyperDlg
 
   private void init(HDT_Work work)
   {
-    HDT_Work parentWork = work.largerWork.get();
-
     htFiles = new HyperTable(tvFiles, 0, false, "");
     htFiles.addCol(hdtWorkFile, ctNone);
     htFiles.addCol(hdtWorkFile, ctNone);
     htFiles.setDblClickHandler(HDT_WorkFile.class, workFile -> launchFile(workFile.getPath().getFilePath()));
 
-    parentWork.workFiles.forEach(workFile ->
+    work.largerWork.get().workFiles.forEach(workFile ->
     {
       if (work.workFiles.contains(workFile)) return;
 
-      String pathStr;
+      String pathStr = "";
 
       if (workFile.getPath().isEmpty() == false)
       {
         FilePath filePath = workFile.getPath().getFilePath();
-        FilePath relPath = db.getRootFilePath().relativize(filePath);
-
-        if (relPath == null)
-          pathStr = filePath.getNameOnly().toString();
-        else
-          pathStr = relPath.toString();
+        pathStr = nullSwitch(db.getRootFilePath().relativize(filePath), filePath.getNameOnly().toString(), FilePath::toString);
       }
-      else
-        pathStr = "";
 
       HyperTableRow row = htFiles.newDataRow();
       row.setCellValue(0, workFile, pathStr);

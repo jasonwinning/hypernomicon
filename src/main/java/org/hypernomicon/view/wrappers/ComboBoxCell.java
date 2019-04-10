@@ -87,7 +87,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     setGraphic(cB);
     cB.show();
 
-    runDelayedInFXThread(6, 50, event ->
+    runDelayedInFXThread(6, 50, () ->
     {
       cB.requestFocus();
       AutoCompleteCB.scrollToValue(cB);

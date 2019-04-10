@@ -62,14 +62,11 @@ public class NewQueryFavDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if (tfName.getText().length() == 0)
-    {
-      messageDialog("Name cannot be zero-length.", mtError);
-      safeFocus(tfName);
-      return false;
-    }
+    if (tfName.getText().length() > 0) return true;
 
-    return true;
+    messageDialog("Name cannot be zero-length.", mtError);
+    safeFocus(tfName);
+    return false;
   }
 
 //---------------------------------------------------------------------------

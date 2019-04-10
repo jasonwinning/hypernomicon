@@ -20,10 +20,12 @@ package org.hypernomicon.view.tabs;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -47,7 +49,6 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
@@ -82,6 +83,11 @@ import org.hypernomicon.view.reports.ReportTable;
 import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.CheckBoxOrCommandListCell.CheckBoxOrCommand;
 import org.hypernomicon.view.wrappers.ResultsTable.ColumnGroup;
+import org.hypernomicon.view.wrappers.ResultsTable.ColumnGroupItem;
+
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.SetMultimap;
+
 import org.hypernomicon.queryEngines.QueryEngine.QueryType;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -118,8 +124,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     private ReportTable reportTable;
 
     public final ArrayList<ResultsRow> resultsBackingList = new ArrayList<>();
-    private Set<HDT_RecordType> resultTypes;
-    private Set<Tag> resultTags;
+    private SetMultimap<HDT_RecordType, ColumnGroupItem> recordTypeToColumnGroupItems;
 
     private Tab tab;
     private QueryFavorite fav = null;
@@ -385,7 +390,11 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       if (newFav != null) invokeFavorite(newFav);
 
-      if (doSearch == false) return false;
+      if (doSearch == false)
+      {
+        Platform.runLater(tabPane::requestLayout);
+        return false;
+      }
 
       if (type != null)
       {
@@ -515,9 +524,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     public void clear()
     {
       resultsTable.clear();
-      resultTags = EnumSet.noneOf(Tag.class);
+      recordTypeToColumnGroupItems = LinkedHashMultimap.create();
       resultsBackingList.clear();
-      resultTypes = EnumSet.noneOf(HDT_RecordType.class);
 
       switchToRecordMode();
     }
@@ -660,7 +668,6 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       resultsTable.clear();
       webView.getEngine().loadContent("");
-      resultTypes = EnumSet.noneOf(HDT_RecordType.class);
 
       if (setCaption)
         setCaption();
@@ -745,7 +752,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         boolean firstCall = true;
         HDT_Record record;
 
-        resultTags = EnumSet.noneOf(Tag.class);
+        recordTypeToColumnGroupItems = LinkedHashMultimap.create();
         resultsBackingList.clear();
 
         updateMessage("Running query...");
@@ -809,12 +816,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       Platform.runLater(() -> resultsTable.getTV().setItems(FXCollections.observableList(resultsBackingList)));
 
-      resultTags.forEach(tag ->
-      {
-        TableColumn<ResultsRow, ResultCellValue<String>> col = resultsTable.addTagColumn(tag);
-
-        colGroups.forEach(colGroup -> colGroup.setColumns(col, tag));
-      });
+      recordTypeToColumnGroupItems.keySet().forEach(recordType -> addColumns(recordType, recordTypeToColumnGroupItems.get(recordType)));
 
       if (showDesc)
         chkShowDesc.setSelected(true);
@@ -825,14 +827,52 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
+    private void addColumns(HDT_RecordType recordType, Collection<ColumnGroupItem> items)
+    {
+      EnumMap<HDT_RecordType, ColumnGroupItem> map;
+
+      for (ColumnGroupItem item : items)
+      {
+        if (item.tag == tagName) continue;
+
+        ResultColumn<? extends Comparable<?>> col = null;
+        map = new EnumMap<>(HDT_RecordType.class);
+        map.put(recordType, item);
+
+        for (ColumnGroup grp : colGroups) for (ColumnGroupItem otherItem : grp.items)
+          if ((item.tag != tagNone) && (item.tag == otherItem.tag))
+          {
+            map.put(grp.recordType, otherItem);
+
+            if (otherItem.col != null)
+            {
+              col = otherItem.col;
+
+              if (item.relType == rtNone)
+                col.setVisible(true);
+
+              col.map.putAll(map);
+              map = col.map;
+            }
+          }
+
+        if (col == null)
+          col = resultsTable.addNonGeneralColumn(map);
+
+        for (ColumnGroupItem otherItem : map.values())
+          otherItem.col = col;
+      }
+    }
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
     public void addRecord(HDT_Record record, boolean addToObsList)
     {
       HDT_RecordType recordType = record.getType();
 
-      if (resultTypes.contains(recordType) == false)
+      if (recordTypeToColumnGroupItems.containsKey(recordType) == false)
       {
-        resultTypes.add(recordType);
-
         if (recordType.getDisregardDates() == false)
           resultsTable.addDateColumns();
 
@@ -840,23 +880,20 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         tags.remove(tagHub);
         tags.remove(tagPictureCrop);
 
-        resultTags.addAll(tags);
-
-        colGroups.add(new ColumnGroup(db.getTypeName(recordType), tags));
+        ColumnGroup colGroup = new ColumnGroup(recordType, tags);
+        recordTypeToColumnGroupItems.putAll(recordType, colGroup.items);
 
         if (addToObsList)
-        {
-          tags.forEach(tag ->
-          {
-            if (tag == tagName) return;
+          addColumns(recordType, colGroup.items);
 
-            colGroups.forEach(colGroup -> colGroup.setColumns(resultsTable.addTagColumn(tag), tag));
-          });
-        }
+        colGroups.add(colGroup);
       }
 
       if (addToObsList)
+      {
         resultsTable.getTV().getItems().add(new ResultsRow(record));
+        tabPane.requestLayout();
+      }
       else
         resultsBackingList.add(new ResultsRow(record));
     }
@@ -1314,26 +1351,15 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addToEngineMap(QueryEngine<? extends HDT_Record> queryEngine)
-  {
-    typeToEngine.put(queryEngine.getQueryType(), queryEngine);
-  }
-
   @Override void init(TabEnum tabEnum)
   {
     this.tabEnum = tabEnum;
 
-    addToEngineMap(new PersonQueryEngine());
-    addToEngineMap(new PositionQueryEngine());
-    addToEngineMap(new ConceptQueryEngine());
-    addToEngineMap(new WorkQueryEngine());
-    addToEngineMap(new NoteQueryEngine());
-    addToEngineMap(new DebateQueryEngine());
-    addToEngineMap(new ArgumentQueryEngine());
-    addToEngineMap(new InstitutionQueryEngine());
-    addToEngineMap(new InvestigationQueryEngine());
-    addToEngineMap(new FileQueryEngine());
-    addToEngineMap(new AllQueryEngine());
+    List.of(new PersonQueryEngine       (), new PositionQueryEngine(), new ConceptQueryEngine (), new WorkQueryEngine(),
+            new NoteQueryEngine         (), new DebateQueryEngine  (), new ArgumentQueryEngine(), new InstitutionQueryEngine(),
+            new InvestigationQueryEngine(), new FileQueryEngine    (), new AllQueryEngine     ())
+
+      .forEach(engine -> typeToEngine.put(engine.getQueryType(), engine));
 
     btnExecute.setOnAction(event -> btnExecuteClick());
     btnClear.setOnAction(event -> curQV.resetFields());

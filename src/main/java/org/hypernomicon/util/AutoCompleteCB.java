@@ -130,8 +130,8 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
     }
 
     TextField editor = cb.getEditor();
-    String typed = editor.getText().substring(0, editor.getSelection().getStart()); // Get unselected text
-    String typedLC = typed.toLowerCase();
+    String typed = editor.getText().substring(0, editor.getSelection().getStart()), // Get unselected text
+           typedLC = typed.toLowerCase();
     boolean match = false;
 
     Iterator<HyperTableCell> it = items.iterator();
@@ -273,5 +273,3 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 //---------------------------------------------------------------------------
 
 }
-
-

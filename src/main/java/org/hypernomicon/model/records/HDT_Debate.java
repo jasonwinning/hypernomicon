@@ -18,7 +18,6 @@
 package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
@@ -46,9 +45,8 @@ public class HDT_Debate extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String listName()        { return name(); }
-  @Override public HDT_RecordType getType() { return hdtDebate; }
-  @Override public boolean isUnitable()     { return true; }
+  @Override public String listName()    { return name(); }
+  @Override public boolean isUnitable() { return true; }
 
   public void setLargerDebates(List<HDT_Debate> list) { updateObjectsFromList(rtParentDebateOfDebate, list); }
 

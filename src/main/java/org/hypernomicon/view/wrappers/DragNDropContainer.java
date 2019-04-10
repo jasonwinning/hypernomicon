@@ -123,7 +123,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
   {
     if (dragMilliCtr == 0) return;
 
-    runDelayedInFXThread(1, 650, event ->
+    runDelayedInFXThread(1, 650, () ->
     {
       long diff = System.currentTimeMillis() - dragMilliCtr;
 

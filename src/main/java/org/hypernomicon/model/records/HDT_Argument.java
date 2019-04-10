@@ -19,7 +19,6 @@ package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -67,8 +66,7 @@ public class HDT_Argument extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String listName()            { return name(); }
-  @Override public HDT_RecordType getType()     { return hdtArgument; }
+  @Override public String listName()        { return name(); }
 
   public void setWorks(List<HDT_Work> list) { updateObjectsFromList(rtWorkOfArgument, list); }
 

@@ -89,14 +89,11 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if (hcbWork.selectedID() < 1)
-    {
-      messageDialog("Select a work record.", mtInformation);
-      safeFocus(cbWork);
-      return false;
-    }
+    if (hcbWork.selectedID() >= 1) return true;
 
-    return true;
+    messageDialog("Select a work record.", mtInformation);
+    safeFocus(cbWork);
+    return false;
   }
 
 //---------------------------------------------------------------------------

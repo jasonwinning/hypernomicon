@@ -508,7 +508,7 @@ public class OmniFinder
         {
           htFind.selectRow(ROWS_TO_SHOW - 1);
           htFind.refresh();
-          runDelayedInFXThread(1, 30, event -> htFind.scrollToSelection());
+          runDelayedInFXThread(1, 30, htFind::scrollToSelection);
         }
         else if (finalFirstBuffer)
           htFind.selectRow(0);

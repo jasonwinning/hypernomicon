@@ -22,6 +22,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.google.common.collect.Iterators;
 
@@ -51,6 +54,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
   public void clear()               { throw new UnsupportedOperationException("clear"); }
 
   public boolean isEmpty()          { return iterator().hasNext() == false; }
+  public Stream<BibAuthor> stream() { return StreamSupport.stream(spliterator(), false); }
 
   private final void add(AuthorType authorType, HDT_Person person) { add(new BibAuthor(authorType, person)); }
   final void add(AuthorType authorType, PersonName name)           { add(new BibAuthor(authorType, name)); }
@@ -70,25 +74,20 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
   protected String getStr()
   {
-    StringBuilder auths = new StringBuilder();
-
-    forEach(bibAuthor ->
+    Function<? super BibAuthor, String> mapper = bibAuthor ->
     {
       String auth = bibAuthor.getName().getLastFirst();
 
       switch (bibAuthor.getType())
       {
-        case author: break;
-        case editor: auth = auth + " (ed)"; break;
-        case translator: auth = auth + " (tr)"; break;
-        default: break;
+        case editor:     return auth + " (ed)";
+        case translator: return auth + " (tr)";
+        default:         return auth;
       }
+    };
 
-      if (auths.length() > 0) auths.append("; ");
-      auths.append(auth);
-    });
-
-    return auths.toString();
+    return stream().map(mapper)
+                   .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
   }
 
 //---------------------------------------------------------------------------
@@ -96,18 +95,9 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
   public String getStr(AuthorType authorType)
   {
-    StringBuilder auths = new StringBuilder();
-
-    forEach(bibAuthor ->
-    {
-      if (bibAuthor.getType() == authorType)
-      {
-        if (auths.length() > 0) auths.append("; ");
-        auths.append(bibAuthor.getName().getLastFirst());
-      }
-    });
-
-    return auths.toString();
+    return stream().filter(bibAuthor -> bibAuthor.getType() == authorType)
+                   .map(bibAuthor -> bibAuthor.getName().getLastFirst())
+                   .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
   }
 
 //---------------------------------------------------------------------------

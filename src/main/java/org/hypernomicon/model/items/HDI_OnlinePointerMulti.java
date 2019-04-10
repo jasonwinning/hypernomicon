@@ -115,18 +115,10 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 
   @Override public String getResultTextForTag(Tag tag)
   {
-    StringBuilder allStr = new StringBuilder();
-
-    db.getObjectList(relType, record, false).forEach(objRecord ->
-    {
-      String oneStr = objRecord.listName();
-      if (oneStr.length() == 0) return;
-
-      if (allStr.length() > 0) allStr.append("; ");
-      allStr.append(oneStr);
-    });
-
-    return allStr.toString();
+    return db.getObjectList(relType, record, false).stream().map(HDT_Record::listName)
+                                                            .filter(oneStr -> oneStr.length() > 0)
+                                                            .limit(20)
+                                                            .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
   }
 
 //---------------------------------------------------------------------------

@@ -35,7 +35,7 @@ public class SyncBibDlgCtrlr extends HyperDlg
 
   private SyncTask syncTask = null;
 
-  @Override protected boolean isValid() { return false; }
+  @Override protected boolean isValid() { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -78,9 +78,8 @@ public class SyncBibDlgCtrlr extends HyperDlg
 
     dialogStage.setOnHiding(event ->
     {
-      if (syncTask != null)
-        if (syncTask.isRunning())
-          syncTask.cancel();
+      if ((syncTask != null) && syncTask.isRunning())
+        syncTask.cancel();
 
       db.getBibLibrary().stop();
     });

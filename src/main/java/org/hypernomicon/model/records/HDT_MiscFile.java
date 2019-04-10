@@ -69,9 +69,8 @@ public class HDT_MiscFile extends HDT_RecordWithConnector implements HDT_RecordW
   public boolean getAnnotated()         { return getTagBoolean(tagAnnotated); }
   public void setAnnotated(boolean val) { updateTagBoolean(tagAnnotated, val); }
 
-  @Override public HyperPath getPath()      { return path; }
-  @Override public HDT_RecordType getType() { return hdtMiscFile; }
-  @Override public String listName()        { return name(); }
+  @Override public HyperPath getPath()  { return path; }
+  @Override public String listName()    { return name(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -250,8 +250,8 @@ public class WorkDlgCtrlr extends HyperDlg
     {
       if (newValue == null) return;
 
-      WorkTypeEnum workTypeEnumVal = HDT_WorkType.workTypeIDToEnumVal(HyperTableCell.getCellID(newValue));
-      WorkTypeEnum oldEnumVal = curWork.getWorkTypeValue();
+      WorkTypeEnum workTypeEnumVal = HDT_WorkType.workTypeIDToEnumVal(HyperTableCell.getCellID(newValue)),
+                   oldEnumVal = curWork.getWorkTypeValue();
 
       if ((oldEnumVal == wtUnenteredSet) && (workTypeEnumVal != wtUnenteredSet))
       {
@@ -1057,8 +1057,8 @@ public class WorkDlgCtrlr extends HyperDlg
     {
       if ((extFields.size() > 0) && (chkCreateBibEntry.isSelected() == false))
       {
-        String typeName = db.getBibLibrary().type().getUserReadableName();
-        String msg = "The current work record is not associated with a " + typeName + " entry. Create one now?\n";
+        String typeName = db.getBibLibrary().type().getUserReadableName(),
+               msg = "The current work record is not associated with a " + typeName + " entry. Create one now?\n";
 
         msg = msg + "Otherwise, existing information for these fields will be lost: ";
 
@@ -1093,10 +1093,7 @@ public class WorkDlgCtrlr extends HyperDlg
     if (tfOrigFile.getText().length() == 0)
     {
       if (oldWorkFile != null)
-      {
-        messageDialog("Internal error #82709", mtError);
-        return false;
-      }
+        return falseWithErrorMessage("Internal error #82709");
 
       return true;
     }
@@ -1147,10 +1144,9 @@ public class WorkDlgCtrlr extends HyperDlg
     }
     else
     {
-      if ((newWorkFile == null) && (oldWorkFile != null))
-        if (oldWorkFile.works.size() > 1)
-          if (confirmDialog("The same file that was associated with this work is associated with other works as well. Should these also be updated?"))
-            newWorkFile = oldWorkFile;
+      if ((newWorkFile == null) && (oldWorkFile != null) && (oldWorkFile.works.size() > 1))
+        if (confirmDialog("The same file that was associated with this work is associated with other works as well. Should these also be updated?"))
+          newWorkFile = oldWorkFile;
     }
 
     try
@@ -1240,16 +1236,13 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     EntryType entryType = cbEntryType.getValue();
 
-    if (entryType != null)
-    {
-      switch (entryType)
-      {
-        case etUnentered : case etOther : case etNone : entryType = null; break;
-        default: break;
-      }
-    }
+    if (entryType == null) return null;
 
-    return entryType;
+    switch (entryType)
+    {
+      case etUnentered : case etOther : case etNone : return null;
+      default: return entryType;
+    }
   }
 
 //---------------------------------------------------------------------------

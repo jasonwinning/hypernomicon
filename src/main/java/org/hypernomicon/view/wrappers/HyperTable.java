@@ -753,7 +753,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public void edit(HyperTableRow row, int colNdx)
   {
-    runDelayedInFXThread(1, 200, event -> tv.edit(tv.getItems().indexOf(row), tv.getColumns().get(colNdx)));
+    runDelayedInFXThread(1, 200, () -> tv.edit(tv.getItems().indexOf(row), tv.getColumns().get(colNdx)));
   }
 
 //---------------------------------------------------------------------------

@@ -167,7 +167,7 @@ public final class WindowStack
       // This is a workaround for:
       // https://bugs.openjdk.java.net/browse/JDK-8140491
 
-      runDelayedInFXThread(1, 300, event -> // 300 ms delay to prevent main window from hiding/showing for multiple dialog boxes
+      runDelayedInFXThread(1, 300, () -> // 300 ms delay to prevent main window from hiding/showing for multiple dialog boxes
       {
         if (app.getPrimaryStage().isShowing() == false)
           return;

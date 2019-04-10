@@ -18,7 +18,6 @@
 package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.LinkedHashSet;
@@ -50,9 +49,8 @@ public class HDT_Position extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String listName()        { return name(); }
-  @Override public HDT_RecordType getType() { return hdtPosition; }
-  @Override public boolean isUnitable()     { return true; }
+  @Override public String listName()    { return name(); }
+  @Override public boolean isUnitable() { return true; }
 
   public void setLargerPositions(List<HDT_Position> list) { updateObjectsFromList(rtParentPosOfPos, list); }
   public void setDebates(List<HDT_Debate> list)           { updateObjectsFromList(rtDebateOfPosition, list); }
@@ -102,10 +100,10 @@ public class HDT_Position extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public PositionSource getLaunchableWork()   { return getSource(true, false, false); }
-  public PositionSource getWork()             { return getSource(true, false, true); }
-  public PositionSource getArgument()         { return getSource(true, true, true); }
-  public PositionSource getWorkWithAuthor()   { return getSource(false, false, true); }
+  public PositionSource getLaunchableWork()   { return getSource(true , false, false); }
+  public PositionSource getWork()             { return getSource(true , false, true ); }
+  public PositionSource getArgument()         { return getSource(true , true , true ); }
+  public PositionSource getWorkWithAuthor()   { return getSource(false, false, true ); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

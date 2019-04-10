@@ -18,7 +18,6 @@
 package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
@@ -42,8 +41,7 @@ public class HDT_Glossary extends HDT_RecordBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String listName()        { return name(); }
-  @Override public HDT_RecordType getType() { return hdtGlossary; }
+  @Override public String listName()      { return name(); }
 
   public boolean getActive()              { return getTagBoolean(tagActive); }
   public void setActive(boolean newValue) { updateTagBoolean(tagActive, newValue); }

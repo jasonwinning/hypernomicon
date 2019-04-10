@@ -84,7 +84,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   @Override void focusOnSearchKey()                          { safeFocus(tfSearchKey); }
   @Override public void setRecord(HDT_MiscFile activeRecord) { curMiscFile = activeRecord; }
 
-  @FXML public boolean btnManageClick()                      { return showFileDialog(); }
+  @FXML public boolean btnManageClick()                      { return showFileDialog(null); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -309,9 +309,12 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean showFileDialog()
+  public boolean showFileDialog(FilePath srcFilePath)
   {
     fdc = FileDlgCtrlr.create("Miscellaneous file", hdtMiscFile, curMiscFile, (HDT_Work) getHyperTab(workTab).activeRecord(), tfName.getText());
+
+    if (srcFilePath != null)
+      fdc.setSrcFilePath(srcFilePath);
 
     boolean result = fdc.showModal();
 

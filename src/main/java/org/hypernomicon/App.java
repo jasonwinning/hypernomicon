@@ -64,7 +64,6 @@ import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
@@ -328,39 +327,30 @@ public final class App extends Application
         }
       });
 
-      scene.setOnDragOver(new EventHandler<DragEvent>()
+      scene.addEventFilter(DragEvent.DRAG_OVER, event ->
       {
-        @Override public void handle(DragEvent event)
-        {
-          Dragboard board = event.getDragboard();
+        if (event.getDragboard().hasFiles())
+          event.acceptTransferModes(TransferMode.MOVE);
 
-          if (board.hasFiles())
-            event.acceptTransferModes(TransferMode.ANY);
-          else
-            event.consume();
-        }
+        event.consume();
       });
 
-      // Dropping over surface
-      scene.setOnDragDropped(new EventHandler<DragEvent>()
+      scene.addEventFilter(DragEvent.DRAG_DROPPED, event ->
       {
-        @Override public void handle(DragEvent event)
+        Dragboard board = event.getDragboard();
+
+        if (board.hasImage())
+          if (isDebugging)
+            System.out.println("has image");
+
+        if (board.hasFiles())
         {
-          Dragboard board = event.getDragboard();
-
-          if (board.hasImage())
-            if (isDebugging)
-              System.out.println("has image");
-
-          if (board.hasFiles())
-          {
-            List<String> args = board.getFiles().stream().map(File::getAbsolutePath).collect(Collectors.toList());
-            Platform.runLater(() -> ui.handleArgs(args));
-            event.setDropCompleted(true);
-          }
-
-          event.consume();
+          List<String> args = board.getFiles().stream().map(File::getAbsolutePath).collect(Collectors.toList());
+          Platform.runLater(() -> ui.handleArgs(args));
+          event.setDropCompleted(true);
         }
+
+        event.consume();
       });
 
       primaryStage.setScene(scene);

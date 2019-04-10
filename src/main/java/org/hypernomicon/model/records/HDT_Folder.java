@@ -66,7 +66,6 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
   @Override public String getCBText()       { return path.getNameStr(); }
   @Override public String listName()        { return path.getNameStr(); }
   @Override public void expire()            { path.clear(); super.expire(); }
-  @Override public HDT_RecordType getType() { return hdtFolder; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

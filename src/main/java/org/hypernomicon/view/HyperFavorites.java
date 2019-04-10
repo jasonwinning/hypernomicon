@@ -106,11 +106,11 @@ public class HyperFavorites
     {
       FavMenuItem favItem = (FavMenuItem) mainList.get(favNdx + FIRST_FAV_MENU_ITEM_NDX);
 
-      node.node("favTypes").put("" + favNdx, "record");
+      node.node("favTypes").put(String.valueOf(favNdx), "record");
       HyperTableCell cell = favItem.favRecord;
 
-      node.node("ids").putInt("" + favNdx, cell.getID());
-      node.node("types").put("" + favNdx, db.getTypeTagStr(cell.getType()));
+      node.node("ids").putInt(String.valueOf(favNdx), cell.getID());
+      node.node("types").put(String.valueOf(favNdx), db.getTypeTagStr(cell.getType()));
     }
 
     for (int queryNdx = 0; queryNdx < queryList.size(); queryNdx++)
@@ -119,7 +119,7 @@ public class HyperFavorites
 
       int favNdx = mainCount + queryNdx;
 
-      node.node("favTypes").put("" + favNdx, "query");
+      node.node("favTypes").put(String.valueOf(favNdx), "query");
       QueryFavorite query = favItem.query;
 
       node.node("queries").node("query" + favNdx).put("name", query.name);
@@ -156,14 +156,14 @@ public class HyperFavorites
 
     for (int ndx = 0; ndx < count; ndx++)
     {
-      if (node.node("favTypes").get("" + ndx, "").equals("record"))
+      if (node.node("favTypes").get(String.valueOf(ndx), "").equals("record"))
       {
-        int id = node.node("ids").getInt("" + ndx, -1);
-        HDT_RecordType type = db.parseTypeTagStr(node.node("types").get("" + ndx, ""));
+        int id = node.node("ids").getInt(String.valueOf(ndx), -1);
+        HDT_RecordType type = db.parseTypeTagStr(node.node("types").get(String.valueOf(ndx), ""));
 
         nullSwitch((HDT_Record)db.records(type).getByID(id), record -> mainList.add(ui.new FavMenuItem(record)));
       }
-      else if (node.node("favTypes").get("" + ndx, "").equals("query"))
+      else if (node.node("favTypes").get(String.valueOf(ndx), "").equals("query"))
       {
         QueryFavorite query = new QueryFavorite();
 

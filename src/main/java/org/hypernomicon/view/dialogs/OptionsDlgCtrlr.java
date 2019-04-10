@@ -80,7 +80,7 @@ public class OptionsDlgCtrlr extends HyperDlg
                           tfSepBefore1, tfSepBefore2, tfSepBefore3, tfSepBefore4, tfSepBefore5,
                           tfSepWithin1, tfSepWithin2, tfSepWithin3, tfSepWithin4, tfSepWithin5;
 
-  private static HashMap<String, Integer> componentMap;
+  private final HashMap<String, Integer> componentMap = new LinkedHashMap<>();
   private StringProperty authUrl;
   private OAuth1RequestToken requestToken;
 
@@ -98,16 +98,10 @@ public class OptionsDlgCtrlr extends HyperDlg
   {
     FileChooser fileChooser = new FileChooser();
 
-    // Set extension filter
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
     fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
 
-    // Show save file dialog
-    File file = fileChooser.showOpenDialog(owner);
-
-    if (file == null) return;
-
-    tf.setText(file.getPath());
+    nullSwitch(fileChooser.showOpenDialog(owner), file -> tf.setText(file.getPath()));
   }
 
 //---------------------------------------------------------------------------
@@ -154,7 +148,6 @@ public class OptionsDlgCtrlr extends HyperDlg
     lblStep4.visibleProperty().bind(authUrl.isNotEmpty());
     lblStep4Instructions.visibleProperty().bind(authUrl.isNotEmpty());
 
-    componentMap = new LinkedHashMap<>();
     componentMap.put("Author last names", AUTHOR_FN_COMPONENT);
     componentMap.put("Year", YEAR_FN_COMPONENT);
     componentMap.put("Title (no subtitle)", TITLE_FN_COMPONENT);
@@ -290,8 +283,8 @@ public class OptionsDlgCtrlr extends HyperDlg
 
     tf.textProperty().addListener((observable, oldValue, newValue) ->
     {
-      if (newValue == null) return;
-      appPrefs.put(prefKey, newValue);
+      if (newValue != null)
+        appPrefs.put(prefKey, newValue);
     });
   }
 
@@ -318,9 +311,8 @@ public class OptionsDlgCtrlr extends HyperDlg
     chk.setSelected(appPrefs.getBoolean(prefKey, defValue));
     chk.selectedProperty().addListener((observable, oldValue, newValue) ->
     {
-      if (newValue == null) return;
-
-      appPrefs.putBoolean(prefKey, newValue.booleanValue());
+      if (newValue != null)
+        appPrefs.putBoolean(prefKey, newValue.booleanValue());
     });
   }
 
@@ -329,7 +321,7 @@ public class OptionsDlgCtrlr extends HyperDlg
 
   private void initMaxChar(TextField tf, String prefKey)
   {
-    tf.setText("" + db.prefs.getInt(prefKey, 255));
+    tf.setText(String.valueOf(db.prefs.getInt(prefKey, 255)));
 
     tf.textProperty().addListener((observable, oldValue, newValue) ->
     {
@@ -389,11 +381,11 @@ public class OptionsDlgCtrlr extends HyperDlg
 
       switch (code)
       {
-        case AUTHOR_FN_COMPONENT : author = ultraTrim("" + value); break;
-        case TITLE_FN_COMPONENT  : title  = ultraTrim("" + value); break;
-        case YEAR_FN_COMPONENT   : year   = ultraTrim("" + value); break;
-        case TRANS_FN_COMPONENT  : trans  = ultraTrim("" + value); break;
-        case EDITOR_FN_COMPONENT : editor = ultraTrim("" + value); break;
+        case AUTHOR_FN_COMPONENT : author = ultraTrim(value); break;
+        case TITLE_FN_COMPONENT  : title  = ultraTrim(value); break;
+        case YEAR_FN_COMPONENT   : year   = ultraTrim(value); break;
+        case TRANS_FN_COMPONENT  : trans  = ultraTrim(value); break;
+        case EDITOR_FN_COMPONENT : editor = ultraTrim(value); break;
       }
     }
 

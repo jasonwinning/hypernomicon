@@ -51,10 +51,8 @@ public class LockedDlgCtrlr extends HyperDlg
   private class MessageSenderThread extends Thread
   {
     private LockedDlgCtrlr dlg;
-
     private InterComputerMsg sentMsg;
-    private boolean done;
-    private boolean gotResponse = false;
+    private boolean done, gotResponse = false;
 
     private MessageSenderThread(LockedDlgCtrlr dlg, InterComputerMsg sentMsg)
     {

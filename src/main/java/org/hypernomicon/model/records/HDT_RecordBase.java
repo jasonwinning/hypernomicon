@@ -73,6 +73,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   private final LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items;
   private final boolean dummyFlag;
   private final String sortKeyAttr;
+  private final HDT_RecordType type;
 
   private int id;
   private Instant creationDate, modifiedDate, viewDate;
@@ -106,6 +107,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final boolean hasStoredState()       { return xmlState.stored; }
   @Override public final void updateSortKey()           { if (dataset != null) dataset.updateSortKey(makeSortKey(), id); }
   @Override public final HDI_Schema getSchema(Tag tag)  { return nullSwitch(items.get(tag), null, HDI_Base::getSchema); }
+  @Override public final HDT_RecordType getType()       { return type; }
 
   @Override public final void writeStoredStateToXML(StringBuilder xml)        { xmlState.writeToXML(xml); }
   @Override public void setSearchKey(String newKey) throws SearchKeyException { setSearchKey(newKey, false, false); }
@@ -135,6 +137,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   HDT_RecordBase(HDT_RecordState xmlState, HyperDataset<? extends HDT_Record> dataset, Tag nameTag)
   {
     name = new NameItem();
+    type = HDT_RecordType.typeByRecordClass(getClass());
 
     this.xmlState = xmlState;
     id = xmlState.id;

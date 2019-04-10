@@ -19,12 +19,15 @@ package org.hypernomicon.view.wrappers;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.EnumSet;
+import java.util.EnumMap;
 import java.util.Set;
 import java.util.function.Function;
 
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.relations.RelationSet;
+import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.dialogs.SelectColumnsDlgCtrlr;
 import org.hypernomicon.view.dialogs.SelectColumnsDlgCtrlr.TypeCheckBox;
 
@@ -32,6 +35,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
+import static org.hypernomicon.model.records.HDT_RecordBase.HDT_DateType.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -39,7 +43,6 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
@@ -59,39 +62,67 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
 //---------------------------------------------------------------------------
 
+  public static class ResultColumn<Comp_T extends Comparable<Comp_T>> extends TableColumn<ResultsRow, ResultCellValue<Comp_T>>
+  {
+    public ResultColumn(String caption) { super(caption); }
+
+    public final EnumMap<HDT_RecordType, ColumnGroupItem> map = new EnumMap<>(HDT_RecordType.class);
+  }
+
+//---------------------------------------------------------------------------
+
   public static final class ColumnGroupItem
   {
-    private ColumnGroupItem(Tag tag, String caption)
+    private ColumnGroupItem(Tag tag)
     {
       this.tag = tag;
-      this.caption = caption;
+      caption = db.getTagHeader(tag);
+      relType = RelationType.rtNone;
     }
 
-    private final Tag tag;
+    private ColumnGroupItem(String caption)
+    {
+      tag = tagNone;
+      this.caption = caption;
+      relType = RelationType.rtNone;
+    }
+
+    private ColumnGroupItem(RelationType relType)
+    {
+      this.relType = relType;
+      tag = relType.getSubjTag();
+      caption = relType.getSubjTitle();
+    }
+
+    public final Tag tag;
+    public final RelationType relType; // If relType != rtNone, then this is a column showing subjects for the row record (the object)
     public final String caption;
-    public TableColumn<ResultsRow, ? extends ResultCellValue<? extends Comparable<?>>> col;
+    public ResultColumn<? extends Comparable<?>> col;
   }
 
 //---------------------------------------------------------------------------
 
   public static final class ColumnGroup
   {
+    public final HDT_RecordType recordType;
     public final String caption;
     public final ArrayList<ColumnGroupItem> items = new ArrayList<>();
     public TypeCheckBox checkBox;
 
-    public ColumnGroup(String caption, Set<Tag> tags)
+    public ColumnGroup(HDT_RecordType recordType, Set<Tag> tags)
     {
-      this.caption = caption;
+      this.recordType = recordType;
+      caption = db.getTypeName(recordType);
 
-      tags.forEach(tag -> items.add(new ColumnGroupItem(tag, db.getTagHeader(tag))));
+      tags.forEach(tag -> items.add(new ColumnGroupItem(tag)));
+
+      RelationSet.getRelationsForObjType(recordType).forEach(relType -> items.add(new ColumnGroupItem(relType)));
     }
 
-    public <Comp_T extends Comparable<Comp_T>> void setColumns(TableColumn<ResultsRow, ResultCellValue<Comp_T>> col, Tag tag)
+    public ColumnGroup(String caption)
     {
-      items.forEach(item -> {
-        if (item.tag == tag)
-          item.col = col; });
+      this.caption = caption;
+      recordType = hdtNone;
     }
   }
 
@@ -203,53 +234,53 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
   private void initColumns()
   {
     datesAdded = false;
-    generalGroup = new ColumnGroup("General", EnumSet.noneOf(Tag.class));
+    generalGroup = new ColumnGroup("General");
     ColumnGroupItem item;
 
     colGroups.add(generalGroup);
 
-    TableColumn<ResultsRow, ResultCellValue<Integer>> intCol;
-    TableColumn<ResultsRow, ResultCellValue<String>> strCol;
+    ResultColumn<Integer> intCol;
+    ResultColumn<String> strCol;
 
-    intCol = new TableColumn<>("ID");
+    intCol = new ResultColumn<>("ID");
 
     intCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordIDStr(), str -> Integer.valueOf(parseInt(str, -1))));
     intCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
     tv.getColumns().add(intCol);
 
-    item = new ColumnGroupItem(tagNone, "ID");
+    item = new ColumnGroupItem("ID");
     generalGroup.items.add(item);
     item.col = intCol;
 
-    strCol = new TableColumn<>("Name");
+    strCol = new ResultColumn<>("Name");
     strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordName(), str -> makeSortKeyByType(str, hdtWork)));
     strCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
     tv.getColumns().add(strCol);
 
-    item = new ColumnGroupItem(tagNone, "Name");
+    item = new ColumnGroupItem("Name");
     generalGroup.items.add(item);
     item.col = strCol;
 
-    strCol = new TableColumn<>("Type");
+    strCol = new ResultColumn<>("Type");
     strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordTypeStr(), str -> str.trim().toLowerCase()));
     strCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
     tv.getColumns().add(strCol);
 
-    item = new ColumnGroupItem(tagNone, "Type");
+    item = new ColumnGroupItem("Type");
     generalGroup.items.add(item);
     item.col = strCol;
 
-    strCol = new TableColumn<>("Search Key");
+    strCol = new ResultColumn<>("Search Key");
     strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getSearchKey(), str -> str.trim().toLowerCase()));
     strCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
     tv.getColumns().add(strCol);
     strCol.setVisible(false);
 
-    item = new ColumnGroupItem(tagNone, "Search Key");
+    item = new ColumnGroupItem("Search Key");
     generalGroup.items.add(item);
     item.col = strCol;
 
-    strCol = new TableColumn<>("Sort Key");
+    strCol = new ResultColumn<>("Sort Key");
     strCol.setCellValueFactory(cellData ->
     {
       String sortKey = cellData.getValue().getSortKey();
@@ -260,18 +291,49 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
     tv.getColumns().add(strCol);
     strCol.setVisible(false);
 
-    item = new ColumnGroupItem(tagNone, "Sort Key");
+    item = new ColumnGroupItem("Sort Key");
     generalGroup.items.add(item);
     item.col = strCol;
 
-    Node showHideColumnsButton = tv.lookup(".show-hide-columns-button");
+    if (buttonAdded) return;
 
-    if (showHideColumnsButton != null)
-      showHideColumnsButton.addEventFilter(MouseEvent.MOUSE_PRESSED, event ->
+    runDelayedOutsideFXThread(0, () -> { while (buttonAdded == false)
+    {
+      runInFXThread(() -> { synchronized (lock)
       {
-        SelectColumnsDlgCtrlr.create("Select Columns").showModal();
-        event.consume();
-      });
+        if (buttonAdded) return;
+
+        nullSwitch(tv.lookup(".show-hide-columns-button"), showHideColumnsButton ->
+        {
+          buttonAdded = true;
+
+          showHideColumnsButton.addEventFilter(MouseEvent.MOUSE_PRESSED, event ->
+          {
+            SelectColumnsDlgCtrlr.create("Select Columns").showModal();
+            event.consume();
+          });
+        });
+      }});
+
+      sleepForMillis(50);
+    }});
+  }
+
+  private boolean buttonAdded = false;
+  private static final Object lock = new Object();
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void addDateColumn(String caption, HDT_DateType dateType)
+  {
+    ResultColumn<Instant> col = new ResultColumn<>(caption);
+    col.setCellValueFactory(cellData -> cellData.getValue().getDateCellValue(dateType).getObservable());
+    tv.getColumns().add(col);
+
+    ColumnGroupItem item = new ColumnGroupItem(caption);
+    generalGroup.items.add(item);
+    item.col = col;
   }
 
 //---------------------------------------------------------------------------
@@ -284,49 +346,60 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
     Platform.runLater(() ->
     {
-      TableColumn<ResultsRow, ResultCellValue<Instant>> col;
-      ColumnGroupItem item;
-
-      col = new TableColumn<>("Date created");
-      col.setCellValueFactory(cellData -> cellData.getValue().getCreationDateCellValue().getObservable());
-      tv.getColumns().add(col);
-
-      item = new ColumnGroupItem(tagNone, "Date created");
-      generalGroup.items.add(item);
-      item.col = col;
-
-      col = new TableColumn<>("Date modified");
-      col.setCellValueFactory(cellData -> cellData.getValue().getModifiedDateCellValue().getObservable());
-      tv.getColumns().add(col);
-
-      item = new ColumnGroupItem(tagNone, "Date modified");
-      generalGroup.items.add(item);
-      item.col = col;
-
-      col = new TableColumn<>("Date accessed");
-      col.setCellValueFactory(cellData -> cellData.getValue().getViewDateCellValue().getObservable());
-      tv.getColumns().add(col);
-
-      item = new ColumnGroupItem(tagNone, "Date accessed");
-      generalGroup.items.add(item);
-      item.col = col;
+      addDateColumn("Date created" , dateTypeCreation);
+      addDateColumn("Date modified", dateTypeModified);
+      addDateColumn("Date accessed", dateTypeView);
     });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TableColumn<ResultsRow, ResultCellValue<String>> addTagColumn(Tag tag)
+  public ResultColumn<String> addNonGeneralColumn(EnumMap<HDT_RecordType, ColumnGroupItem> map)
   {
-    TableColumn<ResultsRow, ResultCellValue<String>> col = new TableColumn<>(db.getTagHeader(tag));
+    ColumnGroupItem firstItem = map.entrySet().iterator().next().getValue();
+
+    ResultColumn<String> col = new ResultColumn<>(firstItem.caption);
+
     Function<String, String> strToComp;
 
-    if (tag == tagTitle)
+    if (firstItem.tag == tagTitle)
       strToComp = str -> makeSortKeyByType(str, hdtWork);
     else
       strToComp = str -> str.trim().toLowerCase();
 
-    col.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getTagText(tag), strToComp));
+    boolean visible = false;
+    for (ColumnGroupItem item : map.values())
+      if (item.relType == RelationType.rtNone)
+        visible = true;
+
+    col.setVisible(visible);
+
+    col.setCellValueFactory(cellData ->
+    {
+      String str = "";
+      HDT_Record record = cellData.getValue().getRecord();
+
+      if (record != null)
+      {
+        ColumnGroupItem item = map.get(record.getType());
+
+        if (item != null)
+        {
+          if (item.relType != RelationType.rtNone)
+          {
+            str = db.getSubjectList(item.relType, record).stream().map(HDT_Record::listName)
+                                                                  .filter(oneStr -> oneStr.length() > 0)
+                                                                  .limit(20)
+                                                                  .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+          }
+          else
+            str = record.getResultTextForTag(item.tag);
+        }
+      }
+
+      return getCustomCellValue(str, strToComp);
+    });
 
     col.setMaxWidth(RESULT_COL_MAX_WIDTH);
 

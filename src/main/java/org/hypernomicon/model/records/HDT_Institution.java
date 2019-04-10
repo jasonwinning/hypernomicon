@@ -68,8 +68,6 @@ public class HDT_Institution extends HDT_RecordBase
   public void setWebLink(String newLink) { updateTagString(tagWebLink, newLink); }
   public String getWebLink()             { return getTagString(tagWebLink); }
 
-  @Override public HDT_RecordType getType() { return hdtInstitution; }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

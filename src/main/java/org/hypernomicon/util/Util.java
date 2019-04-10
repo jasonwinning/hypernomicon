@@ -89,8 +89,6 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.event.EventTarget;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
@@ -1390,12 +1388,12 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void runDelayedInFXThread(int cycles, int delayMS, EventHandler<ActionEvent> handler)
+  public static void runDelayedInFXThread(int cycles, int delayMS, Runnable runnable)
   {
     Timeline timeline = new Timeline();
     timeline.setCycleCount(cycles);
 
-    timeline.getKeyFrames().add(new KeyFrame(Duration.millis(delayMS), handler));
+    timeline.getKeyFrames().add(new KeyFrame(Duration.millis(delayMS), event -> runnable.run()));
     timeline.play();
   }
 

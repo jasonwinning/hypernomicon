@@ -180,6 +180,8 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
           chkField.setLayoutX(fieldLeft);
           chkField.setLayoutY(posY);
           chkField.selectedProperty().bindBidirectional(item.col.visibleProperty());
+          chkField.selectedProperty().addListener((obs, ov, nv) -> item.col.getTableView().scrollToColumnIndex(0));
+
           innerPane.getChildren().add(chkField);
 
           chkField.selectedProperty().addListener((observable, oldValue, newValue) ->

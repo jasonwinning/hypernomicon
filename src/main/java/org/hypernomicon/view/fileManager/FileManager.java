@@ -734,7 +734,7 @@ public class FileManager extends HyperDlg
 
     fileTable.addContextMenuItem("New misc. file record", fileRow -> fileRow.getRecord() == null, fileRow ->
     {
-      ui.newMiscFile(fileRow);
+      ui.newMiscFile(fileRow, null);
       refresh();
     });
 

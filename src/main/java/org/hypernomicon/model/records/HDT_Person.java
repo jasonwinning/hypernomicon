@@ -98,7 +98,6 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
   void setLastNameInternal(String newStr, boolean update)  { setNameInternal(newStr.replace("|", "") + "|" + getFirstName(), update); }
 
   @Override public void setName(String str) { messageDialog("Internal error #19982", mtError); }
-  @Override public HDT_RecordType getType() { return hdtPerson; }
   @Override public String listName()        { return getNameLastFirst(false); }
   @Override public HyperPath getPath()      { return picture; }
 

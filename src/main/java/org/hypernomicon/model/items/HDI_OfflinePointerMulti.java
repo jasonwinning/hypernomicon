@@ -50,9 +50,8 @@ public class HDI_OfflinePointerMulti extends HDI_OfflineBase
   {
     objIDs.add(objID);
 
-    if (nestedItems != null)
-      if (nestedItems.isEmpty() == false)
-        objIDtoMaps.put(objID, nestedItems);
+    if ((nestedItems != null) && (nestedItems.isEmpty() == false))
+      objIDtoMaps.put(objID, nestedItems);
   }
 
 //---------------------------------------------------------------------------
