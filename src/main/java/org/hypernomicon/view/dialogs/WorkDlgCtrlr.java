@@ -34,13 +34,14 @@ import com.adobe.internal.xmp.XMPException;
 
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
-import org.hypernomicon.bib.BibAuthors;
-import org.hypernomicon.bib.BibData;
-import org.hypernomicon.bib.BibData.BibFieldEnum;
-import org.hypernomicon.bib.BibData.EntryType;
-import org.hypernomicon.bib.BibDataStandalone;
-import org.hypernomicon.bib.BibUtils;
-import org.hypernomicon.bib.PdfMetadata;
+import org.hypernomicon.bib.authors.BibAuthors;
+import org.hypernomicon.bib.data.BibData;
+import org.hypernomicon.bib.data.BibDataStandalone;
+import org.hypernomicon.bib.data.BibField.BibFieldEnum;
+import org.hypernomicon.bib.data.CrossrefBibData;
+import org.hypernomicon.bib.data.EntryType;
+import org.hypernomicon.bib.data.GoogleBibData;
+import org.hypernomicon.bib.data.PDFBibData;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.PersonName;
@@ -55,7 +56,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.model.relations.ObjectGroup;
 
-import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
+import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
@@ -75,7 +76,6 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.bib.BibUtils.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -169,7 +169,7 @@ public class WorkDlgCtrlr extends HyperDlg
       row -> row.getText(0).length() > 0,
       row ->
       {
-        List<String> list = BibUtils.matchISBN(row.getText(0));
+        List<String> list = matchISBN(row.getText(0));
         if (collEmpty(list) == false)
           mnuISBNClick(list.get(0));
       });
@@ -228,7 +228,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), null);
 
-    tfTitle.textProperty().addListener((observable, oldValue, newValue) ->
+    tfTitle.textProperty().addListener((ob, oldValue, newValue) ->
     {
       int pos;
       String fileTitle = newValue;
@@ -244,9 +244,9 @@ public class WorkDlgCtrlr extends HyperDlg
       tfFileTitle.setText(fileTitle.trim());
     });
 
-    tfFileTitle.textProperty().addListener((observable, oldValue, newValue) -> btnRegenerateFilenameClick());
+    tfFileTitle.textProperty().addListener((ob, oldValue, newValue) -> btnRegenerateFilenameClick());
 
-    cbType.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    cbType.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null) return;
 
@@ -281,9 +281,9 @@ public class WorkDlgCtrlr extends HyperDlg
       }
     });
 
-    tfYear.textProperty().addListener((observable, oldValue, newValue) -> btnRegenerateFilenameClick());
+    tfYear.textProperty().addListener((ob, oldValue, newValue) -> btnRegenerateFilenameClick());
 
-    tfOrigFile.textProperty().addListener((observable, oldValue, newValue) -> btnRegenerateFilenameClick());
+    tfOrigFile.textProperty().addListener((ob, oldValue, newValue) -> btnRegenerateFilenameClick());
 
     lblCase.setOnMouseClicked(event ->
     {
@@ -489,11 +489,9 @@ public class WorkDlgCtrlr extends HyperDlg
     }
 
     boolean nameTaken = true;
-    int ctr = 0;
 
-    while (nameTaken)
+    for (int ctr = 1; nameTaken; ctr++)
     {
-      ctr++;
       if (ctr >= 1000)
       {
         newFileName = fileName;
@@ -607,7 +605,6 @@ public class WorkDlgCtrlr extends HyperDlg
 
   private boolean extractDataFromPdf(boolean doWebQuery, boolean doMerge)
   {
-    BibData bd = null;
     boolean dontLaunchPdf = true;
 
     if (FilePath.isEmpty(origFilePath) || origFilePath.exists() == false) return false;
@@ -616,35 +613,28 @@ public class WorkDlgCtrlr extends HyperDlg
     httpClient.stop();
     setAllVisible(false, btnStop, progressBar);
 
-    PdfMetadata md = new PdfMetadata();
+    PDFBibData tempPdfBD = null;
 
     try
     {
-      BibUtils.getPdfMetadata(origFilePath, md);
+      tempPdfBD = new PDFBibData(origFilePath);
     }
     catch (IOException | XMPException e)
     {
       return falseWithErrorMessage("Error: " + e.getMessage());
     }
 
-    List<String> isbns = md.bd.getMultiStr(bfISBNs);
+    List<String> isbns = tempPdfBD.getMultiStr(bfISBNs);
 
-    String doi = md.bd.getStr(bfDOI), isbn = "";
+    String doi = tempPdfBD.getStr(bfDOI), isbn = "";
+    if (doi.length() == 0)
+      doi = matchDOI(origFilePath.getNameOnly().toString());
+
+    if (isbns.size() == 0)
+      isbns = matchISBN(origFilePath.getNameOnly().toString());
 
     if (isbns.size() > 0)
       isbn = isbns.get(0);
-
-    if ((doi.length() == 0) && (isbn.length() == 0))
-    {
-      bd = new BibDataStandalone();
-      bd.extractDOIandISBNs(origFilePath.getNameOnly().toString());
-      doi = bd.getStr(bfDOI);
-
-      if (bd.getMultiStr(bfISBNs).size() > 0)
-        isbn = bd.getMultiStr(bfISBNs).get(0);
-
-      bd = null;
-    }
 
     if (doWebQuery)
     {
@@ -662,14 +652,18 @@ public class WorkDlgCtrlr extends HyperDlg
     htISBN.buildRows(isbns, (row, isbnStr) -> row.setCellValue(0, -1, isbnStr, hdtNone));
 
     if (doWebQuery && dontLaunchPdf)
-      pdfBD = md.extractBibData();
+    {
+      tempPdfBD.populateFromFile();
+      pdfBD = tempPdfBD;
+    }
     else
     {
       if (doMerge)
       {
         try
         {
-          doMerge(md.extractBibData());
+          tempPdfBD.populateFromFile();
+          doMerge(tempPdfBD);
         }
         catch (IOException e)
         {
@@ -680,7 +674,8 @@ public class WorkDlgCtrlr extends HyperDlg
       else
       {
         lblAutoPopulated.setText("Fields auto-populated with information extracted from PDF file");
-        populateFieldsFromBibData(md.extractBibData(), true);
+        tempPdfBD.populateFromFile();
+        populateFieldsFromBibData(tempPdfBD, true);
       }
     }
 
@@ -713,9 +708,9 @@ public class WorkDlgCtrlr extends HyperDlg
     lblAutoPopulated.setText("");
     setAllVisible(true, btnStop, progressBar);
 
-    JsonHttpClient.getObjAsync(getCrossrefUrl(doi), httpClient, jsonObj ->
+    JsonHttpClient.getObjAsync(CrossrefBibData.getQueryUrl(doi), httpClient, jsonObj ->
     {
-      BibData bibData = BibData.createFromCrossrefJSON(jsonObj, doi);
+      BibData bibData = CrossrefBibData.createFromJSON(jsonObj, doi);
 
       if (bibData != null)
       {
@@ -776,9 +771,9 @@ public class WorkDlgCtrlr extends HyperDlg
     lblAutoPopulated.setText("");
     setAllVisible(true, btnStop, progressBar);
 
-    JsonHttpClient.getObjAsync(getGoogleUrl(isbn), httpClient, jsonObj ->
+    JsonHttpClient.getObjAsync(GoogleBibData.getQueryUrl(isbn), httpClient, jsonObj ->
     {
-      BibData bibData = BibData.createFromGoogleJSON(jsonObj, isbn);
+      BibData bibData = GoogleBibData.createFromJSON(jsonObj, isbn);
 
       if (bibData != null)
       {
@@ -841,15 +836,15 @@ public class WorkDlgCtrlr extends HyperDlg
 
   private void btnDOIClick()
   {
-    String doi = BibUtils.matchDOI(tfDOI.getText());
+    String doi = matchDOI(tfDOI.getText());
     if (doi.length() == 0) return;
 
     lblAutoPopulated.setText("");
     setAllVisible(true, btnStop, progressBar);
 
-    JsonHttpClient.getObjAsync(getCrossrefUrl(doi), httpClient, jsonObj ->
+    JsonHttpClient.getObjAsync(CrossrefBibData.getQueryUrl(doi), httpClient, jsonObj ->
     {
-      BibData bd = BibData.createFromCrossrefJSON(jsonObj, doi);
+      BibData bd = CrossrefBibData.createFromJSON(jsonObj, doi);
       setAllVisible(false, btnStop, progressBar);
 
       if (bd == null)
@@ -888,9 +883,9 @@ public class WorkDlgCtrlr extends HyperDlg
     lblAutoPopulated.setText("");
     setAllVisible(true, btnStop, progressBar);
 
-    JsonHttpClient.getObjAsync(getGoogleUrl(isbn), httpClient, jsonObj ->
+    JsonHttpClient.getObjAsync(GoogleBibData.getQueryUrl(isbn), httpClient, jsonObj ->
     {
-      BibData bd = BibData.createFromGoogleJSON(jsonObj, isbn);
+      BibData bd = GoogleBibData.createFromJSON(jsonObj, isbn);
       setAllVisible(false, btnStop, progressBar);
 
       if (bd == null)
@@ -1018,7 +1013,17 @@ public class WorkDlgCtrlr extends HyperDlg
       curBD.copyAllFieldsFrom(bd, populateAuthors, true);
 
     if (curBD.entryTypeNotEmpty())
-      cbEntryType.setValue(curBD.getEntryType());
+    {
+      EntryType entryType = curBD.getEntryType();
+      if (cbEntryType.getItems().contains(entryType) == false)
+      {
+        messageDialog("\"" + entryType.getUserFriendlyName() + "\" is not a valid " +
+                      db.getBibLibrary().type().getUserReadableName() + " entry type.", mtWarning);
+        cbEntryType.getSelectionModel().select(null);
+      }
+      else
+        cbEntryType.getSelectionModel().select(entryType);
+    }
 
     tfYear.setText(curBD.getStr(bfYear));
 
@@ -1062,7 +1067,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
         msg = msg + "Otherwise, existing information for these fields will be lost: ";
 
-        String fieldsStr = extFields.stream().map(BibData::getFieldName).reduce((s1, s2) -> s1 + ", " + s2).orElse("");
+        String fieldsStr = extFields.stream().map(BibFieldEnum::getUserFriendlyName).reduce((s1, s2) -> s1 + ", " + s2).orElse("");
 
         chkCreateBibEntry.setSelected(confirmDialog(msg + fieldsStr));
       }

@@ -125,8 +125,7 @@ public class FileDownloadUtility
       if (curBufferNdx >= buffers.size())
         throw new IOException("End of buffer");
 
-      val = buffers.get(curBufferNdx)[curPosition];
-      curPosition++;
+      val = buffers.get(curBufferNdx)[curPosition++];
 
       return val + 128;
     }

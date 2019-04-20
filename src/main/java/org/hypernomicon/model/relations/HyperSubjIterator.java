@@ -48,11 +48,7 @@ public class HyperSubjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType exte
   @Override public HDT_SubjType next()
   {
     if (hasNext())
-    {
-      HDT_SubjType record = list.get(nextNdx);
-      nextNdx++;
-      return record;
-    }
+      return list.get(nextNdx++);
 
     throw new NoSuchElementException();
   }

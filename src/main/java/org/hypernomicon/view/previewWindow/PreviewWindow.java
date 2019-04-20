@@ -193,7 +193,7 @@ public class PreviewWindow extends HyperDlg
     addWrapper(pvsOther    , apOther  , tabOther  , btnOther  );
     addWrapper(pvsTreeTab  , apTree   , tabTree   , btnTree   );
 
-    btnPerson.getToggleGroup().selectedToggleProperty().addListener((observable, oldVal, newVal) ->
+    btnPerson.getToggleGroup().selectedToggleProperty().addListener((ob, oldVal, newVal) ->
     {
       if (newVal == null)
         oldVal.setSelected(true);
@@ -224,7 +224,7 @@ public class PreviewWindow extends HyperDlg
         launchWorkFile(filePath, curWrapper().getPageNum());
     });
 
-    btnLock.selectedProperty().addListener((observable, oldValue, newValue) ->
+    btnLock.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue)
         btnLock.setGraphic(getImageViewForRelativePath("resources/images/lock.png"));
@@ -236,7 +236,7 @@ public class PreviewWindow extends HyperDlg
       }
     });
 
-    sldPreview.valueProperty().addListener((observable, oldValue, newValue) ->
+    sldPreview.valueProperty().addListener((ob, oldValue, newValue) ->
     {
       if (tfPreviewPage.isDisabled() == false)
       {
@@ -249,7 +249,7 @@ public class PreviewWindow extends HyperDlg
       }
     });
 
-    sldPreview.valueChangingProperty().addListener((observable, oldValue, newValue) ->
+    sldPreview.valueChangingProperty().addListener((ob, oldValue, newValue) ->
     {
       if ((oldValue == null) || (newValue == null)) return;
 
@@ -313,9 +313,7 @@ public class PreviewWindow extends HyperDlg
 
       if (curPage < 2) return;
 
-      curPage--;
-
-      curWrapper().setPreview(curPage, true);
+      curWrapper().setPreview(--curPage, true);
     });
 
     btnPreviewNext.setOnAction(event ->
@@ -326,9 +324,7 @@ public class PreviewWindow extends HyperDlg
 
       if (curPage >= sldPreview.getMax()) return;
 
-      curPage++;
-
-      curWrapper().setPreview(curPage, true);
+      curWrapper().setPreview(++curPage, true);
     });
 
     btnStartPage.setOnAction(event ->
@@ -369,7 +365,7 @@ public class PreviewWindow extends HyperDlg
         updateEndBtn(curWrapper().getWorkEndPageNum());
     });
 
-    tpPreview.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    tpPreview.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null) return;
 
@@ -383,7 +379,7 @@ public class PreviewWindow extends HyperDlg
       wrapper.getToggleButton().setSelected(true);
     });
 
-    tfPreviewPage.focusedProperty().addListener((observable, oldValue, newValue) ->
+    tfPreviewPage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       int pageNum = curWrapper().getPageNum();
 
@@ -423,7 +419,7 @@ public class PreviewWindow extends HyperDlg
         wrapper.refreshPreview(false, true);
     };
 
-    dialogStage.focusedProperty().addListener((observable, oldValue, newValue) ->
+    dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (ui.windows.getCyclingFocus() || (newValue != true)) return;
 

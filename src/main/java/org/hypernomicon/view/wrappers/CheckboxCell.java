@@ -37,9 +37,9 @@ class CheckboxCell extends TableCell<HyperTableRow, Boolean>
     this.table = table;
     chk = new CheckBox();
 
-    emptyProperty().addListener((observable, oldValue, newValue) -> chk.setVisible(newValue.booleanValue() == false));
+    emptyProperty().addListener((ob, oldValue, newValue) -> chk.setVisible(newValue.booleanValue() == false));
 
-    chk.selectedProperty().addListener((ov, oldValue, newValue) ->
+    chk.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       HyperTableRow row = getTableRow().getItem();
       if (row == null) return;

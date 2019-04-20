@@ -98,7 +98,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
       chkType.setSelected(true);
       innerPane.getChildren().add(chkType);
 
-      chkSelectAll.selectedProperty().addListener((observable, oldValue, newValue) ->
+      chkSelectAll.selectedProperty().addListener((ob, oldValue, newValue) ->
       {
         if (noListen) return;
         noListen = true;
@@ -123,7 +123,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
         noListen = false;
       });
 
-      chkSelectNone.selectedProperty().addListener((observable, oldValue, newValue) ->
+      chkSelectNone.selectedProperty().addListener((ob, oldValue, newValue) ->
       {
         if (noListen) return;
         noListen = true;
@@ -149,7 +149,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
       });
 
 
-      chkType.selectedProperty().addListener((observable, oldValue, newValue) ->
+      chkType.selectedProperty().addListener((ob, oldValue, newValue) ->
       {
         if (noListen) return;
         noListen = true;
@@ -180,11 +180,11 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
           chkField.setLayoutX(fieldLeft);
           chkField.setLayoutY(posY);
           chkField.selectedProperty().bindBidirectional(item.col.visibleProperty());
-          chkField.selectedProperty().addListener((obs, ov, nv) -> item.col.getTableView().scrollToColumnIndex(0));
+          chkField.selectedProperty().addListener((ob, ov, nv) -> item.col.getTableView().scrollToColumnIndex(0));
 
           innerPane.getChildren().add(chkField);
 
-          chkField.selectedProperty().addListener((observable, oldValue, newValue) ->
+          chkField.selectedProperty().addListener((ob, oldValue, newValue) ->
           {
             if (noListen) return;
             noListen = true;

@@ -38,8 +38,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.adobe.internal.xmp.XMPException;
 
-import org.hypernomicon.bib.BibUtils;
-import org.hypernomicon.bib.PdfMetadata;
+import org.hypernomicon.bib.data.PDFBibData;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
@@ -139,10 +138,9 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
                   pdfFilePath = workFile.getPath().getFilePath();
                   try
                   {
-                    PdfMetadata md = new PdfMetadata();
-                    BibUtils.getPdfMetadata(pdfFilePath, md);
+                    PDFBibData bd = new PDFBibData(pdfFilePath);
 
-                    nullSwitch(md.getXmpRoot(), xmpRoot -> xmpRoot.addCsvLines(csvFile));
+                    bd.addCsvLines(csvFile);
                   }
                   catch (IOException e)
                   {

@@ -19,8 +19,9 @@ package org.hypernomicon.view.workMerge;
 
 import static org.hypernomicon.util.Util.*;
 
-import org.hypernomicon.bib.BibData;
-import org.hypernomicon.bib.BibData.BibFieldEnum;
+import org.hypernomicon.bib.data.BibData;
+import org.hypernomicon.bib.data.BibField.BibFieldEnum;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
@@ -58,7 +59,7 @@ public class MergeWorksMLCtrlr extends BibFieldRow
     this.ap = ap;
     this.bibFieldEnum = bibFieldEnum;
 
-    lbl.setText(BibData.getFieldName(bibFieldEnum));
+    lbl.setText(bibFieldEnum.getUserFriendlyName());
 
     if (bd4 == null)
       deleteGridPaneColumn(gp, 3);

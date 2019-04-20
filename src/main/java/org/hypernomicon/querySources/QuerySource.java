@@ -17,9 +17,11 @@
 
 package org.hypernomicon.querySources;
 
+import java.util.Iterator;
+
 import org.hypernomicon.model.records.HDT_Record;
 
-public interface QuerySource
+public interface QuerySource extends Iterator<HDT_Record>
 {
   public static enum QuerySourceType
   {
@@ -33,5 +35,4 @@ public interface QuerySource
   int count();
   QuerySourceType sourceType();
   boolean containsRecord(HDT_Record record);
-  HDT_Record getRecord(int ndx);
 }

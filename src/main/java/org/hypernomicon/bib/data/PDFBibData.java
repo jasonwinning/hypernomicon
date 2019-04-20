@@ -15,21 +15,332 @@
  *
  */
 
-package org.hypernomicon.bib;
+package org.hypernomicon.bib.data;
 
-import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
+import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
+import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.util.Util.*;
 
-import org.apache.pdfbox.pdmodel.PDDocumentInformation;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 
-public class PdfMetadata
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentInformation;
+import org.apache.pdfbox.pdmodel.common.PDMetadata;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
+import org.hypernomicon.bib.authors.BibAuthors;
+import org.hypernomicon.bib.authors.BibAuthorsStandalone;
+import org.hypernomicon.model.items.PersonName;
+import org.hypernomicon.util.filePath.FilePath;
+
+import com.adobe.internal.xmp.XMPException;
+import com.adobe.internal.xmp.XMPIterator;
+import com.adobe.internal.xmp.XMPMeta;
+import com.adobe.internal.xmp.XMPMetaFactory;
+import com.adobe.internal.xmp.properties.XMPPropertyInfo;
+
+public class PDFBibData extends BibDataStandalone
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+// See the following for some library code that might be useful:
+// https://svn.apache.org/viewvc/pdfbox/trunk/examples/src/main/java/org/apache/pdfbox/examples/pdmodel/AddMetadataFromDocInfo.java?view=markup
+// Or google "import org.apache.xmpbox.schema"
+
+  private static class PathParts
+  {
+    public String prefix = null, name = null;
+    int arrayNdx = -1;
+
+    public PathParts(String str)
+    {
+      if ((str == null) || (str.length() == 0)) return;
+
+      if (str.startsWith("["))
+      {
+        arrayNdx = parseInt(str.substring(1, str.indexOf(']')), 0) - 1;
+        return;
+      }
+
+      int ndx = str.indexOf(":");
+      prefix = str.substring(0, ndx);
+      name = str.substring(ndx + 1);
+
+      ndx = name.indexOf("[");
+      if (ndx >= 0)
+      {
+        arrayNdx = parseInt(name.substring(ndx + 1, name.indexOf(']')), 0) - 1;
+        name = name.substring(0, ndx);
+      }
+    }
+  }
+
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
+
+  private class XMPNode
+  {
+    private final XMPNode parent;
+    private final XMPMeta xmpMeta;
+    private final XMPPropertyInfo propInfo;
+    private final LinkedHashMap<String, LinkedHashMap<String, XMPNode>> prefixToNameToChild = new LinkedHashMap<>();
+    private final ArrayList<XMPNode> elements = new ArrayList<>();
+    private final String ns, path, value, prefix, name;
+    private final int arrayNdx;
+
+    @SuppressWarnings("unused")
+    public XMPPropertyInfo getPropInfo() { return propInfo; }
+    public String getNamespace()         { return ns; }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    public XMPNode(XMPMeta xmpMeta, XMPNode parent, XMPPropertyInfo propInfo)
+    {
+      this.xmpMeta = xmpMeta;
+      this.parent = parent;
+      this.propInfo = propInfo;
+
+      if (propInfo != null)
+      {
+        ns = nullSwitch(propInfo.getNamespace(), parent.getNamespace());
+        path = propInfo.getPath();
+        value = propInfo.getValue();
+      }
+      else
+      {
+        ns = null;
+        path = null;
+        value = null;
+      }
+
+      if (path != null)
+      {
+        int ndx = path.lastIndexOf("/");
+        String subPath = path.substring(ndx + 1);
+
+        PathParts parts = new PathParts(subPath);
+
+        prefix = parts.prefix;
+        name = parts.name;
+        arrayNdx = parts.arrayNdx;
+      }
+      else
+      {
+        prefix = null;
+        name = null;
+        arrayNdx = -1;
+      }
+    }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    public void addDescendant(XMPPropertyInfo targetInfo)
+    {
+      String subPath = targetInfo.getPath().substring(safeStr(path).length());
+      if (subPath.startsWith("/"))
+        subPath = subPath.substring(1);
+
+      int ndx = subPath.indexOf("/");
+      if (ndx >= 0)
+        subPath = subPath.substring(0, ndx);
+
+      PathParts parts = new PathParts(subPath);
+
+      if (subPath.contains(":"))
+      {
+        LinkedHashMap<String, XMPNode> nameToChild;
+
+        if (prefixToNameToChild.containsKey(parts.prefix) == false)
+        {
+          nameToChild = new LinkedHashMap<>();
+          prefixToNameToChild.put(parts.prefix, nameToChild);
+        }
+        else
+          nameToChild = prefixToNameToChild.get(parts.prefix);
+
+        if (nameToChild.containsKey(parts.name))
+        {
+          nameToChild.get(parts.name).addDescendant(targetInfo);
+          return;
+        }
+
+        XMPNode child = new XMPNode(xmpMeta, this, targetInfo);
+        nameToChild.put(parts.name, child);
+        return;
+      }
+
+      if (elements.size() > parts.arrayNdx)
+      {
+        elements.get(parts.arrayNdx).addDescendant(targetInfo);
+        return;
+      }
+
+      elements.add(new XMPNode(xmpMeta, this, targetInfo));
+    }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    private void addCsvLines(ArrayList<String> csvFile)
+    {
+      String line = "";
+
+      if (safeStr(value).length() > 0)
+      {
+        if (arrayNdx >= 0)
+          line = "[" + (arrayNdx + 1) + "]";
+
+        line = line + escape(value) + "," + getCsvPath();
+      }
+
+      line = convertToSingleLine(line);
+      line = line.replace("\"", "");
+
+      if (line.length() > 0)
+        if (csvFile.contains(line) == false)
+          csvFile.add(line);
+
+      prefixToNameToChild.values().forEach(nameToChild ->
+        nameToChild.values().forEach(child ->
+          child.addCsvLines(csvFile)));
+
+      elements.forEach(child -> child.addCsvLines(csvFile));
+    }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    private String escape(String str) { return str.replace(",", "@&$"); }
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
+    private String getCsvPath()
+    {
+      String line = "";
+
+      if (parent != null)
+        line = parent.getCsvPath();
+
+      if (safeStr(name).length() > 0)
+      {
+        if (line.length() > 0)
+          line = line + "," + escape(prefix) + "," + escape(name);
+        else
+          line = escape(prefix) + "," + escape(name);
+      }
+
+      return line;
+    }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    private boolean nameIsNotExcluded(String nameStr)
+    {
+      nameStr = safeStr(nameStr).toLowerCase();
+
+      return ! (nameStr.contains("journaldoi") || nameStr.contains("instanceid") || nameStr.contains("documentid"));
+    }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    public void extractDOIandISBNs(BibData bd)
+    {
+      if (nameIsNotExcluded(name))
+        bd.extractDOIandISBNs(value);
+
+      prefixToNameToChild.values().forEach(nameToChild ->
+        nameToChild.forEach((childName, child) ->
+        {
+          if (nameIsNotExcluded(childName))
+            child.extractDOIandISBNs(bd);
+        }));
+
+      elements.forEach(child -> child.extractDOIandISBNs(bd));
+    }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    public void extractBibData(BibDataStandalone bd)
+    {
+      if (elements.isEmpty() == false)
+      {
+        if (prefix.equals("dc"))
+        {
+          if (name.equals("creator"))
+          {
+            BibAuthors authors = bd.getAuthors();
+            authors.clear();
+
+            elements.forEach(child -> authors.add(AuthorType.author, new PersonName(child.value)));
+          }
+          else if (name.equals("title"))
+          {
+            bd.setMultiStr(bfTitle, Collections.emptyList());
+
+            elements.forEach(child -> bd.addStr(bfTitle, child.value));
+          }
+          else if (name.equals("description"))
+          {
+            elements.forEach(child -> bd.addStr(bfMisc, child.value));
+          }
+        }
+        else if (safeStr(prefix).startsWith("prism"))
+        {
+          if (elements.size() > 0)
+          {
+            YearType yt = YearType.getByDesc(name);
+
+            if (yt != ytUnknown)
+              bd.setYear(elements.get(0).value, yt);
+          }
+        }
+      }
+
+      if (safeStr(prefix).startsWith("prism"))
+      {
+        YearType yt = YearType.getByDesc(name);
+
+        if (yt != ytUnknown)
+          bd.setYear(value, yt);
+        else
+        {
+          switch (name)
+          {
+            case "aggregationType" : bd.setEntryType(EntryType.parsePrismAggregationType(value)); break;
+            case "issn" : bd.addISSN(value); break;
+          }
+        }
+      }
+      else if (safeStr(prefix).equals("xmp"))
+      {
+        if (name.equals("Label"))
+          bd.addStr(bfMisc, value);
+      }
+
+      prefixToNameToChild.values().forEach(nameToChild ->
+        nameToChild.values().forEach(child ->
+          child.extractBibData(bd)));
+
+      elements.forEach(child -> child.extractBibData(bd));
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   private PDDocumentInformation docInfo = null;
   private XMPNode xmpRoot = null;
-  public final BibDataStandalone bd = new BibDataStandalone();
 
   public XMPNode getXmpRoot()               { return xmpRoot; }
   public PDDocumentInformation getDocInfo() { return docInfo; }
@@ -37,56 +348,123 @@ public class PdfMetadata
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void setDocInfo(PDDocumentInformation docInfo)
+  @SuppressWarnings("resource")
+  public PDFBibData(FilePath filePath) throws IOException, XMPException
+  {
+    super();
+
+    PDDocument pdfDoc = null;
+
+    try
+    {
+      pdfDoc = PDDocument.load(filePath.toFile());
+
+      setDocInfo(pdfDoc.getDocumentInformation());
+
+      PDMetadata metadata = pdfDoc.getDocumentCatalog().getMetadata();
+
+      if (metadata != null)
+      {
+        byte[] byteArray = metadata.toByteArray();
+        setXmpRoot(byteArray);
+      }
+
+      if (getStr(bfDOI).length() > 0)
+        return;
+
+      PDFTextStripper pdfStripper = new PDFTextStripper();
+      pdfStripper.setStartPage(1);
+      pdfStripper.setEndPage(7);
+
+      String parsedText = pdfStripper.getText(pdfDoc).replace('\u0002', '/'); // sometimes slash in DOI is encoded as STX control character
+
+      extractDOIandISBNs(parsedText);
+
+      if (getStr(bfDOI).length() == 0)
+      {
+        parsedText = parsedText.replaceAll("\\h*", ""); // remove whitespace
+        extractDOIandISBNs(parsedText);
+      }
+    }
+    finally
+    {
+      if (pdfDoc != null)
+      {
+        try { pdfDoc.close(); }
+        catch (IOException e) { throw e; }
+      }
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void setDocInfo(PDDocumentInformation docInfo)
   {
     this.docInfo = docInfo;
     if (docInfo == null) return;
 
-    bd.extractDOIandISBNs(docInfo.getAuthor());
-    bd.extractDOIandISBNs(docInfo.getCreator());
-    bd.extractDOIandISBNs(docInfo.getKeywords());
-    bd.extractDOIandISBNs(docInfo.getProducer());
-    bd.extractDOIandISBNs(docInfo.getSubject());
-    bd.extractDOIandISBNs(docInfo.getTitle());
-    bd.extractDOIandISBNs(docInfo.getTrapped());
+    extractDOIandISBNs(docInfo.getAuthor());
+    extractDOIandISBNs(docInfo.getCreator());
+    extractDOIandISBNs(docInfo.getKeywords());
+    extractDOIandISBNs(docInfo.getProducer());
+    extractDOIandISBNs(docInfo.getSubject());
+    extractDOIandISBNs(docInfo.getTitle());
+    extractDOIandISBNs(docInfo.getTrapped());
 
-    docInfo.getMetadataKeys().forEach(key -> {
-      if (key.toLowerCase().contains("journaldoi") == false)
-        bd.extractDOIandISBNs(docInfo.getCustomMetadataValue(key)); });
+    docInfo.getMetadataKeys().stream().filter(key -> key.toLowerCase().contains("journaldoi") == false)
+                                      .forEach(key -> extractDOIandISBNs(docInfo.getCustomMetadataValue(key)));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void setXmpRoot(XMPNode xmpRoot)
+  private void setXmpRoot(byte[] byteArray) throws XMPException
   {
-    this.xmpRoot = xmpRoot;
+    XMPMeta xmpMeta = XMPMetaFactory.parseFromBuffer(byteArray);
 
-    if (xmpRoot != null)
-      xmpRoot.extractDOIandISBNs(bd);
+    xmpRoot = new XMPNode(xmpMeta, null, null);
+
+    XMPIterator it = xmpMeta.iterator();
+
+    while (it.hasNext())
+    {
+      XMPPropertyInfo propInfo = (XMPPropertyInfo) it.next();
+
+      if (propInfo.getPath() != null)
+        xmpRoot.addDescendant(propInfo);
+    }
+
+    xmpRoot.extractDOIandISBNs(this);
   }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public BibData extractBibData()
+  public void populateFromFile()
   {
     if (safeStr(docInfo.getAuthor()).length() > 0)
     {
-      bd.getAuthors().clear();
-      BibAuthorsStandalone.class.cast(bd.getAuthors()).setOneLiner(docInfo.getAuthor());
+      authors.clear();
+      BibAuthorsStandalone.class.cast(authors).setOneLiner(docInfo.getAuthor());
     }
 
     if (safeStr(docInfo.getTitle()).length() > 0)
-      bd.setTitle(docInfo.getTitle());
+      setTitle(docInfo.getTitle());
 
     if (safeStr(docInfo.getSubject()).length() > 0)
-      bd.addStr(bfMisc, docInfo.getSubject());
+      addStr(bfMisc, docInfo.getSubject());
 
     if (xmpRoot != null)
-      xmpRoot.extractBibData(bd);
+      xmpRoot.extractBibData(this);
+  }
 
-    return bd;
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  public void addCsvLines(ArrayList<String> csvFile)
+  {
+    if (xmpRoot != null) xmpRoot.addCsvLines(csvFile);
   }
 
   //---------------------------------------------------------------------------

@@ -17,26 +17,25 @@
 
 package org.hypernomicon.querySources;
 
-import static org.hypernomicon.model.HyperDB.*;
+import java.util.EnumSet;
 
-import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 
-public class DatasetQuerySource implements QuerySource
+public class DatasetQuerySource extends CombinedUnfilteredQuerySource
 {
   private final HDT_RecordType type;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public DatasetQuerySource(HDT_RecordType type)             { this.type = type; }
+  public DatasetQuerySource(HDT_RecordType type)
+  {
+    super(EnumSet.of(type));
+    this.type = type;
+  }
 
-  public HDT_RecordType recordType()                         { return type; }
-
-  @Override public int count()                               { return db.records(type).size(); }
-  @Override public QuerySourceType sourceType()              { return QuerySourceType.QST_recordsByType; }
-  @Override public boolean containsRecord(HDT_Record record) { return record.getType() == type; }
-  @Override public HDT_Record getRecord(int ndx)             { return db.records(type).getByIDNdx(ndx); }
+  public HDT_RecordType recordType()            { return type; }
+  @Override public QuerySourceType sourceType() { return QuerySourceType.QST_recordsByType; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -17,11 +17,16 @@
 
 package org.hypernomicon.util.json;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+
+import com.google.common.collect.Lists;
+
 import org.hypernomicon.util.json.JsonObj.JsonNodeType;
 
 import static org.hypernomicon.util.Util.*;
@@ -31,7 +36,7 @@ import static org.hypernomicon.util.Util.*;
 
 public class JsonArray
 {
-  JSONArray jArr;
+  final JSONArray jArr;
 
   public JsonArray(JSONArray jArr) { this.jArr = jArr; }
   public JsonArray()               { jArr = new JSONArray(); }
@@ -81,8 +86,7 @@ public class JsonArray
     {
       if (hasNext())
       {
-        lastNdx = nextNdx;
-        nextNdx++;
+        lastNdx = nextNdx++;
         return getObj(lastNdx);
       }
 
@@ -120,8 +124,7 @@ public class JsonArray
     {
       if (hasNext())
       {
-        lastNdx = nextNdx;
-        nextNdx++;
+        lastNdx = nextNdx++;
         return getStr(lastNdx);
       }
 
@@ -148,6 +151,14 @@ public class JsonArray
   {
     Object obj = jArr.get(ndx);
     return obj instanceof String ? String.class.cast(obj) : "";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static List<String> toStrList(JsonArray jArr)
+  {
+    return jArr == null ? new ArrayList<>() : Lists.newArrayList((Iterable<String>)jArr.getStrs());
   }
 
 //---------------------------------------------------------------------------

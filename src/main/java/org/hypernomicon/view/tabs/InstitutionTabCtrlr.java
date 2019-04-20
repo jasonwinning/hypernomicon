@@ -40,6 +40,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -54,9 +55,9 @@ import javafx.scene.control.TextField;
 public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 {
   private boolean alreadyChangingLocation;
-  private HyperTable htSubInstitutions, htPersons;
+  private HyperTable htSubInst, htPersons;
   private HyperCB hcbState, hcbCountry, hcbType, hcbParentInst;
-  private HDT_Institution curInstitution;
+  private HDT_Institution curInst;
 
   @FXML private TextField tfCity, tfName;
   @FXML private Button btnLink, btnParent;
@@ -70,7 +71,7 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
   @Override HDT_RecordType getType()                            { return hdtInstitution; }
   @Override public void enable(boolean enabled)                 { ui.tabInstitutions.getContent().setDisable(enabled == false); }
   @Override void focusOnSearchKey()                             { return; }
-  @Override public void setRecord(HDT_Institution activeRecord) { curInstitution = activeRecord; }
+  @Override public void setRecord(HDT_Institution activeRecord) { curInst = activeRecord; }
   @Override public void setDividerPositions()                   { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
   @Override public void getDividerPositions()                   { getDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
   @Override public void findWithinDesc(String text)             { messageDialog("Internal error #52009", mtError); }
@@ -82,21 +83,21 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
   {
     HashMap<HDT_Person, HashSet<HDT_Institution>> peopleMap = new HashMap<>();
 
-    tfName.setText(curInstitution.name());
-    tfCity.setText(curInstitution.getCity());
-    tfLink.setText(curInstitution.getWebLink());
+    tfName.setText(curInst.name());
+    tfCity.setText(curInst.getCity());
+    tfLink.setText(curInst.getWebLink());
 
-    hcbState     .addAndSelectEntryOrBlank(curInstitution.state     , HDT_Record::name);
-    hcbCountry   .addAndSelectEntryOrBlank(curInstitution.country   , HDT_Record::name);
-    hcbType      .addAndSelectEntryOrBlank(curInstitution.instType  , HDT_Record::name);
-    hcbParentInst.addAndSelectEntryOrBlank(curInstitution.parentInst, HDT_Record::name);
+    hcbState     .addAndSelectEntryOrBlank(curInst.state     , HDT_Record::name);
+    hcbCountry   .addAndSelectEntryOrBlank(curInst.country   , HDT_Record::name);
+    hcbType      .addAndSelectEntryOrBlank(curInst.instType  , HDT_Record::name);
+    hcbParentInst.addAndSelectEntryOrBlank(curInst.parentInst, HDT_Record::name);
 
  // Populate departments and people
  // -------------------------------
 
-    addPersonsFromInst(curInstitution, curInstitution, peopleMap);
+    addPersonsFromInst(curInst, curInst, peopleMap);
 
-    htSubInstitutions.buildRows(curInstitution.subInstitutions, (row, subInst) ->
+    htSubInst.buildRows(curInst.subInstitutions, (row, subInst) ->
     {
       row.setCellValue(1, subInst, subInst.name());
       if (subInst.instType.isNotNull())
@@ -104,11 +105,11 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
       row.setCellValue(3, subInst, subInst.getWebLink());
     });
 
-    if (curInstitution.isDeptOrFaculty() && curInstitution.parentInst.isNotNull())
+    if (curInst.isDeptOrFaculty() && curInst.parentInst.isNotNull())
     {
-      curInstitution.parentInst.get().subInstitutions.forEach(sibInst ->
+      curInst.parentInst.get().subInstitutions.forEach(sibInst ->
       {
-        if (sibInst != curInstitution)
+        if (sibInst != curInst)
           addSiblingInsts(sibInst, sibInst, peopleMap);
       });
     }
@@ -128,8 +129,7 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
       row.setCellValue(3, instID, instStr, hdtInstitution);
     });
 
-    htPersons.getTV().getSortOrder().clear();
-    htPersons.getTV().getSortOrder().add(htPersons.getTV().getColumns().get(0));
+    htPersons.getTV().getSortOrder().setAll(List.of(htPersons.getTV().getColumns().get(0)));
 
     safeFocus(tfName);
 
@@ -155,7 +155,7 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
 
   private void addPersonsFromInst(HDT_Institution nearestChildInst, HDT_Institution inst, HashMap<HDT_Person, HashSet<HDT_Institution>> peopleMap)
   {
-    if (nearestChildInst == curInstitution)
+    if (nearestChildInst == curInst)
       inst.subInstitutions.forEach(subInst -> addPersonsFromInst(subInst, subInst, peopleMap));
     else
       inst.subInstitutions.forEach(subInst -> addPersonsFromInst(nearestChildInst, subInst, peopleMap));
@@ -172,14 +172,13 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init(TabEnum tabEnum)
+  @Override void init()
   {
-    this.tabEnum = tabEnum;
     alreadyChangingLocation = false;
 
-    htSubInstitutions = new HyperTable(tvSubInstitutions, 1, true, PREF_KEY_HT_INST_SUB);
+    htSubInst = new HyperTable(tvSubInstitutions, 1, true, PREF_KEY_HT_INST_SUB);
 
-    htSubInstitutions.addActionColWithButtonHandler(ctLinkBtn, 3, (row, colNdx) ->
+    htSubInst.addActionColWithButtonHandler(ctLinkBtn, 3, (row, colNdx) ->
     {
       String link = row.getText(colNdx);
 
@@ -189,13 +188,13 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
         openWebLink(row.getText(colNdx));
     });
 
-    htSubInstitutions.addTextEditCol(hdtInstitution, true, false);
-    htSubInstitutions.addCol(hdtInstitutionType, ctDropDownList);
-    htSubInstitutions.addTextEditCol(hdtInstitution, true, false);
+    htSubInst.addTextEditCol(hdtInstitution, true, false);
+    htSubInst.addCol(hdtInstitutionType, ctDropDownList);
+    htSubInst.addTextEditCol(hdtInstitution, true, false);
 
-    htSubInstitutions.addContextMenuItem("Go to this record", HDT_Institution.class, inst -> ui.goToRecord(inst, true));
+    htSubInst.addContextMenuItem("Go to this record", HDT_Institution.class, inst -> ui.goToRecord(inst, true));
 
-    htSubInstitutions.addContextMenuItem("Delete this institution record", HDT_Institution.class, inst ->
+    htSubInst.addContextMenuItem("Delete this institution record", HDT_Institution.class, inst ->
     {
       if (ui.cantSaveRecord(true)) return;
       if (confirmDialog("Are you sure you want to delete this record?") == false) return;
@@ -203,11 +202,7 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
       ui.update();
     });
 
-    htSubInstitutions.addChangeOrderMenuItem(true, () ->
-    {
-      ArrayList<HDT_Institution> list = htSubInstitutions.saveToList(1, hdtInstitution);
-      curInstitution.subInstitutions.reorder(list, true);
-    });
+    htSubInst.addChangeOrderMenuItem(true, () -> curInst.subInstitutions.reorder(htSubInst.saveToList(1, hdtInstitution), true));
 
     htPersons = new HyperTable(tvPersons, 0, false, PREF_KEY_HT_INST_PEOPLE);
 
@@ -221,7 +216,7 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType), null);
     hcbParentInst = new HyperCB(cbParentInst, ctDropDownList, new StandardPopulator(hdtInstitution), null);
 
-    cbState.valueProperty().addListener((observable, oldValue, newValue) ->
+    cbState.valueProperty().addListener((ob, oldValue, newValue) ->
     {
       if (alreadyChangingLocation) return;
 
@@ -233,7 +228,7 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
       }
     });
 
-    cbCountry.valueProperty().addListener((observable, oldValue, newValue) ->
+    cbCountry.valueProperty().addListener((ob, oldValue, newValue) ->
     {
       if (alreadyChangingLocation) return;
 
@@ -276,7 +271,7 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
     hcbParentInst.clear();
     hcbType.clear();
 
-    htSubInstitutions.clear();
+    htSubInst.clear();
     htPersons.clear();
   }
 
@@ -297,26 +292,26 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
     boolean locationChanged = false;
 
     if (tfCity.getText().trim().length() > 0)
-      if (curInstitution.getCity().trim().equalsIgnoreCase(tfCity.getText().trim()) == false)
+      if (curInst.getCity().trim().equalsIgnoreCase(tfCity.getText().trim()) == false)
         locationChanged = true;
 
     if (hcbState.selectedRecord() != null)
-      if (curInstitution.state.get() != hcbState.selectedRecord())
+      if (curInst.state.get() != hcbState.selectedRecord())
         locationChanged = true;
 
     if (hcbCountry.selectedRecord() != null)
-      if (curInstitution.country.get() != hcbCountry.selectedRecord())
+      if (curInst.country.get() != hcbCountry.selectedRecord())
         locationChanged = true;
 
-    curInstitution.setCity(tfCity.getText());
-    curInstitution.setName(tfName.getText());
-    curInstitution.setWebLink(tfLink.getText());
-    curInstitution.state.setID(hcbState.selectedID());
-    curInstitution.country.setID(hcbCountry.selectedID());
-    curInstitution.instType.setID(hcbType.selectedID());
-    curInstitution.parentInst.setID(hcbParentInst.selectedID());
+    curInst.setCity(tfCity.getText());
+    curInst.setName(tfName.getText());
+    curInst.setWebLink(tfLink.getText());
+    curInst.state.setID(hcbState.selectedID());
+    curInst.country.setID(hcbCountry.selectedID());
+    curInst.instType.setID(hcbType.selectedID());
+    curInst.parentInst.setID(hcbParentInst.selectedID());
 
-    htSubInstitutions.getDataRows().forEach(row ->
+    htSubInst.getDataRows().forEach(row ->
     {
       int subInstID = row.getID(1);
 
@@ -326,7 +321,7 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
 
         subInstID = subInst.getID();
         subInst.setName(row.getText(1));
-        subInst.parentInst.setID(curInstitution.getID());
+        subInst.parentInst.setID(curInst.getID());
         subInst.instType.setID(row.getID(2));
         subInst.setWebLink(row.getText(3));
 
@@ -339,11 +334,11 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
 
     if (locationChanged == false) return true;
 
-    if (hasSubInstWithDifferentLocation(curInstitution, curInstitution))
+    if (hasSubInstWithDifferentLocation(curInst, curInst))
       if (!confirmDialog("One or more sub-institutions have a different location than the present one. Should they also be updated?"))
         return true;
 
-    curInstitution.overwriteSubInstLocations();
+    curInst.overwriteSubInstLocations();
 
     return true;
   }

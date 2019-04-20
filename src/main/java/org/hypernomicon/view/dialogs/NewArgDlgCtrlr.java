@@ -88,7 +88,7 @@ public class NewArgDlgCtrlr extends HyperDlg
 
     rbArgName1.setSelected(true);
 
-    cbWork.getSelectionModel().selectedItemProperty().addListener((observable, oldCell, newCell) ->
+    cbWork.getSelectionModel().selectedItemProperty().addListener((ob, oldCell, newCell) ->
     {
       if (changingWorkProgrammatically) return;
 
@@ -116,9 +116,9 @@ public class NewArgDlgCtrlr extends HyperDlg
       changingWorkProgrammatically = false;
     });
 
-    tfTitle.textProperty().addListener((observable, oldText, newText) -> rbNew.setSelected(true));
+    tfTitle.textProperty().addListener((ob, oldText, newText) -> rbNew.setSelected(true));
 
-    cbIncludeAuth.selectedProperty().addListener((observable, oldSelected, newSelected) -> reviseSuggestions());
+    cbIncludeAuth.selectedProperty().addListener((ob, oldSelected, newSelected) -> reviseSuggestions());
 
     hcbPerson.addBlankEntry();
     hcbPositionVerdict.addAndSelectEntry(db.positionVerdicts.getByID(1), HDT_Record::getCBText);
@@ -141,7 +141,7 @@ public class NewArgDlgCtrlr extends HyperDlg
     addListeners(tfArgName5, rbArgName5, false); addListeners(tfArgName6, rbArgName6, false);
     addListeners(tfArgName7, rbArgName7, false); addListeners(tfArgName8, rbArgName8, false);
 
-    cbPerson.getSelectionModel().selectedItemProperty().addListener((observable, oldCell, newCell) ->
+    cbPerson.getSelectionModel().selectedItemProperty().addListener((ob, oldCell, newCell) ->
     {
       if (HyperTableCell.getCellID(oldCell) == HyperTableCell.getCellID(newCell)) return;
 
@@ -161,9 +161,9 @@ public class NewArgDlgCtrlr extends HyperDlg
 
   private void addListeners(TextField tf, RadioButton rb, boolean proArg)
   {
-    rb.selectedProperty().addListener((observable, oldSelected, newSelected) -> argNameSelect(newSelected, proArg));
+    rb.selectedProperty().addListener((ob, oldSelected, newSelected) -> argNameSelect(newSelected, proArg));
 
-    tf.textProperty().addListener((observable, oldText, newText) ->
+    tf.textProperty().addListener((ob, oldText, newText) ->
     {
       if (!revising)
         rb.setSelected(true);

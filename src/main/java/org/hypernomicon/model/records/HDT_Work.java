@@ -27,9 +27,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.hypernomicon.bib.BibData;
-import org.hypernomicon.bib.BibUtils;
-import org.hypernomicon.bib.WorkBibData;
+import org.hypernomicon.bib.data.BibData;
+import org.hypernomicon.bib.data.WorkBibData;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
@@ -104,7 +103,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   public String getBibEntryKey() { return getBibEntryKeyString(); }
   public String getMiscBib()     { return getTagString(tagMiscBib); }
   public String getDOI()         { return getTagString(tagDOI); }
-  public List<String> getISBNs() { return BibUtils.matchISBN(getTagString(tagISBN)); }
+  public List<String> getISBNs() { return matchISBN(getTagString(tagISBN)); }
   public String getWebLink()     { return getTagString(tagWebLink); }
   public Authors getAuthors()    { return authors; }
   public int getStartPageNum()   { return workFiles.isEmpty() ? -1 : getStartPageNum(workFiles.get(0)); }
@@ -114,7 +113,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   public void setYear(String str)        { updateTagString(tagYear, str); }
   public void setBibEntryKey(String str) { updateBibEntryKey(str); }
   public void setMiscBib(String str)     { updateTagString(tagMiscBib, str); }
-  public void setDOI(String str)         { updateTagString(tagDOI, BibUtils.matchDOI(str)); }
+  public void setDOI(String str)         { updateTagString(tagDOI, matchDOI(str)); }
   public void setWebLink(String str)     { updateTagString(tagWebLink, str); }
 
 //---------------------------------------------------------------------------
@@ -318,8 +317,8 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
     if (alsoAddToEmptySubworks == false) return;
 
-    subWorks.forEach(childWork -> {
-      if (childWork.workFiles.isEmpty()) childWork.addWorkFile(newID, true, confirmToRemoveFromUnenteredSet); });
+    subWorks.stream().filter(childWork -> childWork.workFiles.isEmpty())
+                     .forEach(childWork -> childWork.addWorkFile(newID, true, confirmToRemoveFromUnenteredSet));
   }
 
 //---------------------------------------------------------------------------
@@ -399,7 +398,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   {
     List<String> allIsbns = new ArrayList<>();
 
-    list.forEach(isbn -> BibUtils.matchISBN(isbn, allIsbns));
+    list.forEach(isbn -> matchISBN(isbn, allIsbns));
 
     List<String> curISBNs = getISBNs();
 

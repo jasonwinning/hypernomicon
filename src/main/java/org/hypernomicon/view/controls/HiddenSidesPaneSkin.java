@@ -69,8 +69,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
-import org.controlsfx.control.HiddenSidesPane;
-
 public class HiddenSidesPaneSkin extends SkinBase<HiddenSidesPane> {
 
     private final StackPane stackPane;

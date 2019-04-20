@@ -49,6 +49,7 @@ import org.hypernomicon.view.wrappers.TreeWrapper.TreeTargetType;
 import com.google.common.collect.HashBasedTable;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -58,12 +59,13 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
@@ -295,7 +297,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     {
       TableRow<HyperTableRow> row = new TableRow<>();
 
-      row.itemProperty().addListener((observable, oldValue, newValue) ->
+      row.itemProperty().addListener((ob, oldValue, newValue) ->
       {
         if (newValue == null)
           row.setContextMenu(null);
@@ -351,16 +353,13 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public static <RowType> void preventMovingColumns(TableView<RowType> tv, ArrayList<TableColumn<RowType, ?>> colList)
   {
     // This handsome block of code is the only way within JavaFX to prevent the user from moving columns around
-    tv.getColumns().addListener(new ListChangeListener<TableColumn<RowType, ?>>()
+    tv.getColumns().addListener((Change<? extends TableColumn<RowType, ?>> change) ->
     {
-      @Override public void onChanged(Change<? extends TableColumn<RowType, ?>> change)
+      change.next();
+      if (change.wasReplaced())
       {
-        change.next();
-        if (change.wasReplaced())
-        {
-          tv.getColumns().clear();
-          tv.getColumns().addAll(colList);
-        }
+        tv.getColumns().clear();
+        tv.getColumns().addAll(colList);
       }
     });
   }
@@ -778,11 +777,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     ArrayList<ObjectGroup> list = new ArrayList<>();
     HDT_RecordType objType = db.getObjType(relType);
 
-    db.getNestedTags(relType).forEach(tag ->
-    {
-      if (colNdxToTag.containsValue(tag) == false)
-        colNdxToTag.put(-1, tag);
-    });
+    db.getNestedTags(relType).stream().filter(tag -> colNdxToTag.containsValue(tag) == false).forEach(tag -> colNdxToTag.put(-1, tag));
 
     rows.forEach(row ->
     {
@@ -862,16 +857,12 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   @SuppressWarnings("unchecked")
   public <HDT_T extends HDT_Record> ArrayList<HDT_T> saveToList(int colNdx, HDT_RecordType objType)
   {
-    ArrayList<HDT_T> list = new ArrayList<>();
-
-    rows.forEach(row -> { if (row.getType(colNdx) == objType)
-    {
-      int id = row.getID(colNdx);
-      if (id > 0)
-        nullSwitch((HDT_T) db.records(objType).getByID(id), list::add);
-    }});
-
-    return list;
+    return rows.stream().filter(row -> row.getType(colNdx) == objType)
+                        .map(row -> row.getID(colNdx))
+                        .filter(id -> id > 0)
+                        .map(id -> (HDT_T) db.records(objType).getByID(id))
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toCollection(ArrayList::new));
   }
 
 //---------------------------------------------------------------------------

@@ -195,7 +195,7 @@ public class FileTable extends DragNDropContainer<FileRow>
 
           if (filePath.isDirectory())
           {
-            rows.add(nextDirNdx, row);
+            rows.add(nextDirNdx++, row);
 
             for (TreeItem<FileRow> childTreeItem : parentTreeItem.getChildren())
             {
@@ -210,8 +210,6 @@ public class FileTable extends DragNDropContainer<FileRow>
                 }
               }
             }
-
-            nextDirNdx++;
           }
           else
             rows.add(row);

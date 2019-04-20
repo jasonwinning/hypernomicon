@@ -23,6 +23,7 @@ import static org.hypernomicon.view.mainText.MainTextWrapper.*;
 
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.view.mainText.MainTextCtrlr;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.RadioButton;
 import javafx.scene.web.HTMLEditor;

@@ -21,7 +21,7 @@ import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
-import org.hypernomicon.bib.lib.LibraryWrapper.SyncTask;
+import org.hypernomicon.bib.LibraryWrapper.SyncTask;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
@@ -54,7 +54,7 @@ public class SyncBibDlgCtrlr extends HyperDlg
     {
       syncTask = db.getBibLibrary().createNewSyncTask();
 
-      syncTask.runningProperty().addListener((observable, wasRunning, isRunning) ->
+      syncTask.runningProperty().addListener((ob, wasRunning, isRunning) ->
       {
         if (wasRunning && (isRunning == false))
         {

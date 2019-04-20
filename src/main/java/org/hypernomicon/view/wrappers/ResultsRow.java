@@ -18,7 +18,6 @@
 package org.hypernomicon.view.wrappers;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordBase.HDT_DateType;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.wrappers.ResultsTable.ResultCellValue;
 
@@ -60,16 +59,16 @@ public final class ResultsRow extends AbstractRow<HDT_Record, ResultsRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ResultCellValue<Instant> getDateCellValue(HDT_DateType dateType)
+  ResultCellValue<Instant> getDateCellValue(Tag dateTag)
   {
     Instant i = null;
 
-    if ((record != null) && (record.getType() != hdtNone)) switch (dateType)
+    if ((record != null) && (record.getType() != hdtNone)) switch (dateTag)
     {
-      case dateTypeCreation : i = record.getCreationDate(); break;
-      case dateTypeModified : i = record.getModifiedDate(); break;
-      case dateTypeView     : i = record.getViewDate    (); break;
-      default               :                               break;
+      case tagCreationDate : i = record.getCreationDate(); break;
+      case tagModifiedDate : i = record.getModifiedDate(); break;
+      case tagViewDate     : i = record.getViewDate    (); break;
+      default              :                               break;
     }
 
     return i == null ? new ResultCellValue<>("", Instant.MIN) : new ResultCellValue<>(dateTimeToUserReadableStr(i), i);

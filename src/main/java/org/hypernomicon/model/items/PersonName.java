@@ -77,9 +77,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
     ndx = name.length();
     while (ndx > 0)
     {
-      ndx--;
-
-      if (name.substring(ndx).matches("[^A-Za-z][A-Z]\\..*"))  // Parses "John B. X. James"
+      if (name.substring(--ndx).matches("[^A-Za-z][A-Z]\\..*"))  // Parses "John B. X. James"
       {
         ndx = ndx + 3;
         first = ultraTrim(name.substring(0, ndx));

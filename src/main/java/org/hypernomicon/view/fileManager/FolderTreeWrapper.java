@@ -82,7 +82,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 
       ImageView openImage = getImageViewForRelativePath(ui.getGraphicRelativePathByType(hdtFolder));
 
-      row.itemProperty().addListener((observable, oldValue, newValue) ->
+      row.itemProperty().addListener((ob, oldValue, newValue) ->
       {
         if (oldValue == newValue) return;
 

@@ -301,7 +301,7 @@ public class HyperTableColumn
     cellButton.setMaxHeight (18.0 * displayScale);
     cellButton.setPadding(new Insets(0.0, 7.0, 0.0, 7.0));
 
-    tableCell.emptyProperty().addListener((observable, oldValue, newValue) -> cellButton.setVisible(newValue.booleanValue() == false));
+    tableCell.emptyProperty().addListener((ob, oldValue, newValue) -> cellButton.setVisible(newValue.booleanValue() == false));
 
     return cellButton;
   }

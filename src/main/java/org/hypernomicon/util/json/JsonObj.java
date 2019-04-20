@@ -32,7 +32,7 @@ public class JsonObj implements Cloneable
 {
   public static enum JsonNodeType { OBJECT, STRING, ARRAY, NONE }
 
-  JSONObject jObj;
+  final JSONObject jObj;
 
   public JsonObj(JSONObject jObj) { this.jObj = jObj; }
   public JsonObj()                { jObj = new JSONObject(); }

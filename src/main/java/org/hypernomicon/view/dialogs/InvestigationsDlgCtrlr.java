@@ -88,7 +88,7 @@ public class InvestigationsDlgCtrlr extends HyperDlg
     listView.setItems(data);
     listView.setCellFactory(CheckBoxListCell.forListView(InvestigationSetting::selectedProperty));
 
-    tfNew.textProperty().addListener((obs, ov, nv) -> chkNew.setSelected(nv.trim().length() > 0));
+    tfNew.textProperty().addListener((ob, ov, nv) -> chkNew.setSelected(nv.trim().length() > 0));
 
     onShown = tfNew::requestFocus;
   }

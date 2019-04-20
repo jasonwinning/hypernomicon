@@ -163,9 +163,8 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init(TabEnum tabEnum)
+  @Override void init()
   {
-    this.tabEnum = tabEnum;
     ctrlr.init(hdtConcept, this);
 
     ctrlr.tvParents.getColumns().remove(2);
@@ -176,7 +175,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     ctrlr.spMain.getItems().add(1, tpConcepts);
     tpConcepts.getTabs().get(0).setClosable(false);
 
-    tpConcepts.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) ->
+    tpConcepts.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) ->
     {
       if (alreadyChangingTab) return;
 
@@ -459,9 +458,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   {
     ctrlr.clear();
 
-    tpConcepts.getTabs().forEach(tab -> {
-      if (tab.getContent() == ctrlr.apDescription)
-        tab.setContent(null); });
+    tpConcepts.getTabs().stream().filter(tab -> tab.getContent() == ctrlr.apDescription).forEach(tab -> tab.setContent(null));
 
     alreadyChangingTab = true;
     while (tpConcepts.getTabs().size() > 1)

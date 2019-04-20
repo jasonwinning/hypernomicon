@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.bib.lib;
+package org.hypernomicon.bib;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -34,8 +34,7 @@ import org.json.simple.parser.ParseException;
 import com.google.common.collect.EnumHashBiMap;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.bib.BibData.EntryType;
-import org.hypernomicon.bib.BibEntryRow;
+import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 

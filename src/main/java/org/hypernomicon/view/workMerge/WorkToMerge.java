@@ -19,14 +19,14 @@ package org.hypernomicon.view.workMerge;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.dialogs.WorkDlgCtrlr.createAuthorRecordHandler;
-import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
+import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
-import org.hypernomicon.bib.BibData;
-import org.hypernomicon.bib.BibData.BibFieldEnum;
+import org.hypernomicon.bib.data.BibData;
+import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;

@@ -131,7 +131,7 @@ public class ContentsWindow extends HyperDlg
     dialogStage.getScene().setOnMouseEntered(event -> mouseAlreadyHere = true);  // Don't refresh when user clicks a button while dialog is out of focus
     dialogStage.getScene().setOnMouseExited (event -> mouseAlreadyHere = false);
 
-    dialogStage.focusedProperty().addListener((observable, oldValue, newValue) ->
+    dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (ui.windows.getCyclingFocus()) return;
 

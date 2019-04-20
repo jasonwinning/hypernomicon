@@ -85,6 +85,8 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
       chkNewEntry.setVisible(false);
     }
 
+    onShown = () -> disableCache(taContents);
+
     btnBrowse.setOnAction(event -> btnBrowseClick());
     btnCreateNew.setOnAction(event -> doImport(true));
     btnExisting.setOnAction(event -> doImport(false));

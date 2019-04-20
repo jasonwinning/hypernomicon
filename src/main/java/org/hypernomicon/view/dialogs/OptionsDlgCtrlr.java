@@ -31,14 +31,13 @@ import com.github.scribejava.core.model.OAuth1AccessToken;
 import com.github.scribejava.core.model.OAuth1RequestToken;
 import com.github.scribejava.core.oauth.OAuth10aService;
 
-import org.hypernomicon.bib.lib.LibraryWrapper.LibraryType;
+import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.zotero.ZoteroOAuthApi;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
 import org.hypernomicon.util.CryptoUtil;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -177,7 +176,7 @@ public class OptionsDlgCtrlr extends HyperDlg
     });
 
     sliderFontSize.setValue(appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE));
-    sliderFontSize.valueProperty().addListener((ChangeListener<Number>)(observable, oldValue, newValue) ->
+    sliderFontSize.valueProperty().addListener((ob, oldValue, newValue) ->
     {
       if ((oldValue == null) || (newValue == null)) return;
       if ((oldValue.doubleValue() == newValue.doubleValue())) return;
@@ -265,7 +264,7 @@ public class OptionsDlgCtrlr extends HyperDlg
 
     cb.getSelectionModel().select(selNdx);
 
-    cb.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    cb.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null) return;
 
@@ -281,7 +280,7 @@ public class OptionsDlgCtrlr extends HyperDlg
   {
     tf.setText(appPrefs.get(prefKey, ""));
 
-    tf.textProperty().addListener((observable, oldValue, newValue) ->
+    tf.textProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue != null)
         appPrefs.put(prefKey, newValue);
@@ -294,7 +293,7 @@ public class OptionsDlgCtrlr extends HyperDlg
   private void initDBCheckBox(CheckBox chk, String prefKey, boolean defValue)
   {
     chk.setSelected(db.prefs.getBoolean(prefKey, defValue));
-    chk.selectedProperty().addListener((observable, oldValue, newValue) ->
+    chk.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null) return;
 
@@ -309,7 +308,7 @@ public class OptionsDlgCtrlr extends HyperDlg
   private void initAppCheckBox(CheckBox chk, String prefKey, boolean defValue)
   {
     chk.setSelected(appPrefs.getBoolean(prefKey, defValue));
-    chk.selectedProperty().addListener((observable, oldValue, newValue) ->
+    chk.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue != null)
         appPrefs.putBoolean(prefKey, newValue.booleanValue());
@@ -323,7 +322,7 @@ public class OptionsDlgCtrlr extends HyperDlg
   {
     tf.setText(String.valueOf(db.prefs.getInt(prefKey, 255)));
 
-    tf.textProperty().addListener((observable, oldValue, newValue) ->
+    tf.textProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null) return;
 
@@ -422,7 +421,7 @@ public class OptionsDlgCtrlr extends HyperDlg
   {
     tf.setText(db.prefs.get(prefKey, ""));
 
-    tf.textProperty().addListener((observable, oldValue, newValue) ->
+    tf.textProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null) return;
       db.prefs.put(prefKey, newValue);

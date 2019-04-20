@@ -22,8 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.hypernomicon.bib.BibData.EntryType;
-import org.hypernomicon.bib.lib.BibEntry;
+import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.view.wrappers.HasRightClickableRows;
 import org.hypernomicon.view.wrappers.HyperTable;
 
@@ -40,7 +39,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
+import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
@@ -83,7 +82,7 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
                                      tcPublishedIn = (TableColumn<BibEntryRow, String>) tv.getColumns().get(6);
 
     tcEntryKey   .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getEntryKey()));
-    tcType       .setCellValueFactory(cellData -> new SimpleStringProperty(BibUtils.getEntryTypeName(cellData.getValue().getEntry().getEntryType())));
+    tcType       .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getEntryType().getUserFriendlyName()));
     tcAuthors    .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getAuthors().getStr()));
     tcTitle      .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfTitle)));
     tcYear       .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfYear)));
@@ -116,7 +115,7 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
     {
       TableRow<BibEntryRow> row = new TableRow<>();
 
-      row.itemProperty().addListener((o, ov, nv) -> row.setContextMenu(nv == null ? null : createContextMenu(nv)));
+      row.itemProperty().addListener((ob, ov, nv) -> row.setContextMenu(nv == null ? null : createContextMenu(nv)));
 
       row.setOnMouseClicked(mouseEvent ->
       {

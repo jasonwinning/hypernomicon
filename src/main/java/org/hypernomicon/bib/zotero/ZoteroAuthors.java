@@ -23,17 +23,17 @@ import java.util.Map.Entry;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Iterators;
 
-import org.hypernomicon.bib.BibAuthor;
-import org.hypernomicon.bib.BibAuthors;
-import org.hypernomicon.bib.BibData.AuthorType;
-import org.hypernomicon.bib.BibData.EntryType;
+import org.hypernomicon.bib.authors.BibAuthor;
+import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
+import org.hypernomicon.bib.authors.BibAuthors;
+import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.bib.BibData.EntryType.*;
-import static org.hypernomicon.bib.BibData.AuthorType.*;
+import static org.hypernomicon.bib.authors.BibAuthor.AuthorType.*;
+import static org.hypernomicon.bib.data.EntryType.*;
 
 public class ZoteroAuthors extends BibAuthors
 {
@@ -249,7 +249,7 @@ public class ZoteroAuthors extends BibAuthors
       .put(etWebPage, "translator", translator)
 
       .build();
- }
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

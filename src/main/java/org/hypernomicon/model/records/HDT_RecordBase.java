@@ -61,10 +61,6 @@ public abstract class HDT_RecordBase implements HDT_Record
   }
 
 //---------------------------------------------------------------------------
-
-  public static enum HDT_DateType { dateTypeCreation, dateTypeModified, dateTypeView; }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private final HyperDataset<? extends HDT_Record> dataset;
@@ -85,29 +81,30 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final Instant getViewDate()          { return getType().getDisregardDates() ? null : viewDate; }
   @Override public final Instant getCreationDate()      { return getType().getDisregardDates() ? null : creationDate; }
   @Override public final Tag getNameTag()               { return nameTag; }
-  @Override public String getNameEngChar()              { return name.getEngChar(); }
-  @Override public String getCBText()                   { return listName(); }
-  @Override public String getXMLObjectName()            { return listName(); }
-  @Override public boolean isUnitable()                 { return false; }
   @Override public final boolean isDummy()              { return dummyFlag; }
   @Override public final boolean hasMainText()          { return this instanceof HDT_RecordWithConnector; }
   @Override public final boolean hasDesc()              { return this instanceof HDT_RecordWithDescription; }
   @Override public final int getID()                    { return id; }
   @Override public final void viewNow()                 { if (db.viewTestingInProgress == false) viewDate = Instant.now(); }
   @Override public final String getSortKeyAttr()        { return sortKeyAttr; }
-  @Override public String name()                        { return name.get(); }
   @Override public final String getSortKey()            { return dataset.getKeyByID(id); }
-  @Override public String getSearchKey()                { return db.getSearchKey(this); }
-  @Override public List<SearchKeyword> getSearchKeys()  { return db.getKeysByRecord(this); }
-  @Override public String getFirstActiveKeyWord()       { return db.getFirstActiveKeyWord(this); }
   @Override public final boolean isExpired()            { return expired; }
-  @Override public void setName(String str)             { setNameInternal(str, true); }
   @Override public final Set<Tag> getAllTags()          { return items.keySet().isEmpty() ? EnumSet.noneOf(Tag.class) : EnumSet.copyOf(items.keySet()); }
   @Override public final boolean getTagBoolean(Tag tag) { return HDI_OnlineBoolean.class.cast(items.get(tag)).get(); }
   @Override public final boolean hasStoredState()       { return xmlState.stored; }
   @Override public final void updateSortKey()           { if (dataset != null) dataset.updateSortKey(makeSortKey(), id); }
   @Override public final HDI_Schema getSchema(Tag tag)  { return nullSwitch(items.get(tag), null, HDI_Base::getSchema); }
   @Override public final HDT_RecordType getType()       { return type; }
+
+  @Override public String name()                        { return name.get(); }
+  @Override public void setName(String str)             { setNameInternal(str, true); }
+  @Override public String getNameEngChar()              { return name.getEngChar(); }
+  @Override public String getCBText()                   { return listName(); }
+  @Override public String getXMLObjectName()            { return listName(); }
+  @Override public boolean isUnitable()                 { return false; }
+  @Override public String getSearchKey()                { return db.getSearchKey(this); }
+  @Override public List<SearchKeyword> getSearchKeys()  { return db.getKeysByRecord(this); }
+  @Override public String getFirstActiveKeyWord()       { return db.getFirstActiveKeyWord(this); }
 
   @Override public final void writeStoredStateToXML(StringBuilder xml)        { xmlState.writeToXML(xml); }
   @Override public void setSearchKey(String newKey) throws SearchKeyException { setSearchKey(newKey, false, false); }
@@ -589,26 +586,18 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setDates(Instant newDate)
-  {
-    modifiedDate = newDate;
-    creationDate = newDate;
-    viewDate     = newDate;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static void setRootRecordDates()
   {
     Instant dbCreationDate = db.getCreationDate();
 
-    HDT_RecordBase.class.cast(db.folders     .getByID(1)).setDates(dbCreationDate);
-    HDT_RecordBase.class.cast(db.debates     .getByID(1)).setDates(dbCreationDate);
-    HDT_RecordBase.class.cast(db.notes       .getByID(1)).setDates(dbCreationDate);
-    HDT_RecordBase.class.cast(db.workLabels  .getByID(1)).setDates(dbCreationDate);
-    HDT_RecordBase.class.cast(db.personGroups.getByID(1)).setDates(dbCreationDate);
-    HDT_RecordBase.class.cast(db.glossaries  .getByID(1)).setDates(dbCreationDate);
+    EnumSet.of(hdtFolder, hdtDebate, hdtNote, hdtWorkLabel, hdtPersonGroup, hdtGlossary).forEach(type ->
+    {
+      HDT_RecordBase record = (HDT_RecordBase) db.records(type).getByID(1);
+
+      record.modifiedDate = dbCreationDate;
+      record.creationDate = dbCreationDate;
+      record.viewDate     = dbCreationDate;
+    });
   }
 
 //---------------------------------------------------------------------------

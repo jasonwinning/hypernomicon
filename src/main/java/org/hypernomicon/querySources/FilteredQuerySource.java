@@ -18,6 +18,7 @@
 package org.hypernomicon.querySources;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -29,6 +30,7 @@ import org.hypernomicon.queryEngines.QueryEngine.QueryType;
 public abstract class FilteredQuerySource implements QuerySource
 {
   protected final List<HDT_Record> list = new ArrayList<>();
+  private Iterator<HDT_Record> it;
   protected final HyperTableCell op1, op2, op3;
   protected final int query;
   protected final QueryType queryType;
@@ -55,7 +57,8 @@ public abstract class FilteredQuerySource implements QuerySource
 //---------------------------------------------------------------------------
 
   @Override public int count()                               { ensureGenerated(); return list.size(); }
-  @Override public HDT_Record getRecord(int ndx)             { ensureGenerated(); return list.get(ndx); }
+  @Override public boolean hasNext()                         { ensureGenerated(); return it.hasNext(); }
+  @Override public HDT_Record next()                         { ensureGenerated(); return it.next(); }
   @Override public QuerySourceType sourceType()              { return QuerySourceType.QST_filteredRecords; }
   @Override public boolean containsRecord(HDT_Record record) { ensureGenerated(); return list.contains(record); }
 
@@ -64,7 +67,7 @@ public abstract class FilteredQuerySource implements QuerySource
   public HDT_RecordType recordType()                    { return queryType.getRecordType(); }
   public boolean containsCell(HyperTableCell cell)      { ensureGenerated(); return list.contains(HyperTableCell.getRecord(cell)); }
   public void addAllTo(Set<HDT_Record> filteredRecords) { ensureGenerated(); filteredRecords.addAll(list); }
-  protected void ensureGenerated()                      { if (!generated) { runFilter(); generated = true; }}
+  protected void ensureGenerated()                      { if (!generated) { runFilter(); it = list.iterator(); generated = true; }}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -47,8 +47,7 @@ public class HyperObjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType exten
   {
     if (hasNext())
     {
-      lastNdx = nextNdx;
-      nextNdx++;
+      lastNdx = nextNdx++;
       return list.get(lastNdx);
     }
 

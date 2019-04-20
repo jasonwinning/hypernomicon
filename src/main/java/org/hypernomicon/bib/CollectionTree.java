@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.hypernomicon.bib.lib.BibCollection;
-
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -57,7 +55,7 @@ public class CollectionTree
     {
       TreeCell<BibCollectionRow> row = new TreeCell<>();
 
-      row.itemProperty().addListener((observable, oldValue, newValue) ->
+      row.itemProperty().addListener((ob, oldValue, newValue) ->
       {
         if (oldValue == newValue) return;
 

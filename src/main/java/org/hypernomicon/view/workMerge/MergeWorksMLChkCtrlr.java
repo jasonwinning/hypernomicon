@@ -21,8 +21,8 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
 
-import org.hypernomicon.bib.BibData;
-import org.hypernomicon.bib.BibData.BibFieldEnum;
+import org.hypernomicon.bib.data.BibData;
+import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
@@ -61,7 +61,7 @@ public class MergeWorksMLChkCtrlr extends BibFieldRow
     this.ap = ap;
     this.bibFieldEnum = bibFieldEnum;
 
-    lbl.setText(BibData.getFieldName(bibFieldEnum));
+    lbl.setText(bibFieldEnum.getUserFriendlyName());
 
     if (bd4 == null)
     {

@@ -68,9 +68,9 @@ public class NewInstDlgCtrlr extends HyperDlg
 
     hcbParent.dontCreateNewRecord = true;
 
-    cbParent.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> rbExisting.setSelected(true));
+    cbParent.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) -> rbExisting.setSelected(true));
 
-    tfNewParentName.textProperty().addListener((observable, oldValue, newValue) -> rbNew.setSelected(true));
+    tfNewParentName.textProperty().addListener((ob, oldValue, newValue) -> rbNew.setSelected(true));
 
     hcbParent.addAndSelectEntryOrBlank(parent, HDT_Record::name);
 

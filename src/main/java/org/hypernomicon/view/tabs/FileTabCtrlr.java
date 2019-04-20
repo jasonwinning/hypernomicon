@@ -127,8 +127,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   {
     if (curMiscFile.getPath().isEmpty() == false)
     {
-      FilePath filePath = curMiscFile.getPath().getFilePath();
-      FilePath relPath = db.getRootFilePath().relativize(filePath);
+      FilePath filePath = curMiscFile.getPath().getFilePath(),
+               relPath = db.getRootFilePath().relativize(filePath);
 
       if (relPath == null)
         tfFileName.setText(filePath.getNameOnly().toString());
@@ -146,10 +146,10 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   {
     int workID = hcbWork.selectedID();
 
-    htLabels.setCanAddRows(workID < 1);
+    htLabels .setCanAddRows(workID < 1);
     htAuthors.setCanAddRows(workID < 1);
 
-    htLabels.clear();
+    htLabels .clear();
     htAuthors.clear();
 
     if (curMiscFile == null) return;
@@ -159,12 +159,12 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
       HDT_Work work = db.works.getByID(workID);
 
       htAuthors.buildRows(work.authorRecords, (row, author) -> row.setCellValue(1, author, author.getCBText()));
-      htLabels.buildRows(work.labels,         (row, label)  -> row.setCellValue(2, label, label.getExtendedText()));
+      htLabels .buildRows(work.labels,        (row, label)  -> row.setCellValue(2, label, label.getExtendedText()));
     }
     else
     {
       htAuthors.buildRows(curMiscFile.authors, (row, author) -> row.setCellValue(1, author, author.getCBText()));
-      htLabels.buildRows(curMiscFile.labels,   (row, label)  -> row.setCellValue(2, label, label.getExtendedText()));
+      htLabels .buildRows(curMiscFile.labels,  (row, label)  -> row.setCellValue(2, label, label.getExtendedText()));
     }
   }
 
@@ -181,9 +181,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void init(TabEnum tabEnum)
+  @Override public void init()
   {
-    this.tabEnum = tabEnum;
     mainText = new MainTextWrapper(apDescription);
     tfFileName.setEditable(false);
 
@@ -226,10 +225,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     hcbType = new HyperCB(cbType, ctDropDown, new StandardPopulator(hdtFileType), null);
     hcbWork = new HyperCB(cbWork, ctDropDownList, new StandardPopulator(hdtWork), null);
 
-    hcbWork.getComboBox().getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
-    {
-      cbWorkChange();
-    });
+    hcbWork.getComboBox().getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) -> cbWorkChange());
 
     btnWork  .setOnAction(event -> ui.goToRecord(HyperTableCell.getRecord(hcbWork.selectedHTC()), true));
     btnTree  .setOnAction(event -> ui.goToTreeRecord(curMiscFile));

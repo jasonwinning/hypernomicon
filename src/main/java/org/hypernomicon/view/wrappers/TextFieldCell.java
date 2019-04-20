@@ -115,7 +115,7 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
   {
     textField = new TextField(getString());
     textField.setMinWidth(getWidth() - getGraphicTextGap() * 2);
-    textField.focusedProperty().addListener((observable, oldValue, newValue) ->
+    textField.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == false)
         commit();

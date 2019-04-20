@@ -221,17 +221,10 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
   {
     switch (tag)
     {
-      case tagDisplayRecord :
-        return connector.getMainText().getDisplayItemsString();
-
-      case tagKeyWork :
-        return connector.getMainText().getKeyWorksString();
-
-      case tagHub :
-        return "";
-
-      default :
-        return connector.getMainText().getPlain();
+      case tagDisplayRecord : return connector.getMainText().getDisplayItemsString();
+      case tagKeyWork       : return connector.getMainText().getKeyWorksString();
+      case tagHub           : return "";
+      default               : return connector.getMainText().getPlain();
     }
   }
 

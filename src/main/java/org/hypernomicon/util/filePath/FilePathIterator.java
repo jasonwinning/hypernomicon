@@ -45,8 +45,7 @@ public class FilePathIterator implements Iterator<FilePath>
 
   @Override public boolean hasNext()
   {
-    if (pathIterator != null)
-      if (pathIterator.hasNext()) return true;
+    if ((pathIterator != null) && pathIterator.hasNext()) return true;
 
     while (nameIterator.hasNext())
     {
@@ -62,15 +61,7 @@ public class FilePathIterator implements Iterator<FilePath>
 
   @Override public FilePath next()
   {
-    if (pathIterator != null)
-      if (pathIterator.hasNext())
-        return pathIterator.next();
-
-    while (nameIterator.hasNext())
-    {
-      pathIterator = nameIterator.next().iterator();
-      if (pathIterator.hasNext()) return pathIterator.next();
-    }
+    if (hasNext()) return pathIterator.next();
 
     throw new NoSuchElementException();
   }

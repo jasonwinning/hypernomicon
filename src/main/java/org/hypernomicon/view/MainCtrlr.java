@@ -35,8 +35,10 @@ import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.tabs.QueriesTabCtrlr.*;
 import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 
-import org.hypernomicon.bib.BibData;
-import org.hypernomicon.bib.lib.BibEntry;
+import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.bib.data.BibData;
+import org.hypernomicon.bib.data.BibTexBibData;
+import org.hypernomicon.bib.data.RISBibData;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.PersonName;
@@ -181,7 +183,7 @@ public final class MainCtrlr
 
     windows.push(stage);
 
-    stage.focusedProperty().addListener((Observable, oldValue, newValue) ->
+    stage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (windows.getCyclingFocus()) return;
 
@@ -190,7 +192,7 @@ public final class MainCtrlr
       windows.push(stage);
     });
 
-    stage.widthProperty().addListener((Observable, oldValue, newValue) ->
+    stage.widthProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue.doubleValue() < oldValue.doubleValue())
         maximized = false;
@@ -202,7 +204,7 @@ public final class MainCtrlr
       }
     });
 
-    stage.heightProperty().addListener((observable, oldValue, newValue) ->
+    stage.heightProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue.doubleValue() < oldValue.doubleValue())
         maximized = false;
@@ -214,7 +216,7 @@ public final class MainCtrlr
       }
     });
 
-    stage.maximizedProperty().addListener((observable, oldValue, newValue) ->
+    stage.maximizedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue && !oldValue)
       {
@@ -234,11 +236,11 @@ public final class MainCtrlr
     WorkTabCtrlr       .addHyperTab(workTab       , tabWorks       , "WorkTab.fxml");
     FileTabCtrlr       .addHyperTab(miscFileTab   , tabFiles       , "FileTab.fxml");
 
-    new DebateTab()         .baseInit   (debateTab     , tabDebates);
-    new PositionTab()       .baseInit   (positionTab   , tabPositions);
-    new ArgumentTab()       .baseInit   (argumentTab   , tabArguments);
-    new NoteTab()           .baseInit   (noteTab       , tabNotes);
-    new TermTab()           .baseInit   (termTab       , tabTerms);
+    new DebateTab()    .baseInit   (debateTab     , tabDebates);
+    new PositionTab()  .baseInit   (positionTab   , tabPositions);
+    new ArgumentTab()  .baseInit   (argumentTab   , tabArguments);
+    new NoteTab()      .baseInit   (noteTab       , tabNotes);
+    new TermTab()      .baseInit   (termTab       , tabTerms);
 
     QueriesTabCtrlr    .addHyperTab(queryTab      , tabQueries     , "QueriesTab.fxml");
     TreeTabCtrlr       .addHyperTab(treeTab       , tabTree        , "TreeTab.fxml");
@@ -303,19 +305,19 @@ public final class MainCtrlr
     else
       btnPointerPreview.setSelected(true);
 
-    btnPointerLaunch.selectedProperty().addListener((observable, oldValue, newValue) ->
+    btnPointerLaunch.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue)
         appPrefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true);
     });
 
-    btnPointerPreview.selectedProperty().addListener((observable, oldValue, newValue) ->
+    btnPointerPreview.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue)
         appPrefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, false);
     });
 
-    btnPointerLaunch.getToggleGroup().selectedToggleProperty().addListener((observable, oldValue, newValue) ->
+    btnPointerLaunch.getToggleGroup().selectedToggleProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null)
         oldValue.setSelected(true);
@@ -362,7 +364,7 @@ public final class MainCtrlr
       AnchorPane.setTopAnchor(topToolBar, 0.0);
       AnchorPane.setRightAnchor(topToolBar, 0.0);
 
-      midAnchorPane.widthProperty().addListener((observable, oldValue, newValue) ->
+      midAnchorPane.widthProperty().addListener((ob, oldValue, newValue) ->
       {
         if ((newValue != null) && (newValue.doubleValue() > 1))
           adjustToolBar(newValue.doubleValue());
@@ -423,7 +425,7 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
-    selectorTabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) ->
+    selectorTabPane.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) ->
     {
       if ((newTab == null) || (oldTab == newTab)) return;
 
@@ -448,7 +450,7 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
-    tfOmniGoTo.textProperty().addListener((observable, oldValue, newValue) ->
+    tfOmniGoTo.textProperty().addListener((ob, oldValue, newValue) ->
     {
       if ((newValue != null) && (newValue.equals(oldValue) == false))
         tfOmniGoToChange(newValue, false);
@@ -481,7 +483,7 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
-    tfRecord.focusedProperty().addListener((observable, oldValue, newValue) ->
+    tfRecord.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue)
         tfRecord.setText("");
@@ -491,7 +493,7 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
-    tfID.focusedProperty().addListener((observable, oldValue, newValue) ->
+    tfID.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       if ((newValue.booleanValue() == false) && (activeRecord() != null))
         tfID.setText(String.valueOf(activeRecord().getID()));
@@ -1012,8 +1014,8 @@ public final class MainCtrlr
     forEachHyperTab(hyperTab -> hyperTab.enable(enabled));
 
     enableAllIff(enabled, mnuNewDatabase, mnuCloseDatabase, mnuImportWork,      mnuImportFile,    mnuExitNoSave,       mnuChangeID, mnuNewField,
-                         mnuNewCountry,  mnuNewRank,       mnuNewPersonStatus, mnuSaveReloadAll, mnuRevertToDiskCopy, mnuAddToQueryResults,
-                         btnFileMgr,     btnBibMgr,        btnPreviewWindow,   btnMentions,      btnAdvancedSearch,   btnSaveAll);
+                          mnuNewCountry,  mnuNewRank,       mnuNewPersonStatus, mnuSaveReloadAll, mnuRevertToDiskCopy, mnuAddToQueryResults,
+                          btnFileMgr,     btnBibMgr,        btnPreviewWindow,   btnMentions,      btnAdvancedSearch,   btnSaveAll);
 
     if (disabled)
       getTree().clear();
@@ -1546,6 +1548,7 @@ public final class MainCtrlr
       super(db.getTypeName(record.getType()) + ": " + record.getCBText());
       isQuery = false;
       favRecord = new HyperTableCell(record.getID(), record.getCBText(), record.getType());
+      query = null;
       setOnAction(event -> goToRecord(record, true));
     }
 
@@ -1554,11 +1557,12 @@ public final class MainCtrlr
       super("Query: " + query.name);
       isQuery = true;
       this.query = query;
+      favRecord = null;
       setOnAction(event -> showSearch(query.autoexec, null, -1, query, null, null, query.name));
     }
 
-    public boolean isQuery;
-    public QueryFavorite query;
+    final public boolean isQuery;
+    final public QueryFavorite query;
     public HyperTableCell favRecord;
   }
 
@@ -1667,7 +1671,7 @@ public final class MainCtrlr
 
   private void searchForMentions(HDT_Record record, boolean descOnly)
   {
-    boolean noneFound = false, didSearch = false, backClick = activeTabEnum() != queryTab;
+    boolean noneFound = false, backClick = activeTabEnum() != queryTab;
 
     if (record == null) return;
 
@@ -1676,12 +1680,8 @@ public final class MainCtrlr
 
     lblStatus.setText("");
 
-    if (descOnly)
-      didSearch = showSearch(true, qtAllRecords, QUERY_LINKING_TO_RECORD, null, new HyperTableCell(-1, "", type), new HyperTableCell(id, "", type), "Mentions: " + record.listName());
-    else
-      didSearch = showSearch(true, qtAllRecords, QUERY_MATCHING_RECORD, null, new HyperTableCell(-1, "", type), new HyperTableCell(id, "", type), "Mentions: " + record.listName());
-
-    if (!didSearch)
+    if (!showSearch(true, qtAllRecords, descOnly ? QUERY_LINKING_TO_RECORD : QUERY_MATCHING_RECORD, null,
+                    new HyperTableCell(-1, "", type), new HyperTableCell(id, "", type), "Mentions: " + record.listName()))
     {
       discardLastQuery(backClick);
       return;
@@ -2732,7 +2732,7 @@ public final class MainCtrlr
 
     try
     {
-      bd = BibData.createFromBibTex(lines);
+      bd = BibTexBibData.create(lines);
     }
     catch (TokenMgrException | ParseException e)
     {
@@ -2740,7 +2740,7 @@ public final class MainCtrlr
     }
 
     if (bd == null)
-      bd = BibData.createFromRIS(lines);
+      bd = RISBibData.create(lines);
 
     if (bd == null)
     {

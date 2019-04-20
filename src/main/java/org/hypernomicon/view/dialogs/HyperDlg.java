@@ -26,7 +26,6 @@ import java.io.IOException;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
@@ -47,8 +46,6 @@ public abstract class HyperDlg
 //---------------------------------------------------------------------------
 
   public final Stage getStage()            { return dialogStage; }
-  protected final boolean isOkClicked()    { return okClicked; }
-  protected final AnchorPane getMainPane() { return mainPane; }
   public final boolean shownAlready()      { return shownAlready; }
   protected abstract boolean isValid();
 
@@ -142,13 +139,9 @@ public abstract class HyperDlg
   {
     if (shownAlready == false)
     {
-      Parent root = dialogStage.getScene().getRoot();
-
-      String id = safeStr(mainPane.getId());
-
-      if (id.equals("About") == false)
+      if (safeStr(mainPane.getId()).equals("About") == false)
       {
-        scaleNodeForDPI(root);
+        scaleNodeForDPI(mainPane);
         setFontSize(mainPane);
       }
     }
@@ -211,7 +204,7 @@ public abstract class HyperDlg
 
     ui.windows.pop();
 
-    return isOkClicked();
+    return okClicked;
   }
 
 //---------------------------------------------------------------------------

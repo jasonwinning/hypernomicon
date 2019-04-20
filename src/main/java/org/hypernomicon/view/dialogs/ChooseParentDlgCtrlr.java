@@ -74,14 +74,13 @@ public class ChooseParentDlgCtrlr extends HyperDlg
     popupTree = new TreeWrapper(ttv, false, new ComboBox<TreeRow>(), true);
     this.types = types;
     this.child = child;
-    int ctr = 1;
     parent = null;
 
     title = "Select a ";
 
     Iterator<HDT_RecordType> it = types.iterator();
 
-    while (it.hasNext())
+    for (int ctr = 1; it.hasNext(); ctr++)
     {
       HDT_RecordType type = it.next();
 
@@ -96,8 +95,6 @@ public class ChooseParentDlgCtrlr extends HyperDlg
         else
           title += ", ";
       }
-
-      ctr++;
     }
 
     title = title + " record";
@@ -117,7 +114,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
     popupTree.sort();
     popupTree.expandMainBranches();
 
-    ttv.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    ttv.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue != null)
         tfPath.setText(TreeTabCtrlr.getTreePath(ttv, newValue));

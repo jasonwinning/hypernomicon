@@ -17,7 +17,6 @@
 
 package org.hypernomicon.bib;
 
-import org.hypernomicon.bib.lib.BibEntry;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.wrappers.AbstractRow;
 

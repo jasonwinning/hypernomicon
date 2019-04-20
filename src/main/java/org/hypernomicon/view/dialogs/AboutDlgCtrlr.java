@@ -18,7 +18,6 @@
 package org.hypernomicon.view.dialogs;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -84,7 +83,7 @@ public class AboutDlgCtrlr extends HyperDlg
         anchorTag("Website", "http://hypernomicon.org/") + "&nbsp;&nbsp;&nbsp;" +
         anchorTag("GitHub repo", "https://github.com/jasonwinning/hypernomicon") + "</body></html>";
 
-    webView.getEngine().titleProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
+    webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
     {
       MainTextWrapper.handleJSEvent("", webView.getEngine(), new TextViewInfo());
     });
@@ -124,7 +123,7 @@ public class AboutDlgCtrlr extends HyperDlg
 
         "</div></body></html>";
 
-    tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) -> updateHtml(newTab));
+    tabPane.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) -> updateHtml(newTab));
 
     updateHtml(tabPane.getSelectionModel().getSelectedItem());
   }

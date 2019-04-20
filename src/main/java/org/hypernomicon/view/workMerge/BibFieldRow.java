@@ -17,13 +17,13 @@
 
 package org.hypernomicon.view.workMerge;
 
-import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
+import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 
 import java.io.IOException;
 
 import org.hypernomicon.App;
-import org.hypernomicon.bib.BibData;
-import org.hypernomicon.bib.BibData.BibFieldEnum;
+import org.hypernomicon.bib.data.BibData;
+import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.AnchorPane;
@@ -46,10 +46,10 @@ public abstract class BibFieldRow
     FXMLLoader loader;
 
     if ((bibFieldEnum == bfISBNs) ||
-        (bibFieldEnum == bfISSNs))                      loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksMultiLineChk.fxml"));
-    else if (bibFieldEnum == bfEntryType)               loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksCB.fxml"));
-    else if (BibData.bibFieldIsMultiLine(bibFieldEnum)) loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksMultiLine.fxml"));
-    else                                                loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksSingleLine.fxml"));
+        (bibFieldEnum == bfISSNs))        loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksMultiLineChk.fxml"));
+    else if (bibFieldEnum == bfEntryType) loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksCB.fxml"));
+    else if (bibFieldEnum.isMultiLine())  loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksMultiLine.fxml"));
+    else                                  loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksSingleLine.fxml"));
 
     AnchorPane ap = loader.load();
     BibFieldRow row = loader.getController();

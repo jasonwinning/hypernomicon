@@ -47,7 +47,6 @@ import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
@@ -114,9 +113,8 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init(TabEnum tabEnum)
+  @Override void init()
   {
-    this.tabEnum = tabEnum;
     tree = new TreeWrapper(ttv, true, ui.cbTreeGoTo, false);
 
     debateTree = tree.debateTree;
@@ -149,18 +147,6 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     tree.addContextMenuItem("Detach from this parent", HDT_Record.class,
       record -> tree.canDetach(false),
       record -> tree.canDetach(true));
-
-    tree.addContextMenuItem("Launch file...", HDT_Work.class,
-      work -> work.canLaunch() && db.isLoaded(),
-      work -> work.launch(-1));
-
-    tree.addContextMenuItem("Launch file...", HDT_MiscFile.class,
-      miscFile -> (miscFile.getPath().isEmpty() == false) && db.isLoaded(),
-      miscFile ->
-      {
-        miscFile.viewNow();
-        launchFile(miscFile.getPath().getFilePath());
-      });
 
     tree.addContextMenuItem("Rename...", HDT_WorkLabel.class,
       label -> db.isLoaded(),
@@ -202,7 +188,9 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       glossary -> db.isLoaded(),
       this::createGlossary);
 
-    webView.getEngine().titleProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
+    tree.addDefaultMenuItems();
+
+    webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
     {
       textToHilite = lastTextHilited;
       String mainText = "";
@@ -218,7 +206,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
-    webView.getEngine().getLoadWorker().stateProperty().addListener((ChangeListener<Worker.State>) (ov, oldState, newState) ->
+    webView.getEngine().getLoadWorker().stateProperty().addListener((ob, oldState, newState) ->
     {
       if (newState == Worker.State.SUCCEEDED)
       {
@@ -232,7 +220,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     MainTextWrapper.webViewAddZoom(webView, PREF_KEY_TREETAB_ZOOM);
 
-    ttv.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    ttv.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       boolean clearWV = true, clearPreview = true;
 
@@ -368,7 +356,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       newLabel.setName(dlg.getNewName());
       newLabel.parentLabels.add(label);
 
-      Platform.runLater(() -> tree.selectRecord(newLabel, 0, false));
+      Platform.runLater(() -> { tree.sort(); tree.selectRecord(newLabel, 0, false); });
     }
   }
 

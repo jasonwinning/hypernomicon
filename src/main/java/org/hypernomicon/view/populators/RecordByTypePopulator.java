@@ -107,9 +107,9 @@ public class RecordByTypePopulator extends Populator
     }
 
     Iterator<? extends HDT_Record> it = db.records(recordType).keyIterator();
-    HDT_Record record = getNextRecord(it);
+    HDT_Record record;
 
-    while (record != null)
+    while ((record = getNextRecord(it)) != null)
     {
       Instant curDate = record.getViewDate();
       int slotNdx = -1;
@@ -141,8 +141,6 @@ public class RecordByTypePopulator extends Populator
           revPos[pos[ndx]] = ndx;
         }
       }
-
-      record = getNextRecord(it);
     }
 
     ArrayList<Integer> recent = new ArrayList<>();

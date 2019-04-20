@@ -15,14 +15,17 @@
  *
  */
 
-package org.hypernomicon.bib;
+package org.hypernomicon.bib.data;
 
 import java.util.List;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.hypernomicon.bib.lib.BibEntry;
+import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.bib.authors.BibAuthors;
+import org.hypernomicon.bib.authors.WorkBibAuthors;
+import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 
@@ -62,7 +65,7 @@ public class WorkBibData extends BibData
 
   @Override public EntryType getEntryType()
   {
-    return nullSwitch(getBibEntry(), convertWorkTypeToEntryType(work.getWorkTypeValue()), BibEntry::getEntryType);
+    return nullSwitch(getBibEntry(), EntryType.fromWorkType(work.getWorkTypeValue()), BibEntry::getEntryType);
   }
 
 //---------------------------------------------------------------------------

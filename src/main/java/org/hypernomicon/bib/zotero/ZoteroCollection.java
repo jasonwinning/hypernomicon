@@ -17,7 +17,7 @@
 
 package org.hypernomicon.bib.zotero;
 
-import org.hypernomicon.bib.lib.BibCollection;
+import org.hypernomicon.bib.BibCollection;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 

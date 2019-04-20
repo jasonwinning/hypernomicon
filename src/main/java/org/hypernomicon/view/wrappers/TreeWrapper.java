@@ -97,7 +97,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
     clear();
 
-    ttv.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    ttv.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue != null)
         if (newValue.getValue() != null)
@@ -123,7 +123,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
       setupDragHandlers(row);
 
-      row.itemProperty().addListener((o, ov, nv) -> row.setContextMenu(nullSwitch(nv, null, this::createContextMenu)));
+      row.itemProperty().addListener((ob, ov, nv) -> row.setContextMenu(nullSwitch(nv, null, this::createContextMenu)));
 
       return row;
     });
@@ -413,7 +413,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     }
 
     ChangeParentDlgCtrlr cpdc = ChangeParentDlgCtrlr.create("Copy or move record to destination",
-        draggingRow.treeItem.getParent().getValue().getRecord(), targetRow.getRecord(), draggingRow.getRecord(), db.relationIsMulti(newRelType));
+                                                            draggingRow.treeItem.getParent().getValue().getRecord(),
+                                                            targetRow.getRecord(), draggingRow.getRecord(), db.relationIsMulti(newRelType));
 
     if (cpdc.showModal())
     {

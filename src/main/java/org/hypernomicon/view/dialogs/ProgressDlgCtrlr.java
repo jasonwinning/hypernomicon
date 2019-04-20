@@ -85,7 +85,7 @@ public class ProgressDlgCtrlr extends HyperDlg
     lblTask.textProperty().bind(task.messageProperty());
 
     progressBar.progressProperty().bind(task.progressProperty());
-    task.progressProperty().addListener((observable, oldValue, newValue) ->
+    task.progressProperty().addListener((ob, oldValue, newValue) ->
     {
       long percent = java.lang.Math.round(newValue.doubleValue() * 100.0);
 

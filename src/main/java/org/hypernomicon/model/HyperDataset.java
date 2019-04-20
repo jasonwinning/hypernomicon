@@ -35,7 +35,6 @@ import java.util.LinkedHashMap;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public final class HyperDataset<HDT_DT extends HDT_Record>
 {
@@ -51,6 +50,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
     public int size()                            { return core.idCount(); }
     public boolean containsID(int id)            { return core.containsID(id); }
+    public Stream<HDT_DT> stream()               { return core.stream(); }
 
     public String getKeyByID(int id)             { return core.getKeyByID(id); }
 
@@ -70,7 +70,6 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
     public Iterable<HDT_DT> keyIterable()        { return this::keyIterator; }
     public Iterator<HDT_DT> keyIterator()        { return new CoreIterator(this, true); }
     @Override public Iterator<HDT_DT> iterator() { return new CoreIterator(this, false); }
-    public Stream<HDT_DT> stream()               { return StreamSupport.stream(spliterator(), false); }
   }
 
 //---------------------------------------------------------------------------
@@ -175,12 +174,10 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
     {
       if (db.task.isCancelled()) throw new TerminateTaskException();
 
-      db.curTaskCount++;
-
       record.bringStoredCopyOnline(true);
       db.addToInitialNavList(record);
 
-      if ((db.curTaskCount % 10) == 0)
+      if ((++db.curTaskCount % 10) == 0)
         db.task.updateProgress(db.curTaskCount, db.totalTaskCount);
     }
 
@@ -233,12 +230,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
         throw new HDB_InternalError(89843);
 
       if (recordState.id < 1)
-      {
-        recordState.id = 1;
-
-        while (idAvailable(recordState.id) == false)
-          recordState.id++;
-      }
+        for (recordState.id = 1; idAvailable(recordState.id) == false; recordState.id++);
     }
 
     HDT_DT record = createRecord(recordState);
@@ -275,7 +267,8 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
     {
       return klazz.getConstructor(HDT_RecordState.class, getClass()).newInstance(recordState, this);
     }
-    catch (NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException e)
+    catch (NoSuchMethodException    | InstantiationException    | IllegalAccessException |
+           IllegalArgumentException | InvocationTargetException | SecurityException e)
     {
       e.printStackTrace();
       return null;

@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.bib.lib;
+package org.hypernomicon.bib;
 
 public interface BibCollection
 {

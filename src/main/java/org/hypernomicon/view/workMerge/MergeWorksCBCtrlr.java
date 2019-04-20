@@ -18,11 +18,14 @@
 package org.hypernomicon.view.workMerge;
 
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.model.HyperDB.*;
 
-import org.hypernomicon.bib.BibData;
-import org.hypernomicon.bib.BibData.BibFieldEnum;
-import org.hypernomicon.bib.BibData.EntryType;
+import org.hypernomicon.bib.data.BibData;
+import org.hypernomicon.bib.data.BibField.BibFieldEnum;
+import org.hypernomicon.bib.data.EntryType;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -56,67 +59,49 @@ public class MergeWorksCBCtrlr extends BibFieldRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void initOne(ComboBox<EntryType> cb, RadioButton rb, BibData bd)
+  {
+    bibManagerDlg.initCB(cb);
+
+    if (bd.entryTypeNotEmpty())
+    {
+      EntryType entryType = bd.getEntryType();
+      if (cb.getItems().contains(entryType) == false)
+      {
+        messageDialog("\"" + entryType.getUserFriendlyName() + "\" is not a valid " +
+                      db.getBibLibrary().type().getUserReadableName() + " entry type.", mtWarning);
+        cb.getSelectionModel().select(null);
+      }
+      else
+      {
+        cb.getSelectionModel().select(entryType);
+        rb.setSelected(true);
+      }
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
   @Override protected void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4)
   {
     this.ap = ap;
     this.bibFieldEnum = bibFieldEnum;
 
-    lbl.setText(BibData.getFieldName(bibFieldEnum));
+    lbl.setText(bibFieldEnum.getUserFriendlyName());
 
     if (bd4 == null)
-    {
       deleteGridPaneColumn(gp, 3);
-    }
     else
-    {
-      bibManagerDlg.initCB(cb4);
-
-      if (bd4.entryTypeNotEmpty())
-      {
-        cb4.setValue(bd4.getEntryType());
-        cb4.getSelectionModel().select(bd4.getEntryType());
-
-        rb4.setSelected(true);
-      }
-    }
+      initOne(cb4, rb4, bd4);
 
     if (bd3 == null)
-    {
       deleteGridPaneColumn(gp, 2);
-    }
     else
-    {
-      bibManagerDlg.initCB(cb3);
+      initOne(cb3, rb3, bd3);
 
-      if (bd3.entryTypeNotEmpty())
-      {
-        cb3.setValue(bd3.getEntryType());
-        cb3.getSelectionModel().select(bd3.getEntryType());
-
-        rb3.setSelected(true);
-      }
-    }
-
-    bibManagerDlg.initCB(cb2);
-
-    if (bd2.entryTypeNotEmpty())
-    {
-      cb2.setValue(bd2.getEntryType());
-      cb2.getSelectionModel().select(bd2.getEntryType());
-
-      rb2.setSelected(true);
-    }
-
-    bibManagerDlg.initCB(cb1);
-
-    if (bd1.entryTypeNotEmpty())
-    {
-      cb1.setValue(bd1.getEntryType());
-      cb1.getSelectionModel().select(bd1.getEntryType());
-
-      rb1.setSelected(true);
-    }
+    initOne(cb2, rb2, bd2);
+    initOne(cb1, rb1, bd1);
   }
 
 //---------------------------------------------------------------------------

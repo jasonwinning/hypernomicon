@@ -102,22 +102,22 @@ public class PictureDlgCtrlr extends HyperDlg
     ivPicture.fitWidthProperty().bind(apPicture.widthProperty());
     ivPicture.fitHeightProperty().bind(apPicture.heightProperty());
 
-    apPicture.widthProperty().addListener((observable, oldValue, newValue) ->
+    apPicture.widthProperty().addListener((ob, oldValue, newValue) ->
     {
       resizeCrop(newValue.doubleValue(), apPicture.getHeight());
     });
 
-    apPicture.heightProperty().addListener((observable, oldValue, newValue) ->
+    apPicture.heightProperty().addListener((ob, oldValue, newValue) ->
     {
       resizeCrop(apPicture.getWidth(), newValue.doubleValue());
     });
 
     btnBrowse.setOnAction(event -> btnBrowseClick());
 
-    rbNone.   selectedProperty().addListener((observable, oldValue, newValue) -> { if (newValue) rbNoneSelected    (); });
-    rbCurrent.selectedProperty().addListener((observable, oldValue, newValue) -> { if (newValue) rbCurrentSelected (); });
-    rbFile.   selectedProperty().addListener((observable, oldValue, newValue) -> { if (newValue) rbFileSelected    (); });
-    rbWeb.    selectedProperty().addListener((observable, oldValue, newValue) -> { if (newValue) rbWebSelected     (); });
+    rbNone.   selectedProperty().addListener((ob, oldValue, newValue) -> { if (newValue) rbNoneSelected    (); });
+    rbCurrent.selectedProperty().addListener((ob, oldValue, newValue) -> { if (newValue) rbCurrentSelected (); });
+    rbFile.   selectedProperty().addListener((ob, oldValue, newValue) -> { if (newValue) rbFileSelected    (); });
+    rbWeb.    selectedProperty().addListener((ob, oldValue, newValue) -> { if (newValue) rbWebSelected     (); });
 
     tfWeb.setTextFormatter(new TextFormatter<>(change ->
     {
@@ -143,7 +143,7 @@ public class PictureDlgCtrlr extends HyperDlg
       return change;
     }));
 
-    tfWeb.focusedProperty().addListener((ov, oldValue, newValue) ->
+    tfWeb.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       Platform.runLater(() ->
       {
@@ -152,7 +152,7 @@ public class PictureDlgCtrlr extends HyperDlg
       });
     });
 
-    tfName.focusedProperty().addListener((ov, oldValue, newValue) ->
+    tfName.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       Platform.runLater(() ->
       {

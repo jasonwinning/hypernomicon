@@ -63,7 +63,7 @@ public class ChangeIDDlgCtrlr extends HyperDlg
     hcbType = new HyperCB(cbType, ctDropDownList, new RecordTypePopulator(), null, false);
     hcbRecord = new HyperCB(cbRecord, ctDropDownList, new RecordByTypePopulator(), null);
 
-    cbType.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    cbType.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       HDT_RecordType oldType = HyperTableCell.getCellType(oldValue),
                      newType = HyperTableCell.getCellType(newValue);
@@ -74,7 +74,7 @@ public class ChangeIDDlgCtrlr extends HyperDlg
       hcbRecord.selectID(-1);
     });
 
-    cbRecord.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    cbRecord.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       int oldID = HyperTableCell.getCellID(oldValue),
           newID = HyperTableCell.getCellID(newValue);
@@ -99,7 +99,7 @@ public class ChangeIDDlgCtrlr extends HyperDlg
         tfNewID.setText(String.valueOf(db.getNextID(hcbRecord.selectedType())));
     });
 
-    tfNewID.textProperty().addListener((observable, oldValue, newValue) ->
+    tfNewID.textProperty().addListener((ob, oldValue, newValue) ->
     {
       int id = parseInt(newValue, -1);
 

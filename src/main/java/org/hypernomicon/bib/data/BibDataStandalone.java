@@ -15,18 +15,23 @@
  *
  */
 
-package org.hypernomicon.bib;
+package org.hypernomicon.bib.data;
 
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
+import org.hypernomicon.bib.data.BibField.BibFieldEnum;
+import org.hypernomicon.bib.data.BibField.BibFieldType;
+import org.hypernomicon.bib.authors.BibAuthors;
+import org.hypernomicon.bib.authors.BibAuthorsStandalone;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 
-import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
-import static org.hypernomicon.bib.BibData.BibFieldType.*;
+import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
+import static org.hypernomicon.bib.data.BibField.BibFieldType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
@@ -37,7 +42,7 @@ public class BibDataStandalone extends BibData
   private final LinkedHashSet<BibField> bibFields = new LinkedHashSet<>();
   private final HashMap<BibFieldEnum, BibField> bibFieldEnumToBibField = new HashMap<>();
   protected YearType yearType;      // Internally-used descriptor indicates where year field came from for purposes of determining priority
-  private final BibAuthorsStandalone authors = new BibAuthorsStandalone();
+  final BibAuthorsStandalone authors = new BibAuthorsStandalone();
 
   private static final EnumSet<BibFieldType> stringBibFieldTypes = EnumSet.of(bftString, bftMultiString);
 
@@ -48,7 +53,7 @@ public class BibDataStandalone extends BibData
 
     EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum ->
     {
-      if (stringBibFieldTypes.contains(bibFieldEnumToType.get(bibFieldEnum)))
+      if (stringBibFieldTypes.contains(bibFieldEnum.getType()))
       {
         BibField bibField = new BibField(bibFieldEnum);
         bibFields.add(bibField);
@@ -64,7 +69,7 @@ public class BibDataStandalone extends BibData
   {
     this();
 
-    EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum -> { switch (bibFieldEnumToType.get(bibFieldEnum))
+    EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum -> { switch (bibFieldEnum.getType())
     {
       case bftString      : setStr(bibFieldEnum, bd.getStr(bibFieldEnum)); break;
       case bftMultiString : setMultiStr(bibFieldEnum, bd.getMultiStr(bibFieldEnum)); break;
@@ -91,7 +96,7 @@ public class BibDataStandalone extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void setYear(String text, YearType yearType)
+  public void setYear(String text, YearType yearType)
   {
     if ((this.yearType != null) && (this.yearType.ordinal() > yearType.ordinal())) return;
 
@@ -130,13 +135,13 @@ public class BibDataStandalone extends BibData
 
   @Override public String getStr(BibFieldEnum bibFieldEnum)
   {
-    if (bibFieldEnumToType.get(bibFieldEnum) == bftString)
+    if (bibFieldEnum.getType() == bftString)
       return bibFieldEnumToBibField.get(bibFieldEnum).getStr();
 
     switch (bibFieldEnum)
     {
       case bfEntryType :
-        return BibUtils.getEntryTypeName(entryType);
+        return entryType.getUserFriendlyName();
 
       case bfWorkType :
         return workType == null ? "" : workType.getCBText();
@@ -159,7 +164,7 @@ public class BibDataStandalone extends BibData
 
   @Override public void addStr(BibFieldEnum bibFieldEnum, String newStr)
   {
-    if (bibFieldIsMultiLine(bibFieldEnum) == false)
+    if (bibFieldEnum.isMultiLine() == false)
     {
       messageDialog("Internal error #90228", mtError);
       return;

@@ -75,7 +75,7 @@ class TreeCB
 
   //---------------------------------------------------------------------------
 
-    comboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    comboBox.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null)
         tree.selectRecord(null, -1, true);

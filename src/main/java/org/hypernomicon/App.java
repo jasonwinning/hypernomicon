@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
@@ -66,10 +67,9 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.stage.Stage;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Region;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.input.DragEvent;
@@ -187,7 +187,7 @@ public final class App extends Application
 
     primaryStage.setTitle(appTitle);
 
-    if (!initRootLayout())
+    if (!initMainWindows())
     {
       Platform.exit();
       return;
@@ -273,7 +273,7 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean initRootLayout()
+  private boolean initMainWindows()
   {
     Application.setUserAgentStylesheet(STYLESHEET_MODENA);
 
@@ -283,12 +283,12 @@ public final class App extends Application
       BasicConfigurator.configure();
 
       FXMLLoader loader = new FXMLLoader(App.class.getResource("view/Main.fxml"));
-      BorderPane rootLayout = loader.load();
+      Region rootNode = loader.load();
 
       ui = loader.getController();
       ui.init();
 
-      Scene scene = new Scene(rootLayout);
+      Scene scene = new Scene(rootNode);
 
       scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
 
@@ -355,15 +355,12 @@ public final class App extends Application
 
       primaryStage.setScene(scene);
 
-      primaryStage.getIcons().setAll(new Image(App.class.getResourceAsStream("resources/images/logo-16x16.png")),
-                                     new Image(App.class.getResourceAsStream("resources/images/logo-32x32.png")),
-                                     new Image(App.class.getResourceAsStream("resources/images/logo-48x48.png")),
-                                     new Image(App.class.getResourceAsStream("resources/images/logo-64x64.png")),
-                                     new Image(App.class.getResourceAsStream("resources/images/logo-128x128.png")),
-                                     new Image(App.class.getResourceAsStream("resources/images/logo-256x256.png")));
+      primaryStage.getIcons().addAll(Stream.of("16x16", "32x32", "48x48", "64x64", "128x128", "256x256")
+                                           .map(str -> new Image(App.class.getResourceAsStream("resources/images/logo-" + str + ".png")))
+                                           .collect(Collectors.toList()));
       ui.hideFindTable();
 
-      initScaling(rootLayout);
+      initScaling(rootNode);
 
       double  x          = appPrefs.getDouble (PREF_KEY_WINDOW_X,          primaryStage.getX()),
               y          = appPrefs.getDouble (PREF_KEY_WINDOW_Y,          primaryStage.getY()),
@@ -382,12 +379,14 @@ public final class App extends Application
         primaryStage.setWidth(width);
         primaryStage.setHeight(height);
 
-        ensureVisible(primaryStage, rootLayout.getPrefWidth(), rootLayout.getPrefHeight());
+        ensureVisible(primaryStage, rootNode.getPrefWidth(), rootNode.getPrefHeight());
       }
 
       primaryStage.show();
 
-      rescale();
+      scaleNodeForDPI(rootNode);
+      MainTextWrapper.rescale();
+      getHyperTab(personTab).rescale();
 
       forEachHyperTab(HyperTab::setDividerPositions);
 
@@ -453,9 +452,9 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initScaling(Parent rootLayout)
+  private void initScaling(Region rootNode)
   {
-    setFontSize(rootLayout);
+    setFontSize(rootNode);
 
     Text text = new Text("Mac @Wow Cem");
     double fontSize = appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
@@ -463,18 +462,6 @@ public final class App extends Application
       text.setFont(new Font(fontSize));
 
     displayScale = text.getLayoutBounds().getWidth() / baseDisplayScale;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void rescale()
-  {
-    scaleNodeForDPI(primaryStage.getScene().getRoot());
-
-    MainTextWrapper.rescale();
-
-    getHyperTab(personTab).rescale();
   }
 
 //---------------------------------------------------------------------------

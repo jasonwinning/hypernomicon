@@ -29,7 +29,6 @@ import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -61,19 +60,8 @@ public class HyperFavorites
 
     public void removeFromList(ObservableList<MenuItem> items)
     {
-      Iterator<MenuItem> it = items.iterator();
-
-      while (it.hasNext())
-      {
-        MenuItem item = it.next();
-
-        FavMenuItem fav = (FavMenuItem) item;
-        if (fav.isQuery && (fav.query == this))
-        {
-          it.remove();
-          return;
-        }
-      }
+      nullSwitch(items.stream().map(item -> (FavMenuItem)item).filter(fav -> fav.isQuery && (fav.query == this)).findFirst().orElse(null),
+                 items::remove);
     }
   }
 

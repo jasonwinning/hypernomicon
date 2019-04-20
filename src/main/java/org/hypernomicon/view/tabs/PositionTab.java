@@ -135,9 +135,8 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init(TabEnum tabEnum)
+  @Override void init()
   {
-    this.tabEnum = tabEnum;
     ObservableList<TableColumn<HyperTableRow, ?>> cols;
 
     ctrlr.init(hdtPosition, this);

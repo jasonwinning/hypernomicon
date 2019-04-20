@@ -79,7 +79,7 @@ public class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
 
       cb.setCellFactory(listView -> new CheckBoxOrCommandListCell());
 
-      cb.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+      cb.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
       {
         if (newValue.text.length() == 0) return;
 

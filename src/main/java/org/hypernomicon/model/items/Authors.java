@@ -45,7 +45,7 @@ import org.hypernomicon.model.relations.ObjectGroup;
 
 import com.google.common.collect.Sets;
 
-import org.hypernomicon.bib.BibAuthors;
+import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HyperDB.Tag;

@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.bib;
+package org.hypernomicon.bib.authors;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -26,7 +26,7 @@ import static org.hypernomicon.util.Util.*;
 
 import com.google.common.collect.Iterators;
 
-import org.hypernomicon.bib.BibData.AuthorType;
+import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.SplitString;
 

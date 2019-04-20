@@ -56,7 +56,6 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 
-import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Worker;
 import javafx.event.Event;
 import javafx.fxml.FXMLLoader;
@@ -133,7 +132,7 @@ public final class MainTextWrapper
 
     view.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
-    view.getEngine().getLoadWorker().stateProperty().addListener((ChangeListener<Worker.State>) (ov, oldState, newState) ->
+    view.getEngine().getLoadWorker().stateProperty().addListener((ob, oldState, newState) ->
     {
       if (newState == Worker.State.SUCCEEDED)
       {
@@ -165,7 +164,7 @@ public final class MainTextWrapper
 
     view.setOnDragDropped(Event::consume);
 
-    we.titleProperty().addListener((title, oldTitle, newTitle) -> handleJSEvent(curWrapper.completeHtml, we, curWrapper.viewInfo));
+    we.titleProperty().addListener((ob, oldTitle, newTitle) -> handleJSEvent(curWrapper.completeHtml, we, curWrapper.viewInfo));
 
     scriptContent = new StringBuilder()
         .append("<script>\n\n")

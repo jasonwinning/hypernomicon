@@ -68,7 +68,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     hcbAuthor = new HyperCB(cbAuthor, ctDropDownList, new StandardPopulator(hdtPerson), null, false);
     hcbWork = new HyperCB(cbWork, ctDropDownList, new HybridSubjectPopulator(rtAuthorOfWork), null, false);
 
-    cbAuthor.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    cbAuthor.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null) return;
 

@@ -120,7 +120,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
     setAllVisible(false, lblStatus, progressIndicator, tabPane);
 
-    tabPane.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
+    tabPane.getSelectionModel().selectedIndexProperty().addListener((ob, oldValue, newValue) ->
     {
       if (noTabUpdate) return;
 
@@ -137,7 +137,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
     lblDupSearchKey.setOnMouseClicked(event -> setSearchKey(new PersonName(tfDupFirstName.getText(), tfDupLastName.getText()), tfDupSearchKey));
 
-    tfFirstName.textProperty().addListener((observable, oldValue, newValue) ->
+    tfFirstName.textProperty().addListener((ob, oldValue, newValue) ->
     {
       if (alreadyChangingName) return;
       setSearchKey(new PersonName(newValue, tfLastName.getText()));
@@ -150,7 +150,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
       rbCreateNoMerge.setSelected(true);
     }
 
-    grpAction.selectedToggleProperty().addListener((o, ov, nv) -> updateRadioButtons());
+    grpAction.selectedToggleProperty().addListener((ob, ov, nv) -> updateRadioButtons());
 
     tfSearchKey.disableProperty().bind(rbAddNoCreate.selectedProperty());
 
@@ -327,12 +327,8 @@ public class NewPersonDlgCtrlr extends HyperDlg
         list.add(personForDupCheck);
     }));
 
-    db.persons.forEach(person ->
+    db.persons.stream().filter(person -> person.works.isEmpty()).map(Author::new).map(PersonForDupCheck::new).forEach(personForDupCheck ->
     {
-      if (person.works.isEmpty() == false) return;
-
-      PersonForDupCheck personForDupCheck = new PersonForDupCheck(new Author(person));
-
       if (personForDupCheck.fullLCNameEngChar.length() > 0)
         list.add(personForDupCheck);
     });

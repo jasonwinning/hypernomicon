@@ -17,38 +17,21 @@
 
 package org.hypernomicon.querySources;
 
-import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
+
+import com.google.common.collect.Iterators;
+
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 public class CombinedUnfilteredQuerySource implements QuerySource
 {
   private final Set<HDT_RecordType> types;
-  private int firstNdxThisType = 0, lastNdxThisType = 0, total = 0;
-  HDT_RecordType lastType = hdtNone;
-  private final EnumMap<HDT_RecordType, Integer> firstNdxForType = new EnumMap<>(HDT_RecordType.class),
-                                                 lastNdxForType  = new EnumMap<>(HDT_RecordType.class);
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public CombinedUnfilteredQuerySource()
-  {
-    types = EnumSet.allOf(HDT_RecordType.class);
-    types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
-
-    types.forEach(type ->
-    {
-      firstNdxForType.put(type, total);
-      total += db.records(type).size();
-      lastNdxForType.put(type, total - 1);
-    });
-  }
+  private final Iterator<? extends HDT_Record> it;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -57,44 +40,17 @@ public class CombinedUnfilteredQuerySource implements QuerySource
   {
     this.types = types;
 
-    types.forEach(type ->
-    {
-      firstNdxForType.put(type, total);
-      total += db.records(type).size();
-      lastNdxForType.put(type, total - 1);
-    });
-
+    it = Iterators.concat(types.stream().map(type -> db.records(type).iterator()).iterator());
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int count()                               { return total; }
-  @Override public QuerySourceType sourceType()              { return QuerySourceType.QST_combinedUnfilteredRecords; }
-  @Override public boolean containsRecord(HDT_Record record) { return types.contains(record.getType()); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HDT_Record getRecord(int ndx)
-  {
-    if ((lastType != hdtNone) && (ndx >= firstNdxThisType) && (ndx <= lastNdxThisType))
-      return db.records(lastType).getByIDNdx(ndx - firstNdxThisType);
-
-    for (HDT_RecordType type : types)
-    {
-      firstNdxThisType = firstNdxForType.get(type);
-      lastNdxThisType = lastNdxForType.get(type);
-
-      if ((ndx >= firstNdxThisType) && (ndx <= lastNdxThisType))
-      {
-        lastType = type;
-        return db.records(lastType).getByIDNdx(ndx - firstNdxThisType);
-      }
-    }
-
-    return null;  // this should never happen
-  }
+  @Override public int count()                          { return types.stream().map(type -> db.records(type).size()).reduce(0, (i1, i2) -> i1 + i2); }
+  @Override public QuerySourceType sourceType()         { return QuerySourceType.QST_combinedUnfilteredRecords; }
+  @Override public boolean containsRecord(HDT_Record r) { return types.contains(r.getType()); }
+  @Override public boolean hasNext()                    { return it.hasNext(); }
+  @Override public HDT_Record next()                    { return it.next(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -114,7 +114,7 @@ public class PreviewWrapper
     this.btn = btn;
     this.ap = ap;
 
-    btn.selectedProperty().addListener((observable, oldValue, newValue) ->
+    btn.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue) window.tpPreview.getSelectionModel().select(tab);
     });
@@ -576,8 +576,7 @@ public class PreviewWrapper
     // Now remove adjacent duplicates
 
     Iterator<Integer> it = curPrevFile.navList.iterator();
-    int ndx = 0;
-    int prevPage = -1;
+    int ndx = 0, prevPage = -1;
 
     while (it.hasNext())
     {

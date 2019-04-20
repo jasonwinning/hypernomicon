@@ -230,9 +230,7 @@ class MentionsIndex
 
         for (HDT_RecordType type : types) for (HDT_Record record : db.records(type))
         {
-          ctr++;
-
-          if ((((int)ctr) % 50) == 0)
+          if ((((int)ctr++) % 50) == 0)
           {
             if (stopRequested)
             {
@@ -260,7 +258,7 @@ class MentionsIndex
       }
     };
 
-    task.progressProperty().addListener((observable, oldValue, newValue) ->
+    task.progressProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue.doubleValue() == 1.0)
         Platform.runLater(() -> ui.updateProgress("", -1.0));

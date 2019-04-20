@@ -579,7 +579,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       return;
     }
 
-    // Remove the object from the object list if it was there;
+    // Remove the object from the object list if it was there
     if (objList.contains(obj))
     {
       if (ndx == -1) objList.remove(obj); // removes first occurrence
@@ -779,11 +779,15 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     private Tag subjTag;
     private static final HashMap<Integer, RelationType> codeToVal;
 
+  //---------------------------------------------------------------------------
+
     static
     {
       codeToVal = new HashMap<>();
       EnumSet.allOf(RelationType.class).forEach(val -> codeToVal.put(val.getCode(), val));
     }
+
+  //---------------------------------------------------------------------------
 
     private RelationType(int code, Tag subjTag, String title)
     {
@@ -793,6 +797,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       this.title = title;
     }
 
+  //---------------------------------------------------------------------------
+
     private RelationType(int code, String subjTitle, String title)
     {
       this.code = code;
@@ -800,6 +806,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       this.subjTitle = subjTitle;
       this.title = title;
     }
+
+  //---------------------------------------------------------------------------
 
     public static RelationType codeToVal(int num) { return codeToVal.get(num); }
     public int getCode()                          { return code; }

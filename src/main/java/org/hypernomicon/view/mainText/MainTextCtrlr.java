@@ -165,7 +165,7 @@ public class MainTextCtrlr
     hcbType = new HyperCB(cbType, ctDropDownList, rtp, null);
     hcbName = new HyperCB(cbName, ctDropDownList, new RecordByTypePopulator(), null);
 
-    hcbType.getComboBox().getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    hcbType.getComboBox().getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null) return;
 
@@ -196,7 +196,7 @@ public class MainTextCtrlr
     prop = new SimpleBooleanProperty();
     prop.bind(cbType.focusedProperty().or(cbName.focusedProperty()));
 
-    prop.addListener((observable, oldValue, newValue) ->
+    prop.addListener((ob, oldValue, newValue) ->
     {
       if (newValue)
         hsPane.setPinnedSide(Side.RIGHT);
@@ -217,7 +217,7 @@ public class MainTextCtrlr
       }
     });
 
-    hcbKeyType.getComboBox().getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    hcbKeyType.getComboBox().getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null) return;
 
@@ -253,17 +253,17 @@ public class MainTextCtrlr
 
     disableAll(btnMoveUp, btnMoveDown, btnRemove, btnInsert);
 
-    cbName.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    cbName.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       btnInsert.setDisable(HyperTableCell.getRecord(newValue) == null);
     });
 
-    cbKeyName.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    cbKeyName.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       btnAdd.setDisable(HyperTableCell.getRecord(newValue) == null);
     });
 
-    lvRecords.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    lvRecords.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null)
       {
@@ -471,9 +471,7 @@ public class MainTextCtrlr
       lvRecords.getItems().add(ndx, item);
 
     hsPane.requestLayout();
-
     safeFocus(lvRecords);
-
   }
 
 //---------------------------------------------------------------------------

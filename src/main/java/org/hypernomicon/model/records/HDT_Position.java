@@ -80,9 +80,7 @@ public class HDT_Position extends HDT_RecordWithConnector
 
     subPositions.forEach(subPos -> people.addAll(subPos.getPeople()));
 
-    arguments.forEach(arg -> {
-      if (arg.isInFavor(this))
-        people.addAll(arg.getPeople()); });
+    arguments.stream().filter(arg -> arg.isInFavor(this)).forEach(arg -> people.addAll(arg.getPeople()));
 
     return people;
   }

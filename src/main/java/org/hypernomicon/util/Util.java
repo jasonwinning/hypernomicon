@@ -18,7 +18,6 @@
 package org.hypernomicon.util;
 
 import org.hypernomicon.App;
-import org.hypernomicon.bib.BibUtils;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
@@ -75,6 +74,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -103,11 +103,9 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.input.Clipboard;
@@ -454,7 +452,7 @@ public final class Util
 
   public static void searchWorldCatISBN(String isbn)
   {
-    List<String> list = BibUtils.matchISBN(isbn);
+    List<String> list = matchISBN(isbn);
     if (collEmpty(list) == false)
       openWebLink("http://www.worldcat.org/search?q=bn%3A" + list.get(0) + "&qt=advanced");
   }
@@ -464,7 +462,7 @@ public final class Util
 
   public static void searchDOI(String str)
   {
-    String doi = BibUtils.matchDOI(str);
+    String doi = matchDOI(str);
     if (doi.length() > 0)
       openWebLink("http://dx.doi.org/" + escapeURL(doi, false));
   }
@@ -1046,14 +1044,14 @@ public final class Util
           {
             case "\u00e0": // Latin small letter a with grave accent, as in 'vis a vis' or 'a la'
 
-            case "a"   : case "also": case "amid": case "an" : case "and" :
-            case "as"  : case "at"  : case "atop": case "but": case "by"  :
-            case "for" : case "from": case "if"  : case "in" : case "into":
-            case "is"  : case "it"  : case "la"  : case "nor": case "of"  :
-            case "off" : case "on"  : case "onto": case "or" : case "out" :
-            case "per" : case "qua" : case "sans": case "so" : case "than":
-            case "that": case "the" : case "then": case "to" : case "unto":
-            case "upon": case "via" : case "with": case "yet":
+            case "a"    : case "also" : case "amid" : case "an"  : case "and"  :
+            case "as"   : case "at"   : case "atop" : case "but" : case "by"   :
+            case "for"  : case "from" : case "if"   : case "in"  : case "into" :
+            case "is"   : case "it"   : case "la"   : case "nor" : case "of"   :
+            case "off"  : case "on"   : case "onto" : case "or"  : case "out"  :
+            case "per"  : case "qua"  : case "sans" : case "so"  : case "than" :
+            case "that" : case "the"  : case "then" : case "to"  : case "unto" :
+            case "upon" : case "via"  : case "with" : case "yet" :
               break;
 
             default :
@@ -1106,7 +1104,7 @@ public final class Util
 
   public static boolean checkInternetConnection()
   {
-    return InternetCheckDlgCtrlr.create(appTitle).checkInternet("https://www.dropbox.com/");
+    return InternetCheckDlgCtrlr.create(appTitle).checkInternet("https://www.google.com/");
   }
 
 //---------------------------------------------------------------------------
@@ -1402,7 +1400,7 @@ public final class Util
 
   public static void runDelayedOutsideFXThread(int delayMS, Runnable runnable)
   {
-    new Timer().schedule(new TimerTask() { @Override public void run() { runnable.run(); }}, delayMS);
+    new Timer(true).schedule(new TimerTask() { @Override public void run() { runnable.run(); }}, delayMS);
   }
 
 //---------------------------------------------------------------------------
@@ -1441,15 +1439,14 @@ public final class Util
 
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(App.class.getResourceAsStream(relPath))))
     {
-      String line = reader.readLine();
+      String line;
 
-      while (line != null)
+      while ((line = reader.readLine()) != null)
       {
         if (keepEOLchars && strBuilder.length() > 0)
           strBuilder.append("\n");
 
         strBuilder.append(line);
-        line = reader.readLine();
       }
     }
   }
@@ -1591,15 +1588,12 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void disableCache(TextArea ta)
+  public static void disableCache(Node node)
   {
-    ta.setCache(false);
+    node.setCache(false);
 
-    if (ta.getChildrenUnmodifiable().isEmpty()) return;
-
-    ScrollPane sp = (ScrollPane)ta.getChildrenUnmodifiable().get(0);
-    sp.setCache(false);
-    sp.getChildrenUnmodifiable().forEach(n -> n.setCache(false));
+    if (node instanceof Parent)
+      Parent.class.cast(node).getChildrenUnmodifiable().forEach(Util::disableCache);
   }
 
 //---------------------------------------------------------------------------
@@ -1825,6 +1819,145 @@ public final class Util
       if      (target instanceof Node    ) Node    .class.cast(target).setVisible(visible);
       else if (target instanceof MenuItem) MenuItem.class.cast(target).setVisible(visible);
     });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+// DOI legal characters according to Crossref: "a-z", "A-Z", "0-9" and "-._;()/"
+// But I've seen at least one Crossref DOI that included a colon
+
+  public static String matchDOI(String str)
+  {
+    Pattern p = Pattern.compile("(\\A|\\D)(10\\.\\d{4,}[0-9.]*/[a-zA-Z0-9\\-._;:()/\\\\]+)(\\z|\\D)");
+    Matcher m = p.matcher(safeStr(str));
+
+    return m.find() ? m.group(2) : "";
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static List<String> matchISSN(String str)
+  {
+    return matchISSN(str, null);
+  }
+
+  public static List<String> matchISSN(String str, List<String> list)
+  {
+    if (list == null) list = new ArrayList<>();
+    if (safeStr(str).length() == 0) return list;
+
+    str = str.replaceAll("\\p{Pd}", "-").toUpperCase(); // treat all dashes the same
+
+    Pattern p = Pattern.compile("(\\A|\\G|[^0-9\\-])(\\d{4}-\\d{3}[\\dxX])(\\z|[^0-9\\-])");
+    Matcher m = p.matcher(str);
+
+    while (m.find())
+    {
+      String found = m.group(2).replace("-", "");
+      int sum = 0;
+
+      for (int x = 0; x < 8; x++)
+      {
+        char c = found.charAt(x);
+        int n = c == 'X' ? 10 : parseInt(String.valueOf(c), -1);
+
+        sum += (n * (8 - x));
+      }
+
+      if ((sum > 0) && ((sum % 11) == 0))
+      {
+        found = m.group(2);
+
+        if (list.contains(found) == false)
+          list.add(found);
+      }
+    }
+
+    return list;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static List<String> matchISBN(String str)
+  {
+    return matchISBN(str, null);
+  }
+
+  public static List<String> matchISBN(String str, List<String> list)
+  {
+    if (list == null) list = new ArrayList<>();
+    if (safeStr(str).length() == 0) return list;
+
+    matchISBNiteration(str, list);
+
+    while (str.contains(" "))
+      str = str.replace(" ", "");
+
+    matchISBNiteration(str, list);
+
+    return list;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void matchISBNiteration(String str, List<String> list)
+  {
+    str = str.replaceAll("\\p{Pd}", "-")  // treat all dashes the same
+             .replaceAll("\\u00AD", "-")  // "soft hyphen" is not included in the \p{Pd} class
+
+             .replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0').replace('°', '0');
+
+    while (str.contains("--"))
+      str = str.replace("--", "-");
+
+    Pattern p = Pattern.compile("(\\A|\\G|[^0-9\\-])((\\d-?){12}\\d)(\\z|[^0-9\\-])");
+    Matcher m = p.matcher(str);
+
+    while (m.find())
+    {
+      String found = m.group(2).replace("-", "");
+
+      int n, sum = 0;
+      for (int x = 0; x < 12; x++)
+      {
+        int coeff = ((x % 2) * 2) + 1;
+        n = parseInt(String.valueOf(found.charAt(x)), -1);
+        sum += (coeff * n);
+      }
+
+      n = parseInt(StringUtils.right(found, 1), -1);
+
+      if ((sum > 0) && (((10 - (sum % 10)) % 10) == n))
+      {
+        if (list.contains(found) == false)
+          list.add(found);
+      }
+    }
+
+    p = Pattern.compile("(\\A|\\G|[^0-9\\-])((\\d-?){9}[0-9xX])(\\z|[^0-9xX\\-])");
+    m = p.matcher(str);
+
+    while (m.find())
+    {
+      String found = m.group(2).toUpperCase().replace("-", "");
+      int sum1 = 0, sum2 = 0;
+
+      for (int x = 0; x < 10; x++)
+      {
+        char c = found.charAt(x);
+        int n = c == 'X' ? 10 : parseInt(String.valueOf(c), -1);
+
+        sum1 += (n * (10 - x));
+        sum2 += (n * (x + 1));
+      }
+
+      if ((sum1 > 0) && (sum2 > 0) && ((sum1 % 11) == 0) && ((sum2 % 11) == 0) && (list.contains(found) == false))
+        list.add(found);
+    }
   }
 
 //---------------------------------------------------------------------------

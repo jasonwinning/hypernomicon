@@ -9,8 +9,9 @@
   -fx-text-fill: #906f6f;
 }
 
-.tab-pane .tab-header-area .tab-header-background {
-    -fx-background-color: #584343;
+.tab-pane .tab-header-area .tab-header-background 
+{
+  -fx-background-color: #584343;
 }
 
 .tab

@@ -48,10 +48,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
   @FXML private ListView<Preset> lvPresets;
   @FXML private ComboBox<LaunchCommandTypeEnum> cbCommandType;
   @FXML private TextField tfPath;
-  @FXML private Button btnBrowse, btnInvoke, btnOk, btnCancel;
-  @FXML private Button btnAppPathVar;
-  @FXML private Button btnFilePathVar;
-  @FXML private Button btnPageNumVar;
+  @FXML private Button btnBrowse, btnInvoke, btnOk, btnCancel, btnAppPathVar, btnFilePathVar, btnPageNumVar;
 
 //---------------------------------------------------------------------------
 

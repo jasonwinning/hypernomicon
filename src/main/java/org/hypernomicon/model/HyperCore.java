@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.records.HDT_Record;
@@ -87,6 +88,7 @@ final class HyperCore<HDT_DT extends HDT_Record>
   private final HashMap<Integer, HDT_DT> idToRecord = new HashMap<>();
 
   int idCount()                { return sortedIDs.size(); }
+  Stream<HDT_DT> stream()      { return sortedIDs.stream().map(idToRecord::get); }
   String getKeyByID(int id)    { return idToKey.get(id); }
   int getIDbyIDNdx(int ndx)    { return sortedIDs.get(ndx); }
   int getIDbyKeyNdx(int ndx)   { return sortedKeys.get(ndx).getID(); }

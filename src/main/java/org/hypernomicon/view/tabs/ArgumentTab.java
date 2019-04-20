@@ -159,9 +159,8 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init(TabEnum tabEnum)
+  @Override void init()
   {
-    this.tabEnum = tabEnum;
     ctrlr.init(hdtArgument, this);
 
     AnchorPane aP = new AnchorPane();
@@ -259,7 +258,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
     htCounters.addCol(hdtArgumentVerdict, ctNone);
     htCounters.addCol(hdtArgument, ctNone);
 
-    htWhereMade.getTV().focusedProperty().addListener((observable, oldValue, newValue) -> updateArgCounts());
+    htWhereMade.getTV().focusedProperty().addListener((ob, oldValue, newValue) -> updateArgCounts());
 
     initContextMenus();
   }

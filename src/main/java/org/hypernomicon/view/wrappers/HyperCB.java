@@ -181,7 +181,7 @@ public class HyperCB implements CommitableWrapper
 
   //---------------------------------------------------------------------------
 
-    cb.focusedProperty().addListener((observable, oldValue, newValue) ->
+    cb.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue)
         populate(false);

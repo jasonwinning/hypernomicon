@@ -87,10 +87,10 @@ import javafx.beans.property.SimpleObjectProperty;
 
 import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.bib.lib.BibCollection;
-import org.hypernomicon.bib.lib.BibEntry;
-import org.hypernomicon.bib.lib.LibraryWrapper;
-import org.hypernomicon.bib.lib.LibraryWrapper.LibraryType;
+import org.hypernomicon.bib.BibCollection;
+import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.bib.LibraryWrapper;
+import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;

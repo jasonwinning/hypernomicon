@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.bib;
+package org.hypernomicon.bib.data;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,25 +25,70 @@ import org.apache.commons.lang3.StringUtils;
 
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
-import static org.hypernomicon.bib.BibData.BibFieldType.*;
-import static org.hypernomicon.bib.BibUtils.*;
-
-import org.hypernomicon.bib.BibData.BibFieldEnum;
-import org.hypernomicon.bib.BibData.BibFieldType;
+import static org.hypernomicon.bib.data.BibField.BibFieldType.*;
 
 public class BibField
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static enum BibFieldEnum
+  {
+    bfEntryType      ("Entry Type"                , bftEntryType),
+    bfWorkType       ("Work Type"                 , bftWorkType),
+    bfAuthors        ("Authors"                   , bftAuthor),
+    bfContainerTitle ("Container Title"           , bftMultiString), // For articles this is the journal title; for chapters it is the book title
+    bfDOI            ("DOI"                       , bftString),      // Document Object ID only, without "doi:" or url
+    bfEdition        ("Edition"                   , bftString),      // Information about publication edition
+    bfEditors        ("Editors"                   , bftAuthor),
+    bfISBNs          ("ISBNs"                     , bftMultiString), // International standard book numbers
+    bfISSNs          ("ISSNs"                     , bftMultiString), // International standard serial numbers
+    bfIssue          ("Issue"                     , bftString),      // Issue number
+    bfLanguage       ("Language"                  , bftString),      // Language
+    bfMisc           ("Miscellaneous Information" , bftMultiString), // Used internally to hold uncategorized extracted information
+    bfPages          ("Page Numbers"              , bftString),      // Page range
+    bfPubLoc         ("Publisher Location"        , bftString),      // Where published
+    bfPublisher      ("Publisher"                 , bftString),      // May or may not include city
+    bfTitle          ("Title"                     , bftMultiString), // Title of this work
+    bfTranslators    ("Translators"               , bftAuthor),
+    bfURL            ("URL"                       , bftString),      // URL where this work can be found
+    bfVolume         ("Volume"                    , bftString),      // Volume number
+    bfYear           ("Year"                      , bftString);      // Publication year
+
+    private BibFieldType type;
+    private String userFriendlyName;
+
+    private BibFieldEnum(String userFriendlyName, BibFieldType type)
+    {
+      this.type = type;
+      this.userFriendlyName = userFriendlyName;
+    }
+
+    public BibFieldType getType()       { return type; }
+    public String getUserFriendlyName() { return userFriendlyName; }
+    public boolean isMultiLine()        { return type == BibFieldType.bftMultiString; }
+  }
+
+  public static enum BibFieldType { bftString, bftMultiString, bftEntryType, bftWorkType, bftAuthor }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private final BibFieldEnum bibFieldEnum;
   private final BibFieldType type;
   private final List<String> strList = new ArrayList<>();
 
   private String str;
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public BibField(BibFieldEnum bibFieldEnum)
   {
     this.bibFieldEnum = bibFieldEnum;
 
-    type = BibData.getFieldType(bibFieldEnum);
+    type = bibFieldEnum.type;
   }
 
   public boolean isMultiStr() { return type == bftMultiString; }

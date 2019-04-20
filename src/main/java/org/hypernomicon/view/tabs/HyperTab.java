@@ -63,12 +63,11 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   private static final Map<Tab, HyperTab<? extends HDT_Record, ? extends HDT_Record>> tabToHyperTab = new HashMap<>();
   private Tab tab;
   private HyperView<HDT_CT> view = null;
-
-  protected TabEnum tabEnum;
+  private TabEnum tabEnum;
 
 //---------------------------------------------------------------------------
 
-  abstract void init(TabEnum tabEnum);
+  abstract void init();
   abstract void focusOnSearchKey();
   abstract HDT_RecordType getType();
 
@@ -112,7 +111,8 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   void baseInit(TabEnum tabEnum, Tab tab) throws IOException
   {
     this.tab = tab;
-    init(tabEnum);
+    this.tabEnum = tabEnum;
+    init();
 
     enumToHyperTab.put(tabEnum, this);
     tabToHyperTab.put(tab, this);

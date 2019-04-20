@@ -81,8 +81,8 @@ public class MergeTermDlgCtrlr extends HyperDlg
     if ((key1.length() == 0) && (key2.length() > 0))
       rbKey2.setSelected(true);
 
-    tfName3.textProperty().addListener((observable, oldValue, newValue) -> rbName3.setSelected(true));
-    tfKey3 .textProperty().addListener((observable, oldValue, newValue) -> rbKey3 .setSelected(true));
+    tfName3.textProperty().addListener((ob, oldValue, newValue) -> rbName3.setSelected(true));
+    tfKey3 .textProperty().addListener((ob, oldValue, newValue) -> rbKey3 .setSelected(true));
   }
 
 //---------------------------------------------------------------------------

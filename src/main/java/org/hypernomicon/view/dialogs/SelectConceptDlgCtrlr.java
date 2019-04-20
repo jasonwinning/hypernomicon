@@ -83,9 +83,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       {
         List<HDT_Glossary> termGlossaries = term.getGlossaries();
 
-        db.glossaries.forEach(glossary -> {
-          if (termGlossaries.contains(glossary) == false)
-            glossaries.add(glossary); });
+        db.glossaries.stream().filter(glossary -> termGlossaries.contains(glossary) == false).forEach(glossaries::add);
       }
 
       return glossaries;
@@ -95,7 +93,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
     hcbTerm.addBlankEntry();
 
-    cbTerm.getSelectionModel().selectedItemProperty().addListener((observable, oldCell, newCell) ->
+    cbTerm.getSelectionModel().selectedItemProperty().addListener((ob, oldCell, newCell) ->
     {
       if (alreadyChanging) return;
 

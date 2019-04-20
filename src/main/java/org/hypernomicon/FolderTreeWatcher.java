@@ -60,13 +60,7 @@ public class FolderTreeWatcher
 {
   static class WatcherEvent
   {
-    static enum WatcherEventKind
-    {
-      wekRename,
-      wekDelete,
-      wekCreate,
-      wekModify
-    }
+    static enum WatcherEventKind { wekRename, wekDelete, wekCreate, wekModify }
 
     private final WatcherEventKind kind;
     private final PathInfo oldPathInfo, newPathInfo;

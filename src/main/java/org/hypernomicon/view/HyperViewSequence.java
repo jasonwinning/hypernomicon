@@ -62,7 +62,7 @@ public class HyperViewSequence
     this.chbForward = chbForward;
     this.chbBack = chbBack;
 
-    tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldTab, newTab) ->
+    tabPane.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) ->
     {
       if ((db.isLoaded() == false) || alreadyChangingTab) return;
 
@@ -131,8 +131,7 @@ public class HyperViewSequence
   {
     saveViewToSequence(false);
 
-    curNdx--;
-    if (curNdx < 0)
+    if (--curNdx < 0)
       curNdx = 0;
 
     update();

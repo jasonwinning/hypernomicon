@@ -171,7 +171,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 
     hCB.setOnAction(onAction);
 
-    cB.focusedProperty().addListener((observable, oldValue, newValue) ->
+    cB.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (!cB.isFocused())
         commit();

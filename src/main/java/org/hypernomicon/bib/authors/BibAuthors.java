@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.bib;
+package org.hypernomicon.bib.authors;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,14 +29,13 @@ import java.util.stream.StreamSupport;
 import com.google.common.collect.Iterators;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.bib.BibData.AuthorType;
+import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.ObjectGroup;
-import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.view.dialogs.NewPersonDlgCtrlr;
 
 import static org.hypernomicon.model.HyperDB.Tag.*;
@@ -56,23 +55,13 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
   public boolean isEmpty()          { return iterator().hasNext() == false; }
   public Stream<BibAuthor> stream() { return StreamSupport.stream(spliterator(), false); }
 
-  private final void add(AuthorType authorType, HDT_Person person) { add(new BibAuthor(authorType, person)); }
-  final void add(AuthorType authorType, PersonName name)           { add(new BibAuthor(authorType, name)); }
+  public final void add(AuthorType authorType, HDT_Person person) { add(new BibAuthor(authorType, person)); }
+  public final void add(AuthorType authorType, PersonName name)   { add(new BibAuthor(authorType, name)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void setFromCrossRefJson(JsonArray jsonArr, AuthorType aType)
-  {
-    if (jsonArr == null) return;
-
-    jsonArr.getObjs().forEach(author -> add(new BibAuthor(aType, new PersonName(author.getStrSafe("given"), author.getStrSafe("family")))));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  protected String getStr()
+  public String getStr()
   {
     Function<? super BibAuthor, String> mapper = bibAuthor ->
     {

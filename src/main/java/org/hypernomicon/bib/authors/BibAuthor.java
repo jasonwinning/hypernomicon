@@ -15,9 +15,8 @@
  *
  */
 
-package org.hypernomicon.bib;
+package org.hypernomicon.bib.authors;
 
-import org.hypernomicon.bib.BibData.AuthorType;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Person;
@@ -26,6 +25,8 @@ import static org.hypernomicon.util.Util.*;
 
 public final class BibAuthor implements Cloneable
 {
+  public static enum AuthorType { author, editor, translator }
+
   private final PersonName name;
   private final HDT_Person person;
   private final AuthorType type;

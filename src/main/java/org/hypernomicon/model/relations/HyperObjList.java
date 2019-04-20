@@ -364,9 +364,8 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     {
       if (c.contains(relSet.getObject(subj, ndx)) == false)
       {
-        remove(ndx);
+        remove(ndx--);
         removedAny = true;
-        ndx--;
         cnt--;
       }
     }

@@ -37,6 +37,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
@@ -257,23 +258,16 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       htFields.getColumns().forEach(col -> col.setDontCreateNewRecord(true));
 
-      htFields.addRefreshHandler(() -> tabPane.requestLayout());
+      htFields.addRefreshHandler(tabPane::requestLayout);
 
       resultsTable = new ResultsTable(tvResults);
       resultsTable.getTV().setItems(FXCollections.observableList(resultsBackingList));
 
       reportTable = new ReportTable(this);
 
-      tvResults.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) ->
+      tvResults.getSelectionModel().selectedIndexProperty().addListener((ob, oldValue, newValue) ->
       {
         refreshView(newValue.intValue());
-      });
-
-      resultsTable.addDefaultMenuItems();
-
-      resultsTable.addContextMenuItem("Remove from query results", HDT_Record.class, record ->
-      {
-        new ArrayList<>(resultsTable.getTV().getSelectionModel().getSelectedItems()).forEach(row -> resultsTable.getTV().getItems().remove(row));
       });
 
       clear();
@@ -758,7 +752,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         updateMessage("Running query...");
         updateProgress(0, 1);
 
-        for (int recordNdx = 0; recordNdx < total; recordNdx++)
+        for (int recordNdx = 0; combinedSource.hasNext(); recordNdx++)
         {
           if (isCancelled())
           {
@@ -769,7 +763,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           if ((recordNdx % 50) == 0)
             updateProgress(recordNdx, total);
 
-          record = combinedSource.getRecord(recordNdx);
+          record = combinedSource.next();
 
           boolean lastConnectiveWasOr = false, firstRow = true, add = false;
 
@@ -1252,7 +1246,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       cb.getSelectionModel().select(tvResults.getSelectionModel().getSelectedItem());
 
-      cbListenerToRemove = (observable, oldValue, newValue) ->
+      cbListenerToRemove = (ob, oldValue, newValue) ->
       {
         if ((newValue != null) && (newValue.getRecord() != null))
         {
@@ -1266,7 +1260,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (tvListenerToRemove != null)
         tvResults.getSelectionModel().selectedItemProperty().removeListener(tvListenerToRemove);
 
-      tvListenerToRemove = (observable, oldValue, newValue) ->
+      tvListenerToRemove = (ob, oldValue, newValue) ->
       {
         noScroll = true;
         cb.getSelectionModel().select(newValue);
@@ -1351,10 +1345,8 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init(TabEnum tabEnum)
+  @Override void init()
   {
-    this.tabEnum = tabEnum;
-
     List.of(new PersonQueryEngine       (), new PositionQueryEngine(), new ConceptQueryEngine (), new WorkQueryEngine(),
             new NoteQueryEngine         (), new DebateQueryEngine  (), new ArgumentQueryEngine(), new InstitutionQueryEngine(),
             new InvestigationQueryEngine(), new FileQueryEngine    (), new AllQueryEngine     ())
@@ -1365,12 +1357,15 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     btnClear.setOnAction(event -> curQV.resetFields());
     btnToggleFavorite.setOnAction(event -> curQV.btnFavoriteClick());
 
-    tabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    tabPane.getTabs().addListener((Change<? extends Tab> c) -> Platform.runLater(tabPane::requestLayout));
+
+    tabPane.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       if (clearingViews == false) tabPaneChange(newValue);
+      Platform.runLater(tabPane::requestLayout);
     });
 
-    webView.getEngine().titleProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
+    webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
     {
       if (curQV.inRecordMode == false)
       {
@@ -1392,7 +1387,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
-    webView.getEngine().getLoadWorker().stateProperty().addListener((ChangeListener<Worker.State>) (ov, oldState, newState) ->
+    webView.getEngine().getLoadWorker().stateProperty().addListener((ob, oldState, newState) ->
     {
       if (newState == Worker.State.SUCCEEDED)
       {
@@ -1405,7 +1400,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     MainTextWrapper.webViewAddZoom(webView, PREF_KEY_QUERYTAB_ZOOM);
 
-    tfName.textProperty().addListener((observable, oldValue, newValue) ->
+    tfName.textProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null) return;
       if (safeStr(oldValue).equals(newValue)) return;

@@ -15,11 +15,11 @@
  *
  */
 
-package org.hypernomicon.bib;
+package org.hypernomicon.bib.authors;
 
 import java.util.ArrayList;
 
-import org.hypernomicon.bib.BibData.AuthorType;
+import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.model.records.HDT_Work;
 
 public class WorkBibAuthors extends BibAuthors

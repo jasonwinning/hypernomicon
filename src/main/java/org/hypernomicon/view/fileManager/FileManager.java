@@ -63,7 +63,6 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 import org.hypernomicon.view.wrappers.MenuItemSchema;
 import org.hypernomicon.view.wrappers.ReadOnlyCell;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.SplitPane;
@@ -329,8 +328,7 @@ public class FileManager extends HyperDlg
 
       for (FilePath srcFilePath : srcSet)
       {
-        updateProgress(curTaskCount, totalTaskCount);
-        curTaskCount++;
+        updateProgress(curTaskCount++, totalTaskCount);
 
         if (isCancelled())
           throw new TerminateTaskException();
@@ -357,8 +355,7 @@ public class FileManager extends HyperDlg
 
       for (FilePath destFilePath : destSet)
       {
-        updateProgress(curTaskCount, totalTaskCount);
-        curTaskCount++;
+        updateProgress(curTaskCount++, totalTaskCount);
 
         if (isCancelled())
           throw new TerminateTaskException();
@@ -381,7 +378,7 @@ public class FileManager extends HyperDlg
     if (!HyperTask.performTaskWithProgressDialog(task)) return false;
 
     PasteAnswer paUnrelated = PasteAnswer.check,
-                paRelated = PasteAnswer.check;
+                paRelated   = PasteAnswer.check;
 
     Iterator<Entry<FilePath, FilePath>> it = srcToDest.entrySet().iterator();
 
@@ -498,8 +495,7 @@ public class FileManager extends HyperDlg
       {
         for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
         {
-          updateProgress(curTaskCount, totalTaskCount);
-          curTaskCount++;
+          updateProgress(curTaskCount++, totalTaskCount);
 
           if (isCancelled())
             throw new TerminateTaskException();
@@ -573,8 +569,7 @@ public class FileManager extends HyperDlg
 
         for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
         {
-          updateProgress(curTaskCount, totalTaskCount);
-          curTaskCount++;
+          updateProgress(curTaskCount++, totalTaskCount);
 
           if (isCancelled())
             throw new TerminateTaskException();
@@ -594,8 +589,7 @@ public class FileManager extends HyperDlg
         {
           for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
           {
-            updateProgress(curTaskCount, totalTaskCount);
-            curTaskCount++;
+            updateProgress(curTaskCount++, totalTaskCount);
 
             if (isCancelled())
               throw new TerminateTaskException();
@@ -620,8 +614,7 @@ public class FileManager extends HyperDlg
         {
           for (Entry<FilePath, FilePath> entry : srcToDest.entrySet())
           {
-            updateProgress(curTaskCount, totalTaskCount);
-            curTaskCount++;
+            updateProgress(curTaskCount++, totalTaskCount);
 
             FilePath srcFilePath = entry.getKey(),
                      destFilePath = entry.getValue();
@@ -669,8 +662,7 @@ public class FileManager extends HyperDlg
 
           for (FilePath srcFilePath : srcToDest.keySet())
           {
-            updateProgress(curTaskCount, totalTaskCount);
-            curTaskCount++;
+            updateProgress(curTaskCount++, totalTaskCount);
 
             if (srcFilePath.exists())
               if (srcFilePath.isDirectory())
@@ -740,7 +732,7 @@ public class FileManager extends HyperDlg
 
     fileTable.addContextMenuItem("New work record", fileRow -> fileRow.getRecord() == null, fileRow ->
     {
-      ui.newWorkAndWorkFile(null, null);
+      ui.newWorkAndWorkFile(null, fileRow.getFilePath());
       refresh();
     });
 
@@ -777,7 +769,7 @@ public class FileManager extends HyperDlg
       ui.windows.push(dialogStage);
     };
 
-    dialogStage.focusedProperty().addListener((observable, oldValue, newValue) ->
+    dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (ui.windows.getCyclingFocus()) return;
 
@@ -1268,7 +1260,7 @@ public class FileManager extends HyperDlg
     recordTable.addCol(hdtNone, ctIncremental);
     recordTable.addCol(hdtNone, ctNone);
 
-    treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    treeView.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       if ((newValue == null) || (newValue == oldValue)) return;
 
@@ -1291,7 +1283,7 @@ public class FileManager extends HyperDlg
       getStage().setTitle(dialogTitle + " - " + folder.getPath().getFilePath());
     });
 
-    fileTV.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    fileTV.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == null)
       {
@@ -1334,7 +1326,7 @@ public class FileManager extends HyperDlg
 
       fileTable.setupDragHandlers(row);
 
-      row.itemProperty().addListener((observable, oldValue, newValue) ->
+      row.itemProperty().addListener((ob, oldValue, newValue) ->
       {
         if (newValue == null)
           row.setContextMenu(null);
@@ -1345,7 +1337,7 @@ public class FileManager extends HyperDlg
       return row;
     });
 
-    recordTV.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    recordTV.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue == oldValue) return;
 
@@ -1380,7 +1372,7 @@ public class FileManager extends HyperDlg
       webView.getEngine().loadContent("");
     });
 
-    webView.getEngine().titleProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
+    webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
     {
       HDT_Record record = recordTable.selectedRecord();
       if (record == null) return;

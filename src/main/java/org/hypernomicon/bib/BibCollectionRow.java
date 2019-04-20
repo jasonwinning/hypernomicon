@@ -18,7 +18,6 @@
 package org.hypernomicon.bib;
 
 import org.hypernomicon.bib.CollectionTree.BibCollectionType;
-import org.hypernomicon.bib.lib.BibCollection;
 
 import static org.hypernomicon.bib.CollectionTree.BibCollectionType.*;
 import javafx.scene.control.TreeItem;

@@ -83,9 +83,8 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init(TabEnum tabEnum)
+  @Override void init()
   {
-    this.tabEnum = tabEnum;
     ctrlr.init(hdtDebate, this);
     ctrlr.tvParents.getColumns().remove(2);
     ctrlr.tvParents.getColumns().get(2).setText("Larger Debate Name");

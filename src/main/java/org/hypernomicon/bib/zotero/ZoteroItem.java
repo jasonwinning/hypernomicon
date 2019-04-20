@@ -23,22 +23,22 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.hypernomicon.bib.BibAuthor;
-import org.hypernomicon.bib.BibAuthors;
-import org.hypernomicon.bib.BibField;
-import org.hypernomicon.bib.BibUtils;
-import org.hypernomicon.bib.WorkBibAuthors;
-import org.hypernomicon.bib.lib.BibEntry;
+import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.bib.authors.BibAuthor;
+import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
+import org.hypernomicon.bib.data.BibField.BibFieldEnum;
+import org.hypernomicon.bib.authors.BibAuthors;
+import org.hypernomicon.bib.authors.WorkBibAuthors;
+import org.hypernomicon.bib.data.BibField;
+import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
 import com.google.common.collect.Lists;
 
-import static org.hypernomicon.bib.BibData.EntryType.*;
-import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
-import static org.hypernomicon.bib.BibUtils.matchISBN;
-import static org.hypernomicon.bib.BibUtils.matchISSN;
+import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
+import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
@@ -99,7 +99,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
   {
     if (linkedToWork()) return getWork().workType.get();
 
-    return convertEntryTypeToWorkType(getEntryType());
+    return EntryType.toWorkType(getEntryType());
   }
 
 //---------------------------------------------------------------------------
@@ -342,7 +342,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
     switch (bibFieldEnum)
     {
-      case bfEntryType : return BibUtils.getEntryTypeName(getEntryType());
+      case bfEntryType : return getEntryType().getUserFriendlyName();
 
       case bfDOI       : case bfURL       : case bfVolume    : case bfIssue     : case bfPages :
       case bfPublisher : case bfPubLoc    : case bfEdition   : case bfLanguage  :
@@ -478,9 +478,9 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     if (ZoteroAuthors.getCreatorTypeStr(entryType, AuthorType.editor    ).length() == 0) editorList1    .clear();
     if (ZoteroAuthors.getCreatorTypeStr(entryType, AuthorType.translator).length() == 0) translatorList1.clear();
 
-    if (authorList1    .size() != authorList2    .size()) return true;
-    if (editorList1    .size() != editorList2    .size()) return true;
-    if (translatorList1.size() != translatorList2.size()) return true;
+    if ((authorList1    .size() != authorList2    .size()) ||
+        (editorList1    .size() != editorList2    .size()) ||
+        (translatorList1.size() != translatorList2.size()))   return true;
 
     for (int ndx = 0; ndx < authorList1.size(); ndx++)
       if (authorList1.get(ndx).getName().equalsExceptParenthetical(authorList2.get(ndx).getName()) == false) return true;
@@ -537,11 +537,11 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     {
       ZoteroItem serverItem = new ZoteroItem(zWrapper, jServerObj, true);
 
-      if (missingKeysOK || thisTypeHasFieldKey(bfDOI))   serverItem.setStr(bfDOI, getStr(bfDOI));
-      if (missingKeysOK || thisTypeHasFieldKey(bfYear))  serverItem.setStr(bfYear, getStr(bfYear));
-      if (missingKeysOK || thisTypeHasFieldKey(bfURL))   serverItem.setStr(bfURL, getStr(bfURL));
+      if (missingKeysOK || thisTypeHasFieldKey(bfDOI  )) serverItem.setStr(bfDOI, getStr(bfDOI));
+      if (missingKeysOK || thisTypeHasFieldKey(bfYear )) serverItem.setStr(bfYear, getStr(bfYear));
+      if (missingKeysOK || thisTypeHasFieldKey(bfURL  )) serverItem.setStr(bfURL, getStr(bfURL));
       if (missingKeysOK || thisTypeHasFieldKey(bfISBNs)) serverItem.setMultiStr(bfISBNs, getMultiStr(bfISBNs));
-      if (missingKeysOK || thisTypeHasFieldKey(bfMisc))  serverItem.setMultiStr(bfMisc, getMultiStr(bfMisc));
+      if (missingKeysOK || thisTypeHasFieldKey(bfMisc )) serverItem.setMultiStr(bfMisc, getMultiStr(bfMisc));
       if (missingKeysOK || thisTypeHasFieldKey(bfTitle)) serverItem.setTitle(getStr(bfTitle));
 
       BibAuthors serverAuthors = serverItem.getAuthors();

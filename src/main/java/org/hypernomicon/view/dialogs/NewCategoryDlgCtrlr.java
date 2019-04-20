@@ -65,7 +65,7 @@ public class NewCategoryDlgCtrlr extends HyperDlg
 
     hcbCompare = new HyperCB(cbCompare, ctDropDownList, new RecordByTypePopulator(), null);
 
-    cbRecordType.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    cbRecordType.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       HDT_RecordType oldType = HyperTableCell.getCellType(oldValue),
                      newType = HyperTableCell.getCellType(newValue);
@@ -78,7 +78,7 @@ public class NewCategoryDlgCtrlr extends HyperDlg
       tfNewID.setText(newType == hdtNone ? "" : String.valueOf(db.getNextID(newType)));
     });
 
-    cbCompare.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+    cbCompare.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
       int oldID = HyperTableCell.getCellID(oldValue),
           newID = HyperTableCell.getCellID(newValue);

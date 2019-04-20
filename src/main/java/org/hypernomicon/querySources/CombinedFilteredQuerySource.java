@@ -17,6 +17,7 @@
 
 package org.hypernomicon.querySources;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -25,6 +26,7 @@ import org.hypernomicon.model.records.HDT_Record;
 public class CombinedFilteredQuerySource implements QuerySource
 {
   private final List<HDT_Record> records;
+  private final Iterator<HDT_Record> it;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -32,6 +34,7 @@ public class CombinedFilteredQuerySource implements QuerySource
   public CombinedFilteredQuerySource(Set<HDT_Record> recordSet)
   {
     records = List.copyOf(recordSet);
+    it = records.iterator();
   }
 
 //---------------------------------------------------------------------------
@@ -40,7 +43,8 @@ public class CombinedFilteredQuerySource implements QuerySource
   @Override public int count()                               { return records.size(); }
   @Override public QuerySourceType sourceType()              { return QuerySourceType.QST_combinedFilteredRecords; }
   @Override public boolean containsRecord(HDT_Record record) { return records.contains(record); }
-  @Override public HDT_Record getRecord(int ndx)             { return records.get(ndx); }
+  @Override public boolean hasNext()                         { return it.hasNext(); }
+  @Override public HDT_Record next()                         { return it.next(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -35,7 +35,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
-import static org.hypernomicon.model.records.HDT_RecordBase.HDT_DateType.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -50,6 +49,7 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Window;
 
 public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 {
@@ -187,7 +187,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
           dblClick(row.getItem());
       });
 
-      row.itemProperty().addListener((observable, oldValue, newValue) ->
+      row.itemProperty().addListener((ob, oldValue, newValue) ->
       {
         if (newValue == null)
           row.setContextMenu(null);
@@ -196,6 +196,13 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
       });
 
       return row;
+    });
+
+    addDefaultMenuItems();
+
+    addContextMenuItem("Remove from query results", HDT_Record.class, record ->
+    {
+      new ArrayList<>(tv.getSelectionModel().getSelectedItems()).forEach(row -> tv.getItems().remove(row));
     });
   }
 
@@ -216,7 +223,6 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
     tv.getColumns().clear();
     tv.getItems().clear();
     colGroups.clear();
-    tv.setContextMenu(null);
 
     initColumns();
   }
@@ -295,43 +301,57 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
     generalGroup.items.add(item);
     item.col = strCol;
 
-    if (buttonAdded) return;
+    if (commencedAddingButton) return;
 
-    runDelayedOutsideFXThread(0, () -> { while (buttonAdded == false)
+    commencedAddingButton = true;
+
+    Thread thread = new Thread()
     {
-      runInFXThread(() -> { synchronized (lock)
+      @Override public void run()
       {
-        if (buttonAdded) return;
-
-        nullSwitch(tv.lookup(".show-hide-columns-button"), showHideColumnsButton ->
+        while (buttonAdded == false)
         {
-          buttonAdded = true;
-
-          showHideColumnsButton.addEventFilter(MouseEvent.MOUSE_PRESSED, event ->
+          runInFXThread(() ->
           {
-            SelectColumnsDlgCtrlr.create("Select Columns").showModal();
-            event.consume();
-          });
-        });
-      }});
+            buttonAdded = buttonAdded || !nullSwitch(tv.getScene(), false, scene ->
+                                          nullSwitch(scene.getWindow(), false, Window::isShowing));
+            if (buttonAdded) return;
 
-      sleepForMillis(50);
-    }});
+            nullSwitch(tv.lookup(".show-hide-columns-button"), showHideColumnsButton ->
+            {
+              buttonAdded = true;
+
+              showHideColumnsButton.addEventFilter(MouseEvent.MOUSE_PRESSED, event ->
+              {
+                SelectColumnsDlgCtrlr.create("Select Columns").showModal();
+                event.consume();
+              });
+            });
+          });
+
+          sleepForMillis(50);
+        }
+      }
+    };
+
+    thread.setDaemon(true);
+    thread.start();
   }
 
-  private boolean buttonAdded = false;
-  private static final Object lock = new Object();
+  private boolean buttonAdded = false, commencedAddingButton = false;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addDateColumn(String caption, HDT_DateType dateType)
+  private void addDateColumn(Tag dateTag)
   {
-    ResultColumn<Instant> col = new ResultColumn<>(caption);
-    col.setCellValueFactory(cellData -> cellData.getValue().getDateCellValue(dateType).getObservable());
+    String header = db.getTagHeader(dateTag);
+
+    ResultColumn<Instant> col = new ResultColumn<>(header);
+    col.setCellValueFactory(cellData -> cellData.getValue().getDateCellValue(dateTag).getObservable());
     tv.getColumns().add(col);
 
-    ColumnGroupItem item = new ColumnGroupItem(caption);
+    ColumnGroupItem item = new ColumnGroupItem(header);
     generalGroup.items.add(item);
     item.col = col;
   }
@@ -346,9 +366,9 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
     Platform.runLater(() ->
     {
-      addDateColumn("Date created" , dateTypeCreation);
-      addDateColumn("Date modified", dateTypeModified);
-      addDateColumn("Date accessed", dateTypeView);
+      addDateColumn(tagCreationDate);
+      addDateColumn(tagModifiedDate);
+      addDateColumn(tagViewDate);
     });
   }
 

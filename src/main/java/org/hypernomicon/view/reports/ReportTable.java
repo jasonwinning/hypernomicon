@@ -50,7 +50,7 @@ public class ReportTable
 
     tv.setPlaceholder(new Label("There are no query results to display."));
 
-    tv.getSelectionModel().selectedItemProperty().addListener((observable, oldRow, newRow) -> qv.refreshView());
+    tv.getSelectionModel().selectedItemProperty().addListener((ob, oldRow, newRow) -> qv.refreshView());
   }
 
   //---------------------------------------------------------------------------
@@ -60,7 +60,6 @@ public class ReportTable
   {
     tv.getColumns().clear();
     tv.getItems().clear();
-    tv.setContextMenu(null);
   }
 
 //---------------------------------------------------------------------------

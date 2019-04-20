@@ -21,31 +21,27 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import java.util.EnumSet;
 
-import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 
-public class AllQuerySource implements QuerySource
+public class AllQuerySource extends CombinedUnfilteredQuerySource
 {
-  private final CombinedUnfilteredQuerySource source;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public AllQuerySource()
+  public AllQuerySource() { super(types()); }
+
+  @Override public QuerySourceType sourceType() { return QuerySourceType.QST_allRecords; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static EnumSet<HDT_RecordType> types()
   {
     EnumSet<HDT_RecordType> types = EnumSet.allOf(HDT_RecordType.class);
     types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
-
-    source = new CombinedUnfilteredQuerySource(types);
+    return types;
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public int count()                               { return source.count(); }
-  @Override public QuerySourceType sourceType()              { return QuerySourceType.QST_allRecords; }
-  @Override public boolean containsRecord(HDT_Record record) { return true; }
-  @Override public HDT_Record getRecord(int ndx)             { return source.getRecord(ndx); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

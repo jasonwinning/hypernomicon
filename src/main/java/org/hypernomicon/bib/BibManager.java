@@ -33,12 +33,9 @@ import java.util.Set;
 
 import com.google.common.collect.EnumHashBiMap;
 
-import org.hypernomicon.bib.BibData.EntryType;
 import org.hypernomicon.bib.CollectionTree.BibCollectionType;
-import org.hypernomicon.bib.lib.BibCollection;
-import org.hypernomicon.bib.lib.BibEntry;
-import org.hypernomicon.bib.lib.LibraryWrapper;
-import org.hypernomicon.bib.lib.LibraryWrapper.SyncTask;
+import org.hypernomicon.bib.LibraryWrapper.SyncTask;
+import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
@@ -55,7 +52,6 @@ import javafx.animation.RotateTransition;
 import javafx.animation.SequentialTransition;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
@@ -160,7 +156,7 @@ public class BibManager extends HyperDlg
 
     syncTask = libraryWrapper.createNewSyncTask();
 
-    syncTask.runningProperty().addListener((observable, wasRunning, isRunning) ->
+    syncTask.runningProperty().addListener((ob, wasRunning, isRunning) ->
     {
       if ((wasRunning == false) || isRunning) return;
 
@@ -230,7 +226,7 @@ public class BibManager extends HyperDlg
       libraryWrapper.stop();
     });
 
-    workRecordToAssign.addListener((prop, oldValue, newValue) ->
+    workRecordToAssign.addListener((ob, oldValue, newValue) ->
     {
       if (newValue != oldValue)
       {
@@ -265,7 +261,7 @@ public class BibManager extends HyperDlg
     btnSelect.setOnAction(event -> btnSelectClick());
     btnCreateNew.setOnAction(event -> btnCreateNewClick());
 
-    tableView.getSelectionModel().selectedItemProperty().addListener((o, ov, nv) -> refresh());
+    tableView.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> refresh());
 
     entryTable.addContextMenuItem("View this entry on the web", row -> row.getURL().length() > 0, row -> openWebLink(row.getURL()));
 
@@ -324,7 +320,7 @@ public class BibManager extends HyperDlg
       ui.openPreviewWindow(src);
     });
 
-    webView.getEngine().titleProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) ->
+    webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
     {
       MainTextWrapper.handleJSEvent("", webView.getEngine(), new TextViewInfo());
     });
@@ -360,7 +356,7 @@ public class BibManager extends HyperDlg
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    treeView.getSelectionModel().selectedItemProperty().addListener((observable, oldTreeItem, newTreeItem) ->
+    treeView.getSelectionModel().selectedItemProperty().addListener((ob, oldTreeItem, newTreeItem) ->
     {
       if (newTreeItem == null)
       {
@@ -377,7 +373,7 @@ public class BibManager extends HyperDlg
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    dialogStage.focusedProperty().addListener((observable, oldValue, newValue) ->
+    dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (ui.windows.getCyclingFocus()) return;
 
@@ -547,14 +543,14 @@ public class BibManager extends HyperDlg
       @Override public String toString(EntryType et)
       {
         if (map.containsKey(et))
-          return BibUtils.getEntryTypeName(et);
+          return et.getUserFriendlyName();
 
         return "";
       }
 
       @Override public EntryType fromString(String string)
       {
-        EntryType et = BibUtils.parseEntryType(string);
+        EntryType et = EntryType.parse(string);
         if (map.containsKey(et))
           return et;
 
@@ -564,7 +560,7 @@ public class BibManager extends HyperDlg
 
     List<EntryType> choices = new ArrayList<>(map.keySet());
 
-    choices.sort((et1, et2) -> BibUtils.getEntryTypeName(et1).compareTo(BibUtils.getEntryTypeName(et2)));
+    choices.sort((et1, et2) -> et1.getUserFriendlyName().compareTo(et2.getUserFriendlyName()));
 
     cb.setItems(null);
     cb.setItems(FXCollections.observableList(choices));

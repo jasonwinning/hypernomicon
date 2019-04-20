@@ -20,6 +20,7 @@ package org.hypernomicon.bib.zotero;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
@@ -55,18 +56,15 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr;
-import org.hypernomicon.bib.BibData;
-import org.hypernomicon.bib.BibData.EntryType;
 import org.hypernomicon.bib.BibEntryRow;
-import org.hypernomicon.bib.lib.LibraryWrapper;
+import org.hypernomicon.bib.LibraryWrapper;
+import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.zotero.ZoteroEntity.ZoteroEntityType;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.JsonHttpClient;
-
-import static org.hypernomicon.bib.BibData.EntryType.*;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -118,7 +116,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     jsonClient = new JsonHttpClient();
   }
 
-  JsonObj getTemplate(BibData.EntryType type) { return templates.get(type); }
+  JsonObj getTemplate(EntryType type) { return templates.get(type); }
 
   @Override public EnumHashBiMap<EntryType, String> getEntryTypeMap() { return entryTypeMap; }
 
@@ -620,7 +618,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       try
       {
         mwd = MergeWorksDlgCtrlr.create("Merge Remote Changes with Local Changes", item, new ZoteroItem(this, jObj, true),
-                                                null, null, item.getWork(), false, false);
+                                        null, null, item.getWork(), false, false);
       }
       catch (IOException e)
       {

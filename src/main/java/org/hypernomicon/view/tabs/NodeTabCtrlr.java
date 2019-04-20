@@ -124,18 +124,18 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
         labelLink = null;
     }
 
-    btnGoogle.setOnAction(event -> searchGoogle(tfName.getText(), true));
-    btnIEP.setOnAction(event -> searchIEP(tfName.getText()));
-    btnSEP.setOnAction(event -> searchSEP(tfName.getText()));
+    btnGoogle   .setOnAction(event -> searchGoogle(tfName.getText(), true));
+    btnIEP      .setOnAction(event -> searchIEP(tfName.getText()));
+    btnSEP      .setOnAction(event -> searchSEP(tfName.getText()));
     btnWikipedia.setOnAction(event -> searchWikipedia(tfName.getText()));
-    btnTree.setOnAction(event -> ui.goToTreeRecord(ui.viewRecord()));
+    btnTree     .setOnAction(event -> ui.goToTreeRecord(ui.viewRecord()));
 
     double fontSize = appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
     if (fontSize < 0) fontSize = lblGoTo1.getFont().getSize();
 
-    lblGoTo1.setFont(new Font(fontSize + 6.0));
-    lblGoTo2.setFont(new Font(fontSize + 6.0));
-    lblGoTo3.setFont(new Font(fontSize + 6.0));
+    lblGoTo1.setFont     (new Font(fontSize + 6.0));
+    lblGoTo2.setFont     (new Font(fontSize + 6.0));
+    lblGoTo3.setFont     (new Font(fontSize + 6.0));
     lblMergeTerms.setFont(new Font(fontSize + 6.0));
   }
 

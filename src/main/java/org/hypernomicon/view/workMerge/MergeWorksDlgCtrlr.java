@@ -19,7 +19,7 @@ package org.hypernomicon.view.workMerge;
 
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
-import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
+import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -28,10 +28,10 @@ import java.util.List;
 
 import java.io.IOException;
 
-import org.hypernomicon.bib.BibData;
-import org.hypernomicon.bib.BibData.BibFieldEnum;
-import org.hypernomicon.bib.BibData.EntryType;
-import org.hypernomicon.bib.BibField;
+import org.hypernomicon.bib.data.BibData;
+import org.hypernomicon.bib.data.BibField;
+import org.hypernomicon.bib.data.BibField.BibFieldEnum;
+import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.relations.ObjectGroup;
@@ -228,15 +228,13 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     extraRows.put(bibFieldEnum, row);
     AnchorPane ap = row.getAnchorPane();
 
-    GridPane.setRowIndex(ap, nextRowNdx);
-
-    nextRowNdx++;
+    GridPane.setRowIndex(ap, nextRowNdx++);
 
     gpMain.getChildren().add(ap);
 
     RowConstraints rc;
 
-    if (BibData.bibFieldIsMultiLine(bibFieldEnum))
+    if (bibFieldEnum.isMultiLine())
       rc = new RowConstraints(10.0, 150.0, Region.USE_COMPUTED_SIZE);
     else
     {

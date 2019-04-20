@@ -109,7 +109,7 @@ public final class Author implements Cloneable, Comparable<Author>
 
   @Override public boolean equals(Object obj)
   {
-    if ((obj == null) || ((obj instanceof Author) == false)) return false;
+    if ((obj instanceof Author) == false) return false;
 
     Author other = (Author)obj;
 

@@ -15,15 +15,15 @@
  *
  */
 
-package org.hypernomicon.bib.lib;
+package org.hypernomicon.bib;
 
-import static org.hypernomicon.bib.BibData.BibFieldEnum.*;
+import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.model.HyperDB.*;
 
 import java.util.List;
 
-import org.hypernomicon.bib.BibAuthors;
-import org.hypernomicon.bib.BibData;
+import org.hypernomicon.bib.authors.BibAuthors;
+import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.model.records.HDT_Work;
 
 public abstract class BibEntry extends BibData

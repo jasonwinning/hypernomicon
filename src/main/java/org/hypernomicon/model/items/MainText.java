@@ -122,10 +122,7 @@ public class MainText
   {
     String keyWorksStr = getKeyWorksString();
 
-    if (keyWorksStr.length() == 0)
-      return plainText;
-
-    return ultraTrim(plainText + " Key works: " + keyWorksStr);
+    return ultraTrim(plainText + (keyWorksStr.length() == 0 ? "" : " Key works: " + keyWorksStr));
   }
 
 //---------------------------------------------------------------------------

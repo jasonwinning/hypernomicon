@@ -184,9 +184,8 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init(TabEnum tabEnum)
+  @Override void init()
   {
-    this.tabEnum = tabEnum;
     ctrlr.init(hdtNote, this);
     ctrlr.tvParents.getColumns().remove(2);
 

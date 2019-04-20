@@ -66,7 +66,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
     cb.setEditable(true);
 
     // add a focus listener such that if not in focus, reset the filtered typed keys
-    cb.getEditor().focusedProperty().addListener((observable, oldValue, newValue) ->
+    cb.getEditor().focusedProperty().addListener((ob, oldValue, newValue) ->
     {
       newHCB.somethingWasTyped = false;
 
