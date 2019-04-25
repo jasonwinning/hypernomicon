@@ -596,7 +596,18 @@ public final class Util
 
   public static void messageDialog(String msg, MessageDialogType mt)
   {
-    runInFXThread(() -> messageDialogSameThread(msg, mt));
+    messageDialog(msg, mt, false);
+  }
+
+  public static void messageDialog(String msg, MessageDialogType mt, boolean wait)
+  {
+    if (wait) messageDialogShowing = true;
+    runInFXThread(() -> messageDialogSameThread(msg, mt, true));
+
+    if (wait == false) return;
+
+    while (messageDialogShowing)
+      sleepForMillis(50);
   }
 
 //---------------------------------------------------------------------------
@@ -604,7 +615,15 @@ public final class Util
 
   public static void messageDialogSameThread(String msg, MessageDialogType mt)
   {
+    messageDialogSameThread(msg, mt, false);
+  }
+
+  // This should never be called by anything but the above two methods
+  private static void messageDialogSameThread(String msg, MessageDialogType mt, boolean otherThreadIsWaiting)
+  {
     Alert alert = null;
+
+    if (otherThreadIsWaiting) messageDialogShowing = true;
 
     switch (mt)
     {
@@ -632,7 +651,10 @@ public final class Util
     alert.setContentText(msg);
 
     showAndWait(alert);
+    if (otherThreadIsWaiting) messageDialogShowing = false;
   }
+
+  private static boolean messageDialogShowing = false;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -371,7 +371,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
       StringBuilder json = new StringBuilder(jObj.toString());
 
-      FilePath filePath = db.getRootFilePath().resolve(ZOTERO_CREATOR_TYPES_FILE_NAME);
+      FilePath filePath = db.xmlPath(ZOTERO_CREATOR_TYPES_FILE_NAME);
 
       saveStringBuilderToFile(json, filePath);
     }
@@ -400,7 +400,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
       StringBuilder json = new StringBuilder(jArr.toString());
 
-      FilePath filePath = db.getRootFilePath().resolve(ZOTERO_TEMPLATE_FILE_NAME);
+      FilePath filePath = db.xmlPath(ZOTERO_TEMPLATE_FILE_NAME);
 
       saveStringBuilderToFile(json, filePath);
     }

@@ -79,7 +79,7 @@ public class HyperPath
     if (FilePath.isEmpty(filePath))
       return;
 
-    if (db.getRootFilePath().isSubpath(filePath) == false)
+    if (db.getRootPath().isSubpath(filePath) == false)
     {
       messageDialog("Internal error: Hyperpath not in database folder tree", mtError);
       return;
@@ -158,7 +158,7 @@ public class HyperPath
   {
     if (record != null)
       if ((record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID))
-        return db.getRootFilePath();
+        return db.getRootPath();
 
     if (FilePath.isEmpty(fileName)) return null;
 
@@ -174,7 +174,7 @@ public class HyperPath
   {
     dirFilePath = dirFilePath.getDirOnly();
 
-    if (db.getRootFilePath().isSubpath(dirFilePath) == false)  // the path is not in the database folder tree
+    if (db.getRootPath().isSubpath(dirFilePath) == false)  // the path is not in the database folder tree
       return null;
 
     Set<HyperPath> set = getHyperPathSetForFilePath(dirFilePath);

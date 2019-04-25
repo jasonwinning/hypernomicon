@@ -201,7 +201,7 @@
                   <TabPane id="mainTabPane" fx:id="tabPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" tabClosingPolicy="UNAVAILABLE">
                     <tabs>
                       <Tab fx:id="tabPersons" text="Persons" />
-                        <Tab fx:id="tabInstitutions" text="Institutions" />
+                        <Tab fx:id="tabInst" text="Institutions" />
                         <Tab fx:id="tabWorks" text="Works" />
                         <Tab fx:id="tabFiles" text="Misc. Files" />
                         <Tab fx:id="tabDebates" text="Problems/Debates" />

@@ -44,11 +44,11 @@ public class WorkBibData extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean linkedToWork()                  { return true; }
-  @Override public HDT_Work getWork()                      { return work; }
-  @Override public HDT_WorkType getWorkType()              { return work.workType.get(); }
-  @Override public void setWorkType(HDT_WorkType workType) { work.setWorkType(workType.getEnumVal()); }
-  @Override public BibAuthors getAuthors()                 { return new WorkBibAuthors(work); }
+  @Override public boolean linkedToWork()              { return true; }
+  @Override public HDT_Work getWork()                  { return work; }
+  @Override public HDT_WorkType getWorkType()          { return work.workType.get(); }
+  @Override public void setWorkType(HDT_WorkType type) { work.setWorkType(type.getEnumVal()); }
+  @Override public BibAuthors getAuthors()             { return new WorkBibAuthors(work); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -78,6 +78,7 @@ public class WorkBibData extends BibData
       case bfTitle : work.setName(BibField.buildTitle(list));   return;
       case bfMisc  : work.setMiscBib(strListToStr(list, true)); return;
       case bfISBNs : work.setISBNs(list);                       return;
+
       default      : break;
     }
 
@@ -102,6 +103,7 @@ public class WorkBibData extends BibData
       case bfYear : work.setYear(newStr);    return;
       case bfDOI  : work.setDOI(newStr);     return;
       case bfURL  : work.setWebLink(newStr); return;
+
       default     : break;
     }
 

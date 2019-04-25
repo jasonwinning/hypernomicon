@@ -27,7 +27,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane prefHeight="677.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.QueriesTabCtrlr">
+<AnchorPane prefHeight="677.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.QueryTabCtrlr">
    <children>
       <Label layoutX="6.0" layoutY="6.0" text="Show:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="6.0" />
       <CheckBox fx:id="chkShowFields" layoutX="44.0" layoutY="6.0" mnemonicParsing="false" selected="true" text="Fields" AnchorPane.leftAnchor="44.0" AnchorPane.topAnchor="6.0" />

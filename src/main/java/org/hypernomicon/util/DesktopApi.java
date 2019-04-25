@@ -17,7 +17,7 @@
 
 package org.hypernomicon.util;
 
-import static org.hypernomicon.util.Util.MessageDialogType.mtError;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.awt.Desktop;
 import java.io.IOException;

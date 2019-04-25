@@ -29,7 +29,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.DirectoryChooser;
-import static javafx.scene.control.Control.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -290,7 +289,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
       if ((folder != null) && (folder.getPath().getFilePath().exists()))
         dirChooser.setInitialDirectory(folder.getPath().getFilePath().toFile());
       else
-        dirChooser.setInitialDirectory(db.getPath(PREF_KEY_TOPICAL_PATH).toFile());
+        dirChooser.setInitialDirectory(db.topicalPath().toFile());
     }
     else
       dirChooser.setInitialDirectory(folderPath.toFile());

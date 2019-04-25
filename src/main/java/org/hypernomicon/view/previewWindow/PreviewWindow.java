@@ -708,7 +708,7 @@ public class PreviewWindow extends HyperDlg
 
   public void cleanup()
   {
-    if (browserCoreInitialized)
+    if (jxBrowserInitialized)
       getDisposeHandler(tabToWrapper.values().iterator()).run();
   }
 

@@ -93,7 +93,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void saveToDisk() { libraryWrapper.saveToDisk(db.getRootFilePath().resolve(BIB_FILE_NAME)); }
+  public void saveToDisk() { libraryWrapper.saveToDisk(db.xmlPath(BIB_FILE_NAME)); }
 
   @Override public boolean isValid() { return true; }
 

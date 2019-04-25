@@ -50,11 +50,11 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
     ltZotero("zotero", "Zotero"),
     ltMendeley("mendeley", "Mendeley");
 
-    private LibraryType(String descriptor, String userReadableName) { this.descriptor = descriptor; this.userReadableName = userReadableName; }
-    private final String descriptor, userReadableName;
+    private LibraryType(String descriptor, String userFriendlyName) { this.descriptor = descriptor; this.userFriendlyName = userFriendlyName; }
+    private final String descriptor, userFriendlyName;
 
     public String getDescriptor()       { return descriptor; }
-    public String getUserReadableName() { return userReadableName; }
+    public String getUserFriendlyName() { return userFriendlyName; }
 
     public static LibraryType getByDescriptor(String descriptor)
     {

@@ -150,7 +150,7 @@ public final class HyperDB
   private DialogResult deleteFileAnswer;
   HyperTask task;
   long totalTaskCount, curTaskCount;
-  private FilePath rootFilePath, prefsFilePath;
+  private FilePath rootFilePath, hdbFilePath;
   private Instant dbCreationDate;
 
   private boolean loaded       = false, deletionInProgress = false, pointerResolutionInProgress = false,
@@ -165,7 +165,6 @@ public final class HyperDB
 
   public boolean isDeletionInProgress()                         { return deletionInProgress; }
   public boolean resolvingPointers()                            { return pointerResolutionInProgress; }
-  public FilePath getRootFilePath()                             { return rootFilePath; }
   public int getNextID(HDT_RecordType type)                     { return datasets.get(type).getNextID(); }
   public boolean idAvailable(HDT_RecordType type, int id)       { return datasets.get(type).idAvailable(id); }
   public String getTypeTagStr(HDT_RecordType type)              { return typeToTagStr.get(type); }
@@ -271,6 +270,43 @@ public final class HyperDB
   public <HDT_SubjType extends HDT_Record> void resolvePointersByRelation(RelationType relType, HDT_SubjType subj) throws HDB_InternalError
   { getRelSet(relType).resolvePointers(subj); }
 
+  public FilePath getRootPath  () { return rootFilePath; }
+  public FilePath xmlPath      () { return rootFilePath.resolve(DEFAULT_XML_PATH); }
+  public FilePath booksPath    () { return getPrefPath(PREF_KEY_BOOKS_PATH     , ""); }
+  public FilePath papersPath   () { return getPrefPath(PREF_KEY_PAPERS_PATH    , ""); }
+  public FilePath miscFilesPath() { return getPrefPath(PREF_KEY_MISC_FILES_PATH, ""); }
+  public FilePath picturesPath () { return getPrefPath(PREF_KEY_PICTURES_PATH  , ""); }
+  public FilePath resultsPath  () { return getPrefPath(PREF_KEY_RESULTS_PATH   , ""); }
+  public FilePath unenteredPath() { return getPrefPath(PREF_KEY_UNENTERED_PATH , ""); }
+  public FilePath topicalPath  () { return getPrefPath(PREF_KEY_TOPICAL_PATH   , ""); }
+
+  public FilePath getRootPath  (String fileNameStr) { return rootFilePath.resolve(fileNameStr); }
+  public FilePath xmlPath      (String fileNameStr) { return rootFilePath.resolve(DEFAULT_XML_PATH).resolve(fileNameStr); }
+  public FilePath booksPath    (String fileNameStr) { return getPrefPath(PREF_KEY_BOOKS_PATH     , fileNameStr); }
+  public FilePath papersPath   (String fileNameStr) { return getPrefPath(PREF_KEY_PAPERS_PATH    , fileNameStr); }
+  public FilePath miscFilesPath(String fileNameStr) { return getPrefPath(PREF_KEY_MISC_FILES_PATH, fileNameStr); }
+  public FilePath picturesPath (String fileNameStr) { return getPrefPath(PREF_KEY_PICTURES_PATH  , fileNameStr); }
+  public FilePath resultsPath  (String fileNameStr) { return getPrefPath(PREF_KEY_RESULTS_PATH   , fileNameStr); }
+  public FilePath unenteredPath(String fileNameStr) { return getPrefPath(PREF_KEY_UNENTERED_PATH , fileNameStr); }
+  public FilePath topicalPath  (String fileNameStr) { return getPrefPath(PREF_KEY_TOPICAL_PATH   , fileNameStr); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private FilePath getPrefPath(String prefKey, String fileNameStr)
+  {
+    String pathStr = appPrefs.get(PREF_KEY_SOURCE_PATH, "");
+    if (pathStr.equals("")) return null;
+    FilePath sourcePath = new FilePath(pathStr);
+
+    String relPath = prefs.get(prefKey, "");
+    if (relPath.equals("")) return null;
+
+    if (fileNameStr.equals("")) return sourcePath.resolve(relPath);
+
+    return sourcePath.resolve(relPath).resolve(fileNameStr);
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -354,31 +390,6 @@ public final class HyperDB
     }
 
     return accessor;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public FilePath getPath(String prefKey)
-  {
-    return getPath(prefKey, "");
-  }
-
-  public FilePath getPath(String prefKey, String relativeStr)
-  {
-    String pathStr = appPrefs.get(PREF_KEY_SOURCE_PATH, "");
-    if (pathStr.equals("")) return null;
-    FilePath sourcePath = new FilePath(pathStr);
-
-    if (prefKey.length() == 0)
-      return sourcePath.resolve(relativeStr);
-
-    String path2 = prefs.get(prefKey, "");
-    if (path2.equals("")) return null;
-
-    if (relativeStr.equals("")) return sourcePath.resolve(path2);
-
-    return sourcePath.resolve(path2).resolve(relativeStr);
   }
 
 //---------------------------------------------------------------------------
@@ -477,7 +488,7 @@ public final class HyperDB
         writeDatasetToXML(xmlList, hdtHub);             finalizeXMLFile(xmlList, filenameList, HUB_FILE_NAME);
 
         for (int ndx = 0; ndx < filenameList.size(); ndx++)
-          saveStringBuilderToFile(xmlList.get(ndx), rootFilePath.resolve(filenameList.get(ndx)));
+          saveStringBuilderToFile(xmlList.get(ndx), xmlPath(filenameList.get(ndx)));
       }
       catch (IOException | HDB_InternalError e)
       {
@@ -490,7 +501,7 @@ public final class HyperDB
 
     if (!HyperTask.performTaskWithProgressDialog(task)) return false;
 
-    try (FileOutputStream out = new FileOutputStream(prefsFilePath.toFile()))
+    try (FileOutputStream out = new FileOutputStream(xmlPath(SETTINGS_FILE_NAME).toFile()))
     {
       favorites.saveToPrefNode();
 
@@ -503,7 +514,8 @@ public final class HyperDB
     }
     catch (IOException | BackingStoreException e)
     {
-      messageDialog("An error occurred while attempting to save database options to HDB file. Record data has been saved to XML files, however." + System.lineSeparator() + e.getMessage(), mtError);
+      messageDialog("An error occurred while attempting to save database options to " + SETTINGS_FILE_NAME +
+                    ". Record data has been saved to XML files, however." + System.lineSeparator() + e.getMessage(), mtError);
     }
 
     return true;
@@ -531,7 +543,7 @@ public final class HyperDB
     close(null);
 
     rootFilePath = newRootFilePath;
-    prefsFilePath = rootFilePath.resolve(appPrefs.get(PREF_KEY_SOURCE_FILENAME, PREFS_DEFAULT_FILENAME));
+    hdbFilePath = rootFilePath.resolve(appPrefs.get(PREF_KEY_SOURCE_FILENAME, HDB_DEFAULT_FILENAME));
 
     if (dbChanged)
       dbPreChangeHandlers.forEach(Runnable::run);
@@ -542,7 +554,7 @@ public final class HyperDB
                                          DEBATE_FILE_NAME, ARGUMENT_FILE_NAME, POSITION_FILE_NAME,    WORK_FILE_NAME,
                                          TERM_FILE_NAME,   FILE_FILE_NAME,     NOTE_FILE_NAME,        HUB_FILE_NAME })
     {
-      FilePath filePath = rootFilePath.resolve(fileName);
+      FilePath filePath = xmlPath(fileName);
 
       if (filePath.exists() == false)
         return falseWithErrorMessage("Unable to load database. Reason: File does not exist: " + filePath);
@@ -602,7 +614,7 @@ public final class HyperDB
 
     try
     {
-      try (InputStream is = new FileInputStream(rootFilePath.resolve(prefsFilePath).toFile()))
+      try (InputStream is = new FileInputStream(xmlPath(SETTINGS_FILE_NAME).toFile()))
       {
         prefs = Preferences.userNodeForPackage(getClass());
         prefs.node("favorites").removeNode();
@@ -611,15 +623,15 @@ public final class HyperDB
         Preferences.importPreferences(is);
         favorites.loadFromPrefNode();
 
-        if ((db.getPath(PREF_KEY_PICTURES_PATH  ) == null) ||
-            (db.getPath(PREF_KEY_BOOKS_PATH     ) == null) ||
-            (db.getPath(PREF_KEY_PAPERS_PATH    ) == null) ||
-            (db.getPath(PREF_KEY_RESULTS_PATH   ) == null) ||
-            (db.getPath(PREF_KEY_UNENTERED_PATH ) == null) ||
-            (db.getPath(PREF_KEY_MISC_FILES_PATH) == null) ||
-            (db.getPath(PREF_KEY_TOPICAL_PATH   ) == null))
+        if ((db.picturesPath () == null) ||
+            (db.booksPath    () == null) ||
+            (db.papersPath   () == null) ||
+            (db.resultsPath  () == null) ||
+            (db.unenteredPath() == null) ||
+            (db.miscFilesPath() == null) ||
+            (db.topicalPath  () == null))
         {
-          throw new HyperDataException("Unable to load information about paths from database options HDB file");
+          throw new HyperDataException("Unable to load information about paths from database settings file");
         }
 
         String dbCreationDateStr = prefs.get(PREF_KEY_DB_CREATION_DATE, "");
@@ -640,13 +652,13 @@ public final class HyperDB
           }
           catch (Exception e)
           {
-            throw new HyperDataException("Unable to initialize link to " + libType.getUserReadableName() + ": " + e.getMessage(), e);
+            throw new HyperDataException("Unable to initialize link to " + libType.getUserFriendlyName() + ": " + e.getMessage(), e);
           }
         }
       }
       catch (IOException | InvalidPreferencesFormatException | BackingStoreException e)
       {
-        throw new HyperDataException("An error occurred while attempting to read database options from HDB file: " + e.getMessage(), e);
+        throw new HyperDataException("An error occurred while attempting to read database settings: " + e.getMessage(), e);
       }
     }
     catch (HyperDataException e)
@@ -689,7 +701,7 @@ public final class HyperDB
 
     bibLibrary = null;
 
-    getRootFilePath().resolve(BIB_FILE_NAME).deletePromptOnFail(true);
+    xmlPath(BIB_FILE_NAME).deletePromptOnFail(true);
 
     prefs.remove(PREF_KEY_BIB_API_KEY);
     prefs.remove(PREF_KEY_BIB_USER_ID);
@@ -712,7 +724,7 @@ public final class HyperDB
     if (bibLibrary != null)
       throw new HDB_InternalError(21174);
 
-    FilePath bibJsonFilePath = getRootFilePath().resolve(BIB_FILE_NAME);
+    FilePath bibJsonFilePath = xmlPath(BIB_FILE_NAME);
 
     if (bibJsonFilePath.exists())
     {
@@ -745,7 +757,7 @@ public final class HyperDB
       default       : throw new HDB_InternalError(21175);
     }
 
-    bLibrary.loadFromDisk(getRootFilePath().resolve(BIB_FILE_NAME));
+    bLibrary.loadFromDisk(xmlPath(BIB_FILE_NAME));
 
     bibLibrary = bLibrary;
 
@@ -1461,7 +1473,7 @@ public final class HyperDB
 
     appPrefs.put(PREF_KEY_SOURCE_PATH, newPath);
     rootFilePath = new FilePath(newPath);
-    prefsFilePath = rootFilePath.resolve(appPrefs.get(PREF_KEY_SOURCE_FILENAME, PREFS_DEFAULT_FILENAME));
+    hdbFilePath = rootFilePath.resolve(appPrefs.get(PREF_KEY_SOURCE_FILENAME, HDB_DEFAULT_FILENAME));
 
     folders.forEach(prefs::put);
 
@@ -1505,6 +1517,11 @@ public final class HyperDB
 
       recordState = new HDT_RecordState(hdtFolder, RESULTS_FOLDER_ID, "", "", "", "");
       HDI_OfflinePath.class.cast(recordState.items.get(tagFileName)).setFileName(folders.get(PREF_KEY_RESULTS_PATH));
+      HDI_OfflinePath.class.cast(recordState.items.get(tagParentFolder)).setFolderID(ROOT_FOLDER_ID);
+      createNewRecordFromState(recordState, true);
+
+      recordState = new HDT_RecordState(hdtFolder, XML_FOLDER_ID, "", "", "", "");
+      HDI_OfflinePath.class.cast(recordState.items.get(tagFileName)).setFileName(DEFAULT_XML_PATH);
       HDI_OfflinePath.class.cast(recordState.items.get(tagParentFolder)).setFolderID(ROOT_FOLDER_ID);
       createNewRecordFromState(recordState, true);
     }
@@ -1630,7 +1647,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void init(Preferences appPrefs, FolderTreeWatcher folderTreeWatcher)
+  public void init(Preferences appPrefs, FolderTreeWatcher folderTreeWatcher) throws HDB_InternalError
   {
     if (initialized || unableToLoad) return;
 
@@ -1859,8 +1876,8 @@ public final class HyperDB
     }
     catch (HDB_InternalError e)
     {
-      messageDialog(e.getMessage(), mtError);
       unableToLoad = true;
+      throw e;
     }
   }
 
@@ -1938,26 +1955,26 @@ public final class HyperDB
     TOPICAL_FOLDER_ID = 6,
     UNENTERED_FOLDER_ID = 7,
     RESULTS_FOLDER_ID = 8,
-    FIRST_USER_FOLDER_ID = 9;
+    XML_FOLDER_ID = 9,
+    FIRST_USER_FOLDER_ID = 10;
 
   public static final String
 
     BIB_FILE_NAME = "Bib.json",
     ZOTERO_TEMPLATE_FILE_NAME = "ZoteroTemplates.json",
     ZOTERO_CREATOR_TYPES_FILE_NAME = "ZoteroCreatorTypes.json",
+    DEFAULT_XML_PATH = "XML",
     DEFAULT_PICTURES_PATH = "Pictures",
     DEFAULT_BOOKS_PATH = "Books",
     DEFAULT_PAPERS_PATH = "Papers",
     DEFAULT_UNENTERED_PATH = "Works not entered yet",
     DEFAULT_MISC_FILES_PATH = "Misc",
     DEFAULT_RESULTS_PATH = "Search results",
-    DEFAULT_TOPICAL_PATH = "Topical";
-
-  private static final String
-
+    DEFAULT_TOPICAL_PATH = "Topical",
     LOCK_FILE_NAME = "dblock.dat",
     REQUEST_MSG_FILE_NAME = "request_message.dat",
     RESPONSE_MSG_FILE_NAME = "response_message.dat",
+    SETTINGS_FILE_NAME = "Settings.xml",
     OTHER_FILE_NAME = "Other.xml",
     PERSON_FILE_NAME = "People.xml",
     INSTITUTION_FILE_NAME = "Institutions.xml",
@@ -2004,7 +2021,11 @@ public final class HyperDB
   public boolean isProtectedFile(FilePath filePath)
   {
     if (filePath.equals(rootFilePath)) return true;
-    if (filePath.getParent().equals(rootFilePath) == false) return false;
+
+    FilePath xmlPath = xmlPath();
+
+    if ((filePath.getParent().equals(rootFilePath) == false) &&
+        (filePath.getParent().equals(xmlPath     ) == false))   return false;
 
     HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, false);
 
@@ -2013,24 +2034,25 @@ public final class HyperDB
         if (isProtectedRecord(folder.getID(), folder.getType()))
           return true;
 
-    if (filePath.equals(prefsFilePath) ||
+    if (filePath.equals(hdbFilePath) ||
         filePath.equals(getRequestMessageFilePath()) ||
         filePath.equals(getResponseMessageFilePath()) ||
         filePath.equals(getLockFilePath()) ||
-        filePath.equals(rootFilePath.resolve(PERSON_FILE_NAME       )) ||
-        filePath.equals(rootFilePath.resolve(PERSON_FILE_NAME       )) ||
-        filePath.equals(rootFilePath.resolve(OTHER_FILE_NAME        )) ||
-        filePath.equals(rootFilePath.resolve(INSTITUTION_FILE_NAME  )) ||
-        filePath.equals(rootFilePath.resolve(INVESTIGATION_FILE_NAME)) ||
-        filePath.equals(rootFilePath.resolve(DEBATE_FILE_NAME       )) ||
-        filePath.equals(rootFilePath.resolve(ARGUMENT_FILE_NAME     )) ||
-        filePath.equals(rootFilePath.resolve(POSITION_FILE_NAME     )) ||
-        filePath.equals(rootFilePath.resolve(WORK_FILE_NAME         )) ||
-        filePath.equals(rootFilePath.resolve(TERM_FILE_NAME         )) ||
-        filePath.equals(rootFilePath.resolve(FILE_FILE_NAME         )) ||
-        filePath.equals(rootFilePath.resolve(NOTE_FILE_NAME         )) ||
-        filePath.equals(rootFilePath.resolve(HUB_FILE_NAME          )) ||
-        filePath.equals(rootFilePath.resolve(BIB_FILE_NAME          )))
+        filePath.equals(xmlPath.resolve(SETTINGS_FILE_NAME     )) ||
+        filePath.equals(xmlPath.resolve(PERSON_FILE_NAME       )) ||
+        filePath.equals(xmlPath.resolve(PERSON_FILE_NAME       )) ||
+        filePath.equals(xmlPath.resolve(OTHER_FILE_NAME        )) ||
+        filePath.equals(xmlPath.resolve(INSTITUTION_FILE_NAME  )) ||
+        filePath.equals(xmlPath.resolve(INVESTIGATION_FILE_NAME)) ||
+        filePath.equals(xmlPath.resolve(DEBATE_FILE_NAME       )) ||
+        filePath.equals(xmlPath.resolve(ARGUMENT_FILE_NAME     )) ||
+        filePath.equals(xmlPath.resolve(POSITION_FILE_NAME     )) ||
+        filePath.equals(xmlPath.resolve(WORK_FILE_NAME         )) ||
+        filePath.equals(xmlPath.resolve(TERM_FILE_NAME         )) ||
+        filePath.equals(xmlPath.resolve(FILE_FILE_NAME         )) ||
+        filePath.equals(xmlPath.resolve(NOTE_FILE_NAME         )) ||
+        filePath.equals(xmlPath.resolve(HUB_FILE_NAME          )) ||
+        filePath.equals(xmlPath.resolve(BIB_FILE_NAME          )))
       return true;
 
     return false;

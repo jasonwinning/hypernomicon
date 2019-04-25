@@ -500,7 +500,7 @@ public class OptionsDlgCtrlr extends HyperDlg
 
   private void btnUnlinkClick()
   {
-    String typeName = db.getBibLibrary().type().getUserReadableName();
+    String typeName = db.getBibLibrary().type().getUserFriendlyName();
 
     if (confirmDialog("Do you really want to unlink your " + typeName + " account?" + System.lineSeparator() +
                       "All associations between Hypernomicon records and " + typeName + " entries will be erased." + System.lineSeparator() +

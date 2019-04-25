@@ -23,7 +23,6 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
-import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 
 import java.util.ArrayList;
@@ -39,8 +38,6 @@ import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.dialogs.ChangeParentDlgCtrlr;
-import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.TreeTabCtrlr;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
@@ -276,7 +273,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       if (row.getName().toLowerCase().contains(text) ||
           ((searchingNameOnly == false) && (row.getDescString().toLowerCase().contains(text))))
       {
-        TreeTabCtrlr.class.cast(HyperTab.getHyperTab(treeTab)).textToHilite = text;
+        ui.treeHyperTab().textToHilite = text;
         selectRecord(row.getRecord(), getRowsForRecord(row.getRecord()).indexOf(row), true);
         return;
       }

@@ -21,7 +21,7 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
-import org.hypernomicon.view.tabs.QueriesTabCtrlr.QueryView;
+import org.hypernomicon.view.tabs.QueryTabCtrlr.QueryView;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;

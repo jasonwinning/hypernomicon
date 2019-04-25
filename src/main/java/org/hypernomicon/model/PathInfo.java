@@ -62,7 +62,7 @@ public class PathInfo
   {
     this.filePath = filePath;
 
-    if (filePath.equals(db.getRootFilePath()))
+    if (filePath.equals(db.getRootPath()))
     {
       fileKind = fkFolderRecord;
       parentFolder = null;
@@ -70,7 +70,7 @@ public class PathInfo
       return;
     }
 
-    if (db.getRootFilePath().isSubpath(filePath))
+    if (db.getRootPath().isSubpath(filePath))
     {
       parentFolder = getParentFolderOfPath(filePath);
 

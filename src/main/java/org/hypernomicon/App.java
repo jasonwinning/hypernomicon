@@ -26,16 +26,17 @@ import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.tabs.HyperTab.*;
 
 import org.hypernomicon.bib.BibManager;
+import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.fileManager.FileManager;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.previewWindow.ContentsWindow;
+import org.hypernomicon.view.previewWindow.PDFJSWrapper;
 import org.hypernomicon.view.previewWindow.PreviewWindow;
-import org.hypernomicon.view.tabs.PersonTabCtrlr;
 import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.QueriesTabCtrlr.QueryView;
+import org.hypernomicon.view.tabs.QueryTabCtrlr.QueryView;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -59,7 +60,6 @@ import org.apache.log4j.Logger;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
 
-import com.teamdev.jxbrowser.chromium.BrowserCore;
 import com.teamdev.jxbrowser.chromium.BrowserPreferences;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
 
@@ -94,7 +94,6 @@ public final class App extends Application
   private boolean testMainTextEditing = false;
   private double deltaX;
   private long swipeStartTime;
-  private static String jxBrowserErrMsg = "";
   private static boolean isDebugging;
   private static final double baseDisplayScale = 81.89306640625;
   private static int total, ctr, lastPercent;
@@ -108,7 +107,7 @@ public final class App extends Application
   public static PreviewWindow previewWindow = null;
   public static QueryView curQV;
   public static TikaConfig tika;
-  public static boolean browserCoreInitialized = false,
+  public static boolean jxBrowserInitialized = false,
                         jxBrowserDisabled = false;
   public static double displayScale;
   public static final FolderTreeWatcher folderTreeWatcher = new FolderTreeWatcher();
@@ -146,36 +145,24 @@ public final class App extends Application
     BrowserPreferences.setChromiumSwitches("--disable-web-security", "--user-data-dir", "--allow-file-access-from-files", "--enable-local-file-accesses");
 
     // On Mac OS X Chromium engine must be initialized in non-UI thread.
-    if (Environment.isMac()) initJXBrowser();
+    if (Environment.isMac()) PDFJSWrapper.init();
 
-    appPrefs = Preferences.userNodeForPackage(App.class);
+    try
+    {
+      appPrefs = Preferences.userNodeForPackage(App.class);
+      db.init(appPrefs, folderTreeWatcher);
+    }
+    catch (SecurityException | HDB_InternalError e)
+    {
+      appPrefs = null;
+      messageDialog("Initialization error: " + e.getMessage(), mtError, true);
 
-    db.init(appPrefs, folderTreeWatcher);
+      Platform.exit();
+      return;
+    }
 
     //db.viewTestingInProgress = true;
     //testMainTextEditing = true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void initJXBrowser()
-  {
-    try
-    {
-      BrowserCore.initialize();
-      browserCoreInitialized  = true;
-    }
-    catch (Exception e)
-    {
-      jxBrowserErrMsg = safeStr(e.getMessage());
-      jxBrowserDisabled = true;
-    }
-    catch (ExceptionInInitializerError e)
-    {
-      jxBrowserErrMsg = safeStr(e.getCause().getMessage());
-      jxBrowserDisabled = true;
-    }
   }
 
 //---------------------------------------------------------------------------
@@ -187,18 +174,10 @@ public final class App extends Application
 
     primaryStage.setTitle(appTitle);
 
-    if (!initMainWindows())
+    if ((appPrefs == null) || !initMainWindows())
     {
       Platform.exit();
       return;
-    }
-
-    if (jxBrowserDisabled)
-    {
-      if (jxBrowserErrMsg.length() > 0)
-        messageDialog("Unable to initialize preview window: " + jxBrowserErrMsg, mtError);
-      else
-        messageDialog("Unable to initialize preview window", mtError);
     }
 
     List<String> args = new ArrayList<>(getParameters().getUnnamed());
@@ -252,7 +231,7 @@ public final class App extends Application
         MainTextWrapper mainText;
 
         if (record.getType() == hdtInvestigation)
-          mainText = PersonTabCtrlr.class.cast(getHyperTab(personTab)).getInvMainTextWrapper(record.getID());
+          mainText = ui.personHyperTab().getInvMainTextWrapper(record.getID());
         else
           mainText = ui.activeTab().getMainTextWrapper();
 
@@ -386,7 +365,7 @@ public final class App extends Application
 
       scaleNodeForDPI(rootNode);
       MainTextWrapper.rescale();
-      getHyperTab(personTab).rescale();
+      getHyperTab(personTabEnum).rescale();
 
       forEachHyperTab(HyperTab::setDividerPositions);
 

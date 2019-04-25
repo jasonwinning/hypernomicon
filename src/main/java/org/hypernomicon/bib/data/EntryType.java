@@ -101,7 +101,8 @@ public enum EntryType
                            .forEach(et -> nameToType.put(et.userFriendlyName, et));
   }
 
-  public String getUserFriendlyName() { return userFriendlyName; }
+  public String getUserFriendlyName()      { return userFriendlyName; }
+  public static EntryType parse(String et) { return nameToType.getOrDefault(et, null); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -145,14 +146,6 @@ public enum EntryType
 
       default             : return etUnentered;
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static EntryType parse(String et)
-  {
-    return nameToType.getOrDefault(et, null);
   }
 
 //---------------------------------------------------------------------------

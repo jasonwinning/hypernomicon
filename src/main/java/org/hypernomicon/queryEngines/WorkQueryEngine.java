@@ -28,7 +28,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.view.tabs.QueriesTabCtrlr.*;
+import static org.hypernomicon.view.tabs.QueryTabCtrlr.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,7 +41,6 @@ import com.adobe.internal.xmp.XMPException;
 import org.hypernomicon.bib.data.PDFBibData;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
-import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 
 public class WorkQueryEngine extends QueryEngine<HDT_Work>
@@ -112,15 +111,14 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
 
       case QUERY_ANALYZE_METADATA :
 
-        FilePath pdfFilePath = null;
-
         if (firstCall)
         {
           FilePath filePath = getHomeDir().resolve("data.csv");
           if (filePath.exists()) try
           {
             Files.delete(filePath.toPath());
-          } catch (IOException e)
+          }
+          catch (IOException e)
           {
             e.printStackTrace();
           }
@@ -128,29 +126,21 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
           csvFile = new ArrayList<>();
         }
 
-        for (HDT_WorkFile workFile : work.workFiles)
+        work.workFiles.forEach(workFile ->
         {
-          if (workFile.getPath() != null)
-            if (workFile.getPath().isEmpty() == false)
-              if (workFile.getPath().getFilePath().exists())
-                if (getMediaType(workFile.getPath().getFilePath()).toString().contains("pdf"))
-                {
-                  pdfFilePath = workFile.getPath().getFilePath();
-                  try
-                  {
-                    PDFBibData bd = new PDFBibData(pdfFilePath);
-
-                    bd.addCsvLines(csvFile);
-                  }
-                  catch (IOException e)
-                  {
-                    e.printStackTrace();
-                  } catch (XMPException e)
-                  {
-                    e.printStackTrace();
-                  }
-                }
-        }
+          if ((workFile.getPath() != null) && (workFile.getPath().isEmpty() == false) &&
+              (workFile.getPath().getFilePath().exists()) && (getMediaType(workFile.getPath().getFilePath()).toString().contains("pdf")))
+          {
+            try
+            {
+              new PDFBibData(workFile.getPath().getFilePath()).addCsvLines(csvFile);
+            }
+            catch (IOException | XMPException e)
+            {
+              e.printStackTrace();
+            }
+          }
+        });
 
         if (lastCall)
         {

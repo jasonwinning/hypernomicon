@@ -18,10 +18,9 @@
 package org.hypernomicon.view.dialogs;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
-import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.ctDropDown;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import org.hypernomicon.model.items.HyperPath;
@@ -139,8 +138,8 @@ public class FileDlgCtrlr extends HyperDlg
       {
         tfCurrentPath.setText(srcFilePath.toString());
 
-        if (db.getPath(PREF_KEY_UNENTERED_PATH).isSubpath(srcFilePath))
-          tfNewPath.setText(db.getPath(PREF_KEY_MISC_FILES_PATH).toString());
+        if (db.unenteredPath().isSubpath(srcFilePath))
+          tfNewPath.setText(db.miscFilesPath().toString());
         else
         {
           tfNewPath.setText(srcFilePath.getDirOnly().toString());
@@ -172,7 +171,7 @@ public class FileDlgCtrlr extends HyperDlg
         if (FilePath.isEmpty(newFilePath) == false)
           tfNewPath.setText(newFilePath.getDirOnly().toString());
         else
-          tfNewPath.setText(db.getPath(PREF_KEY_TOPICAL_PATH).toString());
+          tfNewPath.setText(db.topicalPath().toString());
       }
     }
     else
@@ -182,7 +181,7 @@ public class FileDlgCtrlr extends HyperDlg
         if (FilePath.isEmpty(srcFilePath) == false)
           tfNewPath.setText(srcFilePath.getDirOnly().toString());
         else
-          tfNewPath.setText(db.getPath(PREF_KEY_MISC_FILES_PATH).toString());
+          tfNewPath.setText(db.miscFilesPath().toString());
       }
 
       tfRecordName.setText(recordName);
@@ -270,7 +269,7 @@ public class FileDlgCtrlr extends HyperDlg
     }
     else  // chosen file is not already attached to a record
     {
-      if (db.getRootFilePath().isSubpath(newSrc))
+      if (db.getRootPath().isSubpath(newSrc))
       {
         rbNeither.setDisable(false);
       }
@@ -313,7 +312,7 @@ public class FileDlgCtrlr extends HyperDlg
     }
 
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
-    fileChooser.setInitialDirectory(db.getPath(PREF_KEY_UNENTERED_PATH).toFile());
+    fileChooser.setInitialDirectory(db.unenteredPath().toFile());
 
     setSrcFilePath(new FilePath(fileChooser.showOpenDialog(getStage())));
   }
@@ -382,12 +381,12 @@ public class FileDlgCtrlr extends HyperDlg
     if (chosenFilePath.exists() && chosenFilePath.isDirectory())
       dirChooser.setInitialDirectory(chosenFilePath.toFile());
     else
-      dirChooser.setInitialDirectory(db.getRootFilePath().toFile());
+      dirChooser.setInitialDirectory(db.getRootPath().toFile());
 
     chosenFilePath = new FilePath(dirChooser.showDialog(dialogStage));
     if (FilePath.isEmpty(chosenFilePath)) return;
 
-    if (db.getRootFilePath().isSubpath(chosenFilePath) == false)
+    if (db.getRootPath().isSubpath(chosenFilePath) == false)
     {
       messageDialog("The file cannot be copied or moved outside the database folder structure.", mtError);
       return;

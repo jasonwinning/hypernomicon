@@ -38,7 +38,7 @@ public abstract class BibEntry extends BibData
 
   public BibEntry(boolean thisIsBackup)      { this.thisIsBackup = thisIsBackup; }
 
-  @Override public HDT_Work getWork()        { return thisIsBackup ? null : db.getWorkByBibEntryKey(getEntryKey()); }
+  @Override public HDT_Work getWork()        { return thisIsBackup ? null  : db.getWorkByBibEntryKey(getEntryKey()); }
   @Override protected boolean linkedToWork() { return thisIsBackup ? false : getWork() != null; }
 
 //---------------------------------------------------------------------------

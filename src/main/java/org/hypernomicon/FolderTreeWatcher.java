@@ -119,7 +119,7 @@ public class FolderTreeWatcher
 
       try
       {
-        registerTree(db.getRootFilePath());
+        registerTree(db.getRootPath());
       }
       catch (IOException e)
       {
@@ -328,7 +328,7 @@ public class FolderTreeWatcher
                             {
                               HDT_WorkFile workFile = (HDT_WorkFile) record;
 
-                              if (ui.activeTabEnum() == workTab)
+                              if (ui.activeTabEnum() == workTabEnum)
                               {
                                 if (workFile.works.contains(ui.activeRecord()))
                                 {
@@ -342,7 +342,7 @@ public class FolderTreeWatcher
                             }
                             else if (record.getType() == hdtMiscFile)
                             {
-                              if (ui.activeTabEnum() == miscFileTab)
+                              if (ui.activeTabEnum() == fileTabEnum)
                               {
                                 FileTabCtrlr tabFiles = (FileTabCtrlr) ui.activeTab();
                                 if (tabFiles.fdc != null)
@@ -558,20 +558,14 @@ public class FolderTreeWatcher
 
   private void start()
   {
-    if (watcherThread == null)
+    if (watcherThread != null)
     {
-      watcherThread = new WatcherThread(watcher, watchKeyToDir);
-
-      stopped = false;
-    }
-    else if (watcherThread.isAlive() == false)
-    {
+      if (watcherThread.isAlive()) return;
       stop();
-
-      watcherThread = new WatcherThread(watcher, watchKeyToDir);
-
-      stopped = false;
     }
+
+    watcherThread = new WatcherThread(watcher, watchKeyToDir);
+    stopped = false;
   }
 
 //---------------------------------------------------------------------------

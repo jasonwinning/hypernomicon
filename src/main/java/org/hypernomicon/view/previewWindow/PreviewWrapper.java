@@ -39,7 +39,6 @@ import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.previewWindow.PDFJSWrapper.PDFJSCommand;
 import org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource;
-import org.hypernomicon.view.tabs.WorkTabCtrlr;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.MenuItem;
@@ -187,13 +186,11 @@ public class PreviewWrapper
 
   private void initJS()
   {
-    if (jxBrowserDisabled)
-      return;
+    if (jxBrowserDisabled) return;
 
     jsWrapper = new PDFJSWrapper(ap, this::doneHndlr, this::pageChangeHndlr, this::retrievedDataHndlr);
 
-    if (jxBrowserDisabled)
-      return;
+    if (jxBrowserDisabled) return;
 
     initialized = true;
     viewerClear = false;
@@ -478,60 +475,58 @@ public class PreviewWrapper
     {
       String mimetypeStr = getMediaType(curPrevFile.filePath).toString();
 
-      if (mimetypeStr.contains("html") ||
-          mimetypeStr.contains("openxmlformats-officedocument") ||
-          mimetypeStr.contains("pdf")  ||
-          mimetypeStr.contains("image") ||
-          mimetypeStr.contains("plain") ||
-          mimetypeStr.contains("video") ||
-          mimetypeStr.contains("audio"))
+      filePathShowing = null;
+      pageNumShowing = -1;
+
+      window.clearControls();
+      needsRefresh = false;
+
+      viewerClear = false;
+
+      if (viewerErrOccurred) return;
+
+      labelToPage = null;
+      pageToLabel = null;
+      hilitePages = null;
+
+      if (mimetypeStr.contains("pdf"))
       {
-        filePathShowing = null;
-        pageNumShowing = -1;
-
-        window.clearControls();
-        needsRefresh = false;
-
-        viewerClear = false;
-
-        if (viewerErrOccurred) return;
-
-        labelToPage = null;
-        pageToLabel = null;
-        hilitePages = null;
-
-        if (mimetypeStr.contains("pdf"))
-          jsWrapper.loadPdf(curPrevFile.filePath, pageNum);
-        else if (mimetypeStr.contains("openxmlformats-officedocument"))
-        {
-          try
-          {
-            DocumentConverter converter = new DocumentConverter();
-            Result<String> result = converter.convertToHtml(curPrevFile.filePath.toFile());
-            String html = result.getValue(); // The generated HTML
-
-            result.getWarnings().forEach(msg -> System.out.println(msg));
-
-            jsWrapper.loadHtml(html);
-          }
-          catch (IOException e)
-          {
-            jsWrapper.loadFile(curPrevFile.filePath);
-          }
-        }
-        else
-          jsWrapper.loadFile(curPrevFile.filePath);
+        jsWrapper.loadPdf(curPrevFile.filePath, pageNum);
 
         filePathShowing = curPrevFile.filePath;
         pageNumShowing = -1;
 
         return;
       }
-      else
+
+      numPages = 1;
+
+      if (mimetypeStr.contains("openxmlformats-officedocument"))
       {
-        clearPreview();
-        return;
+        try
+        {
+          DocumentConverter converter = new DocumentConverter();
+          Result<String> result = converter.convertToHtml(curPrevFile.filePath.toFile());
+          String html = result.getValue(); // The generated HTML
+
+          result.getWarnings().forEach(msg -> System.out.println(msg));
+
+          if (html.length() == 0) html = UNABLE_TO_PREVIEW_HTML;
+          jsWrapper.loadHtml(html);
+        }
+        catch (IOException e)
+        {
+          jsWrapper.loadHtml(UNABLE_TO_PREVIEW_HTML);
+        }
       }
+      else if (mimetypeStr.contains("html")  || mimetypeStr.contains("image")  || mimetypeStr.contains("plain") ||
+               mimetypeStr.contains("video") || mimetypeStr.contains("audio"))
+        jsWrapper.loadFile(curPrevFile.filePath);
+      else
+        jsWrapper.loadHtml(UNABLE_TO_PREVIEW_HTML);
+
+      filePathShowing = curPrevFile.filePath;
+      pageNumShowing = pageNum;
     }
 
     if (pageNum != pageNumShowing)
@@ -542,6 +537,8 @@ public class PreviewWrapper
 
     refreshControls();
   }
+
+  private static final String UNABLE_TO_PREVIEW_HTML = "Unable to preview the file.";
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -660,9 +657,9 @@ public class PreviewWrapper
     else
       work.setEndPageNum(workFile, pageNum);
 
-    if (ui.activeTab().getTabEnum() == workTab)
+    if (ui.activeTab().getTabEnum() == workTabEnum)
       if (ui.activeTab().activeRecord() == curPrevFile.record)
-        WorkTabCtrlr.class.cast(ui.activeTab()).setPageNum(workFile, pageNum, isStart);
+        ui.workHyperTab().setPageNum(workFile, pageNum, isStart);
 
     contentsWindow.update(workFile, pageNum, true);
 

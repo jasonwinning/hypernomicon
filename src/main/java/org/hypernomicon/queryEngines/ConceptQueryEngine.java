@@ -18,7 +18,7 @@
 package org.hypernomicon.queryEngines;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.view.tabs.QueriesTabCtrlr.curQuery;
+import static org.hypernomicon.view.tabs.QueryTabCtrlr.*;
 
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.querySources.DatasetQuerySource;

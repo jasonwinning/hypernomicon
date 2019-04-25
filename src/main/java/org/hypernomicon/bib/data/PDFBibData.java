@@ -54,10 +54,10 @@ public class PDFBibData extends BibDataStandalone
 
   private static class PathParts
   {
-    public String prefix = null, name = null;
+    private String prefix = null, name = null;
     int arrayNdx = -1;
 
-    public PathParts(String str)
+    private PathParts(String str)
     {
       if ((str == null) || (str.length() == 0)) return;
 
@@ -94,13 +94,13 @@ public class PDFBibData extends BibDataStandalone
     private final int arrayNdx;
 
     @SuppressWarnings("unused")
-    public XMPPropertyInfo getPropInfo() { return propInfo; }
-    public String getNamespace()         { return ns; }
+    private XMPPropertyInfo getPropInfo() { return propInfo; }
+    private String getNamespace()         { return ns; }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    public XMPNode(XMPMeta xmpMeta, XMPNode parent, XMPPropertyInfo propInfo)
+    private XMPNode(XMPMeta xmpMeta, XMPNode parent, XMPPropertyInfo propInfo)
     {
       this.xmpMeta = xmpMeta;
       this.parent = parent;
@@ -141,7 +141,7 @@ public class PDFBibData extends BibDataStandalone
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    public void addDescendant(XMPPropertyInfo targetInfo)
+    private void addDescendant(XMPPropertyInfo targetInfo)
     {
       String subPath = targetInfo.getPath().substring(safeStr(path).length());
       if (subPath.startsWith("/"))
@@ -214,8 +214,8 @@ public class PDFBibData extends BibDataStandalone
       elements.forEach(child -> child.addCsvLines(csvFile));
     }
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
 
     private String escape(String str) { return str.replace(",", "@&$"); }
 
@@ -253,7 +253,7 @@ public class PDFBibData extends BibDataStandalone
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    public void extractDOIandISBNs(BibData bd)
+    private void extractDOIandISBNs(BibData bd)
     {
       if (nameIsNotExcluded(name))
         bd.extractDOIandISBNs(value);
@@ -271,7 +271,7 @@ public class PDFBibData extends BibDataStandalone
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    public void extractBibData(BibDataStandalone bd)
+    private void extractBibData(BibDataStandalone bd)
     {
       if (elements.isEmpty() == false)
       {
@@ -318,7 +318,7 @@ public class PDFBibData extends BibDataStandalone
           switch (name)
           {
             case "aggregationType" : bd.setEntryType(EntryType.parsePrismAggregationType(value)); break;
-            case "issn" : bd.addISSN(value); break;
+            case "issn"            : bd.addISSN(value); break;
           }
         }
       }
@@ -342,7 +342,6 @@ public class PDFBibData extends BibDataStandalone
   private PDDocumentInformation docInfo = null;
   private XMPNode xmpRoot = null;
 
-  public XMPNode getXmpRoot()               { return xmpRoot; }
   public PDDocumentInformation getDocInfo() { return docInfo; }
 
 //---------------------------------------------------------------------------
@@ -352,39 +351,29 @@ public class PDFBibData extends BibDataStandalone
   public PDFBibData(FilePath filePath) throws IOException, XMPException
   {
     super();
-
     PDDocument pdfDoc = null;
 
     try
     {
       pdfDoc = PDDocument.load(filePath.toFile());
-
       setDocInfo(pdfDoc.getDocumentInformation());
-
       PDMetadata metadata = pdfDoc.getDocumentCatalog().getMetadata();
 
       if (metadata != null)
-      {
-        byte[] byteArray = metadata.toByteArray();
-        setXmpRoot(byteArray);
-      }
+        setXmpRoot(metadata.toByteArray());
 
-      if (getStr(bfDOI).length() > 0)
-        return;
+      if (getStr(bfDOI).length() > 0) return;
 
       PDFTextStripper pdfStripper = new PDFTextStripper();
-      pdfStripper.setStartPage(1);
-      pdfStripper.setEndPage(7);
 
-      String parsedText = pdfStripper.getText(pdfDoc).replace('\u0002', '/'); // sometimes slash in DOI is encoded as STX control character
+      parseAndExtractIDs(pdfDoc, pdfStripper, 1, 7);
 
-      extractDOIandISBNs(parsedText);
+      if (getStr(bfDOI).length() > 0) return;
 
-      if (getStr(bfDOI).length() == 0)
-      {
-        parsedText = parsedText.replaceAll("\\h*", ""); // remove whitespace
-        extractDOIandISBNs(parsedText);
-      }
+      int numPages = pdfDoc.getNumberOfPages();
+
+      if (numPages > 7)
+        parseAndExtractIDs(pdfDoc, pdfStripper, numPages - 3, numPages);
     }
     finally
     {
@@ -393,6 +382,25 @@ public class PDFBibData extends BibDataStandalone
         try { pdfDoc.close(); }
         catch (IOException e) { throw e; }
       }
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void parseAndExtractIDs(PDDocument pdfDoc, PDFTextStripper pdfStripper, int startPage, int endPage) throws IOException
+  {
+    pdfStripper.setStartPage(startPage);
+    pdfStripper.setEndPage(endPage);
+
+    String parsedText = pdfStripper.getText(pdfDoc).replace('\u0002', '/'); // sometimes slash in DOI is encoded as STX control character
+
+    extractDOIandISBNs(parsedText);
+
+    if (getStr(bfDOI).length() == 0)
+    {
+      parsedText = parsedText.replaceAll("\\h*", ""); // remove whitespace
+      extractDOIandISBNs(parsedText);
     }
   }
 

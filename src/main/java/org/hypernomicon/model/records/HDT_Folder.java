@@ -75,6 +75,9 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     if (getID() == ROOT_FOLDER_ID)
       return falseWithErrorMessage("Unable to rename the folder: Root folder cannot be renamed.");
 
+    if (getID() == XML_FOLDER_ID)
+      return falseWithErrorMessage("Unable to rename the folder: XML folder cannot be renamed.");
+
     if (path.getParentFolder() == null)
       return falseWithErrorMessage("Unable to rename the folder: parent folder record is null.");
 

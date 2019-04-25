@@ -46,17 +46,21 @@ import static org.hypernomicon.model.Exceptions.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.control.Control;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 
 @SuppressWarnings("unused")
-public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Record>
+public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Record> extends Control
 {
   public static enum TabEnum
   {
-    personTab, institutionTab, workTab,  miscFileTab, debateTab, positionTab, argumentTab,
-    noteTab,   termTab,        queryTab, treeTab,     omniTab,   listTab
+    personTabEnum, instTabEnum, workTabEnum,  fileTabEnum, debateTabEnum, positionTabEnum, argumentTabEnum,
+    noteTabEnum,   termTabEnum, queryTabEnum, treeTabEnum, omniTabEnum,   listTabEnum
   }
 
   private static final EnumMap<TabEnum, HyperTab<? extends HDT_Record, ? extends HDT_Record>> enumToHyperTab = new EnumMap<>(TabEnum.class);
@@ -117,7 +121,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
     enumToHyperTab.put(tabEnum, this);
     tabToHyperTab.put(tab, this);
 
-    if ((tabEnum != treeTab) && (tabEnum != queryTab))
+    if ((tabEnum != treeTabEnum) && (tabEnum != queryTabEnum))
       ui.addSelectorTab(tabEnum);
   }
 
@@ -173,18 +177,18 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
     switch (recordType)
     {
       case hdtTerm        :
-      case hdtConcept     : return termTab;
+      case hdtConcept     : return termTabEnum;
 
-      case hdtInstitution : return institutionTab;
-      case hdtDebate      : return debateTab;
-      case hdtPosition    : return positionTab;
-      case hdtArgument    : return argumentTab;
-      case hdtWork        : return workTab;
-      case hdtMiscFile    : return miscFileTab;
-      case hdtNote        : return noteTab;
-      case hdtWorkLabel   : return treeTab;
+      case hdtInstitution : return instTabEnum;
+      case hdtDebate      : return debateTabEnum;
+      case hdtPosition    : return positionTabEnum;
+      case hdtArgument    : return argumentTabEnum;
+      case hdtWork        : return workTabEnum;
+      case hdtMiscFile    : return fileTabEnum;
+      case hdtNote        : return noteTabEnum;
+      case hdtWorkLabel   : return treeTabEnum;
 
-      default             : return personTab;
+      default             : return personTabEnum;
     }
   }
 

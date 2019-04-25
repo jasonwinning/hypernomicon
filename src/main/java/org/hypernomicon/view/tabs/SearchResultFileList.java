@@ -18,7 +18,6 @@
 package org.hypernomicon.view.tabs;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
@@ -138,7 +137,7 @@ public class SearchResultFileList
 
     private static FilePath getDestPath(FilePath filePath)
     {
-      FilePath destFilePath = db.getPath(PREF_KEY_RESULTS_PATH, filePath.getNameOnly().toString());
+      FilePath destFilePath = db.resultsPath(filePath.getNameOnly().toString());
       String destStr = destFilePath.toString(),
              baseStr = FilenameUtils.removeExtension(destStr),
              ext = FilenameUtils.EXTENSION_SEPARATOR_STR + filePath.getExtensionOnly();

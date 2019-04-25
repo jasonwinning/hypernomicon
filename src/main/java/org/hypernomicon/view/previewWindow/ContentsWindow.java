@@ -157,8 +157,8 @@ public class ContentsWindow extends HyperDlg
 
   private void setPageNum(HDT_Work work, int num, boolean isStart)
   {
-    if ((ui.activeTab().getTabEnum() == workTab) && (ui.activeTab().activeRecord() == work))
-      WorkTabCtrlr.class.cast(ui.activeTab()).setPageNum(curWorkFile, num, isStart);
+    if ((ui.activeTab().getTabEnum() == workTabEnum) && (ui.activeTab().activeRecord() == work))
+      ui.workHyperTab().setPageNum(curWorkFile, num, isStart);
     else
     {
       if (isStart)
@@ -210,10 +210,10 @@ public class ContentsWindow extends HyperDlg
       if (work.authorRecords.size() > 0)
         authorID = work.authorRecords.get(0).getID();
 
-      if (ui.activeTabEnum() == workTab)
+      if (ui.activeTabEnum() == workTabEnum)
         if (ui.activeTab().activeRecord() == work)
         {
-          wtc = (WorkTabCtrlr) ui.activeTab();
+          wtc = ui.workHyperTab();
 
           title = wtc.getTitle();
           year = wtc.tfYear.getText();

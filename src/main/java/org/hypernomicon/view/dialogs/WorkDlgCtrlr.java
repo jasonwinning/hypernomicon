@@ -131,17 +131,17 @@ public class WorkDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  public static WorkDlgCtrlr create(String title, FilePath filePathToUse, WorkTabCtrlr workCtrlr)
+  public static WorkDlgCtrlr create(String title, FilePath filePathToUse)
   {
     WorkDlgCtrlr wdc = HyperDlg.create("WorkDlg.fxml", title, true);
-    wdc.init(null, workCtrlr, filePathToUse);
+    wdc.init(null, filePathToUse);
     return wdc;
   }
 
-  public static WorkDlgCtrlr create(String title, HDT_WorkFile workFileToUse, WorkTabCtrlr workCtrlr)
+  public static WorkDlgCtrlr create(String title, HDT_WorkFile workFileToUse)
   {
     WorkDlgCtrlr wdc = HyperDlg.create("WorkDlg.fxml", title, true);
-    wdc.init(workFileToUse, workCtrlr, null);
+    wdc.init(workFileToUse, null);
     return wdc;
   }
 
@@ -368,7 +368,7 @@ public class WorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_WorkFile workFileToUse, WorkTabCtrlr workCtrlr, FilePath filePathToUse)
+  private void init(HDT_WorkFile workFileToUse, FilePath filePathToUse)
   {
     initControls();
 
@@ -385,7 +385,7 @@ public class WorkDlgCtrlr extends HyperDlg
       }
     };
 
-    curWork = workCtrlr.activeRecord();
+    curWork = ui.workHyperTab().activeRecord();
     curBD = new BibDataStandalone(curWork.getBibData());
 
     if ((db.bibLibraryIsLinked() == false) || (curWork.getBibEntryKey().length() > 0))
@@ -399,7 +399,7 @@ public class WorkDlgCtrlr extends HyperDlg
       rbCopy.setDisable(true);
     }
 
-    workCtrlr.getBibDataFromGUI(curBD);
+    ui.workHyperTab().getBibDataFromGUI(curBD);
     populateFieldsFromBibData(curBD, false);
 
     htAuthors.clear();
@@ -407,7 +407,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     boolean atLeastOneInFilename = false;
 
-    for (HyperTableRow origRow : workCtrlr.htAuthors.getDataRows())
+    for (HyperTableRow origRow : ui.workHyperTab().htAuthors.getDataRows())
     {
       int authID = origRow.getID(1);
       String authName = origRow.getText(1);
@@ -525,7 +525,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
 
-    fileChooser.setInitialDirectory(db.getPath(PREF_KEY_UNENTERED_PATH).toFile());
+    fileChooser.setInitialDirectory(db.unenteredPath().toFile());
 
     useChosenFile(new FilePath(fileChooser.showOpenDialog(getStage())));
   }
@@ -564,11 +564,11 @@ public class WorkDlgCtrlr extends HyperDlg
 
     rbMove.setDisable(false);
 
-    rbCurrent.setDisable(db.getRootFilePath().isSubpath(chosenFile) == false);
+    rbCurrent.setDisable(db.getRootPath().isSubpath(chosenFile) == false);
 
     if (rbCurrent.isSelected())
     {
-      if (rbCurrent.isDisabled() || db.getPath(PREF_KEY_UNENTERED_PATH).isSubpath(chosenFile))
+      if (rbCurrent.isDisabled() || db.unenteredPath().isSubpath(chosenFile))
         rbMove.setSelected(true);
     }
 
@@ -1012,13 +1012,13 @@ public class WorkDlgCtrlr extends HyperDlg
     if (bd != curBD)
       curBD.copyAllFieldsFrom(bd, populateAuthors, true);
 
-    if (curBD.entryTypeNotEmpty())
+    if (curBD.entryTypeNotEmpty() && db.bibLibraryIsLinked())
     {
       EntryType entryType = curBD.getEntryType();
       if (cbEntryType.getItems().contains(entryType) == false)
       {
         messageDialog("\"" + entryType.getUserFriendlyName() + "\" is not a valid " +
-                      db.getBibLibrary().type().getUserReadableName() + " entry type.", mtWarning);
+                      db.getBibLibrary().type().getUserFriendlyName() + " entry type.", mtWarning);
         cbEntryType.getSelectionModel().select(null);
       }
       else
@@ -1062,7 +1062,7 @@ public class WorkDlgCtrlr extends HyperDlg
     {
       if ((extFields.size() > 0) && (chkCreateBibEntry.isSelected() == false))
       {
-        String typeName = db.getBibLibrary().type().getUserReadableName(),
+        String typeName = db.getBibLibrary().type().getUserFriendlyName(),
                msg = "The current work record is not associated with a " + typeName + " entry. Create one now?\n";
 
         msg = msg + "Otherwise, existing information for these fields will be lost: ";

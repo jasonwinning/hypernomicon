@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -1438,37 +1439,65 @@ public class FileManager extends HyperDlg
 
     FilePath fileTablePath = nullSwitch(fileTV.getSelectionModel().getSelectedItem(), null, FileRow::getFilePath);
 
+    if ((record != null) && EnumSet.of(hdtWork, hdtMiscFile, hdtWorkFile).contains(record.getType()) == false)
+    {
+      if (FilePath.isEmpty(fileTablePath) == false)
+        record = HyperPath.getFileFromFilePath(fileTablePath);
+      else if (FilePath.isEmpty(filePath) == false)
+        record = HyperPath.getFileFromFilePath(filePath);
+    }
+
     if (record != null)
     {
-      if (record.getType() == hdtWork)
+      switch (record.getType())
       {
-        HDT_WorkFile workFile = null;
+        case hdtWorkFile :
 
-        if (FilePath.isEmpty(fileTablePath) == false)
-        {
-          HDT_RecordWithPath recordWP = HyperPath.getFileFromFilePath(fileTablePath);
-          if ((recordWP != null) && (recordWP.getType() == hdtWorkFile))
-            workFile = (HDT_WorkFile) recordWP;
-        }
+          HDT_WorkFile workFile = (HDT_WorkFile)record;
+          if (workFile.works.size() > 0)
+          {
+            HDT_Work work = workFile.works.get(0);
 
-        if (workFile == null)
-          if (FilePath.isEmpty(filePath) == false)
-            workFile = HDT_WorkFile.class.cast(HyperPath.getFileFromFilePath(filePath));
+            previewWindow.setPreview(pvsManager, workFile.getPath().getFilePath(), work.getStartPageNum(workFile), work.getEndPageNum(workFile), work);
+            return;
+          }
 
-        if (workFile != null)
-        {
-          HDT_Work work = (HDT_Work) record;
+          record = recordTable.selectedRecord();
+          break;
 
-          previewWindow.setPreview(pvsManager, workFile.getPath().getFilePath(), work.getStartPageNum(workFile), work.getEndPageNum(workFile), work);
+        case hdtWork :
+
+          workFile = null;
+
+          if (FilePath.isEmpty(fileTablePath) == false)
+          {
+            HDT_RecordWithPath recordWP = HyperPath.getFileFromFilePath(fileTablePath);
+            if ((recordWP != null) && (recordWP.getType() == hdtWorkFile))
+              workFile = (HDT_WorkFile) recordWP;
+          }
+
+          if (workFile == null)
+            if (FilePath.isEmpty(filePath) == false)
+              workFile = HDT_WorkFile.class.cast(HyperPath.getFileFromFilePath(filePath));
+
+          if (workFile != null)
+          {
+            HDT_Work work = (HDT_Work) record;
+
+            previewWindow.setPreview(pvsManager, workFile.getPath().getFilePath(), work.getStartPageNum(workFile), work.getEndPageNum(workFile), work);
+            return;
+          }
+
+          break;
+
+        case hdtMiscFile :
+
+          HDT_MiscFile miscFile = (HDT_MiscFile) record;
+
+          previewWindow.setPreview(pvsManager, miscFile.getPath().getFilePath(), -1, -1, miscFile);
           return;
-        }
-      }
-      else if (record.getType() == hdtMiscFile)
-      {
-        HDT_MiscFile miscFile = (HDT_MiscFile) record;
 
-        previewWindow.setPreview(pvsManager, miscFile.getPath().getFilePath(), -1, -1, miscFile);
-        return;
+        default : break;
       }
     }
 

@@ -48,7 +48,7 @@ public final class Const
     PREF_KEY_DB_CREATION_DATE = "dbCreationDate",
     PREF_KEY_SOURCE_PATH = "sourcePath",
     PREF_KEY_SOURCE_FILENAME = "sourceFile",
-    PREFS_DEFAULT_FILENAME = "database.hdb",
+    HDB_DEFAULT_FILENAME = "database.hdb",
     PREF_KEY_IMAGE_EDITOR = "imageEditor",
     PREF_KEY_IMAGE_EDITOR_COMMANDS = "imageEditorCommands",
     PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE = "imageEditorCommandType",

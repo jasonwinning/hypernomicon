@@ -102,16 +102,29 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       HDT_Term term = HyperTableCell.getRecord(newCell);
       List<HyperTableCell> glossaryCells = hcbGlossary.populate(true);
 
-      if ((term != null) && (oldConcept == null))
+      boolean selectedGlossary = false;
+
+      if (term != null)
       {
-        if (glossaryCells.stream().anyMatch(cell -> cell.getID() == 1))
-          hcbGlossary.selectID(1);
+        if (oldConcept == null)
+        {
+          if (glossaryCells.stream().anyMatch(cell -> cell.getID() == 1))
+          {
+            hcbGlossary.selectID(1);
+            selectedGlossary = true;
+          }
+        }
+        else if (glossaryCells.stream().anyMatch(cell -> cell.getID() == oldConcept.glossary.getID()))
+        {
+          hcbGlossary.selectID(oldConcept.glossary.getID());
+          selectedGlossary = true;
+        }
+
+        if (selectedGlossary == false)
+          cbGlossary.getSelectionModel().select(glossaryCells.size() == 0 ? null : glossaryCells.get(0));
       }
       else
-      {
-        if (glossaryCells.stream().anyMatch(cell -> cell.getID() == oldConcept.glossary.getID()))
-          hcbGlossary.selectID(1);
-      }
+        cbGlossary.getSelectionModel().select(null);
 
       alreadyChanging = false;
     });

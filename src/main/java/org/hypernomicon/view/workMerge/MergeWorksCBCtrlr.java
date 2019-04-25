@@ -48,41 +48,6 @@ public class MergeWorksCBCtrlr extends BibFieldRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public EntryType getEntryType()
-  {
-    if      (rb1.isSelected()) return cb1.getValue();
-    else if (rb2.isSelected()) return cb2.getValue();
-    else if (rb3.isSelected()) return cb3.getValue();
-    else                       return cb4.getValue();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void initOne(ComboBox<EntryType> cb, RadioButton rb, BibData bd)
-  {
-    bibManagerDlg.initCB(cb);
-
-    if (bd.entryTypeNotEmpty())
-    {
-      EntryType entryType = bd.getEntryType();
-      if (cb.getItems().contains(entryType) == false)
-      {
-        messageDialog("\"" + entryType.getUserFriendlyName() + "\" is not a valid " +
-                      db.getBibLibrary().type().getUserReadableName() + " entry type.", mtWarning);
-        cb.getSelectionModel().select(null);
-      }
-      else
-      {
-        cb.getSelectionModel().select(entryType);
-        rb.setSelected(true);
-      }
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override protected void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4)
   {
     this.ap = ap;
@@ -102,6 +67,41 @@ public class MergeWorksCBCtrlr extends BibFieldRow
 
     initOne(cb2, rb2, bd2);
     initOne(cb1, rb1, bd1);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void initOne(ComboBox<EntryType> cb, RadioButton rb, BibData bd)
+  {
+    bibManagerDlg.initCB(cb);
+
+    if (bd.entryTypeNotEmpty())
+    {
+      EntryType entryType = bd.getEntryType();
+      if (cb.getItems().contains(entryType) == false)
+      {
+        messageDialog("\"" + entryType.getUserFriendlyName() + "\" is not a valid " +
+                      db.getBibLibrary().type().getUserFriendlyName() + " entry type.", mtWarning);
+        cb.getSelectionModel().select(null);
+      }
+      else
+      {
+        cb.getSelectionModel().select(entryType);
+        rb.setSelected(true);
+      }
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public EntryType getEntryType()
+  {
+    if      (rb1.isSelected()) return cb1.getValue();
+    else if (rb2.isSelected()) return cb2.getValue();
+    else if (rb3.isSelected()) return cb3.getValue();
+    else                       return cb4.getValue();
   }
 
 //---------------------------------------------------------------------------

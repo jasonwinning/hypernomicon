@@ -26,7 +26,7 @@ import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.view.tabs.QueriesTabCtrlr.*;
+import static org.hypernomicon.view.tabs.QueryTabCtrlr.*;
 
 public class PersonQueryEngine extends QueryEngine<HDT_Person>
 {

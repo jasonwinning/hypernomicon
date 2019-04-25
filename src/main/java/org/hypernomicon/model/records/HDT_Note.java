@@ -20,7 +20,6 @@ package org.hypernomicon.model.records;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
@@ -50,7 +49,7 @@ public class HDT_Note extends HDT_RecordWithConnector
 
   public String getFolderStr()
   {
-    return folder.isNull() ? "" : db.getPath(PREF_KEY_TOPICAL_PATH).relativize(folder.get().getPath().getFilePath()).toString();
+    return folder.isNull() ? "" : db.topicalPath().relativize(folder.get().getPath().getFilePath()).toString();
   }
 
 //---------------------------------------------------------------------------

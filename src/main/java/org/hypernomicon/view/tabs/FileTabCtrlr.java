@@ -40,8 +40,6 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
-import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
-
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -128,7 +126,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     if (curMiscFile.getPath().isEmpty() == false)
     {
       FilePath filePath = curMiscFile.getPath().getFilePath(),
-               relPath = db.getRootFilePath().relativize(filePath);
+               relPath = db.getRootPath().relativize(filePath);
 
       if (relPath == null)
         tfFileName.setText(filePath.getNameOnly().toString());
@@ -307,7 +305,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   public boolean showFileDialog(FilePath srcFilePath)
   {
-    fdc = FileDlgCtrlr.create("Miscellaneous file", hdtMiscFile, curMiscFile, (HDT_Work) getHyperTab(workTab).activeRecord(), tfName.getText());
+    fdc = FileDlgCtrlr.create("Miscellaneous file", hdtMiscFile, curMiscFile, ui.workHyperTab().activeRecord(), tfName.getText());
 
     if (srcFilePath != null)
       fdc.setSrcFilePath(srcFilePath);
@@ -319,7 +317,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
       if (curMiscFile.getPath().isEmpty())
         tfFileName.setText("");
       else
-        tfFileName.setText(db.getRootFilePath().relativize(curMiscFile.getPath().getFilePath()).toString());
+        tfFileName.setText(db.getRootPath().relativize(curMiscFile.getPath().getFilePath()).toString());
 
       tfName.setText(fdc.tfRecordName.getText());
 

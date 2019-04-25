@@ -52,7 +52,7 @@ import javafx.scene.control.TextField;
 
 //---------------------------------------------------------------------------
 
-public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
+public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 {
   private boolean alreadyChangingLocation;
   private HyperTable htSubInst, htPersons;
@@ -67,14 +67,14 @@ public class InstitutionTabCtrlr extends HyperTab<HDT_Institution, HDT_Instituti
   @FXML private Hyperlink hlGoogleMaps;
   @FXML private SplitPane spHoriz;
 
-  @Override public String getRecordName()                       { return tfName.getText(); }
-  @Override HDT_RecordType getType()                            { return hdtInstitution; }
-  @Override public void enable(boolean enabled)                 { ui.tabInstitutions.getContent().setDisable(enabled == false); }
-  @Override void focusOnSearchKey()                             { return; }
-  @Override public void setRecord(HDT_Institution activeRecord) { curInst = activeRecord; }
-  @Override public void setDividerPositions()                   { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
-  @Override public void getDividerPositions()                   { getDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
-  @Override public void findWithinDesc(String text)             { messageDialog("Internal error #52009", mtError); }
+  @Override public String getRecordName()              { return tfName.getText(); }
+  @Override HDT_RecordType getType()                   { return hdtInstitution; }
+  @Override public void enable(boolean enabled)        { ui.tabInst.getContent().setDisable(enabled == false); }
+  @Override void focusOnSearchKey()                    { return; }
+  @Override public void setRecord(HDT_Institution rec) { curInst = rec; }
+  @Override public void setDividerPositions()          { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
+  @Override public void getDividerPositions()          { getDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
+  @Override public void findWithinDesc(String text)    { messageDialog("Internal error #52009", mtError); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

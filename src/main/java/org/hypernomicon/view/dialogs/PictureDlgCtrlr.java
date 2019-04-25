@@ -80,24 +80,24 @@ public class PictureDlgCtrlr extends HyperDlg
   @FXML private ProgressBar progressBar;
   @FXML private Button btnStop;
 
-  private PersonTabCtrlr personCtrlr;
+  private PersonTabCtrlr personHyperTab;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static PictureDlgCtrlr create(String title, Rectangle2D viewPort, PersonTabCtrlr personCtrlr)
+  public static PictureDlgCtrlr create(String title, Rectangle2D viewPort)
   {
     PictureDlgCtrlr pdc = HyperDlg.create("PictureDlg.fxml", title, true);
-    pdc.init(viewPort, personCtrlr);
+    pdc.init(viewPort);
     return pdc;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(Rectangle2D viewPort, PersonTabCtrlr personCtrlr)
+  private void init(Rectangle2D viewPort)
   {
-    this.personCtrlr = personCtrlr;
+    this.personHyperTab = ui.personHyperTab();
 
     ivPicture.fitWidthProperty().bind(apPicture.widthProperty());
     ivPicture.fitHeightProperty().bind(apPicture.heightProperty());
@@ -185,7 +185,7 @@ public class PictureDlgCtrlr extends HyperDlg
       FilePath filePath = null;
 
       if (rbCurrent.isSelected())
-        filePath = personCtrlr.curPicture;
+        filePath = personHyperTab.curPicture;
       else if (rbFile.isSelected())
         filePath = new FilePath(tfFile.getText());
 
@@ -196,9 +196,9 @@ public class PictureDlgCtrlr extends HyperDlg
 
     btnGoogle.setOnAction(event ->
     {
-      String term = personCtrlr.tfFirst.getText() + " " +
-                    personCtrlr.tfLast.getText() + " " +
-                    HyperTableCell.getCellText(personCtrlr.cbField.getSelectionModel().getSelectedItem());
+      String term = personHyperTab.tfFirst.getText() + " " +
+                    personHyperTab.tfLast.getText() + " " +
+                    HyperTableCell.getCellText(personHyperTab.cbField.getSelectionModel().getSelectedItem());
 
       searchGoogleImage(term);
     });
@@ -238,7 +238,7 @@ public class PictureDlgCtrlr extends HyperDlg
 
     btnDelete.disableProperty().bind(rbCurrent.selectedProperty().not());
 
-    if (FilePath.isEmpty(personCtrlr.curPicture) == false)
+    if (FilePath.isEmpty(personHyperTab.curPicture) == false)
       rbCurrent.setSelected(true);
     else
     {
@@ -267,14 +267,14 @@ public class PictureDlgCtrlr extends HyperDlg
   {
     String ext = "";
 
-    FilePath filePath = db.getPath(PREF_KEY_PICTURES_PATH, tfName.getText());
+    FilePath filePath = db.picturesPath(tfName.getText());
     ext = filePath.getExtensionOnly();
     if (ext.length() == 0) ext = "jpg";
 
-    String fileName = makeFileName(personCtrlr.tfLast.getText(), ext);
-    HDT_Person person = personCtrlr.activeRecord();
+    String fileName = makeFileName(personHyperTab.tfLast.getText(), ext);
+    HDT_Person person = personHyperTab.activeRecord();
 
-    if (cantUseName(fileName)) fileName = makeFileName(personCtrlr.tfLast.getText() + personCtrlr.tfFirst.getText(), ext);
+    if (cantUseName(fileName)) fileName = makeFileName(personHyperTab.tfLast.getText() + personHyperTab.tfFirst.getText(), ext);
     if (cantUseName(fileName)) fileName = makeFileName(person.getLastName(), ext);
     if (cantUseName(fileName)) fileName = makeFileName(person.listName(), ext);
     if (cantUseName(fileName)) return;
@@ -309,8 +309,8 @@ public class PictureDlgCtrlr extends HyperDlg
   {
     if (FilePath.isFilenameValid(fileName) == false) return true;
 
-    FilePath filePath = db.getPath(PREF_KEY_PICTURES_PATH, fileName);
-    if (filePath.equals(personCtrlr.curPicture)) return false;
+    FilePath filePath = db.picturesPath(fileName);
+    if (filePath.equals(personHyperTab.curPicture)) return false;
 
     return filePath.exists();
   }
@@ -484,18 +484,18 @@ public class PictureDlgCtrlr extends HyperDlg
 
   private void btnDeleteClick()
   {
-    if (FilePath.isEmpty(personCtrlr.curPicture))
+    if (FilePath.isEmpty(personHyperTab.curPicture))
       return;
 
-    if (confirmDialog("Are you sure you want to delete the file \"" + personCtrlr.curPicture.getNameOnly() + "\"?") == false)
+    if (confirmDialog("Are you sure you want to delete the file \"" + personHyperTab.curPicture.getNameOnly() + "\"?") == false)
       return;
 
-    if (personCtrlr.curPicture.deletePromptOnFail(false) == false)
+    if (personHyperTab.curPicture.deletePromptOnFail(false) == false)
       return;
 
-    db.unmapFilePath(personCtrlr.curPicture);
+    db.unmapFilePath(personHyperTab.curPicture);
     removeCrop();
-    personCtrlr.curPicture = null;
+    personHyperTab.curPicture = null;
     tfCurrent.setText("");
     rbNone.setSelected(true);
     rbCurrent.setDisable(true);
@@ -513,11 +513,11 @@ public class PictureDlgCtrlr extends HyperDlg
 
     if (rbCurrent.isSelected())
     {
-      if (FilePath.isEmpty(personCtrlr.curPicture)) return;
+      if (FilePath.isEmpty(personHyperTab.curPicture)) return;
       if (tfName.getText().length() == 0) return;
 
-      src = personCtrlr.curPicture;
-      dest = db.getPath(PREF_KEY_PICTURES_PATH, tfName.getText());
+      src = personHyperTab.curPicture;
+      dest = db.picturesPath(tfName.getText());
 
       if (src.equals(dest) == false)
       {
@@ -534,7 +534,7 @@ public class PictureDlgCtrlr extends HyperDlg
       {
         if (tfFile.getText().length() == 0) return;
         src = new FilePath(tfFile.getText());
-        dest = db.getPath(PREF_KEY_PICTURES_PATH, tfName.getText());
+        dest = db.picturesPath(tfName.getText());
         sameFile = src.equals(dest);
       }
       else
@@ -556,7 +556,7 @@ public class PictureDlgCtrlr extends HyperDlg
       return;
 
     String execPath = appPrefs.get(PREF_KEY_IMAGE_EDITOR, "");
-    FilePath picturePath = db.getPath(PREF_KEY_PICTURES_PATH, tfName.getText());
+    FilePath picturePath = db.picturesPath(tfName.getText());
 
     if (execPath.length() == 0)
       DesktopApi.edit(picturePath);
@@ -705,14 +705,14 @@ public class PictureDlgCtrlr extends HyperDlg
   {
     removeCrop();
 
-    picture = new Image(personCtrlr.curPicture.toURI().toString());
+    picture = new Image(personHyperTab.curPicture.toURI().toString());
 
     if (!picture.isError())
     {
       ivPicture.setImage(picture);
 
-      tfCurrent.setText(personCtrlr.curPicture.getNameOnly().toString());
-      tfName.setText(personCtrlr.curPicture.getNameOnly().toString());
+      tfCurrent.setText(personHyperTab.curPicture.getNameOnly().toString());
+      tfName.setText(personHyperTab.curPicture.getNameOnly().toString());
     }
     else
     {
@@ -735,7 +735,7 @@ public class PictureDlgCtrlr extends HyperDlg
     fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Image files", "*.jpg;*.gif;*.png;*.jpeg"),
                                              new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
 
-    fileChooser.setInitialDirectory(db.getPath(PREF_KEY_PICTURES_PATH).toFile());
+    fileChooser.setInitialDirectory(db.picturesPath().toFile());
 
     FilePath filePath = new FilePath(fileChooser.showOpenDialog(getStage()));
 
@@ -754,20 +754,20 @@ public class PictureDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    FilePath curFile = personCtrlr.curPicture,
+    FilePath curFile = personHyperTab.curPicture,
              newFileOrig = null,
-             newFileNew = db.getPath(PREF_KEY_PICTURES_PATH, tfName.getText());
+             newFileNew = db.picturesPath(tfName.getText());
 
     String curFileName = "",
            newFileOldName,
            newFileNewName = tfName.getText();
 
-    if (FilePath.isEmpty(personCtrlr.curPicture) == false)
-      curFileName = personCtrlr.curPicture.getNameOnly().toString();
+    if (FilePath.isEmpty(personHyperTab.curPicture) == false)
+      curFileName = personHyperTab.curPicture.getNameOnly().toString();
 
     if (rbNone.isSelected())
     {
-      personCtrlr.curPicture = null;
+      personHyperTab.curPicture = null;
       noRemoveCrop = true;
       return true;
     }
@@ -857,10 +857,10 @@ public class PictureDlgCtrlr extends HyperDlg
           progressBar.setVisible(true);
           btnStop.setVisible(true);
 
-          FileDownloadUtility.downloadToFile(tfWeb.getText(), db.getPath(PREF_KEY_PICTURES_PATH), newFileNewName,
+          FileDownloadUtility.downloadToFile(tfWeb.getText(), db.picturesPath(), newFileNewName,
                                              new StringBuilder(), true, httpClient, buffer ->
           {
-            personCtrlr.curPicture = newFileNew;
+            personHyperTab.curPicture = newFileNew;
             noRemoveCrop = true;
             rbCurrent.setSelected(true);
 
@@ -927,7 +927,7 @@ public class PictureDlgCtrlr extends HyperDlg
       }
     }
 
-    personCtrlr.curPicture = newFileNew;
+    personHyperTab.curPicture = newFileNew;
     noRemoveCrop = true;
     rbCurrent.setSelected(true);
 

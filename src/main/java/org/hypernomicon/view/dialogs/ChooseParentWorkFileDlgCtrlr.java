@@ -68,7 +68,7 @@ public class ChooseParentWorkFileDlgCtrlr extends HyperDlg
       if (workFile.getPath().isEmpty() == false)
       {
         FilePath filePath = workFile.getPath().getFilePath();
-        pathStr = nullSwitch(db.getRootFilePath().relativize(filePath), filePath.getNameOnly().toString(), FilePath::toString);
+        pathStr = nullSwitch(db.getRootPath().relativize(filePath), filePath.getNameOnly().toString(), FilePath::toString);
       }
 
       HyperTableRow row = htFiles.newDataRow();

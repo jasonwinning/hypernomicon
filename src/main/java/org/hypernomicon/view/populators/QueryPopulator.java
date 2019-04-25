@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view.populators;
 
-import static org.hypernomicon.view.tabs.QueriesTabCtrlr.*;
+import static org.hypernomicon.view.tabs.QueryTabCtrlr.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.ArrayList;
@@ -26,8 +26,8 @@ import java.util.List;
 
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.queryEngines.QueryEngine.QueryType;
-import org.hypernomicon.view.tabs.QueriesTabCtrlr;
-import org.hypernomicon.view.tabs.QueriesTabCtrlr.QueryView;
+import org.hypernomicon.view.tabs.QueryTabCtrlr;
+import org.hypernomicon.view.tabs.QueryTabCtrlr.QueryView;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -91,7 +91,7 @@ public class QueryPopulator extends Populator
       rowToChoices.put(row, new ArrayList<>());
 
     rowToChoices.get(row).clear();
-    QueriesTabCtrlr.addQueries(this, row, newType);
+    QueryTabCtrlr.addQueries(this, row, newType);
   }
 
 //---------------------------------------------------------------------------

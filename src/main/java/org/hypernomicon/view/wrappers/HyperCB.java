@@ -36,15 +36,14 @@ import org.hypernomicon.view.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.view.dialogs.RecordSelectDlgCtrlr;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.VariablePopulator;
-import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.PersonTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
+
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
-import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -447,7 +446,7 @@ public class HyperCB implements CommitableWrapper
         }
         else if ((populator.getRecordType(row) == hdtInstitution) && (dontCreateNewRecord == false))
         {
-          PersonTabCtrlr.class.cast(HyperTab.getHyperTab(personTab)).newInstClick(row, cb.getEditor().getText(), colNdx);
+          ui.personHyperTab().newInstClick(row, cb.getEditor().getText(), colNdx);
         }
       }
     }

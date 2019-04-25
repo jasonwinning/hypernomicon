@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import com.teamdev.jxbrowser.chromium.Browser;
+import com.teamdev.jxbrowser.chromium.BrowserCore;
 import com.teamdev.jxbrowser.chromium.BrowserPreferences;
 import com.teamdev.jxbrowser.chromium.DialogParams;
 import com.teamdev.jxbrowser.chromium.JSArray;
@@ -52,6 +53,8 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import org.hypernomicon.App;
 import org.hypernomicon.util.filePath.FilePath;
+
+import javafx.application.Platform;
 import javafx.scene.layout.AnchorPane;
 
 //---------------------------------------------------------------------------
@@ -120,6 +123,57 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static void init() { init(false); }
+
+  private static Browser init(boolean createBrowserInstance)
+  {
+    Browser browser = null;
+
+    try
+    {
+      if (createBrowserInstance)
+        browser = new Browser();
+      else
+        BrowserCore.initialize();
+
+      jxBrowserInitialized  = true;
+    }
+    catch (Exception e)
+    {
+      String msg = safeStr(e.getMessage());
+      messageDialog("Unable to initialize preview window" + (msg.length() > 0 ? (": " + msg) : ""), mtError, true);
+      closeWindows();
+      jxBrowserDisabled = true;
+    }
+    catch (ExceptionInInitializerError e)
+    {
+      String msg = safeStr(e.getCause().getMessage());
+      messageDialog("Unable to initialize preview window" + (msg.length() > 0 ? (": " + msg) : ""), mtError, true);
+      closeWindows();
+      jxBrowserDisabled = true;
+    }
+
+    return jxBrowserDisabled ? null : browser;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void closeWindows()
+  {
+    Platform.runLater(() ->
+    {
+      if (App.previewWindow.getStage().isShowing())
+        App.previewWindow.getStage().close();
+
+      if (App.contentsWindow.getStage().isShowing())
+        App.contentsWindow.getStage().close();
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   boolean reloadBrowser(Runnable stuffToDoAfterLoadingViewerHtml)
   {
     if (browser != null)
@@ -128,28 +182,8 @@ public class PDFJSWrapper
       oldBrowser = browser;
     }
 
-    try
-    {
-      browser = new Browser();
-    }
-    catch (ExceptionInInitializerError e)
-    {
-      String msg = safeStr(e.getCause().getMessage());
-
-      messageDialog("Unable to initialize preview window" + (msg.length() == 0 ? "" : (": " + msg)), mtError);
-      jxBrowserDisabled = true;
-      return false;
-    }
-    catch (Exception e)
-    {
-      String msg = safeStr(e.getMessage());
-
-      messageDialog("Unable to initialize preview window" + (msg.length() == 0 ? "" : (": " + msg)), mtError);
-      jxBrowserDisabled = true;
-      return false;
-    }
-
-    browserCoreInitialized  = true;
+    browser = init(true);
+    if (browser == null) return false;
 
     if (viewerHTMLStr == null)
     {
@@ -157,6 +191,7 @@ public class PDFJSWrapper
       catch (IOException e)
       {
         messageDialog("Unable to initialize preview window: Unable to read HTML file", mtError);
+        closeWindows();
         jxBrowserDisabled = true;
         return false;
       }

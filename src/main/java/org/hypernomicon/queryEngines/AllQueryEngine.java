@@ -21,7 +21,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
-import static org.hypernomicon.view.tabs.QueriesTabCtrlr.*;
+import static org.hypernomicon.view.tabs.QueryTabCtrlr.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 

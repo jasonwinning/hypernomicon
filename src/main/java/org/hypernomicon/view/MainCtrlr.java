@@ -29,10 +29,8 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.queryEngines.QueryEngine.QueryType.*;
-import static org.hypernomicon.view.tabs.HyperTab.getHyperTab;
-import static org.hypernomicon.view.tabs.HyperTab.getTabEnumByRecordType;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
-import static org.hypernomicon.view.tabs.QueriesTabCtrlr.*;
+import static org.hypernomicon.view.tabs.QueryTabCtrlr.*;
 import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 
 import org.hypernomicon.bib.BibEntry;
@@ -131,7 +129,7 @@ public final class MainCtrlr
   @FXML private ToolBar tbGoTo, topToolBar;
   @FXML public Label lblStatus;
   @FXML public Menu mnuFavorites, mnuQueries;
-  @FXML public Tab tabArguments, tabDebates, tabFiles, tabInstitutions, tabNotes, tabPersons, tabPositions, tabQueries, tabTerms, tabTree, tabWorks;
+  @FXML public Tab tabArguments, tabDebates, tabFiles, tabInst, tabNotes, tabPersons, tabPositions, tabQueries, tabTerms, tabTree, tabWorks;
   @FXML public ToggleButton btnPointerLaunch;
 
   public final WindowStack windows = new WindowStack();
@@ -160,7 +158,7 @@ public final class MainCtrlr
 
   private ObservableList<ResultsRow> results() { return curQV.resultsTable.getTV().getItems(); }
   MenuBar getMenuBar()                         { return menuBar; }
-  public TreeWrapper getTree()                 { return TreeTabCtrlr.class.cast(getHyperTab(treeTab)).getTree(); }
+  public TreeWrapper getTree()                 { return treeHyperTab().getTree(); }
   private Stage primaryStage()                 { return app.getPrimaryStage(); }
 
   @FXML private void mnuExitClick()           { shutDown(true, true, true); }
@@ -169,6 +167,18 @@ public final class MainCtrlr
   @FXML private void mnuChangeFavOrderClick() { FavOrderDlgCtrlr.create("Change Order of Favorites").showModal(); }
   @FXML private void mnuSettingsClick()       { if (!cantSaveRecord(true)) OptionsDlgCtrlr.create(appTitle + " Settings").showModal(); }
   @FXML private void mnuFindMentionsClick()   { if (!cantSaveRecord(true)) searchForMentions(activeRecord(), false); }
+
+  public PersonTabCtrlr personHyperTab  () { return getHyperTab(personTabEnum  ); }
+  public InstTabCtrlr   instHyperTab    () { return getHyperTab(instTabEnum    ); }
+  public WorkTabCtrlr   workHyperTab    () { return getHyperTab(workTabEnum    ); }
+  public FileTabCtrlr   fileHyperTab    () { return getHyperTab(fileTabEnum    ); }
+  public DebateTab      debateHyperTab  () { return getHyperTab(debateTabEnum  ); }
+  public PositionTab    positionHyperTab() { return getHyperTab(positionTabEnum); }
+  public ArgumentTab    argumentHyperTab() { return getHyperTab(argumentTabEnum); }
+  public NoteTab        noteHyperTab    () { return getHyperTab(noteTabEnum    ); }
+  public TermTab        termHyperTab    () { return getHyperTab(termTabEnum    ); }
+  public QueryTabCtrlr  queryHyperTab   () { return getHyperTab(queryTabEnum   ); }
+  public TreeTabCtrlr   treeHyperTab    () { return getHyperTab(treeTabEnum    ); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -231,22 +241,22 @@ public final class MainCtrlr
     ttDates = new Tooltip("No dates to show.");
     ttDates.setStyle("-fx-font-size: 14px;");
 
-    PersonTabCtrlr     .addHyperTab(personTab     , tabPersons     , "PersonTab.fxml");
-    InstitutionTabCtrlr.addHyperTab(institutionTab, tabInstitutions, "InstitutionTab.fxml");
-    WorkTabCtrlr       .addHyperTab(workTab       , tabWorks       , "WorkTab.fxml");
-    FileTabCtrlr       .addHyperTab(miscFileTab   , tabFiles       , "FileTab.fxml");
+    PersonTabCtrlr     .addHyperTab(personTabEnum   , tabPersons     , "PersonTab.fxml");
+    InstTabCtrlr       .addHyperTab(instTabEnum     , tabInst        , "InstTab.fxml");
+    WorkTabCtrlr       .addHyperTab(workTabEnum     , tabWorks       , "WorkTab.fxml");
+    FileTabCtrlr       .addHyperTab(fileTabEnum     , tabFiles       , "FileTab.fxml");
 
-    new DebateTab()    .baseInit   (debateTab     , tabDebates);
-    new PositionTab()  .baseInit   (positionTab   , tabPositions);
-    new ArgumentTab()  .baseInit   (argumentTab   , tabArguments);
-    new NoteTab()      .baseInit   (noteTab       , tabNotes);
-    new TermTab()      .baseInit   (termTab       , tabTerms);
+    new DebateTab()    .baseInit   (debateTabEnum   , tabDebates);
+    new PositionTab()  .baseInit   (positionTabEnum , tabPositions);
+    new ArgumentTab()  .baseInit   (argumentTabEnum , tabArguments);
+    new NoteTab()      .baseInit   (noteTabEnum     , tabNotes);
+    new TermTab()      .baseInit   (termTabEnum     , tabTerms);
 
-    QueriesTabCtrlr    .addHyperTab(queryTab      , tabQueries     , "QueriesTab.fxml");
-    TreeTabCtrlr       .addHyperTab(treeTab       , tabTree        , "TreeTab.fxml");
+    QueryTabCtrlr      .addHyperTab(queryTabEnum    , tabQueries     , "QueryTab.fxml");
+    TreeTabCtrlr       .addHyperTab(treeTabEnum     , tabTree        , "TreeTab.fxml");
 
-    addSelectorTab(omniTab);
-    addSelectorTab(listTab);
+    addSelectorTab(omniTabEnum);
+    addSelectorTab(listTabEnum);
 
     chbBack = new ClickHoldButton(btnBack, Side.TOP);
     chbForward = new ClickHoldButton(btnForward, Side.TOP);
@@ -402,15 +412,10 @@ public final class MainCtrlr
 
     db.addDeleteHandler(record ->
     {
-      if (record.getType() == hdtPerson)
-      {
-        PersonTabCtrlr personHyperTab = getHyperTab(personTab);
-        if (personHyperTab.activeRecord() == record)
-          personHyperTab.curPicture = null;  // User has already been asked if they want to delete the picture; don't ask again
-      }
+      if ((record.getType() == hdtPerson) && (personHyperTab().activeRecord() == record))
+        personHyperTab().curPicture = null;  // User has already been asked if they want to delete the picture; don't ask again
 
-      QueriesTabCtrlr.class.cast(getHyperTab(queryTab)).queryViews.forEach(qv ->
-        qv.resultsTable.getTV().getItems().removeIf(row -> row.getRecord() == record));
+      queryHyperTab().queryViews.forEach(qv -> qv.resultsTable.getTV().getItems().removeIf(row -> row.getRecord() == record));
 
       int ndx = favorites.indexOfRecord(record);
 
@@ -505,7 +510,7 @@ public final class MainCtrlr
 
     tfRecord.setOnAction(event ->
     {
-      if ((activeTabEnum() == treeTab) || (activeTabEnum() == queryTab)) return;
+      if ((activeTabEnum() == treeTabEnum) || (activeTabEnum() == queryTabEnum)) return;
       if (activeRecord() == null)
       {
         tfRecord.setText("");
@@ -529,7 +534,7 @@ public final class MainCtrlr
     {
       PreviewSource src = determinePreviewContext();
 
-      if (activeTabEnum() == miscFileTab)
+      if (activeTabEnum() == fileTabEnum)
       {
         HDT_MiscFile miscFile = (HDT_MiscFile) activeRecord();
 
@@ -546,7 +551,7 @@ public final class MainCtrlr
 
     tfID.setOnAction(event ->
     {
-      if ((activeTabEnum() == treeTab) || (activeTabEnum() == queryTab)) return;
+      if ((activeTabEnum() == treeTabEnum) || (activeTabEnum() == queryTabEnum)) return;
 
       HDT_Record record = activeRecord();
       if (record == null)
@@ -567,7 +572,7 @@ public final class MainCtrlr
 
     mnuFindWithinName.setOnAction(event ->
     {
-      if (selectorTabEnum() == omniTab)
+      if (selectorTabEnum() == omniTabEnum)
         showSearch(true, QueryType.qtAllRecords, QUERY_WITH_NAME_CONTAINING, null, new HyperTableCell(-1, selectorTF.getText(), hdtNone), null, selectorTF.getText());
       else
         mnuFindWithinNameClick();
@@ -577,7 +582,7 @@ public final class MainCtrlr
 
     mnuFindWithinAnyField.setOnAction(event ->
     {
-      if (selectorTabEnum() == omniTab)
+      if (selectorTabEnum() == omniTabEnum)
         showSearch(true, QueryType.qtAllRecords, QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(-1, selectorTF.getText(), hdtNone), null, selectorTF.getText());
       else
         showSearch(true, QueryType.fromRecordType(selectorType()), QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(-1, selectorTF.getText(), hdtNone), null, selectorTF.getText());
@@ -611,11 +616,11 @@ public final class MainCtrlr
     {
       switch (activeTabEnum())
       {
-        case personTab : return pvsPersonTab;
-        case workTab   : return pvsWorkTab;
-        case queryTab  : return pvsQueryTab;
-        case treeTab   : return pvsTreeTab;
-        default        : return pvsOther;
+        case personTabEnum : return pvsPersonTab;
+        case workTabEnum   : return pvsWorkTab;
+        case queryTabEnum  : return pvsQueryTab;
+        case treeTabEnum   : return pvsTreeTab;
+        default            : return pvsOther;
       }
     }
 
@@ -732,7 +737,7 @@ public final class MainCtrlr
 
   private void btnGoToClick(boolean fromMenu)
   {
-    if (selectorTabEnum() != listTab)
+    if (selectorTabEnum() != listTabEnum)
     {
       hcbGoTo.triggerOnAction();
 
@@ -744,10 +749,10 @@ public final class MainCtrlr
 
     TabEnum tabEnum = activeTabEnum();
 
-    if (tabEnum == queryTab)
+    if (tabEnum == queryTabEnum)
       curQV.resultsTable.dblClick(curQV.resultsTable.getTV().getSelectionModel().getSelectedItem());
 
-    if (tabEnum != treeTab) return;
+    if (tabEnum != treeTabEnum) return;
 
     if (fromMenu)
     {
@@ -828,7 +833,7 @@ public final class MainCtrlr
   {
     HDT_RecordType type = selectorType();
     String query = selectorTF.getText();
-    boolean backClick = activeTabEnum() != queryTab;
+    boolean backClick = activeTabEnum() != queryTabEnum;
 
     lblStatus.setText("");
 
@@ -859,7 +864,7 @@ public final class MainCtrlr
   //
   private void discardLastQuery(boolean backClick)
   {
-    QueriesTabCtrlr.class.cast(getHyperTab(queryTab)).closeCurrentView();
+    queryHyperTab().closeCurrentView();
 
     if (backClick) btnBackClick();
   }
@@ -966,7 +971,7 @@ public final class MainCtrlr
       HyperTable.saveColWidthsToPrefs();
     }
 
-    if (browserCoreInitialized)
+    if (jxBrowserInitialized)
       Platform.runLater(previewWindow::cleanup); // This eventually closes the application main window
     else
     {
@@ -1024,7 +1029,7 @@ public final class MainCtrlr
 
     updateBibImportMenus();
     updateFavorites();
-    updateTopicFolders();
+    updateTopicalFolders();
   }
 
 //---------------------------------------------------------------------------
@@ -1053,8 +1058,7 @@ public final class MainCtrlr
 
     copyRegionLayout(cbGoTo, cbResultGoTo);
 
-    QueriesTabCtrlr queriesTab = getHyperTab(queryTab);
-    queriesTab.setCB(cbResultGoTo);
+    queryHyperTab().setCB(cbResultGoTo);
 
     cbResultGoTo.setConverter(new StringConverter<ResultsRow>()
     {
@@ -1107,15 +1111,15 @@ public final class MainCtrlr
     if (saveRecord)
       if (cantSaveRecord(false)) return false;
 
-    db.prefs.putInt(PREF_KEY_PERSON_ID     , getHyperTab(personTab     ).getActiveID());
-    db.prefs.putInt(PREF_KEY_INSTITUTION_ID, getHyperTab(institutionTab).getActiveID());
-    db.prefs.putInt(PREF_KEY_DEBATE_ID     , getHyperTab(debateTab     ).getActiveID());
-    db.prefs.putInt(PREF_KEY_POSITION_ID   , getHyperTab(positionTab   ).getActiveID());
-    db.prefs.putInt(PREF_KEY_ARGUMENT_ID   , getHyperTab(argumentTab   ).getActiveID());
-    db.prefs.putInt(PREF_KEY_WORK_ID       , getHyperTab(workTab       ).getActiveID());
-    db.prefs.putInt(PREF_KEY_TERM_ID       , getHyperTab(termTab       ).getActiveID());
-    db.prefs.putInt(PREF_KEY_FILE_ID       , getHyperTab(miscFileTab   ).getActiveID());
-    db.prefs.putInt(PREF_KEY_NOTE_ID       , getHyperTab(noteTab       ).getActiveID());
+    db.prefs.putInt(PREF_KEY_PERSON_ID     , personHyperTab  ().getActiveID());
+    db.prefs.putInt(PREF_KEY_INSTITUTION_ID, instHyperTab    ().getActiveID());
+    db.prefs.putInt(PREF_KEY_DEBATE_ID     , debateHyperTab  ().getActiveID());
+    db.prefs.putInt(PREF_KEY_POSITION_ID   , positionHyperTab().getActiveID());
+    db.prefs.putInt(PREF_KEY_ARGUMENT_ID   , argumentHyperTab().getActiveID());
+    db.prefs.putInt(PREF_KEY_WORK_ID       , workHyperTab    ().getActiveID());
+    db.prefs.putInt(PREF_KEY_TERM_ID       , termHyperTab    ().getActiveID());
+    db.prefs.putInt(PREF_KEY_FILE_ID       , fileHyperTab    ().getActiveID());
+    db.prefs.putInt(PREF_KEY_NOTE_ID       , noteHyperTab    ().getActiveID());
 
     db.prefs.put(PREF_KEY_RECORD_TYPE, db.getTypeTagStr(activeType() == hdtNone ? hdtPerson : activeType()));
 
@@ -1149,7 +1153,7 @@ public final class MainCtrlr
 
       forEachHyperTab(HyperTab::refresh);
 
-      if (activeTabEnum() == queryTab)
+      if (activeTabEnum() == queryTabEnum)
         activeTab().clear();
 
       update();
@@ -1323,7 +1327,7 @@ public final class MainCtrlr
     {
       case hdtGlossary :
 
-        if (activeTabEnum() != treeTab)
+        if (activeTabEnum() != treeTabEnum)
           return falseWithErrorMessage("Glossary records can only be deleted from the tree tab.");
 
         HDT_Glossary glossary = (HDT_Glossary) record;
@@ -1406,7 +1410,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void updateTopicFolders()
+  private void updateTopicalFolders()
   {
     while (mnuFolders.getItems().size() > 10) // Clear the topical folder items that currently exist
       mnuFolders.getItems().remove(10);
@@ -1417,10 +1421,10 @@ public final class MainCtrlr
       return;
     }
 
-    FilePath topicsPath = db.getPath(PREF_KEY_TOPICAL_PATH);
+    FilePath topicalPath = db.topicalPath();
     mnuFolders.setDisable(false);
 
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(topicsPath.toPath(), "**"))
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(topicalPath.toPath(), "**"))
     {
       stream.forEach(entry ->
       {
@@ -1428,7 +1432,7 @@ public final class MainCtrlr
 
         if (entryFilePath.isDirectory())
         {
-          FilePath relFilePath = topicsPath.relativize(entryFilePath);
+          FilePath relFilePath = topicalPath.relativize(entryFilePath);
 
           if (FilePath.isEmpty(relFilePath) == false)
           {
@@ -1520,14 +1524,14 @@ public final class MainCtrlr
 
     switch (code)
     {
-      case 1 : filePath = db.getPath(PREF_KEY_PAPERS_PATH    ); break;
-      case 2 : filePath = db.getPath(PREF_KEY_BOOKS_PATH     ); break;
-      case 3 : filePath = db.getPath(PREF_KEY_UNENTERED_PATH ); break;
-      case 4 : filePath = db.getPath(PREF_KEY_TOPICAL_PATH   ); break;
-      case 5 : filePath = db.getPath(PREF_KEY_PICTURES_PATH  ); break;
-      case 6 : filePath = db.getPath(PREF_KEY_MISC_FILES_PATH); break;
-      case 7 : filePath = new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")); break;
-      case 8 : filePath = db.getPath(PREF_KEY_RESULTS_PATH   ); break;
+      case 1 : filePath = db.papersPath   (); break;
+      case 2 : filePath = db.booksPath    (); break;
+      case 3 : filePath = db.unenteredPath(); break;
+      case 4 : filePath = db.topicalPath  (); break;
+      case 5 : filePath = db.picturesPath (); break;
+      case 6 : filePath = db.miscFilesPath(); break;
+      case 7 : filePath = db.getRootPath  (); break;
+      case 8 : filePath = db.resultsPath  (); break;
     }
 
     if (FilePath.isEmpty(filePath)) return;
@@ -1582,7 +1586,7 @@ public final class MainCtrlr
 
     mnuFavorites.setDisable(false);
 
-    if ((activeTabEnum() != treeTab) && (activeTabEnum() != queryTab) && (viewRecord() != null))
+    if ((activeTabEnum() != treeTabEnum) && (activeTabEnum() != queryTabEnum) && (viewRecord() != null))
     {
       mnuToggleFavorite.setDisable(false);
 
@@ -1598,7 +1602,7 @@ public final class MainCtrlr
 
   @FXML private void mnuToggleFavoriteClick()
   {
-    if ((activeTabEnum() == treeTab) || (activeTabEnum() == queryTab)) return;
+    if ((activeTabEnum() == treeTabEnum) || (activeTabEnum() == queryTabEnum)) return;
     if (cantSaveRecord(true)) return;
 
     HDT_Record record = viewRecord();
@@ -1671,7 +1675,7 @@ public final class MainCtrlr
 
   private void searchForMentions(HDT_Record record, boolean descOnly)
   {
-    boolean noneFound = false, backClick = activeTabEnum() != queryTab;
+    boolean noneFound = false, backClick = activeTabEnum() != queryTabEnum;
 
     if (record == null) return;
 
@@ -1714,7 +1718,7 @@ public final class MainCtrlr
 
     HDT_Record record = null;
 
-    if (activeTabEnum() == termTab)
+    if (activeTabEnum() == termTabEnum)
     {
       HDT_Term term = (HDT_Term) activeRecord();
       record = viewRecord();
@@ -1768,7 +1772,7 @@ public final class MainCtrlr
     HDT_Record viewRecord = viewRecord();
 
     if (revertToDiskCopy(record) && (viewRecord != null) && (viewRecord != record))
-      if ((activeTabEnum() != treeTab) && (activeTabEnum() != queryTab))
+      if ((activeTabEnum() != treeTabEnum) && (activeTabEnum() != queryTabEnum))
         revertToDiskCopy(viewRecord);
 
     update();
@@ -1837,21 +1841,21 @@ public final class MainCtrlr
       return;
     }
 
-    setTabView(new HyperView<>(personTab     , db.persons     .getByID(db.prefs.getInt(PREF_KEY_PERSON_ID     , -1))));
-    setTabView(new HyperView<>(institutionTab, db.institutions.getByID(db.prefs.getInt(PREF_KEY_INSTITUTION_ID, -1))));
-    setTabView(new HyperView<>(debateTab     , db.debates     .getByID(db.prefs.getInt(PREF_KEY_DEBATE_ID     , -1))));
-    setTabView(new HyperView<>(positionTab   , db.positions   .getByID(db.prefs.getInt(PREF_KEY_POSITION_ID   , -1))));
-    setTabView(new HyperView<>(argumentTab   , db.arguments   .getByID(db.prefs.getInt(PREF_KEY_ARGUMENT_ID   , -1))));
-    setTabView(new HyperView<>(workTab       , db.works       .getByID(db.prefs.getInt(PREF_KEY_WORK_ID       , -1))));
+    setTabView(new HyperView<>(personTabEnum  , db.persons     .getByID(db.prefs.getInt(PREF_KEY_PERSON_ID     , -1))));
+    setTabView(new HyperView<>(instTabEnum    , db.institutions.getByID(db.prefs.getInt(PREF_KEY_INSTITUTION_ID, -1))));
+    setTabView(new HyperView<>(debateTabEnum  , db.debates     .getByID(db.prefs.getInt(PREF_KEY_DEBATE_ID     , -1))));
+    setTabView(new HyperView<>(positionTabEnum, db.positions   .getByID(db.prefs.getInt(PREF_KEY_POSITION_ID   , -1))));
+    setTabView(new HyperView<>(argumentTabEnum, db.arguments   .getByID(db.prefs.getInt(PREF_KEY_ARGUMENT_ID   , -1))));
+    setTabView(new HyperView<>(workTabEnum    , db.works       .getByID(db.prefs.getInt(PREF_KEY_WORK_ID       , -1))));
 
     HDT_Concept concept = nullSwitch(db.terms.getByID(db.prefs.getInt(PREF_KEY_TERM_ID, -1)), null, term -> term.concepts.get(0));
 
-    setTabView(new HyperView<>(termTab,        concept));
+    setTabView(new HyperView<>(termTabEnum,     concept));
 
-    setTabView(new HyperView<>(miscFileTab   , db.miscFiles   .getByID(db.prefs.getInt(PREF_KEY_FILE_ID       , -1))));
-    setTabView(new HyperView<>(noteTab       , db.notes       .getByID(db.prefs.getInt(PREF_KEY_NOTE_ID       , -1))));
-    setTabView(new HyperView<>(queryTab      , null));
-    setTabView(new HyperView<>(treeTab       , null));
+    setTabView(new HyperView<>(fileTabEnum    , db.miscFiles   .getByID(db.prefs.getInt(PREF_KEY_FILE_ID       , -1))));
+    setTabView(new HyperView<>(noteTabEnum    , db.notes       .getByID(db.prefs.getInt(PREF_KEY_NOTE_ID       , -1))));
+    setTabView(new HyperView<>(queryTabEnum   , null));
+    setTabView(new HyperView<>(treeTabEnum    , null));
 
     enableControls(db.isLoaded());
 
@@ -1909,17 +1913,17 @@ public final class MainCtrlr
     if (success)
     {
       lblStatus.setText("");
-      updateTopicFolders();
-      getHyperTab(queryTab).clear();
+      updateTopicalFolders();
+      queryHyperTab().clear();
 
       gpBottom.setDisable(false);
-      getHyperTab(queryTab).enable(true);
-      getHyperTab(treeTab).enable(true);
+      queryHyperTab().enable(true);
+      treeHyperTab().enable(true);
 
       getTree().expandMainBranches();
       fileManagerDlg.folderTree.expandMainBranches();
 
-      primaryStage().setTitle(appTitle + " - " + db.getPath("", appPrefs.get(PREF_KEY_SOURCE_FILENAME, "")));
+      primaryStage().setTitle(appTitle + " - " + db.getRootPath(appPrefs.get(PREF_KEY_SOURCE_FILENAME, "")));
     }
     else
       mnuCloseClick();
@@ -1932,7 +1936,7 @@ public final class MainCtrlr
 
   public boolean cantSaveRecord(boolean showMessage)
   {
-    if ((db.isLoaded() == false) || (activeTabEnum() == queryTab) || (activeTabEnum() == treeTab) || (activeRecord() == null))
+    if ((db.isLoaded() == false) || (activeTabEnum() == queryTabEnum) || (activeTabEnum() == treeTabEnum) || (activeRecord() == null))
       return false;
 
     CommitableWrapper.commitWrapper(primaryStage().getScene().getFocusOwner());
@@ -1956,13 +1960,13 @@ public final class MainCtrlr
       return;
     }
 
-    viewSequence.forwardToNewSlotAndView(new HyperView<>(treeTab, record));
+    viewSequence.forwardToNewSlotAndView(new HyperView<>(treeTabEnum, record));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TabEnum activeTabEnum()                    { return viewSequence.isEmpty() ? personTab : viewSequence.curTabEnum(); }
+  public TabEnum activeTabEnum()                    { return viewSequence.isEmpty() ? personTabEnum : viewSequence.curTabEnum(); }
   public HyperTab<? extends HDT_Record,
                   ? extends HDT_Record> activeTab() { return viewSequence.isEmpty() ? null : viewSequence.curHyperTab(); }
   public HDT_RecordType activeType()                { return viewSequence.isEmpty() ? hdtPerson : viewSequence.curHyperView().getTabRecordType(); }
@@ -2067,7 +2071,7 @@ public final class MainCtrlr
       default : break;
     }
 
-    if (getTabEnumByRecordType(record.getType()) == personTab)
+    if (getTabEnumByRecordType(record.getType()) == personTabEnum)
       if (record.getType() != hdtPerson) return;
 
     if (windows.getOutermostStage() != primaryStage())
@@ -2086,7 +2090,7 @@ public final class MainCtrlr
 
   public void update()
   {
-    updateTopicFolders();
+    updateTopicalFolders();
 
     if (db.isLoaded() == false)
     {
@@ -2100,7 +2104,7 @@ public final class MainCtrlr
 
     switch (tabEnum)
     {
-      case queryTab : case treeTab :
+      case queryTabEnum : case treeTabEnum :
         tab.update();
         updateBottomPanel(true);
         return;
@@ -2127,8 +2131,8 @@ public final class MainCtrlr
 
         record = db.records(activeType()).getByKeyNdx(ndx);
 
-        if (tabEnum == termTab)
-          viewSequence.updateCurrentView(new HyperView<>(termTab, HDT_Term.class.cast(record).concepts.get(0)));
+        if (tabEnum == termTabEnum)
+          viewSequence.updateCurrentView(new HyperView<>(termTabEnum, HDT_Term.class.cast(record).concepts.get(0)));
         else
           viewSequence.updateCurrentView(new HyperView<>(tabEnum, record));
       }
@@ -2163,7 +2167,7 @@ public final class MainCtrlr
   {
     TabEnum tabEnum = selectorTabEnum();
 
-    if ((tabEnum == listTab) || (tabEnum == omniTab))
+    if ((tabEnum == listTabEnum) || (tabEnum == omniTabEnum))
       return activeType();
 
     return getRecordTypeByTabEnum(tabEnum);
@@ -2186,9 +2190,9 @@ public final class MainCtrlr
 
     switch (selectorTabEnum)
     {
-      case listTab :
+      case listTabEnum :
 
-        if (activeTabEnum == queryTab)
+        if (activeTabEnum == queryTabEnum)
         {
           if (cbResultGoTo == null) initResultCB();
 
@@ -2196,7 +2200,7 @@ public final class MainCtrlr
           selectorTF = cbResultGoTo.getEditor();
         }
 
-        if (activeTabEnum == treeTab)
+        if (activeTabEnum == treeTabEnum)
         {
           setAllVisible(true, mnuFindNextAll, mnuFindPreviousAll, mnuFindPreviousInName, mnuFindNextInName);
 
@@ -2209,14 +2213,14 @@ public final class MainCtrlr
 
         break;
 
-      case omniTab :
+      case omniTabEnum :
 
         mnuRecordSelect.setVisible(false);
         setAllVisible(true, mnuFindWithinAnyField, mnuFindWithinName);
 
         selectorTF = tfOmniGoTo;
 
-        btnCreateNew.setDisable((activeTabEnum == queryTab) || (activeTabEnum == treeTab));
+        btnCreateNew.setDisable((activeTabEnum == queryTabEnum) || (activeTabEnum == treeTabEnum));
 
         break;
 
@@ -2290,7 +2294,7 @@ public final class MainCtrlr
   // Query-specific stuff
   //---------------------------------------------------------------------------
 
-    if (activeTabEnum == queryTab)
+    if (activeTabEnum == queryTabEnum)
     {
       btnSave.setText("Accept Edits");
       btnRevert.setText("Revert");
@@ -2303,7 +2307,7 @@ public final class MainCtrlr
   // Tree-specific stuff
   //---------------------------------------------------------------------------
 
-    else if (activeTabEnum == treeTab)
+    else if (activeTabEnum == treeTabEnum)
     {
       if (treeSubjRecord == null)
       {
@@ -2370,11 +2374,9 @@ public final class MainCtrlr
   {
     if (cantSaveRecord(true)) return false;
 
-    QueriesTabCtrlr queriesTab = (QueriesTabCtrlr) getHyperTab(queryTab);
+    viewSequence.forwardToNewSlotAndView(new HyperView<>(queryTabEnum, queryHyperTab().activeRecord(), queryHyperTab().getMainTextInfo()));
 
-    viewSequence.forwardToNewSlotAndView(new HyperView<>(queryTab, queriesTab.activeRecord(), queriesTab.getMainTextInfo()));
-
-    boolean result = queriesTab.showSearch(doSearch, type, query, fav, op1, op2, caption);
+    boolean result = queryHyperTab().showSearch(doSearch, type, query, fav, op1, op2, caption);
     updateFavorites();
 
     return result;
@@ -2410,7 +2412,7 @@ public final class MainCtrlr
 
   private void incDecClick(boolean increment)
   {
-    if (activeTabEnum() == treeTab)
+    if (activeTabEnum() == treeTabEnum)
     {
       getTree().selectNextInstance(increment);
       return;
@@ -2633,8 +2635,7 @@ public final class MainCtrlr
 
     ui.goToRecord(miscFile, false);
 
-    FileTabCtrlr fileCtrlr = HyperTab.getHyperTab(miscFileTab);
-    if (fileCtrlr.showFileDialog(filePath) == false)
+    if (fileHyperTab().showFileDialog(filePath) == false)
     {
       if (fileRow != null)
         miscFile.getPath().clear(false);
@@ -2665,9 +2666,7 @@ public final class MainCtrlr
 
     goToRecord(work, false);
 
-    WorkTabCtrlr workCtrlr = getHyperTab(workTab);
-
-    if (workCtrlr.showWorkDialog(null, filePathToUse) == false)
+    if (workHyperTab().showWorkDialog(null, filePathToUse) == false)
       deleteCurrentRecord(false);
   }
 

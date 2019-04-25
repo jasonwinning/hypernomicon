@@ -118,7 +118,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 {
   @FXML private AnchorPane apDescription, apLowerMid, apLowerRight;
   @FXML private Button btnBibManager, btnLargerWork, btnLaunch, btnMergeBib, btnNewChapter, btnOpenLink,
-                       btnScholar, btnStop, btnTree, btnUseDOI, btnUseISBN, btnWorldCat;
+                       btnScholar, btnStop, btnTree, btnUseDOI, btnUseISBN, btnWorldCat, btnAutofill;
   @FXML private ComboBox<HyperTableCell> cbLargerWork, cbType;
   @FXML private Label lblSearchKey, lblTitle;
   @FXML private MenuButton btnPDFMeta, btnWebQuery;
@@ -478,6 +478,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     btnUseDOI.setOnAction(event -> useDOIClick());
     btnUseISBN.setOnAction(event -> useISBNClick());
+    btnAutofill.setOnAction(event -> btnAutofillClick());
 
     btnLaunch.setOnAction(event -> curWork.launch(getCurPageNum(curWork, null, true)));
 
@@ -1214,7 +1215,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Adobe PDF file (*.pdf)", "*.pdf"),
                                              new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
 
-    fileChooser.setInitialDirectory(db.getPath(PREF_KEY_UNENTERED_PATH).toFile());
+    fileChooser.setInitialDirectory(db.unenteredPath().toFile());
 
     List<File> files = fileChooser.showOpenMultipleDialog(app.getPrimaryStage());
     if (collEmpty(files)) return;
@@ -1346,7 +1347,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     DirectoryChooser dirChooser = new DirectoryChooser();
 
-    FilePath destPath = curWork.workFiles.size() > 0 ? curWork.getPath().getFilePath().getDirOnly() : db.getPath(PREF_KEY_UNENTERED_PATH);
+    FilePath destPath = curWork.workFiles.size() > 0 ? curWork.getPath().getFilePath().getDirOnly() : db.unenteredPath();
 
     FilePath folder = null;
     HDT_Folder folderRecord = null;
@@ -1359,7 +1360,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         dirChooser.setInitialDirectory(destPath.toFile());
       else
       {
-        folder = db.getPath(PREF_KEY_UNENTERED_PATH);
+        folder = db.unenteredPath();
         if (folder.exists() && folder.isDirectory())
           dirChooser.setInitialDirectory(folder.toFile());
       }
@@ -1702,9 +1703,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     else
     {
       if ((workFile == null) && (filePathToUse != null))
-        wdc = WorkDlgCtrlr.create("Import New Work", filePathToUse, this);
+        wdc = WorkDlgCtrlr.create("Import New Work", filePathToUse);
       else
-        wdc = WorkDlgCtrlr.create("Work File", workFile, this);
+        wdc = WorkDlgCtrlr.create("Work File", workFile);
 
       if (wdc.showModal() == false)
       {
@@ -1958,6 +1959,14 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void btnAutofillClick()
+  {
+
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void btnMergeBibClick()
   {
     if (ui.cantSaveRecord(true)) return;
@@ -1968,7 +1977,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (db.bibLibraryIsLinked() && (curWork.getBibEntryKey().length() == 0))
     {
-      String typeName = db.getBibLibrary().type().getUserReadableName();
+      String typeName = db.getBibLibrary().type().getUserFriendlyName();
       creatingNewEntry = confirmDialog("The current work record is not associated with a " + typeName + " entry. Create one now?");
     }
 

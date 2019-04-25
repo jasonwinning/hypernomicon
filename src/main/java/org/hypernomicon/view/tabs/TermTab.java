@@ -193,7 +193,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
       curConcept = ConceptTab.class.cast(newTab).concept;
 
-      ui.viewSequence.updateCurrentView(new HyperView<>(termTab, curConcept, getMainTextInfo()));
+      ui.viewSequence.updateCurrentView(new HyperView<>(termTabEnum, curConcept, getMainTextInfo()));
 
       HDT_Glossary glossary = curConcept.glossary.get();
       if (glossary.getID() > 1) glossary.viewNow();
@@ -362,10 +362,9 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
       tpConcepts.getTabs().remove(getConceptTab(concept));
 
-      HDT_Term newTerm = frmSelectConcept.getTerm();
-
       curTerm.concepts.remove(concept);
-      newTerm.concepts.add(concept);
+      frmSelectConcept.getTerm().concepts.add(concept);
+      concept.glossary.set(frmSelectConcept.getGlossary());
 
       ui.goToRecord(concept, false);
     }

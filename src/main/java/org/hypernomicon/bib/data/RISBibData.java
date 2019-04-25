@@ -20,7 +20,7 @@ package org.hypernomicon.bib.data;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
-import static org.hypernomicon.util.Util.ultraTrim;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -149,15 +149,8 @@ public class RISBibData extends BibDataStandalone
 
   public static BibData create(List<String> lines)
   {
-    try
-    {
-      return new RISBibData(lines);
-    }
-    catch (RISException e)
-    {
-      return null;
-    }
-
+    try { return new RISBibData(lines); }
+    catch (RISException e) { return null; }
   }
 
 //---------------------------------------------------------------------------

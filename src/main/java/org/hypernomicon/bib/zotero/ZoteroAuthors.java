@@ -55,8 +55,8 @@ public class ZoteroAuthors extends BibAuthors
   {
     Iterators.removeIf(creatorsArr.getObjs(), creatorObj ->
     {
-      return getAuthorTypeForStr(creatorObj.getStrSafe("creatorType")) != null;  // If the creatorType is one that does not map onto a
-    });                                                                          // Hypernomicon-aware type (author, editor, or translator) then ignore
+      return getAuthorTypeForStr(creatorObj.getStrSafe("creatorType")) != null;  // If the creatorType does not map onto a Hypernomicon-aware
+    });                                                                          // type (author, editor, or translator), then ignore it
   }
 
 //---------------------------------------------------------------------------

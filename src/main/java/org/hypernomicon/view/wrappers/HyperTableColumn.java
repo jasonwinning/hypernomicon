@@ -22,7 +22,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -34,8 +33,6 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.populators.Populator;
-import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.PersonTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
@@ -240,8 +237,7 @@ public class HyperTableColumn
             super.startEdit();
             super.cancelEdit();
 
-            PersonTabCtrlr personTabCtrlr = HyperTab.getHyperTab(personTab);
-            personTabCtrlr.showInvSelectDialog(getTableRow().getItem());
+            ui.personHyperTab().showInvSelectDialog(getTableRow().getItem());
           }
 
           @Override public void updateItem(HyperTableCell item, boolean empty)

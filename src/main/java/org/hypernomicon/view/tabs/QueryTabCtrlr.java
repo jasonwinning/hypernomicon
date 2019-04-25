@@ -111,7 +111,7 @@ import static org.hypernomicon.view.populators.BooleanPopulator.*;
 
 //---------------------------------------------------------------------------
 
-public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
+public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 {
   public class QueryView
   {
@@ -787,12 +787,9 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
                 firstCall = false;
               }
 
-              if (firstRow)
-                add = result;
-              else if (lastConnectiveWasOr)
-                add = add || result;
-              else
-                add = add && result;
+              if      (firstRow)            add = result;
+              else if (lastConnectiveWasOr) add = add || result;
+              else                          add = add && result;
             }
 
             lastConnectiveWasOr = row.getID(5) == OR_CONNECTIVE_ID;
@@ -1330,7 +1327,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public void findWithinDesc(String text) { if (activeRecord() != null) MainTextWrapper.hiliteText(text, webView.getEngine()); }
 
   @FXML private void mnuCopyToFolderClick()         { copyFilesToFolder(true); }
-  @FXML private void mnuShowSearchFolderClick()     { if (db.isLoaded()) launchFile(db.getPath(PREF_KEY_RESULTS_PATH)); }
+  @FXML private void mnuShowSearchFolderClick()     { if (db.isLoaded()) launchFile(db.resultsPath()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1790,7 +1787,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     boolean startWatcher = folderTreeWatcher.stop();
 
-    try { FileUtils.cleanDirectory(db.getPath(PREF_KEY_RESULTS_PATH).toFile()); }
+    try { FileUtils.cleanDirectory(db.resultsPath().toFile()); }
     catch (IOException e) { messageDialog("One or more files were not deleted. Reason: " + e.getMessage(), mtError); }
 
     if (startWatcher)
@@ -1818,7 +1815,7 @@ public class QueriesTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   @Override public void enable(boolean enabled)
   {
-    AnchorPane.class.cast(ui.tabQueries.getContent()).getChildren().forEach(node ->
+    getChildren().forEach(node ->
     {
       if (node != tabPane)
         node.setDisable(enabled == false);

@@ -17,13 +17,13 @@
 
 package org.hypernomicon.view.reports;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.dialogs.NewPersonDlgCtrlr.*;
-import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,8 +36,6 @@ import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.view.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.view.dialogs.NewPersonDlgCtrlr.PersonForDupCheck;
-import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.QueriesTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -173,8 +171,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
       if (npdc.showModal() == false) return;
 
-      QueriesTabCtrlr queriesTab = (QueriesTabCtrlr) HyperTab.getHyperTab(queryTab);
-      queriesTab.btnExecuteClick();
+      ui.queryHyperTab().btnExecuteClick();
     });
 
     ht.addCol(hdtNone, ctNone);

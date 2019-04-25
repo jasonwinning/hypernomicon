@@ -21,7 +21,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
@@ -50,9 +49,6 @@ import org.hypernomicon.view.controls.HiddenSidesPane;
 import org.hypernomicon.view.dialogs.NewLinkDlgCtrlr;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
-import org.hypernomicon.view.tabs.FileTabCtrlr;
-import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.WorkTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import javafx.application.Platform;
@@ -343,16 +339,12 @@ public class MainTextCtrlr
 
     if (keyType == hdtWork)
     {
-      WorkTabCtrlr workCtrlr = HyperTab.getHyperTab(workTab);
-
-      if (workCtrlr.showWorkDialog(null) == false)
+      if (ui.workHyperTab().showWorkDialog(null) == false)
         ui.deleteCurrentRecord(false);
     }
     else
     {
-      FileTabCtrlr fileCtrlr = HyperTab.getHyperTab(miscFileTab);
-
-      if (fileCtrlr.showFileDialog(null) == false)
+      if (ui.fileHyperTab().showFileDialog(null) == false)
         ui.deleteCurrentRecord(false);
     }
   }

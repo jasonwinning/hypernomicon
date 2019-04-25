@@ -19,7 +19,6 @@ package org.hypernomicon.view;
 
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.TreeTabCtrlr;
 import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 import org.hypernomicon.view.wrappers.ClickHoldButton;
 
@@ -77,7 +76,7 @@ public class HyperViewSequence
 
       HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = getHyperTabByTab(newTab);
 
-      if (hyperTab.getTabEnum() != workTab)
+      if (hyperTab.getTabEnum() != workTabEnum)
         bibManagerDlg.workRecordToAssign.set(null);
 
       forwardToNewSlotAndView(hyperTab.getView());
@@ -166,7 +165,7 @@ public class HyperViewSequence
     {
       HyperView<? extends HDT_Record> view = curHyperView();
 
-      if ((view.getTabEnum() != queryTab) && (view.getTabEnum() != treeTab) && (view.getViewRecord() == null))
+      if ((view.getTabEnum() != queryTabEnum) && (view.getTabEnum() != treeTabEnum) && (view.getViewRecord() == null))
         advance = false;
     }
 
@@ -203,7 +202,7 @@ public class HyperViewSequence
 
     ui.update();
 
-    if (curHyperTab.getTabEnum() != queryTab) nullSwitch(ui.activeRecord(), activeRecord ->
+    if (curHyperTab.getTabEnum() != queryTabEnum) nullSwitch(ui.activeRecord(), activeRecord ->
     {
       if (activeRecord.getType() == hdtPerson)
       {
@@ -214,11 +213,11 @@ public class HyperViewSequence
         ui.omniFocus();
     });
 
-    if (curHyperTab.getTabEnum() != workTab)
+    if (curHyperTab.getTabEnum() != workTabEnum)
       bibManagerDlg.workRecordToAssign.set(null);
 
-    if (curHyperTab.getTabEnum() == treeTab)
-      TreeTabCtrlr.class.cast(getHyperTab(treeTab)).selectRecord(curView.getViewRecord(), true);
+    if (curHyperTab.getTabEnum() == treeTabEnum)
+      ui.treeHyperTab().selectRecord(curView.getViewRecord(), true);
   }
 
 //---------------------------------------------------------------------------
@@ -296,8 +295,8 @@ public class HyperViewSequence
 
       switch (view.getTabEnum())
       {
-        case queryTab : beforePart = "(Queries tab) "; break;
-        case treeTab  : beforePart = "(Tree tab) ";    break;
+        case queryTabEnum : beforePart = "(Queries tab) "; break;
+        case treeTabEnum  : beforePart = "(Tree tab) ";    break;
         default       :                                break;
       }
 

@@ -27,7 +27,6 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
-import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.model.Exceptions.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
@@ -815,7 +814,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     ivPerson.setOnMouseClicked(event ->
     {
-      PictureDlgCtrlr ctrlr = PictureDlgCtrlr.create("Edit Picture", viewPort, this);
+      PictureDlgCtrlr ctrlr = PictureDlgCtrlr.create("Edit Picture", viewPort);
 
       if (ctrlr.showModal())
         viewPort = ctrlr.getViewPort();
@@ -953,9 +952,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       inv.person.set(curPerson);
       inv.setName(dlg.newName());
       work.investigations.add(inv);
-
-      PersonTabCtrlr personTabCtrlr = getHyperTab(personTab);
-      personTabCtrlr.addInvView(inv);
+      addInvView(inv);
     }
 
     HyperTableCell newValue = new HyperTableCell(work.investigations.isEmpty() ? -1 : work.investigations.get(0).getID(), work.getInvText(curPerson), hdtInvestigation);
