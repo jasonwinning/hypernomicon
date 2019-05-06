@@ -18,16 +18,13 @@
 package org.hypernomicon.view.dialogs;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 public class NewLinkDlgCtrlr extends HyperDlg
 {
   @FXML public TextField tfDisplayText, tfURL;
-  @FXML private Button btnOk, btnCancel;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -35,18 +32,10 @@ public class NewLinkDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if (tfDisplayText.getText().trim().length() == 0)
-    {
-      messageDialog("Enter the text to be displayed.", mtError);
-      safeFocus(tfDisplayText);
-      return false;
-    }
+      return falseWithErrorMessage("Enter the text to be displayed.", tfDisplayText);
 
     if (tfURL.getText().trim().length() == 0)
-    {
-      messageDialog("Enter a web address (URL).", mtError);
-      safeFocus(tfURL);
-      return false;
-    }
+      return falseWithErrorMessage("Enter a web address (URL).", tfURL);
 
     return true;
   }

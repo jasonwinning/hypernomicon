@@ -25,13 +25,11 @@ import org.hypernomicon.bib.LibraryWrapper.SyncTask;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 
 public class SyncBibDlgCtrlr extends HyperDlg
 {
   @FXML private ProgressBar progressBar;
-  @FXML private Button btnCancel;
 
   private SyncTask syncTask = null;
 

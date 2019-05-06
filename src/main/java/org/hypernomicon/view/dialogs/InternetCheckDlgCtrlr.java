@@ -26,9 +26,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -36,10 +33,6 @@ import javafx.scene.control.ProgressBar;
 public class InternetCheckDlgCtrlr extends HyperDlg
 {
   private HyperTask task;
-
-  @FXML private ProgressBar progressBar;
-  @FXML private Button btnCancel, btnSkip;
-  @FXML private Label lblTask, lblPercent;
 
   @Override protected boolean isValid() { return false; }
 

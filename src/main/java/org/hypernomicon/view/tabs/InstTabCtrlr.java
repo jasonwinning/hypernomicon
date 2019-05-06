@@ -45,7 +45,6 @@ import java.util.List;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -64,13 +63,11 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   @FXML private TextField tfLink;
   @FXML private ComboBox<HyperTableCell> cbType, cbParentInst, cbState, cbCountry;
   @FXML private TableView<HyperTableRow> tvSubInstitutions, tvPersons;
-  @FXML private Hyperlink hlGoogleMaps;
   @FXML private SplitPane spHoriz;
 
   @Override public String getRecordName()              { return tfName.getText(); }
   @Override HDT_RecordType getType()                   { return hdtInstitution; }
   @Override public void enable(boolean enabled)        { ui.tabInst.getContent().setDisable(enabled == false); }
-  @Override void focusOnSearchKey()                    { return; }
   @Override public void setRecord(HDT_Institution rec) { curInst = rec; }
   @Override public void setDividerPositions()          { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
   @Override public void getDividerPositions()          { getDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
@@ -196,7 +193,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     htSubInst.addContextMenuItem("Delete this institution record", HDT_Institution.class, inst ->
     {
-      if (ui.cantSaveRecord(true)) return;
+      if (ui.cantSaveRecord()) return;
       if (confirmDialog("Are you sure you want to delete this record?") == false) return;
       db.deleteRecord(hdtInstitution, inst.getID());
       ui.update();
@@ -278,16 +275,10 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean saveToRecord(boolean showMessage)
+  @Override public boolean saveToRecord()
   {
     if (hcbType.selectedID() < 1)
-    {
-      if (showMessage)
-        messageDialog("You must select a type.", mtError);
-
-      safeFocus(cbType);
-      return false;
-    }
+      return falseWithErrorMessage("You must select a type.", cbType);
 
     boolean locationChanged = false;
 

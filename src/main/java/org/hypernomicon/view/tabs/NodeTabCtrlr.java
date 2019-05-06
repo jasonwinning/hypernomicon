@@ -69,7 +69,6 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 
   String getRecordName()               { return tfName.getText(); }
-  void focusOnSearchKey()              { safeFocus(tfSearchKey); }
   void hilite(String text)             { mainText.hilite(text); }
   TextViewInfo getMainTextInfo()       { return mainText.getViewInfo(); }
   MainTextWrapper getMainTextWrapper() { return mainText; }
@@ -148,7 +147,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
     miUnlink.setText("Unlink");
     miUnlink.setOnAction(ae ->
     {
-      if (ui.cantSaveRecord(true)) return;
+      if (ui.cantSaveRecord()) return;
       record.getLink().disconnectRecord(record.getType(), true);
       ui.update();
     });
@@ -321,7 +320,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 
   private void linkToTermClick()
   {
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     SelectConceptDlgCtrlr frmSelectConcept = SelectConceptDlgCtrlr.create("Term select", null);
 
@@ -403,26 +402,18 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean save(HDT_CT record, boolean showMessage, HyperNodeTab<HDT_RT, HDT_CT> hyperTab)
+  boolean save(HDT_CT record)
   {
     if (record.getType() == hdtConcept)
     {
       if (tfSearchKey.getText().length() == 0)
-      {
-        messageDialog("Unable to modify record: search key of term cannot be zero-length.", mtError);
-        safeFocus(tfSearchKey);
-        return false;
-      }
+        return falseWithErrorMessage("Unable to modify record: search key of term cannot be zero-length.", tfSearchKey);
 
       if (tfName.getText().length() == 0)
-      {
-        messageDialog("Unable to modify record: term cannot be zero-length.", mtError);
-        safeFocus(tfName);
-        return false;
-      }
+        return falseWithErrorMessage("Unable to modify record: term cannot be zero-length.", tfName);
     }
 
-    if (!hyperTab.saveSearchKey(record, tfSearchKey, showMessage)) return false;
+    if (!HyperTab.saveSearchKey(record, tfSearchKey)) return false;
 
     record.setName(tfName.getText());
 

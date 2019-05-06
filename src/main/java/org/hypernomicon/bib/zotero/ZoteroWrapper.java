@@ -498,16 +498,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       errMsgList.add(item.getEntryKey() + " code: " + jError.getLong("code", -1) + " " + jError.getStr("message"));
     });
 
-    fxThreadReturnValue = null;
-
-    runInFXThread(() ->
-    {
-      messageDialogSameThread(strListToStr(errMsgList, false), mtError);
-
-      fxThreadReturnValue = Boolean.TRUE;
-    });
-
-    while (fxThreadReturnValue == null) sleepForMillis(100);
+    messageDialog(strListToStr(errMsgList, false), mtError, true);
   }
 
   //---------------------------------------------------------------------------

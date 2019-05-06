@@ -20,7 +20,6 @@ package org.hypernomicon.view.dialogs;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.EnumSet;
@@ -107,25 +106,13 @@ public class NewCategoryDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if (tfNewName.getText().length() == 0)
-    {
-      messageDialog("Record name cannot be blank.", mtError);
-      safeFocus(tfNewName);
-      return false;
-    }
+      return falseWithErrorMessage("Record name cannot be blank.", tfNewName);
 
     if (tfNewKey.getText().length() == 0)
-    {
-      messageDialog("Sort key cannot be blank.", mtError);
-      safeFocus(tfNewKey);
-      return false;
-    }
+      return falseWithErrorMessage("Sort key cannot be blank.", tfNewKey);
 
     if (hcbRecordType.selectedType() == hdtNone)
-    {
-      messageDialog("You must select a record type.", mtError);
-      safeFocus(cbRecordType);
-      return false;
-    }
+      return falseWithErrorMessage("You must select a record type.", cbRecordType);
 
     return true;
   }

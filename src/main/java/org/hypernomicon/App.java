@@ -124,6 +124,7 @@ public final class App extends Application
     app = this;
 
     Logger.getLogger("org.apache").setLevel(Level.WARN);
+    BasicConfigurator.configure();
 
     String rtArgs = getRuntimeMXBean().getInputArguments().toString();
     isDebugging = rtArgs.contains("-agentlib:jdwp") || rtArgs.contains("-Xrunjdwp");
@@ -149,10 +150,12 @@ public final class App extends Application
 
     try
     {
+      tika = new TikaConfig();
+
       appPrefs = Preferences.userNodeForPackage(App.class);
       db.init(appPrefs, folderTreeWatcher);
     }
-    catch (SecurityException | HDB_InternalError e)
+    catch (SecurityException | HDB_InternalError | TikaException | IOException e)
     {
       appPrefs = null;
       messageDialog("Initialization error: " + e.getMessage(), mtError, true);
@@ -174,11 +177,14 @@ public final class App extends Application
 
     primaryStage.setTitle(appTitle);
 
-    if ((appPrefs == null) || !initMainWindows())
+    if (appPrefs == null)
     {
       Platform.exit();
       return;
     }
+
+    if (!initMainWindows())
+      return;
 
     List<String> args = new ArrayList<>(getParameters().getUnnamed());
 
@@ -258,9 +264,6 @@ public final class App extends Application
 
     try
     {
-      tika = new TikaConfig();
-      BasicConfigurator.configure();
-
       FXMLLoader loader = new FXMLLoader(App.class.getResource("view/Main.fxml"));
       Region rootNode = loader.load();
 
@@ -308,6 +311,9 @@ public final class App extends Application
 
       scene.addEventFilter(DragEvent.DRAG_OVER, event ->
       {
+        if (event.getDragboard().hasContent(HYPERNOMICON_DATA_FORMAT))
+          return;
+
         if (event.getDragboard().hasFiles())
           event.acceptTransferModes(TransferMode.MOVE);
 
@@ -316,6 +322,9 @@ public final class App extends Application
 
       scene.addEventFilter(DragEvent.DRAG_DROPPED, event ->
       {
+        if (event.getDragboard().hasContent(HYPERNOMICON_DATA_FORMAT))
+          return;
+
         Dragboard board = event.getDragboard();
 
         if (board.hasImage())
@@ -415,14 +424,14 @@ public final class App extends Application
       contentsWindow.setInitWidth(PREF_KEY_CONTENTS_WINDOW_WIDTH);
       contentsWindow.setInitHeight(PREF_KEY_CONTENTS_WINDOW_HEIGHT);
     }
-    catch(IOException | TikaException e)
+    catch(IOException e)
     {
-      messageDialog("Unable to initialize. Reason: " + e.getMessage(), mtError);
+      messageDialog("Initialization error: " + e.getMessage(), mtError);
 
       if (ui != null)
         ui.shutDown(false, false, false);
-
-      return false;
+      else
+        Platform.exit();
     }
 
     return true;

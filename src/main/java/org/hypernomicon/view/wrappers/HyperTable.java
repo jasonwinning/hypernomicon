@@ -158,6 +158,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   @FunctionalInterface public static interface RowBuilder<T> { void buildRow(HyperTableRow row, T object); }
 
   public <T> void buildRows(Iterable<T> objs, RowBuilder<T> bldr) { objs.forEach(obj -> bldr.buildRow(newDataRow(), obj)); }
+  public <T> void buildRows(Stream<T>   objs, RowBuilder<T> bldr) { objs.forEach(obj -> bldr.buildRow(newDataRow(), obj)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -634,13 +635,12 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     {
       pop = cols.get(colNdx - 1).getPopulator();
 
-      if (pop != null)
-        if (pop.getValueType() == CellValueType.cvtRecordType)
-        {
-          rtp = (RecordTypePopulator) pop;
+      if ((pop != null) && (pop.getValueType() == CellValueType.cvtRecordType))
+      {
+        rtp = (RecordTypePopulator) pop;
 
-          rtp.getTypes().forEach(objType -> ui.treeTargetTypes.add(new TreeTargetType(getRelation(ui.activeType(), objType), objType)));
-        }
+        rtp.getTypes().forEach(objType -> ui.treeTargetTypes.add(new TreeTargetType(getRelation(ui.activeType(), objType), objType)));
+      }
     }
 
     if (rtp == null)
@@ -665,9 +665,8 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
         List<HyperTableCell> choices = pop.populate(row, false);
         HDT_Record record = null;
 
-        if (choices != null)
-          if (choices.size() > 0)
-            record = HyperTableCell.getRecord(choices.get(0));
+        if (collEmpty(choices) == false)
+          record = HyperTableCell.getRecord(choices.get(0));
 
         startID = record == null ? 1 : record.getID();
         startType = hdtWorkLabel;
@@ -719,7 +718,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
         if (onlyIfCanAddRows && (canAddRows == false)) return;
 
         if (ui.windows.getOutermostModality() == Modality.NONE)
-          if (ui.cantSaveRecord(true)) return;
+          if (ui.cantSaveRecord()) return;
 
         boolean couldAddRows = canAddRows;
 
@@ -735,7 +734,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
         else
         {
           if (ui.windows.getOutermostModality() == Modality.NONE)
-            ui.cantSaveRecord(true);
+            ui.cantSaveRecord();
         }
 
         canAddRows = couldAddRows;
@@ -777,7 +776,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     ArrayList<ObjectGroup> list = new ArrayList<>();
     HDT_RecordType objType = db.getObjType(relType);
 
-    db.getNestedTags(relType).stream().filter(tag -> colNdxToTag.containsValue(tag) == false).forEach(tag -> colNdxToTag.put(-1, tag));
+    db.getNestedTags(relType).stream().filter(Predicate.not(colNdxToTag::containsValue)).forEach(tag -> colNdxToTag.put(-1, tag));
 
     rows.forEach(row ->
     {

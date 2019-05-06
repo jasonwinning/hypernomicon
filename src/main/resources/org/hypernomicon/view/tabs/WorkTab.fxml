@@ -193,13 +193,13 @@
                                                   </items>
                                                 </SplitMenuButton>
                                             <TextField fx:id="tfDOI" layoutX="82.0" layoutY="3.0" prefHeight="25.0" prefWidth="165.0" AnchorPane.leftAnchor="124.0" AnchorPane.topAnchor="3.0" />
-                                                <MenuButton fx:id="btnWebQuery" layoutX="4.0" layoutY="30.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="118.0" text="Web Query" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="30.0">
+                                                <MenuButton layoutX="4.0" layoutY="30.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="118.0" text="Web Query" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="30.0">
                                                   <items>
                                                     <MenuItem fx:id="mnuFindDOIonCrossref" mnemonicParsing="false" text="Find DOI and bibliographic information on Crossref" />
                                                     <MenuItem fx:id="mnuFindISBNonGoogleBooks" mnemonicParsing="false" text="Find ISBN and bibliographic information on Google Books" />
                                                   </items>
                                                 </MenuButton>
-                                                <MenuButton fx:id="btnPDFMeta" layoutX="4.0" layoutY="57.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="118.0" text="PDF metadata" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="57.0">
+                                                <MenuButton layoutX="4.0" layoutY="57.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="118.0" text="PDF metadata" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="57.0">
                                                   <items>
                                                     <MenuItem fx:id="mnuShowMetadata" mnemonicParsing="false" text="Show existing metadata in PDF" />
                                                     <MenuItem fx:id="mnuStoreMetadata" mnemonicParsing="false" text="Store this metadata into PDF" />

@@ -49,10 +49,13 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
   public String getText()         { return text; }
   public HDT_RecordType getType() { return type; }
 
+  public <HDT_T extends HDT_Record> HDT_T getRecord()           { return HyperTableCell.getRecord(this); }
+
   static HyperTableCell fromBoolean(boolean boolVal)            { return boolVal ? trueCell : falseCell; }
   public static int getCellID(HyperTableCell cell)              { return cell == null ? -1 : cell.id; }
   public static String getCellText(HyperTableCell cell)         { return cell == null ? "" : safeStr(cell.text); }
   public static HDT_RecordType getCellType(HyperTableCell cell) { return ((cell == null) || (cell.type == null)) ? hdtNone : cell.type; }
+  public static boolean isEmpty(HyperTableCell cell)            { return cell == null ? true : cell.equals(HyperTableCell.blankCell); }
 
   @Override public HyperTableCell clone()
   { try { return (HyperTableCell) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }}
@@ -139,8 +142,6 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
 
   @Override public int compareTo(HyperTableCell otherCell)
   {
-    String thisKey = "", otherKey = "";
-
     if (sortMethod == hsmLast)
       return Integer.MAX_VALUE;
     else if (otherCell.sortMethod == hsmLast)
@@ -154,18 +155,16 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
     }
     else if (sortMethod == hsmWork)
     {
-      HDT_Work thisWork = getRecord(this), otherWork = getRecord(otherCell);
+      HDT_Work thisWork = getRecord(), otherWork = otherCell.getRecord();
 
-      int numAuthors = Math.max(thisWork.getAuthors().size(), otherWork.getAuthors().size());
-      int ndx, cResult;
+      int cResult, numAuthors = Math.max(thisWork.getAuthors().size(), otherWork.getAuthors().size());
 
-      for (ndx = 0; ndx < numAuthors; ndx++)
+      for (int ndx = 0; ndx < numAuthors; ndx++)
       {
         if ((ndx >= thisWork.getAuthors().size()) || (ndx >= otherWork.getAuthors().size()))
           return thisWork.getAuthors().size() - otherWork.getAuthors().size();
 
         cResult = thisWork.getAuthors().get(ndx).compareTo(otherWork.getAuthors().get(ndx));
-
         if (cResult != 0) return cResult;
       }
 
@@ -175,17 +174,15 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
       return thisWork.getSortKey().compareTo(otherWork.getSortKey());
     }
 
-    if (id > 0)
-      if (type != null)
-        if (type != hdtNone)
-          thisKey = db.records(type).getByID(id).getSortKey();
+    String thisKey = "", otherKey = "";
+
+    if ((id > 0) && (type != null) && (type != hdtNone))
+      thisKey = db.records(type).getByID(id).getSortKey();
 
     if (thisKey.length() == 0) thisKey = makeSortKeyByType(text, type);
 
-    if (otherCell.id > 0)
-      if (otherCell.type != null)
-        if (otherCell.type != hdtNone)
-          otherKey = db.records(otherCell.type).getByID(otherCell.id).getSortKey();
+    if ((otherCell.id > 0) && (otherCell.type != null) && (otherCell.type != hdtNone))
+      otherKey = db.records(otherCell.type).getByID(otherCell.id).getSortKey();
 
     if (otherKey.length() == 0) otherKey = makeSortKeyByType(otherCell.text, otherCell.type);
 
@@ -203,14 +200,6 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
 
     HDT_RecordType type = getCellType(cell);
     return type == hdtNone ? null : (HDT_T)db.records(type).getByID(id);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static boolean isEmpty(HyperTableCell cell)
-  {
-    return cell == null ? true : cell.equals(HyperTableCell.blankCell);
   }
 
 //---------------------------------------------------------------------------

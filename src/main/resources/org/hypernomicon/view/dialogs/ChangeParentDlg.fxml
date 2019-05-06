@@ -85,7 +85,7 @@
                      </rowConstraints>
                      <children>
                         <Button fx:id="btnCopy" maxWidth="75.0" minWidth="75.0" mnemonicParsing="false" onAction="#btnCopyClick" prefWidth="75.0" text="Copy" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
-                        <Button fx:id="btnMove" maxWidth="75.0" minWidth="75.0" mnemonicParsing="false" onAction="#btnMoveClick" prefWidth="75.0" text="Move" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+                        <Button maxWidth="75.0" minWidth="75.0" mnemonicParsing="false" onAction="#btnMoveClick" prefWidth="75.0" text="Move" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
                         <Button fx:id="btnCancel" maxWidth="75.0" minWidth="75.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="75.0" text="Cancel" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
                      </children>
                   </GridPane>

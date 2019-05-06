@@ -201,10 +201,8 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
     if (row.getID(ht.getMainColNdx()) > 0) // That's not a typo, it should be the main column ndx for the table, not the target ndx
     {
-      if (ctrlType == ctGoNewBtn)
-        setAction(ButtonAction.baGo);
-      else if (ctrlType == ctEditNewBtn)
-        setAction(ButtonAction.baEdit);
+      if      (ctrlType == ctGoNewBtn  ) setAction(ButtonAction.baGo);
+      else if (ctrlType == ctEditNewBtn) setAction(ButtonAction.baEdit);
     }
     else if (ctrlType != ctBrowseBtn)
     {

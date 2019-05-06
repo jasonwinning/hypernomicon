@@ -176,4 +176,28 @@ public class BibDataStandalone extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public void setStartPage(String value)
+  {
+    BibField field = bibFieldEnumToBibField.get(bfPages);
+
+    String[] arr = field.getStr().split("-");
+
+    field.setStr(value + "-" + (arr.length > 1 ? arr[1] : ""));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void setEndPage(String value)
+  {
+    BibField field = bibFieldEnumToBibField.get(bfPages);
+
+    String[] arr = field.getStr().split("-");
+
+    field.setStr((arr.length > 0 ? arr[0] : "") + "-" + value);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

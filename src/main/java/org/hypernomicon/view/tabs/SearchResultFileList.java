@@ -262,7 +262,7 @@ public class SearchResultFileList
     {
       case hdtMiscFile : case hdtWorkFile :
 
-        addFile(record.getPath().getFilePath(), -1, -1);
+        addFile(record.filePath(), -1, -1);
         break;
 
       case hdtWork :
@@ -281,7 +281,7 @@ public class SearchResultFileList
               ((endPage < 1) && (startPage > 0)))
             errList.add("Warning: Work \"" + work.name() + "\", ID " + work.getID() + " is missing a start or end page number.");
 
-          addFile(workFile.getPath().getFilePath(), startPage, endPage);
+          addFile(workFile.filePath(), startPage, endPage);
         }
 
         work.subWorks .forEach(subWork  -> addRecord(subWork , includeEdited));

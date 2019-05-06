@@ -26,7 +26,6 @@ import java.util.List;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.MouseButton;
@@ -34,7 +33,6 @@ import javafx.util.StringConverter;
 
 public class RecordSelectDlgCtrlr extends HyperDlg
 {
-  @FXML private Button btnOK, btnCancel;
   @FXML public ListView<HyperTableCell> listView;
 
 //---------------------------------------------------------------------------
@@ -57,7 +55,7 @@ public class RecordSelectDlgCtrlr extends HyperDlg
 
     listView.setItems(FXCollections.observableArrayList(list));
 
-    StringConverter<HyperTableCell> strConv = new StringConverter<HyperTableCell>()
+    StringConverter<HyperTableCell> strConv = new StringConverter<>()
     {
       @Override public String toString(HyperTableCell cell)     { return HyperTableCell.getCellText(cell); }
       @Override public HyperTableCell fromString(String string) { return new HyperTableCell(-1, string, objType); }
@@ -67,7 +65,7 @@ public class RecordSelectDlgCtrlr extends HyperDlg
 
     listView.setOnMouseClicked(mouseEvent ->
     {
-      if ((mouseEvent.getButton().equals(MouseButton.PRIMARY)) && (mouseEvent.getClickCount() == 2))
+      if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2))
         btnOkClick();
     });
   }

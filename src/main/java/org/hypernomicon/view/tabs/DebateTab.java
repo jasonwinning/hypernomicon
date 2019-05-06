@@ -46,7 +46,6 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
   @Override HDT_RecordType getType()                { return hdtDebate; }
   @Override public void enable(boolean enabled)     { ui.tabDebates.getContent().setDisable(enabled == false); }
-  @Override void focusOnSearchKey()                 { ctrlr.focusOnSearchKey(); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
   @Override public void setRecord(HDT_Debate deb)   { curDebate = deb; }
@@ -127,9 +126,9 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean saveToRecord(boolean showMessage)
+  @Override public boolean saveToRecord()
   {
-    if (!ctrlr.save(curDebate, showMessage, this)) return false;
+    if (!ctrlr.save(curDebate)) return false;
 
     curDebate.setLargerDebates(htParents.saveToList(2, hdtDebate));
 
@@ -143,7 +142,7 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
   @Override public void newClick(HDT_RecordType objType, HyperTableRow row)
   {
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     switch (objType)
     {

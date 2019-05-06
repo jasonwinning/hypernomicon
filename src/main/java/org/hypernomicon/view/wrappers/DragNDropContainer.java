@@ -17,6 +17,7 @@
 
 package org.hypernomicon.view.wrappers;
 
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Record;
@@ -30,7 +31,6 @@ import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.DataFormat;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -45,7 +45,6 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
   private double lastDragX, lastDragY;
   private ScrollBar scrollBar = null;
   private final Control ctrl;
-  private static final DataFormat HYPERNOMICON_DATA_FORMAT = new DataFormat("application/Hypernomicon");
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

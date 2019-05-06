@@ -105,10 +105,7 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 
     HDT_Work work = (HDT_Work)record;
 
-    HDT_WorkType workType = work.workType.get();
-    if (workType == null) return HDT_Work.addFileIndicator("Work", work);
-
-    switch (workType.getEnumVal())
+    switch (HDT_WorkType.getEnumVal(work.workType.get()))
     {
       case wtPaper     : typeName = "Paper"   ; break;
       case wtBook      : typeName = "Book"    ; break;

@@ -44,11 +44,11 @@ public class WorkBibData extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean linkedToWork()              { return true; }
-  @Override public HDT_Work getWork()                  { return work; }
-  @Override public HDT_WorkType getWorkType()          { return work.workType.get(); }
-  @Override public void setWorkType(HDT_WorkType type) { work.setWorkType(type.getEnumVal()); }
-  @Override public BibAuthors getAuthors()             { return new WorkBibAuthors(work); }
+  @Override public boolean linkedToWork()            { return true; }
+  @Override public HDT_Work getWork()                { return work; }
+  @Override public HDT_WorkType getWorkType()        { return work.workType.get(); }
+  @Override public void setWorkType(HDT_WorkType wt) { work.workType.set(wt); }
+  @Override public BibAuthors getAuthors()           { return new WorkBibAuthors(work); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

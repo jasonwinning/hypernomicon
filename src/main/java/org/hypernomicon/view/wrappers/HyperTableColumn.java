@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
-
+import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.populators.Populator;
@@ -54,10 +54,8 @@ public class HyperTableColumn
 {
   public static enum HyperCtrlType
   {
-    ctNone,     ctIncremental, ctDropDownList, ctDropDown,
-    ctEdit,     ctLinkBtn,     ctBrowseBtn,    ctGoBtn,
-    ctGoNewBtn, ctEditNewBtn,  ctCustomBtn,    ctCheckbox,
-    ctIcon,     ctInvSelect
+    ctNone,     ctIncremental, ctDropDownList, ctDropDown, ctEdit, ctLinkBtn,  ctBrowseBtn, ctGoBtn,
+    ctGoNewBtn, ctEditNewBtn,  ctCustomBtn,    ctCheckbox, ctIcon, ctInvSelect
   }
 
   final private TableColumn<HyperTableRow, HyperTableCell> tc;
@@ -194,7 +192,7 @@ public class HyperTableColumn
 
             if (type == hdtWork)
             {
-              HDT_Work work = HyperTableCell.getRecord(cell);
+              HDT_Work work = cell.getRecord();
 
               if (work.workType.isNotNull())
               {
@@ -204,7 +202,7 @@ public class HyperTableColumn
               }
             }
 
-            setGraphic(getImageViewForRelativePath(ui.getGraphicRelativePathByType(type)));
+            setGraphic(getImageViewForRecordType(type));
             setTooltip(new Tooltip(db.getTypeName(type)));
           }
         });
@@ -274,12 +272,9 @@ public class HyperTableColumn
   {
     List<HyperTableCell> choices = new ArrayList<>();
 
-    for (HyperTableRow row : tc.getTableView().getItems())
-    {
-      int recordID = row.getID(colNdx);
-      if (recordID > 0)
-        choices.add(new HyperTableCell(recordID, db.records(row.getType(colNdx)).getByID(recordID).getCBText(), row.getType(colNdx)));
-    }
+    tc.getTableView().getItems().forEach(row ->
+      nullSwitch(row.getRecord(colNdx), (HDT_Record record) -> choices.add(new HyperTableCell(record, record.getCBText()))));
+
     choices.add(HyperTableCell.blankCell);
 
     return choices;

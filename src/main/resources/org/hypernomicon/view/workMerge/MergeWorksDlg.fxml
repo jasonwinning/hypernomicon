@@ -32,7 +32,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="646.0" prefWidth="1039.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr">
+<AnchorPane prefHeight="646.0" prefWidth="1039.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr">
    <children>
       <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" layoutX="333.0" layoutY="150.0" vbarPolicy="ALWAYS" AnchorPane.bottomAnchor="32.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <content>
@@ -71,7 +71,7 @@
                                     </AnchorPane>
                                     <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                                        <children>
-                                          <Hyperlink fx:id="hlFixCase" text="Try to fix case" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="4.0" />
+                                          <Hyperlink fx:id="hlFixCase" text="Conform case" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="4.0" />
                                        </children>
                                     </AnchorPane>
                                     <AnchorPane GridPane.rowIndex="1">

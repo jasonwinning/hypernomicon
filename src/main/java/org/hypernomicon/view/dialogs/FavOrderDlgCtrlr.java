@@ -33,7 +33,7 @@ import static org.hypernomicon.view.HyperFavorites.*;
 public class FavOrderDlgCtrlr extends HyperDlg
 {
   @FXML private ListView<MenuItem> lvRecord, lvQuery;
-  @FXML private Button btnRecordUp, btnRecordDown, btnQueryUp, btnQueryDown, btnOk;
+  @FXML private Button btnRecordUp, btnRecordDown, btnQueryUp, btnQueryDown;
 
   @Override protected boolean isValid() { return true; }
 

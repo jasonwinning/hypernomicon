@@ -46,6 +46,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.records.*;
@@ -90,13 +91,12 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   private TabPane tpConcepts;
   private boolean alreadyChangingTab = false, updatingGlossaries = false;
 
-  @Override HDT_RecordType getType()                         { return hdtTerm; }
-  @Override public void enable(boolean enabled)              { ui.tabTerms.getContent().setDisable(enabled == false); }
-  @Override void focusOnSearchKey()                          { ctrlr.focusOnSearchKey(); }
-  @Override public void findWithinDesc(String text)          { ctrlr.hilite(text); }
-  @Override public TextViewInfo getMainTextInfo()            { return ctrlr.getMainTextInfo(); }
-  @Override public void setRecord(HDT_Concept concept)       { curConcept = concept; curTerm = curConcept == null ? null : curConcept.term.get(); }
-  @Override public boolean saveToRecord(boolean showMessage) { return ctrlr.save(curConcept, showMessage, this); }
+  @Override HDT_RecordType getType()                   { return hdtTerm; }
+  @Override public void enable(boolean enabled)        { ui.tabTerms.getContent().setDisable(enabled == false); }
+  @Override public void findWithinDesc(String text)    { ctrlr.hilite(text); }
+  @Override public TextViewInfo getMainTextInfo()      { return ctrlr.getMainTextInfo(); }
+  @Override public void setRecord(HDT_Concept concept) { curConcept = concept; curTerm = curConcept == null ? null : curConcept.term.get(); }
+  @Override public boolean saveToRecord()              { return ctrlr.save(curConcept); }
 
   private ConceptTab curTab()      { return (ConceptTab) tpConcepts.getSelectionModel().getSelectedItem(); }
 
@@ -179,7 +179,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     {
       if (alreadyChangingTab) return;
 
-      if (!ctrlr.save(curConcept, true, this))
+      if (!ctrlr.save(curConcept))
       {
         alreadyChangingTab = true;
         tpConcepts.getSelectionModel().select(oldTab);
@@ -254,12 +254,12 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     });
 
     if (newList.size() > oldList.size())
-      nullSwitch(findFirst(newList, glossary -> oldList.contains(glossary) == false), glossary -> addGlossary(glossary, newList.indexOf(glossary)));
+      nullSwitch(findFirst(newList, Predicate.not(oldList::contains)), glossary -> addGlossary(glossary, newList.indexOf(glossary)));
     else if (newList.size() < oldList.size())
       nullSwitch(findFirst(oldList, glossary -> (newList.contains(glossary) == false) && (newList.size() > 0)), this::removeGlossary);
     else
     {
-      HDT_Glossary glossary = findFirst(newList, gl -> oldList.contains(gl) == false);
+      HDT_Glossary glossary = findFirst(newList, Predicate.not(oldList::contains));
 
       if (glossary != null)
       {
@@ -281,7 +281,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   void merge()
   {
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     RecordDropdownDlgCtrlr<HDT_Term> rdd = RecordDropdownDlgCtrlr.create("Select a Term Record to Merge With", hdtTerm);
     if (rdd.showModal() == false) return;
@@ -350,7 +350,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
       return;
     }
 
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     HDT_Concept concept = curConcept;
 

@@ -23,7 +23,6 @@ import org.hypernomicon.view.wrappers.ResultsTable.ColumnGroup;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.AnchorPane;
 import static org.hypernomicon.view.wrappers.ResultsTable.*;
 
@@ -32,7 +31,6 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
   @FXML private CheckBox chkSelectAll, chkSelectNone, chkFirstType, chkFirstField, chkSecondType;
   @FXML private Button btnOk;
   @FXML private AnchorPane innerPane;
-  @FXML private ScrollPane scrollPane;
 
 //---------------------------------------------------------------------------
 

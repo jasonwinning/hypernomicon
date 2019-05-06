@@ -119,7 +119,7 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 
       row.setOnMouseClicked(mouseEvent ->
       {
-        if ((mouseEvent.getButton().equals(MouseButton.PRIMARY)) && (mouseEvent.getClickCount() == 2))
+        if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2))
           nullSwitch(row.getItem(), item -> nullSwitch(item.getWork(), work -> ui.goToRecord(work, true)));
       });
 

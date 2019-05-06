@@ -49,7 +49,7 @@ import javafx.stage.FileChooser;
 
 public class FileDlgCtrlr extends HyperDlg
 {
-  @FXML private Button btnBrowseNew, btnBrowseOld, btnExplore, btnLaunch, btnOk, btnUseFile, btnUseRecord;
+  @FXML private Button btnUseRecord;
   @FXML private CheckBox chkDontChangeFilename;
   @FXML private Label lblName;
   @FXML private RadioButton rbCopy, rbMove, rbNeither;
@@ -133,7 +133,7 @@ public class FileDlgCtrlr extends HyperDlg
 
     if (curFileRecord != null)
     {
-      srcFilePath = curFileRecord.getPath().getFilePath();
+      srcFilePath = curFileRecord.filePath();
       if (FilePath.isEmpty(srcFilePath) == false)
       {
         tfCurrentPath.setText(srcFilePath.toString());
@@ -166,7 +166,7 @@ public class FileDlgCtrlr extends HyperDlg
         FilePath newFilePath = null;
 
         if (curWork.workFiles.size() > 0)
-          newFilePath = curWork.getPath().getFilePath();
+          newFilePath = curWork.filePath();
 
         if (FilePath.isEmpty(newFilePath) == false)
           tfNewPath.setText(newFilePath.getDirOnly().toString());
@@ -403,35 +403,19 @@ public class FileDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if (FilePath.isEmpty(srcFilePath))
-    {
-      messageDialog("You must enter a source file name.", mtError);
-      safeFocus(tfCurrentPath);
-      return false;
-    }
+      return falseWithErrorMessage("You must enter a source file name.", tfCurrentPath);
 
     if ((chkDontChangeFilename.isSelected() == false) && (tfFileName.getText().length() == 0))
-    {
-      messageDialog("You must enter a destination file name.", mtError);
-      safeFocus(tfFileName);
-      return false;
-    }
+      return falseWithErrorMessage("You must enter a destination file name.", tfFileName);
 
     if (tfNewPath.getText().length() == 0)
-    {
-      messageDialog("You must enter a destination path.", mtError);
-      safeFocus(tfNewPath);
-      return false;
-    }
+      return falseWithErrorMessage("You must enter a destination path.", tfNewPath);
 
     if (recordType == hdtMiscFile)
     {
       int fileTypeID = hcbType.selectedID();
       if ((fileTypeID < 1) && (hcbType.getText().length() == 0))
-      {
-        messageDialog("You must enter a file type.", mtError);
-        safeFocus(cbType);
-        return false;
-      }
+        return falseWithErrorMessage("You must enter a file type.", cbType);
     }
 
     // check to see if destination file name currently points to a file in the database

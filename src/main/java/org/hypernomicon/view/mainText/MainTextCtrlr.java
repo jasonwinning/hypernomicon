@@ -72,7 +72,6 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
@@ -86,11 +85,9 @@ import javafx.scene.web.WebView;
 
 public class MainTextCtrlr
 {
-  @FXML private AnchorPane anchorPane;
   @FXML private BorderPane borderPane;
   @FXML private Button btnAdd, btnInsert, btnMoveDown, btnMoveUp, btnNew, btnRemove;
   @FXML private ComboBox<HyperTableCell> cbKeyName, cbKeyType, cbName, cbType;
-  @FXML private GridPane gridPane;
   @FXML private HTMLEditor he;
   @FXML private HiddenSidesPane hsPane;
   @FXML private ListView<MainText.DisplayItem> lvRecords;
@@ -326,7 +323,7 @@ public class MainTextCtrlr
 
   private void btnNewClick()
   {
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     HDT_RecordType keyType = hcbKeyType.selectedType();
     ArrayList<KeyWork> keyWorks = new ArrayList<>(curRecord.getMainText().getKeyWorks());

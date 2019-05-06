@@ -70,7 +70,6 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override HDT_RecordType getType()                { return hdtNote; }
   @Override public void enable(boolean enabled)     { ui.tabNotes.getContent().setDisable(enabled == false); }
-  @Override void focusOnSearchKey()                 { ctrlr.focusOnSearchKey(); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
   @Override public void setRecord(HDT_Note note)    { curNote = note; }
@@ -84,7 +83,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     tfFolder.setText(curNote.getFolderStr());
 
-    folderPath = nullSwitch(curNote.folder.get(), null, folder -> folder.getPath().getFilePath());
+    folderPath = curNote.filePath();
 
     htParents.buildRows(curNote.parentNotes, (row, otherNote) -> row.setCellValue(2, otherNote, otherNote.name()));
 
@@ -192,10 +191,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     tabMentioners = new Tab("Mentioners", ctrlr.tvRightChildren);
     tabPane = new TabPane(tabSubnotes, tabMentioners);
 
-    AnchorPane.setLeftAnchor(tabPane, 0.0);
-    AnchorPane.setRightAnchor(tabPane, 0.0);
-    AnchorPane.setTopAnchor(tabPane, 0.0);
-    AnchorPane.setBottomAnchor(tabPane, 0.0);
+    setAnchors(tabPane, 0.0, 0.0, 0.0, 0.0);
 
     ctrlr.apLowerPane.getChildren().setAll(tabPane);
 
@@ -215,7 +211,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     addFolderMenuItem("Copy path to clipboard", event -> copyToClipboard(folderPath.toString()));
     addFolderMenuItem("Unassign folder", event ->
     {
-      if (ui.cantSaveRecord(true)) return;
+      if (ui.cantSaveRecord()) return;
       curNote.folder.set(null);
       ui.update();
     });
@@ -278,7 +274,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
   void browseClick()
   {
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     DirectoryChooser dirChooser = new DirectoryChooser();
 
@@ -286,8 +282,8 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     {
       HDT_Folder folder = curNote.getDefaultFolder();
 
-      if ((folder != null) && (folder.getPath().getFilePath().exists()))
-        dirChooser.setInitialDirectory(folder.getPath().getFilePath().toFile());
+      if ((folder != null) && folder.filePath().exists())
+        dirChooser.setInitialDirectory(folder.filePath().toFile());
       else
         dirChooser.setInitialDirectory(db.topicalPath().toFile());
     }
@@ -335,9 +331,9 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean saveToRecord(boolean showMessage)
+  @Override public boolean saveToRecord()
   {
-    if (!ctrlr.save(curNote, showMessage, this)) return false;
+    if (!ctrlr.save(curNote)) return false;
 
     curNote.setParentNotes(htParents.saveToList(2, hdtNote));
 
@@ -351,7 +347,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override public void newClick(HDT_RecordType objType, HyperTableRow row)
   {
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     switch (objType)
     {

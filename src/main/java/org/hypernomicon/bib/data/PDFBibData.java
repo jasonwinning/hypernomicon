@@ -258,12 +258,11 @@ public class PDFBibData extends BibDataStandalone
       if (nameIsNotExcluded(name))
         bd.extractDOIandISBNs(value);
 
-      prefixToNameToChild.values().forEach(nameToChild ->
-        nameToChild.forEach((childName, child) ->
-        {
-          if (nameIsNotExcluded(childName))
-            child.extractDOIandISBNs(bd);
-        }));
+      prefixToNameToChild.values().forEach(nameToChild -> nameToChild.forEach((childName, child) ->
+      {
+        if (nameIsNotExcluded(childName))
+          child.extractDOIandISBNs(bd);
+      }));
 
       elements.forEach(child -> child.extractDOIandISBNs(bd));
     }
@@ -294,6 +293,10 @@ public class PDFBibData extends BibDataStandalone
           {
             elements.forEach(child -> bd.addStr(bfMisc, child.value));
           }
+          else if (name.equals("publisher"))
+          {
+            bd.setStr(bfPublisher, elements.get(0).value);
+          }
         }
         else if (safeStr(prefix).startsWith("prism"))
         {
@@ -318,7 +321,15 @@ public class PDFBibData extends BibDataStandalone
           switch (name)
           {
             case "aggregationType" : bd.setEntryType(EntryType.parsePrismAggregationType(value)); break;
-            case "issn"            : bd.addISSN(value); break;
+            case "issn"            : bd.addISSN(value);                  break;
+            case "publicationName" : bd.addStr(bfContainerTitle, value); break;
+            case "volume"          : bd.setStr(bfVolume, value);         break;
+            case "number"          :
+            case "issueIdentifier" : bd.setStr(bfIssue, value);          break;
+            case "pageRange"       : bd.setStr(bfPages, value);          break;
+            case "startingPage"    : bd.setStartPage(value);             break;
+            case "endingPage"      : bd.setEndPage(value);               break;
+            case "url"             : bd.setStr(bfURL, value);            break;
           }
         }
       }
@@ -326,6 +337,11 @@ public class PDFBibData extends BibDataStandalone
       {
         if (name.equals("Label"))
           bd.addStr(bfMisc, value);
+      }
+      else if (safeStr(prefix).equals("dc"))
+      {
+        if (name.equals("source") && isStringUrl(value))
+          bd.setStr(bfURL, value);
       }
 
       prefixToNameToChild.values().forEach(nameToChild ->

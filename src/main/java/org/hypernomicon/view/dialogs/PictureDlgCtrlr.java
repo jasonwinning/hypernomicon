@@ -48,6 +48,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
@@ -71,9 +72,9 @@ public class PictureDlgCtrlr extends HyperDlg
 
   @FXML private RadioButton rbNone, rbFile, rbWeb, rbCurrent;
   @FXML private TextField tfCurrent, tfFile, tfWeb;
-  @FXML private Button btnBrowse;
+  @FXML private Button btnBrowse, btnPaste;
   @FXML private TextField tfName;
-  @FXML private Button btnRefresh, btnDelete, btnShow, btnEdit, btnOK, btnCancel, btnGoogle;
+  @FXML private Button btnRefresh, btnDelete, btnShow, btnEdit, btnGoogle;
   @FXML private AnchorPane apPicture;
   @FXML private ImageView ivPicture;
   @FXML private Label lblChangeName;
@@ -99,18 +100,14 @@ public class PictureDlgCtrlr extends HyperDlg
   {
     this.personHyperTab = ui.personHyperTab();
 
-    ivPicture.fitWidthProperty().bind(apPicture.widthProperty());
+    ivPicture.fitWidthProperty ().bind(apPicture.widthProperty ());
     ivPicture.fitHeightProperty().bind(apPicture.heightProperty());
 
-    apPicture.widthProperty().addListener((ob, oldValue, newValue) ->
-    {
-      resizeCrop(newValue.doubleValue(), apPicture.getHeight());
-    });
+    btnPaste.setOnAction(event -> tfWeb.setText(getClipboardText(true)));
+    btnPaste.setTooltip(new Tooltip("Paste text from clipboard"));
 
-    apPicture.heightProperty().addListener((ob, oldValue, newValue) ->
-    {
-      resizeCrop(apPicture.getWidth(), newValue.doubleValue());
-    });
+    apPicture.widthProperty ().addListener((ob, oldValue, newValue) -> resizeCrop(newValue .doubleValue(), apPicture.getHeight  ()));
+    apPicture.heightProperty().addListener((ob, oldValue, newValue) -> resizeCrop(apPicture.getWidth   (), newValue .doubleValue()));
 
     btnBrowse.setOnAction(event -> btnBrowseClick());
 
@@ -143,34 +140,28 @@ public class PictureDlgCtrlr extends HyperDlg
       return change;
     }));
 
-    tfWeb.focusedProperty().addListener((ob, oldValue, newValue) ->
+    tfWeb.focusedProperty().addListener((ob, oldValue, newValue) -> Platform.runLater(() ->
     {
-      Platform.runLater(() ->
-      {
-        if (tfWeb.isFocused() && !tfWeb.getText().isEmpty())
-          tfWeb.selectAll();
-      });
-    });
+      if (tfWeb.isFocused() && !tfWeb.getText().isEmpty())
+        tfWeb.selectAll();
+    }));
 
-    tfName.focusedProperty().addListener((ob, oldValue, newValue) ->
+    tfName.focusedProperty().addListener((ob, oldValue, newValue) -> Platform.runLater(() ->
     {
-      Platform.runLater(() ->
+      if (tfName.isFocused() && !tfName.getText().isEmpty())
       {
-        if (tfName.isFocused() && !tfName.getText().isEmpty())
-        {
-          if (FilenameUtils.indexOfExtension(tfName.getText()) >= 0)
-            tfName.selectRange(0, FilenameUtils.indexOfExtension(tfName.getText()));
-          else
-            tfName.selectAll();
-        }
-      });
-    });
+        if (FilenameUtils.indexOfExtension(tfName.getText()) >= 0)
+          tfName.selectRange(0, FilenameUtils.indexOfExtension(tfName.getText()));
+        else
+          tfName.selectAll();
+      }
+    }));
 
     btnRefresh.setOnAction(event ->
     {
       if      (rbCurrent.isSelected()) rbCurrentSelected();
-      else if (rbFile.isSelected())    rbFileSelected();
-      else if (rbWeb.isSelected())     rbWebSelected();
+      else if (rbFile   .isSelected()) rbFileSelected();
+      else if (rbWeb    .isSelected()) rbWebSelected();
     });
 
     btnShow   .disableProperty().bind(rbCurrent.selectedProperty().not().and(rbFile.selectedProperty().not()));
@@ -196,11 +187,8 @@ public class PictureDlgCtrlr extends HyperDlg
 
     btnGoogle.setOnAction(event ->
     {
-      String term = personHyperTab.tfFirst.getText() + " " +
-                    personHyperTab.tfLast.getText() + " " +
-                    HyperTableCell.getCellText(personHyperTab.cbField.getSelectionModel().getSelectedItem());
-
-      searchGoogleImage(term);
+      searchGoogleImage(personHyperTab.tfFirst.getText() + " " + personHyperTab.tfLast.getText() + " " +
+                        HyperTableCell.getCellText(personHyperTab.cbField.getSelectionModel().getSelectedItem()));
     });
 
     ivPicture.setOnMousePressed(event ->
@@ -233,7 +221,7 @@ public class PictureDlgCtrlr extends HyperDlg
 
     lblChangeName.setOnMouseClicked(event -> autoGenerateName());
 
-    btnEdit.setOnAction(event -> btnEditClick());
+    btnEdit  .setOnAction(event -> btnEditClick  ());
     btnDelete.setOnAction(event -> btnDeleteClick());
 
     btnDelete.disableProperty().bind(rbCurrent.selectedProperty().not());
@@ -777,22 +765,14 @@ public class PictureDlgCtrlr extends HyperDlg
   //---------------------------------------------------------------------------
 
     if (newFileNewName.length() == 0)
-    {
-      messageDialog("Name cannot be blank.", mtError);
-      safeFocus(tfName);
-      return false;
-    }
+      return falseWithErrorMessage("Name cannot be blank.", tfName);
 
     if (rbWeb.isSelected())
     {
       newFileOldName = "";
 
       if (tfWeb.getText().length() == 0)
-      {
-        messageDialog("Please enter a web address.", mtError);
-        safeFocus(tfWeb);
-        return false;
-      }
+        return falseWithErrorMessage("Please enter a web address.", tfWeb);
 
       if (newFileNew.exists())
       {
@@ -820,26 +800,13 @@ public class PictureDlgCtrlr extends HyperDlg
       newFileOldName = newFileOrig.getNameOnly().toString();
 
       if (FilePath.isEmpty(newFileOrig) || (newFileOldName.length() == 0))
-      {
-        messageDialog("Please specify a file from the local file system.", mtError);
-        safeFocus(tfFile);
-        return false;
-      }
+        return falseWithErrorMessage("Please specify a file from the local file system.", tfFile);
 
       if (newFileOrig.exists() == false)
-      {
-        messageDialog("Please select an existing file.", mtError);
-        safeFocus(tfFile);
-        return false;
-      }
+        return falseWithErrorMessage("Please select an existing file.", tfFile);
 
-      if (FilePath.isEmpty(curFile) == false)
-        if (curFile.equals(newFileOrig))
-        {
-          messageDialog("Previous file and new file are the same.", mtError);
-          safeFocus(tfFile);
-          return false;
-        }
+      if ((FilePath.isEmpty(curFile) == false) && curFile.equals(newFileOrig))
+        return falseWithErrorMessage("Previous file and new file are the same.", tfFile);
     }
 
   //---------------------------------------------------------------------------

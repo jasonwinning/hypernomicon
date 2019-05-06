@@ -65,7 +65,7 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 public class OptionsDlgCtrlr extends HyperDlg
 {
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
-  @FXML private Button btnAuthorize, btnImageEditorBrowse, btnPDFReaderBrowse, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced;
+  @FXML private Button btnAuthorize, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced;
   @FXML private CheckBox chkAddInitial, chkAutoOpenPDF, chkAutoRetrieveBib, chkInternet, chkLowercase,
                          chkPosix, chkTreatEdAsAuthor, chkYearLetter, chkUseSentenceCase;
   @FXML private ComboBox<String> cbComponent1, cbComponent2, cbComponent3, cbComponent4, cbComponent5;
@@ -135,7 +135,10 @@ public class OptionsDlgCtrlr extends HyperDlg
     if (db.isLoaded() == false)
       tabPane.getTabs().remove(tabLinkToExtBibMgr);
     else if (db.bibLibraryIsLinked())
+    {
+      setUnlinkMessage();
       tabLinkToExtBibMgr.setContent(apUnlinkFromExtBibMgr);
+    }
 
     btnVerify.visibleProperty().bind(authUrl.isNotEmpty());
     lblRedirect.visibleProperty().bind(authUrl.isNotEmpty());
@@ -463,8 +466,8 @@ public class OptionsDlgCtrlr extends HyperDlg
 
     if (tfVerificationCode.textProperty().isEmpty().get())
     {
-      messageDialog("You must enter a verification code.", mtWarning);
-      safeFocus(tfVerificationCode);
+      falseWithWarningMessage("You must enter a verification code.", tfVerificationCode);
+      return;
     }
 
     OAuth1AccessToken accessToken = null;
@@ -492,7 +495,16 @@ public class OptionsDlgCtrlr extends HyperDlg
 
     SyncBibDlgCtrlr.create().sync();
 
+    setUnlinkMessage();
     tabLinkToExtBibMgr.setContent(apUnlinkFromExtBibMgr);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void setUnlinkMessage()
+  {
+    lblCurrentlyLinked.setText("This database is currently linked to a " + db.getBibLibrary().type().getUserFriendlyName() + " library.");
   }
 
 //---------------------------------------------------------------------------

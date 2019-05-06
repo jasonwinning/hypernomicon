@@ -60,7 +60,6 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
   @Override public void setRecord(HDT_Argument arg) { curArgument = arg; }
-  @Override void focusOnSearchKey()                 { ctrlr.focusOnSearchKey(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -277,12 +276,12 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       person -> ui.goToRecord(person, true));
 
     htCounters.addContextMenuItem("Launch work file", HDT_Argument.class,
-      arg -> arg.works.stream().anyMatch(work -> work.getPath().isEmpty() == false),
-      arg -> findFirst(arg.works, work -> work.getPath().isEmpty() == false).launch(-1));
+      arg -> arg.works.stream().anyMatch(HDT_Work::pathNotEmpty),
+      arg -> findFirst(arg.works, HDT_Work::pathNotEmpty).launch(-1));
 
     htCounters.addContextMenuItem("Go to work record", HDT_Argument.class,
       arg -> arg.works.size() > 0,
-      arg -> ui.goToRecord(nullSwitch(findFirst(arg.works, work -> work.getPath().isEmpty() == false), arg.works.get(0)), true));
+      arg -> ui.goToRecord(nullSwitch(findFirst(arg.works, HDT_Work::pathNotEmpty), arg.works.get(0)), true));
 
     htCounters.addContextMenuItem("Go to person record", HDT_Person.class,
       person -> ui.goToRecord(person, true));
@@ -306,11 +305,11 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean saveToRecord(boolean showMessage)
+  @Override public boolean saveToRecord()
   {
     boolean okToSave = true;
 
-    if (!ctrlr.save(curArgument, showMessage, this)) return false;
+    if (!ctrlr.save(curArgument)) return false;
 
     for (HyperTableRow row : htParents.getDataRows())
     {
@@ -349,7 +348,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
   @Override public void newClick(HDT_RecordType objType, HyperTableRow row)
   {
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     switch (objType)
     {

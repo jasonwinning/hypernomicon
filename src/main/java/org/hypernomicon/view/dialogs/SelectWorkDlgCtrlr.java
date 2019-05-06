@@ -27,7 +27,6 @@ import org.hypernomicon.model.records.HDT_Work;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import org.hypernomicon.view.populators.HybridSubjectPopulator;
 import org.hypernomicon.view.populators.Populator;
@@ -35,13 +34,11 @@ import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 
 public class SelectWorkDlgCtrlr extends HyperDlg
 {
   @FXML private ComboBox<HyperTableCell> cbAuthor, cbWork;
-  @FXML private Button btnOK, btnCancel;
 
   private HyperCB hcbAuthor, hcbWork;
 
@@ -91,9 +88,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
   {
     if (hcbWork.selectedID() >= 1) return true;
 
-    messageDialog("Select a work record.", mtInformation);
-    safeFocus(cbWork);
-    return false;
+    return falseWithInfoMessage("Select a work record.", cbWork);
   }
 
 //---------------------------------------------------------------------------

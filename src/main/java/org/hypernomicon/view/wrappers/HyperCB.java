@@ -160,7 +160,7 @@ public class HyperCB implements CommitableWrapper
 
   //---------------------------------------------------------------------------
 
-    cb.setConverter(new StringConverter<HyperTableCell>()
+    cb.setConverter(new StringConverter<>()
     {
       @Override public String toString(HyperTableCell cell)
       {

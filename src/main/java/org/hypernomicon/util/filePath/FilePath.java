@@ -316,7 +316,7 @@ public class FilePath implements Comparable<FilePath>
   {
     try
     {
-      Files.walkFileTree(getDirOnly().toPath(), new SimpleFileVisitor<Path>()
+      Files.walkFileTree(getDirOnly().toPath(), new SimpleFileVisitor<>()
       {
         @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws FileNotFoundException, IOException
         {
@@ -338,7 +338,7 @@ public class FilePath implements Comparable<FilePath>
     }
     catch (IOException e)
     {
-      messageDialogSameThread(e.getMessage(), mtError);
+      messageDialog(e.getMessage(), mtError, true);
       return false;
     }
 
@@ -391,7 +391,7 @@ public class FilePath implements Comparable<FilePath>
   {
     try
     {
-      Files.walkFileTree(getDirOnly().toPath(), new SimpleFileVisitor<Path>()
+      Files.walkFileTree(getDirOnly().toPath(), new SimpleFileVisitor<>()
       {
         @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws FileNotFoundException, IOException
         {
@@ -416,7 +416,7 @@ public class FilePath implements Comparable<FilePath>
     }
     catch (IOException e)
     {
-      messageDialogSameThread(e.getMessage(), mtError);
+      messageDialog(e.getMessage(), mtError, true);
       return true;
     }
 
@@ -476,7 +476,7 @@ public class FilePath implements Comparable<FilePath>
 
     final MutableBoolean hasFiles = new MutableBoolean(false);
 
-    Files.walkFileTree(getDirOnly().toPath(), new SimpleFileVisitor<Path>()
+    Files.walkFileTree(getDirOnly().toPath(), new SimpleFileVisitor<>()
     {
       @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
       {

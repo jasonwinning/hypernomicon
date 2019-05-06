@@ -45,7 +45,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 
-<BorderPane id="childrenOnly" fx:id="mainPane" prefHeight="746.0" prefWidth="1253.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.MainCtrlr">
+<BorderPane id="childrenOnly" prefHeight="746.0" prefWidth="1253.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.MainCtrlr">
    <top>
       <HBox fx:id="topHBox" style="-fx-background-color: linear-gradient(#F8F8F8 0%, #ECECEC 25%, #F0F0F0 75%, #F8F8F8 100%);">
          <children>
@@ -196,7 +196,7 @@
    <center>
       <AnchorPane fx:id="midAnchorPane" BorderPane.alignment="TOP_CENTER">
          <children>
-            <StackPane fx:id="stackPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <StackPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
                   <TabPane id="mainTabPane" fx:id="tabPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" tabClosingPolicy="UNAVAILABLE">
                     <tabs>
@@ -278,7 +278,7 @@
                   </Button>
                   <Button fx:id="btnDecrement" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" layoutX="74.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0" AnchorPane.leftAnchor="74.0" AnchorPane.topAnchor="5.0">
                      <graphic>
-                        <ImageView fx:id="ivLeft" pickOnBounds="true" preserveRatio="true">
+                        <ImageView pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@../resources/images/control-stop-180.png" />
                            </image>
@@ -290,7 +290,7 @@
                   </Button>
                   <Button fx:id="btnIncrement" contentDisplay="GRAPHIC_ONLY" layoutX="110.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="32.0" text="Button" AnchorPane.leftAnchor="110.0" AnchorPane.topAnchor="5.0">
                      <graphic>
-                        <ImageView fx:id="ivRight" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true" smooth="false">
+                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true" smooth="false">
                            <image>
                               <Image url="@../resources/images/control-stop.png" />
                            </image>
@@ -346,7 +346,7 @@
                         </Tab>
                         <Tab fx:id="tabOmniSelector" closable="false">
                            <content>
-                              <AnchorPane fx:id="apOmniGoTo" maxHeight="24.0" minHeight="24.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="24.0">
+                              <AnchorPane maxHeight="24.0" minHeight="24.0" nodeOrientation="LEFT_TO_RIGHT" prefHeight="24.0">
                                  <children>
                                     <TextField fx:id="tfOmniGoTo" maxHeight="24.0" minHeight="24.0" prefHeight="24.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                  </children>

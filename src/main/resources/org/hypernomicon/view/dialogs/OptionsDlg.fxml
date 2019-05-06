@@ -72,7 +72,7 @@
                               </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                  <children>
-                                    <Button fx:id="btnImageEditorBrowse" layoutX="15.0" layoutY="-5.0" mnemonicParsing="false" onAction="#btnImageEditorBrowseClick" text="..." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                    <Button layoutX="15.0" layoutY="-5.0" mnemonicParsing="false" onAction="#btnImageEditorBrowseClick" text="..." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                  </children>
                               </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
@@ -91,7 +91,7 @@
                                  </children></AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
                                  <children>
-                                    <Button fx:id="btnPDFReaderBrowse" layoutX="-9.0" layoutY="2.0" mnemonicParsing="false" onAction="#btnPDFReaderClick" text="..." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                    <Button layoutX="-9.0" layoutY="2.0" mnemonicParsing="false" onAction="#btnPDFReaderClick" text="..." AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                  </children></AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
                                  <children>

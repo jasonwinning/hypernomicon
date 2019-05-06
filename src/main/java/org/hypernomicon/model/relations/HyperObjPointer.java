@@ -69,10 +69,8 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
       if (obj != null)
       {
         if (obj.getType() != relSet.getObjType())
-        {
-          messageDialog("Interal error #02055", mtError);
-          return false;
-        }
+          return falseWithErrorMessage("Interal error #02055");
+
         relSet.setObject(subj, obj, -1, true);
       }
 

@@ -18,7 +18,6 @@
 package org.hypernomicon.view.dialogs;
 
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.dialogs.RenameDlgCtrlr.NameType.*;
 
 import org.apache.commons.io.FilenameUtils;
@@ -39,7 +38,7 @@ public class RenameDlgCtrlr extends HyperDlg
     ntFolder
   }
 
-  @FXML private Button btnOk, btnCancel;
+  @FXML private Button btnOk;
   @FXML private Label lblInvalid;
   @FXML private TextField tfName;
 
@@ -54,20 +53,12 @@ public class RenameDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if (tfName.getText().length() == 0)
-    {
-      messageDialog("Name cannot be zero-length.", mtError);
-      safeFocus(tfName);
-      return false;
-    }
+      return falseWithErrorMessage("Name cannot be zero-length.", tfName);
 
     if (nameType != ntRecord)
     {
       if (FilenameUtils.equalsNormalizedOnSystem(oldName, tfName.getText()))
-      {
-        messageDialog("Original name and new name are the same.", mtError);
-        safeFocus(tfName);
-        return false;
-      }
+        return falseWithErrorMessage("Original name and new name are the same.", tfName);
     }
 
     return true;

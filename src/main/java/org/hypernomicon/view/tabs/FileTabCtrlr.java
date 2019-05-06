@@ -37,7 +37,6 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import javafx.event.ActionEvent;
@@ -79,7 +78,6 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   @Override public void findWithinDesc(String text)          { mainText.hilite(text); }
   @Override public TextViewInfo getMainTextInfo()            { return mainText.getViewInfo(); }
   @Override public MainTextWrapper getMainTextWrapper()      { return mainText; }
-  @Override void focusOnSearchKey()                          { safeFocus(tfSearchKey); }
   @Override public void setRecord(HDT_MiscFile activeRecord) { curMiscFile = activeRecord; }
 
   @FXML public boolean btnManageClick()                      { return showFileDialog(null); }
@@ -123,9 +121,9 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   public void refreshFile()
   {
-    if (curMiscFile.getPath().isEmpty() == false)
+    if (curMiscFile.pathNotEmpty())
     {
-      FilePath filePath = curMiscFile.getPath().getFilePath(),
+      FilePath filePath = curMiscFile.filePath(),
                relPath = db.getRootPath().relativize(filePath);
 
       if (relPath == null)
@@ -184,13 +182,13 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     mainText = new MainTextWrapper(apDescription);
     tfFileName.setEditable(false);
 
-    addShowMenuItem("Show in system explorer", event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.getPath().getFilePath()); });
-    addShowMenuItem("Show in file manager"   , event -> { if (tfFileName.getText().length() > 0) ui.goToFileInManager(curMiscFile.getPath().getFilePath()); });
+    addShowMenuItem("Show in system explorer", event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.filePath()); });
+    addShowMenuItem("Show in file manager"   , event -> { if (tfFileName.getText().length() > 0) ui.goToFileInManager(curMiscFile.filePath()); });
     addShowMenuItem("Copy path to clipboard" , event -> { if (tfFileName.getText().length() > 0) copyToClipboard(curMiscFile.getPath().toString()); });
 
     addShowMenuItem("Unassign file", event ->
     {
-      if (ui.cantSaveRecord(true)) return;
+      if (ui.cantSaveRecord()) return;
       curMiscFile.getPath().clear();
       ui.update();
     });
@@ -227,8 +225,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     btnWork  .setOnAction(event -> ui.goToRecord(HyperTableCell.getRecord(hcbWork.selectedHTC()), true));
     btnTree  .setOnAction(event -> ui.goToTreeRecord(curMiscFile));
-    btnLaunch.setOnAction(event -> { if (tfFileName.getText().length() > 0) launchFile(curMiscFile.getPath().getFilePath()); });
-    btnShow  .setOnAction(event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.getPath().getFilePath()); });
+    btnLaunch.setOnAction(event -> { if (tfFileName.getText().length() > 0) launchFile(curMiscFile.filePath()); });
+    btnShow  .setOnAction(event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.filePath()); });
 
     btnManage.setTooltip(new Tooltip("Update or rename file"));
   }
@@ -255,17 +253,13 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean saveToRecord(boolean showMessage)
+  @Override public boolean saveToRecord()
   {
-    if (!saveSearchKey(curMiscFile, tfSearchKey, showMessage)) return false;
+    if (!saveSearchKey(curMiscFile, tfSearchKey)) return false;
 
     int fileTypeID = hcbType.selectedID();
     if ((fileTypeID < 1) && (hcbType.getText().length() == 0))
-    {
-      messageDialog("You must enter a file type.", mtError);
-      safeFocus(cbType);
-      return false;
-    }
+      return falseWithErrorMessage("You must enter a file type.", cbType);
 
     mainText.save();
 
@@ -314,10 +308,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     if (result)
     {
-      if (curMiscFile.getPath().isEmpty())
-        tfFileName.setText("");
-      else
-        tfFileName.setText(db.getRootPath().relativize(curMiscFile.getPath().getFilePath()).toString());
+      tfFileName.setText(curMiscFile.pathNotEmpty() ? db.getRootPath().relativize(curMiscFile.filePath()).toString() : "");
 
       tfName.setText(fdc.tfRecordName.getText());
 

@@ -21,7 +21,6 @@ import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 
@@ -37,7 +36,6 @@ public class ProgressDlgCtrlr extends HyperDlg
   private long lastPercent = -200;
 
   @FXML private ProgressBar progressBar;
-  @FXML private Button btnCancel;
   @FXML private Label lblTask, lblPercent;
 
 //---------------------------------------------------------------------------

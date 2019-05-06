@@ -1527,8 +1527,7 @@ public final class HyperDB
     }
     catch(RelationCycleException | DuplicateRecordException | HDB_InternalError | SearchKeyException | HubChangedException e)
     {
-      messageDialog("Unable to create folder records for new database.", mtError);
-      return false;
+      return falseWithErrorMessage("Unable to create folder records for new database.");
     }
 
     try
@@ -1537,8 +1536,7 @@ public final class HyperDB
     }
     catch (HDB_InternalError e)
     {
-      messageDialog(e.getMessage(), mtError);
-      return false;
+      return falseWithErrorMessage(e.getMessage());
     }
 
     loaded = true;
@@ -2029,10 +2027,8 @@ public final class HyperDB
 
     HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, false);
 
-    if (folder != null)
-      if (folder.getPath().getFilePath().equals(filePath))
-        if (isProtectedRecord(folder.getID(), folder.getType()))
-          return true;
+    if ((folder != null) && folder.filePath().equals(filePath) && isProtectedRecord(folder.getID(), folder.getType()))
+      return true;
 
     if (filePath.equals(hdbFilePath) ||
         filePath.equals(getRequestMessageFilePath()) ||
@@ -2196,7 +2192,7 @@ public final class HyperDB
 
     if (paths == null) return;
 
-    paths.removeIf(path -> path.getFilePath().equals(filePath));
+    paths.removeIf(path -> path.filePath().equals(filePath));
 
     if (paths.isEmpty())
       filenameMap.remove(name);

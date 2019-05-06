@@ -142,11 +142,7 @@ public class GoogleBibData extends BibDataStandalone
 
     if (auths.length() == 0) auths = eds;
 
-    title = convertToEnglishChars(title).trim();
-    title = title.replace(":", "");
-    title = title.replace("?", "");
-
-    title = title.replace(' ', '+');
+    title = convertToEnglishChars(title).trim().replace(":", "").replace("?", "").replace(' ', '+');
 
     if (title.length() > 0)
       url = url + escapeURL("\"" + title + "\"", false);

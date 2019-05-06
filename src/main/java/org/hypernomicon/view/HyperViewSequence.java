@@ -65,7 +65,7 @@ public class HyperViewSequence
     {
       if ((db.isLoaded() == false) || alreadyChangingTab) return;
 
-      if (ui.cantSaveRecord(true))
+      if (ui.cantSaveRecord())
       {
         alreadyChangingTab = true;
         tabPane.getSelectionModel().select(oldTab);
@@ -313,7 +313,7 @@ public class HyperViewSequence
 
     item.setOnAction(event ->
     {
-      if (ui.cantSaveRecord(true)) return;
+      if (ui.cantSaveRecord()) return;
 
       saveViewToSequence(false);
       curNdx = ndx;

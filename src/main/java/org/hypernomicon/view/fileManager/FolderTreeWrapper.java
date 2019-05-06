@@ -17,7 +17,6 @@
 
 package org.hypernomicon.view.fileManager;
 
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -80,7 +79,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
     {
       TreeCell<FileRow> row = new TreeCell<>();
 
-      ImageView openImage = getImageViewForRelativePath(ui.getGraphicRelativePathByType(hdtFolder));
+      ImageView openImage = getImageViewForRecordType(hdtFolder);
 
       row.itemProperty().addListener((ob, oldValue, newValue) ->
       {
@@ -178,7 +177,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
         if (hyperPath.getRecordsString().length() == 0)
         {
           HDT_RecordWithPath folder = hyperPath.getRecord();
-          if (folder.getPath().getFilePath().exists() == false)
+          if (folder.filePath().exists() == false)
           {
             HDT_Folder.deleteFolderRecordTree((HDT_Folder) folder);
             return true;

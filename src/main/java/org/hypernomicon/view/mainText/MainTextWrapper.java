@@ -120,15 +120,8 @@ public final class MainTextWrapper
     editCtrlr = loader.getController();
     editCtrlr.init();
 
-    AnchorPane.setTopAnchor(bpEditorRoot, 0.0);
-    AnchorPane.setBottomAnchor(bpEditorRoot, 0.0);
-    AnchorPane.setLeftAnchor(bpEditorRoot, 0.0);
-    AnchorPane.setRightAnchor(bpEditorRoot, 0.0);
-
-    AnchorPane.setTopAnchor(view, 0.0);
-    AnchorPane.setBottomAnchor(view, 0.0);
-    AnchorPane.setLeftAnchor(view, 0.0);
-    AnchorPane.setRightAnchor(view, 0.0);
+    setAnchors(bpEditorRoot, 0.0, 0.0, 0.0, 0.0);
+    setAnchors(view        , 0.0, 0.0, 0.0, 0.0);
 
     view.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
@@ -284,12 +277,12 @@ public final class MainTextWrapper
         if (recordType == hdtWork)
         {
           HDT_Work work = db.works.getByID(recordID);
-          previewWindow.setPreview(pvsOther, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+          previewWindow.setPreview(pvsOther, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
         }
         else
         {
           HDT_MiscFile miscFile = db.miscFiles.getByID(recordID);
-          previewWindow.setPreview(pvsOther, miscFile.getPath().getFilePath(), -1, -1, miscFile);
+          previewWindow.setPreview(pvsOther, miscFile.filePath(), -1, -1, miscFile);
         }
 
         ui.openPreviewWindow(pvsOther);
@@ -308,7 +301,7 @@ public final class MainTextWrapper
 
           if (file.getPath().isEmpty()) return;
 
-          launchFile(file.getPath().getFilePath());
+          launchFile(file.filePath());
         }
         else
           db.works.getByID(recordID).launch(-1);
@@ -504,9 +497,8 @@ public final class MainTextWrapper
 
     view.setOnMouseClicked(mouseEvent ->
     {
-      if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
-        if (mouseEvent.getClickCount() == 2)
-          mainTextWrapper.beginEditing(true);
+      if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2))
+        mainTextWrapper.beginEditing(true);
     });
 
     boolean noDisplayRecords = displayItems == null ? true : displayItems.stream().noneMatch(item -> item.type == DisplayItemType.diRecord);
@@ -736,7 +728,7 @@ public final class MainTextWrapper
       if (miscFile.fileType.isNotNull())
         typeName = typeName + " - " + miscFile.fileType.get().listName();
 
-      if (miscFile.getPath().isEmpty() == false)
+      if (miscFile.pathNotEmpty())
         return htmlEscaper.escape("(" + typeName + ") " + miscFile.getPath().getNameStr());
     }
 

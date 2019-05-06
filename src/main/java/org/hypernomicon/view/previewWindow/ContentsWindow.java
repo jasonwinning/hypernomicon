@@ -157,7 +157,7 @@ public class ContentsWindow extends HyperDlg
 
   private void setPageNum(HDT_Work work, int num, boolean isStart)
   {
-    if ((ui.activeTab().getTabEnum() == workTabEnum) && (ui.activeTab().activeRecord() == work))
+    if ((ui.activeTabEnum() == workTabEnum) && (ui.activeTab().activeRecord() == work))
       ui.workHyperTab().setPageNum(curWorkFile, num, isStart);
     else
     {
@@ -210,16 +210,15 @@ public class ContentsWindow extends HyperDlg
       if (work.authorRecords.size() > 0)
         authorID = work.authorRecords.get(0).getID();
 
-      if (ui.activeTabEnum() == workTabEnum)
-        if (ui.activeTab().activeRecord() == work)
-        {
-          wtc = ui.workHyperTab();
+      if ((ui.activeTabEnum() == workTabEnum) && (ui.activeTab().activeRecord() == work))
+      {
+        wtc = ui.workHyperTab();
 
-          title = wtc.getTitle();
-          year = wtc.tfYear.getText();
-          workType = wtc.hcbType.selectedRecord();
-          authStr = wtc.getShortAuthorsStr();
-        }
+        title = wtc.getTitle();
+        year = wtc.tfYear.getText();
+        workType = wtc.hcbType.selectedRecord();
+        authStr = wtc.getShortAuthorsStr();
+      }
 
       row.setCellValue(0, authorID, authStr, hdtPerson);
 

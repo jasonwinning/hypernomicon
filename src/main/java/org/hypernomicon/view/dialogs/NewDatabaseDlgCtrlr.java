@@ -25,7 +25,6 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 
@@ -36,7 +35,6 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 public class NewDatabaseDlgCtrlr extends HyperDlg
 {
-  @FXML private Button btnOK, btnCancel;
   @FXML private CheckBox cbInst, cbFields, cbRanks, cbStatus, cbStates, cbCountries;
   @FXML private TextField tfPapers, tfBooks, tfUnentered, tfPictures, tfTopicFolders, tfMiscFiles, tfResults;
 
@@ -88,7 +86,7 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
     {
       saveStringBuilderToFile(new StringBuilder(DEFAULT_XML_PATH + "/" + SETTINGS_FILE_NAME), filePath.resolve(HDB_DEFAULT_FILENAME));
 
-      success              = filePath.resolve(DEFAULT_XML_PATH        ).toFile().mkdirs();
+      success              = filePath.resolve(DEFAULT_XML_PATH                   ).toFile().mkdirs();
       if (success) success = filePath.resolve(ultraTrim(tfPictures    .getText())).toFile().mkdirs();
       if (success) success = filePath.resolve(ultraTrim(tfBooks       .getText())).toFile().mkdirs();
       if (success) success = filePath.resolve(ultraTrim(tfPapers      .getText())).toFile().mkdirs();

@@ -116,8 +116,17 @@ public class PDFJSWrapper
 
     javascriptToJava = new JavascriptToJava();
 
-    pdfjsMode = true; // Setting this to true so that viewer html is loaded in reloadBrowser
     reloadBrowser(null);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void switchToPdfMode()
+  {
+    if (pdfjsMode) return;
+
+    loadViewerHtml(null);
   }
 
 //---------------------------------------------------------------------------
@@ -208,15 +217,11 @@ public class PDFJSWrapper
 
     browserView = new BrowserView(browser);
 
-    AnchorPane.setTopAnchor(browserView, 0.0);
-    AnchorPane.setBottomAnchor(browserView, 0.0);
-    AnchorPane.setLeftAnchor(browserView, 0.0);
-    AnchorPane.setRightAnchor(browserView, 0.0);
+    setAnchors(browserView, 0.0, 0.0, 0.0, 0.0);
 
     apBrowser.getChildren().add(browserView);
 
     addCustomProtocolHandler("jar");
-    addViewerHTMLProtocolHandler();
 
     apBrowser.setOnMouseEntered(event -> safeFocus(browserView));
 
@@ -246,32 +251,23 @@ public class PDFJSWrapper
       System.out.println("JS " + event.getLevel() + ": " + msg);
     });
 
-    browser.loadURL("viewerhtml:///html");
-
-    while (browser.isLoading()) sleepForMillis(50);
-
-    browser.addLoadListener(new LoadAdapter()
+    browser.addLoadListener(new LoadAdapter() { @Override public void onFinishLoadingFrame(FinishLoadingEvent event)
     {
-      @Override public void onFinishLoadingFrame(FinishLoadingEvent event)
-      {
-        if (event.isMainFrame())
-        {
-          ready = true;
+      if (event.isMainFrame() == false) return;
 
-          JSValue window = browser.executeJavaScriptAndReturnValue("window");
+      ready = true;
 
-          window.asObject().setProperty("javaApp", javascriptToJava);
+      JSValue window = browser.executeJavaScriptAndReturnValue("window");
 
-          pdfjsMode = browser.executeJavaScriptAndReturnValue("'PDFViewerApplication' in window").getBooleanValue();
+      window.asObject().setProperty("javaApp", javascriptToJava);
 
-          if (postBrowserLoadCode != null)
-          {
-            postBrowserLoadCode.run();
-            postBrowserLoadCode = null;
-          }
-        }
-      }
-    });
+      pdfjsMode = browser.executeJavaScriptAndReturnValue("'PDFViewerApplication' in window").getBooleanValue();
+
+      if (postBrowserLoadCode == null) return;
+
+      postBrowserLoadCode.run();
+      postBrowserLoadCode = null;
+    }});
 
     Runnable runnable = () ->
     {
@@ -296,9 +292,11 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void clearHtml()
+  private void cleanupPdfHtml()
   {
-    browser.executeJavaScript("if ('PDFViewerApplication' in window) PDFViewerApplication.cleanup();");
+    if (pdfjsMode)
+      browser.executeJavaScript("if ('PDFViewerApplication' in window) PDFViewerApplication.cleanup();");
+
     pdfjsMode = false;
   }
 
@@ -307,7 +305,7 @@ public class PDFJSWrapper
 
   private void loadViewerHtml(Runnable stuffToDoAfterLoading)
   {
-    clearHtml();
+    cleanupPdfHtml();
 
     postBrowserLoadCode = stuffToDoAfterLoading;
 
@@ -337,27 +335,6 @@ public class PDFJSWrapper
     viewerHTMLStr = viewerHTMLSB.toString();
   }
 
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void addViewerHTMLProtocolHandler()
-  {
-    ProtocolService protocolService = browser.getContext().getProtocolService();
-
-    protocolService.setProtocolHandler("viewerhtml", new ProtocolHandler()
-    {
-      @Override public URLResponse onRequest(URLRequest request)
-      {
-        URLResponse response = new URLResponse();
-
-        response.setData(String.valueOf("<html><body>&nbsp;</body></html>").getBytes());
-
-        response.getHeaders().setHeader("Content-Type", "text/html");
-        return response;
-      }
-    });
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -534,7 +511,7 @@ public class PDFJSWrapper
 
   void loadHtml(String html)
   {
-    clearHtml();
+    cleanupPdfHtml();
     browser.loadHTML(html);
   }
 
@@ -543,7 +520,7 @@ public class PDFJSWrapper
 
   void loadFile(FilePath file)
   {
-    clearHtml();
+    cleanupPdfHtml();
     browser.loadURL(file.toURLString());
   }
 
@@ -601,7 +578,7 @@ public class PDFJSWrapper
 
   void cleanup(Runnable disposeHndlr)
   {
-    clearHtml();
+    cleanupPdfHtml();
 
     browser.addDisposeListener(event -> disposeHndlr.run());
     browser.dispose();

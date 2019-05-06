@@ -268,6 +268,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       tvResults.getSelectionModel().selectedIndexProperty().addListener((ob, oldValue, newValue) ->
       {
         refreshView(newValue.intValue());
+        tabPane.requestLayout();
       });
 
       clear();
@@ -289,6 +290,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
         ui.updateBottomPanel(false);
       }
+
+      tabPane.requestLayout();
     }
 
     private void refreshView(int selRowNdx)
@@ -317,15 +320,15 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           if (curResult.getType() == hdtWork)
           {
             HDT_Work work = (HDT_Work) curResult;
-            previewWindow.setPreview(pvsQueryTab, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+            previewWindow.setPreview(pvsQueryTab, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
           }
           else if (curResult.getType() == hdtMiscFile)
           {
             HDT_MiscFile miscFile = (HDT_MiscFile) curResult;
-            previewWindow.setPreview(pvsQueryTab, miscFile.getPath().getFilePath(), -1, -1, miscFile);
+            previewWindow.setPreview(pvsQueryTab, miscFile.filePath(), -1, -1, miscFile);
           }
           else if (curResult.getType() == hdtWorkFile)
-            previewWindow.setPreview(pvsQueryTab, HDT_RecordWithPath.class.cast(curResult).getPath().getFilePath(), 1, -1, null);
+            previewWindow.setPreview(pvsQueryTab, HDT_RecordWithPath.class.cast(curResult).filePath(), 1, -1, null);
           else
             previewWindow.setPreview(pvsQueryTab, null, -1, -1, null);
         }
@@ -812,6 +815,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (showDesc)
         chkShowDesc.setSelected(true);
 
+      curQV.refreshView();
       return true;
     }
 
@@ -883,7 +887,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (addToObsList)
       {
         resultsTable.getTV().getItems().add(new ResultsRow(record));
-        tabPane.requestLayout();
+        refreshView();
       }
       else
         resultsBackingList.add(new ResultsRow(record));
@@ -1313,14 +1317,13 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   public void btnExecuteClick()                     { curQV.btnExecuteClick(true); }   // if any of the queries are unfiltered, they
                                                                                        // will all be treated as unfiltered
   @Override HDT_RecordType getType()                { return hdtNone; }
-  @Override public boolean update()                 { return true; }
-  @Override void focusOnSearchKey()                 { return; }
+  @Override public boolean update()                 { curQV.refreshView(); return true; }
   @Override public void setRecord(HDT_Record rec)   { if (curQV != null) curQV.setRecord(rec); }
   @Override public int getRecordCount()             { return results().size(); }
   @Override public TextViewInfo getMainTextInfo()   { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
   @Override public void setDividerPositions()       { return; }
   @Override public void getDividerPositions()       { return; }
-  @Override public boolean saveToRecord(boolean sm) { return false; }
+  @Override public boolean saveToRecord()           { return false; }
   @Override public HDT_Record activeRecord()        { return curQV == null ? null : curQV.curResult; }
   @Override public String getRecordName()           { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
   @Override public int getRecordNdx()               { return getRecordCount() > 0 ? curQV.tvResults.getSelectionModel().getSelectedIndex() : -1; }

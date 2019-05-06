@@ -119,7 +119,7 @@ public class HDT_Position extends HDT_RecordWithConnector
 
         for (HDT_Work work : arg.works)
         {
-          if (work.getPath().isEmpty() == false)
+          if (work.pathNotEmpty())
           {
             if (work.authorRecords.size() > 0)
             {

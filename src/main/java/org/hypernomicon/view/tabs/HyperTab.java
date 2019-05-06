@@ -72,13 +72,12 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 
   abstract void init();
-  abstract void focusOnSearchKey();
   abstract HDT_RecordType getType();
 
   public abstract String getRecordName();
   public abstract boolean update();
   public abstract void clear();
-  public abstract boolean saveToRecord(boolean showMessage);
+  public abstract boolean saveToRecord();
   public abstract void enable(boolean enabled);
   public abstract void setDividerPositions();
   public abstract void getDividerPositions();
@@ -97,7 +96,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
   public void newClick(HDT_RecordType objType, HyperTableRow row) { }
 
-  public static void forEachHyperTab(Consumer<HyperTab<? extends HDT_Record, ? extends HDT_Record>> action) { enumToHyperTab.values().forEach(action); }
+  public static void forEachHyperTab(Consumer<HyperTab<? extends HDT_Record, ? extends HDT_Record>> a) { enumToHyperTab.values().forEach(a); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -128,7 +127,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected final boolean saveSearchKey(HDT_Record record, TextField tfSearchKey, boolean showMessage)
+  protected static final boolean saveSearchKey(HDT_Record record, TextField tfSearchKey)
   {
     try
     {
@@ -136,16 +135,10 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
     }
     catch (SearchKeyException e)
     {
-      if (showMessage)
-      {
-        if (e.getTooShort())
-          messageDialog("Unable to modify record: search key must be at least 3 characters.", mtError);
-        else
-          messageDialog("Unable to modify record: search key already exists.", mtError);
-      }
-
-      focusOnSearchKey();
-      return false;
+      if (e.getTooShort())
+        return falseWithErrorMessage("Unable to modify record: search key must be at least 3 characters.", tfSearchKey);
+      else
+        return falseWithErrorMessage("Unable to modify record: search key already exists.", tfSearchKey);
     }
 
     return true;

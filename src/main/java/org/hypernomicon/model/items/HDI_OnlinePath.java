@@ -129,16 +129,16 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
     {
       case tagFolder :
 
-        if (hyperPath.getFilePath().isDirectory())
+        if (hyperPath.filePath().isDirectory())
           return hyperPath.getNameStr();
 
         // now it should fall through to tagParentFolder case
 
       case tagParentFolder :
-        if (hyperPath.getParentFolder() == null)
+        if (hyperPath.parentFolder() == null)
           return "";
 
-        return hyperPath.getParentFolder().getPath().getNameStr();
+        return hyperPath.parentFolder().getPath().getNameStr();
 
       default :
         return hyperPath.getNameStr();
@@ -155,7 +155,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 
     if (hyperPath.isEmpty() == false)
     {
-      HDT_Folder parentFolder = hyperPath.getParentFolder();
+      HDT_Folder parentFolder = hyperPath.parentFolder();
 
       if (parentFolder != null)
         val.folderID = parentFolder.getID();

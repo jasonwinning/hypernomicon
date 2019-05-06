@@ -18,7 +18,6 @@
 package org.hypernomicon.view.workMerge;
 
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 
 import java.util.ArrayList;
@@ -255,10 +254,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
       HDT_WorkType workType = getMergedWorkType();
 
       if (workType == null)
-      {
-        messageDialog("Select a work type.", mtWarning);
-        return false;
-      }
+        return falseWithWarningMessage("Select a work type.");
     }
 
     if (creatingNewEntry)
@@ -275,10 +271,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
       }
 
       if (entryType == null)
-      {
-        messageDialog("Select an entry type.", mtWarning);
-        return false;
-      }
+        return falseWithWarningMessage("Select an entry type.");
     }
 
     return true;
@@ -329,7 +322,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     if (work != null)
     {
       if (creatingNewWork)
-        work.setWorkType(workType.getEnumVal());
+        work.workType.set(workType);
 
       work.setAuthors(authGroups);
     }

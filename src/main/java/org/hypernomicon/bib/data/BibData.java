@@ -188,23 +188,19 @@ public abstract class BibData
 
     switch (bibFieldEnum)
     {
-      case bfDOI       : case bfURL       : case bfVolume    : case bfIssue     : case bfPages     : case bfEntryType :
-      case bfPublisher : case bfPubLoc    : case bfEdition   : case bfLanguage  : case bfYear      : case bfWorkType :
+      case bfDOI       : case bfURL    : case bfVolume  : case bfIssue    : case bfPages : case bfEntryType :
+      case bfPublisher : case bfPubLoc : case bfEdition : case bfLanguage : case bfYear  : case bfWorkType  :
 
-        if (ultraTrim(getStr(bibFieldEnum)).equals(ultraTrim(otherBD.getStr(bibFieldEnum))) == false) return false;
-        break;
+        return ultraTrim(getStr(bibFieldEnum)).equals(ultraTrim(otherBD.getStr(bibFieldEnum)));
 
-      case bfContainerTitle: case bfTitle: case bfMisc: case bfISBNs: case bfISSNs:
+      case bfContainerTitle : case bfTitle : case bfMisc : case bfISBNs : case bfISSNs :
 
-        if (strListsEqual(getMultiStr(bibFieldEnum), otherBD.getMultiStr(bibFieldEnum), false) == false) return false;
-        break;
+        return strListsEqual(getMultiStr(bibFieldEnum), otherBD.getMultiStr(bibFieldEnum), false);
 
-      case bfAuthors: case bfEditors: case bfTranslators:
+      default:
 
-        break;
+        return true;
     }
-
-    return true;
   }
 
 //---------------------------------------------------------------------------

@@ -329,7 +329,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
 
             db.folders.forEach(folder ->
             {
-              FilePath filePath = folder.getPath().getFilePath();
+              FilePath filePath = folder.filePath();
 
               if (map.containsKey(filePath))
               {

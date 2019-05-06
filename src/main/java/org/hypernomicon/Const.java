@@ -19,8 +19,12 @@ package org.hypernomicon;
 
 import org.hypernomicon.util.VersionNumber;
 
+import javafx.scene.input.DataFormat;
+
 public final class Const
 {
+  public static final DataFormat HYPERNOMICON_DATA_FORMAT = new DataFormat("application/Hypernomicon");
+
   public static final double
 
     DEFAULT_FONT_SIZE = 11.0;

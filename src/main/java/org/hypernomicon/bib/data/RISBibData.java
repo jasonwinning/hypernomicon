@@ -108,17 +108,8 @@ public class RISBibData extends BibDataStandalone
 
           case "SE": break;    // Section
 
-          case "SP":
-
-            String pages = getStr(bfPages);
-            setStr(bfPages, pages.length() == 0 ? val : (val + "-" + pages));
-            break;
-
-          case "EP":
-
-            pages = getStr(bfPages);
-            setStr(bfPages, pages.length() == 0 ? val : (pages + "-" + val));
-            break;
+          case "SP": setStartPage(val); break;
+          case "EP": setEndPage  (val); break;
 
           case "TI": case "TT": case "T1": case "T2": case "T3":
 
@@ -160,63 +151,34 @@ public class RISBibData extends BibDataStandalone
   {
     switch (risType)
     {
-      case "ABST"    : return etAbstract;
-      case "ADVS"    : return etAudiovisualMaterial;
-      case "AGGR"    : return etAggregatedDatabase;
-      case "ANCIENT" : return etAncientText;
-      case "ART"     : return etArtwork;
-      case "BILL"    : return etBill;
-      case "BLOG"    : return etBlogPost;
-      case "BOOK"    : return etBook;
-      case "CASE"    : return etCase;
-      case "CHAP"    : return etBookChapter;
-      case "CHART"   : return etChart;
-      case "CLSWK"   : return etClassicalWork;
-      case "COMP"    : return etSoftware;
-      case "CONF"    : return etConferenceProceedings;
-      case "CPAPER"  : return etConferencePaper;
-      case "CTLG"    : return etCatalog;
-      case "DATA"    : return etDataFile;
-      case "DBASE"   : return etOnlineDatabase;
-      case "DICT"    : return etDictionaryEntry;
-      case "EBOOK"   : return etElectronicBook;
-      case "ECHAP"   : return etElectronicBookSection;
-      case "EDBOOK"  : return etEditedBook;
-      case "EJOUR"   : return etElectronicArticle;
-      case "ELEC"    : return etWebPage;
-      case "ENCYC"   : return etEncyclopediaArticle;
-      case "EQUA"    : return etEquation;
-      case "FIGURE"  : return etFigure;
-      case "GEN"     : return etUnentered;
-      case "GOVDOC"  : return etGovernmentDocument;
-      case "GRANT"   : return etGrant;
-      case "HEAR"    : return etHearing;
-      case "ICOMM"   : return etInternetCommunication;
-      case "INPR"    : return etInPress;
-      case "JFULL"   : return etJournal;
-      case "JOUR"    : return etJournalArticle;
-      case "LEGAL"   : return etRuling;
-      case "MANSCPT" : return etManuscript;
-      case "MAP"     : return etMap;
-      case "MGZN"    : return etMagazineArticle;
-      case "MPCT"    : return etFilm;
-      case "MULTI"   : return etOnlineMultimedia;
-      case "MUSIC"   : return etMusicScore;
-      case "NEWS"    : return etNewspaperArticle;
-      case "PAMP"    : return etPamphlet;
-      case "PAT"     : return etPatent;
-      case "PCOMM"   : return etPersonalCommunication;
-      case "RPRT"    : return etReport;
-      case "SER"     : return etSerialPublication;
-      case "SLIDE"   : return etSlide;
-      case "SOUND"   : return etAudioRecording;
-      case "STAND"   : return etStandard;
-      case "STAT"    : return etStatute;
-      case "THES"    : return etThesis;
-      case "UNPB"    : return etUnpublishedWork;
-      case "VIDEO"   : return etVideoRecording;
-
-      default        : return etOther;
+      case "ABST"    : return etAbstract;                  case "GOVDOC"  : return etGovernmentDocument;
+      case "ADVS"    : return etAudiovisualMaterial;       case "GRANT"   : return etGrant;
+      case "AGGR"    : return etAggregatedDatabase;        case "HEAR"    : return etHearing;
+      case "ANCIENT" : return etAncientText;               case "ICOMM"   : return etInternetCommunication;
+      case "ART"     : return etArtwork;                   case "INPR"    : return etInPress;
+      case "BILL"    : return etBill;                      case "JFULL"   : return etJournal;
+      case "BLOG"    : return etBlogPost;                  case "JOUR"    : return etJournalArticle;
+      case "BOOK"    : return etBook;                      case "LEGAL"   : return etRuling;
+      case "CASE"    : return etCase;                      case "MANSCPT" : return etManuscript;
+      case "CHAP"    : return etBookChapter;               case "MAP"     : return etMap;
+      case "CHART"   : return etChart;                     case "MGZN"    : return etMagazineArticle;
+      case "CLSWK"   : return etClassicalWork;             case "MPCT"    : return etFilm;
+      case "COMP"    : return etSoftware;                  case "MULTI"   : return etOnlineMultimedia;
+      case "CONF"    : return etConferenceProceedings;     case "MUSIC"   : return etMusicScore;
+      case "CPAPER"  : return etConferencePaper;           case "NEWS"    : return etNewspaperArticle;
+      case "CTLG"    : return etCatalog;                   case "PAMP"    : return etPamphlet;
+      case "DATA"    : return etDataFile;                  case "PAT"     : return etPatent;
+      case "DBASE"   : return etOnlineDatabase;            case "PCOMM"   : return etPersonalCommunication;
+      case "DICT"    : return etDictionaryEntry;           case "RPRT"    : return etReport;
+      case "EBOOK"   : return etElectronicBook;            case "SER"     : return etSerialPublication;
+      case "ECHAP"   : return etElectronicBookSection;     case "SLIDE"   : return etSlide;
+      case "EDBOOK"  : return etEditedBook;                case "SOUND"   : return etAudioRecording;
+      case "EJOUR"   : return etElectronicArticle;         case "STAND"   : return etStandard;
+      case "ELEC"    : return etWebPage;                   case "STAT"    : return etStatute;
+      case "ENCYC"   : return etEncyclopediaArticle;       case "THES"    : return etThesis;
+      case "EQUA"    : return etEquation;                  case "UNPB"    : return etUnpublishedWork;
+      case "FIGURE"  : return etFigure;                    case "VIDEO"   : return etVideoRecording;
+      case "GEN"     : return etUnentered;                 default        : return etOther;
     }
   }
 

@@ -35,7 +35,7 @@ import javafx.scene.control.TableView;
 
 public class ObjectOrderDlgCtrlr extends HyperDlg
 {
-  @FXML private Button btnMoveUp, btnMoveDown, btnOK;
+  @FXML private Button btnMoveUp, btnMoveDown;
   @FXML private TableView<HyperTableRow> tv;
 
   private ObservableList<HyperTableRow> rows;

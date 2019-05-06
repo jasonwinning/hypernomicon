@@ -133,7 +133,7 @@ public class BibManager extends HyperDlg
 
   private void sync()
   {
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     if (btnStop.isDisabled() == false) return;
 
@@ -270,7 +270,7 @@ public class BibManager extends HyperDlg
     entryTable.addContextMenuItem("Unassign work record", row -> nonNull(row.getWork()), row ->
     {
       if (confirmDialog("Are you sure you want to unassign the work record?") == false) return;
-      if (ui.cantSaveRecord(true)) return;
+      if (ui.cantSaveRecord()) return;
 
       HDT_Work work = row.getWork();
 
@@ -288,7 +288,7 @@ public class BibManager extends HyperDlg
 
     entryTable.addContextMenuItem("Create new work record for this entry", row -> isNull(row.getWork()), row ->
     {
-      if (ui.cantSaveRecord(true)) return;
+      if (ui.cantSaveRecord()) return;
 
       HDT_Work work = db.createNewBlankRecord(hdtWork);
 
@@ -301,7 +301,7 @@ public class BibManager extends HyperDlg
 
     entryTable.addContextMenuItem("Assign this entry to an existing work", row -> isNull(row.getWork()), row ->
     {
-      if (ui.cantSaveRecord(true)) return;
+      if (ui.cantSaveRecord()) return;
 
       HDT_Person person = findFirstHaving(row.getEntry().getAuthors(), bibAuthor -> HDT_Person.lookUpByName(bibAuthor.getName()));
 
@@ -316,7 +316,7 @@ public class BibManager extends HyperDlg
     entryTable.addContextMenuItem("Show in Preview Window", HDT_Work.class, HDT_Work::canLaunch, work ->
     {
       PreviewSource src = ui.determinePreviewContext();
-      previewWindow.setPreview(src, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+      previewWindow.setPreview(src, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
       ui.openPreviewWindow(src);
     });
 
@@ -412,8 +412,7 @@ public class BibManager extends HyperDlg
     EntryType et = cbNewType.getValue();
     if (et == null)
     {
-      messageDialog("You must select an entry type.", mtWarning);
-      safeFocus(cbNewType);
+      falseWithWarningMessage("You must select an entry type.", cbNewType);
       return;
     }
 
@@ -434,7 +433,7 @@ public class BibManager extends HyperDlg
 
   private void btnSelectClick()
   {
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     HDT_Work work = workRecordToAssign.get();
     BibEntry entry = tableView.getSelectionModel().getSelectedItem().getEntry();
@@ -538,7 +537,7 @@ public class BibManager extends HyperDlg
   {
     EnumHashBiMap<EntryType, String> map = libraryWrapper.getEntryTypeMap();
 
-    cb.setConverter(new StringConverter<EntryType>()
+    cb.setConverter(new StringConverter<>()
     {
       @Override public String toString(EntryType et)
       {

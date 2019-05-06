@@ -128,12 +128,11 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
 
         work.workFiles.forEach(workFile ->
         {
-          if ((workFile.getPath() != null) && (workFile.getPath().isEmpty() == false) &&
-              (workFile.getPath().getFilePath().exists()) && (getMediaType(workFile.getPath().getFilePath()).toString().contains("pdf")))
+          if (workFile.pathNotEmpty() && workFile.filePath().exists() && getMediaType(workFile.filePath()).toString().contains("pdf"))
           {
             try
             {
-              new PDFBibData(workFile.getPath().getFilePath()).addCsvLines(csvFile);
+              new PDFBibData(workFile.filePath()).addCsvLines(csvFile);
             }
             catch (IOException | XMPException e)
             {

@@ -78,15 +78,15 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     if (getID() == XML_FOLDER_ID)
       return falseWithErrorMessage("Unable to rename the folder: XML folder cannot be renamed.");
 
-    if (path.getParentFolder() == null)
+    if (parentFolder() == null)
       return falseWithErrorMessage("Unable to rename the folder: parent folder record is null.");
 
-    FilePath srcFilePath = path.getFilePath();
+    FilePath srcFilePath = filePath();
 
     if (srcFilePath.exists() == false)
       return falseWithErrorMessage("Unable to rename the folder: it does not exist.");
 
-    FilePath parentFilePath = path.getParentFolder().path.getFilePath();
+    FilePath parentFilePath = parentFolder().filePath();
 
     if (parentFilePath.exists() == false)
       return falseWithErrorMessage("Unable to rename the folder: parent folder does not exist.");
@@ -116,7 +116,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
     db.unmapFilePath(srcFilePath);
     setNameInternal(newName, true);
-    path.assign(path.getParentFolder(), new FilePath(newName));
+    path.assign(parentFolder(), new FilePath(newName));
 
     switch (getID())
     {
@@ -142,16 +142,16 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
   public boolean delete(boolean singleCall)
   {
+    FilePath filePath = filePath();
+
     if (isProtectedRecord(getID(), getType()))
-      return falseWithErrorMessage("The folder \"" + path.getFilePath() + "\" cannot be deleted.");
+      return falseWithErrorMessage("The folder \"" + filePath + "\" cannot be deleted.");
 
-    if (path.getParentFolder() == null)
-      return falseWithErrorMessage("Unable to delete the folder \"" + path.getFilePath() + "\": parent folder record is null.");
-
-    FilePath filePath = path.getFilePath();
+    if (parentFolder() == null)
+      return falseWithErrorMessage("Unable to delete the folder \"" + filePath + "\": parent folder record is null.");
 
     if (filePath.exists() == false)
-      return falseWithErrorMessage("Unable to rename the folder \"" + path.getFilePath() + "\": it does not exist.");
+      return falseWithErrorMessage("Unable to rename the folder \"" + filePath + "\": it does not exist.");
 
     boolean restartWatcher = folderTreeWatcher.stop();
 
@@ -169,7 +169,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     catch (IOException e)
     {
       folderTreeWatcher.createNewWatcherAndStart();
-      return falseWithErrorMessage("An error occurred while attempting to delete the folder \"" + path.getFilePath() + "\": " + e.getMessage());
+      return falseWithErrorMessage("An error occurred while attempting to delete the folder \"" + filePath + "\": " + e.getMessage());
     }
 
     deleteFolderRecordTree(this);
@@ -185,7 +185,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
   public static void deleteFolderRecordTree(HDT_Folder folder)
   {
-    FilePath filePath = folder.getPath().getFilePath();
+    FilePath filePath = folder.filePath();
 
     if (folder.childFolders.isEmpty() == false)
       folder.childFolders.forEach(HDT_Folder::deleteFolderRecordTree);
@@ -207,9 +207,9 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     checkedForExistence = true;
 
     if (getID() != ROOT_FOLDER_ID)
-      if (path.getFilePath().exists() == false)
+      if (filePath().exists() == false)
         if ((getID() < FIRST_USER_FOLDER_ID) || (path.getRecordsString().length() > 0))
-          messageDialog("The folder: \"" + path.getFilePath() + "\" is referred to by one or more database records but cannot be found." + System.lineSeparator() + System.lineSeparator() +
+          messageDialog("The folder: \"" + filePath() + "\" is referred to by one or more database records but cannot be found." + System.lineSeparator() + System.lineSeparator() +
                         "Next time, only use the Hypernomicon File Manager to make changes to move, rename, or delete database folders.", mtWarning);
 
     childFolders.forEach(HDT_Folder::checkExists);

@@ -71,7 +71,7 @@ public class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
         }
       };
 
-      cb.setConverter(new StringConverter<CheckBoxOrCommand>()
+      cb.setConverter(new StringConverter<>()
       {
         @Override public String toString(CheckBoxOrCommand object)   { return caption; }
         @Override public CheckBoxOrCommand fromString(String string) { return new CheckBoxOrCommand(caption, Util::noOp); }

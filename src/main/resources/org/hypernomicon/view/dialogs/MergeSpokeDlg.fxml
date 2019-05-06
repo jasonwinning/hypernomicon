@@ -68,7 +68,7 @@
                   </AnchorPane>
                   <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
                      <children>
-                        <RadioButton fx:id="rbDesc3" mnemonicParsing="false" text="Alternate:" toggleGroup="$tgDesc" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <RadioButton mnemonicParsing="false" text="Alternate:" toggleGroup="$tgDesc" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                      </children>
                   </AnchorPane>
                   <AnchorPane cacheShape="false" prefHeight="200.0" prefWidth="200.0" scaleShape="false" GridPane.columnIndex="1" GridPane.rowIndex="2">

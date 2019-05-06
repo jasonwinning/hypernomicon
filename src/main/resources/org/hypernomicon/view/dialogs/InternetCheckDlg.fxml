@@ -40,16 +40,16 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <Label fx:id="lblTask" text="Checking for internet connection..." GridPane.columnSpan="2147483647" />
-            <Label fx:id="lblPercent" text="Press &quot;Skip&quot; if internet connection is not needed." GridPane.columnSpan="2147483647" GridPane.rowIndex="1" />
+            <Label text="Checking for internet connection..." GridPane.columnSpan="2147483647" />
+            <Label text="Press &quot;Skip&quot; if internet connection is not needed." GridPane.columnSpan="2147483647" GridPane.rowIndex="1" />
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
                <children>
-                  <ProgressBar fx:id="progressBar" layoutX="52.0" layoutY="11.0" prefWidth="200.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="4.0" />
+                  <ProgressBar layoutX="52.0" layoutY="11.0" prefWidth="200.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="4.0" />
                </children>
             </AnchorPane>
             <BorderPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
                <right>
-                  <Button fx:id="btnSkip" mnemonicParsing="false" onAction="#btnSkip" prefWidth="75.0" text="Skip" BorderPane.alignment="TOP_CENTER" />
+                  <Button mnemonicParsing="false" onAction="#btnSkip" prefWidth="75.0" text="Skip" BorderPane.alignment="TOP_CENTER" />
                </right>
             </BorderPane>
             <BorderPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">

@@ -29,7 +29,6 @@ import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 
@@ -37,7 +36,6 @@ public class VerdictDlgCtrlr extends HyperDlg
 {
   @FXML private Label lblParentType, lblParentName;
   @FXML private ComboBox<HyperTableCell> cbVerdict;
-  @FXML private Button btnOk, btnCancel;
 
   public HyperCB hcbVerdict;
 
@@ -83,9 +81,7 @@ public class VerdictDlgCtrlr extends HyperDlg
   {
     if (hcbVerdict.selectedID() > 0) return true;
 
-    messageDialog("You must select a verdict.", mtError);
-    safeFocus(cbVerdict);
-    return false;
+    return falseWithErrorMessage("You must select a verdict.", cbVerdict);
   }
 
 //---------------------------------------------------------------------------

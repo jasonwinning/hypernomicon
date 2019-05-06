@@ -24,11 +24,13 @@ import com.google.common.collect.EnumHashBiMap;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.MainText;
+import org.hypernomicon.util.filePath.FilePath;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
+import static org.hypernomicon.util.Util.*;
 
 //---------------------------------------------------------------------------
 
@@ -39,7 +41,15 @@ public class SimpleRecordTypes
 //---------------------------------------------------------------------------
 
   public interface HDT_RecordWithDescription extends HDT_Record { MainText getDesc(); }
-  public interface HDT_RecordWithPath extends HDT_Record        { HyperPath getPath(); }
+
+  public interface HDT_RecordWithPath extends HDT_Record
+  {
+    HyperPath getPath();
+
+    default boolean  pathNotEmpty()   { return nullSwitch(getPath(), false, path -> path.isEmpty() == false); }
+    default FilePath filePath()       { return nullSwitch(getPath(), null, HyperPath::filePath); }
+    default HDT_Folder parentFolder() { return nullSwitch(getPath(), null, HyperPath::parentFolder); }
+  }
 
   static abstract class HDT_SimpleRecord extends HDT_RecordBase
   {
@@ -126,16 +136,15 @@ public class SimpleRecordTypes
     {
       EnumHashBiMap<WorkTypeEnum, Integer> map = EnumHashBiMap.create(WorkTypeEnum.class);
 
-      map.put(wtPaper    , 1);  map.put(wtBook        , 2);
-      map.put(wtWebPage  , 3);  map.put(wtChapter     , 4);
-      map.put(wtRecording, 5);  map.put(wtUnenteredSet, 6);
+      map.put(wtNone   , -1); map.put(wtPaper    , 1); map.put(wtBook        , 2); map.put(wtWebPage, 3);
+      map.put(wtChapter,  4); map.put(wtRecording, 5); map.put(wtUnenteredSet, 6);
 
       return map;
     }
 
     public HDT_WorkType(HDT_RecordState xmlState, HyperDataset<HDT_WorkType> dataset) { super(xmlState, dataset); }
 
-    public WorkTypeEnum getEnumVal()                         { return workTypeIDToEnumVal(getID()); }
+    public static WorkTypeEnum getEnumVal(HDT_WorkType wt)   { return wt == null ? wtNone : workTypeIDToEnumVal(wt.getID()); }
     public static HDT_WorkType get(WorkTypeEnum enumVal)     { return db.workTypes.getByID(enumMap.get(enumVal)); }
     public static WorkTypeEnum workTypeIDToEnumVal(int wtID) { return enumMap.inverse().getOrDefault(wtID, wtNone); }
   }

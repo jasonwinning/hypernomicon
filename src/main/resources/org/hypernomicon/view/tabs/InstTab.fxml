@@ -75,7 +75,7 @@
                   <ComboBox fx:id="cbState" layoutX="34.0" layoutY="4.0" prefHeight="22.0" prefWidth="60.0" AnchorPane.leftAnchor="34.0" AnchorPane.topAnchor="4.0" />
                   <Label layoutX="97.0" layoutY="7.0" text="Country:" AnchorPane.leftAnchor="97.0" AnchorPane.topAnchor="7.0" />
                   <ComboBox fx:id="cbCountry" layoutX="143.0" prefHeight="22.0" prefWidth="231.0" AnchorPane.leftAnchor="143.0" AnchorPane.rightAnchor="76.0" AnchorPane.topAnchor="4.0" />
-                  <Hyperlink fx:id="hlGoogleMaps" layoutX="374.0" layoutY="4.0" onAction="#linkClick" text="Google maps" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0" />
+                  <Hyperlink layoutX="374.0" layoutY="4.0" onAction="#linkClick" text="Google maps" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="4.0" />
                </children>
             </AnchorPane>
             <AnchorPane GridPane.columnSpan="2147483647" GridPane.rowIndex="3">

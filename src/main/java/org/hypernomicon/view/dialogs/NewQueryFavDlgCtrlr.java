@@ -18,10 +18,8 @@
 package org.hypernomicon.view.dialogs;
 
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 
@@ -29,7 +27,6 @@ public class NewQueryFavDlgCtrlr extends HyperDlg
 {
   @FXML private TextField tfName;
   @FXML private CheckBox chkAutoExec;
-  @FXML private Button btnOk, btnCancel;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -64,9 +61,7 @@ public class NewQueryFavDlgCtrlr extends HyperDlg
   {
     if (tfName.getText().length() > 0) return true;
 
-    messageDialog("Name cannot be zero-length.", mtError);
-    safeFocus(tfName);
-    return false;
+    return falseWithErrorMessage("Name cannot be zero-length.", tfName);
   }
 
 //---------------------------------------------------------------------------

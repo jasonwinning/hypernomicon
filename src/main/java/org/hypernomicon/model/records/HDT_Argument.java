@@ -50,17 +50,10 @@ public class HDT_Argument extends HDT_RecordWithConnector
   {
     super(xmlState, dataset, tagName);
 
-    if (dataset != null)
-    {
-      positions = Collections.unmodifiableList(getObjList(rtPositionOfArgument));
-      counteredArgs = Collections.unmodifiableList(getObjList(rtCounterOfArgument));
-      works = getObjList(rtWorkOfArgument);
-      counterArgs = getSubjList(rtCounterOfArgument);
-    }
-    else
-    {
-      positions = null; counteredArgs = null; works = null; counterArgs = null;
-    }
+    positions = Collections.unmodifiableList(getObjList(rtPositionOfArgument));
+    counteredArgs = Collections.unmodifiableList(getObjList(rtCounterOfArgument));
+    works = getObjList(rtWorkOfArgument);
+    counterArgs = getSubjList(rtCounterOfArgument);
   }
 
 //---------------------------------------------------------------------------

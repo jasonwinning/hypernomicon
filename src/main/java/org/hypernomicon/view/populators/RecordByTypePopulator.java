@@ -268,7 +268,7 @@ public class RecordByTypePopulator extends Populator
     if (recordType != HyperTableCell.getCellType(cell))
       return null;
 
-    return getCell(HyperTableCell.getRecord(cell));
+    return getCell(cell.getRecord());
   }
 
 //---------------------------------------------------------------------------

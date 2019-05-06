@@ -78,7 +78,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.json.simple.parser.ParseException;
 
 import com.adobe.internal.xmp.XMPException;
@@ -92,7 +91,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SplitMenuButton;
@@ -121,7 +119,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
                        btnScholar, btnStop, btnTree, btnUseDOI, btnUseISBN, btnWorldCat, btnAutofill;
   @FXML private ComboBox<HyperTableCell> cbLargerWork, cbType;
   @FXML private Label lblSearchKey, lblTitle;
-  @FXML private MenuButton btnPDFMeta, btnWebQuery;
   @FXML private MenuItem mnuCrossref, mnuFindDOIonCrossref, mnuFindISBNonGoogleBooks, mnuGoogle, mnuShowMetadata, mnuStoreMetadata;
   @FXML private ProgressBar progressBar;
   @FXML private SplitMenuButton btnDOI;
@@ -160,7 +157,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   @Override public void findWithinDesc(String text)     { mainText.hilite(text); }
   @Override public TextViewInfo getMainTextInfo()       { return mainText.getViewInfo(); }
   @Override public void setRecord(HDT_Work work)        { curWork = work; }
-  @Override void focusOnSearchKey()                     { safeFocus(tfSearchKey); }
   @Override public MainTextWrapper getMainTextWrapper() { return mainText; }
 
   private List<Author> getAuthorsFromUI()      { return Authors.getListFromObjectGroups(getAuthorGroups(), curWork); }
@@ -171,7 +167,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private void setTabCaption(Tab tab, int cnt) { tab.setText(tabCaptions.get(tab) + " (" + cnt + ")"); }
   private void saveISBNs()                     { curWork.setISBNs(htISBN.dataRowStream().map(row -> row.getText(0)).collect(Collectors.toList())); }
   private void useDOIClick()                   { tfDOI.setText(getDoiFromBibTab()); }
-  private void useISBNClick()                  { getIsbnsFromBibTab().forEach(isbn -> htISBN.newDataRow().setCellValue(0, -1, isbn, hdtNone)); }
+  private void useISBNClick()                  { htISBN.buildRows(getIsbnsFromBibTab(), (row, isbn) -> row.setCellValue(0, -1, isbn, hdtNone)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -202,7 +198,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       row -> (row.getText(1).length() > 0) && (row.getID(1) < 1),
       row ->
       {
-        if (ui.cantSaveRecord(true)) return;
+        if (ui.cantSaveRecord()) return;
 
         String text = row.getText(1);
 
@@ -216,7 +212,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         if (otherPerson != null)
         {
           htAuthors.selectID(1, row, otherPerson.getID());
-          saveToRecord(false);
+          saveToRecord();
           curWork.setPersonIsInFileName(otherPerson, isInFileName);
           ui.update();
           return;
@@ -229,7 +225,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
           Populator pop = htAuthors.getPopulator(1);
           pop.setChanged(row);                      // A new record has been created so force it to repopulate
           htAuthors.selectID(1, row, npdc.getPerson().getID());
-          saveToRecord(false);
+          saveToRecord();
           curWork.setPersonIsInFileName(npdc.getPerson(), isInFileName);
           ui.update();
         }
@@ -306,7 +302,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       int endPageNum = parseInt(row.getText(nextColNdx), -1);
 
-      previewWindow.setPreview(pvsWorkTab, workFile.getPath().getFilePath(), startPageNum, endPageNum, curWork);
+      previewWindow.setPreview(pvsWorkTab, workFile.filePath(), startPageNum, endPageNum, curWork);
     });
 
     htWorkFiles.addTextEditColWithUpdateHandler(hdtWorkFile, false, true, (row, cellVal, nextColNdx, nextPopulator) ->
@@ -319,7 +315,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       int startPageNum = parseInt(row.getText(nextColNdx - 2), -1);
 
-      previewWindow.setPreview(pvsWorkTab, workFile.getPath().getFilePath(), startPageNum, endPageNum, curWork);
+      previewWindow.setPreview(pvsWorkTab, workFile.filePath(), startPageNum, endPageNum, curWork);
     });
 
     htWorkFiles.addTextEditCol(hdtWorkFile, false, false);
@@ -327,24 +323,19 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htWorkFiles.setTooltip(0, ButtonAction.baEdit, "Update or rename this work file");
     htWorkFiles.setTooltip(0, ButtonAction.baNew, "Add a new work file");
 
-    htWorkFiles.addContextMenuItem("Launch file", HDT_WorkFile.class,
-      workFile -> workFile.getPath().isEmpty() == false,
-      workFile -> launchWorkFile(workFile.getPath().getFilePath(), getCurPageNum(curWork, workFile, true)));
+    htWorkFiles.addContextMenuItem("Launch file", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty,
+      workFile -> launchWorkFile(workFile.filePath(), getCurPageNum(curWork, workFile, true)));
 
-    htWorkFiles.addContextMenuItem("Show in system explorer", HDT_WorkFile.class,
-      workFile -> workFile.getPath().isEmpty() == false,
-      workFile -> highlightFileInExplorer(workFile.getPath().getFilePath()));
+    htWorkFiles.addContextMenuItem("Show in system explorer", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty,
+      workFile -> highlightFileInExplorer(workFile.filePath()));
 
-    htWorkFiles.addContextMenuItem("Show in File Manager", HDT_WorkFile.class,
-      workFile -> workFile.getPath().isEmpty() == false,
-      workFile -> ui.goToFileInManager(workFile.getPath().getFilePath()));
+    htWorkFiles.addContextMenuItem("Show in File Manager", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty,
+      workFile -> ui.goToFileInManager(workFile.filePath()));
 
-    htWorkFiles.addContextMenuItem("Copy path to clipboard", HDT_WorkFile.class,
-      workFile -> workFile.getPath().isEmpty() == false,
+    htWorkFiles.addContextMenuItem("Copy path to clipboard", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty,
       workFile -> copyToClipboard(workFile.getPath().toString()));
 
-    htWorkFiles.addContextMenuItem("Update or rename this work file", HDT_WorkFile.class,
-      workFile -> workFile.getPath().isEmpty() == false,
+    htWorkFiles.addContextMenuItem("Update or rename this work file", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty,
       this::showWorkDialog);
 
     htWorkFiles.addContextMenuItem("Select parent work file",
@@ -386,11 +377,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htWorkFiles.addContextMenuItem("Move to a new work record", HDT_WorkFile.class, condHandler, this::moveFileToNewWork);
 
-    htWorkFiles.addContextMenuItem("Remove file", HDT_WorkFile.class,
-      workFile -> workFile.getPath().isEmpty() == false,
+    htWorkFiles.addContextMenuItem("Remove file", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty,
       workFile ->
       {
-        if (ui.cantSaveRecord(true)) return;
+        if (ui.cantSaveRecord()) return;
 
         if (confirmDialog("Are you sure you want to remove this file from the work record?") == false) return;
 
@@ -401,7 +391,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htWorkFiles.addChangeOrderMenuItem(true, () -> db.getObjectList(rtWorkFileOfWork, curWork, true).reorder(htWorkFiles.saveToList(2, hdtWorkFile)));
 
-    htWorkFiles.setDblClickHandler(HDT_WorkFile.class, workFile -> launchWorkFile(workFile.getPath().getFilePath(), getCurPageNum(curWork, workFile, true)));
+    htWorkFiles.setDblClickHandler(HDT_WorkFile.class, workFile -> launchWorkFile(workFile.filePath(), getCurPageNum(curWork, workFile, true)));
 
     tvWorkFiles.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -409,9 +399,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       HDT_WorkFile workFile = newValue.getRecord();
       if (workFile == null)
-        previewWindow.setPreview(pvsWorkTab, curWork.getPath().getFilePath(), getCurPageNum(curWork, null, true), getCurPageNum(curWork, null, false), curWork);
+        previewWindow.setPreview(pvsWorkTab, curWork.filePath(), getCurPageNum(curWork, null, true), getCurPageNum(curWork, null, false), curWork);
       else
-        previewWindow.setPreview(pvsWorkTab, workFile.getPath().getFilePath(), getCurPageNum(curWork, workFile, true), getCurPageNum(curWork, workFile, false), curWork);
+        previewWindow.setPreview(pvsWorkTab, workFile.filePath(), getCurPageNum(curWork, workFile, true), getCurPageNum(curWork, workFile, false), curWork);
     });
 
     tvSubworks.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
@@ -419,7 +409,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if ((newValue == null) || (oldValue == newValue)) return;
 
       HDT_Work subWork = newValue.getRecord();
-      previewWindow.setPreview(pvsWorkTab, subWork.getPath().getFilePath(), subWork.getStartPageNum(), subWork.getEndPageNum(), subWork);
+      previewWindow.setPreview(pvsWorkTab, subWork.filePath(), subWork.getStartPageNum(), subWork.getEndPageNum(), subWork);
     });
 
     htMiscFiles = new HyperTable(tvMiscFiles, 1, true, PREF_KEY_HT_WORK_MISC);
@@ -809,7 +799,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
           if (curWork.authorRecords.get(0).getLastName().length() > 0)
             tfSearchKey.setText(makeWorkSearchKey(curWork.getAuthors(), curWork.getYear(), curWork));
 
-    FilePath filePath = curWork.getPath().getFilePath();
+    FilePath filePath = curWork.filePath();
     boolean updatePreview = true;
 
     if (curWork == lastWork)
@@ -818,11 +808,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       htWorkFiles.getTV().getSortOrder().setAll(list);
 
-      updatePreview = false;
-
-      if (FilePath.isEmpty(filePath) == false)
-        if (filePath.equals(previewWindow.getFilePath(pvsWorkTab)) == false)
-          updatePreview = true;
+      updatePreview = (FilePath.isEmpty(filePath) == false) && (filePath.equals(previewWindow.getFilePath(pvsWorkTab)) == false);
     }
     else
     {
@@ -883,11 +869,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     for (HDT_WorkFile file : curWork.workFiles)
     {
-      if (file.getPath().getParentFolder() != null)
+      if (file.parentFolder() != null)
       {
         if (folder == null)
-          folder = file.getPath().getParentFolder();
-        else if (folder != file.getPath().getParentFolder())
+          folder = file.parentFolder();
+        else if (folder != file.parentFolder())
           notInSame = true;
       }
 
@@ -913,7 +899,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if (notInSame)
         tfLink.setText("(The files are located in multiple folders.)");
       else if (folder != null)
-        tfLink.setText(folder.getPath().getFilePath().toString());
+        tfLink.setText(folder.filePath().toString());
     }
   }
 
@@ -1063,7 +1049,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private void moveFileToNewWork(HDT_WorkFile workFile)
   {
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     HDT_Work oldWork = curWork,
              newWork = db.createNewBlankRecord(hdtWork);
@@ -1097,7 +1083,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private void moveFileToDifferentWork(HDT_WorkFile workFile)
   {
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     HDT_Person author = curWork.authorRecords.isEmpty() ? null : curWork.authorRecords.get(0);
 
@@ -1137,7 +1123,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private void moveAllFiles()
   {
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     if (curWork.workFiles.size() == 0)
     {
@@ -1147,7 +1133,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     FilePathSet files = new FilePathSet();
 
-    curWork.workFiles.forEach(workFile -> files.add(workFile.getPath().getFilePath()));
+    curWork.workFiles.forEach(workFile -> files.add(workFile.filePath()));
 
     MutableBoolean allSame = new MutableBoolean();
     FilePath folder = pickDirectory(true, files, allSame);
@@ -1186,7 +1172,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   @FXML private void btnNewChapterClick()
   {
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     if (curWork.getWorkTypeValue() == wtUnenteredSet)
     {
@@ -1347,7 +1333,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     DirectoryChooser dirChooser = new DirectoryChooser();
 
-    FilePath destPath = curWork.workFiles.size() > 0 ? curWork.getPath().getFilePath().getDirOnly() : db.unenteredPath();
+    FilePath destPath = curWork.workFiles.size() > 0 ? curWork.filePath().getDirOnly() : db.unenteredPath();
 
     FilePath folder = null;
     HDT_Folder folderRecord = null;
@@ -1449,7 +1435,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     changeToNormalMode();
 
-    ui.tabWorks.setGraphic(getImageViewForRelativePath(ui.getGraphicRelativePathByType(hdtWork)));
+    ui.tabWorks.setGraphic(getImageViewForRecordType(hdtWork));
 
     if (db.bibLibraryIsLinked())
     {
@@ -1591,7 +1577,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean saveToRecord(boolean showMessage)
+  @Override public boolean saveToRecord()
   {
     WorkTypeEnum workTypeEnumVal = HDT_WorkType.workTypeIDToEnumVal(hcbType.selectedID());
 
@@ -1606,7 +1592,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
               tfSearchKey.setText(makeWorkSearchKey(tfSearchKey.getText().replace(curWork.getYear(), tfYear.getText()), curWork));
     }
 
-    if (!saveSearchKey(curWork, tfSearchKey, showMessage)) return false;
+    if (!saveSearchKey(curWork, tfSearchKey)) return false;
 
     curWork.setName(tfTitle.getText());
     curWork.workType.setID(hcbType.selectedID());
@@ -1669,7 +1655,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       case hdtMiscFile :
 
-        if (ui.cantSaveRecord(true)) return;
+        if (ui.cantSaveRecord()) return;
         HDT_MiscFile file = db.createNewBlankRecord(hdtMiscFile);
         file.work.set(curWork);
         ui.goToRecord(file, false);
@@ -1689,7 +1675,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     boolean result;
 
-    if (ui.cantSaveRecord(true)) return false;
+    if (ui.cantSaveRecord()) return false;
 
     if (curWork.getWorkTypeValue() == wtUnenteredSet)
     {
@@ -1781,19 +1767,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addBibLine(String tag, String value, TextArea ta)
-  {
-    if (value == null) return;
-
-    if (ta.getText().length() > 0)
-      ta.appendText(System.lineSeparator());
-
-    ta.appendText(tag + ": " + value);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private void extractBibDataFromPdf()
   {
     httpClient.stop();
@@ -1810,9 +1783,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     curWork.workFiles.forEach(workFile ->
     {
-      if ((workFile.getPath() == null) || workFile.getPath().isEmpty()) return;
+      if (workFile.pathNotEmpty() == false) return;
 
-      FilePath filePath = workFile.getPath().getFilePath();
+      FilePath filePath = workFile.filePath();
 
       if (filePath.exists() && getMediaType(filePath).toString().contains("pdf"))
         pdfFilePaths.add(filePath);
@@ -1851,7 +1824,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
           if (isbns.isEmpty() && (goodPdfBD == null))
             goodPdfBD = lastPdfBD;
 
-          curIsbns.stream().filter(isbn -> isbns.contains(isbn) == false).forEach(isbns::add);
+          curIsbns.stream().filter(Predicate.not(isbns::contains)).forEach(isbns::add);
         }
       }
 
@@ -1864,12 +1837,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       goodPdfBD.setMultiStr(bfISBNs, isbns);
 
       taPdfMetadata.appendText(goodPdfBD.createReport());
-
-      PDDocumentInformation docInfo = goodPdfBD.getDocInfo();
-
-      addBibLine("Keywords", docInfo.getKeywords(), taPdfMetadata);
-      addBibLine("Creator" , docInfo.getCreator (), taPdfMetadata);
-      addBibLine("Producer", docInfo.getProducer(), taPdfMetadata);
     }
     catch (IOException | XMPException e)
     {
@@ -1969,7 +1936,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private void btnMergeBibClick()
   {
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     MergeWorksDlgCtrlr mwd = null;
     boolean creatingNewEntry = false;

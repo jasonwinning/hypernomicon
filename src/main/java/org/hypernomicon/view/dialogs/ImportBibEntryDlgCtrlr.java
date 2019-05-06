@@ -48,7 +48,7 @@ import static java.nio.charset.StandardCharsets.*;
 
 public class ImportBibEntryDlgCtrlr extends HyperDlg
 {
-  @FXML private Button btnBrowse, btnCancel, btnCreateNew, btnExisting;
+  @FXML private Button btnBrowse, btnCreateNew, btnExisting;
   @FXML private CheckBox chkDeleteFile, chkNewEntry;
   @FXML private ComboBox<HyperTableCell> cbWork;
   @FXML private TextArea taContents;
@@ -162,11 +162,7 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if ((createNewWork == false) && (hcbWork.selectedID() < 1))
-    {
-      messageDialog("You must select a work record.", mtError);
-      safeFocus(cbWork);
-      return false;
-    }
+      return falseWithErrorMessage("You must select a work record.", cbWork);
 
     return true;
   }

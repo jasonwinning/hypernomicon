@@ -48,6 +48,7 @@ import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.input.DragEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
 import javafx.scene.control.TreeTableColumn.SortType;
 
@@ -119,6 +120,15 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       TreeTableRow<TreeRow> row = new TreeTableRow<>();
 
       setupDragHandlers(row);
+
+      row.setOnMouseClicked(mouseEvent ->
+      {
+        nullSwitch(row.getItem(), treeRow -> nullSwitch(treeRow.treeItem, treeItem -> nullSwitch(treeRow.getRecord(), record ->
+        {
+          if (db.isLoaded() && (mouseEvent.getButton().equals(MouseButton.PRIMARY)) && (mouseEvent.getClickCount() == 2) && treeItem.isLeaf())
+            ui.goToRecord(record, false);
+        })));
+      });
 
       row.itemProperty().addListener((ob, ov, nv) -> row.setContextMenu(nullSwitch(nv, null, this::createContextMenu)));
 
@@ -462,11 +472,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     RelationType relType = getParentChildRelation(parent.getType(), child.getType(), forward);
 
     if ((relType == rtNone) || (relType == rtUnited))
-    {
-      if (doDetach)
-        messageDialog("Internal error #33948.", mtError);
-      return false;
-    }
+      return doDetach ? falseWithErrorMessage("Internal error #33948.") : false;
 
     if (forward.booleanValue())
     {

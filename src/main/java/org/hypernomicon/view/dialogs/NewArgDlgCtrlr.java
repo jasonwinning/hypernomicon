@@ -40,7 +40,6 @@ import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
@@ -49,7 +48,6 @@ import javafx.scene.web.WebView;
 
 public class NewArgDlgCtrlr extends HyperDlg
 {
-  @FXML private Button btnCancel, btnOK;
   @FXML private CheckBox cbIncludeAuth;
   @FXML private ComboBox<HyperTableCell> cbPerson, cbPositionVerdict, cbWork;
   @FXML private RadioButton rbArgName1, rbArgName2, rbArgName3, rbArgName4, rbArgName5, rbArgName6, rbArgName7, rbArgName8, rbExisting, rbNew;

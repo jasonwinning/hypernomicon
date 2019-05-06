@@ -31,7 +31,7 @@
             <Tab fx:id="tabGeneral" closable="false" text="General" />
             <Tab fx:id="tabContributors" closable="false" text="Contributors" />
             <Tab fx:id="tabAcknowledgements" closable="false" text="Acknowledgements" />
-            <Tab fx:id="tabLicense" closable="false" text="License" />
+            <Tab closable="false" text="License" />
          </tabs>
       </TabPane>
       <ImageView fitHeight="152.0" fitWidth="121.0" layoutX="50.0" layoutY="55.0" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="75.0">

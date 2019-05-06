@@ -78,7 +78,7 @@ public class PathInfo
 
       if (set != null) for (HyperPath setHyperPath : set)
       {
-        if (parentFolder == setHyperPath.getParentFolder())
+        if (parentFolder == setHyperPath.parentFolder())
         {
           switch (setHyperPath.getRecordType())
           {

@@ -28,7 +28,7 @@ import javafx.scene.input.TransferMode;
 
 public class ChangeParentDlgCtrlr extends HyperDlg
 {
-  @FXML private Button btnMove, btnCopy, btnCancel;
+  @FXML private Button btnCopy;
   @FXML private Label label1, label2, label3;
   @FXML private TextField tfChild, tfNewParent, tfOldParent;
 

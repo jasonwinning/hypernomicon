@@ -97,16 +97,13 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
       rowMenu.getItems().add(newItem);
     }
 
-    rowMenu.setOnShowing(event -> rowMenu.getItems().forEach(menuItem ->
+    rowMenu.setOnShowing(event -> rowMenu.getItems().forEach(menuItem -> { if (menuItem instanceof HasRightClickableRows.RowMenuItem)
     {
-      if (menuItem instanceof HasRightClickableRows.RowMenuItem)
-      {
-        @SuppressWarnings("unchecked")
-        RowMenuItem rowItem = (RowMenuItem)menuItem;
+      @SuppressWarnings("unchecked")
+      RowMenuItem rowItem = (RowMenuItem)menuItem;
 
-        rowItem.setDisable(rowItem.schema.disabled);
-      }
-    }));
+      rowItem.setDisable(rowItem.schema.disabled);
+    }}));
 
     return noneVisible ? null : rowMenu;
   }
@@ -167,80 +164,64 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 
   final public void addDefaultMenuItems()
   {
-    addContextMenuItem("Launch work file", HDT_Work.class,
-                       HDT_Work::canLaunch,
-                       work -> work.launch(-1));
+    addContextMenuItem("Launch work file", HDT_Work.class, HDT_Work::canLaunch, work -> work.launch(-1));
 
-    addContextMenuItem("Show in Preview Window", HDT_Work.class,
-                       HDT_Work::canLaunch,
+    addContextMenuItem("Show in Preview Window", HDT_Work.class, HDT_Work::canLaunch,
                        work ->
                        {
                          PreviewSource src = ui.determinePreviewContext();
-                         previewWindow.setPreview(src, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+                         previewWindow.setPreview(src, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
                          ui.openPreviewWindow(src);
                        });
 
-    addContextMenuItem("Launch", HDT_WorkFile.class,
-                       workFile -> workFile.getPath().isEmpty() == false,
-                       workFile -> launchFile(workFile.getPath().getFilePath()));
+    addContextMenuItem("Launch", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty, workFile -> launchFile(workFile.filePath()));
 
-    addContextMenuItem("Show in Preview Window", HDT_WorkFile.class,
-                       workFile -> workFile.getPath().isEmpty() == false,
+    addContextMenuItem("Show in Preview Window", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty,
                        workFile ->
                        {
                          PreviewSource src = ui.determinePreviewContext();
-                         previewWindow.setPreview(src, workFile.getPath().getFilePath(), -1, -1, workFile);
+                         previewWindow.setPreview(src, workFile.filePath(), -1, -1, workFile);
                          ui.openPreviewWindow(src);
                        });
 
-    addContextMenuItem("Launch file", HDT_MiscFile.class,
-                       miscFile -> miscFile.getPath().isEmpty() == false,
+    addContextMenuItem("Launch file", HDT_MiscFile.class, HDT_MiscFile::pathNotEmpty,
                        miscFile ->
                        {
                          miscFile.viewNow();
-                         launchFile(miscFile.getPath().getFilePath());
+                         launchFile(miscFile.filePath());
                        });
 
-    addContextMenuItem("Show in Preview Window", HDT_MiscFile.class,
-                       miscFile -> miscFile.getPath().isEmpty() == false,
+    addContextMenuItem("Show in Preview Window", HDT_MiscFile.class, HDT_MiscFile::pathNotEmpty,
                        miscFile ->
                        {
                          PreviewSource src = ui.determinePreviewContext();
-                         previewWindow.setPreview(src, miscFile.getPath().getFilePath(), -1, -1, miscFile);
+                         previewWindow.setPreview(src, miscFile.filePath(), -1, -1, miscFile);
                          ui.openPreviewWindow(src);
                        });
 
-    addContextMenuItem("Show in File Manager", HDT_WorkFile.class,
-                       workFile -> workFile.getPath().isEmpty() == false,
-                       workFile -> ui.goToFileInManager(workFile.getPath().getFilePath()));
+    addContextMenuItem("Show in File Manager", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty,
+                       workFile -> ui.goToFileInManager(workFile.filePath()));
 
-    addContextMenuItem("Show in File Manager", HDT_MiscFile.class,
-                       miscFile -> miscFile.getPath().isEmpty() == false,
-                       miscFile -> ui.goToFileInManager(miscFile.getPath().getFilePath()));
+    addContextMenuItem("Show in File Manager", HDT_MiscFile.class, HDT_MiscFile::pathNotEmpty,
+                       miscFile -> ui.goToFileInManager(miscFile.filePath()));
 
-    addContextMenuItem("Show in File Manager", HDT_Folder.class,
-                       folder -> folder.getPath().isEmpty() == false,
-                       folder -> ui.goToFileInManager(folder.getPath().getFilePath()));
+    addContextMenuItem("Show in File Manager", HDT_Folder.class, HDT_Folder::pathNotEmpty,
+                       folder -> ui.goToFileInManager(folder.filePath()));
 
-    addContextMenuItem("Show in system explorer", HDT_MiscFile.class,
-                       miscFile -> miscFile.getPath().isEmpty() == false,
-                       miscFile -> highlightFileInExplorer(miscFile.getPath().getFilePath()));
+    addContextMenuItem("Show in system explorer", HDT_MiscFile.class, HDT_MiscFile::pathNotEmpty,
+                       miscFile -> highlightFileInExplorer(miscFile.filePath()));
 
-    addContextMenuItem("Show in system explorer", HDT_WorkFile.class,
-                       workFile -> workFile.getPath().isEmpty() == false,
-                       workFile -> highlightFileInExplorer(workFile.getPath().getFilePath()));
+    addContextMenuItem("Show in system explorer", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty,
+                       workFile -> highlightFileInExplorer(workFile.filePath()));
 
-    addContextMenuItem("Show in system explorer", HDT_Folder.class,
-                       folder -> folder.getPath().isEmpty() == false,
-                       folder -> highlightFileInExplorer(folder.getPath().getFilePath()));
+    addContextMenuItem("Show in system explorer", HDT_Folder.class, HDT_Folder::pathNotEmpty,
+                       folder -> highlightFileInExplorer(folder.filePath()));
 
-    addContextMenuItem("Show folder in File Manager", HDT_Note.class,
-                       note -> nullSwitch(note.folder.get(), false, folder -> folder.getPath().isEmpty() == false),
-                       note -> ui.goToFileInManager(note.folder.get().getPath().getFilePath()));
+    addContextMenuItem("Show folder in File Manager", HDT_Note.class, HDT_Note::pathNotEmpty,
+                       note -> ui.goToFileInManager(note.filePath()));
 
-    addContextMenuItem("Show folder in system explorer", HDT_Note.class,
-                       note -> nullSwitch(note.folder.get(), false, folder -> folder.getPath().isEmpty() == false),
-                       note -> highlightFileInExplorer(note.folder.get().getPath().getFilePath()));
+    addContextMenuItem("Show folder in system explorer", HDT_Note.class, HDT_Note::pathNotEmpty,
+                       note -> highlightFileInExplorer(note.filePath()));
   }
 
 //---------------------------------------------------------------------------

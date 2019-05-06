@@ -102,16 +102,15 @@ import javafx.util.StringConverter;
 
 public final class MainCtrlr
 {
-  @FXML Tab tabOmniSelector, tabViewSelector;
+  @FXML Tab tabOmniSelector;
   @FXML TableView<HyperTableRow> tvFind;
-  @FXML private AnchorPane apFindBackground, apGoTo, apListGoTo, apOmniGoTo, apStatus, midAnchorPane;
-  @FXML private BorderPane mainPane;
+  @FXML private AnchorPane apFindBackground, apGoTo, apListGoTo, apStatus, midAnchorPane;
   @FXML private Button btnAdvancedSearch, btnBibMgr, btnDecrement, btnFileMgr, btnIncrement, btnMentions, btnPreviewWindow,
-                       btnSave, btnDelete, btnRevert, btnCreateNew, btnSearch, btnBack, btnForward, btnSaveAll, btnTextSearch;
+                       btnSave, btnDelete, btnRevert, btnCreateNew, btnBack, btnForward, btnSaveAll, btnTextSearch;
   @FXML private ComboBox<HyperTableCell> cbGoTo;
   @FXML private GridPane gpBottom;
   @FXML private HBox topHBox;
-  @FXML private ImageView ivDates, ivLeft, ivRight;
+  @FXML private ImageView ivDates;
   @FXML private Label lblProgress;
   @FXML private Menu mnuFolders;
   @FXML private MenuBar menuBar;
@@ -122,11 +121,11 @@ public final class MainCtrlr
   @FXML private ProgressBar progressBar;
   @FXML private SeparatorMenuItem mnuBibImportSeparator;
   @FXML private SplitMenuButton btnGoTo;
-  @FXML private StackPane stackPane;
+  @FXML private Tab tabViewSelector;
   @FXML private TabPane selectorTabPane, tabPane;
   @FXML private TextField tfID, tfOmniGoTo, tfRecord;
   @FXML private ToggleButton btnPointerPreview;
-  @FXML private ToolBar tbGoTo, topToolBar;
+  @FXML private ToolBar topToolBar;
   @FXML public Label lblStatus;
   @FXML public Menu mnuFavorites, mnuQueries;
   @FXML public Tab tabArguments, tabDebates, tabFiles, tabInst, tabNotes, tabPersons, tabPositions, tabQueries, tabTerms, tabTree, tabWorks;
@@ -142,7 +141,7 @@ public final class MainCtrlr
   public final ComboBox<TreeRow> cbTreeGoTo = new ComboBox<>();
   private ComboBox<ResultsRow> cbResultGoTo = null;
   private ClickHoldButton chbBack, chbForward;
-  private TextField selectorTF = null;
+  private TextField tfSelector = null;
 
   public HDT_Record treeSubjRecord = null, treeObjRecord = null;
   public final List<TreeTargetType> treeTargetTypes = new ArrayList<>();
@@ -165,8 +164,8 @@ public final class MainCtrlr
   @FXML private void mnuExitNoSaveClick()     { if (confirmDialog("Abandon changes and quit?")) shutDown(false, true, false); }
   @FXML private void mnuAboutClick()          { AboutDlgCtrlr.create("About " + appTitle).showModal(); }
   @FXML private void mnuChangeFavOrderClick() { FavOrderDlgCtrlr.create("Change Order of Favorites").showModal(); }
-  @FXML private void mnuSettingsClick()       { if (!cantSaveRecord(true)) OptionsDlgCtrlr.create(appTitle + " Settings").showModal(); }
-  @FXML private void mnuFindMentionsClick()   { if (!cantSaveRecord(true)) searchForMentions(activeRecord(), false); }
+  @FXML private void mnuSettingsClick()       { if (!cantSaveRecord()) OptionsDlgCtrlr.create(appTitle + " Settings").showModal(); }
+  @FXML private void mnuFindMentionsClick()   { if (!cantSaveRecord()) searchForMentions(activeRecord(), false); }
 
   public PersonTabCtrlr personHyperTab  () { return getHyperTab(personTabEnum  ); }
   public InstTabCtrlr   instHyperTab    () { return getHyperTab(instTabEnum    ); }
@@ -241,19 +240,19 @@ public final class MainCtrlr
     ttDates = new Tooltip("No dates to show.");
     ttDates.setStyle("-fx-font-size: 14px;");
 
-    PersonTabCtrlr     .addHyperTab(personTabEnum   , tabPersons     , "PersonTab.fxml");
-    InstTabCtrlr       .addHyperTab(instTabEnum     , tabInst        , "InstTab.fxml");
-    WorkTabCtrlr       .addHyperTab(workTabEnum     , tabWorks       , "WorkTab.fxml");
-    FileTabCtrlr       .addHyperTab(fileTabEnum     , tabFiles       , "FileTab.fxml");
+    PersonTabCtrlr   .addHyperTab(personTabEnum   , tabPersons     , "PersonTab.fxml");
+    InstTabCtrlr     .addHyperTab(instTabEnum     , tabInst        , "InstTab.fxml");
+    WorkTabCtrlr     .addHyperTab(workTabEnum     , tabWorks       , "WorkTab.fxml");
+    FileTabCtrlr     .addHyperTab(fileTabEnum     , tabFiles       , "FileTab.fxml");
 
-    new DebateTab()    .baseInit   (debateTabEnum   , tabDebates);
-    new PositionTab()  .baseInit   (positionTabEnum , tabPositions);
-    new ArgumentTab()  .baseInit   (argumentTabEnum , tabArguments);
-    new NoteTab()      .baseInit   (noteTabEnum     , tabNotes);
-    new TermTab()      .baseInit   (termTabEnum     , tabTerms);
+    new DebateTab()  .baseInit   (debateTabEnum   , tabDebates);
+    new PositionTab().baseInit   (positionTabEnum , tabPositions);
+    new ArgumentTab().baseInit   (argumentTabEnum , tabArguments);
+    new NoteTab()    .baseInit   (noteTabEnum     , tabNotes);
+    new TermTab()    .baseInit   (termTabEnum     , tabTerms);
 
-    QueryTabCtrlr      .addHyperTab(queryTabEnum    , tabQueries     , "QueryTab.fxml");
-    TreeTabCtrlr       .addHyperTab(treeTabEnum     , tabTree        , "TreeTab.fxml");
+    QueryTabCtrlr    .addHyperTab(queryTabEnum    , tabQueries     , "QueryTab.fxml");
+    TreeTabCtrlr     .addHyperTab(treeTabEnum     , tabTree        , "TreeTab.fxml");
 
     addSelectorTab(omniTabEnum);
     addSelectorTab(listTabEnum);
@@ -356,12 +355,12 @@ public final class MainCtrlr
       TabEnum hyperTabEnum = hyperTab.getTabEnum();
       String path = getGraphicRelativePathByType(getRecordTypeByTabEnum(hyperTabEnum));
 
-      ImageView graphic = getImageViewForRelativePath(path);
-      if (graphic == null) return;
+      nullSwitch(getImageViewForRelativePath(path), graphic ->
+      {
+        hyperTab.getTab().setGraphic(graphic);
 
-      hyperTab.getTab().setGraphic(graphic);
-
-      nullSwitch(selectorTabs.get(hyperTabEnum), selectorTab -> selectorTab.setGraphic(getImageViewForRelativePath(path)));
+        nullSwitch(selectorTabs.get(hyperTabEnum), selectorTab -> selectorTab.setGraphic(getImageViewForRelativePath(path)));
+      });
     });
 
     if (SystemUtils.IS_OS_MAC)
@@ -541,7 +540,7 @@ public final class MainCtrlr
         if (miscFile == null)
           previewWindow.clearPreview(src);
         else
-          previewWindow.setPreview(src, miscFile.getPath().getFilePath(), -1, -1, miscFile);
+          previewWindow.setPreview(src, miscFile.filePath(), -1, -1, miscFile);
       }
 
       openPreviewWindow(src);
@@ -573,7 +572,7 @@ public final class MainCtrlr
     mnuFindWithinName.setOnAction(event ->
     {
       if (selectorTabEnum() == omniTabEnum)
-        showSearch(true, QueryType.qtAllRecords, QUERY_WITH_NAME_CONTAINING, null, new HyperTableCell(-1, selectorTF.getText(), hdtNone), null, selectorTF.getText());
+        showSearch(true, QueryType.qtAllRecords, QUERY_WITH_NAME_CONTAINING, null, new HyperTableCell(-1, tfSelector.getText(), hdtNone), null, tfSelector.getText());
       else
         mnuFindWithinNameClick();
     });
@@ -583,9 +582,9 @@ public final class MainCtrlr
     mnuFindWithinAnyField.setOnAction(event ->
     {
       if (selectorTabEnum() == omniTabEnum)
-        showSearch(true, QueryType.qtAllRecords, QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(-1, selectorTF.getText(), hdtNone), null, selectorTF.getText());
+        showSearch(true, QueryType.qtAllRecords, QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(-1, tfSelector.getText(), hdtNone), null, tfSelector.getText());
       else
-        showSearch(true, QueryType.fromRecordType(selectorType()), QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(-1, selectorTF.getText(), hdtNone), null, selectorTF.getText());
+        showSearch(true, QueryType.fromRecordType(selectorType()), QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(-1, tfSelector.getText(), hdtNone), null, tfSelector.getText());
     });
 
 //---------------------------------------------------------------------------
@@ -635,7 +634,7 @@ public final class MainCtrlr
 
   public void btnForwardClick()
   {
-    if (btnForward.isDisabled() || cantSaveRecord(true)) return;
+    if (btnForward.isDisabled() || cantSaveRecord()) return;
 
     viewSequence.stepForward();
   }
@@ -645,7 +644,7 @@ public final class MainCtrlr
 
   public void btnBackClick()
   {
-    if (btnBack.isDisabled() || cantSaveRecord(true)) return;
+    if (btnBack.isDisabled() || cantSaveRecord()) return;
 
     viewSequence.stepBack();
   }
@@ -677,7 +676,7 @@ public final class MainCtrlr
       return;
     }
 
-    if (cantSaveRecord(true)) return;
+    if (cantSaveRecord()) return;
 
     fileManagerDlg.showNonmodal();
   }
@@ -729,7 +728,7 @@ public final class MainCtrlr
 
     hideFindTable();
 
-    activeTab().findWithinDesc(selectorTF.getText());
+    activeTab().findWithinDesc(tfSelector.getText());
   }
 
 //---------------------------------------------------------------------------
@@ -750,7 +749,7 @@ public final class MainCtrlr
     TabEnum tabEnum = activeTabEnum();
 
     if (tabEnum == queryTabEnum)
-      curQV.resultsTable.dblClick(curQV.resultsTable.getTV().getSelectionModel().getSelectedItem());
+      goToRecord(queryHyperTab().activeRecord(), false);
 
     if (tabEnum != treeTabEnum) return;
 
@@ -792,8 +791,8 @@ public final class MainCtrlr
 
         HDT_MiscFile miscFile = (HDT_MiscFile) record;
 
-        if (miscFile.getPath().isEmpty() == false)
-          return getImageRelPathForFilePath(miscFile.getPath().getFilePath(), null);
+        if (miscFile.pathNotEmpty())
+          return getImageRelPathForFilePath(miscFile.filePath(), null);
 
       default :
 
@@ -832,7 +831,7 @@ public final class MainCtrlr
   private void mnuFindWithinNameClick()
   {
     HDT_RecordType type = selectorType();
-    String query = selectorTF.getText();
+    String query = tfSelector.getText();
     boolean backClick = activeTabEnum() != queryTabEnum;
 
     lblStatus.setText("");
@@ -880,7 +879,7 @@ public final class MainCtrlr
     {
       if (save)
       {
-        if (cantSaveRecord(false) && prompt)
+        if (cantSaveRecord() && prompt)
           if (!confirmDialog("Unable to accept most recent changes to this record; however, all other data will be saved. Continue exiting?"))
             return;
 
@@ -1060,7 +1059,7 @@ public final class MainCtrlr
 
     queryHyperTab().setCB(cbResultGoTo);
 
-    cbResultGoTo.setConverter(new StringConverter<ResultsRow>()
+    cbResultGoTo.setConverter(new StringConverter<>()
     {
       @Override public String toString(ResultsRow row)
       {
@@ -1108,8 +1107,7 @@ public final class MainCtrlr
     if (db.isLoaded() == false)
       return falseWithErrorMessage("No database is currently loaded.");
 
-    if (saveRecord)
-      if (cantSaveRecord(false)) return false;
+    if (saveRecord && cantSaveRecord()) return false;
 
     db.prefs.putInt(PREF_KEY_PERSON_ID     , personHyperTab  ().getActiveID());
     db.prefs.putInt(PREF_KEY_INSTITUTION_ID, instHyperTab    ().getActiveID());
@@ -1184,7 +1182,7 @@ public final class MainCtrlr
     {
       if (confirmDialog("Save data to XML files?"))
       {
-        if (cantSaveRecord(true)) return;
+        if (cantSaveRecord()) return;
         saveAllToDisk(false, false, false);
       }
 
@@ -1231,7 +1229,7 @@ public final class MainCtrlr
       return;
     }
 
-    if (cantSaveRecord(true)) return;
+    if (cantSaveRecord()) return;
 
     if (db.isLoaded())
     {
@@ -1268,7 +1266,7 @@ public final class MainCtrlr
   {
     if (btnSave.getText().equals(TREE_SELECT_BTN_CAPTION))
       treeSelect();
-    else if (!cantSaveRecord(true))
+    else if (!cantSaveRecord())
       update();
   }
 
@@ -1277,7 +1275,7 @@ public final class MainCtrlr
 
   @FXML private void btnCreateClick()
   {
-    if (cantSaveRecord(true)) return;
+    if (cantSaveRecord()) return;
 
     HDT_RecordType type = selectorType();
     String name = hcbGoTo.selectedID() == -1 ? cbGoTo.getEditor().getText() : "";
@@ -1379,7 +1377,7 @@ public final class MainCtrlr
     {
       if (confirmDialog("Save data to XML files before closing?"))
       {
-        if (cantSaveRecord(true)) return;
+        if (cantSaveRecord()) return;
         saveAllToDisk(false, false, false);
       }
     }
@@ -1458,7 +1456,7 @@ public final class MainCtrlr
       return;
     }
 
-    if (cantSaveRecord(true)) return;
+    if (cantSaveRecord()) return;
 
     ChangeIDDlgCtrlr ctrlr = ChangeIDDlgCtrlr.create("Change Record ID");
 
@@ -1492,7 +1490,7 @@ public final class MainCtrlr
       return;
     }
 
-    if (cantSaveRecord(true)) return;
+    if (cantSaveRecord()) return;
 
     NewCategoryDlgCtrlr ctrlr = NewCategoryDlgCtrlr.create("New Category", type);
 
@@ -1603,7 +1601,7 @@ public final class MainCtrlr
   @FXML private void mnuToggleFavoriteClick()
   {
     if ((activeTabEnum() == treeTabEnum) || (activeTabEnum() == queryTabEnum)) return;
-    if (cantSaveRecord(true)) return;
+    if (cantSaveRecord()) return;
 
     HDT_Record record = viewRecord();
     if (record == null) return;
@@ -1934,14 +1932,14 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean cantSaveRecord(boolean showMessage)
+  public boolean cantSaveRecord()
   {
     if ((db.isLoaded() == false) || (activeTabEnum() == queryTabEnum) || (activeTabEnum() == treeTabEnum) || (activeRecord() == null))
       return false;
 
     CommitableWrapper.commitWrapper(primaryStage().getScene().getFocusOwner());
 
-    return activeTab().saveToRecord(showMessage) == false;
+    return activeTab().saveToRecord() == false;
   }
 
 //---------------------------------------------------------------------------
@@ -1951,7 +1949,7 @@ public final class MainCtrlr
   {
     if (db.isLoaded() == false) return;
 
-    if (cantSaveRecord(true))
+    if (cantSaveRecord())
     {
       treeSubjRecord = null;
       treeObjRecord = null;
@@ -2047,7 +2045,7 @@ public final class MainCtrlr
 
       case hdtFolder :
 
-        goToFileInManager(HDT_Folder.class.cast(record).getPath().getFilePath());
+        goToFileInManager(HDT_Folder.class.cast(record).filePath());
         return;
 
       case hdtInvestigation :
@@ -2077,12 +2075,12 @@ public final class MainCtrlr
     if (windows.getOutermostStage() != primaryStage())
       windows.focusStage(primaryStage());
 
-    if (save && cantSaveRecord(true)) return;
+    if (save && cantSaveRecord()) return;
 
     viewSequence.forwardToNewSlotAndView(new HyperView<>(record));
 
     if (inv != null)
-      PersonTabCtrlr.class.cast(activeTab()).showInvestigation(inv.getID());
+      personHyperTab().showInvestigation(inv.getID());
   }
 
 //---------------------------------------------------------------------------
@@ -2163,6 +2161,9 @@ public final class MainCtrlr
     return selectorTabs.inverse().get(tab);
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private HDT_RecordType selectorType()
   {
     TabEnum tabEnum = selectorTabEnum();
@@ -2180,7 +2181,7 @@ public final class MainCtrlr
   {
     TabEnum selectorTabEnum = selectorTabEnum(), activeTabEnum = activeTabEnum();
     HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = nullSwitch(getHyperTab(selectorTabEnum), activeTab());
-    selectorTF = null;
+    tfSelector = null;
 
     int count = hyperTab == null ? 0 : hyperTab.getRecordCount();
 
@@ -2197,7 +2198,7 @@ public final class MainCtrlr
           if (cbResultGoTo == null) initResultCB();
 
           apListGoTo.getChildren().setAll(cbResultGoTo);
-          selectorTF = cbResultGoTo.getEditor();
+          tfSelector = cbResultGoTo.getEditor();
         }
 
         if (activeTabEnum == treeTabEnum)
@@ -2206,7 +2207,7 @@ public final class MainCtrlr
 
           copyRegionLayout(cbGoTo, cbTreeGoTo);
           apListGoTo.getChildren().setAll(cbTreeGoTo);
-          selectorTF = cbTreeGoTo.getEditor();
+          tfSelector = cbTreeGoTo.getEditor();
         }
 
         btnCreateNew.setDisable(true);
@@ -2218,7 +2219,7 @@ public final class MainCtrlr
         mnuRecordSelect.setVisible(false);
         setAllVisible(true, mnuFindWithinAnyField, mnuFindWithinName);
 
-        selectorTF = tfOmniGoTo;
+        tfSelector = tfOmniGoTo;
 
         btnCreateNew.setDisable((activeTabEnum == queryTabEnum) || (activeTabEnum == treeTabEnum));
 
@@ -2228,7 +2229,7 @@ public final class MainCtrlr
 
         setAllVisible(true, mnuFindWithinAnyField, mnuFindWithinName);
 
-        selectorTF = cbGoTo.getEditor();
+        tfSelector = cbGoTo.getEditor();
         hcbGoTo.clear();
         RecordByTypePopulator.class.cast(hcbGoTo.getPopulator()).setRecordType(Populator.dummyRow, selectorType());
         if (cbGoTo.isEditable() == false) cbGoTo.setEditable(true);
@@ -2245,10 +2246,10 @@ public final class MainCtrlr
 
     hideFindTable();
 
-    if (setFocus && (selectorTF != null)) Platform.runLater(() ->
+    if (setFocus && (tfSelector != null)) Platform.runLater(() ->
     {
-      selectorTF.requestFocus();
-      selectorTF.selectAll();
+      tfSelector.requestFocus();
+      tfSelector.selectAll();
     });
   }
 
@@ -2372,7 +2373,7 @@ public final class MainCtrlr
 
   public boolean showSearch(boolean doSearch, QueryType type, int query, QueryFavorite fav, HyperTableCell op1, HyperTableCell op2, String caption)
   {
-    if (cantSaveRecord(true)) return false;
+    if (cantSaveRecord()) return false;
 
     viewSequence.forwardToNewSlotAndView(new HyperView<>(queryTabEnum, queryHyperTab().activeRecord(), queryHyperTab().getMainTextInfo()));
 
@@ -2387,10 +2388,7 @@ public final class MainCtrlr
 
   private void recordLookup()
   {
-    int nextID = -1;
-
-    if (hcbGoTo.somethingWasTyped)
-      nextID = HyperTableCell.getCellID(hcbGoTo.typedMatch);
+    int nextID = hcbGoTo.somethingWasTyped ? HyperTableCell.getCellID(hcbGoTo.typedMatch) : -1;
 
     if (nextID < 1)
       nextID = hcbGoTo.selectedID();
@@ -2452,9 +2450,9 @@ public final class MainCtrlr
       {
         msg += db.getTypeName(treeTargetTypes.get(ndx).objType);
 
-        if       ((ndx == 0) && (lastNdx == 1))   msg += " or ";
-        else if  (ndx == (lastNdx - 1))           msg += ", or ";
-        else if  (ndx < lastNdx)                  msg += ", ";
+        if      ((ndx == 0) && (lastNdx == 1)) msg += " or ";
+        else if (ndx == (lastNdx - 1))         msg += ", or ";
+        else if (ndx < lastNdx)                msg += ", ";
       }
 
       messageDialog(msg + ".", mtError);
@@ -2626,7 +2624,7 @@ public final class MainCtrlr
 
   public void newMiscFile(FileRow fileRow, FilePath filePath)
   {
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     HDT_MiscFile miscFile = db.createNewBlankRecord(hdtMiscFile);
 
@@ -2657,7 +2655,7 @@ public final class MainCtrlr
 
   public void newWorkAndWorkFile(HDT_Person person, FilePath filePathToUse)
   {
-    if (cantSaveRecord(true)) return;
+    if (cantSaveRecord()) return;
 
     HDT_Work work = db.createNewBlankRecord(hdtWork);
 
@@ -2715,7 +2713,7 @@ public final class MainCtrlr
 
   private void importBibFile(List<String> lines, FilePath filePath)
   {
-    if (cantSaveRecord(true)) return;
+    if (cantSaveRecord()) return;
 
     ImportBibEntryDlgCtrlr ibed = ImportBibEntryDlgCtrlr.create("Import Bibliography File", lines, filePath);
 

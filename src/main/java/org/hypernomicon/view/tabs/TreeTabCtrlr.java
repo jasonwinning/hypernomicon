@@ -75,17 +75,16 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   public String textToHilite = "";
   private TreeWrapper tree;
 
-  @Override HDT_RecordType getType()                { return hdtNone; }
-  @Override public void enable(boolean enabled)     { ui.tabTree.getContent().setDisable(enabled == false); }
-  @Override public void clear()                     { tree.clear(); }
-  @Override public boolean saveToRecord(boolean sm) { return true; }
-  @Override void focusOnSearchKey()                 { return; }
-  @Override public void setRecord(HDT_Record ar)    { return; }
-  @Override public HDT_Record activeRecord()        { return tree.selectedRecord(); }
-  @Override public String getRecordName()           { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
-  @Override public TextViewInfo getMainTextInfo()   { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
-  @Override public void setDividerPositions()       { return; }
-  @Override public void getDividerPositions()       { return; }
+  @Override HDT_RecordType getType()              { return hdtNone; }
+  @Override public void enable(boolean enabled)   { ui.tabTree.getContent().setDisable(enabled == false); }
+  @Override public void clear()                   { tree.clear(); }
+  @Override public boolean saveToRecord()         { return true; }
+  @Override public void setRecord(HDT_Record ar)  { return; }
+  @Override public HDT_Record activeRecord()      { return tree.selectedRecord(); }
+  @Override public String getRecordName()         { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
+  @Override public TextViewInfo getMainTextInfo() { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
+  @Override public void setDividerPositions()     { return; }
+  @Override public void getDividerPositions()     { return; }
 
   public TreeWrapper getTree() { return tree; }
 
@@ -246,14 +245,14 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
             case hdtWork :
 
               HDT_Work work = (HDT_Work)record;
-              previewWindow.setPreview(pvsTreeTab, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+              previewWindow.setPreview(pvsTreeTab, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
               clearPreview = false;
               break;
 
             case hdtMiscFile :
 
               HDT_MiscFile miscFile = (HDT_MiscFile)record;
-              previewWindow.setPreview(pvsTreeTab, miscFile.getPath().getFilePath(), -1, -1, miscFile);
+              previewWindow.setPreview(pvsTreeTab, miscFile.filePath(), -1, -1, miscFile);
               clearPreview = false;
               break;
 

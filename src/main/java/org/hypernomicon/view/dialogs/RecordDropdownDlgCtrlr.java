@@ -24,19 +24,16 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 
 public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
 {
   @FXML private ComboBox<HyperTableCell> cbRecord;
-  @FXML private Button btnOK, btnCancel;
 
   private HyperCB hcbRecord;
   private String typeName;
@@ -72,9 +69,7 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
   {
     if (hcbRecord.selectedID() >= 1) return true;
 
-    messageDialog("Select a " + typeName + " record.", mtInformation);
-    safeFocus(cbRecord);
-    return false;
+    return falseWithInfoMessage("Select a " + typeName + " record.", cbRecord);
   }
 
 //---------------------------------------------------------------------------

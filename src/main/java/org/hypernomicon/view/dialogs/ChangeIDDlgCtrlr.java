@@ -119,18 +119,10 @@ public class ChangeIDDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if (hcbRecord.selectedID() < 1)
-    {
-      messageDialog("You must select a record.", mtError);
-      safeFocus(cbRecord);
-      return false;
-    }
+      return falseWithErrorMessage("You must select a record.", cbRecord);
 
     if ((parseInt(tfNewID.getText(), -1) < 1) || lblNotAvailable.isVisible())
-    {
-      messageDialog("You must enter a valid numeric ID.", mtError);
-      safeFocus(tfNewID);
-      return false;
-    }
+      return falseWithErrorMessage("You must enter a valid numeric ID.", tfNewID);
 
     HDT_Record record = db.records(hcbRecord.selectedType()).getByID(parseInt(tfOldID.getText(), -1));
 

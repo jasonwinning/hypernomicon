@@ -25,6 +25,7 @@ import java.util.Iterator;
 import com.google.common.collect.Sets;
 
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.hypernomicon.util.FilenameMap;
 
@@ -38,7 +39,7 @@ public class FilePathSet implements Set<FilePath>
   @Override public void clear()                         { nameToPaths.clear(); }
   @Override public Iterator<FilePath> iterator()        { return new FilePathIterator(nameToPaths); }
   @Override public boolean isEmpty()                    { return size() == 0; }
-  @Override public boolean retainAll(Collection<?> c)   { return removeIf(filePath -> c.contains(filePath) == false); }
+  @Override public boolean retainAll(Collection<?> c)   { return removeIf(Predicate.not(c::contains)); }
   @Override public int size()                           { return nameToPaths.values().stream().map(Set::size).reduce(0, Math::addExact); }
   @Override public boolean containsAll(Collection<?> c) { return c.stream().allMatch(this::contains); }
 

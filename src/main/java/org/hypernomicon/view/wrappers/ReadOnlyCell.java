@@ -19,6 +19,7 @@ package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.function.Consumer;
 
@@ -47,22 +48,16 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
     this.table = table;
     this.col = col;
 
-    setOnMouseClicked(mouseEvent ->
+    setOnMouseClicked(mouseEvent -> nullSwitch(getItem(), cellItem -> nullSwitch(cellItem.getRecord(), (HDT_Record record) ->
     {
-      if ((mouseEvent.getButton().equals(MouseButton.PRIMARY)) && (mouseEvent.getClickCount() == 2))
+      if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2))
       {
-        HyperTableCell cellItem = getItem();
-        if (cellItem == null) return;
-
-        HDT_Record record = HyperTableCell.getRecord(cellItem);
-        if (record == null) return;
-
         if (table.dblClickHandler != null)
           handleRecord(table.dblClickHandler, record);
         else
           ui.goToRecord(record, true);
       }
-    });
+    })));
   }
 
 //---------------------------------------------------------------------------

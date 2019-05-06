@@ -42,7 +42,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.RadioButton;
@@ -57,7 +56,6 @@ import javafx.scene.layout.AnchorPane;
 public class NewPersonDlgCtrlr extends HyperDlg
 {
   @FXML private AnchorPane apDup;
-  @FXML private Button btnCancel, btnOK;
   @FXML private Label lblDupSearchKey, lblDupTitle, lblDupType, lblDupYear, lblSearchKey, lblStatus;
   @FXML private ProgressIndicator progressIndicator;
   @FXML private RadioButton rbAddNoCreate, rbCreateNoMerge, rbMerge, rbUseDupName, rbUseName;
@@ -644,12 +642,9 @@ public class NewPersonDlgCtrlr extends HyperDlg
       }
 
       if (e.getTooShort())
-        messageDialog("Unable to modify record: search key must be at least 3 characters.", mtError);
+        return falseWithErrorMessage("Unable to modify record: search key must be at least 3 characters.", tfSearchKey);
       else
-        messageDialog("Unable to modify record: search key already exists.", mtError);
-
-      safeFocus(tfSearchKey);
-      return false;
+        return falseWithErrorMessage("Unable to modify record: search key already exists.", tfSearchKey);
     }
 
     if (rbMerge.isSelected())

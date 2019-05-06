@@ -35,9 +35,9 @@ import org.hypernomicon.view.reports.ReportEngine;
 
 public class AboutDlgCtrlr extends HyperDlg
 {
-  private @FXML WebView webView;
-  private @FXML TabPane tabPane;
-  private @FXML Tab tabGeneral, tabContributors, tabAcknowledgements, tabLicense;
+  @FXML private WebView webView;
+  @FXML private TabPane tabPane;
+  @FXML private Tab tabGeneral, tabContributors, tabAcknowledgements;
 
   private String tabGeneralHtml, tabContributorsHtml, tabAcknowledgementsHtml;
 

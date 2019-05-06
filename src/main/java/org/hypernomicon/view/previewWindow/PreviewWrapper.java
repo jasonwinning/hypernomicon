@@ -74,7 +74,7 @@ public class PreviewWrapper
   private final PreviewSource src;
   private final PreviewWindow window;
   private final Tab tab;
-  private boolean viewerErrOccurred = false, needsRefresh = true, initialized = false, viewerClear = false;
+  private boolean viewerErrOccurred = false, needsRefresh = true, initialized = false, pdfIsShowing = false;
   private PDFJSWrapper jsWrapper;
   private Map<String, Integer> labelToPage;
   private Map<Integer, String> pageToLabel;
@@ -144,7 +144,7 @@ public class PreviewWrapper
 
       case pjsClose:
 
-        viewerClear = true;
+        pdfIsShowing = false;
         break;
 
       default :
@@ -193,7 +193,6 @@ public class PreviewWrapper
     if (jxBrowserDisabled) return;
 
     initialized = true;
-    viewerClear = false;
   }
 
 //---------------------------------------------------------------------------
@@ -376,8 +375,12 @@ public class PreviewWrapper
 
     if (initialized == false) return;
 
-    if (viewerClear == false)
+    if (pdfIsShowing)
       jsWrapper.close();
+    else
+      jsWrapper.switchToPdfMode();
+
+    pdfIsShowing = false;
 
     if (window.curSource() == src)
       needsRefresh = false;
@@ -473,6 +476,12 @@ public class PreviewWrapper
 
     if (forceReload || (curPrevFile.filePath.equals(filePathShowing) == false))
     {
+      if (curPrevFile.filePath.isDirectory())
+      {
+        clearPreview();
+        return;
+      }
+
       String mimetypeStr = getMediaType(curPrevFile.filePath).toString();
 
       filePathShowing = null;
@@ -480,8 +489,6 @@ public class PreviewWrapper
 
       window.clearControls();
       needsRefresh = false;
-
-      viewerClear = false;
 
       if (viewerErrOccurred) return;
 
@@ -493,12 +500,15 @@ public class PreviewWrapper
       {
         jsWrapper.loadPdf(curPrevFile.filePath, pageNum);
 
+        pdfIsShowing = true;
+
         filePathShowing = curPrevFile.filePath;
         pageNumShowing = -1;
 
         return;
       }
 
+      pdfIsShowing = false;
       numPages = 1;
 
       if (mimetypeStr.contains("openxmlformats-officedocument"))
@@ -657,9 +667,8 @@ public class PreviewWrapper
     else
       work.setEndPageNum(workFile, pageNum);
 
-    if (ui.activeTab().getTabEnum() == workTabEnum)
-      if (ui.activeTab().activeRecord() == curPrevFile.record)
-        ui.workHyperTab().setPageNum(workFile, pageNum, isStart);
+    if ((ui.activeTabEnum() == workTabEnum) && (ui.activeTab().activeRecord() == work))
+      ui.workHyperTab().setPageNum(workFile, pageNum, isStart);
 
     contentsWindow.update(workFile, pageNum, true);
 

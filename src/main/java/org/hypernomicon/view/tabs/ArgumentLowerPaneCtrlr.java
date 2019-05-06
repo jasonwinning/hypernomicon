@@ -26,7 +26,6 @@ import javafx.scene.control.TableView;
 public class ArgumentLowerPaneCtrlr
 {
   @FXML TableView<HyperTableRow> tvWhereMade, tvCounters;
-  @FXML private TableView<HyperTableRow> tvCounterTo;
   @FXML TabPane tabPane;
   @FXML Tab tabWhereMade, tabCounters;
 }

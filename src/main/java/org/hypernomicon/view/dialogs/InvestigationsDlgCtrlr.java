@@ -25,7 +25,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -57,7 +56,6 @@ public class InvestigationsDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  @FXML private Button btnOk, btnCancel;
   @FXML private TextField tfNew;
   @FXML private CheckBox chkNew;
   @FXML public ListView<InvestigationSetting> listView;

@@ -86,6 +86,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
@@ -101,11 +102,12 @@ import javafx.stage.FileChooser;
 
 public class WorkDlgCtrlr extends HyperDlg
 {
-  @FXML private Button btnBrowse, btnLaunch, btnOk, btnRegenerateFilename, btnStop;
+  @FXML private Button btnRegenerateFilename, btnStop;
   @FXML private CheckBox chkCreateBibEntry, chkKeepFilenameUnchanged;
   @FXML private ComboBox<EntryType> cbEntryType;
   @FXML private ComboBox<HyperTableCell> cbType;
-  @FXML private Label lblAutoPopulated, lblCase;
+  @FXML private Hyperlink hlCase;
+  @FXML private Label lblAutoPopulated;
   @FXML private MenuItem mnuPopulateFromPDF;
   @FXML private ProgressBar progressBar;
   @FXML private RadioButton rbCopy, rbCurrent, rbMove;
@@ -285,7 +287,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     tfOrigFile.textProperty().addListener((ob, oldValue, newValue) -> btnRegenerateFilenameClick());
 
-    lblCase.setOnMouseClicked(event ->
+    hlCase.setOnMouseClicked(event ->
     {
       alreadyChangingTitle = true;
       tfTitle.setText(HDT_Work.fixCase(tfTitle.getText()));
@@ -443,7 +445,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     if (oldWorkFile != null)
     {
-      origFilePath = oldWorkFile.getPath().getFilePath();
+      origFilePath = oldWorkFile.filePath();
       tfOrigFile.setText(origFilePath.toString());
     }
   }
@@ -1073,27 +1075,15 @@ public class WorkDlgCtrlr extends HyperDlg
       }
 
       if (chkCreateBibEntry.isSelected() && (getEntryType() == null))
-      {
-        messageDialog("Select a bibliographic entry type.", mtWarning);
-        safeFocus(cbEntryType);
-        return false;
-      }
+        return falseWithWarningMessage("Select a bibliographic entry type.", cbEntryType);
     }
 
     if (chkKeepFilenameUnchanged.isSelected() == false)
       if ((tfOrigFile.getText().length() > 0) && (tfNewFile.getText().length() == 0))
-      {
-        messageDialog("Enter destination file name.", mtWarning);
-        safeFocus(tfNewFile);
-        return false;
-      }
+        return falseWithWarningMessage("Enter destination file name.", tfNewFile);
 
     if (hcbType.selectedID() < 1)
-    {
-      messageDialog("Select a work type.", mtWarning);
-      safeFocus(cbType);
-      return false;
-    }
+      return falseWithWarningMessage("Select a work type.", cbType);
 
     if (tfOrigFile.getText().length() == 0)
     {

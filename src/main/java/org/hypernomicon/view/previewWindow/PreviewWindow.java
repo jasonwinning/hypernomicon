@@ -491,7 +491,7 @@ public class PreviewWindow extends HyperDlg
     srcToWrapper.values().forEach(wrapper ->
     {
       if (FilePath.isEmpty(wrapper.getFilePath()) == false)
-        if ((wrapper.getFilePath().equals(workFile.getPath().getFilePath())) && (wrapper.getRecord() == work))
+        if (wrapper.getFilePath().equals(workFile.filePath()) && (wrapper.getRecord() == work))
         {
           wrapper.setWorkPageFromContentsWindow(pageNum, isStart);
 
@@ -576,7 +576,7 @@ public class PreviewWindow extends HyperDlg
     }
     else
     {
-      ImageView iv = getImageViewForRelativePath(ui.getGraphicRelativePathByType(record.getType()));
+      ImageView iv = getImageViewForRecordType(record.getType());
       paneType.getChildren().setAll(iv);
 
       if (record.getType() == hdtWork)

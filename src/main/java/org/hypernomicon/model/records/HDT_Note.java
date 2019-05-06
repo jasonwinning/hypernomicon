@@ -17,7 +17,6 @@
 
 package org.hypernomicon.model.records;
 
-import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
@@ -25,9 +24,12 @@ import static org.hypernomicon.util.Util.*;
 import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.items.HyperPath;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperObjPointer;
+import org.hypernomicon.util.filePath.FilePath;
 
-public class HDT_Note extends HDT_RecordWithConnector
+public class HDT_Note extends HDT_RecordWithConnector implements HDT_RecordWithPath
 {
   public final List<HDT_Note> parentNotes, subNotes;
   public final HyperObjPointer<HDT_Note, HDT_Folder> folder;
@@ -47,29 +49,14 @@ public class HDT_Note extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getFolderStr()
-  {
-    return folder.isNull() ? "" : db.topicalPath().relativize(folder.get().getPath().getFilePath()).toString();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+  public String getFolderStr()          { return nullSwitch(filePath(), "", FilePath::toString); }
+  public HDT_Folder getDefaultFolder()  { return folder.isNotNull() ? folder.get() : findFirstHaving(parentNotes, HDT_Note::getDefaultFolder); }
 
   public void setParentNotes(List<HDT_Note> list) { updateObjectsFromList(rtParentNoteOfNote, list); }
 
+  @Override public HyperPath getPath()  { return folder.isNull() ? null : folder.get().getPath(); }
   @Override public String listName()    { return name(); }
   @Override public boolean isUnitable() { return true; }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HDT_Folder getDefaultFolder()
-  {
-    if (folder.isNotNull())
-      return folder.get();
-
-    return findFirstHaving(parentNotes, HDT_Note::getDefaultFolder);
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

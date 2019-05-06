@@ -35,26 +35,26 @@ public class BibField
 
   public static enum BibFieldEnum
   {
-    bfEntryType      ("Entry Type"                , bftEntryType),
-    bfWorkType       ("Work Type"                 , bftWorkType),
-    bfAuthors        ("Authors"                   , bftAuthor),
-    bfContainerTitle ("Container Title"           , bftMultiString), // For articles this is the journal title; for chapters it is the book title
-    bfDOI            ("DOI"                       , bftString),      // Document Object ID only, without "doi:" or url
-    bfEdition        ("Edition"                   , bftString),      // Information about publication edition
-    bfEditors        ("Editors"                   , bftAuthor),
-    bfISBNs          ("ISBNs"                     , bftMultiString), // International standard book numbers
-    bfISSNs          ("ISSNs"                     , bftMultiString), // International standard serial numbers
-    bfIssue          ("Issue"                     , bftString),      // Issue number
-    bfLanguage       ("Language"                  , bftString),      // Language
-    bfMisc           ("Miscellaneous Information" , bftMultiString), // Used internally to hold uncategorized extracted information
-    bfPages          ("Page Numbers"              , bftString),      // Page range
-    bfPubLoc         ("Publisher Location"        , bftString),      // Where published
-    bfPublisher      ("Publisher"                 , bftString),      // May or may not include city
-    bfTitle          ("Title"                     , bftMultiString), // Title of this work
-    bfTranslators    ("Translators"               , bftAuthor),
-    bfURL            ("URL"                       , bftString),      // URL where this work can be found
-    bfVolume         ("Volume"                    , bftString),      // Volume number
-    bfYear           ("Year"                      , bftString);      // Publication year
+    bfEntryType      ("Entry Type"        , bftEntryType),
+    bfWorkType       ("Work Type"         , bftWorkType),
+    bfAuthors        ("Authors"           , bftAuthor),
+    bfContainerTitle ("Container Title"   , bftMultiString), // For articles this is the journal title; for chapters it is the book title
+    bfDOI            ("DOI"               , bftString),      // Document Object ID only, without "doi:" or url
+    bfEdition        ("Edition"           , bftString),      // Information about publication edition
+    bfEditors        ("Editors"           , bftAuthor),
+    bfISBNs          ("ISBNs"             , bftMultiString), // International standard book numbers
+    bfISSNs          ("ISSNs"             , bftMultiString), // International standard serial numbers
+    bfIssue          ("Issue"             , bftString),      // Issue number
+    bfLanguage       ("Language"          , bftString),      // Language
+    bfMisc           ("Misc. Information" , bftMultiString), // Holds uncategorized information
+    bfPages          ("Page Numbers"      , bftString),      // Page range
+    bfPubLoc         ("Publisher Location", bftString),      // Where published
+    bfPublisher      ("Publisher"         , bftString),      // May or may not include city
+    bfTitle          ("Title"             , bftMultiString), // Title of this work
+    bfTranslators    ("Translators"       , bftAuthor),
+    bfURL            ("URL"               , bftString),      // URL where this work can be found
+    bfVolume         ("Volume"            , bftString),      // Volume number
+    bfYear           ("Year"              , bftString);      // Publication year
 
     private BibFieldType type;
     private String userFriendlyName;

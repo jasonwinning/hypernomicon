@@ -25,6 +25,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.records.HDT_Record;
@@ -83,7 +84,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       {
         List<HDT_Glossary> termGlossaries = term.getGlossaries();
 
-        db.glossaries.stream().filter(glossary -> termGlossaries.contains(glossary) == false).forEach(glossaries::add);
+        db.glossaries.stream().filter(Predicate.not(termGlossaries::contains)).forEach(glossaries::add);
       }
 
       return glossaries;
@@ -144,8 +145,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
   {
     if (tfSearchKey.getText().length() == 0)
     {
-      messageDialog("Unable to create term record: search key of term cannot be zero-length.", mtError);
-      safeFocus(tfSearchKey);
+      falseWithErrorMessage("Unable to create term record: search key of term cannot be zero-length.", tfSearchKey);
       return;
     }
 
@@ -181,18 +181,10 @@ public class SelectConceptDlgCtrlr extends HyperDlg
   @Override protected boolean isValid()
   {
     if (hcbTerm.selectedRecord() == null)
-    {
-      messageDialog("You must select a term.", mtError);
-      safeFocus(cbTerm);
-      return false;
-    }
+      return falseWithErrorMessage("You must select a term.", cbTerm);
 
     if (hcbGlossary.selectedRecord() == null)
-    {
-      messageDialog("You must select a glossary.", mtError);
-      safeFocus(cbGlossary);
-      return false;
-    }
+      return falseWithErrorMessage("You must select a glossary.", cbGlossary);
 
     term = hcbTerm.selectedRecord();
 

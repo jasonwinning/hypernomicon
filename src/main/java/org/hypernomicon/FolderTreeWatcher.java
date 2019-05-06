@@ -50,8 +50,6 @@ import org.hypernomicon.model.PathInfo;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.tabs.FileTabCtrlr;
-import org.hypernomicon.view.tabs.WorkTabCtrlr;
 import javafx.application.Platform;
 
 //---------------------------------------------------------------------------
@@ -172,7 +170,7 @@ public class FolderTreeWatcher
 
             if (folder.getID() > 0)
             {
-              FilePath filePath = folder.getPath().getFilePath().resolve(new FilePath(watchEvent.context())); // This is what actually changed
+              FilePath filePath = folder.filePath().resolve(new FilePath(watchEvent.context())); // This is what actually changed
               PathInfo newPathInfo = new PathInfo(filePath);
               WatcherEvent watcherEvent = null;
 
@@ -310,52 +308,43 @@ public class FolderTreeWatcher
                   {
                     sleepForMillis(2000);
 
-                    if (newPath.exists())
+                    if ((newPath.exists() == false) || oldPathInfo.getFilePath().equals(newPath)) return;
+
+                    if (confirmDialog("A file that is in use by the database has been renamed from outside the program." + System.lineSeparator() +
+                                      "This may or may not cause a data integrity problem." + System.lineSeparator() +
+                                      "Should the record be reassigned to \"" + newPath.getNameOnly() + "\"?"))
                     {
-                      if (confirmDialog("A file that is in use by the database has been renamed from outside the program." + System.lineSeparator() +
-                                        "This may or may not cause a data integrity problem." + System.lineSeparator() +
-                                        "Should the record be reassigned to \"" + newPath.getNameOnly() + "\"?"))
+                      if (newPath.exists())
                       {
-                        if (newPath.exists())
+                        hyperPath2.assign(hyperPath2.parentFolder(), newPath.getNameOnly());
+
+                        HDT_RecordWithPath record = hyperPath2.getRecord();
+
+                        if (record != null)
                         {
-                          hyperPath2.assign(hyperPath2.getParentFolder(), newPath.getNameOnly());
-
-                          HDT_RecordWithPath record = hyperPath2.getRecord();
-
-                          if (record != null)
+                          if ((record.getType() == hdtWorkFile) && (ui.activeTabEnum() == workTabEnum))
                           {
-                            if (record.getType() == hdtWorkFile)
+                            HDT_WorkFile workFile = (HDT_WorkFile) record;
+
+                            if (workFile.works.contains(ui.activeRecord()))
                             {
-                              HDT_WorkFile workFile = (HDT_WorkFile) record;
+                              if      (ui.workHyperTab().wdc != null) ui.workHyperTab().wdc.btnCancel.fire();
+                              else if (ui.workHyperTab().fdc != null) ui.workHyperTab().fdc.btnCancel.fire();
 
-                              if (ui.activeTabEnum() == workTabEnum)
-                              {
-                                if (workFile.works.contains(ui.activeRecord()))
-                                {
-                                  WorkTabCtrlr tabWorks = (WorkTabCtrlr) ui.activeTab();
-                                  if      (tabWorks.wdc != null) tabWorks.wdc.btnCancel.fire();
-                                  else if (tabWorks.fdc != null) tabWorks.fdc.btnCancel.fire();
-
-                                  tabWorks.refreshFiles();
-                                }
-                              }
-                            }
-                            else if (record.getType() == hdtMiscFile)
-                            {
-                              if (ui.activeTabEnum() == fileTabEnum)
-                              {
-                                FileTabCtrlr tabFiles = (FileTabCtrlr) ui.activeTab();
-                                if (tabFiles.fdc != null)
-                                  tabFiles.fdc.btnCancel.fire();
-
-                                tabFiles.refreshFile();
-                              }
+                              ui.workHyperTab().refreshFiles();
                             }
                           }
+                          else if ((record.getType() == hdtMiscFile) && (ui.activeTabEnum() == fileTabEnum))
+                          {
+                            if (ui.fileHyperTab().fdc != null)
+                              ui.fileHyperTab().fdc.btnCancel.fire();
+
+                            ui.fileHyperTab().refreshFile();
+                          }
                         }
-                        else
-                          messageDialog("The file \"" + newPath.getNameOnly() + "\" no longer exists. Record was not changed.", mtError);
                       }
+                      else
+                        messageDialog("The file \"" + newPath.getNameOnly() + "\" no longer exists. Record was not changed.", mtError);
                     }
                   });
                 }
@@ -363,7 +352,7 @@ public class FolderTreeWatcher
 
               if (watcherEvent.isDirectory())
               {
-                hyperPath.assign(hyperPath.getParentFolder(), newPathInfo.getFilePath().getNameOnly());
+                hyperPath.assign(hyperPath.parentFolder(), newPathInfo.getFilePath().getNameOnly());
                 registerTree(newPathInfo.getFilePath());
               }
             }
@@ -479,8 +468,7 @@ public class FolderTreeWatcher
     catch (IOException e)
     {
       e.printStackTrace();
-      messageDialog("Unable to start watch service: " + e.getMessage(), mtError);
-      return false;
+      return falseWithErrorMessage("Unable to start watch service: " + e.getMessage());
     }
 
     start();
@@ -493,7 +481,7 @@ public class FolderTreeWatcher
 
   private void registerTree(FilePath rootFilePath) throws IOException
   {
-    Files.walkFileTree(rootFilePath.toPath(), new FileVisitor<Path>()
+    Files.walkFileTree(rootFilePath.toPath(), new FileVisitor<>()
     {
       /**
        * Invoked for a directory before entries in the directory are visited.

@@ -35,7 +35,6 @@ import org.hypernomicon.view.wrappers.TreeWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeTableColumn;
@@ -45,7 +44,6 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 {
   @FXML private TreeTableView<TreeRow> ttv;
   @FXML private TextField tfPath;
-  @FXML private Button btnCancel, btnOk;
   @FXML private TreeTableColumn<TreeRow, HyperTreeCellValue> tcName;
   @FXML private TreeTableColumn<TreeRow, String> tcType, tcDesc;
 

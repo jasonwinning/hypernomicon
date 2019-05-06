@@ -26,6 +26,7 @@ import static org.hypernomicon.util.Util.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.WorkBibData;
@@ -64,27 +65,19 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   {
     super(xmlState, dataset, tagTitle);
 
-    if (dataset != null)
-    {
-      authors = new Authors(getObjList(rtAuthorOfWork), this);
+    authors = new Authors(getObjList(rtAuthorOfWork), this);
 
-      authorRecords = Collections.unmodifiableList(getObjList(rtAuthorOfWork));
-      investigations = getObjList(rtInvestigationOfWork);
-      labels = getObjList(rtLabelOfWork);
-      workFiles = Collections.unmodifiableList(getObjList(rtWorkFileOfWork));
+    authorRecords = Collections.unmodifiableList(getObjList(rtAuthorOfWork));
+    investigations = getObjList(rtInvestigationOfWork);
+    labels = getObjList(rtLabelOfWork);
+    workFiles = Collections.unmodifiableList(getObjList(rtWorkFileOfWork));
 
-      subWorks = getSubjList(rtParentWorkOfWork);
-      miscFiles = getSubjList(rtWorkOfMiscFile);
-      arguments = getSubjList(rtWorkOfArgument);
+    subWorks = getSubjList(rtParentWorkOfWork);
+    miscFiles = getSubjList(rtWorkOfMiscFile);
+    arguments = getSubjList(rtWorkOfArgument);
 
-      workType = getObjPointer(rtTypeOfWork);
-      largerWork = getObjPointer(rtParentWorkOfWork);
-    }
-    else
-    {
-      authors  = null; authorRecords = null; investigations = null; labels   = null; workFiles  = null;
-      subWorks = null; miscFiles     = null; arguments      = null; workType = null; largerWork = null;
-    }
+    workType = getObjPointer(rtTypeOfWork);
+    largerWork = getObjPointer(rtParentWorkOfWork);
   }
 
   public void setInvestigations(List<HDT_Investigation> list) { updateObjectsFromList(rtInvestigationOfWork, list); }
@@ -236,7 +229,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
       {
         if (confirmDialog("Recursively update ISBN(s) for contained/container works?"))
         {
-          String isbnStr = lwISBNs.stream().filter(isbn -> ISBNs.contains(isbn) == false).reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+          String isbnStr = lwISBNs.stream().filter(Predicate.not(ISBNs::contains)).reduce((s1, s2) -> s1 + "; " + s2).orElse("");
 
           HDT_Work ancestor = this;
           while (ancestor.largerWork.isNotNull())
@@ -262,7 +255,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     if (workFiles.size() != largerWork.workFiles.size())
       ask = true;
     else
-      ask = workFiles.stream().allMatch(workFile -> largerWork.workFiles.contains(workFile)) == false;
+      ask = workFiles.stream().allMatch(largerWork.workFiles::contains) == false;
 
     if (ask)
     {
@@ -328,7 +321,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   {
     switch (HDT_WorkType.workTypeIDToEnumVal(workTypeID))
     {
-      case wtBook    : return db.booksPath();
+      case wtBook    :
       case wtChapter : return db.booksPath();
       case wtPaper   : return db.papersPath();
       default        : return db.miscFilesPath();
@@ -351,7 +344,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     }
 
     if (pageNum < 1) pageNum = getStartPageNum();
-    launchWorkFile(getPath().getFilePath(), pageNum);
+    launchWorkFile(filePath(), pageNum);
   }
 
 //---------------------------------------------------------------------------
@@ -374,7 +367,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     String indicator = "";
 
     if (work.workFiles.isEmpty() == false)
-      indicator = work.workFiles.get(0).getPath().getFilePath().getExtensionOnly().toLowerCase();
+      indicator = work.workFiles.get(0).filePath().getExtensionOnly().toLowerCase();
     else if (safeStr(work.getWebLink()).length() > 0)
       indicator = "web";
 

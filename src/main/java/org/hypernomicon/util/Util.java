@@ -18,6 +18,7 @@
 package org.hypernomicon.util;
 
 import org.hypernomicon.App;
+import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
@@ -547,8 +548,8 @@ public final class Util
   {
     PopupDialog dlg = new PopupDialog(msg);
 
-    dlg.addButton("Abort", mrAbort);
-    dlg.addButton("Retry", mrRetry);
+    dlg.addButton("Abort" , mrAbort);
+    dlg.addButton("Retry" , mrRetry);
     dlg.addButton("Ignore", mrIgnore);
 
     return dlg.showModal();
@@ -561,10 +562,10 @@ public final class Util
   {
     PopupDialog dlg = new PopupDialog(msg);
 
-    dlg.addButton("Yes", mrYes);
-    dlg.addButton("No", mrNo);
+    dlg.addButton("Yes"       , mrYes);
+    dlg.addButton("No"        , mrNo);
     dlg.addButton("Yes to all", mrYesToAll);
-    dlg.addButton("No to all", mrNoToAll);
+    dlg.addButton("No to all" , mrNoToAll);
 
     return dlg.showModal();
   }
@@ -577,7 +578,7 @@ public final class Util
     PopupDialog dlg = new PopupDialog(msg);
 
     dlg.addButton("Yes", mrYes);
-    dlg.addButton("No", mrNo);
+    dlg.addButton("No" , mrNo);
 
     return dlg.showModal() == mrYes;
   }
@@ -585,9 +586,20 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean falseWithErrorMessage(String msg)
+  public static boolean falseWithErrorMessage  (String msg)                   { return falseWithMessage(msg, mtError      , null); }
+  public static boolean falseWithErrorMessage  (String msg, Node nodeToFocus) { return falseWithMessage(msg, mtError      , nodeToFocus); }
+  public static boolean falseWithWarningMessage(String msg)                   { return falseWithMessage(msg, mtWarning    , null); }
+  public static boolean falseWithWarningMessage(String msg, Node nodeToFocus) { return falseWithMessage(msg, mtWarning    , nodeToFocus); }
+  public static boolean falseWithInfoMessage   (String msg)                   { return falseWithMessage(msg, mtInformation, null); }
+  public static boolean falseWithInfoMessage   (String msg, Node nodeToFocus) { return falseWithMessage(msg, mtInformation, nodeToFocus); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static boolean falseWithMessage(String msg, MessageDialogType mt, Node nodeToFocus)
   {
-    messageDialog(msg, mtError);
+    messageDialog(msg, mt);
+    if (nodeToFocus != null) safeFocus(nodeToFocus);
     return false;
   }
 
@@ -602,56 +614,44 @@ public final class Util
   public static void messageDialog(String msg, MessageDialogType mt, boolean wait)
   {
     if (wait) messageDialogShowing = true;
-    runInFXThread(() -> messageDialogSameThread(msg, mt, true));
 
-    if (wait == false) return;
-
-    while (messageDialogShowing)
-      sleepForMillis(50);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void messageDialogSameThread(String msg, MessageDialogType mt)
-  {
-    messageDialogSameThread(msg, mt, false);
-  }
-
-  // This should never be called by anything but the above two methods
-  private static void messageDialogSameThread(String msg, MessageDialogType mt, boolean otherThreadIsWaiting)
-  {
-    Alert alert = null;
-
-    if (otherThreadIsWaiting) messageDialogShowing = true;
-
-    switch (mt)
+    runInFXThread(() ->
     {
-      case mtWarning :
-        alert = new Alert(AlertType.WARNING);
-        alert.setHeaderText("Warning");
-        break;
+      Alert alert = null;
 
-      case mtError :
-        alert = new Alert(AlertType.ERROR);
-        alert.setHeaderText("Error");
-        break;
+      messageDialogShowing = true;
 
-      case mtInformation :
-        alert = new Alert(AlertType.INFORMATION);
-        alert.setHeaderText("Information");
-        break;
+      switch (mt)
+      {
+        case mtWarning :
+          alert = new Alert(AlertType.WARNING);
+          alert.setHeaderText("Warning");
+          break;
 
-      default:
+        case mtError :
+          alert = new Alert(AlertType.ERROR);
+          alert.setHeaderText("Error");
+          break;
 
-        return;
-    }
+        case mtInformation :
+          alert = new Alert(AlertType.INFORMATION);
+          alert.setHeaderText("Information");
+          break;
 
-    alert.setTitle(appTitle);
-    alert.setContentText(msg);
+        default:
 
-    showAndWait(alert);
-    if (otherThreadIsWaiting) messageDialogShowing = false;
+          return;
+      }
+
+      alert.setTitle(appTitle);
+      alert.setContentText(msg);
+
+      showAndWait(alert);
+      messageDialogShowing = false;
+    });
+
+    while (wait && messageDialogShowing)
+      sleepForMillis(50);
   }
 
   private static boolean messageDialogShowing = false;
@@ -840,10 +840,8 @@ public final class Util
 
   public static void copyRegionLayout(Region node1, Region node2)
   {
-    AnchorPane.setBottomAnchor(node2, AnchorPane.getBottomAnchor(node1));
-    AnchorPane.setTopAnchor   (node2, AnchorPane.getTopAnchor   (node1));
-    AnchorPane.setLeftAnchor  (node2, AnchorPane.getLeftAnchor  (node1));
-    AnchorPane.setRightAnchor (node2, AnchorPane.getRightAnchor (node1));
+    setAnchors(node2, AnchorPane.getTopAnchor (node1), AnchorPane.getBottomAnchor(node1),
+                      AnchorPane.getLeftAnchor(node1), AnchorPane.getRightAnchor (node1));
 
     GridPane.setColumnIndex(node2, GridPane.getColumnIndex(node1));
     GridPane.setColumnSpan (node2, GridPane.getColumnSpan (node1));
@@ -856,6 +854,17 @@ public final class Util
     node2.setMinSize (node1.getMinWidth (), node1.getMinHeight ());
     node2.setMaxSize (node1.getMaxWidth (), node1.getMaxHeight ());
     node2.setPrefSize(node1.getPrefWidth(), node1.getPrefHeight());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void setAnchors(Node node, Double top, Double bottom, Double left, Double right)
+  {
+    AnchorPane.setTopAnchor   (node, top   );
+    AnchorPane.setBottomAnchor(node, bottom);
+    AnchorPane.setLeftAnchor  (node, left  );
+    AnchorPane.setRightAnchor (node, right );
   }
 
 //---------------------------------------------------------------------------
@@ -1497,6 +1506,14 @@ public final class Util
   public static ImageView getImageViewForRelativePath(String relPath)
   {
     return relPath.length() > 0 ? new ImageView(App.class.getResource(relPath).toString()) : null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static ImageView getImageViewForRecordType(HDT_RecordType type)
+  {
+    return getImageViewForRelativePath(ui.getGraphicRelativePathByType(type));
   }
 
 //---------------------------------------------------------------------------

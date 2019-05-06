@@ -31,7 +31,7 @@ import javafx.scene.web.WebView;
 
 public class MergeSpokeDlgCtrlr extends HyperDlg
 {
-  @FXML private RadioButton rbDesc1, rbDesc2, rbDesc3;
+  @FXML private RadioButton rbDesc1, rbDesc2;
   @FXML private WebView view1, view2;
   @FXML private HTMLEditor he3;
 

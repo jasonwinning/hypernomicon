@@ -183,8 +183,8 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
       row.setOnMouseClicked(mouseEvent ->
       {
-        if ((mouseEvent.getButton().equals(MouseButton.PRIMARY)) && (mouseEvent.getClickCount() == 2))
-          dblClick(row.getItem());
+        if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2))
+          nullSwitch(row.getItem(), rowItem -> ui.goToRecord(rowItem.getRecord(), false));
       });
 
       row.itemProperty().addListener((ob, oldValue, newValue) ->
@@ -204,15 +204,6 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
     {
       new ArrayList<>(tv.getSelectionModel().getSelectedItems()).forEach(row -> tv.getItems().remove(row));
     });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void dblClick(ResultsRow row)
-  {
-    if (row != null)
-      ui.goToRecord(row.getRecord(), true);
   }
 
 //---------------------------------------------------------------------------
@@ -249,7 +240,6 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
     ResultColumn<String> strCol;
 
     intCol = new ResultColumn<>("ID");
-
     intCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordIDStr(), str -> Integer.valueOf(parseInt(str, -1))));
     intCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
     tv.getColumns().add(intCol);

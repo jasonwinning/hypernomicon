@@ -56,12 +56,12 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 
 //---------------------------------------------------------------------------
 
-  public FilePath getFilePath() { return hyperPath.getFilePath(); }
-  boolean isDirectory()         { return hyperPath.getFilePath().isDirectory(); }
-  public HDT_Folder getFolder() { return hyperPath.getParentFolder(); }
+  public FilePath getFilePath() { return hyperPath.filePath(); }
+  boolean isDirectory()         { return hyperPath.filePath().isDirectory(); }
+  public HDT_Folder getFolder() { return hyperPath.parentFolder(); }
   String getFileName()          { return hyperPath.getNameStr(); }
   HyperPath getHyperPath()      { return hyperPath; }
-  private void determineType()  { if (mimetype == null) mimetype = getMediaType(hyperPath.getFilePath()); }
+  private void determineType()  { if (mimetype == null) mimetype = getMediaType(hyperPath.filePath()); }
 
   void setFolderTreeItem(TreeItem<FileRow> treeItem) { this.treeItem  = treeItem; }
 
@@ -73,7 +73,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 
   FileCellValue<Instant> getModifiedDateCellValue()
   {
-    Instant i = hyperPath.getFilePath().lastModified();
+    Instant i = hyperPath.filePath().lastModified();
 
     return new FileCellValue<>(dateTimeToUserReadableStr(i), i);
   }
@@ -85,7 +85,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
   {
     long size;
 
-    try                   { size = hyperPath.getFilePath().size(); }
+    try                   { size = hyperPath.filePath().size(); }
     catch (IOException e) { return new FileCellValue<>("", Long.valueOf(-1)); }
 
     if (size >= 1000)
@@ -121,7 +121,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
     if (!isDir)
       determineType();
 
-    graphic = getImageViewForRelativePath(getImageRelPathForFilePath(hyperPath.getFilePath(), mimetype, isDir));
+    graphic = getImageViewForRelativePath(getImageRelPathForFilePath(hyperPath.filePath(), mimetype, isDir));
     return graphic;
   }
 

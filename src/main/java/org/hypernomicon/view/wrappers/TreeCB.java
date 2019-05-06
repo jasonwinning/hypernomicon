@@ -85,7 +85,7 @@ class TreeCB
 
   //---------------------------------------------------------------------------
 
-    comboBox.setConverter(new StringConverter<TreeRow>()
+    comboBox.setConverter(new StringConverter<>()
     {
       @Override public String toString(TreeRow row)
       {

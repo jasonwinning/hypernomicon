@@ -179,7 +179,7 @@ public class FileTable extends DragNDropContainer<FileRow>
   {
     clear();
 
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(folder.getPath().getFilePath().toPath(), "**"))
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(folder.filePath().toPath(), "**"))
     {
       int nextDirNdx = 0;
 

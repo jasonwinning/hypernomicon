@@ -61,12 +61,12 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_RecordWithPath getRecord()       { return record; }
-  public HDT_RecordType     getRecordType()   { return record == null ? hdtNone : record.getType(); }
-  public FilePath           getFileName()     { return fileName; }
-  public HDT_Folder         getParentFolder() { return folderPtr == null ? folder : folderPtr.get(); }
+  public HDT_RecordWithPath getRecord()     { return record; }
+  public HDT_RecordType     getRecordType() { return record == null ? hdtNone : record.getType(); }
+  public FilePath           getFileName()   { return fileName; }
+  public HDT_Folder         parentFolder()  { return folderPtr == null ? folder : folderPtr.get(); }
 
-  @Override public String toString() { return getFilePath().toString(); }
+  @Override public String toString() { return filePath().toString(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -127,7 +127,7 @@ public class HyperPath
 
   public void clear(boolean deleteFile)
   {
-    FilePath filePath = getFilePath();
+    FilePath filePath = filePath();
 
     if (folderPtr != null)
       folderPtr.setID(-1);
@@ -148,23 +148,21 @@ public class HyperPath
   public static Set<HyperPath> getHyperPathSetForFilePath(FilePath filePath)
   {
     return nullSwitch(db.filenameMap.get(filePath.getNameOnly().toString()), new HashSet<>(),
-                      paths -> paths.stream().filter(path -> path.getFilePath().equals(filePath)).collect(Collectors.toSet()));
+                      paths -> paths.stream().filter(path -> path.filePath().equals(filePath)).collect(Collectors.toSet()));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FilePath getFilePath()
+  public FilePath filePath()
   {
-    if (record != null)
-      if ((record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID))
-        return db.getRootPath();
+    if ((record != null) && (record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID))
+      return db.getRootPath();
 
     if (FilePath.isEmpty(fileName)) return null;
 
-    return nullSwitch(getParentFolder()  , fileName, folder   ->
-           nullSwitch(folder.getPath()   , fileName, hPath    ->
-           nullSwitch(hPath.getFilePath(), fileName, folderFP -> folderFP.resolve(fileName))));
+    return nullSwitch(parentFolder(), fileName, folder   ->
+           nullSwitch(folder.filePath(), fileName, folderFP -> folderFP.resolve(fileName)));
   }
 
 //---------------------------------------------------------------------------
@@ -261,33 +259,21 @@ public class HyperPath
 
   public boolean moveToFolder(int folderID, boolean confirm, boolean changeFilename, String newName) throws IOException
   {
-    if (folderID == -1)
-    {
-      messageDialog("Internal error #77392", mtError);
-      return false;
-    }
+    if ((folderID == -1) || (db.folders.getByID(folderID) == null))
+      return falseWithErrorMessage("Internal error #77392");
 
-    if (db.folders.getByID(folderID) == null)
-    {
-      messageDialog("Internal error #77392", mtError);
-      return false;
-    }
-
-    FilePath srcFilePath = getFilePath(), destFilePath;
+    FilePath srcFilePath = filePath(), destFilePath;
     HDT_Folder newFolder = db.folders.getByID(folderID);
 
     if (srcFilePath.isDirectory())
-    {
-      messageDialog("Internal error #77393", mtError);
-      return false;
-    }
+      return falseWithErrorMessage("Internal error #77393");
 
     if (getRecordType() == hdtPerson)
-      newFolder = getParentFolder();
+      newFolder = parentFolder();
 
     Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(srcFilePath);
 
-    destFilePath = newFolder.getPath().getFilePath().resolve(changeFilename ? new FilePath(newName) : srcFilePath.getNameOnly());
+    destFilePath = newFolder.filePath().resolve(changeFilename ? new FilePath(newName) : srcFilePath.getNameOnly());
 
     if (srcFilePath.equals(destFilePath)) return true;
 
@@ -308,7 +294,7 @@ public class HyperPath
     if (FilePath.isEmpty(getFileName()) && FilePath.isEmpty(nameOnly)) return;
 
     if ((FilePath.isEmpty(getFileName()) == false) && (FilePath.isEmpty(nameOnly) == false))
-      if ((getParentFolder() == parentFolder) && (getFileName().getNameOnly().equals(nameOnly.getNameOnly()))) return;
+      if ((parentFolder() == parentFolder) && (getFileName().getNameOnly().equals(nameOnly.getNameOnly()))) return;
 
     clear();
     assignInternal(parentFolder, nameOnly);
@@ -367,7 +353,7 @@ public class HyperPath
     db.filenameMap.get(fileName.getNameOnly().toString()).removeIf(path ->
     {
       return ((path.isEmpty() == false) &&
-              path.getFilePath().equals(getFilePath()) && // for this to work, folder records have to be brought online first
+              path.filePath().equals(filePath()) && // for this to work, folder records have to be brought online first
               (path != this));
     });
   }
@@ -381,9 +367,9 @@ public class HyperPath
 
     StringBuilder val = new StringBuilder();
 
-    if (getParentFolder() == db.folders.getByID(PICTURES_FOLDER_ID))
+    if (parentFolder() == db.folders.getByID(PICTURES_FOLDER_ID))
     {
-      HyperPath.getHyperPathSetForFilePath(getFilePath()).forEach(hyperPath ->
+      HyperPath.getHyperPathSetForFilePath(filePath()).forEach(hyperPath ->
       {
         if (hyperPath.getRecordType() != hdtPerson) return;
 
@@ -424,7 +410,7 @@ public class HyperPath
       return filePath.renameTo(newNameStr);
 
     for (HyperPath hyperPath : set)
-      if (hyperPath.moveToFolder(hyperPath.getParentFolder().getID(), false, true, newNameStr) == false)
+      if (hyperPath.moveToFolder(hyperPath.parentFolder().getID(), false, true, newNameStr) == false)
         return false;
 
     return true;

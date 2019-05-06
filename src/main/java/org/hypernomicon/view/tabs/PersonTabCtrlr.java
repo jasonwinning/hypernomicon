@@ -96,7 +96,7 @@ import javafx.scene.layout.Priority;
 public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 {
   @FXML private AnchorPane apOverview;
-  @FXML private Button btnGoogle, btnNewWork, btnScholar;
+  @FXML private Button btnGoogle, btnScholar;
   @FXML private ComboBox<HyperTableCell> cbRank, cbStatus, cbSubfield;
   @FXML private ImageView ivPerson;
   @FXML private Label lblORCID, lblPersonLink, lblPicture, lblSearchKey;
@@ -124,7 +124,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   @Override public String getRecordName()               { return new PersonName(tfFirst.getText(), tfLast.getText()).getLastFirst(); }
   @Override HDT_RecordType getType()                    { return hdtPerson; }
   @Override public void enable(boolean enabled)         { ui.tabPersons.getContent().setDisable(enabled == false); }
-  @Override void focusOnSearchKey()                     { safeFocus(tfSearchKey); }
   @Override public void setRecord(HDT_Person person)    { curPerson = person; }
   @Override public MainTextWrapper getMainTextWrapper() { return mainText; }
 
@@ -153,7 +152,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     tfPersonLink.setText(curPerson.getWebLink());
     tfSearchKey.setText(curPerson.getSearchKey());
 
-    curPicture = curPerson.getPath().getFilePath();
+    curPicture = curPerson.filePath();
     viewPort = curPerson.getViewPort();
     refreshPicture();
 
@@ -236,22 +235,18 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       }
     });
 
-    curPerson.miscFiles.forEach(file ->
+    htWorks.buildRows(curPerson.miscFiles.stream().filter(Predicate.not(htWorks::containsRecord)), (row, file) ->
     {
-      if (htWorks.containsRecord(file) == false)
-      {
-        HyperTableRow row = htWorks.newDataRow();
-        row.setCellValue(0, file, "");  // it's blank because files don't have a year
+      row.setCellValue(0, file, "");  // it's blank because files don't have a year
 
-        if (file.fileType.isNotNull())
-          row.setCellValue(1, file, "File (" + file.fileType.get().name() + ")");
-        else
-          row.setCellValue(1, file, "File");
+      if (file.fileType.isNotNull())
+        row.setCellValue(1, file, "File (" + file.fileType.get().name() + ")");
+      else
+        row.setCellValue(1, file, "File");
 
-        row.setCellValue(2, file, "");
-        row.setCellValue(3, file, "");
-        row.setCellValue(4, file, file.name());
-      }
+      row.setCellValue(2, file, "");
+      row.setCellValue(3, file, "");
+      row.setCellValue(4, file, file.name());
     });
 
  // Add topic records to be populated to sets
@@ -296,19 +291,16 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     argsToAdd.forEach(arg -> addArgToTopicTable(arg, topicRecordsAdded, posToAdd, otherToAdd));
 
-    posToAdd.stream().filter(pos -> topicRecordsAdded.contains(pos) == false).forEach(pos ->
+    htArguments.buildRows(posToAdd.stream().filter(Predicate.not(topicRecordsAdded::contains)), (row, pos) ->
     {
-      HyperTableRow row = htArguments.newDataRow();
       addPosToTopicTable(pos, row, otherToAdd);
       row.setCellValue(0, pos, pos.listName());
       topicRecordsAdded.add(pos);
     });
 
-    otherToAdd.stream().filter(topic -> topicRecordsAdded.contains(topic) == false).forEach(topic ->
+    htArguments.buildRows(otherToAdd.stream().filter(Predicate.not(topicRecordsAdded::contains))
+                                             .filter(topic -> topic != curPerson), (row, topic) ->
     {
-      if (topic == curPerson) return;
-
-      HyperTableRow row = htArguments.newDataRow();
       addOtherToTopicTable(topic, row);
       row.setCellValue(0, topic, topic.listName());
       topicRecordsAdded.add(topic);
@@ -342,9 +334,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     if (curPerson.works.isEmpty())
     {
       for (HDT_MiscFile miscFile : curPerson.miscFiles)
-        if (miscFile.getPath().isEmpty() == false)
+        if (miscFile.pathNotEmpty())
         {
-          previewWindow.setPreview(pvsPersonTab, miscFile.getPath().getFilePath(), -1, -1, miscFile);
+          previewWindow.setPreview(pvsPersonTab, miscFile.filePath(), -1, -1, miscFile);
           return;
         }
 
@@ -355,12 +347,12 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     for (HDT_Work work : curPerson.works)
       if (work.workFiles.isEmpty() == false)
       {
-        previewWindow.setPreview(pvsPersonTab, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+        previewWindow.setPreview(pvsPersonTab, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
         return;
       }
 
     HDT_Work work = curPerson.works.get(0);
-    previewWindow.setPreview(pvsPersonTab, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+    previewWindow.setPreview(pvsPersonTab, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
   }
 
 //---------------------------------------------------------------------------
@@ -423,9 +415,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       if (positions.isEmpty())
         positions.addAll(argument.positions);
 
-      positions.forEach(position ->
+      htArguments.buildRows(positions, (row, position) ->
       {
-        HyperTableRow row = htArguments.newDataRow();
         addPosToTopicTable(position, row, otherToAdd);
         posToAdd.remove(position);
 
@@ -556,9 +547,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean saveToRecord(boolean showMessage)
+  @Override public boolean saveToRecord()
   {
-    if (!saveSearchKey(curPerson, tfSearchKey, showMessage)) return false;
+    if (!saveSearchKey(curPerson, tfSearchKey)) return false;
 
     if (FilePath.isEmpty(curPicture))
       curPerson.getPath().assign(db.folders.getByID(PICTURES_FOLDER_ID), new FilePath(""));
@@ -730,10 +721,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       else if (record.getType() == hdtWork)
       {
         HDT_Work work = (HDT_Work)record;
-        previewWindow.setPreview(pvsPersonTab, work.getPath().getFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+        previewWindow.setPreview(pvsPersonTab, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
       }
       else
-        previewWindow.setPreview(pvsPersonTab, record.getPath().getFilePath(), -1, -1, record);
+        previewWindow.setPreview(pvsPersonTab, record.filePath(), -1, -1, record);
     });
 
     htArguments = new HyperTable(tvArguments, 4, false, PREF_KEY_HT_PERSON_ARG);
@@ -984,7 +975,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     event.consume();
 
-    if (ui.cantSaveRecord(true) || (confirmDialog("Are you sure you want to delete the investigation?") == false))
+    if (ui.cantSaveRecord() || (confirmDialog("Are you sure you want to delete the investigation?") == false))
       return;
 
     invViews.remove(view);
@@ -1105,7 +1096,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   {
     HDT_Institution subInst, parentInst = null;
 
-    if (ui.cantSaveRecord(true)) return;
+    if (ui.cantSaveRecord()) return;
 
     HDT_Institution oldParent = row.getRecord(1);
     if ((newName.length() > 0) && (colNdx == 1))

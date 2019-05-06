@@ -40,10 +40,7 @@ public class ReportTable
     tv = new TableView<>();
     qv = queryView;
 
-    AnchorPane.setBottomAnchor(tv, 0.0);
-    AnchorPane.setTopAnchor(tv, 0.0);
-    AnchorPane.setLeftAnchor(tv, 0.0);
-    AnchorPane.setRightAnchor(tv, 0.0);
+    setAnchors(tv, 0.0, 0.0, 0.0, 0.0);
 
     scaleNodeForDPI(tv);
     setFontSize(tv);
