@@ -33,7 +33,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 
-public class MergeWorksCBCtrlr extends BibFieldRow
+public class EntryTypeCtrlr extends BibFieldRow
 {
   @FXML private RadioButton rb1, rb2, rb3, rb4;
   @FXML private ComboBox<EntryType> cb1, cb2, cb3, cb4;

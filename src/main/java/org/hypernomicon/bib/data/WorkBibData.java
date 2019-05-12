@@ -65,7 +65,7 @@ public class WorkBibData extends BibData
 
   @Override public EntryType getEntryType()
   {
-    return nullSwitch(getBibEntry(), EntryType.fromWorkType(work.getWorkTypeValue()), BibEntry::getEntryType);
+    return nullSwitch(getBibEntry(), EntryType.fromWorkType(work.getWorkTypeEnum()), BibEntry::getEntryType);
   }
 
 //---------------------------------------------------------------------------

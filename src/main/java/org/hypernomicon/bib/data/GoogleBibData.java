@@ -21,16 +21,24 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.records.HDT_RecordType.hdtWork;
 import static org.hypernomicon.util.Util.*;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
 
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Person;
+import org.hypernomicon.model.records.HDT_RecordBase;
 import org.hypernomicon.model.relations.ObjectGroup;
+import org.hypernomicon.util.AsyncHttpClient;
+import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
@@ -40,18 +48,44 @@ public class GoogleBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static GoogleBibData createFromJSON(JsonObj jsonObj, String queryIsbn)
+  private static GoogleBibData createFromJSON(JsonObj jsonObj, String title, String queryIsbn)
   {
+    JsonArray jsonArray;
+
     try
     {
-      jsonObj = jsonObj.getArray("items").getObj(0).getObj("volumeInfo");
+      jsonArray = jsonObj.getArray("items");
+
+      if (jsonArray.size() == 0) return null;
+
+      if (jsonArray.size() == 1) return new GoogleBibData(jsonArray.getObj(0).getObj("volumeInfo"), queryIsbn);
+
+      LevenshteinDistance alg = LevenshteinDistance.getDefaultInstance();
+      GoogleBibData bestBD = null;
+      double bestDist = Double.MAX_VALUE;
+      title = HDT_RecordBase.makeSortKeyByType(title, hdtWork);
+
+      for (JsonObj curArrObj : jsonArray.getObjs())
+      {
+        JsonObj curObj = curArrObj.getObj("volumeInfo");
+        GoogleBibData curBD = new GoogleBibData(curObj, queryIsbn);
+        String curTitle = HDT_RecordBase.makeSortKeyByType(curBD.getStr(bfTitle), hdtWork);
+        int len = Math.min(title.length(), curTitle.length());
+        double curDist = (double)(alg.apply(safeSubstring(title, 0, len), safeSubstring(curTitle, 0, len))) / (double)len;
+
+        if (curDist < bestDist)
+        {
+          bestBD = curBD;
+          bestDist = curDist;
+        }
+      }
+
+      return bestDist > 0.25 ? null : bestBD;
     }
     catch (NullPointerException e)
     {
       return null;
     }
-
-    return new GoogleBibData(jsonObj, queryIsbn);
   }
 
 //---------------------------------------------------------------------------
@@ -106,9 +140,7 @@ public class GoogleBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String getQueryUrl(String isbn) { return getQueryUrl(null, null, isbn); }
-
-  public static String getQueryUrl(String title, List<ObjectGroup> authGroups, String isbn)
+  private static String getQueryUrl(String title, List<ObjectGroup> authGroups, String isbn)
   {
     String url = "https://www.googleapis.com/books/v1/volumes?q=";
 
@@ -156,6 +188,53 @@ public class GoogleBibData extends BibDataStandalone
     }
 
     return url;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static void doHttpRequest(AsyncHttpClient httpClient, Iterator<String> isbnIt, Set<String> alreadyCheckedIDs,
+                            Consumer<BibData> successHndlr, Consumer<Exception> failHndlr)
+  {
+    doHttpRequest(httpClient, null, null, isbnIt, alreadyCheckedIDs, successHndlr, failHndlr);
+  }
+
+  static void doHttpRequest(AsyncHttpClient httpClient, String title, List<ObjectGroup> authGroups, Iterator<String> isbnIt,
+                            Set<String> alreadyCheckedIDs, Consumer<BibData> successHndlr, Consumer<Exception> failHndlr)
+  {
+    String isbn = "";
+    if (isbnIt != null)
+    {
+      while ((isbn.isBlank() && isbnIt.hasNext()))
+      {
+        isbn = isbnIt.next();
+        if (alreadyCheckedIDs.contains(isbn.toLowerCase()))
+          isbn = "";
+      }
+    }
+
+    if (isbn.isBlank() && safeStr(title).isBlank())
+    {
+      successHndlr.accept(null);
+      return;
+    }
+
+    alreadyCheckedIDs.add(isbn.toLowerCase());
+    String finalIsbn = isbn;
+
+    JsonHttpClient.getObjAsync(GoogleBibData.getQueryUrl(title, authGroups, isbn), httpClient, jsonObj ->
+    {
+      BibData bd = GoogleBibData.createFromJSON(jsonObj, title, finalIsbn);
+
+      if ((bd == null) && (isbnIt != null) && (isbnIt.hasNext()))
+      {
+        doHttpRequest(httpClient, isbnIt, alreadyCheckedIDs, successHndlr, failHndlr);
+        return;
+      }
+
+      successHndlr.accept(bd);
+
+    }, failHndlr);
   }
 
 //---------------------------------------------------------------------------

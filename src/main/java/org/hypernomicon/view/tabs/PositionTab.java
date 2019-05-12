@@ -144,7 +144,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
     cols.get(2).setText("Title of Work");
     cols.add(2, new TableColumn<HyperTableRow, HyperTableCell>("Year"));
-    cols.add(2, new TableColumn<HyperTableRow, HyperTableCell>("Argues Position Is"));
+    cols.add(2, new TableColumn<HyperTableRow, HyperTableCell>("Verdict"));
     cols.add(new TableColumn<HyperTableRow, HyperTableCell>("Arg. Name"));
 
     ctrlr.spChildren.setDividerPositions(0.6);

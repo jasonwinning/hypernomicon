@@ -21,16 +21,25 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpResponseException;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Person;
+import org.hypernomicon.model.records.HDT_RecordBase;
 import org.hypernomicon.model.relations.ObjectGroup;
+import org.hypernomicon.util.AsyncHttpClient;
+import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
@@ -40,19 +49,49 @@ public class CrossrefBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static CrossrefBibData createFromJSON(JsonObj jsonObj, String queryDoi)
+  private static CrossrefBibData createFromJSON(JsonObj jsonObj, String title, String queryDoi)
   {
+    JsonArray jsonArray;
+
     try
     {
       jsonObj = jsonObj.getObj("message");
-      jsonObj = nullSwitch(jsonObj.getArray("items"), jsonObj, items -> items.getObj(0));
+      jsonArray = jsonObj.getArray("items");
+
+      if (jsonArray == null)
+        return new CrossrefBibData(jsonObj, queryDoi);
+
+      if (jsonArray.size() == 0)
+        return null;
+
+      if (jsonArray.size() == 1)
+        return new CrossrefBibData(jsonArray.getObj(0), queryDoi);
     }
     catch (NullPointerException | IndexOutOfBoundsException e)
     {
       return null;
     }
 
-    return new CrossrefBibData(jsonObj, queryDoi);
+    LevenshteinDistance alg = LevenshteinDistance.getDefaultInstance();
+    CrossrefBibData bestBD = null;
+    double bestDist = Double.MAX_VALUE;
+    title = HDT_RecordBase.makeSortKeyByType(title, hdtWork);
+
+    for (JsonObj curObj : jsonArray.getObjs())
+    {
+      CrossrefBibData curBD = new CrossrefBibData(curObj, queryDoi);
+      String curTitle = HDT_RecordBase.makeSortKeyByType(curBD.getStr(bfTitle), hdtWork);
+      int len = Math.min(title.length(), curTitle.length());
+      double curDist = (double)(alg.apply(safeSubstring(title, 0, len), safeSubstring(curTitle, 0, len))) / (double)len;
+
+      if (curDist < bestDist)
+      {
+        bestBD = curBD;
+        bestDist = curDist;
+      }
+    }
+
+    return bestDist > 0.25 ? null : bestBD;
   }
 
 //---------------------------------------------------------------------------
@@ -124,7 +163,7 @@ public class CrossrefBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static EntryType parseCrossrefType(String crType)
+  private static EntryType parseCrossrefType(String crType)
   {
     switch (crType)
     {
@@ -162,9 +201,7 @@ public class CrossrefBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String getQueryUrl(String doi) { return getQueryUrl(null, null, null, doi); }
-
-  public static String getQueryUrl(String title, String yearStr, List<ObjectGroup> authGroups, String doi)
+  private static String getQueryUrl(String title, String yearStr, List<ObjectGroup> authGroups, String doi)
   {
     String url = "https://api.crossref.org/works", auths = "", eds = "";
 
@@ -222,13 +259,57 @@ public class CrossrefBibData extends BibDataStandalone
       if (auths.length() > 0)
         url = url + "&";
 
-      if ((auths.length() == 0) && (yearStr.length() == 0))
-        url = url + "query=" + escapeURL(title, false); // For some reason this works better when there is only a title
-      else
-        url = url + "query.title=" + escapeURL(title, false);
+      url = url + "query.title=" + escapeURL(title, false);
     }
 
     return url;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static void doHttpRequest(AsyncHttpClient httpClient, String doi, Set<String> alreadyCheckedIDs,
+                            Consumer<BibData> successHndlr, Consumer<Exception> failHndlr)
+  {
+    doHttpRequest(httpClient, null, null, null, doi, alreadyCheckedIDs, successHndlr, failHndlr);
+  }
+
+  static void doHttpRequest(AsyncHttpClient httpClient, String title, String yearStr, List<ObjectGroup> authGroups, String doi,
+                            Set<String> alreadyCheckedIDs, Consumer<BibData> successHndlr, Consumer<Exception> failHndlr)
+  {
+    if ((doi.length() > 0) && alreadyCheckedIDs.contains(doi.toLowerCase()))
+    {
+      successHndlr.accept(null);
+      return;
+    }
+
+    alreadyCheckedIDs.add(doi.toLowerCase());
+
+    JsonHttpClient.getObjAsync(CrossrefBibData.getQueryUrl(title, yearStr, authGroups, doi), httpClient, jsonObj ->
+    {
+      BibData bd = CrossrefBibData.createFromJSON(jsonObj, title, doi);
+
+      successHndlr.accept(bd);
+
+    }, e ->
+    {
+      if ((e instanceof HttpResponseException) && (HttpResponseException.class.cast(e).getStatusCode() == HttpStatus.SC_NOT_FOUND))
+      {
+        if (doi.endsWith("."))
+        {
+          String newDoi = doi;
+          do { newDoi = StringUtils.removeEnd(newDoi, "."); } while (newDoi.endsWith("."));
+
+          doHttpRequest(httpClient, newDoi, alreadyCheckedIDs, successHndlr, failHndlr);
+          return;
+        }
+
+        successHndlr.accept(null);
+        return;
+      }
+
+      failHndlr.accept(e);
+    });
   }
 
 //---------------------------------------------------------------------------

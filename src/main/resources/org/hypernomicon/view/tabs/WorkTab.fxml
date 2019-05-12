@@ -343,7 +343,7 @@
                               <TableView fx:id="tvArguments" layoutX="503.0" layoutY="-24.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                 <columns>
                                   <TableColumn prefWidth="197.0" text="Position" />
-                                  <TableColumn prefWidth="202.0" text="Argues position is" />
+                                  <TableColumn prefWidth="202.0" text="Verdict" />
                                     <TableColumn prefWidth="766.0" text="Argument name" />
                                 </columns>
                                  <columnResizePolicy>

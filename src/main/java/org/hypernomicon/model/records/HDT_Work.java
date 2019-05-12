@@ -83,7 +83,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   public void setInvestigations(List<HDT_Investigation> list) { updateObjectsFromList(rtInvestigationOfWork, list); }
   public void setWorkLabels(List<HDT_WorkLabel> list)         { updateObjectsFromList(rtLabelOfWork, list); }
 
-  public WorkTypeEnum getWorkTypeValue()    { return HDT_WorkType.workTypeIDToEnumVal(workType.getID()); }
+  public WorkTypeEnum getWorkTypeEnum()     { return HDT_WorkType.workTypeIDToEnumVal(workType.getID()); }
   public void setWorkType(WorkTypeEnum val) { workType.set(HDT_WorkType.get(val)); }
 
   @Override public String listName()        { return name(); }
@@ -294,7 +294,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
     workFile.works.forEach(work ->
     {
-      if ((work.getID() != getID()) && (work.getWorkTypeValue() == WorkTypeEnum.wtUnenteredSet))
+      if ((work.getID() != getID()) && (work.getWorkTypeEnum() == WorkTypeEnum.wtUnenteredSet))
       {
         boolean okToRemoveFromUnenteredSet;
 

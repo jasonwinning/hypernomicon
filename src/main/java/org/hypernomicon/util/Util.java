@@ -37,6 +37,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -49,6 +50,7 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -136,6 +138,7 @@ import org.jsoup.Jsoup;
 
 import com.google.common.escape.Escaper;
 import com.google.common.html.HtmlEscapers;
+import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.Transliterator;
 
 import javafx.scene.control.skin.ComboBoxListViewSkin;
@@ -294,7 +297,7 @@ public final class Util
   {
     if ((list1 == null) != (list2 == null)) return false;
     if ((list1 == null) && (list2 == null)) return true;
-    if (list1.size() != list2.size())   return false;
+    if (list1.size() != list2.size()) return false;
 
     for (int ndx = 0; ndx < list1.size(); ndx++)
     {
@@ -1997,6 +2000,37 @@ public final class Util
       if ((sum1 > 0) && (sum2 > 0) && ((sum1 % 11) == 0) && ((sum2 % 11) == 0) && (list.contains(found) == false))
         list.add(found);
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static Charset detectCharset(byte[] byteData)
+  {
+    CharsetDetector detector = new CharsetDetector();
+
+    detector.setText(byteData);
+
+    return Charset.forName(detector.detect().getName());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static Charset detectCharset(InputStream streamData)
+  {
+    CharsetDetector detector = new CharsetDetector();
+
+    try
+    {
+      detector.setText(streamData);
+    }
+    catch (IOException e)
+    {
+      return null;
+    }
+
+    return Charset.forName(detector.detect().getName());
   }
 
 //---------------------------------------------------------------------------

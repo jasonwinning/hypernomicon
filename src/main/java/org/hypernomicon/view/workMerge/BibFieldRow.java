@@ -47,7 +47,7 @@ public abstract class BibFieldRow
 
     if ((bibFieldEnum == bfISBNs) ||
         (bibFieldEnum == bfISSNs))        loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksMultiLineChk.fxml"));
-    else if (bibFieldEnum == bfEntryType) loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksCB.fxml"));
+    else if (bibFieldEnum == bfEntryType) loader = new FXMLLoader(App.class.getResource("view/workMerge/EntryType.fxml"));
     else if (bibFieldEnum.isMultiLine())  loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksMultiLine.fxml"));
     else                                  loader = new FXMLLoader(App.class.getResource("view/workMerge/MergeWorksSingleLine.fxml"));
 

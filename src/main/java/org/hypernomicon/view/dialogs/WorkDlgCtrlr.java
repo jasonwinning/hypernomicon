@@ -18,31 +18,28 @@
 package org.hypernomicon.view.dialogs;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
-import org.json.simple.parser.ParseException;
-
-import com.adobe.internal.xmp.XMPException;
 
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibData;
+import org.hypernomicon.bib.data.BibDataRetriever;
 import org.hypernomicon.bib.data.BibDataStandalone;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.CrossrefBibData;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.data.GoogleBibData;
 import org.hypernomicon.bib.data.PDFBibData;
-import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Record;
@@ -62,7 +59,6 @@ import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import org.hypernomicon.util.AsyncHttpClient;
-import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.StandardPopulator;
@@ -108,10 +104,10 @@ public class WorkDlgCtrlr extends HyperDlg
   @FXML private ComboBox<HyperTableCell> cbType;
   @FXML private Hyperlink hlCase;
   @FXML private Label lblAutoPopulated;
-  @FXML private MenuItem mnuPopulateFromPDF;
+  @FXML private MenuItem mnuPopulateUsingDOI, mnuPopulateFromPDF;
   @FXML private ProgressBar progressBar;
   @FXML private RadioButton rbCopy, rbCurrent, rbMove;
-  @FXML private SplitMenuButton btnDOI;
+  @FXML private SplitMenuButton btnAutoFill;
   @FXML private TableView<HyperTableRow> tvAuthors, tvISBN;
   @FXML private TextArea taMisc;
   @FXML private TextField tfDOI, tfFileTitle, tfNewFile, tfOrigFile, tfTitle, tfYear;
@@ -122,11 +118,12 @@ public class WorkDlgCtrlr extends HyperDlg
   private HDT_WorkFile oldWorkFile = null, newWorkFile = null;
 
   private FilePath origFilePath = null;
-  private BibData pdfBD = null, curBD = null;
+  private BibData curBD = null;
   private HDT_Work curWork;
+  private BibDataRetriever bibDataRetriever = null;
   private boolean dontRegenerateFilename = false, alreadyChangingTitle = false;
 
-  public static final AsyncHttpClient httpClient = new AsyncHttpClient();
+  private static final AsyncHttpClient httpClient = new AsyncHttpClient();
 
   public List<ObjectGroup> getAuthorGroups() { return htAuthors.getAuthorGroups(curWork, 0, 2, 3, 4); }
   public boolean getCreateEntry()            { return chkCreateBibEntry.isVisible() && chkCreateBibEntry.isSelected(); }
@@ -160,8 +157,15 @@ public class WorkDlgCtrlr extends HyperDlg
 
     tfNewFile.disableProperty().bind(chkKeepFilenameUnchanged.selectedProperty());
 
-    btnDOI.setOnAction(event -> btnDOIClick());
-    mnuPopulateFromPDF.setOnAction(event -> extractDataFromPdf(false, true));
+    mnuPopulateUsingDOI.setOnAction(event ->
+    {
+      String doi = matchDOI(tfDOI.getText());
+      if (doi.length() > 0)
+        industryIdClick(true, doi, null);
+    });
+
+    btnAutoFill       .setOnAction(event -> extractDataFromPdf(true , true, false));
+    mnuPopulateFromPDF.setOnAction(event -> extractDataFromPdf(false, true, false));
 
     htISBN = new HyperTable(tvISBN, 0, true, "");
 
@@ -173,7 +177,7 @@ public class WorkDlgCtrlr extends HyperDlg
       {
         List<String> list = matchISBN(row.getText(0));
         if (collEmpty(list) == false)
-          mnuISBNClick(list.get(0));
+          industryIdClick(false, null, list.get(0));
       });
 
     htAuthors = new HyperTable(tvAuthors, 0, true, PREF_KEY_HT_WORK_DLG);
@@ -253,7 +257,7 @@ public class WorkDlgCtrlr extends HyperDlg
       if (newValue == null) return;
 
       WorkTypeEnum workTypeEnumVal = HDT_WorkType.workTypeIDToEnumVal(HyperTableCell.getCellID(newValue)),
-                   oldEnumVal = curWork.getWorkTypeValue();
+                   oldEnumVal = curWork.getWorkTypeEnum();
 
       if ((oldEnumVal == wtUnenteredSet) && (workTypeEnumVal != wtUnenteredSet))
       {
@@ -315,7 +319,7 @@ public class WorkDlgCtrlr extends HyperDlg
       return change;
     }));
 
-    btnStop.setOnAction(event -> stopClicked());
+    btnStop.setOnAction(event -> stopRetrieving());
   }
 
 //---------------------------------------------------------------------------
@@ -522,7 +526,7 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     FileChooser fileChooser = new FileChooser();
 
-    if (EnumSet.of(wtBook, wtChapter, wtNone, wtPaper).contains(curWork.getWorkTypeValue()))
+    if (EnumSet.of(wtBook, wtChapter, wtNone, wtPaper).contains(curWork.getWorkTypeEnum()))
       fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Adobe PDF file (*.pdf)", "*.pdf"));
 
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
@@ -592,341 +596,190 @@ public class WorkDlgCtrlr extends HyperDlg
     origFilePath = chosenFile;
     tfOrigFile.setText(origFilePath.toString());
 
-    boolean gotData = false;
-
-    if (tfTitle.getText().length() == 0)
-      if (tfYear.getText().length() == 0)
-        gotData = extractDataFromPdf(appPrefs.getBoolean(PREF_KEY_AUTO_RETRIEVE_BIB, true), false);
-
-    if ((gotData == false) && appPrefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
-      btnLaunchClick();
+    if ((tfTitle.getText().length() == 0) && (tfYear.getText().length() == 0))
+      extractDataFromPdf(appPrefs.getBoolean(PREF_KEY_AUTO_RETRIEVE_BIB, true), false, true);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean extractDataFromPdf(boolean doWebQuery, boolean doMerge)
+  @Override public boolean showModal()
   {
-    boolean dontLaunchPdf = true;
+    boolean rv = super.showModal();
 
-    if (FilePath.isEmpty(origFilePath) || origFilePath.exists() == false) return false;
-    if (getMediaType(origFilePath).toString().contains("pdf") == false) return false;
+    stopRetrieving();
 
+    return rv;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void stopRetrieving()
+  {
     httpClient.stop();
+    if (bibDataRetriever != null)
+      bibDataRetriever.stop();
+
     setAllVisible(false, btnStop, progressBar);
+  }
 
-    PDFBibData tempPdfBD = null;
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-    try
-    {
-      tempPdfBD = new PDFBibData(origFilePath);
-    }
-    catch (IOException | XMPException e)
-    {
-      return falseWithErrorMessage("Error: " + e.getMessage());
-    }
+  private void extractDataFromPdf(boolean doWebQuery, boolean doMerge, boolean launchIfNoData)
+  {
+    stopRetrieving();
 
-    List<String> isbns = tempPdfBD.getMultiStr(bfISBNs);
+    lblAutoPopulated.setText("");
 
-    String doi = tempPdfBD.getStr(bfDOI), isbn = "";
-    if (doi.length() == 0)
-      doi = matchDOI(origFilePath.getNameOnly().toString());
-
-    if (isbns.size() == 0)
-      isbns = matchISBN(origFilePath.getNameOnly().toString());
-
-    if (isbns.size() > 0)
-      isbn = isbns.get(0);
+    getBibDataFromGUI();
 
     if (doWebQuery)
     {
-      if (doi.length() > 0)
-        queryCrossref(doi);
-      else if (isbn.length() > 0)
-        queryGoogleBooks(isbns.iterator());
-      else
-        dontLaunchPdf = false;
-    }
+      setAllVisible(true, btnStop, progressBar);
 
-    tfDOI.setText(doi);
-    htISBN.clear();
-
-    htISBN.buildRows(isbns, (row, isbnStr) -> row.setCellValue(0, -1, isbnStr, hdtNone));
-
-    if (doWebQuery && dontLaunchPdf)
-    {
-      tempPdfBD.populateFromFile();
-      pdfBD = tempPdfBD;
-    }
-    else
-    {
-      if (doMerge)
+      bibDataRetriever = new BibDataRetriever(httpClient, curBD, HDT_WorkType.getEnumVal(curBD.getWorkType()), getAuthorGroups(),
+                                              List.of(origFilePath), (pdfBD, queryBD) ->
       {
-        try
-        {
-          tempPdfBD.populateFromFile();
-          doMerge(tempPdfBD);
-        }
-        catch (IOException e)
-        {
-          messageDialog("Unable to initialize merge dialog window.", mtError);
-          return true;
-        }
-      }
-      else
-      {
-        lblAutoPopulated.setText("Fields auto-populated with information extracted from PDF file");
-        tempPdfBD.populateFromFile();
-        populateFieldsFromBibData(tempPdfBD, true);
-      }
-    }
-
-    return dontLaunchPdf;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void doMerge(BibData bd) throws IOException
-  {
-    MergeWorksDlgCtrlr mwd = null;
-    getBibDataFromGUI();
-
-    mwd = MergeWorksDlgCtrlr.create("Merge Information From PDF File", curBD, bd, null, null, curWork, false, false);
-
-    if (mwd.showModal())
-    {
-      lblAutoPopulated.setText("");
-      mwd.mergeInto(curBD);
-      populateFieldsFromBibData(curBD, true);
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void queryCrossref(String doi)
-  {
-    lblAutoPopulated.setText("");
-    setAllVisible(true, btnStop, progressBar);
-
-    JsonHttpClient.getObjAsync(CrossrefBibData.getQueryUrl(doi), httpClient, jsonObj ->
-    {
-      BibData bibData = CrossrefBibData.createFromJSON(jsonObj, doi);
-
-      if (bibData != null)
-      {
-        tfDOI.setText(doi);
-
-        populateFieldsFromBibData(bibData, true);
-        lblAutoPopulated.setText("Fields have been auto-populated from Crossref using doi: " + doi);
-      }
-      else
-      {
-        if (pdfBD != null)
-        {
-          lblAutoPopulated.setText("Fields auto-populated with information extracted from PDF file");
-          populateFieldsFromBibData(pdfBD, true);
-        }
-
-        if (appPrefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
-          btnLaunchClick();
-      }
-
-      setAllVisible(false, btnStop, progressBar);
-      pdfBD = null;
-
-    }, e ->
-    {
-      lblAutoPopulated.setText("");
-      setAllVisible(false, btnStop, progressBar);
-
-      if (e instanceof ParseException)
-      {
-        if (appPrefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
-          btnLaunchClick();
-      }
-      else if (e instanceof TerminateTaskException)
-        noOp();
-      else if (e instanceof UnknownHostException)
-        messageDialog("Unable to connect to host: " + e.getMessage(), mtError);
-      else
-        messageDialog("Error: " + e.getMessage(), mtError);
-
-      if (pdfBD != null)
-      {
-        lblAutoPopulated.setText("Fields auto-populated with information extracted from PDF file");
-        populateFieldsFromBibData(pdfBD, true);
-      }
-
-      pdfBD = null;
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void queryGoogleBooks(Iterator<String> it)
-  {
-    String isbn = it.next();
-
-    lblAutoPopulated.setText("");
-    setAllVisible(true, btnStop, progressBar);
-
-    JsonHttpClient.getObjAsync(GoogleBibData.getQueryUrl(isbn), httpClient, jsonObj ->
-    {
-      BibData bibData = GoogleBibData.createFromJSON(jsonObj, isbn);
-
-      if (bibData != null)
-      {
-        populateFieldsFromBibData(bibData, true);
-        lblAutoPopulated.setText("Fields have been auto-populated from Google Books using isbn: " + isbn);
         setAllVisible(false, btnStop, progressBar);
-      }
-      else
-      {
-        if (it.hasNext())
+
+        if ((pdfBD == null) && (queryBD == null))
         {
-          queryGoogleBooks(it);
+          if (launchIfNoData && appPrefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
+            btnLaunchClick();
+
+          return;
+        }
+
+        if (doMerge)
+        {
+          doMerge(pdfBD, queryBD);
+        }
+        else if (queryBD instanceof CrossrefBibData)
+        {
+          lblAutoPopulated.setText("Fields auto-populated from Crossref, doi: " + queryBD.getStr(bfDOI));
+          populateFieldsFromBibData(queryBD, true);
+        }
+        else if (queryBD instanceof GoogleBibData)
+        {
+          List<String> list = matchISBN(httpClient.lastUrl());
+          if (collEmpty(list) == false)
+            lblAutoPopulated.setText("Fields auto-populated from Google Books, isbn: " + list.get(0));
+          else
+            lblAutoPopulated.setText("Fields have been auto-populated from Google Books");
+
+          populateFieldsFromBibData(queryBD, true);
         }
         else
         {
-          if (appPrefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
+          lblAutoPopulated.setText("Fields auto-populated with information extracted from PDF file");
+          populateFieldsFromBibData(pdfBD, true);
+
+          if (launchIfNoData && appPrefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
             btnLaunchClick();
-
-          if (pdfBD != null)
-          {
-            lblAutoPopulated.setText("Fields auto-populated with information extracted from PDF file");
-            populateFieldsFromBibData(pdfBD, true);
-          }
-
-          setAllVisible(false, btnStop, progressBar);
         }
-      }
+      });
 
-      pdfBD = null;
+      return;
+    }
 
-    }, e ->
+    BibData pdfBD = null;
+
+    try
     {
-      lblAutoPopulated.setText("");
-      setAllVisible(false, btnStop, progressBar);
+      pdfBD = PDFBibData.createFromFiles(List.of(origFilePath));
+    }
+    catch (IOException e)
+    {
+      falseWithErrorMessage("An error occurred while extracting metadata from PDF file: " + e.getMessage());
+      return;
+    }
 
-      if (e instanceof ParseException)
-      {
-        if (appPrefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
-          btnLaunchClick();
-      }
-      else if (e instanceof TerminateTaskException)
-        noOp();
-      else if (e instanceof UnknownHostException)
-        messageDialog("Unable to connect to host: " + e.getMessage(), mtError);
-      else
-        messageDialog("Error: " + e.getMessage(), mtError);
+    if (pdfBD == null)
+    {
+      if (launchIfNoData && appPrefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
+        btnLaunchClick();
 
-      if (pdfBD != null)
-      {
-        lblAutoPopulated.setText("Fields auto-populated with information extracted from PDF file");
-        populateFieldsFromBibData(pdfBD, true);
-      }
+      return;
+    }
 
-      pdfBD = null;
-    });
+    tfDOI.setText(pdfBD.getStr(bfDOI));
+    htISBN.clear();
+
+    htISBN.buildRows(pdfBD.getMultiStr(bfISBNs), (row, isbnStr) -> row.setCellValue(0, -1, isbnStr, hdtNone));
+
+    if (doMerge)
+    {
+      doMerge(pdfBD, null);
+    }
+    else
+    {
+      lblAutoPopulated.setText("Fields auto-populated with information extracted from PDF file");
+      populateFieldsFromBibData(pdfBD, true);
+    }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void btnDOIClick()
+  private void doMerge(BibData bd1, BibData bd2)
   {
-    String doi = matchDOI(tfDOI.getText());
-    if (doi.length() == 0) return;
+    getBibDataFromGUI();
+
+    try
+    {
+      MergeWorksDlgCtrlr mwd = MergeWorksDlgCtrlr.create("Merge Information From PDF File", curBD, bd1, bd2, null, curWork, false, false, false);
+
+      if (mwd.showModal())
+      {
+        lblAutoPopulated.setText("");
+        mwd.mergeInto(curBD);
+        populateFieldsFromBibData(curBD, true);
+      }
+    }
+    catch (IOException e)
+    {
+      messageDialog("Unable to initialize merge dialog window.", mtError);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void industryIdClick(boolean crossref, String doi, String isbn)
+  {
+    stopRetrieving();
 
     lblAutoPopulated.setText("");
     setAllVisible(true, btnStop, progressBar);
 
-    JsonHttpClient.getObjAsync(CrossrefBibData.getQueryUrl(doi), httpClient, jsonObj ->
+    Consumer<BibData> doneHndlr = queryBD ->
     {
-      BibData bd = CrossrefBibData.createFromJSON(jsonObj, doi);
       setAllVisible(false, btnStop, progressBar);
 
-      if (bd == null)
-        lblAutoPopulated.setText("Crossref query yielded no results for doi: " + doi);
-      else
+      if (queryBD == null)
       {
-        try
-        {
-          doMerge(bd);
-        }
-        catch (IOException e)
-        {
-          messageDialog("Unable to initialize merge dialog window.", mtError);
-        }
-      }
-    }, e ->
-    {
-      lblAutoPopulated.setText("");
-      setAllVisible(false, btnStop, progressBar);
+        if (crossref) lblAutoPopulated.setText("Crossref query yielded no results for doi: "      + doi);
+        else          lblAutoPopulated.setText("Google Books query yielded no results for isbn: " + isbn);
 
-      if ((e instanceof ParseException) || (e instanceof TerminateTaskException))
         return;
-
-      if (e instanceof UnknownHostException)
-        messageDialog("Unable to connect to host: " + e.getMessage(), mtError);
-      else
-        messageDialog("Error: " + e.getMessage(), mtError);
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void mnuISBNClick(String isbn)
-  {
-    lblAutoPopulated.setText("");
-    setAllVisible(true, btnStop, progressBar);
-
-    JsonHttpClient.getObjAsync(GoogleBibData.getQueryUrl(isbn), httpClient, jsonObj ->
-    {
-      BibData bd = GoogleBibData.createFromJSON(jsonObj, isbn);
-      setAllVisible(false, btnStop, progressBar);
-
-      if (bd == null)
-        lblAutoPopulated.setText("Google Books query yielded no results for isbn: " + isbn);
-      else
-      {
-        try
-        {
-          doMerge(bd);
-        }
-        catch (IOException e)
-        {
-          messageDialog("Unable to initialize merge dialog window.", mtError);
-        }
       }
-    }, e ->
+
+      doMerge(queryBD, null);
+    };
+
+    BibData bd = new BibDataStandalone();
+    if (crossref)
     {
-      lblAutoPopulated.setText("");
-      setAllVisible(false, btnStop, progressBar);
-
-      if ((e instanceof ParseException) || (e instanceof TerminateTaskException))
-        return;
-
-      if (e instanceof UnknownHostException)
-        messageDialog("Unable to connect to host: " + e.getMessage(), mtError);
-      else
-        messageDialog("Error: " + e.getMessage(), mtError);
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void stopClicked()
-  {
-    httpClient.stop();
-
-    lblAutoPopulated.setText("");
-    setAllVisible(false, btnStop, progressBar);
+      bd.setStr(bfDOI, doi);
+      bibDataRetriever = BibDataRetriever.forCrossref(httpClient, bd, null, doneHndlr);
+    }
+    else
+    {
+      bd.setMultiStr(bfISBNs, List.of(isbn));
+      bibDataRetriever = BibDataRetriever.forGoogleBooks(httpClient, bd, null, doneHndlr);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -1052,27 +905,34 @@ public class WorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static void promptToCreateBibEntry(BibData bd, CheckBox chkCreateBibEntry)
+  {
+    if (chkCreateBibEntry.isSelected()) return;
+
+    EnumSet<BibFieldEnum> extFields = bd.fieldsWithExternalData();
+    if (extFields.size() == 0) return;
+
+    String msg = "The current work record is not associated with a " +
+                 db.getBibLibrary().type().getUserFriendlyName() + " entry. Create one now?\n" +
+                 "Otherwise, existing information for these fields will be lost: " +
+                 extFields.stream().map(BibFieldEnum::getUserFriendlyName).reduce((s1, s2) -> s1 + ", " + s2).orElse("");
+
+    chkCreateBibEntry.setSelected(confirmDialog(msg));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override protected boolean isValid()
   {
     boolean success = true;
     FilePath newFilePath;
 
     getBibDataFromGUI();
-    EnumSet<BibFieldEnum> extFields = curBD.fieldsWithExternalData();
 
     if (chkCreateBibEntry.isVisible())
     {
-      if ((extFields.size() > 0) && (chkCreateBibEntry.isSelected() == false))
-      {
-        String typeName = db.getBibLibrary().type().getUserFriendlyName(),
-               msg = "The current work record is not associated with a " + typeName + " entry. Create one now?\n";
-
-        msg = msg + "Otherwise, existing information for these fields will be lost: ";
-
-        String fieldsStr = extFields.stream().map(BibFieldEnum::getUserFriendlyName).reduce((s1, s2) -> s1 + ", " + s2).orElse("");
-
-        chkCreateBibEntry.setSelected(confirmDialog(msg + fieldsStr));
-      }
+      promptToCreateBibEntry(curBD, chkCreateBibEntry);
 
       if (chkCreateBibEntry.isSelected() && (getEntryType() == null))
         return falseWithWarningMessage("Select a bibliographic entry type.", cbEntryType);

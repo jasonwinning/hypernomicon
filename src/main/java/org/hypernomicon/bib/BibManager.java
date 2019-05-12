@@ -234,7 +234,7 @@ public class BibManager extends HyperDlg
 
         if (newValue != null)
         {
-          switch (newValue.getWorkTypeValue())
+          switch (newValue.getWorkTypeEnum())
           {
             case wtBook    : cbNewType.getSelectionModel().select(EntryType.etBook          ); break;
             case wtChapter : cbNewType.getSelectionModel().select(EntryType.etBookChapter   ); break;
@@ -452,7 +452,7 @@ public class BibManager extends HyperDlg
 
     try
     {
-      mwd = MergeWorksDlgCtrlr.create("Import Into Existing Work Record", work.getBibData(), entry, null, null, work, false, false);
+      mwd = MergeWorksDlgCtrlr.create("Import Into Existing Work Record", work.getBibData(), entry, null, null, work, false, false, false);
     }
     catch (IOException e)
     {

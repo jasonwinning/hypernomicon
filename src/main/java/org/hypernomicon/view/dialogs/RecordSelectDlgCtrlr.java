@@ -17,57 +17,88 @@
 
 package org.hypernomicon.view.dialogs;
 
-import org.hypernomicon.model.records.HDT_RecordType;
-import org.hypernomicon.view.wrappers.HyperTableCell;
-
+import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.List;
+import java.util.function.Function;
 
-import javafx.collections.FXCollections;
+import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.view.OmniFinder;
+import org.hypernomicon.view.populators.Populator;
+import org.hypernomicon.view.populators.RecordByTypePopulator;
+import org.hypernomicon.view.populators.StandardPopulator;
+import org.hypernomicon.view.wrappers.HyperTable;
+import org.hypernomicon.view.wrappers.HyperTableCell;
+import org.hypernomicon.view.wrappers.HyperTableRow;
+
 import javafx.fxml.FXML;
-import javafx.scene.control.ListView;
-import javafx.scene.control.cell.TextFieldListCell;
-import javafx.scene.input.MouseButton;
-import javafx.util.StringConverter;
+import javafx.scene.control.TableView;
+import javafx.scene.text.Text;
 
 public class RecordSelectDlgCtrlr extends HyperDlg
 {
-  @FXML public ListView<HyperTableCell> listView;
+  @FXML private TableView<HyperTableRow> tvFind;
+
+  private OmniFinder omniFinder;
+  private HyperTable htFind;
+
+  public <HDT_T extends HDT_Record> HDT_T getRecord() { return htFind.selectedRecord(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static RecordSelectDlgCtrlr create(String title, List<HyperTableCell> list)
+  public static RecordSelectDlgCtrlr create(String title, Populator populator, List<HyperTableCell> list, String queryStr)
   {
     RecordSelectDlgCtrlr rsd = HyperDlg.create("RecordSelectDlg.fxml", title, true);
-    rsd.init(list);
+    rsd.init(list, populator, queryStr);
     return rsd;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(List<HyperTableCell> list)
+  private void init(List<HyperTableCell> list, Populator populator, String queryStr)
   {
     if (collEmpty(list)) return;
     HDT_RecordType objType = HyperTableCell.getCellType(list.get(0));
 
-    listView.setItems(FXCollections.observableArrayList(list));
+    htFind = new HyperTable(tvFind, 1, false, ""); htFind.disableRefreshAfterCellUpdate = true;
 
-    StringConverter<HyperTableCell> strConv = new StringConverter<>()
+    htFind.addIconCol();
+    htFind.addCol(hdtNone, ctIncremental);
+    htFind.addCol(hdtNone, ctNone);
+    htFind.addCol(hdtNone, ctNone);
+
+    htFind.setDblClickHandler(HDT_Record.class, work -> btnOkClick());
+
+    omniFinder = new OmniFinder(htFind, objType, false);
+
+    tvFind.setPlaceholder(new Text("Searching..."));
+
+    Runnable runnable = () ->
     {
-      @Override public String toString(HyperTableCell cell)     { return HyperTableCell.getCellText(cell); }
-      @Override public HyperTableCell fromString(String string) { return new HyperTableCell(-1, string, objType); }
+      omniFinder.doneHndlr = null;
+
+      if (omniFinder.noResults())
+      {
+        Function<HyperTableCell, HDT_Record> function = cell -> cell.getRecord();
+        omniFinder.setSourceAndStart(list.stream().map(function).iterator(), true);
+      }
     };
 
-    listView.setCellFactory(TextFieldListCell.forListView(strConv));
-
-    listView.setOnMouseClicked(mouseEvent ->
+    if ((populator instanceof StandardPopulator) || (populator instanceof RecordByTypePopulator))
     {
-      if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2))
-        btnOkClick();
-    });
+      omniFinder.doneHndlr = runnable;
+      omniFinder.setQueryAndStart(queryStr, true);
+    }
+    else
+    {
+      Function<HyperTableCell, HDT_Record> function = cell -> cell.getRecord();
+      omniFinder.setSourceAndStart(list.stream().map(function).iterator(), true);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -75,11 +106,13 @@ public class RecordSelectDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
+    if (htFind.selectedRecord() == null)
+      return falseWithWarningMessage("Select a record.");
+
     return true;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-
 
 }

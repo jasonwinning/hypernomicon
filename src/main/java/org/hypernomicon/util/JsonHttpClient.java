@@ -29,6 +29,7 @@ import static java.nio.charset.StandardCharsets.*;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
+import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -151,7 +152,7 @@ public class JsonHttpClient
     if (statusCode >= 400)
     {
       if (failHndlr != null)
-        runInFXThread(() -> failHndlr.accept(new Exception("Response from " + lastUrl + ": " + reasonPhrase)));
+        runInFXThread(() -> failHndlr.accept(new HttpResponseException(statusCode, "Response from " + lastUrl + ": " + reasonPhrase)));
 
       return false;
     }

@@ -17,6 +17,7 @@
 
 package org.hypernomicon.view.workMerge;
 
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 
@@ -28,6 +29,7 @@ import java.util.List;
 import java.io.IOException;
 
 import org.hypernomicon.bib.data.BibData;
+import org.hypernomicon.bib.data.BibDataStandalone;
 import org.hypernomicon.bib.data.BibField;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.EntryType;
@@ -35,9 +37,12 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.view.dialogs.HyperDlg;
+import org.hypernomicon.view.dialogs.WorkDlgCtrlr;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.RadioButton;
@@ -63,39 +68,47 @@ public class MergeWorksDlgCtrlr extends HyperDlg
   @FXML private TableView<HyperTableRow> tvAuthors1, tvAuthors2, tvAuthors3, tvAuthors4;
   @FXML private TextField tfTitle1, tfTitle2, tfTitle3, tfTitle4, tfYear1, tfYear2, tfYear3, tfYear4;
   @FXML private Hyperlink hlFixCase;
+  @FXML private CheckBox chkNewEntry;
+  @FXML private Button btnLaunch;
 
   private final EnumMap<BibFieldEnum, BibField> singleFields = new EnumMap<>(BibFieldEnum.class);
   private final ArrayList<WorkToMerge> works = new ArrayList<>(4);
   private final HashMap<BibFieldEnum, BibFieldRow> extraRows = new HashMap<>();
   private int nextRowNdx = 4;
-  private boolean creatingNewWork, creatingNewEntry;
+  private boolean creatingNewWork;
 
-  public EntryType getEntryType() { return nullSwitch(extraRows.get(bfEntryType), null, row -> MergeWorksCBCtrlr.class.cast(row).getEntryType()); }
+  public EntryType getEntryType()   { return nullSwitch(extraRows.get(bfEntryType), null, row -> EntryTypeCtrlr.class.cast(row).getEntryType()); }
+  public boolean creatingNewEntry() { return chkNewEntry.isVisible() && chkNewEntry.isSelected(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static MergeWorksDlgCtrlr create(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4,
-                                                  HDT_Work destWork, boolean creatingNewWork, boolean creatingNewEntry) throws IOException
+  public static MergeWorksDlgCtrlr create(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
+                                          boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked) throws IOException
   {
     MergeWorksDlgCtrlr mwd = HyperDlg.createUsingFullPath("view/workMerge/MergeWorksDlg.fxml", title, true, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
-    mwd.init(bd1, bd2, bd3, bd4, destWork, creatingNewWork, creatingNewEntry);
+    mwd.init(bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChecked);
     return mwd;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork, boolean creatingNewWork, boolean creatingNewEntry) throws IOException
+  private void init(BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
+                    boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked) throws IOException
   {
     this.creatingNewWork = creatingNewWork;
-    this.creatingNewEntry = creatingNewEntry;
 
     if (creatingNewWork == false)
     {
       deleteGridPaneRow(gpMain, 1);
       nextRowNdx--;
     }
+
+    btnLaunch.setOnAction(event -> destWork.launch(-1));
+
+    if ((destWork == null) || (destWork.pathNotEmpty() == false))
+      btnLaunch.setDisable(true);
 
     ArrayList<BibData> bdList = new ArrayList<>();
 
@@ -136,8 +149,13 @@ public class MergeWorksDlgCtrlr extends HyperDlg
       deleteGridPaneColumn(gpAuthors, 2);
     }
 
-    if (creatingNewEntry)
+    if ((db.bibLibraryIsLinked() == false) || (showNewEntry == false) || (destWork.getBibEntryKey().isBlank() == false))
+      chkNewEntry.setVisible(false);
+    else
+    {
+      chkNewEntry.setSelected(newEntryChecked);
       addField(bfEntryType, bd1, bd2, bd3, bd4);
+    }
 
     for (BibFieldEnum bibFieldEnum : BibFieldEnum.values())
     {
@@ -201,6 +219,23 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 
       if ((bibFieldEnum == bfMisc) || ((cnt > 0) && ((fieldsEqual == false) || (cnt < works.size()))))
         addField(bibFieldEnum, bd1, bd2, bd3, bd4);
+      else if (singleBD != null)
+      {
+        BibField bibField;
+
+        if ((bibFieldEnum == bfEntryType) || (bibFieldEnum == bfWorkType))
+          noOp();
+        else if (bibFieldEnum.isMultiLine())
+        {
+          bibField = new BibField(bibFieldEnum);
+          bibField.setAll(singleBD.getMultiStr(bibFieldEnum));
+        }
+        else
+        {
+          bibField = new BibField(bibFieldEnum);
+          bibField.setStr(singleBD.getStr(bibFieldEnum));
+        }
+      }
 
       hlFixCase.setOnAction(event ->
       {
@@ -257,21 +292,30 @@ public class MergeWorksDlgCtrlr extends HyperDlg
         return falseWithWarningMessage("Select a work type.");
     }
 
-    if (creatingNewEntry)
+    if (chkNewEntry.isVisible())
     {
-      EntryType entryType = getEntryType();
+      BibData mergedBD = new BibDataStandalone();
 
-      if (entryType != null)
+      mergeInto(mergedBD);
+
+      WorkDlgCtrlr.promptToCreateBibEntry(mergedBD, chkNewEntry);
+
+      if (chkNewEntry.isSelected())
       {
-        switch (entryType)
-        {
-          case etUnentered : case etOther : case etNone : entryType = null; break;
-          default: break;
-        }
-      }
+        EntryType entryType = getEntryType();
 
-      if (entryType == null)
-        return falseWithWarningMessage("Select an entry type.");
+        if (entryType != null)
+        {
+          switch (entryType)
+          {
+            case etUnentered : case etOther : case etNone : entryType = null; break;
+            default: break;
+          }
+        }
+
+        if (entryType == null)
+          return falseWithWarningMessage("Select an entry type.");
+      }
     }
 
     return true;

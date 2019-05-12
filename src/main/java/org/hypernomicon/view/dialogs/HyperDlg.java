@@ -196,7 +196,7 @@ public abstract class HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final boolean showModal()
+  public boolean showModal()
   {
     ui.windows.push(dialogStage);
 

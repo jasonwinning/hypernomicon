@@ -77,8 +77,10 @@ public class AsyncHttpClient
   private HttpUriRequest request;
   private boolean stopped = true, cancelledByUser = false;
   private RequestThread requestThread;
+  private String lastUrl = "";
 
   public boolean wasCancelledByUser() { return cancelledByUser; }
+  public String lastUrl()             { return lastUrl; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -88,6 +90,16 @@ public class AsyncHttpClient
     stop();
 
     this.request = request;
+
+    try
+    {
+      lastUrl = request.getURI().toURL().toString();
+    }
+    catch (Exception e)
+    {
+      lastUrl = "";
+    }
+
     requestThread = new RequestThread(responseHandler, failHndlr);
     stopped = false;
   }

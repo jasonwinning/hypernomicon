@@ -609,7 +609,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       try
       {
         mwd = MergeWorksDlgCtrlr.create("Merge Remote Changes with Local Changes", item, new ZoteroItem(this, jObj, true),
-                                        null, null, item.getWork(), false, false);
+                                        null, null, item.getWork(), false, false, false);
       }
       catch (IOException e)
       {

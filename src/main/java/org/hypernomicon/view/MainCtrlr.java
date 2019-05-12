@@ -773,7 +773,7 @@ public final class MainCtrlr
     {
       case hdtWork :
 
-        WorkTypeEnum workType = HDT_Work.class.cast(record).getWorkTypeValue();
+        WorkTypeEnum workType = HDT_Work.class.cast(record).getWorkTypeEnum();
 
         switch (workType)
         {
@@ -2750,20 +2750,21 @@ public final class MainCtrlr
     }
 
     boolean creatingNewWork = ibed.getCreateNewWork(),
-            creatingNewEntry = ibed.getCreateNewBibEntry();
+            newEntryChecked = ibed.getCreateNewBibEntry(),
+            showNewEntry = true;
 
     HDT_Work work = creatingNewWork ? db.createNewBlankRecord(hdtWork) : ibed.getRecord();
 
     BibData workBibData = work.getBibData();
 
     if (work.getBibEntryKey().length() > 0)
-      creatingNewEntry = false;
+      showNewEntry = false;
 
     MergeWorksDlgCtrlr mwd = null;
 
     try
     {
-      mwd = MergeWorksDlgCtrlr.create("Import Into Existing Work Record", workBibData, bd, null, null, work, creatingNewWork, creatingNewEntry);
+      mwd = MergeWorksDlgCtrlr.create("Import Into Existing Work Record", workBibData, bd, null, null, work, creatingNewWork, showNewEntry, newEntryChecked);
     }
     catch (IOException e)
     {
@@ -2777,7 +2778,7 @@ public final class MainCtrlr
       return;
     }
 
-    if (creatingNewEntry)
+    if (mwd.creatingNewEntry())
     {
       BibEntry entry = db.getBibLibrary().addEntry(mwd.getEntryType());
       work.setBibEntryKey(entry.getEntryKey());

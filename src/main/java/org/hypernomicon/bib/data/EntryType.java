@@ -153,7 +153,7 @@ public enum EntryType
 
   public static EntryType parsePrismAggregationType(String paType)
   {
-    switch (paType)
+    switch (paType.toLowerCase())
     {
       case "book"       : return etBook;
       case "catalog"    : return etCatalogItem;

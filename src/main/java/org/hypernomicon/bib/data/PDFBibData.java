@@ -19,12 +19,16 @@ package org.hypernomicon.bib.data;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.BibData.YearType.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.function.Predicate;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
@@ -364,7 +368,7 @@ public class PDFBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("resource")
-  public PDFBibData(FilePath filePath) throws IOException, XMPException
+  public PDFBibData(FilePath filePath) throws IOException
   {
     super();
     PDDocument pdfDoc = null;
@@ -376,7 +380,17 @@ public class PDFBibData extends BibDataStandalone
       PDMetadata metadata = pdfDoc.getDocumentCatalog().getMetadata();
 
       if (metadata != null)
-        setXmpRoot(metadata.toByteArray());
+      {
+        try { setXmpRoot(metadata.toByteArray()); }
+        catch (XMPException e)
+        {
+          messageDialog("An error occurred while parsing XMP data from PDF file: " +
+                        nullSwitch(e.getCause(), e.getMessage(), Throwable::getMessage), mtError, true);
+
+          metadata = null;
+          xmpRoot = null;
+        }
+      }
 
       if (getStr(bfDOI).length() > 0) return;
 
@@ -465,7 +479,7 @@ public class PDFBibData extends BibDataStandalone
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public void populateFromFile()
+  private void populateFromFile()
   {
     if (safeStr(docInfo.getAuthor()).length() > 0)
     {
@@ -489,6 +503,72 @@ public class PDFBibData extends BibDataStandalone
   public void addCsvLines(ArrayList<String> csvFile)
   {
     if (xmpRoot != null) xmpRoot.addCsvLines(csvFile);
+  }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  public static BibData createFromFiles(List<FilePath> filePaths) throws IOException
+  {
+    ArrayList<FilePath> pdfFilePaths = new ArrayList<>(filePaths);
+
+    pdfFilePaths.removeIf(filePath -> (FilePath.isEmpty(filePath) || (filePath.exists() == false) ||
+                                       (getMediaType(filePath).toString().contains("pdf") == false)));
+
+    if (pdfFilePaths.isEmpty())
+      return null;
+
+    PDFBibData firstPdfBD = null, lastPdfBD = null, goodPdfBD = null;
+    List<String> isbns = new ArrayList<>();
+    String doi = "";
+
+    for (FilePath pdfFilePath : pdfFilePaths)
+    {
+      lastPdfBD = new PDFBibData(pdfFilePath);
+      if (firstPdfBD == null)
+        firstPdfBD = lastPdfBD;
+
+      if (doi.length() == 0)
+      {
+        doi = safeStr(lastPdfBD.getStr(bfDOI));
+
+        if ((doi.length() > 0) && (goodPdfBD == null))
+          goodPdfBD = lastPdfBD;
+      }
+
+      List<String> curIsbns = lastPdfBD.getMultiStr(bfISBNs);
+
+      if (curIsbns.isEmpty() == false)
+      {
+        if (isbns.isEmpty() && (goodPdfBD == null))
+          goodPdfBD = lastPdfBD;
+
+        curIsbns.stream().filter(Predicate.not(isbns::contains)).forEach(isbns::add);
+      }
+    }
+
+    if (goodPdfBD == null)
+      goodPdfBD = firstPdfBD;
+
+    goodPdfBD.populateFromFile();
+
+    doi = goodPdfBD.getStr(bfDOI);
+
+    Iterator<FilePath> it = pdfFilePaths.iterator();
+
+    while ((doi.length() == 0) && it.hasNext())
+      doi = matchDOI(it.next().getNameOnly().toString());
+
+    goodPdfBD.setStr(bfDOI, doi);
+
+    it = pdfFilePaths.iterator();
+
+    while ((isbns.size() == 0) && it.hasNext())
+      isbns = matchISBN(it.next().getNameOnly().toString());
+
+    goodPdfBD.setMultiStr(bfISBNs, isbns);
+
+    return goodPdfBD;
   }
 
   //---------------------------------------------------------------------------

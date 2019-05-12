@@ -19,11 +19,10 @@ package org.hypernomicon.view.tabs;
 
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.data.BibData;
-import org.hypernomicon.bib.data.CrossrefBibData;
-import org.hypernomicon.bib.data.GoogleBibData;
+import org.hypernomicon.bib.data.BibDataRetriever;
+import org.hypernomicon.bib.data.BibDataStandalone;
 import org.hypernomicon.bib.data.PDFBibData;
 import org.hypernomicon.model.SearchKeys;
-import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
@@ -36,7 +35,6 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.AsyncHttpClient;
-import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
@@ -69,18 +67,15 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.json.simple.parser.ParseException;
-
-import com.adobe.internal.xmp.XMPException;
 
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
@@ -140,6 +135,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private double btnOpenLinkLeftAnchor, tfLinkLeftAnchor, tfLinkRightAnchor;
   private SplitMenuButton btnFolder = null;
   private HDT_Work curWork, lastWork = null;
+  private BibDataRetriever bibDataRetriever = null;
   private final ObjectProperty<BibData> crossrefBD = new SimpleObjectProperty<>(),
                                         pdfBD      = new SimpleObjectProperty<>(),
                                         googleBD   = new SimpleObjectProperty<>();
@@ -367,10 +363,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       if (inNormalMode || workFile.getPath().isEmpty()) return false;
 
-      if (workFile.works.stream().anyMatch(work -> work.getWorkTypeValue() != wtUnenteredSet))
+      if (workFile.works.stream().anyMatch(work -> work.getWorkTypeEnum() != wtUnenteredSet))
         return false;
 
-      return curWork.getWorkTypeValue() == wtUnenteredSet;
+      return curWork.getWorkTypeEnum() == wtUnenteredSet;
     };
 
     htWorkFiles.addContextMenuItem("Move to an existing work record", HDT_WorkFile.class, condHandler, this::moveFileToDifferentWork);
@@ -433,7 +429,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       {
         List<String> list = matchISBN(row.getText(0));
         if (collEmpty(list) == false)
-          retrieveBibData(false, list.get(0));
+          retrieveBibData(false, "", list);
       });
 
     htISBN.addRefreshHandler(tabPane::requestLayout);
@@ -449,10 +445,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     btnBibManager.setOnAction(event -> ui.goToWorkInBibManager(curWork));
 
-    btnStop.setOnAction(event -> httpClient.stop());
+    btnStop.setOnAction(event -> stopRetrieving());
 
-    mnuFindDOIonCrossref.setOnAction(event -> retrieveBibData(true, ""));
-    mnuFindISBNonGoogleBooks.setOnAction(event -> retrieveBibData(false, ""));
+    mnuFindDOIonCrossref.setOnAction(event -> retrieveBibData(true, "", null));
+    mnuFindISBNonGoogleBooks.setOnAction(event -> retrieveBibData(false, "", null));
 
     mnuGoogle.setOnAction(event ->
     {
@@ -460,9 +456,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         searchGoogle("doi:" + tfDOI.getText(), false);
     });
 
-    mnuCrossref.setOnAction(event -> retrieveBibData(true, tfDOI.getText()));
+    mnuCrossref.setOnAction(event -> retrieveBibData(true, tfDOI.getText(), null));
 
-    mnuShowMetadata.setOnAction(event -> extractBibDataFromPdf());
+    mnuShowMetadata.setOnAction(event -> mnuShowMetadataClick());
 
     mnuStoreMetadata.setVisible(false); // Not implemented yet
 
@@ -490,7 +486,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if (newValue == null) return;
 
       WorkTypeEnum workTypeEnumVal = HDT_WorkType.workTypeIDToEnumVal(HyperTableCell.getCellID(newValue)),
-                   oldEnumVal = curWork.getWorkTypeValue();
+                   oldEnumVal = curWork.getWorkTypeEnum();
 
       if (workTypeEnumVal != wtUnenteredSet)
       {
@@ -666,7 +662,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     btnTree.setDisable(ui.getTree().getRowsForRecord(curWork).size() == 0);
 
-    WorkTypeEnum workTypeEnumVal = curWork.getWorkTypeValue();
+    WorkTypeEnum workTypeEnumVal = curWork.getWorkTypeEnum();
 
     if (workTypeEnumVal == wtUnenteredSet)
       changeToUnenteredSetMode();
@@ -1174,7 +1170,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     if (ui.cantSaveRecord()) return;
 
-    if (curWork.getWorkTypeValue() == wtUnenteredSet)
+    if (curWork.getWorkTypeEnum() == wtUnenteredSet)
     {
       addMultipleFiles();
       return;
@@ -1405,7 +1401,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     disableCache(taPdfMetadata);
     disableCache(taGoogleBooks);
 
-    httpClient.stop();
+    stopRetrieving();
 
     tfDOI.setText("");
     htISBN.clear();
@@ -1677,7 +1673,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (ui.cantSaveRecord()) return false;
 
-    if (curWork.getWorkTypeValue() == wtUnenteredSet)
+    if (curWork.getWorkTypeEnum() == wtUnenteredSet)
     {
       fdc = FileDlgCtrlr.create("Unentered Work File", hdtWorkFile, workFile, curWork, "");
 
@@ -1696,11 +1692,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if (wdc.showModal() == false)
       {
         wdc = null;
-        WorkDlgCtrlr.httpClient.stop();
         return false;
       }
-
-      WorkDlgCtrlr.httpClient.stop();
 
       if (wdc.getCreateEntry())
         curWork.setBibEntryKey(db.getBibLibrary().addEntry(wdc.getEntryType()).getEntryKey());
@@ -1767,78 +1760,31 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void extractBibDataFromPdf()
+  private void mnuShowMetadataClick()
   {
-    httpClient.stop();
+    stopRetrieving();
+
     taPdfMetadata.clear();
+    pdfBD.set(null);
 
     if (tpBib.getTabs().contains(tabPdfMetadata) == false)
       tpBib.getTabs().add(tabPdfMetadata);
 
     tpBib.getSelectionModel().select(tabPdfMetadata);
 
-    if ((db.isLoaded() == false) || (curWork == null)) return;
-
-    ArrayList<FilePath> pdfFilePaths = new ArrayList<>();
-
-    curWork.workFiles.forEach(workFile ->
-    {
-      if (workFile.pathNotEmpty() == false) return;
-
-      FilePath filePath = workFile.filePath();
-
-      if (filePath.exists() && getMediaType(filePath).toString().contains("pdf"))
-        pdfFilePaths.add(filePath);
-    });
-
-    if (pdfFilePaths.isEmpty())
-    {
-      taPdfMetadata.setText("[No PDF file.]");
-      return;
-    }
-
+    List<FilePath> pdfFilePaths = curWork.workFiles.stream().filter(HDT_WorkFile::pathNotEmpty).
+                                                             map(HDT_WorkFile::filePath).
+                                                             collect(Collectors.toList());
     try
     {
-      PDFBibData firstPdfBD = null, lastPdfBD = null, goodPdfBD = null;
-      List<String> isbns = new ArrayList<>();
-      String doi = "";
+      pdfBD.set(PDFBibData.createFromFiles(pdfFilePaths));
 
-      for (FilePath pdfFilePath : pdfFilePaths)
-      {
-        lastPdfBD = new PDFBibData(pdfFilePath);
-        if (firstPdfBD == null)
-          firstPdfBD = lastPdfBD;
-
-        if (doi.length() == 0)
-        {
-          doi = safeStr(lastPdfBD.getStr(bfDOI));
-
-          if ((doi.length() > 0) && (goodPdfBD == null))
-            goodPdfBD = lastPdfBD;
-        }
-
-        List<String> curIsbns = lastPdfBD.getMultiStr(bfISBNs);
-
-        if (curIsbns.isEmpty() == false)
-        {
-          if (isbns.isEmpty() && (goodPdfBD == null))
-            goodPdfBD = lastPdfBD;
-
-          curIsbns.stream().filter(Predicate.not(isbns::contains)).forEach(isbns::add);
-        }
-      }
-
-      if (goodPdfBD == null)
-        goodPdfBD = firstPdfBD;
-
-      goodPdfBD.populateFromFile();
-      pdfBD.set(goodPdfBD);
-
-      goodPdfBD.setMultiStr(bfISBNs, isbns);
-
-      taPdfMetadata.appendText(goodPdfBD.createReport());
+      if (pdfBD.get() == null)
+        taPdfMetadata.setText("[No PDF file.]");
+      else
+        taPdfMetadata.appendText(pdfBD.get().createReport());
     }
-    catch (IOException | XMPException e)
+    catch (IOException e)
     {
       taPdfMetadata.setText("[Error: " + e.getMessage() + "]");
     }
@@ -1849,28 +1795,14 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void retrieveBibData(boolean crossref, String industryID)
+  private void retrieveBibData(boolean crossref, String doi, List<String> isbns)
   {
-    httpClient.stop();
+    stopRetrieving();
 
     if ((db.isLoaded() == false) || (curWork == null)) return;
 
-    Tab tab;
-    TextArea ta;
-    String url;
-
-    if (crossref)
-    {
-      tab = tabCrossref;
-      ta = taCrossref;
-      url = CrossrefBibData.getQueryUrl(tfTitle.getText(), tfYear.getText(), getAuthorGroups(), industryID);
-    }
-    else
-    {
-      tab = tabGoogleBooks;
-      ta = taGoogleBooks;
-      url = GoogleBibData.getQueryUrl(tfTitle.getText(), getAuthorGroups(), industryID);
-    }
+    Tab      tab = crossref ? tabCrossref : tabGoogleBooks;
+    TextArea ta  = crossref ? taCrossref  : taGoogleBooks;
 
     if (tpBib.getTabs().contains(tab) == false)
       tpBib.getTabs().add(tab);
@@ -1882,45 +1814,53 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     tabPane.requestLayout();
 
-    JsonHttpClient.getObjAsync(url, httpClient, jsonObj ->
+    Consumer<BibData> doneHndlr = queryBD ->
     {
-      BibData bd = null;
-
-      if (crossref)
-      {
-        bd = CrossrefBibData.createFromJSON(jsonObj, industryID);
-        crossrefBD.set(bd);
-      }
-      else
-      {
-        bd = GoogleBibData.createFromJSON(jsonObj, industryID);
-        googleBD.set(bd);
-      }
-
-      ta.setText("Query URL: " + url + System.lineSeparator());
-
       setAllVisible(false, btnStop, progressBar);
 
-      if (bd == null)
+      if (crossref) crossrefBD.set(queryBD);
+      else          googleBD  .set(queryBD);
+
+      ta.setText("Query URL: " + httpClient.lastUrl() + System.lineSeparator());
+
+      if (queryBD == null)
       {
         ta.appendText("[No results.]");
         return;
       }
 
-      ta.appendText(bd.createReport());
-    }, e ->
+      ta.appendText(queryBD.createReport());
+    };
+
+    BibData bd = new BibDataStandalone();
+
+    bd.setTitle(tfTitle.getText());
+    bd.setStr(bfYear, tfYear.getText());
+
+    if (crossref)
     {
-      setAllVisible(false, btnStop, progressBar);
-      ta.setText("Query URL: " + url + System.lineSeparator());
+      bd.setStr(bfDOI, safeStr(doi));
+      bibDataRetriever = BibDataRetriever.forCrossref(httpClient, bd, getAuthorGroups(), doneHndlr);
+    }
+    else
+    {
+      if (collEmpty(isbns) == false)
+        bd.setMultiStr(bfISBNs, isbns);
 
-      if ((e instanceof ParseException) || (e instanceof TerminateTaskException))
-        return;
+      bibDataRetriever = BibDataRetriever.forGoogleBooks(httpClient, bd, getAuthorGroups(), doneHndlr);
+    }
+  }
 
-      if (e instanceof UnknownHostException)
-        messageDialog("Unable to connect to host: " + e.getMessage(), mtError);
-      else
-        messageDialog("Error: " + e.getMessage(), mtError);
-    });
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void stopRetrieving()
+  {
+    httpClient.stop();
+    if (bibDataRetriever != null)
+      bibDataRetriever.stop();
+
+    setAllVisible(false, btnStop, progressBar);
   }
 
 //---------------------------------------------------------------------------
@@ -1928,7 +1868,52 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private void btnAutofillClick()
   {
+    stopRetrieving();
 
+    if ((db.isLoaded() == false) || (curWork == null) || ui.cantSaveRecord()) return;
+
+    List<FilePath> pdfFilePaths = curWork.workFiles.stream().filter(HDT_WorkFile::pathNotEmpty)
+                                                            .map(HDT_WorkFile::filePath)
+                                                            .collect(Collectors.toList());
+
+    BibData workBD = curWork.getBibData();
+
+    setAllVisible(true, btnStop, progressBar);
+
+    bibDataRetriever = new BibDataRetriever(httpClient, curWork.getBibData(), curWork.getWorkTypeEnum(), getAuthorGroups(),
+                                            pdfFilePaths, (pdfBD, queryBD) ->
+    {
+      setAllVisible(false, btnStop, progressBar);
+      if ((pdfBD == null) && (queryBD == null))
+        return;
+
+      MergeWorksDlgCtrlr mwd = null;
+
+      try
+      {
+        mwd = MergeWorksDlgCtrlr.create("Merge Bibliographic Data", workBD, pdfBD, queryBD, null, curWork, false, true, false);
+      }
+      catch (IOException e)
+      {
+        messageDialog("Unable to initialize merge dialog window.", mtError);
+        return;
+      }
+
+      if (mwd.showModal() == false) return;
+
+      BibData destBD = workBD;
+
+      if (mwd.creatingNewEntry())
+      {
+        BibEntry entry = db.getBibLibrary().addEntry(mwd.getEntryType());
+        curWork.setBibEntryKey(entry.getEntryKey());
+        destBD = entry;
+      }
+
+      mwd.mergeInto(destBD);
+      bibManagerDlg.refresh();
+      ui.update();
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -1939,19 +1924,12 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     if (ui.cantSaveRecord()) return;
 
     MergeWorksDlgCtrlr mwd = null;
-    boolean creatingNewEntry = false;
     BibData workBibData = curWork.getBibData();
-
-    if (db.bibLibraryIsLinked() && (curWork.getBibEntryKey().length() == 0))
-    {
-      String typeName = db.getBibLibrary().type().getUserFriendlyName();
-      creatingNewEntry = confirmDialog("The current work record is not associated with a " + typeName + " entry. Create one now?");
-    }
 
     try
     {
       mwd = MergeWorksDlgCtrlr.create("Merge Bibliographic Data", workBibData,
-                                      pdfBD.get(), crossrefBD.get(), googleBD.get(), curWork, false, creatingNewEntry);
+                                      pdfBD.get(), crossrefBD.get(), googleBD.get(), curWork, false, true, false);
     }
     catch (IOException e)
     {
@@ -1961,7 +1939,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (mwd.showModal() == false) return;
 
-    if (creatingNewEntry)
+    if (mwd.creatingNewEntry())
     {
       BibEntry entry = db.getBibLibrary().addEntry(mwd.getEntryType());
       curWork.setBibEntryKey(entry.getEntryKey());

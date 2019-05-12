@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.items.Author;
@@ -34,7 +35,9 @@ import org.hypernomicon.queryEngines.AllQueryEngine;
 import org.hypernomicon.util.AutoCompleteCB;
 import org.hypernomicon.view.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.view.dialogs.RecordSelectDlgCtrlr;
+import org.hypernomicon.view.dialogs.ValueSelectDlgCtrlr;
 import org.hypernomicon.view.populators.Populator;
+import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
@@ -264,7 +267,8 @@ public class HyperCB implements CommitableWrapper
         }
 
         List<HyperTableCell> cells = new ArrayList<>();
-        boolean match, alreadyParsedName = false, atLeastOneRealMatch = (populator.getRecordType(row) != hdtPerson) || dontCreateNewRecord;
+        boolean alreadyParsedName = false, atLeastOneRealMatch = (populator.getRecordType(row) != hdtPerson) || dontCreateNewRecord,
+                containsNum = Pattern.compile("\\d").matcher(str).find();
         PersonName personName = null;
 
         AllQueryEngine.linkList.generate(str);
@@ -272,12 +276,7 @@ public class HyperCB implements CommitableWrapper
         for (HyperTableCell cell : cb.getItems())
         {
           HDT_Record record = HyperTableCell.getRecord(cell);
-          boolean added = false;
-
-          if (record != null)
-            match = record.getNameEngChar().toLowerCase().equals(str);
-          else
-            match = false;
+          boolean added = false, match = (record != null) && record.getNameEngChar().toLowerCase().equals(str);
 
           if (cell.getText().toLowerCase().equals(str) || match)
           {
@@ -300,38 +299,35 @@ public class HyperCB implements CommitableWrapper
               added = true;
             }
 
-            if (added == false)
+            if ((added == false) && (record.getType() == hdtWork) && (containsNum == false))
             {
-              if (record.getType() == hdtWork)
-              {
-                HDT_Work work = (HDT_Work) record;
+              HDT_Work work = (HDT_Work) record;
 
-                if (alreadyParsedName == false)
+              if (alreadyParsedName == false)
+              {
+                personName = new PersonName(str).toLowerCase();
+                alreadyParsedName = true;
+              }
+
+              for (Author author : work.getAuthors())
+              {
+                if (personName.getFirst().length() > 0)
                 {
-                  personName = new PersonName(str).toLowerCase();
-                  alreadyParsedName = true;
+                  if ((author.getFirstName(true).toLowerCase().contains(personName.getFirst())) ||
+                      (author.getLastName(true).toLowerCase().contains(personName.getFirst())))
+                  {
+                    cells.add(cell);
+                    added = true;
+                  }
                 }
 
-                for (Author author : work.getAuthors())
+                if (personName.getLast().length() > 0)
                 {
-                  if (personName.getFirst().length() > 0)
+                  if ((author.getFirstName(true).toLowerCase().contains(personName.getLast())) ||
+                      (author.getLastName(true).toLowerCase().contains(personName.getLast())))
                   {
-                    if ((author.getFirstName(true).toLowerCase().contains(personName.getFirst())) ||
-                        (author.getLastName(true).toLowerCase().contains(personName.getFirst())))
-                    {
-                      cells.add(cell);
-                      added = true;
-                    }
-                  }
-
-                  if (personName.getLast().length() > 0)
-                  {
-                    if ((author.getFirstName(true).toLowerCase().contains(personName.getLast())) ||
-                        (author.getLastName(true).toLowerCase().contains(personName.getLast())))
-                    {
-                      cells.add(cell);
-                      added = true;
-                    }
+                    cells.add(cell);
+                    added = true;
                   }
                 }
               }
@@ -375,18 +371,37 @@ public class HyperCB implements CommitableWrapper
 
         if ((cells.size() > 1) && atLeastOneRealMatch)
         {
-          RecordSelectDlgCtrlr ctrlr = RecordSelectDlgCtrlr.create("Choose a record", cells);
-
-          if (ctrlr.showModal())
+          if (populator.getValueType() == CellValueType.cvtRecord)
           {
-            target = ctrlr.listView.getSelectionModel().getSelectedItem();
-            selectID(HyperTableCell.getCellID(target));
+            RecordSelectDlgCtrlr ctrlr = RecordSelectDlgCtrlr.create("Choose a record", populator, cells,
+                convertToEnglishChars(cb.getEditor().getText()).trim());
 
-            if (table != null)
-              table.selectID(colNdx, row, HyperTableCell.getCellID(target));
+            if (ctrlr.showModal())
+            {
+              int id = ctrlr.getRecord().getID();
+              selectID(id);
+
+              if (table != null)
+                table.selectID(colNdx, row, id);
+            }
+            else
+              return;
           }
           else
-            return;
+          {
+            ValueSelectDlgCtrlr ctrlr = ValueSelectDlgCtrlr.create("Choose a value", cells);
+
+            if (ctrlr.showModal())
+            {
+              target = ctrlr.listView.getSelectionModel().getSelectedItem();
+              select(target);
+
+              if (table != null)
+                row.setCellValue(colNdx, target);
+            }
+            else
+              return;
+          }
         }
         else if ((cells.size() == 1) && atLeastOneRealMatch)
         {
@@ -593,6 +608,15 @@ public class HyperCB implements CommitableWrapper
     }
 
     return HyperTableCell.getCellType(cb.getValue());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void select(HyperTableCell cell)
+  {
+    cb.getSelectionModel().select(cell);
+    cb.setValue(cell);
   }
 
 //---------------------------------------------------------------------------

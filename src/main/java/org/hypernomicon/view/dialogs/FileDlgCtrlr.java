@@ -297,7 +297,7 @@ public class FileDlgCtrlr extends HyperDlg
 
     if (recordType == hdtWorkFile)
     {
-      WorkTypeEnum enumVal = curWork.getWorkTypeValue();
+      WorkTypeEnum enumVal = curWork.getWorkTypeEnum();
 
       switch (enumVal)
       {

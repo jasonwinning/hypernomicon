@@ -36,8 +36,6 @@ import java.util.ArrayList;
 
 import org.apache.commons.io.FileUtils;
 
-import com.adobe.internal.xmp.XMPException;
-
 import org.hypernomicon.bib.data.PDFBibData;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
@@ -88,7 +86,7 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
       case QUERY_LIKELY_EDITED_VOLS :
 
         if (work.authorRecords.isEmpty()) return false;
-        if (work.getWorkTypeValue() == WorkTypeEnum.wtPaper) return false;
+        if (work.getWorkTypeEnum() == WorkTypeEnum.wtPaper) return false;
 
         if (work.authorRecords.stream().allMatch(author -> work.personIsEditor(author) || work.personIsTranslator(author)))
           return false;
@@ -134,7 +132,7 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
             {
               new PDFBibData(workFile.filePath()).addCsvLines(csvFile);
             }
-            catch (IOException | XMPException e)
+            catch (IOException e)
             {
               e.printStackTrace();
             }
