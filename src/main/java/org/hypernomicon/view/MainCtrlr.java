@@ -1383,6 +1383,7 @@ public final class MainCtrlr
     }
 
     clearAllTabsAndViews();
+    lblStatus.setText("");
 
     treeSubjRecord = null;
     closeWindows(false);

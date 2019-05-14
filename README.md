@@ -40,7 +40,7 @@ Contributions can be submitted via [Pull requests](https://github.com/jasonwinni
 
 ### Prerequisites
 
-* A recent version of [Java 11](https://www.oracle.com/technetwork/java/javase/downloads/jdk11-downloads-5066655.html) for building 'master' branch
+* A recent version of [JDK 11](https://jdk.java.net/11/) for building 'master' branch
 * A recent version of [Git](https://git-scm.com/downloads)
 * [Maven](https://maven.apache.org/download.cgi) version 3.0.5 or greater
 
@@ -65,7 +65,11 @@ See also the list of [contributors](https://github.com/jasonwinning/hypernomicon
 
 ## License
 
-This project is licensed under the Apache 2.0 License - see the [LICENSE](http://htmlpreview.github.com/?https://github.com/jasonwinning/hypernomicon/blob/master/LICENSE.html) file for details
+This project is licensed under the Apache 2.0 License + Commons Clause 1.0 - see the [LICENSE](http://htmlpreview.github.com/?https://github.com/jasonwinning/hypernomicon/blob/master/LICENSE.html) file for details.
+
+Hypernomicon is a non-commercial product and will always be free to use.
+
+Hypernomicon uses [JxBrowser](https://www.teamdev.com/jxbrowser). You may not use JxBrowser separately from Hypernomicon without a separate license from TeamDev Ltd. Use of JxBrowser as part of Hypernomicon in any commercial software requires a commercial license from TeamDev Ltd.
 
 ## Acknowledgements
 
@@ -74,10 +78,9 @@ This project is licensed under the Apache 2.0 License - see the [LICENSE](http:/
   * [FatCow](http://www.fatcow.com/free-icons)
   * [Fugue](http://p.yusukekamiyamane.com/)
 
-* Third-party libraries used:
+* Additional third-party libraries used:
   * Apache [Commons](https://commons.apache.org/), [PDFBox](https://pdfbox.apache.org/), [Tika](https://tika.apache.org/), [HttpClient](https://hc.apache.org/httpcomponents-client-ga/)
   * [Guava](https://github.com/google/guava)
-  * [JxBrowser](https://www.teamdev.com/jxbrowser)
   * [PDF.js](https://mozilla.github.io/pdf.js/)
   * [jsoup](https://jsoup.org/)
   * [jQuery](https://jquery.com/)

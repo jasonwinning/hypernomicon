@@ -456,7 +456,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         searchGoogle("doi:" + tfDOI.getText(), false);
     });
 
-    mnuCrossref.setOnAction(event -> retrieveBibData(true, tfDOI.getText(), null));
+    mnuCrossref.setOnAction(event ->
+    {
+      if (tfDOI.getText().length() > 0)
+        retrieveBibData(true, tfDOI.getText(), null);
+    });
 
     mnuShowMetadata.setOnAction(event -> mnuShowMetadataClick());
 
