@@ -158,7 +158,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case rtInstOfPerson             : hasNestedItems = false; subjType = hdtPerson;        objType = hdtInstitution;     break;
       case rtTypeOfInst               : hasNestedItems = false; subjType = hdtInstitution;   objType = hdtInstitutionType; break;
       case rtParentInstOfInst         : hasNestedItems = false; subjType = hdtInstitution;   objType = hdtInstitution;     break;
-      case rtStateOfInst              : hasNestedItems = false; subjType = hdtInstitution;   objType = hdtState;           break;
+      case rtCountryOfRegion          : hasNestedItems = false; subjType = hdtRegion;        objType = hdtCountry;         break;
+      case rtRegionOfInst             : hasNestedItems = false; subjType = hdtInstitution;   objType = hdtRegion;          break;
       case rtCountryOfInst            : hasNestedItems = false; subjType = hdtInstitution;   objType = hdtCountry;         break;
       case rtTypeOfWork               : hasNestedItems = false; subjType = hdtWork;          objType = hdtWorkType;        break;
       case rtTypeOfFile               : hasNestedItems = false; subjType = hdtMiscFile;      objType = hdtFileType;        break;
@@ -733,46 +734,47 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   {
  // rtObjectOfSubject
 
-    rtNone                    ( 1, "",                      ""),
+    rtNone                    ( 1, ""                     , ""),
 
-    rtParentWorkOfWork        ( 2, "Child Work(s)",         "Work(s) under this parent work"),
-    rtTypeOfWork              ( 3, tagWork,                 "Work(s) of this type"),
-    rtTypeOfFile              ( 4, tagMiscFile,             "File(s) of this type"),
-    rtAuthorOfWork            ( 5, tagWork,                 "Work(s) by this author"),
-    rtAuthorOfFile            ( 6, tagMiscFile,             "Misc. File(s) by this author"),
-    rtWorkOfArgument          ( 7, tagArgument,             "Argument(s) having this work as source"),
-    rtParentLabelOfLabel      (11, "Child Label(s)",        "Label(s) under this parent label"),
-    rtLabelOfWork             (12, tagWork,                 "Work(s) having this label"),
-    rtLabelOfFile             (13, tagMiscFile,             "Misc. File(s) having this label"),
+    rtParentWorkOfWork        ( 2, "Child Work(s)"        , "Work(s) under this parent work"),
+    rtTypeOfWork              ( 3, tagWork                , "Work(s) of this type"),
+    rtTypeOfFile              ( 4, tagMiscFile            , "File(s) of this type"),
+    rtAuthorOfWork            ( 5, tagWork                , "Work(s) by this author"),
+    rtAuthorOfFile            ( 6, tagMiscFile            , "Misc. File(s) by this author"),
+    rtWorkOfArgument          ( 7, tagArgument            , "Argument(s) having this work as source"),
+    rtParentLabelOfLabel      (11, "Child Label(s)"       , "Label(s) under this parent label"),
+    rtLabelOfWork             (12, tagWork                , "Work(s) having this label"),
+    rtLabelOfFile             (13, tagMiscFile            , "Misc. File(s) having this label"),
     rtCounterOfArgument       (14, "Countered Argument(s)", "Argument(s) countered by this argument"),
-    rtStatusOfPerson          (15, tagPerson,               "Person(s) having this status"),
-    rtFieldOfPerson           (16, tagPerson,               "Person(s) having this field"),
-    rtSubfieldOfPerson        (17, tagPerson,               "Person(s) having this subfield"),
-    rtFieldOfSubfield         (18, tagSubfield,             "Subfield(s) under this field"),
-    rtRankOfPerson            (19, tagPerson,               "Person(s) having this rank"),
-    rtParentDebateOfDebate    (20, "Sub-Debate(s)",         "Debate(s) under this larger debate"),
-    rtParentNoteOfNote        (21, "Sub-Note(s)",           "Note(s) under this parent note"),
-    rtFolderOfNote            (22, tagNote,                 "Note(s) associated with this Folder"),
-    rtDebateOfPosition        (23, tagPosition,             "Position(s) under this debate"),
-    rtParentPosOfPos          (24, "Sub-Position(s)",       "Position(s) under this parent position"),
-    rtPositionOfArgument      (25, tagArgument,             "Argument(s) concerning this position"),
-    rtInvestigationOfWork     (26, tagWork,                 "Work(s) in this investigation"),
-    rtPersonOfInv             (27, tagInvestigation,        "Investigation(s) by this person"),
-    rtStateOfInst             (30, tagInstitution,          "Institution(s) in this state"),
-    rtCountryOfInst           (31, tagInstitution,          "Institution(s) in this country"),
-    rtParentGroupOfGroup      (32, "Sub-Group(s)",          "Group(s) under this parent group"),
-    rtWorkOfMiscFile          (33, tagMiscFile,             "Misc. files of this work"),
-    rtWorkFileOfWork          (34, tagWork,                 "Work(s) having this work file"),
-    rtFolderOfWorkFile        (35, tagWorkFile,             "Work file(s) in this folder"),
-    rtFolderOfMiscFile        (36, tagMiscFile,             "Misc. file(s) in this folder"),
-    rtParentFolderOfFolder    (37, "Subfolder(s)",          "Subfolder(s) of this folder"),
-    rtUnited                  (38, "",                      ""),
-    rtTypeOfInst              (39, tagInstitution,          "Institution(s) of this type"),
-    rtParentInstOfInst        (40, "Division(s)",           "Division(s) of this institution"),
-    rtInstOfPerson            (41, tagPerson,               "Person(s) in this institution"),
-    rtGlossaryOfConcept       (43, tagConcept,              "Concept(s) in this glossary"),
-    rtParentGlossaryOfGlossary(44, "Sub-Glossary(ies)",     "Sub-glossaries under this glossary"),
-    rtConceptOfTerm           (45, tagTerm,                 "Term(s) associated with this concept");
+    rtStatusOfPerson          (15, tagPerson              , "Person(s) having this status"),
+    rtFieldOfPerson           (16, tagPerson              , "Person(s) having this field"),
+    rtSubfieldOfPerson        (17, tagPerson              , "Person(s) having this subfield"),
+    rtFieldOfSubfield         (18, tagSubfield            , "Subfield(s) under this field"),
+    rtRankOfPerson            (19, tagPerson              , "Person(s) having this rank"),
+    rtParentDebateOfDebate    (20, "Sub-Debate(s)"        , "Debate(s) under this larger debate"),
+    rtParentNoteOfNote        (21, "Sub-Note(s)"          , "Note(s) under this parent note"),
+    rtFolderOfNote            (22, tagNote                , "Note(s) associated with this Folder"),
+    rtDebateOfPosition        (23, tagPosition            , "Position(s) under this debate"),
+    rtParentPosOfPos          (24, "Sub-Position(s)"      , "Position(s) under this parent position"),
+    rtPositionOfArgument      (25, tagArgument            , "Argument(s) concerning this position"),
+    rtInvestigationOfWork     (26, tagWork                , "Work(s) in this investigation"),
+    rtPersonOfInv             (27, tagInvestigation       , "Investigation(s) by this person"),
+    rtCountryOfRegion         (29, tagRegion              , "States/regions in this country"),
+    rtRegionOfInst            (30, tagInstitution         , "Institution(s) in this state/region"),
+    rtCountryOfInst           (31, tagInstitution         , "Institution(s) in this country"),
+    rtParentGroupOfGroup      (32, "Sub-Group(s)"         , "Group(s) under this parent group"),
+    rtWorkOfMiscFile          (33, tagMiscFile            , "Misc. files of this work"),
+    rtWorkFileOfWork          (34, tagWork                , "Work(s) having this work file"),
+    rtFolderOfWorkFile        (35, tagWorkFile            , "Work file(s) in this folder"),
+    rtFolderOfMiscFile        (36, tagMiscFile            , "Misc. file(s) in this folder"),
+    rtParentFolderOfFolder    (37, "Subfolder(s)"         , "Subfolder(s) of this folder"),
+    rtUnited                  (38, ""                     , ""),
+    rtTypeOfInst              (39, tagInstitution         , "Institution(s) of this type"),
+    rtParentInstOfInst        (40, "Division(s)"          , "Division(s) of this institution"),
+    rtInstOfPerson            (41, tagPerson              , "Person(s) in this institution"),
+    rtGlossaryOfConcept       (43, tagConcept             , "Concept(s) in this glossary"),
+    rtParentGlossaryOfGlossary(44, "Sub-Glossary(ies)"    , "Sub-glossaries under this glossary"),
+    rtConceptOfTerm           (45, tagTerm                , "Term(s) associated with this concept");
 
     private final int code;
     private final String title, subjTitle;

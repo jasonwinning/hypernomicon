@@ -17,13 +17,11 @@
 
 package org.hypernomicon.view.tabs;
 
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_Institution;
-import org.hypernomicon.model.records.HDT_Person;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_State;
+import org.hypernomicon.view.dialogs.NewRegionDlgCtrlr;
 import org.hypernomicon.view.populators.StandardPopulator;
+import org.hypernomicon.view.populators.SubjectPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -33,8 +31,10 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.ArrayList;
@@ -53,15 +53,14 @@ import javafx.scene.control.TextField;
 
 public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 {
-  private boolean alreadyChangingLocation;
   private HyperTable htSubInst, htPersons;
-  private HyperCB hcbState, hcbCountry, hcbType, hcbParentInst;
+  private HyperCB hcbRegion, hcbCountry, hcbType, hcbParentInst;
   private HDT_Institution curInst;
 
   @FXML private TextField tfCity, tfName;
-  @FXML private Button btnLink, btnParent;
+  @FXML private Button btnLink, btnParent, btnNewRegion;
   @FXML private TextField tfLink;
-  @FXML private ComboBox<HyperTableCell> cbType, cbParentInst, cbState, cbCountry;
+  @FXML private ComboBox<HyperTableCell> cbType, cbParentInst, cbRegion, cbCountry;
   @FXML private TableView<HyperTableRow> tvSubInstitutions, tvPersons;
   @FXML private SplitPane spHoriz;
 
@@ -84,10 +83,10 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     tfCity.setText(curInst.getCity());
     tfLink.setText(curInst.getWebLink());
 
-    hcbState     .addAndSelectEntryOrBlank(curInst.state     , HDT_Record::name);
-    hcbCountry   .addAndSelectEntryOrBlank(curInst.country   , HDT_Record::name);
-    hcbType      .addAndSelectEntryOrBlank(curInst.instType  , HDT_Record::name);
-    hcbParentInst.addAndSelectEntryOrBlank(curInst.parentInst, HDT_Record::name);
+    hcbCountry   .addAndSelectEntryOrBlank(curInst.country    , HDT_Record::name);
+    hcbRegion    .addAndSelectEntryOrBlank(curInst.region     , HDT_Record::name);
+    hcbType      .addAndSelectEntryOrBlank(curInst.instType   , HDT_Record::name);
+    hcbParentInst.addAndSelectEntryOrBlank(curInst.parentInst , HDT_Record::name);
 
  // Populate departments and people
  // -------------------------------
@@ -171,8 +170,6 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
   @Override void init()
   {
-    alreadyChangingLocation = false;
-
     htSubInst = new HyperTable(tvSubInstitutions, 1, true, PREF_KEY_HT_INST_SUB);
 
     htSubInst.addActionColWithButtonHandler(ctLinkBtn, 3, (row, colNdx) ->
@@ -208,36 +205,43 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     htPersons.addCol(hdtField, ctNone);
     htPersons.addCol(hdtInstitution, ctNone);
 
-    hcbState = new HyperCB(cbState, ctDropDownList, new StandardPopulator(hdtState), null);
     hcbCountry = new HyperCB(cbCountry, ctDropDownList, new StandardPopulator(hdtCountry), null);
+    hcbRegion = new HyperCB(cbRegion, ctDropDownList, new SubjectPopulator(rtCountryOfRegion, false), null);
+
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType), null);
     hcbParentInst = new HyperCB(cbParentInst, ctDropDownList, new StandardPopulator(hdtInstitution), null);
 
-    cbState.valueProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (alreadyChangingLocation) return;
-
-      if (HyperTableCell.getCellID(newValue) > 0)
-      {
-        alreadyChangingLocation = true;
-        hcbCountry.selectID(1);
-        alreadyChangingLocation = false;
-      }
-    });
-
     cbCountry.valueProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (alreadyChangingLocation) return;
+      if (newValue == null) return;
 
-      if (HyperTableCell.getCellID(newValue) > 1)
+      if (getCellID(oldValue) != getCellID(newValue))
       {
-        alreadyChangingLocation = true;
-        hcbState.selectID(-1);
-        alreadyChangingLocation = false;
+        ((SubjectPopulator)hcbRegion.getPopulator()).setObj(null, getRecord(newValue));
+        if (getCellID(oldValue) > 0)
+          hcbRegion.selectID(-1);
       }
     });
 
-    btnParent.setOnAction(event -> ui.goToRecord(HyperTableCell.getRecord(hcbParentInst.selectedHTC()), true));
+    btnNewRegion.setOnAction(event ->
+    {
+      HDT_Country country = hcbCountry.selectedRecord();
+
+      if (country == null)
+      {
+        messageDialog("Select a country.", mtWarning);
+        safeFocus(cbCountry);
+        return;
+      }
+
+      NewRegionDlgCtrlr nrdc = NewRegionDlgCtrlr.create("New State/Region", country);
+      if (nrdc.showModal() == false) return;
+
+      hcbRegion.populate(true);
+      hcbRegion.selectID(nrdc.getRegion().getID());
+    });
+
+    btnParent.setOnAction(event -> ui.goToRecord(getRecord(hcbParentInst.selectedHTC()), true));
 
     btnLink.setOnAction(event -> openWebLink(tfLink.getText()));
   }
@@ -248,7 +252,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   @FXML private void linkClick()
   {
     String link = "https://maps.google.com/maps?q=" + tfName.getText() + ",+" +
-                  tfCity.getText() + ",+" + hcbState.getText() + ",+" +
+                  tfCity.getText() + ",+" + hcbRegion.getText() + ",+" +
                   hcbCountry.getText() + "&hl=en";
 
     openWebLink(link.replace(' ', '+'));
@@ -263,7 +267,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     tfCity.clear();
     tfLink.clear();
 
-    hcbState.clear();
+    hcbRegion.clear();
     hcbCountry.clear();
     hcbParentInst.clear();
     hcbType.clear();
@@ -286,8 +290,8 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       if (curInst.getCity().trim().equalsIgnoreCase(tfCity.getText().trim()) == false)
         locationChanged = true;
 
-    if (hcbState.selectedRecord() != null)
-      if (curInst.state.get() != hcbState.selectedRecord())
+    if (hcbRegion.selectedRecord() != null)
+      if (curInst.region.get() != hcbRegion.selectedRecord())
         locationChanged = true;
 
     if (hcbCountry.selectedRecord() != null)
@@ -297,7 +301,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     curInst.setCity(tfCity.getText());
     curInst.setName(tfName.getText());
     curInst.setWebLink(tfLink.getText());
-    curInst.state.setID(hcbState.selectedID());
+    curInst.region.setID(hcbRegion.selectedID());
     curInst.country.setID(hcbCountry.selectedID());
     curInst.instType.setID(hcbType.selectedID());
     curInst.parentInst.setID(hcbParentInst.selectedID());
@@ -344,9 +348,9 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     if ((city.length() > 0) && (city.equalsIgnoreCase(baseInst.getCity().trim()) == false))
       return true;
 
-    HDT_State state = instToCheck.state.get();
+    HDT_Region region = instToCheck.region.get();
 
-    if ((state != null) && (state != baseInst.state.get()))
+    if ((region != null) && (region != baseInst.region.get()))
       return true;
 
     HDT_Country country = instToCheck.country.get();

@@ -50,7 +50,7 @@ public enum HDT_RecordType
   hdtWork           (HDT_Work           .class),
   hdtWorkType       (HDT_WorkType       .class),
   hdtWorkLabel      (HDT_WorkLabel      .class),
-  hdtState          (HDT_State          .class),
+  hdtRegion         (HDT_Region         .class),
   hdtCountry        (HDT_Country        .class),
   hdtPositionVerdict(HDT_PositionVerdict.class),
   hdtArgumentVerdict(HDT_ArgumentVerdict.class),
@@ -76,7 +76,7 @@ public enum HDT_RecordType
     this.klass = klass;
     simple = HDT_SimpleRecord.class.isAssignableFrom(klass);
     gotConnector = HDT_RecordWithConnector.class.isAssignableFrom(klass);
-    disregardDates = simple || (klass == HDT_Subfield.class) || (klass == HDT_Hub.class);
+    disregardDates = simple || (klass == HDT_Subfield.class) || (klass == HDT_Region.class) || (klass == HDT_Hub.class);
   }
 
 //---------------------------------------------------------------------------

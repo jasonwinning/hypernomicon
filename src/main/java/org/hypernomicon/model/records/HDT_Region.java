@@ -23,27 +23,32 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Field;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
 import org.hypernomicon.model.relations.HyperObjPointer;
 
-public class HDT_Subfield extends HDT_RecordBase
+public class HDT_Region extends HDT_RecordBase
 {
-  public final List<HDT_Person> persons;
+  public final List<HDT_Institution> institutions;
 
-  public final HyperObjPointer<HDT_Subfield, HDT_Field> field;
+  public final HyperObjPointer<HDT_Region, HDT_Country> country;
 
-  public HDT_Subfield(HDT_RecordState xmlState, HyperDataset<HDT_Subfield> dataset)
+  public HDT_Region(HDT_RecordState xmlState, HyperDataset<HDT_Region> dataset)
   {
     super(xmlState, dataset, tagName);
 
-    persons = getSubjList(rtSubfieldOfPerson);
-    field = getObjPointer(rtFieldOfSubfield);
+    institutions = getSubjList(rtRegionOfInst);
+    country = getObjPointer(rtCountryOfRegion);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public String listName() { return name(); }
+  @Override public String getCBText()        { return name(); }
+  @Override public String getXMLObjectName() { return name(); }
+  @Override public String listName()         { return getAbbreviation(); }
+
+  public String getAbbreviation()            { return getTagString(tagAbbreviation); }
+  public void   setAbbreviation(String str)  { updateTagString(tagAbbreviation, str); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

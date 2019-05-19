@@ -75,9 +75,6 @@ public class SimpleRecordTypes
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final class HDT_State extends HDT_SimpleRecord
-  { public HDT_State(HDT_RecordState xmlState, HyperDataset<HDT_State> dataset)                     { super(xmlState, dataset);  } }
-
   public static final class HDT_Country extends HDT_SimpleRecord
   { public HDT_Country(HDT_RecordState xmlState, HyperDataset<HDT_Country> dataset)                 { super(xmlState, dataset);  } }
 

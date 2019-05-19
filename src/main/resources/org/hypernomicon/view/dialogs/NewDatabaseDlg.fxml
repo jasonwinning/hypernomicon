@@ -27,7 +27,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane maxHeight="279.0" minHeight="279.0" minWidth="450.0" prefHeight="279.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.NewDatabaseDlgCtrlr">
+<AnchorPane maxHeight="279.0" minHeight="279.0" minWidth="450.0" prefHeight="279.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.NewDatabaseDlgCtrlr">
    <children>
       <GridPane layoutX="10.0" layoutY="5.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="5.0">
          <columnConstraints>
@@ -77,7 +77,7 @@
                                     <Insets />
                                  </GridPane.margin>
                               </CheckBox>
-                              <CheckBox fx:id="cbStates" mnemonicParsing="false" selected="true" text="States" GridPane.columnSpan="2" GridPane.rowIndex="4">
+                              <CheckBox fx:id="cbRegions" mnemonicParsing="false" selected="true" text="States/Regions" GridPane.columnSpan="2" GridPane.rowIndex="4">
                                  <GridPane.margin>
                                     <Insets />
                                  </GridPane.margin>

@@ -465,7 +465,7 @@ public final class HyperDB
       {
         writeDatasetToXML(xmlList, hdtPersonStatus);    writeDatasetToXML(xmlList, hdtRank);            writeDatasetToXML(xmlList, hdtField);
         writeDatasetToXML(xmlList, hdtSubfield);        writeDatasetToXML(xmlList, hdtWorkType);        writeDatasetToXML(xmlList, hdtFileType);
-        writeDatasetToXML(xmlList, hdtCountry);         writeDatasetToXML(xmlList, hdtState);           writeDatasetToXML(xmlList, hdtPositionVerdict);
+        writeDatasetToXML(xmlList, hdtCountry);         writeDatasetToXML(xmlList, hdtRegion);          writeDatasetToXML(xmlList, hdtPositionVerdict);
         writeDatasetToXML(xmlList, hdtArgumentVerdict); writeDatasetToXML(xmlList, hdtInstitutionType); writeDatasetToXML(xmlList, hdtPersonGroup);
 
                                                         finalizeXMLFile(xmlList, filenameList, OTHER_FILE_NAME);
@@ -1584,7 +1584,7 @@ public final class HyperDB
   public HyperDataset<HDT_PersonStatus   >.CoreAccessor personStatuses;
   public HyperDataset<HDT_Institution    >.CoreAccessor institutions;
   public HyperDataset<HDT_InstitutionType>.CoreAccessor institutionTypes;
-  public HyperDataset<HDT_State          >.CoreAccessor states;
+  public HyperDataset<HDT_Region         >.CoreAccessor regions;
   public HyperDataset<HDT_Country        >.CoreAccessor countries;
   public HyperDataset<HDT_Rank           >.CoreAccessor ranks;
   public HyperDataset<HDT_Investigation  >.CoreAccessor investigations;
@@ -1658,7 +1658,7 @@ public final class HyperDB
       personStatuses   = addTag("person_status",      tagPersonStatus,    "Status",                    HDT_PersonStatus   .class);
       institutions     = addTag("institution",        tagInstitution,     "Institution",               HDT_Institution    .class);
       institutionTypes = addTag("institution_type",   tagInstitutionType, "Institution Type",          HDT_InstitutionType.class);
-      states           = addTag("state",              tagState,           "State",                     HDT_State          .class);
+      regions          = addTag("region",             tagRegion,          "State/Region",              HDT_Region         .class);
       countries        = addTag("country",            tagCountry,         "Country",                   HDT_Country        .class);
       ranks            = addTag("rank",               tagRank,            "Rank",                      HDT_Rank           .class);
       investigations   = addTag("investigation",      tagInvestigation,   "Investigation",             HDT_Investigation  .class);
@@ -1698,6 +1698,7 @@ public final class HyperDB
                          addTag("why_famous",         tagWhyFamous,       "Description");
                          addTag("name",               tagName,            "Name");
                          addTag("city",               tagCity,            "City");
+                         addTag("abbreviation",       tagAbbreviation,    "Abbreviation");
                          addTag("description",        tagDescription,     "Description");
                          addTag("title",              tagTitle,           "Title");
                          addTag("file_name",          tagFileName,        "Filename");
@@ -1796,7 +1797,7 @@ public final class HyperDB
       addStringItem(hdtInstitution, tagName);
       addPointerSingle(hdtInstitution, rtTypeOfInst, tagInstitutionType);
       addPointerSingle(hdtInstitution, rtParentInstOfInst, tagParentInst);
-      addPointerSingle(hdtInstitution, rtStateOfInst, tagState);
+      addPointerSingle(hdtInstitution, rtRegionOfInst, tagRegion);
       addPointerSingle(hdtInstitution, rtCountryOfInst, tagCountry);
       addStringItem(hdtInstitution, tagWebLink);
       addStringItem(hdtInstitution, tagCity);
@@ -1829,6 +1830,10 @@ public final class HyperDB
       addPointerMulti(hdtPosition, rtDebateOfPosition, tagDebate);
       addPointerMulti(hdtPosition, rtParentPosOfPos, tagLargerPosition);
       addConnectorItem(hdtPosition, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
+
+      addStringItem(hdtRegion, tagName);
+      addStringItem(hdtRegion, tagAbbreviation);
+      addPointerSingle(hdtRegion, rtCountryOfRegion, tagCountry);
 
       addStringItem(hdtSubfield, tagName);
       addPointerSingle(hdtSubfield, rtFieldOfSubfield, tagField);
@@ -1988,16 +1993,16 @@ public final class HyperDB
 
   public static enum Tag
   {
-    tagNone,          tagPerson,       tagPersonStatus,  tagInstitution,     tagInstitutionType, tagState,        tagCountry,      tagRank,
-    tagInvestigation, tagDebate,       tagArgument,      tagTerm,            tagConcept,         tagWork,         tagWorkType,     tagWorkLabel,
-    tagField,         tagSubfield,     tagPosition,      tagPositionVerdict, tagArgumentVerdict, tagMiscFile,     tagWorkFile,     tagNote,
-    tagGlossary,      tagPersonGroup,  tagFileType,      tagID,              tagType,            tagSortKey,      tagDOI,          tagISBN,
-    tagSearchKey,     tagRecord,       tagFirstName,     tagLastName,        tagWebLink,         tagORCID,        tagPicture,      tagPictureCrop,
-    tagWhyFamous,     tagName,         tagCity,          tagDescription,     tagTitle,           tagFileName,     tagYear,         tagMiscBib,
-    tagAuthor,        tagInFileName,   tagEditor,        tagTranslator,      tagAnnotated,       tagStartPageNum, tagEndPageNum,   tagBibEntryKey,
-    tagComments,      tagLargerDebate, tagListName,      tagCounterargument, tagDefinition,      tagText,         tagActive,       tagLargerPosition,
-    tagParentNote,    tagFolder,       tagLargerWork,    tagParentLabel,     tagParentGlossary,  tagParentGroup,  tagParentFolder, tagCreationDate,
-    tagModifiedDate,  tagViewDate,     tagDisplayRecord, tagKeyWork,         tagLinkedRecord,    tagParentInst,   tagHub;
+    tagNone,           tagPerson,       tagPersonStatus, tagInstitution,     tagInstitutionType, tagRegion,         tagCountry,      tagRank,
+    tagInvestigation,  tagDebate,       tagArgument,     tagTerm,            tagConcept,         tagWork,           tagWorkType,     tagWorkLabel,
+    tagField,          tagSubfield,     tagPosition,     tagPositionVerdict, tagArgumentVerdict, tagMiscFile,       tagWorkFile,     tagNote,
+    tagGlossary,       tagPersonGroup,  tagFileType,     tagID,              tagType,            tagSortKey,        tagDOI,          tagISBN,
+    tagSearchKey,      tagRecord,       tagFirstName,    tagLastName,        tagWebLink,         tagORCID,          tagPicture,      tagPictureCrop,
+    tagWhyFamous,      tagName,         tagAbbreviation, tagCity,            tagDescription,     tagTitle,          tagFileName,     tagYear,
+    tagMiscBib,        tagAuthor,       tagInFileName,   tagEditor,          tagTranslator,      tagAnnotated,      tagStartPageNum, tagEndPageNum,
+    tagBibEntryKey,    tagComments,     tagLargerDebate, tagListName,        tagCounterargument, tagDefinition,     tagText,         tagActive,
+    tagLargerPosition, tagParentNote,   tagFolder,       tagLargerWork,      tagParentLabel,     tagParentGlossary, tagParentGroup,  tagParentFolder,
+    tagCreationDate,   tagModifiedDate, tagViewDate,     tagDisplayRecord,   tagKeyWork,         tagLinkedRecord,   tagParentInst,   tagHub;
 
     static EnumHashBiMap<Tag, Integer> tagToNum = EnumHashBiMap.create(Tag.class);
 

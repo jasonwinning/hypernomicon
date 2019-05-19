@@ -25,7 +25,6 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_InstitutionType;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_State;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.relations.HyperSubjList;
 
@@ -36,7 +35,7 @@ public class HDT_Institution extends HDT_RecordBase
   public final HyperSubjList<HDT_Person, HDT_Institution> persons;
   public final HyperSubjList<HDT_Institution, HDT_Institution> subInstitutions;
 
-  public final HyperObjPointer<HDT_Institution, HDT_State> state;
+  public final HyperObjPointer<HDT_Institution, HDT_Region> region;
   public final HyperObjPointer<HDT_Institution, HDT_Country> country;
   public final HyperObjPointer<HDT_Institution, HDT_InstitutionType> instType;
   public final HyperObjPointer<HDT_Institution, HDT_Institution> parentInst;
@@ -51,7 +50,7 @@ public class HDT_Institution extends HDT_RecordBase
     subInstitutions = getSubjList(rtParentInstOfInst);
     persons = getSubjList(rtInstOfPerson);
 
-    state = getObjPointer(rtStateOfInst);
+    region = getObjPointer(rtRegionOfInst);
     country = getObjPointer(rtCountryOfInst);
     instType = getObjPointer(rtTypeOfInst);
     parentInst = getObjPointer(rtParentInstOfInst);
@@ -119,7 +118,7 @@ public class HDT_Institution extends HDT_RecordBase
     subInstitutions.forEach(subInst ->
     {
       subInst.setCity(getCity());
-      subInst.state.set(state.get());
+      subInst.region.set(region.get());
       subInst.country.set(country.get());
 
       subInst.overwriteSubInstLocations();

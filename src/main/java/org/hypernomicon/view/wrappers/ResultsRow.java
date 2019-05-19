@@ -42,7 +42,7 @@ public final class ResultsRow extends AbstractRow<HDT_Record, ResultsRow>
 //---------------------------------------------------------------------------
 
   String getRecordIDStr()   { return record == null ? "" : String.valueOf(record.getID()); }
-  String getRecordName()    { return record == null ? "" : record.listName(); }
+  String getRecordName()    { return record == null ? "" : (record.getType() == hdtPerson ? record.listName() : record.name()); }
   String getSearchKey()     { return record == null ? "" : record.getSearchKey(); }
   String getSortKey()       { return record == null ? "" : record.getSortKey(); }
   public String getCBText() { return record == null ? cbText : record.listName(); }

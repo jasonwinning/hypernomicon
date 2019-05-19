@@ -35,7 +35,7 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 public class NewDatabaseDlgCtrlr extends HyperDlg
 {
-  @FXML private CheckBox cbInst, cbFields, cbRanks, cbStatus, cbStates, cbCountries;
+  @FXML private CheckBox cbInst, cbFields, cbRanks, cbStatus, cbRegions, cbCountries;
   @FXML private TextField tfPapers, tfBooks, tfUnentered, tfPictures, tfTopicFolders, tfMiscFiles, tfResults;
 
   private String newPath;
@@ -111,6 +111,7 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
     EnumSet<HDT_RecordType> choices = EnumSet.noneOf(HDT_RecordType.class);
 
     if (cbCountries.isSelected()) choices.add(hdtCountry);
+    if (cbRegions.isSelected())   choices.add(hdtRegion);
 
     if (cbFields.isSelected())
     {
@@ -120,7 +121,6 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
 
     if (cbInst.isSelected())      choices.add(hdtInstitution);
     if (cbRanks.isSelected())     choices.add(hdtRank);
-    if (cbStates.isSelected())    choices.add(hdtState);
     if (cbStatus.isSelected())    choices.add(hdtPersonStatus);
 
     return choices;
@@ -150,6 +150,18 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
     tfTopicFolders.setText(DEFAULT_TOPICAL_PATH);
 
     this.newPath = newPath;
+
+    cbCountries.selectedProperty().addListener((ob, ov, nv) ->
+    {
+      if (nv == false)
+        cbRegions.setSelected(false);
+    });
+
+    cbRegions.selectedProperty().addListener((ob, ov, nv) ->
+    {
+      if (nv)
+        cbCountries.setSelected(true);
+    });
   }
 
 //---------------------------------------------------------------------------

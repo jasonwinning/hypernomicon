@@ -692,7 +692,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     htPersonInst.addActionCol(ctGoNewBtn, 1);
     htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctDropDownList, new StandardPopulator(hdtInstitution, popFilter, true), (row, cellVal, nextColNdx, nextPopulator) ->
     {
-      ((SubjectPopulator)nextPopulator).setObj(row, HyperTableCell.getRecord(cellVal));
+      ((SubjectPopulator)nextPopulator).setObj(row, getRecord(cellVal));
       row.setCellValue(nextColNdx, new HyperTableCell(-1, "", nextPopulator.getRecordType(row)));
     });
     htPersonInst.addColAltPopulator(hdtInstitution, ctDropDownList, new SubjectPopulator(rtParentInstOfInst, true, true));
@@ -782,10 +782,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     {
       if (newValue == null) return;
 
-      if (HyperTableCell.getCellID(oldValue) != HyperTableCell.getCellID(newValue))
+      if (getCellID(oldValue) != getCellID(newValue))
       {
         ((SubjectPopulator)hcbSubfield.getPopulator()).setObj(null, getRecord(newValue));
-        if (HyperTableCell.getCellID(oldValue) > 0)
+        if (getCellID(oldValue) > 0)
           hcbSubfield.selectID(-1);
       }
     });
@@ -800,7 +800,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     lblORCID.setOnMouseClicked(event -> searchORCID(tfORCID.getText(), tfFirst.getText(), tfLast.getText()));
 
-    btnGoogle.setOnAction(event -> searchGoogle(tfFirst.getText() + " " + tfLast.getText() + " " + HyperTableCell.getCellText(cbField.getSelectionModel().getSelectedItem()), true));
+    btnGoogle.setOnAction(event -> searchGoogle(tfFirst.getText() + " " + tfLast.getText() + " " + getCellText(cbField.getSelectionModel().getSelectedItem()), true));
     btnScholar.setOnAction(event -> btnScholarClick());
 
     ivPerson.setOnMouseClicked(event ->
@@ -1123,7 +1123,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       subInst.instType.setID(newInstDialog.hcbType.selectedID());
 
       subInst.setCity(parentInst.getCity());
-      subInst.state.set(parentInst.state.get());
+      subInst.region.set(parentInst.region.get());
       subInst.country.set(parentInst.country.get());
 
       curPerson.institutions.add(subInst);

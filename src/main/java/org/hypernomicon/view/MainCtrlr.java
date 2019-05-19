@@ -1252,6 +1252,7 @@ public final class MainCtrlr
       return;
     }
 
+    personHyperTab().curPicture = null;
     clearAllTabsAndViews();
 
     saveAllToDisk(false, false, false);
