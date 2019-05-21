@@ -33,6 +33,7 @@ import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.tabs.QueryTabCtrlr.*;
 import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 
+import org.hypernomicon.App;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibTexBibData;
@@ -62,8 +63,11 @@ import org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.TreeWrapper.TreeTargetType;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -73,6 +77,8 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.jbibtex.ParseException;
@@ -1017,9 +1023,9 @@ public final class MainCtrlr
 
     forEachHyperTab(hyperTab -> hyperTab.enable(enabled));
 
-    enableAllIff(enabled, mnuNewDatabase, mnuCloseDatabase, mnuImportWork,      mnuImportFile,    mnuExitNoSave,       mnuChangeID, mnuNewField,
-                          mnuNewCountry,  mnuNewRank,       mnuNewPersonStatus, mnuSaveReloadAll, mnuRevertToDiskCopy, mnuAddToQueryResults,
-                          btnFileMgr,     btnBibMgr,        btnPreviewWindow,   btnMentions,      btnAdvancedSearch,   btnSaveAll);
+    enableAllIff(enabled, mnuCloseDatabase, mnuImportWork,      mnuImportFile,     mnuExitNoSave,       mnuChangeID,          mnuNewField, mnuNewCountry,
+                          mnuNewRank,       mnuNewPersonStatus, mnuSaveReloadAll,  mnuRevertToDiskCopy, mnuAddToQueryResults, btnFileMgr,  btnBibMgr,
+                          btnPreviewWindow, btnMentions,        btnAdvancedSearch, btnSaveAll);
 
     if (disabled)
       getTree().clear();
@@ -1235,27 +1241,73 @@ public final class MainCtrlr
     {
       if (confirmDialog("Save data to XML files?"))
         saveAllToDisk(false, false, false);
+
+      NewDatabaseDlgCtrlr dlg = NewDatabaseDlgCtrlr.create("Customize How Database Will Be Created", file.getPath());
+
+      if (dlg.showModal() == false)
+        return;
+
+      closeWindows(false);
+
+      try { db.newDB(file.getPath(), dlg.getChoices(), dlg.getFolders()); }
+      catch (HDB_InternalError e)
+      {
+        messageDialog("Unable to create new database: " + e.getMessage(), mtError);
+        shutDown(false, true, false); // An error in db.close is unrecoverable.
+        return;
+      }
+
+      personHyperTab().curPicture = null;
+      clearAllTabsAndViews();
+
+      saveAllToDisk(false, false, false);
     }
-
-    NewDatabaseDlgCtrlr dlg = NewDatabaseDlgCtrlr.create("Customize How Database Will Be Created", file.getPath());
-
-    if (dlg.showModal() == false)
-      return;
-
-    closeWindows(false);
-
-    try { db.newDB(file.getPath(), dlg.getChoices(), dlg.getFolders()); }
-    catch (HDB_InternalError e)
+    else
     {
-      messageDialog("Unable to create new database: " + e.getMessage(), mtError);
-      shutDown(false, true, false); // An error in db.close is unrecoverable.
-      return;
+      FilePath srcFilePath = null;
+
+      try (InputStream is = App.class.getResourceAsStream("resources/blank_db.zip");
+           ZipInputStream zis = new ZipInputStream(is);)
+      {
+        ZipEntry entry;
+
+        while ((entry = zis.getNextEntry()) != null)
+        {
+          FilePath filePath = new FilePath(file).resolve(new FilePath(entry.getName()));
+
+          if (entry.isDirectory())
+          {
+            filePath.toFile().mkdirs();
+          }
+          else
+          {
+            int size;
+            byte[] buffer = new byte[2048];
+
+            if (filePath.getExtensionOnly().equals("hdb"))
+              srcFilePath = filePath;
+
+            try (FileOutputStream fos = new FileOutputStream(filePath.toFile());
+                 BufferedOutputStream bos = new BufferedOutputStream(fos, buffer.length))
+            {
+              while ((size = zis.read(buffer, 0, buffer.length)) != -1)
+              {
+                bos.write(buffer, 0, size);
+              }
+              bos.flush();
+            }
+          }
+        }
+      }
+      catch (IOException e)
+      {
+        messageDialog("Unable to create new database: " + e.getMessage(), mtError);
+        return;
+      }
+
+      appPrefs.put(PREF_KEY_SOURCE_FILENAME, srcFilePath.getNameOnly().toString());
+      appPrefs.put(PREF_KEY_SOURCE_PATH, srcFilePath.getDirOnly().toString());
     }
-
-    personHyperTab().curPicture = null;
-    clearAllTabsAndViews();
-
-    saveAllToDisk(false, false, false);
 
     loadDB();
   }
@@ -2143,7 +2195,7 @@ public final class MainCtrlr
     updateBottomPanel(true);
     tab.clear();
 
-    if (record == null)
+    if (HDT_Record.isEmpty(record))
     {
       tab.enable(false);
       return;

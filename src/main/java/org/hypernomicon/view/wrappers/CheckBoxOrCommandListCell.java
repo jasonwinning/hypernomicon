@@ -23,6 +23,8 @@ import javafx.scene.control.skin.ComboBoxListViewSkin;
 
 import org.hypernomicon.view.wrappers.CheckBoxOrCommandListCell.CheckBoxOrCommand;
 
+import static org.hypernomicon.util.Util.*;
+
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ObservableValue;
@@ -81,9 +83,17 @@ public class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
 
       cb.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
       {
-        if (newValue.text.length() == 0) return;
+        if ((newValue == null) || (safeStr(newValue.text).length() == 0)) return;
 
-        Platform.runLater(() -> cb.getSelectionModel().select(new CheckBoxOrCommand(caption, Util::noOp)));
+        String oldText = oldValue == null ? "" : safeStr(oldValue.text),
+               newText = safeStr(newValue.text);
+
+        Runnable oldHndlr = oldValue == null ? null : oldValue.hndlr,
+                 newHndlr = newValue.hndlr;
+
+        if (oldText.equals(newText) && (oldHndlr == noOpHndlr) && (newHndlr == noOpHndlr)) return;
+
+        Platform.runLater(() -> cb.getSelectionModel().select(new CheckBoxOrCommand(caption, noOpHndlr)));
       });
 
       cb.getSelectionModel().select(items.get(0));
@@ -91,6 +101,8 @@ public class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
       return cb;
     }
   }
+
+  private static Runnable noOpHndlr = Util::noOp;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
