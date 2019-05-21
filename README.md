@@ -24,7 +24,7 @@ Hypernomicon keeps track of all of the above in a highly structured, thoroughly 
 ## Getting started ##
 
 The best way to get started with Hypernomicon is by downloading and installing on your developer machine the latest
-[Hypernomicon release](http://hypernomicon.org/download).
+[Hypernomicon release](https://sourceforge.net/projects/hypernomicon/files/latest/download).
 
 Or you can clone this repository and build from source (see below).
 

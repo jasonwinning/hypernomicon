@@ -119,11 +119,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   @FXML private SplitMenuButton btnDOI;
   @FXML private SplitPane spHoriz1, spHoriz2, spVert;
   @FXML private Tab tabArguments, tabBibDetails, tabCrossref, tabGoogleBooks, tabInvestigations, tabKeyMentions,
-                    tabMiscBib, tabMiscFiles, tabPdfMetadata, tabSubworks, tabWorkFiles;
+                    tabEntry, tabMiscBib, tabMiscFiles, tabPdfMetadata, tabSubworks, tabWorkFiles;
   @FXML private TabPane lowerTabPane, tabPane, tpBib;
   @FXML private TableView<HyperTableRow> tvArguments, tvAuthors, tvISBN, tvInvestigations, tvKeyMentions,
                                          tvLabels, tvMiscFiles, tvSubworks, tvWorkFiles;
-  @FXML private TextArea taCrossref, taGoogleBooks, taMiscBib, taPdfMetadata;
+  @FXML private TextArea taEntry, taCrossref, taGoogleBooks, taMiscBib, taPdfMetadata;
   @FXML private TextField tfDOI, tfLink, tfSearchKey, tfTitle;
   @FXML public TextField tfYear;
 
@@ -171,6 +171,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   @Override void init()
   {
     mainText = new MainTextWrapper(apDescription);
+
+    tabPane.setStyle("-fx-open-tab-animation: NONE; -fx-close-tab-animation: NONE;");
+    tpBib.setStyle("-fx-open-tab-animation: NONE; -fx-close-tab-animation: NONE;");
 
     tabPane.getTabs().forEach(tab -> tabCaptions.put(tab, tab.getText()));
 
@@ -680,7 +683,16 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     tfTitle.setText(curWork.name());
     alreadyChangingTitle = false;
 
+    if (curWork.getBibEntryKey().isBlank() == false)
+    {
+      tabEntry.setText(db.getBibLibrary().type().getUserFriendlyName() + " entry");
+      tpBib.getTabs().add(0, tabEntry);
+      tpBib.getSelectionModel().select(tabEntry);
+      taEntry.appendText(curWork.getBibData().createReport());
+    }
+
     taMiscBib.setText(curWork.getMiscBib());
+
     tfDOI.setText(curWork.getDOI());
     tfSearchKey.setText(curWork.getSearchKey());
     tfLink.setText(curWork.getWebLink());
@@ -1392,12 +1404,14 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     tfYear.setText("");
 
     taMiscBib.clear();
+    taEntry.clear();
     disableCache(taMiscBib);
+    disableCache(taEntry);
     pdfBD.set(null);
     crossrefBD.set(null);
     googleBD.set(null);
 
-    tpBib.getTabs().removeAll(tabCrossref, tabPdfMetadata, tabGoogleBooks);
+    tpBib.getTabs().removeAll(tabEntry, tabCrossref, tabPdfMetadata, tabGoogleBooks);
     taCrossref.clear();
     taPdfMetadata.clear();
     taGoogleBooks.clear();
