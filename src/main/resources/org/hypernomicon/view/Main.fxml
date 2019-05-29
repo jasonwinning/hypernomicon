@@ -121,6 +121,10 @@
                   </Menu>
                 <Menu mnemonicParsing="false" text="Help">
                   <items>
+                        <MenuItem mnemonicParsing="false" onAction="#showWelcomeWindow" text="Show Welcome Window" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem fx:id="mnuVideos" mnemonicParsing="false" text="Tutorial Videos" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
                     <MenuItem mnemonicParsing="false" onAction="#mnuAboutClick" text="About" />
                   </items>
                 </Menu>

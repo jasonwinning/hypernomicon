@@ -130,7 +130,15 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
         })));
       });
 
-      row.itemProperty().addListener((ob, ov, nv) -> row.setContextMenu(nullSwitch(nv, null, this::createContextMenu)));
+      row.itemProperty().addListener((ob, ov, nv) ->
+      {
+        if (nv == null)
+          row.setGraphic(null);
+        else
+          nullSwitch(nv.treeItem, treeItem -> treeItem.expandedProperty().addListener((ob1, ov1, nv1) -> ttv.refresh()));
+
+        row.setContextMenu(nullSwitch(nv, null, this::createContextMenu));
+      });
 
       return row;
     });

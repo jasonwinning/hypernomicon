@@ -78,7 +78,7 @@ public abstract class HyperDlg
       Scene scene = new Scene(mainPane);
       dialogStage.setScene(scene);
 
-      if (safeStr(mainPane.getId()).equals("About") == false)
+      if (safeStr(mainPane.getId()).equals("SpecialUI") == false)
         scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
 
       final T dlg = loader.getController();
@@ -139,7 +139,7 @@ public abstract class HyperDlg
   {
     if (shownAlready == false)
     {
-      if (safeStr(mainPane.getId()).equals("About") == false)
+      if (safeStr(mainPane.getId()).equals("SpecialUI") == false)
       {
         scaleNodeForDPI(mainPane);
         setFontSize(mainPane);

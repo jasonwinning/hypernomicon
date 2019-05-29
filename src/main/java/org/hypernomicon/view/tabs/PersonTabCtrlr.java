@@ -740,6 +740,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     hcbField    = new HyperCB(cbField   , ctDropDownList, new StandardPopulator(hdtField)                , null);
     hcbSubfield = new HyperCB(cbSubfield, ctDropDown    , new SubjectPopulator (rtFieldOfSubfield, false), null);
 
+    btnGoogle.setTooltip(new Tooltip("Search for this person in Google"));
+    btnScholar.setTooltip(new Tooltip("Search for this person in Google Scholar"));
+
     tfFirst.setTooltip(new Tooltip("To indicate what name the person informally goes by, write it in parentheses. For example, \"William (Bill)\""));
 
     tfFirst.textProperty().addListener((ob, oldValue, newValue) ->

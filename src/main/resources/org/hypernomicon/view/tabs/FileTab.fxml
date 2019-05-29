@@ -34,7 +34,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<SplitPane fx:id="spBottomVert" dividerPositions="0.7655086848635235" orientation="VERTICAL" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.FileTabCtrlr">
+<SplitPane fx:id="spBottomVert" dividerPositions="0.7655086848635235" orientation="VERTICAL" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.FileTabCtrlr">
    <items>
       <GridPane>
          <columnConstraints>
@@ -70,9 +70,9 @@
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
                <children>
                   <Label text="Search Key:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="9.0" />
-                  <TextField fx:id="tfSearchKey" layoutX="140.0" layoutY="3.0" prefHeight="22.0" prefWidth="218.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="196.0" AnchorPane.topAnchor="5.0" />
-                  <CheckBox fx:id="checkAnnotated" layoutX="296.0" layoutY="8.0" mnemonicParsing="false" text="Annotated" AnchorPane.rightAnchor="119.0" AnchorPane.topAnchor="8.0" />
-                  <SplitMenuButton fx:id="btnShow" layoutX="332.0" layoutY="3.0" mnemonicParsing="false" text="Show in Folder" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+                  <TextField fx:id="tfSearchKey" layoutX="140.0" layoutY="3.0" prefHeight="25.0" prefWidth="354.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="203.0" AnchorPane.topAnchor="5.0" />
+                  <CheckBox fx:id="checkAnnotated" layoutX="423.0" layoutY="8.0" mnemonicParsing="false" prefWidth="77.0" text="Annotated" AnchorPane.rightAnchor="123.0" AnchorPane.topAnchor="8.0" />
+                  <SplitMenuButton fx:id="btnShow" layoutX="332.0" layoutY="3.0" mnemonicParsing="false" prefWidth="119.0" text="Show in Folder" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
@@ -86,8 +86,8 @@
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
                <children>
                   <Label text="File Name:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="9.0" />
-                  <TextField fx:id="tfFileName" layoutX="85.0" layoutY="3.0" maxHeight="22.0" minHeight="22.0" prefHeight="22.0" prefWidth="218.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="196.0" AnchorPane.topAnchor="5.0" />
-                  <Button fx:id="btnManage" layoutX="290.0" layoutY="5.0" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" onAction="#btnManageClick" prefHeight="22.0" prefWidth="71.0" AnchorPane.rightAnchor="119.0">
+                  <TextField fx:id="tfFileName" layoutX="85.0" layoutY="3.0" maxHeight="22.0" minHeight="22.0" prefHeight="22.0" prefWidth="354.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="203.0" AnchorPane.topAnchor="5.0" />
+                  <Button fx:id="btnManage" layoutX="423.0" layoutY="5.0" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" onAction="#btnManageClick" prefHeight="22.0" prefWidth="77.0" AnchorPane.rightAnchor="123.0">
                      <graphic>
                         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -96,7 +96,7 @@
                         </ImageView>
                      </graphic>
                   </Button>
-                  <Button fx:id="btnLaunch" layoutX="343.0" layoutY="3.0" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="111.0" text="Launch" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
+                  <Button fx:id="btnLaunch" layoutX="343.0" layoutY="3.0" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="119.0" text="Launch" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
                      <graphic>
                         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                            <image>

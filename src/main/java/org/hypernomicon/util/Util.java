@@ -65,6 +65,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -288,6 +289,24 @@ public final class Util
     mtWarning,
     mtError,
     mtInformation
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void removeDupsInStrList(List<String> list)
+  {
+    HashSet<String> set = new HashSet<>();
+    Iterator<String> it = list.iterator();
+
+    while (it.hasNext())
+    {
+      String str = it.next();
+      if (set.contains(str))
+        it.remove();
+      else
+        set.add(str);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -1905,7 +1924,7 @@ public final class Util
         char c = found.charAt(x);
         int n = c == 'X' ? 10 : parseInt(String.valueOf(c), -1);
 
-        sum += (n * (8 - x));
+        sum += n * (8 - x);
       }
 
       if ((sum > 0) && ((sum % 11) == 0))
@@ -1968,7 +1987,7 @@ public final class Util
       {
         int coeff = ((x % 2) * 2) + 1;
         n = parseInt(String.valueOf(found.charAt(x)), -1);
-        sum += (coeff * n);
+        sum += coeff * n;
       }
 
       n = parseInt(StringUtils.right(found, 1), -1);
@@ -1993,8 +2012,8 @@ public final class Util
         char c = found.charAt(x);
         int n = c == 'X' ? 10 : parseInt(String.valueOf(c), -1);
 
-        sum1 += (n * (10 - x));
-        sum2 += (n * (x + 1));
+        sum1 += n * (10 - x);
+        sum2 += n * (x + 1);
       }
 
       if ((sum1 > 0) && (sum2 > 0) && ((sum1 % 11) == 0) && ((sum2 % 11) == 0) && (list.contains(found) == false))

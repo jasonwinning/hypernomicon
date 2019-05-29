@@ -1,0 +1,9 @@
+.anchor-pane
+{
+  -fx-background-color: #241f24;
+}
+
+.titled-pane > .title 
+{
+  -fx-alignment: center;
+}

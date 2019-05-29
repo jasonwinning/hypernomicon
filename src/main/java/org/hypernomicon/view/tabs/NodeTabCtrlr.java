@@ -129,6 +129,11 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
     btnWikipedia.setOnAction(event -> searchWikipedia(tfName.getText()));
     btnTree     .setOnAction(event -> ui.goToTreeRecord(ui.viewRecord()));
 
+    btnGoogle   .setTooltip(new Tooltip("Search record name in Google"));
+    btnIEP      .setTooltip(new Tooltip("Search record name in Internet Encyclopedia of Philosophy"));
+    btnSEP      .setTooltip(new Tooltip("Search record name in Stanford Encyclopedia of Philosophy"));
+    btnWikipedia.setTooltip(new Tooltip("Search record name in Wikipedia"));
+
     double fontSize = appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
     if (fontSize < 0) fontSize = lblGoTo1.getFont().getSize();
 
@@ -305,6 +310,13 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
           TermTab.class.cast(hyperTab).merge();
       });
     }
+
+    if (record == null) return;
+
+    if (record.getType() == hdtDebate)
+      disableAllIff(record.getID() == 1, conceptLink, noteLink, labelLink);
+    else if (record.getType() == hdtNote)
+      disableAllIff(record.getID() == 1, debateLink, conceptLink, labelLink);
   }
 
 //---------------------------------------------------------------------------

@@ -122,7 +122,7 @@ public final class MainCtrlr
   @FXML private MenuBar menuBar;
   @FXML private MenuItem mnuAddToQueryResults, mnuChangeID, mnuCloseDatabase, mnuExitNoSave, mnuFindNextAll, mnuFindNextInName,
                          mnuFindPreviousAll, mnuFindPreviousInName, mnuFindWithinAnyField, mnuFindWithinName, mnuImportBibClipboard,
-                         mnuImportBibFile, mnuNewCountry, mnuNewDatabase, mnuNewField, mnuNewPersonStatus, mnuNewRank,
+                         mnuImportBibFile, mnuNewCountry, mnuNewDatabase, mnuNewField, mnuNewPersonStatus, mnuNewRank, mnuVideos,
                          mnuRecordSelect, mnuRevertToDiskCopy, mnuSaveReloadAll, mnuToggleFavorite, mnuImportWork, mnuImportFile;
   @FXML private ProgressBar progressBar;
   @FXML private SeparatorMenuItem mnuBibImportSeparator;
@@ -305,6 +305,8 @@ public final class MainCtrlr
     mnuImportBibFile     .setOnAction(event -> importBibFile(null, null));
     mnuImportBibClipboard.setOnAction(event -> importBibFile(convertMultiLineStrToStrList(getClipboardText(false), false), null));
 
+    mnuVideos            .setOnAction(event -> openWebLink("http://hypernomicon.org/support.html"));
+
     mnuFindNextAll       .setOnAction(event -> getTree().find(cbTreeGoTo.getEditor().getText(), true,  false));
     mnuFindPreviousAll   .setOnAction(event -> getTree().find(cbTreeGoTo.getEditor().getText(), false, false));
     mnuFindNextInName    .setOnAction(event -> getTree().find(cbTreeGoTo.getEditor().getText(), true,  true ));
@@ -338,10 +340,20 @@ public final class MainCtrlr
         oldValue.setSelected(true);
     });
 
+    btnPointerLaunch.setTooltip(new Tooltip("On right/secondary click on link to work record, launch work file"));
+    btnPointerPreview.setTooltip(new Tooltip("On right/secondary click on link to work record, show in preview window"));
+
+    btnMentions.setTooltip(new Tooltip("Show records whose description mentions this record"));
+
     btnIncrement.setOnAction(event -> incDecClick(true));
     btnDecrement.setOnAction(event -> incDecClick(false));
 
     btnTextSearch.setTooltip(new Tooltip("Search within description"));
+    btnAdvancedSearch.setTooltip(new Tooltip("Start a new search in Queries tab"));
+    btnPreviewWindow.setTooltip(new Tooltip("Open Preview Window"));
+    btnBibMgr.setTooltip(new Tooltip("Open Bibliography Manager Window"));
+    btnFileMgr.setTooltip(new Tooltip("Open File Manager Window"));
+    btnSaveAll.setTooltip(new Tooltip("Save all records to XML files"));
 
     apFindBackground.setOnMousePressed(event -> hideFindTable());
 
@@ -1169,18 +1181,29 @@ public final class MainCtrlr
 
   @FXML private void mnuOpenClick()
   {
-    FileChooser fileChooser = new FileChooser();
+    openDB(null);
+  }
 
-    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(appTitle + " files (*.hdb)", "*.hdb"));
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-    File dir = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, System.getProperty("user.dir")));
+  public void openDB(FilePath filePath)
+  {
+    if (filePath == null)
+    {
+      FileChooser fileChooser = new FileChooser();
 
-    if (dir.exists() == false)
-      dir = new File(System.getProperty("user.dir"));
+      fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(appTitle + " files (*.hdb)", "*.hdb"));
 
-    fileChooser.setInitialDirectory(dir);
+      File dir = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, System.getProperty("user.dir")));
 
-    FilePath filePath = new FilePath(fileChooser.showOpenDialog(primaryStage()));
+      if (dir.exists() == false)
+        dir = new File(System.getProperty("user.dir"));
+
+      fileChooser.setInitialDirectory(dir);
+
+      filePath = new FilePath(fileChooser.showOpenDialog(primaryStage()));
+    }
 
     if (FilePath.isEmpty(filePath)) return;
 
@@ -1882,6 +1905,16 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public void startEmpty()
+  {
+    clearAllTabsAndViews();
+    enableControls(db.isLoaded());
+    showWelcomeWindow();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void loadDB()
   {
     if (loadDataFromDisk() == false)
@@ -1922,8 +1955,27 @@ public final class MainCtrlr
     if (SystemUtils.IS_OS_MAC)
       Platform.runLater(() -> adjustToolBar(0));
 
-    if (appPrefs.get(PREF_KEY_SOURCE_FILENAME, "").length() == 0) return false;
-    if (appPrefs.get(PREF_KEY_SOURCE_PATH, "").length() == 0) return false;
+    FilePath hdbPath = null;
+    boolean hdbExists = false;
+    String srcName = appPrefs.get(PREF_KEY_SOURCE_FILENAME, "");
+    if (srcName.isBlank() == false)
+    {
+      String srcPath = appPrefs.get(PREF_KEY_SOURCE_PATH, "");
+      if (srcPath.isBlank() == false)
+      {
+        hdbPath = new FilePath(srcPath).resolve(srcName);
+        if (hdbPath.exists())
+          hdbExists = true;
+      }
+    }
+
+    if (hdbExists == false)
+    {
+      if (hdbPath == null)
+        return false;
+
+      return falseWithErrorMessage("Unable to load database. The file does not exist: " + hdbPath.toString());
+    }
 
     if (internetNotCheckedYet && appPrefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))
     {
@@ -1960,7 +2012,13 @@ public final class MainCtrlr
     }
 
     if (success)
+    {
+      ArrayList<String> mruList = getHdbMRUs();
+      mruList.add(0, hdbPath.toString());
+      saveHdbMRUs(mruList);
+
       success = folderTreeWatcher.createNewWatcherAndStart();
+    }
 
     if (success)
     {
@@ -1981,6 +2039,32 @@ public final class MainCtrlr
       mnuCloseClick();
 
     return success;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void saveHdbMRUs(ArrayList<String> mruList)
+  {
+    mruList.removeIf(String::isBlank);
+    removeDupsInStrList(mruList);
+
+    for (int ndx = 0; ndx < HDB_MRU_SIZE; ndx++)
+      appPrefs.put(PREF_KEY_HDB_MRU + String.valueOf(ndx + 1), mruList.size() > ndx ? mruList.get(ndx) : "");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public ArrayList<String> getHdbMRUs()
+  {
+    ArrayList<String> mruList = new ArrayList<>();
+
+    for (int ndx = 0; ndx < HDB_MRU_SIZE; ndx++)
+      mruList.add(appPrefs.get(PREF_KEY_HDB_MRU + String.valueOf(ndx + 1), ""));
+
+    mruList.removeIf(String::isBlank);
+    return mruList;
   }
 
 //---------------------------------------------------------------------------
@@ -2394,11 +2478,11 @@ public final class MainCtrlr
 
       btnSave.setText("Accept Edits");
 
-      disableAllIff(activeRec == null, btnDelete, btnSave);
-
+      disableAllIff(activeRec == null, btnDelete, btnSave, btnRevert);
       btnRevert.setText("Revert");
+
 //      if (changed)
-      btnRevert.setDisable(false);
+//        btnRevert.setDisable(false);
 //      else
 //        btnRevert->Enabled = false;
 
@@ -2847,6 +2931,23 @@ public final class MainCtrlr
 
     if ((filePath != null) && ibed.getDeleteFile())
       filePath.deletePromptOnFail(true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void showWelcomeWindow()
+  {
+    WelcomeDlgCtrlr wdc = WelcomeDlgCtrlr.create();
+    if (wdc.showModal() == false) return;
+
+    if (wdc.newClicked())
+      mnuNewDatabaseClick();
+    else if (wdc.openClicked())
+      openDB(wdc.getOpenPath());
+
+    if (db.isLoaded() == false)
+      Platform.runLater(this::showWelcomeWindow);
   }
 
 //---------------------------------------------------------------------------

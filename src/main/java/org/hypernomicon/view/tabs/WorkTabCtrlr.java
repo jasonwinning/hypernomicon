@@ -179,6 +179,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     lowerTabPane.getTabs().forEach(tab -> tabCaptions.put(tab, tab.getText()));
 
+    btnWorldCat.setTooltip(new Tooltip("Search for this work in WorldCat"));
+    btnScholar.setTooltip(new Tooltip("Search for this work in Google Scholar"));
+
     htAuthors = new HyperTable(tvAuthors, 1, true, PREF_KEY_HT_WORK_AUTHORS);
 
     htAuthors.addActionCol(ctGoBtn, 1);

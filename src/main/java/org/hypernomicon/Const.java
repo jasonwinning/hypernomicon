@@ -38,6 +38,7 @@ public final class Const
 
     INITIAL_NAV_LIST_SIZE = 150,
     BUTTON_MENU_DELAY_MS = 300,
+    HDB_MRU_SIZE = 4,
 
     BLANK_FN_COMPONENT = 0,
     AUTHOR_FN_COMPONENT = 1,
@@ -53,6 +54,7 @@ public final class Const
     PREF_KEY_SOURCE_PATH = "sourcePath",
     PREF_KEY_SOURCE_FILENAME = "sourceFile",
     HDB_DEFAULT_FILENAME = "database.hdb",
+    PREF_KEY_HDB_MRU = "hbdMru",
     PREF_KEY_IMAGE_EDITOR = "imageEditor",
     PREF_KEY_IMAGE_EDITOR_COMMANDS = "imageEditorCommands",
     PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE = "imageEditorCommandType",

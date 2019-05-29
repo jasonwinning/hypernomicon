@@ -186,6 +186,19 @@ public final class App extends Application
     if (!initMainWindows())
       return;
 
+    boolean hdbExists = false;
+    String srcName = appPrefs.get(PREF_KEY_SOURCE_FILENAME, "");
+    if (srcName.isBlank() == false)
+    {
+      String srcPath = appPrefs.get(PREF_KEY_SOURCE_PATH, "");
+      if (srcPath.isBlank() == false)
+      {
+        FilePath hdbPath = new FilePath(srcPath).resolve(srcName);
+        if (hdbPath.exists())
+          hdbExists = true;
+      }
+    }
+    
     List<String> args = new ArrayList<>(getParameters().getUnnamed());
 
     if (args.size() > 0)
@@ -196,16 +209,20 @@ public final class App extends Application
       {
         appPrefs.put(PREF_KEY_SOURCE_FILENAME, filePath.getNameOnly().toString());
         appPrefs.put(PREF_KEY_SOURCE_PATH, filePath.getDirOnly().toString());
+        hdbExists = true;
         args.remove(0);
       }
     }
 
-    ui.loadDB();
+    if (hdbExists)
+      ui.loadDB();
+    else
+      ui.startEmpty();
 
     if (args.size() > 0)
       ui.handleArgs(args);
 
-    if (db.viewTestingInProgress)
+    if (db.viewTestingInProgress && hdbExists)
       testUpdatingAllRecords();
   }
 

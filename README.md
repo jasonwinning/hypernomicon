@@ -1,5 +1,7 @@
 # Hypernomicon
 
+[![Tutorial video](https://img.youtube.com/vi/JOTkAzh0qZE/0.jpg)](https://www.youtube.com/watch?v=JOTkAzh0qZE)
+
 Hypernomicon is a personal database application for keeping track of information like theories, debates, arguments, concepts, etc. that might be used by people such as philosophers or others doing academic research.
 
 Hypernomicon is perfect for: Anyone who works in a field (professionals, hobbyists, and students alike) where they have to keep track of several (or more) of the following:

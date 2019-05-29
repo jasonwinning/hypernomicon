@@ -22,6 +22,7 @@ import static org.hypernomicon.model.HyperDB.*;
 
 import java.util.List;
 
+import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.KeyWork;
 import org.hypernomicon.model.items.MainText;
@@ -157,7 +158,7 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
       default: break;
     }
 
-    if (parent == null) return;
+    if ((parent == null) || HyperDB.isUnstoredRecord(parent.getID(), parent.getType())) return;
 
     boolean rc = db.runningConversion;
     db.runningConversion = true;

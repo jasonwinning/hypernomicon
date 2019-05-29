@@ -65,7 +65,7 @@ public class AboutDlgCtrlr extends HyperDlg
       buildDate = "not found";
 
     if (safeStr(version).length() == 0)
-      version = "1.1";
+      version = "1.11";
 
     String family = Font.getDefault().getFamily();
 
