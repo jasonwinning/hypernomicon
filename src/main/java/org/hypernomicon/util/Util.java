@@ -548,7 +548,7 @@ public final class Util
 
       else if (SystemUtils.IS_OS_LINUX)
       {
-        if (DesktopApi.exec(false, true, "nautilus", filePath.toString()) == false)
+        if (DesktopApi.exec(false, false, new StringBuilder(), "nautilus", filePath.toString()) == false)
           launchFile(filePath.getDirOnly());  // this won't highlight the file in the folder
       }
 

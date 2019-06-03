@@ -187,9 +187,9 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
     FilePath filePath;
 
     if (shownAlready())
-      filePath = new FilePath(fileChooser.showOpenDialog(getStage()));
+      filePath = ui.windows.showOpenDialog(fileChooser, getStage());
     else
-      filePath = new FilePath(fileChooser.showOpenDialog(app.getPrimaryStage()));
+      filePath = ui.windows.showOpenDialog(fileChooser, app.getPrimaryStage());
 
     if (FilePath.isEmpty(filePath))
     {

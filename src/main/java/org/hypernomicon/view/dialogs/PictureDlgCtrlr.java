@@ -725,7 +725,7 @@ public class PictureDlgCtrlr extends HyperDlg
 
     fileChooser.setInitialDirectory(db.picturesPath().toFile());
 
-    FilePath filePath = new FilePath(fileChooser.showOpenDialog(getStage()));
+    FilePath filePath = ui.windows.showOpenDialog(fileChooser, getStage());
 
     if (FilePath.isEmpty(filePath)) return;
 

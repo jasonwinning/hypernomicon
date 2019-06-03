@@ -87,16 +87,19 @@ public class DesktopApi
 
   private static boolean openSystemSpecific(String pathStr)
   {
+    StringBuilder sb = new StringBuilder();
+
     if (SystemUtils.IS_OS_LINUX)
     {
-      if (exec(false, true, "kde-open"  , pathStr)) return true;
-      if (exec(false, true, "gnome-open", pathStr)) return true;
-      if (exec(false, true, "xdg-open"  , pathStr)) return true;
-//      if (exec(false, true, "exo-open"  , pathStr)) return true;
-//      if (exec(false, true, "gvfs-open" , pathStr)) return true;
+      if (exec(false, false, sb, "kde-open"  , pathStr)) return true;
+      if (exec(false, false, sb, "gnome-open", pathStr)) return true;
+      if (exec(false, false, sb, "xdg-open"  , pathStr)) return true;
+//      if (exec(false, false, sb, "exo-open"  , pathStr)) return true;
+//      if (exec(false, false, sb, "gvfs-open" , pathStr)) return true;
     }
 
-    return falseWithErrorMessage("Unable to open the file: " + pathStr + ".");
+    return falseWithErrorMessage("Unable to open the file: " + pathStr +
+        (sb.length() > 0 ? "\n" + sb.toString() : "") + ".");
   }
 
 //---------------------------------------------------------------------------
@@ -168,12 +171,12 @@ public class DesktopApi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean exec(boolean showErrMsg, boolean wait, String... parts)
+  public static boolean exec(boolean showErrMsg, boolean wait, StringBuilder errorSB, String... parts)
   {
-    return exec(showErrMsg, wait, Lists.newArrayList(parts));
+    return exec(showErrMsg, wait, errorSB, Lists.newArrayList(parts));
   }
 
-  public static boolean exec(boolean showErrMsg, boolean wait, ArrayList<String> command)
+  public static boolean exec(boolean showErrMsg, boolean wait, StringBuilder errorSB, ArrayList<String> command)
   {
     if (SystemUtils.IS_OS_MAC)
     {
@@ -184,7 +187,6 @@ public class DesktopApi
     ProcessBuilder pb = new ProcessBuilder(command);
     Process proc;
     int retVal = 0;
-    String output = "";
 
     try
     {
@@ -193,7 +195,7 @@ public class DesktopApi
       if (wait)
       {
         retVal = proc.waitFor();
-        output = IOUtils.toString(proc.getErrorStream(), StandardCharsets.UTF_8);
+        assignSB(errorSB, IOUtils.toString(proc.getErrorStream(), StandardCharsets.UTF_8));
       }
     }
     catch (IOException | InterruptedException e)
@@ -204,8 +206,8 @@ public class DesktopApi
       return false;
     }
 
-    if (retVal != 0)
-      messageDialog("An error occurred while trying to start application: " + output, mtError);
+    if ((retVal != 0) && showErrMsg)
+      messageDialog("An error occurred while trying to start application: " + errorSB.toString(), mtError);
 
     return retVal == 0;
   }

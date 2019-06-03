@@ -21,7 +21,7 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="500.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.ObjectOrderDlgCtrlr">
+<AnchorPane prefHeight="500.0" prefWidth="500.0" minHeight="300.0" minWidth="300.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.ObjectOrderDlgCtrlr">
    <children>
       <TableView fx:id="tv" layoutX="141.0" layoutY="72.0" prefHeight="470.0" prefWidth="500.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columns>

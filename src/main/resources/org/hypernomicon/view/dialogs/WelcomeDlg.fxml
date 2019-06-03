@@ -24,7 +24,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 
-<AnchorPane id="SpecialUI" styleClass="anchor-pane" stylesheets="@welcome.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.WelcomeDlgCtrlr">
+<AnchorPane id="SpecialUI" maxHeight="314.0" minHeight="314.0" prefHeight="314.0" minWidth="778.0" styleClass="anchor-pane" stylesheets="@welcome.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.WelcomeDlgCtrlr">
    <children>
       <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <center>

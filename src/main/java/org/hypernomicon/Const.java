@@ -85,6 +85,7 @@ public final class Const
     PREF_KEY_CHECK_INTERNET = "checkInternet",
     PREF_KEY_AUTO_OPEN_PDF = "autoOpenWorkFile",
     PREF_KEY_AUTO_RETRIEVE_BIB = "autoRetrieveBib",
+    PREF_KEY_LINUX_WORKAROUND = "linuxWindowResizabilityWorkaround",
     PREF_KEY_PDFJS_SIDEBAR_VIEW = "pdfjsSidebarView",
     PREF_KEY_FONT_SIZE = "fontSize",
 

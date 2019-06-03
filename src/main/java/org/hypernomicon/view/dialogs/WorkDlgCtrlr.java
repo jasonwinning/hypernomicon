@@ -533,7 +533,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     fileChooser.setInitialDirectory(db.unenteredPath().toFile());
 
-    useChosenFile(new FilePath(fileChooser.showOpenDialog(getStage())));
+    useChosenFile(ui.windows.showOpenDialog(fileChooser, getStage()));
   }
 
 //---------------------------------------------------------------------------

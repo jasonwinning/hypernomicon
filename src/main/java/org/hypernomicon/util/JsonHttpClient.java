@@ -58,6 +58,30 @@ public class JsonHttpClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static void getArrayAsync(String url, AsyncHttpClient httpClient, Consumer<JsonArray> successHndlr, Consumer<Exception> failHndlr)
+  {
+    try
+    {
+      new JsonHttpClient().doAsyncRequest(new HttpGet(url), httpClient, jsonClient -> runInFXThread(() ->
+      {
+        if (jsonClient.jsonArray == null)
+        {
+          jsonClient.jsonArray = new JsonArray();
+          jsonClient.jsonArray.add(jsonClient.jsonObj);
+        }
+        successHndlr.accept(jsonClient.jsonArray);
+      }), failHndlr);
+    }
+    catch (Exception e)
+    {
+      if (failHndlr != null)
+        failHndlr.accept(e);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static void getObjAsync(String url, AsyncHttpClient httpClient, Consumer<JsonObj> successHndlr, Consumer<Exception> failHndlr)
   {
     try

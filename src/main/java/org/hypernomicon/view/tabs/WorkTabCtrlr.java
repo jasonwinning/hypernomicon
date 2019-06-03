@@ -1218,7 +1218,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     fileChooser.setInitialDirectory(db.unenteredPath().toFile());
 
-    List<File> files = fileChooser.showOpenMultipleDialog(app.getPrimaryStage());
+    List<File> files = ui.windows.showOpenMultipleDialog(fileChooser, app.getPrimaryStage());
     if (collEmpty(files)) return;
 
     FilePathSet filePaths = files.stream().map(FilePath::new).collect(Collectors.toCollection(FilePathSet::new));
@@ -1366,7 +1366,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
           dirChooser.setInitialDirectory(folder.toFile());
       }
 
-      folder = new FilePath(dirChooser.showDialog(app.getPrimaryStage()));
+      folder = ui.windows.showDirDialog(dirChooser, app.getPrimaryStage());
 
       if (FilePath.isEmpty(folder)) return null;
 

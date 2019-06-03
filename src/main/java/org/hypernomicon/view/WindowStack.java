@@ -18,17 +18,24 @@
 package org.hypernomicon.view;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.hypernomicon.util.filePath.FilePath;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 public final class WindowStack
 {
@@ -36,30 +43,50 @@ public final class WindowStack
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static interface WindowWrapper
+  private static interface WindowWrapper
   {
     Modality getModality();
     boolean isStage();
+    Object getWrappedObj();
   }
+
+//---------------------------------------------------------------------------
 
   private static final class AlertWrapper implements WindowWrapper
   {
     private final Alert dlg;
 
-    private AlertWrapper(Alert dlg) { this.dlg = dlg; }
+    private AlertWrapper(Alert dlg)         { this.dlg = dlg; }
 
     @Override public Modality getModality() { return dlg.getModality(); }
     @Override public boolean isStage()      { return false; }
+    @Override public Object getWrappedObj() { return dlg; }
   }
+
+//---------------------------------------------------------------------------
 
   private static final class StageWrapper implements WindowWrapper
   {
     private final Stage stage;
 
-    private StageWrapper(Stage stage) { this.stage = stage; }
+    private StageWrapper(Stage stage)       { this.stage = stage; }
 
     @Override public Modality getModality() { return stage.getModality(); }
     @Override public boolean isStage()      { return true; }
+    @Override public Object getWrappedObj() { return stage; }
+  }
+
+//---------------------------------------------------------------------------
+
+  private static final class ChooserWrapper implements WindowWrapper
+  {
+    private final Object chooser;
+
+    private ChooserWrapper(Object chooser)  { this.chooser = chooser; }
+
+    @Override public Modality getModality() { return Modality.APPLICATION_MODAL; }
+    @Override public boolean isStage()      { return true; }
+    @Override public Object getWrappedObj() { return chooser; }
   }
 
 //---------------------------------------------------------------------------
@@ -95,9 +122,10 @@ public final class WindowStack
       if ((oldModality == Modality.NONE) &&
           (newModality != Modality.NONE))
         disableMainMenu();
+
+      windows.removeIf(curW -> curW.getWrappedObj() == window.getWrappedObj());
     }
 
-    while (windows.remove(window));  // semicolon at the end is not a typo
     windows.addFirst(window);
   }
 
@@ -156,31 +184,77 @@ public final class WindowStack
     if (focusingWindow == null) return;
 
     if ((closingWindow.getModality() != Modality.NONE) && (focusingWindow.getModality() == Modality.NONE))
-      itemsDisabled.forEach((menuItem, disabled) -> menuItem.setDisable(disabled));
+      itemsDisabled.forEach(MenuItem::setDisable);
 
     if (focusingWindow.isStage() == false) return;
 
     Stage stage = StageWrapper.class.cast(focusingWindow).stage;
 
+    focusStage(stage);
+
     if (SystemUtils.IS_OS_LINUX && (stage == app.getPrimaryStage()))
     {
-      // This is a workaround for:
-      // https://bugs.openjdk.java.net/browse/JDK-8140491
+      // This is a workaround for: https://bugs.openjdk.java.net/browse/JDK-8140491
+      //
+      // and another bug that seems related to this: https://bugs.openjdk.java.net/browse/JDK-8168842
 
       runDelayedInFXThread(1, 300, () -> // 300 ms delay to prevent main window from hiding/showing for multiple dialog boxes
       {
-        if (app.getPrimaryStage().isShowing() == false)
+        if (stage.isShowing() == false)
           return;
 
         if (windows.stream().anyMatch(window -> window.getModality() != Modality.NONE))
           return;
 
-        app.getPrimaryStage().hide();
-        app.getPrimaryStage().show();
+        if ((stage.isFocused() == false) || appPrefs.getBoolean(PREF_KEY_LINUX_WORKAROUND, false))
+        {
+          stage.hide();
+          stage.show();
+        }
       });
     }
+  }
 
-	  focusStage(stage);
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public FilePath showDirDialog(DirectoryChooser chooser, Window owner)
+  {
+    push(new ChooserWrapper(chooser));
+
+    FilePath rv = nullSwitch(chooser.showDialog(owner), null, FilePath::new);
+
+    pop();
+
+    return rv;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public FilePath showOpenDialog(FileChooser chooser, Window owner)
+  {
+    push(new ChooserWrapper(chooser));
+
+    FilePath rv = nullSwitch(chooser.showOpenDialog(owner), null, FilePath::new);
+
+    pop();
+
+    return rv;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public List<File> showOpenMultipleDialog(FileChooser chooser, Window owner)
+  {
+    push(new ChooserWrapper(chooser));
+
+    List<File> rv = chooser.showOpenMultipleDialog(owner);
+
+    pop();
+
+    return rv;
   }
 
 //---------------------------------------------------------------------------

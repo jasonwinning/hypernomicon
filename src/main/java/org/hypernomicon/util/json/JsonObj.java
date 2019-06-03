@@ -30,7 +30,7 @@ import org.json.simple.parser.ParseException;
 
 public class JsonObj implements Cloneable
 {
-  public static enum JsonNodeType { OBJECT, STRING, ARRAY, NONE }
+  public static enum JsonNodeType { OBJECT, STRING, ARRAY, BOOLEAN, NONE }
 
   final JSONObject jObj;
 
@@ -46,12 +46,10 @@ public class JsonObj implements Cloneable
   public void remove(String key)          { jObj.remove(key); }
   public JsonNodeType getType(String key) { return JsonObj.determineType(jObj.get(key)); }
 
-  public JsonObj getObj(String key)                  { return nullSwitch((JSONObject)jObj.get(key), null, obj -> new JsonObj(obj)); }
-  public String getStr(String key)                   { return (String) jObj.get(key); }
-  public JsonArray getArray(String key)              { return nullSwitch((JSONArray)jObj.get(key), null, obj -> new JsonArray(obj)); }
-  public long getLong(String key, long def)          { return nullSwitch((Long)jObj.get(key), def,  Long::longValue); }
-  public boolean getBoolean(String key, boolean def) { return nullSwitch(jObj.get(key), def,  obj -> parseBoolean(getStr(key))); }
-
+  public JsonObj getObj(String key)         { return nullSwitch((JSONObject)jObj.get(key), null, JsonObj::new); }
+  public String getStr(String key)          { return (String) jObj.get(key); }
+  public JsonArray getArray(String key)     { return nullSwitch((JSONArray)jObj.get(key), null, JsonArray::new); }
+  public long getLong(String key, long def) { return nullSwitch((Long)jObj.get(key), def, Long::longValue); }
 
   @SuppressWarnings("unchecked") public void put(String key, JsonObj childObj) { jObj.put(key, childObj.jObj); }
   @SuppressWarnings("unchecked") public void put(String key, String value)     { jObj.put(key, value); }
@@ -59,6 +57,19 @@ public class JsonObj implements Cloneable
   @SuppressWarnings("unchecked") public Set<String> keySet()                   { return jObj.keySet(); }
 
   @Override public String toString() { return jObj.toJSONString(); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean getBoolean(String key, boolean def)
+  {
+    Object obj = jObj.get(key);
+
+    if (obj instanceof String)
+      return parseBoolean(getStr(key));
+
+    return obj instanceof Boolean ? Boolean.class.cast(obj).booleanValue() : def;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -89,6 +100,7 @@ public class JsonObj implements Cloneable
     if (object instanceof JSONObject) return JsonNodeType.OBJECT;
     if (object instanceof JSONArray ) return JsonNodeType.ARRAY;
     if (object instanceof String    ) return JsonNodeType.STRING;
+    if (object instanceof Boolean   ) return JsonNodeType.BOOLEAN;
 
     return JsonNodeType.NONE;
   }

@@ -25,10 +25,18 @@ import javafx.scene.text.Font;
 import javafx.scene.web.WebView;
 
 import static org.hypernomicon.util.Util.*;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static org.hypernomicon.App.*;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.queryEngines.QueryEngine.QueryType;
+import org.hypernomicon.util.AsyncHttpClient;
+import org.hypernomicon.util.JsonHttpClient;
+import org.hypernomicon.util.VersionNumber;
+import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.reports.ReportEngine;
@@ -39,7 +47,9 @@ public class AboutDlgCtrlr extends HyperDlg
   @FXML private TabPane tabPane;
   @FXML private Tab tabGeneral, tabContributors, tabAcknowledgements;
 
-  private String tabGeneralHtml, tabContributorsHtml, tabAcknowledgementsHtml;
+  private String version, buildDate, htmlStart, nextVersionHtml, tabContributorsHtml, tabAcknowledgementsHtml;
+
+  private static final AsyncHttpClient httpClient = new AsyncHttpClient();
 
   @Override protected boolean isValid() { return true; }
 
@@ -58,30 +68,21 @@ public class AboutDlgCtrlr extends HyperDlg
 
   private void init()
   {
-    String buildDate = manifestValue("Build-Time"),
-           version = manifestValue("Impl-Version");
+    buildDate = manifestValue("Build-Time");
+    version = manifestValue("Impl-Version");
 
     if (safeStr(buildDate).length() == 0)
       buildDate = "not found";
 
     if (safeStr(version).length() == 0)
-      version = "1.11";
+      version = "1.12";
 
     String family = Font.getDefault().getFamily();
 
-    String htmlStart = "<html><head>" + MainTextWrapper.getScriptContent() +
-        "<style>a:link { color:#906f6f; } a:visited { color:#906f6f; }</style>" +
+    htmlStart = "<html><head>" + MainTextWrapper.getScriptContent() +
+        "<style>a:link { color:#906f6f; } a:visited { color:#906f6f; }" +
+               "a.download:link { color:#eef4ff; } a.download:visited { color:#eef4ff; } </style>" +
         "</head><body style='margin: 0; padding: 0; font-family: " + family + "; font-size: 10pt; color: #906f6f;' bgcolor=\"#241f24\">";
-
-    tabGeneralHtml = htmlStart + "Version: " + version + "<br>" +
-        "Build date: " + buildDate + "<br>" +
-        "Copyright \u00a9 2015-2019 Jason Winning.<br><br>" +
-        "Operating system: " + SystemUtils.OS_NAME + "<br>" +
-        "Operating system version: " + SystemUtils.OS_VERSION + "<br>" +
-        "Java runtime: " + SystemUtils.JAVA_RUNTIME_NAME + "<br>" +
-        "Java runtime version: " + SystemUtils.JAVA_RUNTIME_VERSION + "<br>" +
-        anchorTag("Website", "http://hypernomicon.org/") + "&nbsp;&nbsp;&nbsp;" +
-        anchorTag("GitHub repo", "https://github.com/jasonwinning/hypernomicon") + "</body></html>";
 
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -125,7 +126,43 @@ public class AboutDlgCtrlr extends HyperDlg
 
     tabPane.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) -> updateHtml(newTab));
 
+    nextVersionHtml = "Checking to see if a newer version exists...";
+
     updateHtml(tabPane.getSelectionModel().getSelectedItem());
+
+    JsonHttpClient.getArrayAsync("https://api.github.com/repos/jasonwinning/hypernomicon/releases", httpClient, jsonArray ->
+    {
+      VersionNumber updateNum =  new VersionNumber(2, version);
+      Pattern p = Pattern.compile("(\\A|\\D)(\\d(\\d|(\\.\\d))+)(\\z|\\D)");
+
+      for (JsonObj jsonObj : jsonArray.getObjs())
+      {
+        if (jsonObj.getBoolean("prerelease", false) == false)
+        {
+          Matcher m = p.matcher(jsonObj.getStrSafe("tag_name"));
+
+          if (m.find())
+          {
+            VersionNumber curNum = new VersionNumber(2, m.group(2));
+            if (curNum.compareTo(updateNum) > 0)
+              updateNum = curNum;
+          }
+        }
+      }
+
+      if (updateNum.compareTo(new VersionNumber(2, version)) > 0)
+        nextVersionHtml = "<font style=\"color: #eef4ff;\"><b><a class=download href=\"\" onclick=\"openURL('https://sourceforge.net/projects/hypernomicon/files/latest/download'); return false;\">" +
+        "Newer version " + updateNum.toString() + " is available for download.</a></b></font>";
+      else
+        nextVersionHtml = "You have the latest version.";
+
+      updateHtml(tabPane.getSelectionModel().getSelectedItem());
+    }, e ->
+    {
+      nextVersionHtml = "Unable to determine latest version.";
+
+      updateHtml(tabPane.getSelectionModel().getSelectedItem());
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -141,7 +178,7 @@ public class AboutDlgCtrlr extends HyperDlg
 
   private void updateHtml(Tab tab)
   {
-    if      (tab == tabGeneral         ) webView.getEngine().loadContent(tabGeneralHtml         );
+    if      (tab == tabGeneral         ) webView.getEngine().loadContent(getGeneralTabHtml()    );
     else if (tab == tabContributors    ) webView.getEngine().loadContent(tabContributorsHtml    );
     else if (tab == tabAcknowledgements) webView.getEngine().loadContent(tabAcknowledgementsHtml);
     else
@@ -150,6 +187,23 @@ public class AboutDlgCtrlr extends HyperDlg
 
       Platform.runLater(() -> ui.showSearch(true, QueryType.qtReport, ReportEngine.QUERY_LICENSE_AND_NOTICE, null, null, null, ""));
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private String getGeneralTabHtml()
+  {
+    return htmlStart + "Version: " + version + "&nbsp;&nbsp;&nbsp;&nbsp;" + nextVersionHtml + "<br>" +
+        "Build date: " + buildDate + "<br>" +
+        "Copyright \u00a9 2015-2019 Jason Winning.<br><br>" +
+        "Operating system: " + SystemUtils.OS_NAME + "<br>" +
+        "Operating system version: " + SystemUtils.OS_VERSION + "<br>" +
+        "Java runtime: " + SystemUtils.JAVA_RUNTIME_NAME + "<br>" +
+        "Java runtime version: " + SystemUtils.JAVA_RUNTIME_VERSION + "<br>" +
+        anchorTag("Website", "http://hypernomicon.org/") + "&nbsp;&nbsp;&nbsp;" +
+        anchorTag("Release Notes", "https://sourceforge.net/p/hypernomicon/wiki/ReleaseNotes/") + "&nbsp;&nbsp;&nbsp;" +
+        anchorTag("GitHub repo", "https://github.com/jasonwinning/hypernomicon") + "</body></html>";
   }
 
 //---------------------------------------------------------------------------

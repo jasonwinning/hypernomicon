@@ -239,13 +239,13 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
         if (list.size() > 1)
         {
-          DesktopApi.exec(true, false, list);
+          DesktopApi.exec(true, false, new StringBuilder(), list);
           return;
         }
       }
     }
 
-    DesktopApi.exec(true, false, appPath, filePath.toString());
+    DesktopApi.exec(true, false, new StringBuilder(), appPath, filePath.toString());
   }
 
 //---------------------------------------------------------------------------

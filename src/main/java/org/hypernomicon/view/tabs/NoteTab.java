@@ -292,7 +292,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     dirChooser.setTitle("Select Folder");
 
-    FilePath filePath = new FilePath(dirChooser.showDialog(app.getPrimaryStage()));
+    FilePath filePath = ui.windows.showDirDialog(dirChooser, app.getPrimaryStage());
 
     if (FilePath.isEmpty(filePath)) return;
 

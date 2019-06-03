@@ -19,7 +19,7 @@ Hypernomicon is perfect for: Anyone who works in a field (professionals, hobbyis
  * Notes taken during talks, meetings, seminars
  * Any other files or folders associated with any of the above (including notes)
  * Ability to manage (rename, move, etc.) files and folders while not losing associations with any of the above information
- * Associations between works and entries in your bibliography manager (currently integrates with Zotero; Mendeley in the future)
+ * Associations between works and entries in your bibliography manager (currently integrates with Zotero; Mendeley in the near future)
 
 Hypernomicon keeps track of all of the above in a highly structured, thoroughly indexed and user friendly relational database, and automatically generates semantic hyperlinks between all of them so that you are constantly informed of ways all of your information is related that you had not realized.
 
@@ -29,8 +29,6 @@ The best way to get started with Hypernomicon is by downloading and installing o
 [Hypernomicon release](https://sourceforge.net/projects/hypernomicon/files/latest/download).
 
 Or you can clone this repository and build from source (see below).
-
-Either way, you will also need some data. You can download a starter database [here](http://jasonwinning.com/starter_db.zip).
 
 ## Issues and Contributions ##
 
@@ -57,6 +55,11 @@ On the project's root, run:
 `mvn clean package`
 
 It will create an executable jar under `target/hypernomicon-$version.jar`.
+
+
+## Change Log/Release Notes
+
+Can be found [here](https://sourceforge.net/p/hypernomicon/wiki/ReleaseNotes/).
 
 
 ## Authors

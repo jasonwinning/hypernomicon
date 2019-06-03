@@ -27,7 +27,7 @@
 <?import javafx.scene.web.HTMLEditor?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane prefHeight="645.0" prefWidth="1193.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.MergeSpokeDlgCtrlr">
+<AnchorPane prefHeight="645.0" prefWidth="1193.0" minHeight="300.0" minWidth="300.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.MergeSpokeDlgCtrlr">
    <children>
       <TitledPane animated="false" collapsible="false" layoutX="85.0" layoutY="138.0" prefHeight="270.0" prefWidth="589.0" text="Description" AnchorPane.bottomAnchor="37.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <content>

@@ -289,13 +289,13 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       rb = RequestBuilder.get();
 
     request = rb
-        .setUri(url)
-        .setHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-        .setHeader("Zotero-API-Version", "3")
-        .setHeader("Zotero-API-Key", apiKey)
-        .setHeader("Zotero-Write-Token", generateWriteToken())
-        .setHeader("If-Unmodified-Since-Version", String.valueOf(offlineLibVersion))
-        .build();
+      .setUri(url)
+      .setHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+      .setHeader("Zotero-API-Version", "3")
+      .setHeader("Zotero-API-Key", apiKey)
+      .setHeader("Zotero-Write-Token", generateWriteToken())
+      .setHeader("If-Unmodified-Since-Version", String.valueOf(offlineLibVersion))
+      .build();
 
     try
     {
@@ -444,9 +444,9 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
       if (statusCode == HttpStatus.SC_OK)
       {
-        JsonObj jSuccess = jArr.getObj(0).getObj("successful");
-        JsonObj jUnchanged = jArr.getObj(0).getObj("unchanged");
-        JsonObj jFailed = jArr.getObj(0).getObj("failed");
+        JsonObj jSuccess   = jArr.getObj(0).getObj("successful"),
+                jUnchanged = jArr.getObj(0).getObj("unchanged"),
+                jFailed    = jArr.getObj(0).getObj("failed");
 
         if ((jUnchanged.keySet().isEmpty() == false) || (jFailed.keySet().isEmpty() == false))
           showWriteErrorMessages(jUnchanged, jFailed, uploadQueue);

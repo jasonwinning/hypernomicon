@@ -31,7 +31,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="421.0" prefWidth="490.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.PictureDlgCtrlr">
+<AnchorPane prefHeight="421.0" prefWidth="490.0" minHeight="300.0" minWidth="300.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.PictureDlgCtrlr">
    <children>
       <AnchorPane fx:id="apPicture" layoutX="5.0" layoutY="30.0" prefHeight="239.0" prefWidth="480.0" AnchorPane.bottomAnchor="152.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="30.0">
          <children>

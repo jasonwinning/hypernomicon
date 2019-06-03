@@ -1459,7 +1459,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean newDB(String newPath, EnumSet<HDT_RecordType> datasetsToKeep, HashMap<String, String> folders) throws HDB_InternalError
+  public boolean newDB(FilePath newPath, EnumSet<HDT_RecordType> datasetsToKeep, HashMap<String, String> folders) throws HDB_InternalError
   {
     if (loaded == false) return false;
 
@@ -1471,8 +1471,8 @@ public final class HyperDB
     dbCreationDate = Instant.now();
     prefs.put(PREF_KEY_DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
 
-    appPrefs.put(PREF_KEY_SOURCE_PATH, newPath);
-    rootFilePath = new FilePath(newPath);
+    appPrefs.put(PREF_KEY_SOURCE_PATH, newPath.toString());
+    rootFilePath = newPath;
     hdbFilePath = rootFilePath.resolve(appPrefs.get(PREF_KEY_SOURCE_FILENAME, HDB_DEFAULT_FILENAME));
 
     folders.forEach(prefs::put);

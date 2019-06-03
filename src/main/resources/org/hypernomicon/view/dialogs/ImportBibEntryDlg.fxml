@@ -24,7 +24,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="346.0" prefWidth="811.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.ImportBibEntryDlgCtrlr">
+<AnchorPane prefHeight="346.0" prefWidth="811.0" minHeight="300.0" minWidth="300.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.ImportBibEntryDlgCtrlr">
    <children>
       <Label layoutX="6.0" layoutY="14.0" text="Import file:" AnchorPane.leftAnchor="6.0" AnchorPane.topAnchor="14.0" />
       <TextField fx:id="tfFile" editable="false" layoutX="76.0" layoutY="10.0" prefHeight="25.0" prefWidth="687.0" AnchorPane.leftAnchor="79.0" AnchorPane.rightAnchor="45.0" AnchorPane.topAnchor="10.0" />

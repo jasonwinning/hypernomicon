@@ -1202,7 +1202,7 @@ public final class MainCtrlr
 
       fileChooser.setInitialDirectory(dir);
 
-      filePath = new FilePath(fileChooser.showOpenDialog(primaryStage()));
+      filePath = windows.showOpenDialog(fileChooser, primaryStage());
     }
 
     if (FilePath.isEmpty(filePath)) return;
@@ -1241,11 +1241,10 @@ public final class MainCtrlr
     else
       dirChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
 
-    file = dirChooser.showDialog(primaryStage());
+    FilePath rootPath = ui.windows.showDirDialog(dirChooser, primaryStage());
+    if (FilePath.isEmpty(rootPath)) return;
 
-    if (file == null) return;
-
-    String[] list = file.list();
+    String[] list = rootPath.toFile().list();
     if (list == null)
     {
       messageDialog("Selected item is not a folder.", mtError);
@@ -1265,14 +1264,14 @@ public final class MainCtrlr
       if (confirmDialog("Save data to XML files?"))
         saveAllToDisk(false, false, false);
 
-      NewDatabaseDlgCtrlr dlg = NewDatabaseDlgCtrlr.create("Customize How Database Will Be Created", file.getPath());
+      NewDatabaseDlgCtrlr dlg = NewDatabaseDlgCtrlr.create("Customize How Database Will Be Created", rootPath.toString());
 
       if (dlg.showModal() == false)
         return;
 
       closeWindows(false);
 
-      try { db.newDB(file.getPath(), dlg.getChoices(), dlg.getFolders()); }
+      try { db.newDB(rootPath, dlg.getChoices(), dlg.getFolders()); }
       catch (HDB_InternalError e)
       {
         messageDialog("Unable to create new database: " + e.getMessage(), mtError);
@@ -1296,7 +1295,7 @@ public final class MainCtrlr
 
         while ((entry = zis.getNextEntry()) != null)
         {
-          FilePath filePath = new FilePath(file).resolve(new FilePath(entry.getName()));
+          FilePath filePath = rootPath.resolve(new FilePath(entry.getName()));
 
           if (entry.isDirectory())
           {

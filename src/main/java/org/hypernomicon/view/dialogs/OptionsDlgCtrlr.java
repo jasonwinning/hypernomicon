@@ -31,6 +31,7 @@ import com.github.scribejava.core.model.OAuth1AccessToken;
 import com.github.scribejava.core.model.OAuth1RequestToken;
 import com.github.scribejava.core.oauth.OAuth10aService;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.zotero.ZoteroOAuthApi;
 import org.hypernomicon.model.records.HDT_WorkFile;
@@ -67,7 +68,7 @@ public class OptionsDlgCtrlr extends HyperDlg
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
   @FXML private Button btnAuthorize, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced;
   @FXML private CheckBox chkAddInitial, chkAutoOpenPDF, chkAutoRetrieveBib, chkInternet, chkLowercase,
-                         chkPosix, chkTreatEdAsAuthor, chkYearLetter, chkUseSentenceCase;
+                         chkPosix, chkTreatEdAsAuthor, chkYearLetter, chkUseSentenceCase, chkLinuxWorkaround;
   @FXML private ComboBox<String> cbComponent1, cbComponent2, cbComponent3, cbComponent4, cbComponent5;
   @FXML private Label lblCurrentlyLinked, lblExample, lblRedirect, lblStep2, lblStep2Instructions,
                       lblStep3, lblStep3Instructions, lblStep4, lblStep4Instructions;
@@ -100,7 +101,7 @@ public class OptionsDlgCtrlr extends HyperDlg
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
     fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
 
-    nullSwitch(fileChooser.showOpenDialog(owner), file -> tf.setText(file.getPath()));
+    nullSwitch(ui.windows.showOpenDialog(fileChooser, owner), filePath -> tf.setText(filePath.toString()));
   }
 
 //---------------------------------------------------------------------------
@@ -193,6 +194,10 @@ public class OptionsDlgCtrlr extends HyperDlg
     initAppCheckBox(chkInternet, PREF_KEY_CHECK_INTERNET, true);
     initAppCheckBox(chkAutoOpenPDF, PREF_KEY_AUTO_OPEN_PDF, true);
     initAppCheckBox(chkAutoRetrieveBib, PREF_KEY_AUTO_RETRIEVE_BIB, true);
+
+    chkLinuxWorkaround.setVisible(SystemUtils.IS_OS_LINUX);
+
+    initAppCheckBox(chkLinuxWorkaround, PREF_KEY_LINUX_WORKAROUND, false);
 
     boolean disable = (db == null) || (db.prefs == null) || (db.isLoaded() == false);
 

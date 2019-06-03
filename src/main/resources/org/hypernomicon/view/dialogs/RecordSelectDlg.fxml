@@ -24,7 +24,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="697.0" prefWidth="773.0"
+<AnchorPane prefHeight="697.0" prefWidth="773.0" minHeight="300.0" minWidth="300.0"
   xmlns="http://javafx.com/javafx/11.0.1"
   xmlns:fx="http://javafx.com/fxml/1"
   fx:controller="org.hypernomicon.view.dialogs.RecordSelectDlgCtrlr">

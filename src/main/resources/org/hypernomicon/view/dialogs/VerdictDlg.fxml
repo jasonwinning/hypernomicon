@@ -21,7 +21,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="121.0" prefWidth="921.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.VerdictDlgCtrlr">
+<AnchorPane prefHeight="121.0" prefWidth="921.0" minHeight="121.0" minWidth="300.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.VerdictDlgCtrlr">
    <children>
       <Label fx:id="lblParentType" layoutX="14.0" layoutY="14.0" text="Target position:" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="10.0" />
       <Label fx:id="lblParentName" layoutX="148.0" layoutY="10.0" prefHeight="14.0" prefWidth="763.0" text="Label" AnchorPane.leftAnchor="148.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0" />
