@@ -313,7 +313,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
               showHideColumnsButton.addEventFilter(MouseEvent.MOUSE_PRESSED, event ->
               {
-                SelectColumnsDlgCtrlr.create("Select Columns").showModal();
+                SelectColumnsDlgCtrlr.create().showModal();
                 event.consume();
               });
             });

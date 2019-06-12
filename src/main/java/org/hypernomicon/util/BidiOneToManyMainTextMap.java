@@ -62,8 +62,7 @@ public class BidiOneToManyMainTextMap
 
   public void replaceItem(MainText oldItem, MainText newItem)
   {
-    if ((oldItem == null) || (newItem == null)) return;
-    if (oldItem == newItem) return;
+    if ((oldItem == null) || (newItem == null) || (oldItem == newItem)) return;
 
     Set<MainText> oldSet, newSet;
 

@@ -472,7 +472,7 @@ public class MainTextCtrlr
 
     String selText = (String) engine.executeScript("window.getSelection().rangeCount < 1 ? \"\" : window.getSelection().getRangeAt(0).toString()");
 
-    NewLinkDlgCtrlr dlg = NewLinkDlgCtrlr.create("Insert Link", convertToSingleLine(selText));
+    NewLinkDlgCtrlr dlg = NewLinkDlgCtrlr.create(convertToSingleLine(selText));
 
     if (dlg.showModal() == false) return;
 

@@ -67,9 +67,9 @@ public class InvestigationsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static InvestigationsDlgCtrlr create(String title, HDT_Work work, HDT_Person curPerson)
+  public static InvestigationsDlgCtrlr create(HDT_Work work, HDT_Person curPerson)
   {
-    InvestigationsDlgCtrlr idc = HyperDlg.create("InvestigationsDlg.fxml", title, true);
+    InvestigationsDlgCtrlr idc = HyperDlg.create("InvestigationsDlg.fxml", "Assign Investigations - " + work.name(), true);
     idc.init(work, curPerson);
     return idc;
   }

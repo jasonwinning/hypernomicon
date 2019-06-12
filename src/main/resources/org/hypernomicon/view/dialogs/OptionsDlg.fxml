@@ -134,7 +134,7 @@
                               </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="7">
                                  <children>
-                                    <CheckBox fx:id="chkAutoOpenPDF" layoutY="4.0" mnemonicParsing="false" text="Automatically open selected file in Work File dialog" />
+                                    <CheckBox fx:id="chkAutoOpenPDF" layoutY="4.0" mnemonicParsing="false" text="Automatically preview selected file in Work File dialog" />
                                  </children>
                               </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="8">

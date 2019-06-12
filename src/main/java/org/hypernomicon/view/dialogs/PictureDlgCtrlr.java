@@ -86,9 +86,9 @@ public class PictureDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static PictureDlgCtrlr create(String title, Rectangle2D viewPort)
+  public static PictureDlgCtrlr create(Rectangle2D viewPort)
   {
-    PictureDlgCtrlr pdc = HyperDlg.create("PictureDlg.fxml", title, true);
+    PictureDlgCtrlr pdc = HyperDlg.create("PictureDlg.fxml", "Edit Picture", true);
     pdc.init(viewPort);
     return pdc;
   }

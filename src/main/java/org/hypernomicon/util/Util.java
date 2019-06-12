@@ -68,6 +68,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -692,8 +693,8 @@ public final class Util
     {
       DialogPane dlgPane = dlg.getDialogPane();
 
-      dlgPane.setMinSize(800, 400);
-      dlgPane.setMaxSize(800, 400);
+      dlgPane.setMinSize (800, 400);
+      dlgPane.setMaxSize (800, 400);
       dlgPane.setPrefSize(800, 400);
     }
 
@@ -1157,7 +1158,7 @@ public final class Util
 
   public static boolean checkInternetConnection()
   {
-    return InternetCheckDlgCtrlr.create(appTitle).checkInternet("https://www.google.com/");
+    return InternetCheckDlgCtrlr.create().checkInternet("https://www.google.com/");
   }
 
 //---------------------------------------------------------------------------
@@ -1221,6 +1222,7 @@ public final class Util
   public static String safeStr(String s) { return s == null ? "" : s; }
 
   public static boolean collEmpty(Collection<?> c) { return c == null ? true : c.isEmpty(); }
+  public static boolean collEmpty(Map<?, ?> m)     { return m == null ? true : m.isEmpty(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

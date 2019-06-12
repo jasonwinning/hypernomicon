@@ -107,7 +107,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  PDFJSWrapper(AnchorPane apBrowser, PDFJSDoneHandler doneHndlr, Consumer<Integer> pageChangeHndlr, PDFJSRetrievedDataHandler retrievedDataHndlr)
+  public PDFJSWrapper(AnchorPane apBrowser, PDFJSDoneHandler doneHndlr, Consumer<Integer> pageChangeHndlr, PDFJSRetrievedDataHandler retrievedDataHndlr)
   {
     this.doneHndlr = doneHndlr;
     this.pageChangeHndlr = pageChangeHndlr;
@@ -396,7 +396,8 @@ public class PDFJSWrapper
   {
     public void pageChange(int newPage)
     {
-      pageChangeHndlr.accept(newPage);
+      if (pageChangeHndlr != null)
+        pageChangeHndlr.accept(newPage);
     }
 
 //---------------------------------------------------------------------------
@@ -417,6 +418,8 @@ public class PDFJSWrapper
 
     public void setData(JSObject obj)
     {
+      if (retrievedDataHndlr == null) return;
+
       ArrayList<Integer> hilitePages = new ArrayList<>();
       HashMap<String, Integer> labelToPage = new HashMap<>();
       HashMap<Integer, String> pageToLabel = new HashMap<>();
@@ -468,7 +471,8 @@ public class PDFJSWrapper
         printVal(errMessage);
       }
 
-      doneHndlr.handle(PDFJSCommand.pjsOpen, success, "");
+      if (doneHndlr != null)
+        doneHndlr.handle(PDFJSCommand.pjsOpen, success, "");
     }
 
 //---------------------------------------------------------------------------
@@ -487,18 +491,19 @@ public class PDFJSWrapper
         printVal(errMessage);
       }
 
-      doneHndlr.handle(PDFJSCommand.pjsClose, success, "");
+      if (doneHndlr != null)
+        doneHndlr.handle(PDFJSCommand.pjsClose, success, "");
     }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void close()
+  public void close()
   {
     if (!opened)
     {
-      doneHndlr.handle(PDFJSCommand.pjsClose, false, "Unable to close because the viewer is already closed.");
+      if (doneHndlr != null) doneHndlr.handle(PDFJSCommand.pjsClose, false, "Unable to close because the viewer is already closed.");
       return;
     }
 
@@ -571,6 +576,23 @@ public class PDFJSWrapper
 
     browser.executeJavaScript("PDFViewerApplication.pdfViewer.currentPageNumber = " + pageNum + ";");
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void cleanup()
+  {
+    cleanupPdfHtml();
+
+    disposing = true;
+
+    browser.addDisposeListener(event -> { disposing = false; });
+    browser.dispose();
+
+    while (disposing) sleepForMillis(30);
+  }
+
+  private static boolean disposing = false;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -198,7 +198,7 @@ public final class App extends Application
           hdbExists = true;
       }
     }
-    
+
     List<String> args = new ArrayList<>(getParameters().getUnnamed());
 
     if (args.size() > 0)
@@ -321,7 +321,7 @@ public final class App extends Application
 
         if (swipeTime < 200)
         {
-          if (deltaX > 500)       ui.btnBackClick();
+          if      (deltaX >  500) ui.btnBackClick();
           else if (deltaX < -500) ui.btnForwardClick();
         }
       });
@@ -407,9 +407,8 @@ public final class App extends Application
       {
         bibManagerDlg.setLibrary(db.getBibLibrary());
 
-        if (db.bibLibraryIsLinked() == false)
-          if (bibManagerDlg.getStage().isShowing())
-            bibManagerDlg.getStage().close();
+        if ((db.bibLibraryIsLinked() == false) && bibManagerDlg.getStage().isShowing())
+          bibManagerDlg.getStage().close();
 
         ui.updateBibImportMenus();
 

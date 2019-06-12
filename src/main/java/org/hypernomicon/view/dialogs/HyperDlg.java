@@ -70,10 +70,7 @@ public abstract class HyperDlg
       dialogStage.setResizable(resizable);
       dialogStage.initStyle(stageStyle);
 
-      if (modality == Modality.NONE)
-        dialogStage.initOwner(null);
-      else
-        dialogStage.initOwner(ui.windows.getOutermostStage());
+      dialogStage.initOwner(modality == Modality.NONE ? null : ui.windows.getOutermostStage());
       dialogStage.getIcons().addAll(app.getPrimaryStage().getIcons());
       Scene scene = new Scene(mainPane);
       dialogStage.setScene(scene);

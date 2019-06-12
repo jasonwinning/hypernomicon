@@ -100,9 +100,8 @@ public class HyperPath
 
   public boolean isEmpty()
   {
-    if (record != null)
-      if ((record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID))
-        return false;
+    if ((record != null) && (record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID))
+      return false;
 
     return FilePath.isEmpty(getFileName());
   }
@@ -112,9 +111,7 @@ public class HyperPath
 
   public String getNameStr()
   {
-    if ((record != null) &&
-        (record.getID() == ROOT_FOLDER_ID) &&
-        (record.getType() == hdtFolder))
+    if ((record != null) && (record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID))
       return "Root";
 
     return nullSwitch(getFileName(), "", fn -> fn.getNameOnly().toString());
@@ -161,7 +158,7 @@ public class HyperPath
 
     if (FilePath.isEmpty(fileName)) return null;
 
-    return nullSwitch(parentFolder(), fileName, folder   ->
+    return nullSwitch(parentFolder()   , fileName, folder   ->
            nullSwitch(folder.filePath(), fileName, folderFP -> folderFP.resolve(fileName)));
   }
 

@@ -50,9 +50,9 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static SelectWorkDlgCtrlr create(String title, HDT_Person author)
+  public static SelectWorkDlgCtrlr create(HDT_Person author)
   {
-    SelectWorkDlgCtrlr swd = HyperDlg.create("SelectWorkDlg.fxml", title, true);
+    SelectWorkDlgCtrlr swd = HyperDlg.create("SelectWorkDlg.fxml", "Select a Work Record", true);
     swd.init(author);
     return swd;
   }

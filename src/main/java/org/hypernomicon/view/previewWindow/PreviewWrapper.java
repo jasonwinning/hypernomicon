@@ -84,21 +84,23 @@ public class PreviewWrapper
   private final ToggleButton btn;
   private final AnchorPane ap;
 
-  PreviewSource getSource()      { return src; }
-  int getPageNum()               { return pageNum; }
-  int getNumPages()              { return numPages; }
-  Tab getTab()                   { return tab; }
-  FilePath getFilePath()         { return curPrevFile == null ? null : curPrevFile.filePath; }
-  boolean needsRefresh()         { return needsRefresh; }
-  int getWorkStartPageNum()      { return workStartPageNum; }
-  int getWorkEndPageNum()        { return workEndPageNum; }
-  HDT_RecordWithPath getRecord() { return curPrevFile == null ? null : curPrevFile.record; }
-  ToggleButton getToggleButton() { return btn; }
-  FilePath getFilePathShowing()  { return filePathShowing; }
-  void prepareToHide()           { if (initialized) jsWrapper.prepareToHide(); }
-  void prepareToShow()           { if (initialized) jsWrapper.prepareToShow(); }
-  int lowestHilitePage()         { return collEmpty(hilitePages) ? -1 : hilitePages.get(0); }
-  int highestHilitePage()        { return collEmpty(hilitePages) ? -1 : hilitePages.get(hilitePages.size() - 1); }
+  PreviewSource getSource()        { return src; }
+  int getPageNum()                 { return pageNum; }
+  int getNumPages()                { return numPages; }
+  Tab getTab()                     { return tab; }
+  FilePath getFilePath()           { return curPrevFile == null ? null : curPrevFile.filePath; }
+  boolean needsRefresh()           { return needsRefresh; }
+  int getWorkStartPageNum()        { return workStartPageNum; }
+  int getWorkEndPageNum()          { return workEndPageNum; }
+  HDT_RecordWithPath getRecord()   { return curPrevFile == null ? null : curPrevFile.record; }
+  ToggleButton getToggleButton()   { return btn; }
+  FilePath getFilePathShowing()    { return filePathShowing; }
+  void prepareToHide()             { if (initialized) jsWrapper.prepareToHide(); }
+  void prepareToShow()             { if (initialized) jsWrapper.prepareToShow(); }
+  int lowestHilitePage()           { return collEmpty(hilitePages) ? -1 : hilitePages.get(0); }
+  int highestHilitePage()          { return collEmpty(hilitePages) ? -1 : hilitePages.get(hilitePages.size() - 1); }
+  int getPageByLabel(String label) { return collEmpty(labelToPage) ? parseInt(label, -1) : labelToPage.getOrDefault(label, -1); }
+  String getLabelByPage(int page)  { return collEmpty(pageToLabel) ? String.valueOf(page) : pageToLabel.getOrDefault(page, ""); }
 
   boolean enableFileNavButton(boolean isForward) { return (isForward ? getNextFileNdx() : getPreviousFileNdx()) != -1; }
 
@@ -482,8 +484,6 @@ public class PreviewWrapper
         return;
       }
 
-      String mimetypeStr = getMediaType(curPrevFile.filePath).toString();
-
       filePathShowing = null;
       pageNumShowing = -1;
 
@@ -496,10 +496,10 @@ public class PreviewWrapper
       pageToLabel = null;
       hilitePages = null;
 
+      String mimetypeStr = showFile(curPrevFile.filePath, pageNum, jsWrapper);
+
       if (mimetypeStr.contains("pdf"))
       {
-        jsWrapper.loadPdf(curPrevFile.filePath, pageNum);
-
         pdfIsShowing = true;
 
         filePathShowing = curPrevFile.filePath;
@@ -510,30 +510,6 @@ public class PreviewWrapper
 
       pdfIsShowing = false;
       numPages = 1;
-
-      if (mimetypeStr.contains("openxmlformats-officedocument"))
-      {
-        try
-        {
-          DocumentConverter converter = new DocumentConverter();
-          Result<String> result = converter.convertToHtml(curPrevFile.filePath.toFile());
-          String html = result.getValue(); // The generated HTML
-
-          result.getWarnings().forEach(msg -> System.out.println(msg));
-
-          if (html.length() == 0) html = UNABLE_TO_PREVIEW_HTML;
-          jsWrapper.loadHtml(html);
-        }
-        catch (IOException e)
-        {
-          jsWrapper.loadHtml(UNABLE_TO_PREVIEW_HTML);
-        }
-      }
-      else if (mimetypeStr.contains("html")  || mimetypeStr.contains("image")  || mimetypeStr.contains("plain") ||
-               mimetypeStr.contains("video") || mimetypeStr.contains("audio"))
-        jsWrapper.loadFile(curPrevFile.filePath);
-      else
-        jsWrapper.loadHtml(UNABLE_TO_PREVIEW_HTML);
 
       filePathShowing = curPrevFile.filePath;
       pageNumShowing = pageNum;
@@ -549,6 +525,46 @@ public class PreviewWrapper
   }
 
   private static final String UNABLE_TO_PREVIEW_HTML = "Unable to preview the file.";
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  public static String showFile(FilePath filePath, int pageNum, PDFJSWrapper jsWrapper)
+  {
+    String mimetypeStr = getMediaType(filePath).toString();
+
+    if (mimetypeStr.contains("pdf"))
+    {
+      jsWrapper.loadPdf(filePath, pageNum);
+      return mimetypeStr;
+    }
+
+    if (mimetypeStr.contains("openxmlformats-officedocument"))
+    {
+      try
+      {
+        DocumentConverter converter = new DocumentConverter();
+        Result<String> result = converter.convertToHtml(filePath.toFile());
+        String html = result.getValue(); // The generated HTML
+
+        result.getWarnings().forEach(msg -> System.out.println(msg));
+
+        if (html.length() == 0) html = UNABLE_TO_PREVIEW_HTML;
+        jsWrapper.loadHtml(html);
+      }
+      catch (IOException e)
+      {
+        jsWrapper.loadHtml(UNABLE_TO_PREVIEW_HTML);
+      }
+    }
+    else if (mimetypeStr.contains("html")  || mimetypeStr.contains("image")  || mimetypeStr.contains("plain") ||
+             mimetypeStr.contains("video") || mimetypeStr.contains("audio"))
+      jsWrapper.loadFile(filePath);
+    else
+      jsWrapper.loadHtml(UNABLE_TO_PREVIEW_HTML);
+
+    return mimetypeStr;
+  }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -600,28 +616,6 @@ public class PreviewWrapper
         prevPage = page;
       }
     }
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  int getPageByLabel(String label)
-  {
-    if ((labelToPage == null) || labelToPage.isEmpty())
-      return parseInt(label, -1);
-
-    return labelToPage.getOrDefault(label, -1);
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  String getLabelByPage(int page)
-  {
-    if ((pageToLabel == null) || pageToLabel.isEmpty())
-      return String.valueOf(page);
-
-    return pageToLabel.getOrDefault(page, "");
   }
 
   //---------------------------------------------------------------------------

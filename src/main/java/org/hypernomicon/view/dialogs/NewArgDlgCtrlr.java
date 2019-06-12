@@ -64,9 +64,9 @@ public class NewArgDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewArgDlgCtrlr create(String title, HDT_Position curPosition)
+  public static NewArgDlgCtrlr create(HDT_Position curPosition)
   {
-    NewArgDlgCtrlr nad = HyperDlg.create("NewArgDlg.fxml", title, true);
+    NewArgDlgCtrlr nad = HyperDlg.create("NewArgDlg.fxml", "New Argument", true);
     nad.init(curPosition);
     return nad;
   }

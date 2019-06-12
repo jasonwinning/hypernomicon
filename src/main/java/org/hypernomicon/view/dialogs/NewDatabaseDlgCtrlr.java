@@ -129,9 +129,9 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewDatabaseDlgCtrlr create(String title, String newPath)
+  public static NewDatabaseDlgCtrlr create(String newPath)
   {
-    NewDatabaseDlgCtrlr ndd = HyperDlg.create("NewDatabaseDlg.fxml", title, true);
+    NewDatabaseDlgCtrlr ndd = HyperDlg.create("NewDatabaseDlg.fxml", "Customize How Database Will Be Created", true);
     ndd.init(newPath);
     return ndd;
   }

@@ -186,18 +186,248 @@ public class FileManager extends HyperDlg
   private static HyperTask task;
   private static long totalTaskCount, curTaskCount;
 
-  FileRow getFolderRow()     { return nullSwitch(curFolder, null, folder -> folderTree.getRowsForRecord(folder).get(0)); }
-  public void clearHistory() { history.clear(); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
+  FileRow getFolderRow()             { return nullSwitch(curFolder, null, folder -> folderTree.getRowsForRecord(folder).get(0)); }
+  public void clearHistory()         { history.clear(); }
+  public void setNeedRefresh()       { if (suppressNeedRefresh == false) needRefresh = true; }
   @Override public boolean isValid() { return true; }
 
-  public void setNeedRefresh()
+  private List<MarkedRowInfo> getSrcRows(boolean dragging) { return dragging ? dragRows : markedRows; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static FileManager create()
   {
-    if (suppressNeedRefresh) return;
-    needRefresh = true;
+    FileManager managerDlg = HyperDlg.createUsingFullPath("view/fileManager/FileManager.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
+    managerDlg.init();
+    return managerDlg;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void init()
+  {
+    initContainers();
+
+    fileTable.addContextMenuItem("Launch", Predicate.not(FileRow::isDirectory), fileRow -> launchFile(fileRow.getFilePath()));
+    fileTable.addContextMenuItem("Show in system explorer", fileRow -> highlightFileInExplorer(fileRow.getFilePath()));
+    fileTable.addContextMenuItem("Copy path to clipboard", fileRow -> copyToClipboard(fileRow.getFilePath().toString()));
+    fileTable.addContextMenuItem("Rename", this::rename);
+
+    fileTable.addContextMenuItem("New misc. file record", fileRow -> fileRow.getRecord() == null, fileRow ->
+    {
+      ui.newMiscFile(fileRow, null);
+      refresh();
+    });
+
+    fileTable.addContextMenuItem("New work record", fileRow -> fileRow.getRecord() == null, fileRow ->
+    {
+      ui.newWorkAndWorkFile(null, fileRow.getFilePath());
+      refresh();
+    });
+
+    fileTable.addContextMenuItem("Cut", fileRow -> cutCopy(fileRow, false));
+    fileTable.addContextMenuItem("Copy", fileRow -> cutCopy(fileRow, true));
+    pasteMenuItem = fileTable.addContextMenuItem("Paste into this folder", FileRow::isDirectory, dirRow -> paste(dirRow, clipboardCopying, false));
+    fileTable.addContextMenuItem("Delete", this::delete);
+
+    btnCut.setOnAction(event -> cutCopy(null, false));
+    btnCopy.setOnAction(event -> cutCopy(null, true));
+    btnPaste.setOnAction(event -> paste(null, clipboardCopying, false));
+    btnDelete.setOnAction(event -> delete(null));
+    btnNewFolder.setOnAction(event -> newFolder());
+
+    history = new FolderHistory(btnForward, btnBack);
+
+    btnBack.setOnAction(event -> btnBackClick());
+    btnForward.setOnAction(event -> btnForwardClick());
+    btnRefresh.setOnAction(event -> btnRefreshClick());
+    btnRename.setOnAction(event -> rename(null));
+
+    btnMainWindow.setOnAction(event -> ui.windows.focusStage(app.getPrimaryStage()));
+    btnPreviewWindow.setOnAction(event -> ui.openPreviewWindow(pvsManager));
+    btnPaste.setDisable(true);
+    pasteMenuItem.disabled = true;
+
+    onShown = () ->
+    {
+      if (shownAlready() == false)
+        setDividerPositions();
+
+      refresh();
+
+      ui.windows.push(dialogStage);
+    };
+
+    dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if (ui.windows.getCyclingFocus()) return;
+
+      if ((newValue == null) || (newValue.booleanValue() == false)) return;
+
+      ui.windows.push(dialogStage);
+
+      if (needRefresh) refresh();
+    });
+
+    dialogStage.setOnHidden(event -> ui.windows.focusStage(app.getPrimaryStage()));
+
+    recordTable.addDefaultMenuItems();
+
+    btnBack         .setTooltip(new Tooltip("Previous folder in history"));
+    btnForward      .setTooltip(new Tooltip("Next folder in history"));
+    btnCut          .setTooltip(new Tooltip("Cut"));
+    btnCopy         .setTooltip(new Tooltip("Copy"));
+    btnPaste        .setTooltip(new Tooltip("Paste"));
+    btnDelete       .setTooltip(new Tooltip("Delete"));
+    btnNewFolder    .setTooltip(new Tooltip("Create new folder"));
+    btnRename       .setTooltip(new Tooltip("Rename selected file or folder"));
+    btnRefresh      .setTooltip(new Tooltip("Refresh"));
+    btnMainWindow   .setTooltip(new Tooltip("Return to main application window"));
+    btnPreviewWindow.setTooltip(new Tooltip("Show preview window"));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void initContainers()
+  {
+    fileTable = new FileTable(fileTV, PREF_KEY_HT_MGR_FILES);
+    folderTree = new FolderTreeWrapper(treeView, fileTable);
+
+    folderTree.getTreeModel().addParentChildRelation(rtParentFolderOfFolder, true);
+
+    recordTable = new HyperTable(recordTV, 1, false, PREF_KEY_HT_FM_RECORDS, this);
+
+    recordTable.addCol(hdtNone, ctIncremental);
+    recordTable.addCol(hdtNone, ctNone);
+
+    treeView.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if ((newValue == null) || (newValue == oldValue)) return;
+
+      HDT_Folder folder;
+      try
+      {
+        folder = HyperPath.getFolderFromFilePath(newValue.getValue().getFilePath(), true);
+      }
+      catch (Exception e)
+      {
+        messageDialog("A file error occurred: " + e.getMessage(), mtError);
+        return;
+      }
+
+      curFolder = folder;
+      history.add(new HistoryItem(newValue.getValue(), null, null));
+
+      fileTable.update(folder, newValue);
+      setCurrentFileRow(null, false);
+      getStage().setTitle(dialogTitle + " - " + folder.filePath());
+    });
+
+    fileTV.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if (newValue == null)
+      {
+        previewWindow.clearPreview(pvsManager);
+        return;
+      }
+      if (newValue == oldValue) return;
+
+      previewWindow.disablePreviewUpdating = true;
+      setCurrentFileRow(newValue, false);
+      previewWindow.disablePreviewUpdating = false;
+
+      history.updateCurrent(new HistoryItem(folderTree.getSelectionModel().getSelectedItem().getValue(), newValue, null));
+
+      if (selectNonBlankRecordRow() == false)
+        previewWindow.setPreview(pvsManager, newValue.getFilePath(), 1, -1, null);
+    });
+
+    recordTable.setOnShowMore(() -> setCurrentFileRow(fileTV.getSelectionModel().getSelectedItem(), true));
+
+    fileTV.setRowFactory(thisTV ->
+    {
+      TableRow<FileRow> row = new TableRow<>();
+
+      row.setOnMouseClicked(mouseEvent ->
+      {
+        if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2))
+        {
+          nullSwitch(row.getItem(), fileRow ->
+          {
+            if (fileRow.isDirectory())
+              folderTree.getSelectionModel().select(fileRow.getTreeItem());
+            else
+              launchFile(fileRow.getFilePath());
+          });
+        }
+      });
+
+      fileTable.setupDragHandlers(row);
+
+      row.itemProperty().addListener((ob, oldValue, newValue) ->
+      {
+        if (newValue == null)
+          row.setContextMenu(null);
+        else
+          row.setContextMenu(fileTable.createContextMenu(newValue, fileTable.getContextMenuSchemata()));
+      });
+
+      return row;
+    });
+
+    recordTV.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if (newValue == oldValue) return;
+
+      if (newValue != null)
+      {
+        HDT_Record record = HyperTableCell.getRecord(newValue.getCell(1));
+        history.updateCurrent(new HistoryItem(folderTree.selectedItem().getValue(), fileTV.getSelectionModel().getSelectedItem(), record));
+
+        if (record != null)
+        {
+          if (record.getType() == hdtWorkFile)
+          {
+            HDT_WorkFile workFile = HDT_WorkFile.class.cast(record);
+            if (workFile.works.isEmpty() == false)
+              record = workFile.works.get(0);
+          }
+
+          String mainText = "";
+          if (record.hasDesc())
+            mainText = HDT_RecordWithDescription.class.cast(record).getDesc().getHtml();
+
+          MainTextWrapper.setReadOnlyHTML(getHtmlEditorText(mainText), webView.getEngine(), new TextViewInfo(), null);
+
+          setPreviewFromRecordTable();
+
+          return;
+        }
+      }
+
+      setPreviewFromRecordTable();
+
+      webView.getEngine().loadContent("");
+    });
+
+    webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
+    {
+      HDT_Record record = recordTable.selectedRecord();
+      if (record == null) return;
+
+      String mainText = "";
+      if (record.hasDesc())
+        mainText = HDT_RecordWithDescription.class.cast(record).getDesc().getHtml();
+
+      MainTextWrapper.handleJSEvent(getHtmlEditorText(mainText), webView.getEngine(), new TextViewInfo());
+    });
+
+    webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
+
+    MainTextWrapper.webViewAddZoom(webView, PREF_KEY_FILEMGR_ZOOM);
   }
 
 //---------------------------------------------------------------------------
@@ -229,14 +459,6 @@ public class FileManager extends HyperDlg
     markedRows = rows;
     btnPaste.setDisable(false);
     pasteMenuItem.disabled = false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private List<MarkedRowInfo> getSrcRows(boolean dragging)
-  {
-    return dragging ? dragRows : markedRows;
   }
 
 //---------------------------------------------------------------------------
@@ -497,9 +719,8 @@ public class FileManager extends HyperDlg
           if (isCancelled())
             throw new TerminateTaskException();
 
-          if (copying == false)
-            if (entry.getKey().canObtainLock() == false)
-              throw new TerminateTaskException("Unable to obtain lock on path: \"" + entry.getKey() + "\"");
+          if ((copying == false) && (entry.getKey().canObtainLock() == false))
+            throw new TerminateTaskException("Unable to obtain lock on path: \"" + entry.getKey() + "\"");
 
           if (entry.getValue().canObtainLock() == false)
             throw new TerminateTaskException("Unable to obtain lock on path: \"" + entry.getValue() + "\"");
@@ -574,9 +795,8 @@ public class FileManager extends HyperDlg
           FilePath srcFilePath  = entry.getKey(),
                    destFilePath = entry.getValue();
 
-          if (srcFilePath.isDirectory())
-            if (destFilePath.exists() == false)
-              FileUtils.forceMkdir(destFilePath.toFile());
+          if (srcFilePath.isDirectory() && (destFilePath.exists() == false))
+            FileUtils.forceMkdir(destFilePath.toFile());
         }
 
       // if copying, copy files
@@ -593,14 +813,8 @@ public class FileManager extends HyperDlg
 
             FilePath srcFilePath = entry.getKey();
 
-            if (srcFilePath.isDirectory() == false)
-            {
-              srcFilePath = entry.getKey();
-              FilePath destFilePath = entry.getValue();
-
-              if (!srcFilePath.copyTo(destFilePath, false))
-                throw new TerminateTaskException();
-            }
+            if ((srcFilePath.isDirectory() == false) && (!srcFilePath.copyTo(entry.getValue(), false)))
+              throw new TerminateTaskException();
           }
         }
 
@@ -627,16 +841,9 @@ public class FileManager extends HyperDlg
             else
             {
               for (HyperPath hyperPath : set)
-              {
-                HDT_RecordType recordType = hdtNone;
-
-                if (hyperPath.getRecord() != null)
-                  recordType = hyperPath.getRecord().getType();
-
-                if (recordType != hdtFolder)
+                if (nullSwitch(hyperPath.getRecord(), hdtNone, HDT_Record::getType) != hdtFolder)
                   if (!hyperPath.moveToFolder(folder.getID(), false, false, ""))
                     throw new TerminateTaskException();
-              }
             }
           }
 
@@ -647,7 +854,7 @@ public class FileManager extends HyperDlg
           {
             updateProgress(curTaskCount++, totalTaskCount);
 
-            if ((srcFilePath.exists() == false) || (srcFilePath.isDirectory() == false)) return;
+            if (srcFilePath.isDirectory() == false) return;
 
             HDT_Folder folder = HyperPath.getFolderFromFilePath(srcFilePath, false);
 
@@ -661,10 +868,8 @@ public class FileManager extends HyperDlg
           {
             updateProgress(curTaskCount++, totalTaskCount);
 
-            if (srcFilePath.exists())
-              if (srcFilePath.isDirectory())
-                if (srcFilePath.dirContainsAnyFiles(true) == false)
-                  HyperPath.getFolderFromFilePath(srcFilePath, false).delete(false);
+            if (srcFilePath.isDirectory() && (srcFilePath.dirContainsAnyFiles(true) == false))
+              HyperPath.getFolderFromFilePath(srcFilePath, false).delete(false);
           }
         }
       }
@@ -697,102 +902,6 @@ public class FileManager extends HyperDlg
       if (FilePath.isEmpty(pathToHilite) == false)
         goToFilePath(pathToHilite);
     });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static FileManager create()
-  {
-    FileManager managerDlg = HyperDlg.createUsingFullPath("view/fileManager/FileManager.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
-    managerDlg.init();
-    return managerDlg;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void init()
-  {
-    initContainers();
-
-    fileTable.addContextMenuItem("Launch", Predicate.not(FileRow::isDirectory), fileRow -> launchFile(fileRow.getFilePath()));
-    fileTable.addContextMenuItem("Show in system explorer", fileRow -> highlightFileInExplorer(fileRow.getFilePath()));
-    fileTable.addContextMenuItem("Copy path to clipboard", fileRow -> copyToClipboard(fileRow.getFilePath().toString()));
-    fileTable.addContextMenuItem("Rename", this::rename);
-
-    fileTable.addContextMenuItem("New misc. file record", fileRow -> fileRow.getRecord() == null, fileRow ->
-    {
-      ui.newMiscFile(fileRow, null);
-      refresh();
-    });
-
-    fileTable.addContextMenuItem("New work record", fileRow -> fileRow.getRecord() == null, fileRow ->
-    {
-      ui.newWorkAndWorkFile(null, fileRow.getFilePath());
-      refresh();
-    });
-
-    fileTable.addContextMenuItem("Cut", fileRow -> cutCopy(fileRow, false));
-    fileTable.addContextMenuItem("Copy", fileRow -> cutCopy(fileRow, true));
-    pasteMenuItem = fileTable.addContextMenuItem("Paste into this folder", FileRow::isDirectory, dirRow -> paste(dirRow, clipboardCopying, false));
-    fileTable.addContextMenuItem("Delete", this::delete);
-
-    btnCut.setOnAction(event -> cutCopy(null, false));
-    btnCopy.setOnAction(event -> cutCopy(null, true));
-    btnPaste.setOnAction(event -> paste(null, clipboardCopying, false));
-    btnDelete.setOnAction(event -> delete(null));
-    btnNewFolder.setOnAction(event -> newFolder());
-
-    history = new FolderHistory(btnForward, btnBack);
-
-    btnBack.setOnAction(event -> btnBackClick());
-    btnForward.setOnAction(event -> btnForwardClick());
-    btnRefresh.setOnAction(event -> btnRefreshClick());
-    btnRename.setOnAction(event -> rename(null));
-
-    btnMainWindow.setOnAction(event -> ui.windows.focusStage(app.getPrimaryStage()));
-    btnPreviewWindow.setOnAction(event -> ui.openPreviewWindow(pvsManager));
-    btnPaste.setDisable(true);
-    pasteMenuItem.disabled = true;
-
-    onShown = () ->
-    {
-      if (shownAlready() == false)
-        setDividerPositions();
-
-      refresh();
-
-      ui.windows.push(dialogStage);
-    };
-
-    dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (ui.windows.getCyclingFocus()) return;
-
-      if (newValue == null) return;
-      if (newValue == false) return;
-
-      ui.windows.push(dialogStage);
-
-      if (needRefresh) refresh();
-    });
-
-    dialogStage.setOnHidden(event -> ui.windows.focusStage(app.getPrimaryStage()));
-
-    recordTable.addDefaultMenuItems();
-
-    btnBack         .setTooltip(new Tooltip("Previous folder in history"));
-    btnForward      .setTooltip(new Tooltip("Next folder in history"));
-    btnCut          .setTooltip(new Tooltip("Cut"));
-    btnCopy         .setTooltip(new Tooltip("Copy"));
-    btnPaste        .setTooltip(new Tooltip("Paste"));
-    btnDelete       .setTooltip(new Tooltip("Delete"));
-    btnNewFolder    .setTooltip(new Tooltip("Create new folder"));
-    btnRename       .setTooltip(new Tooltip("Rename selected file or folder"));
-    btnRefresh      .setTooltip(new Tooltip("Refresh"));
-    btnMainWindow   .setTooltip(new Tooltip("Return to main application window"));
-    btnPreviewWindow.setTooltip(new Tooltip("Show preview window"));
   }
 
 //---------------------------------------------------------------------------
@@ -882,10 +991,10 @@ public class FileManager extends HyperDlg
 
         switch (hyperPath.getRecord().getType())
         {
-          case hdtPerson   : confirmMsg = confirmMsg + "is assigned as a picture file for a person record. Delete it anyway?"; break;
-          case hdtMiscFile : confirmMsg = confirmMsg + "is assigned to a misc. file record. Okay to delete the file as well as the associated record?"; break;
-          case hdtWorkFile : confirmMsg = confirmMsg + "is assigned to a work file record. Delete it anyway?"; break;
-          case hdtFolder   : confirmMsg = confirmMsg + "is assigned to a note record. Delete it anyway?"; break;
+          case hdtPerson   : confirmMsg += "is assigned as a picture file for a person record. Delete it anyway?"; break;
+          case hdtMiscFile : confirmMsg += "is assigned to a misc. file record. Okay to delete the file as well as the associated record?"; break;
+          case hdtWorkFile : confirmMsg += "is assigned to a work file record. Delete it anyway?"; break;
+          case hdtFolder   : confirmMsg += "is assigned to a note record. Delete it anyway?"; break;
           default          : messageDialog("Internal error #21292", mtError); return;
         }
 
@@ -1004,18 +1113,16 @@ public class FileManager extends HyperDlg
     FilePath filePath = hyperPath.filePath();
     boolean isDir = filePath.isDirectory();
 
-    if ((fileRecord != null) && (deleting == false))
-      if (fileRecord.getType() == hdtPerson)
-        return falseWithErrorMessage("The file \"" + filePath + "\" cannot be moved: It is in use as a picture for person record ID " + fileRecord.getID() + ".");
+    if ((fileRecord != null) && (deleting == false) && (fileRecord.getType() == hdtPerson))
+      return falseWithErrorMessage("The file \"" + filePath + "\" cannot be moved: It is in use as a picture for person record ID " + fileRecord.getID() + ".");
 
     if (db.isProtectedFile(filePath))
       return falseWithErrorMessage((isDir ? "The folder \"" : "The file \"") + filePath + "\" cannot be " + opPast + ".");
 
     if (deleting == false) return true;
 
-    if (isDir)
-      if (HDT_Folder.class.cast(fileRecord).containsFilesThatAreInUse())
-        return falseWithErrorMessage("The folder \"" + filePath + "\" cannot be deleted, because it contains one or more files or folders that are in use by the database.");
+    if (isDir && HDT_Folder.class.cast(fileRecord).containsFilesThatAreInUse())
+      return falseWithErrorMessage("The folder \"" + filePath + "\" cannot be deleted, because it contains one or more files or folders that are in use by the database.");
 
     return true;
   }
@@ -1027,7 +1134,7 @@ public class FileManager extends HyperDlg
   {
     if (curFolder == null) return;
 
-    RenameDlgCtrlr dlg = RenameDlgCtrlr.create("Create folder in: " + curFolder.filePath(), ntFolder, "");
+    RenameDlgCtrlr dlg = RenameDlgCtrlr.create("Create Folder in: " + curFolder.filePath(), ntFolder, "");
 
     if (dlg.showModal() == false) return;
 
@@ -1070,12 +1177,12 @@ public class FileManager extends HyperDlg
     boolean isDir = fileRow.isDirectory(), cantRename;
     String noun;
 
-    if (isDir) { noun = "folder"; cantRename = isUnstoredRecord(fileRecord.getID(), hdtFolder); }
-    else       { noun = "file";   cantRename = db.isProtectedFile(fileRow.getFilePath()); }
+    if (isDir) { noun = "Folder"; cantRename = isUnstoredRecord(fileRecord.getID(), hdtFolder); }
+    else       { noun = "File";   cantRename = db.isProtectedFile(fileRow.getFilePath()); }
 
     if (cantRename)
     {
-      messageDialog("That " + noun + " cannot be renamed.", mtError);
+      messageDialog("That " + noun.toLowerCase() + " cannot be renamed.", mtError);
       return;
     }
 
@@ -1083,9 +1190,9 @@ public class FileManager extends HyperDlg
 
     if (dlg.showModal() == false) return;
 
-    FilePath srcFilePath = fileRow.getFilePath();
-    FilePath parentFilePath = srcFilePath.getParent();
-    FilePath destFilePath = parentFilePath.resolve(dlg.getNewName());
+    FilePath srcFilePath = fileRow.getFilePath(),
+             parentFilePath = srcFilePath.getParent(),
+             destFilePath = parentFilePath.resolve(dlg.getNewName());
 
     if (destFilePath.exists())
     {
@@ -1124,7 +1231,7 @@ public class FileManager extends HyperDlg
     }
     catch (IOException e)
     {
-      messageDialog("Unable to rename the " + noun + ": " + e.getMessage(), mtError);
+      messageDialog("Unable to rename the " + noun.toLowerCase() + ": " + e.getMessage(), mtError);
       return;
     }
     finally
@@ -1245,150 +1352,6 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initContainers()
-  {
-    fileTable = new FileTable(fileTV, PREF_KEY_HT_MGR_FILES);
-    folderTree = new FolderTreeWrapper(treeView, fileTable);
-
-    folderTree.getTreeModel().addParentChildRelation(rtParentFolderOfFolder, true);
-
-    recordTable = new HyperTable(recordTV, 1, false, PREF_KEY_HT_FM_RECORDS, this);
-
-    recordTable.addCol(hdtNone, ctIncremental);
-    recordTable.addCol(hdtNone, ctNone);
-
-    treeView.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if ((newValue == null) || (newValue == oldValue)) return;
-
-      HDT_Folder folder;
-      try
-      {
-        folder = HyperPath.getFolderFromFilePath(newValue.getValue().getFilePath(), true);
-      }
-      catch (Exception e)
-      {
-        messageDialog("A file error occurred: " + e.getMessage(), mtError);
-        return;
-      }
-
-      curFolder = folder;
-      history.add(new HistoryItem(newValue.getValue(), null, null));
-
-      fileTable.update(folder, newValue);
-      setCurrentFileRow(null, false);
-      getStage().setTitle(dialogTitle + " - " + folder.filePath());
-    });
-
-    fileTV.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (newValue == null)
-      {
-        previewWindow.clearPreview(pvsManager);
-        return;
-      }
-      if (newValue == oldValue) return;
-
-      previewWindow.disablePreviewUpdating = true;
-      setCurrentFileRow(newValue, false);
-      previewWindow.disablePreviewUpdating = false;
-
-      history.updateCurrent(new HistoryItem(folderTree.getSelectionModel().getSelectedItem().getValue(), newValue, null));
-
-      if (selectNonBlankRecordRow() == false)
-        previewWindow.setPreview(pvsManager, newValue.getFilePath(), 1, -1, null);
-    });
-
-    recordTable.setOnShowMore(() -> setCurrentFileRow(fileTV.getSelectionModel().getSelectedItem(), true));
-
-    fileTV.setRowFactory(thisTV ->
-    {
-      TableRow<FileRow> row = new TableRow<>();
-
-      row.setOnMouseClicked(mouseEvent ->
-      {
-        if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2))
-        {
-          FileRow fileRow = row.getItem();
-
-          if (fileRow != null)
-          {
-            if (fileRow.isDirectory())
-              folderTree.getSelectionModel().select(fileRow.getTreeItem());
-            else
-              launchFile(fileRow.getFilePath());
-          }
-        }
-      });
-
-      fileTable.setupDragHandlers(row);
-
-      row.itemProperty().addListener((ob, oldValue, newValue) ->
-      {
-        if (newValue == null)
-          row.setContextMenu(null);
-        else
-          row.setContextMenu(fileTable.createContextMenu(newValue, fileTable.getContextMenuSchemata()));
-      });
-
-      return row;
-    });
-
-    recordTV.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
-    {
-      if (newValue == oldValue) return;
-
-      if (newValue != null)
-      {
-        HDT_Record record = HyperTableCell.getRecord(newValue.getCell(1));
-        history.updateCurrent(new HistoryItem(folderTree.selectedItem().getValue(), fileTV.getSelectionModel().getSelectedItem(), record));
-
-        if (record != null)
-        {
-          if (record.getType() == hdtWorkFile)
-          {
-            HDT_WorkFile workFile = HDT_WorkFile.class.cast(record);
-            if (workFile.works.isEmpty() == false)
-              record = workFile.works.get(0);
-          }
-
-          String mainText = "";
-          if (record.hasDesc())
-            mainText = HDT_RecordWithDescription.class.cast(record).getDesc().getHtml();
-
-          MainTextWrapper.setReadOnlyHTML(getHtmlEditorText(mainText), webView.getEngine(), new TextViewInfo(), null);
-
-          setPreviewFromRecordTable();
-
-          return;
-        }
-      }
-
-      setPreviewFromRecordTable();
-
-      webView.getEngine().loadContent("");
-    });
-
-    webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
-    {
-      HDT_Record record = recordTable.selectedRecord();
-      if (record == null) return;
-
-      String mainText = "";
-      if (record.hasDesc())
-        mainText = HDT_RecordWithDescription.class.cast(record).getDesc().getHtml();
-
-      MainTextWrapper.handleJSEvent(getHtmlEditorText(mainText), webView.getEngine(), new TextViewInfo());
-    });
-
-    webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
-
-    MainTextWrapper.webViewAddZoom(webView, PREF_KEY_FILEMGR_ZOOM);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private boolean selectNonBlankRecordRow()
   {
     HyperTableRow rowToPick = null;
@@ -1396,21 +1359,16 @@ public class FileManager extends HyperDlg
     for (HyperTableRow row : recordTable.getDataRows())
     {
       HDT_Record record = row.getRecord();
-      if (record != null)
-      {
-        if (record.hasDesc())
-        {
-          String text = HDT_RecordWithDescription.class.cast(record).getDesc().getPlain().trim();
-          if (text.length() > 0)
-          {
-            recordTable.selectRow(row);
-            return true;
-          }
-        }
+      if (record == null) continue;
 
-        if ((rowToPick == null) && (record instanceof HDT_RecordWithPath) && HDT_RecordWithPath.class.cast(record).pathNotEmpty())
-          rowToPick = row;
+      if (record.hasDesc() && (HDT_RecordWithDescription.class.cast(record).getDesc().getPlain().trim().length() > 0))
+      {
+        recordTable.selectRow(row);
+        return true;
       }
+
+      if ((rowToPick == null) && (record instanceof HDT_RecordWithPath) && HDT_RecordWithPath.class.cast(record).pathNotEmpty())
+        rowToPick = row;
     }
 
     if (rowToPick == null)
@@ -1435,10 +1393,8 @@ public class FileManager extends HyperDlg
 
     if ((record != null) && EnumSet.of(hdtWork, hdtMiscFile, hdtWorkFile).contains(record.getType()) == false)
     {
-      if (FilePath.isEmpty(fileTablePath) == false)
-        record = HyperPath.getFileFromFilePath(fileTablePath);
-      else if (FilePath.isEmpty(filePath) == false)
-        record = HyperPath.getFileFromFilePath(filePath);
+      if      (FilePath.isEmpty(fileTablePath) == false) record = HyperPath.getFileFromFilePath(fileTablePath);
+      else if (FilePath.isEmpty(filePath     ) == false) record = HyperPath.getFileFromFilePath(filePath);
     }
 
     if (record != null)
@@ -1470,9 +1426,8 @@ public class FileManager extends HyperDlg
               workFile = (HDT_WorkFile) recordWP;
           }
 
-          if (workFile == null)
-            if (FilePath.isEmpty(filePath) == false)
-              workFile = HDT_WorkFile.class.cast(HyperPath.getFileFromFilePath(filePath));
+          if ((workFile == null) && (FilePath.isEmpty(filePath) == false))
+            workFile = HDT_WorkFile.class.cast(HyperPath.getFileFromFilePath(filePath));
 
           if (workFile != null)
           {
@@ -1495,10 +1450,7 @@ public class FileManager extends HyperDlg
       }
     }
 
-    if (FilePath.isEmpty(fileTablePath) == false)
-      previewWindow.setPreview(pvsManager, fileTablePath, 1, -1, record);
-    else
-      previewWindow.setPreview(pvsManager, filePath, 1, -1, record);
+    previewWindow.setPreview(pvsManager, FilePath.isEmpty(fileTablePath) ? filePath : fileTablePath, 1, -1, record);
   }
 
 //---------------------------------------------------------------------------

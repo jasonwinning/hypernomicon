@@ -18,6 +18,7 @@
 
 <?import javafx.geometry.Rectangle2D?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckMenuItem?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
@@ -80,6 +81,7 @@
                           </items>
                         </Menu>
                     <MenuItem mnemonicParsing="false" onAction="#mnuSettingsClick" text="Settings" />
+                        <CheckMenuItem fx:id="mnuAutoImport" mnemonicParsing="false" text="Automatically watch for and import PDF files added" />
                         <MenuItem fx:id="mnuAddToQueryResults" mnemonicParsing="false" onAction="#mnuAddToQueryResultsClick" text="Add this record to query results" />
                         <MenuItem fx:id="mnuRevertToDiskCopy" mnemonicParsing="false" onAction="#mnuRevertToDiskCopyClick" text="Revert this record to disk copy" />
                         <MenuItem fx:id="mnuSaveReloadAll" mnemonicParsing="false" onAction="#mnuSaveReloadAllClick" text="Save/Reload All" />

@@ -348,7 +348,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       },
       row ->
       {
-        ChooseParentWorkFileDlgCtrlr ctrlr = ChooseParentWorkFileDlgCtrlr.create("Choose Work File", curWork);
+        ChooseParentWorkFileDlgCtrlr ctrlr = ChooseParentWorkFileDlgCtrlr.create(curWork);
 
         if (ctrlr.showModal() == false) return;
 
@@ -1102,7 +1102,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     HDT_Person author = curWork.authorRecords.isEmpty() ? null : curWork.authorRecords.get(0);
 
-    SelectWorkDlgCtrlr dlg = SelectWorkDlgCtrlr.create("Select a work record", author);
+    SelectWorkDlgCtrlr dlg = SelectWorkDlgCtrlr.create(author);
 
     if (dlg.showModal() == false) return;
 
@@ -1357,12 +1357,12 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       dirChooser.setTitle(moveOnly ? "Select location to move files" : "Select location to move or copy files");
 
-      if (destPath.exists() && destPath.isDirectory())
+      if (destPath.isDirectory())
         dirChooser.setInitialDirectory(destPath.toFile());
       else
       {
         folder = db.unenteredPath();
-        if (folder.exists() && folder.isDirectory())
+        if (folder.isDirectory())
           dirChooser.setInitialDirectory(folder.toFile());
       }
 
@@ -1706,9 +1706,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     else
     {
       if ((workFile == null) && (filePathToUse != null))
-        wdc = WorkDlgCtrlr.create("Import New Work", filePathToUse);
+        wdc = WorkDlgCtrlr.create(filePathToUse);
       else
-        wdc = WorkDlgCtrlr.create("Work File", workFile);
+        wdc = WorkDlgCtrlr.create(workFile);
 
       if (wdc.showModal() == false)
       {

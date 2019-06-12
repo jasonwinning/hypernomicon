@@ -55,9 +55,9 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static SelectConceptDlgCtrlr create(String title, HDT_Concept oldConcept)
+  public static SelectConceptDlgCtrlr create(HDT_Concept oldConcept)
   {
-    SelectConceptDlgCtrlr scd = HyperDlg.create("SelectConceptDlg.fxml", title, true);
+    SelectConceptDlgCtrlr scd = HyperDlg.create("SelectConceptDlg.fxml", "Term Select", true);
     scd.init(oldConcept);
     return scd;
   }

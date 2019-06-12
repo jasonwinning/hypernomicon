@@ -63,7 +63,7 @@ public class OmniFinder
   private HDT_RecordType typeFilter;
   public Runnable doneHndlr = null;
 
-  public boolean noResults() { return records == null ? true : records.isEmpty(); }
+  public boolean noResults() { return collEmpty(records); }
 
   protected enum TierEnum
   {

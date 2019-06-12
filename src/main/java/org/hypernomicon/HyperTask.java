@@ -17,7 +17,6 @@
 
 package org.hypernomicon;
 
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
@@ -63,7 +62,7 @@ public abstract class HyperTask extends Task<Boolean>
 
   public static boolean performTaskWithProgressDialog(HyperTask task)
   {
-    ProgressDlgCtrlr.create(appTitle).performTask(task);
+    ProgressDlgCtrlr.create().performTask(task);
 
     if ((task.getState() == State.FAILED) || (task.getState() == State.CANCELLED))
     {

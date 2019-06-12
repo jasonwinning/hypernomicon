@@ -1194,22 +1194,20 @@ public final class MainTextWrapper
                      .append("</summary><br><div class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\" style=\"margin-left: 3.5em; display: " + (sortByName ? "none" : "block") + ";\">");
             appendKeyWorkSpanAndBody(curRecord, innerHtml, false, tagNdx, true, viewInfo);
 
-            if (curLabel != null)
-              if (curLabel.subLabels.isEmpty() == false)
-              {
-                if (keyWorks.size() > 0) innerHtml.append("<br>");
-                appendSubLabelsKeyWorkBody(curLabel, innerHtml, false, tagNdx, viewInfo, "num" + makeElementID(curLabel));
-              }
+            if ((curLabel != null) && (curLabel.subLabels.isEmpty() == false))
+            {
+              if (keyWorks.size() > 0) innerHtml.append("<br>");
+              appendSubLabelsKeyWorkBody(curLabel, innerHtml, false, tagNdx, viewInfo, "num" + makeElementID(curLabel));
+            }
 
             innerHtml.append("</div><div class=\"" + ALPHA_SORTED_OUTER_CLASS + "\" style=\"margin-left: 3.5em; display: " + (sortByName ? "block" : "none") + ";\">");
             appendKeyWorkSpanAndBody(curRecord, innerHtml, true, tagNdx, true, viewInfo);
 
-            if (curLabel != null)
-              if (curLabel.subLabels.isEmpty() == false)
-              {
-                if (keyWorks.size() > 0) innerHtml.append("<br>");
-                appendSubLabelsKeyWorkBody(curLabel, innerHtml, true, tagNdx, viewInfo, "alp" + makeElementID(curLabel));
-              }
+            if ((curLabel != null) && (curLabel.subLabels.isEmpty() == false))
+            {
+              if (keyWorks.size() > 0) innerHtml.append("<br>");
+              appendSubLabelsKeyWorkBody(curLabel, innerHtml, true, tagNdx, viewInfo, "alp" + makeElementID(curLabel));
+            }
 
             innerHtml.append("</div></details>");
           }

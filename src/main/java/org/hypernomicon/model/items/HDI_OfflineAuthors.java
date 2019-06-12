@@ -67,9 +67,8 @@ public class HDI_OfflineAuthors extends HDI_OfflineBase
     else
       author.name = new PersonName(nodeText);
 
-    if (nestedItems != null)
-      if (nestedItems.isEmpty() == false)
-        author.nestedItems = nestedItems;
+    if (collEmpty(nestedItems) == false)
+      author.nestedItems = nestedItems;
 
     authors.add(author);
   }

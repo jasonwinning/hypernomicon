@@ -727,7 +727,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
         if (ui.windows.getOutermostModality() == Modality.NONE)
           ui.update();
 
-        ObjectOrderDlgCtrlr.create("Change order of rows", this, rows).showModal();
+        ObjectOrderDlgCtrlr.create(this, rows).showModal();
 
         if (handler != null)
           handler.run();

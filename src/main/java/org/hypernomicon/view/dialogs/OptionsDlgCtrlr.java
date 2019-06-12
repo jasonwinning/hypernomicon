@@ -107,9 +107,9 @@ public class OptionsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static OptionsDlgCtrlr create(String title)
+  public static OptionsDlgCtrlr create()
   {
-    OptionsDlgCtrlr odc = HyperDlg.create("OptionsDlg.fxml", title, true);
+    OptionsDlgCtrlr odc = HyperDlg.create("OptionsDlg.fxml", appTitle + " Settings", true);
     odc.init();
     return odc;
   }

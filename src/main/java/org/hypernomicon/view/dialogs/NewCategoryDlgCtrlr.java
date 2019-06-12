@@ -47,9 +47,9 @@ public class NewCategoryDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewCategoryDlgCtrlr create(String title, HDT_RecordType recordType)
+  public static NewCategoryDlgCtrlr create(HDT_RecordType recordType)
   {
-    NewCategoryDlgCtrlr ncd = HyperDlg.create("NewCategoryDlg.fxml", title, true);
+    NewCategoryDlgCtrlr ncd = HyperDlg.create("NewCategoryDlg.fxml", "New Category", true);
     ncd.init(recordType);
     return ncd;
   }

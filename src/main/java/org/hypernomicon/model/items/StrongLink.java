@@ -47,12 +47,12 @@ public class StrongLink
 
 //---------------------------------------------------------------------------
 
-  public HDT_Hub       getHub()      { return hub; }
-  public HDT_Note      getNote()     { return (HDT_Note     ) nullSwitch(noteSpoke    , null, Connector::getSpoke); }
-  public HDT_Concept   getConcept()  { return (HDT_Concept  ) nullSwitch(conceptSpoke , null, Connector::getSpoke); }
-  public HDT_Debate    getDebate()   { return (HDT_Debate   ) nullSwitch(debateSpoke  , null, Connector::getSpoke); }
+  public HDT_Hub       getHub     () { return hub; }
+  public HDT_Note      getNote    () { return (HDT_Note     ) nullSwitch(noteSpoke    , null, Connector::getSpoke); }
+  public HDT_Concept   getConcept () { return (HDT_Concept  ) nullSwitch(conceptSpoke , null, Connector::getSpoke); }
+  public HDT_Debate    getDebate  () { return (HDT_Debate   ) nullSwitch(debateSpoke  , null, Connector::getSpoke); }
   public HDT_Position  getPosition() { return (HDT_Position ) nullSwitch(positionSpoke, null, Connector::getSpoke); }
-  public HDT_WorkLabel getLabel()    { return (HDT_WorkLabel) nullSwitch(labelSpoke   , null, Connector::getSpoke); }
+  public HDT_WorkLabel getLabel   () { return (HDT_WorkLabel) nullSwitch(labelSpoke   , null, Connector::getSpoke); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

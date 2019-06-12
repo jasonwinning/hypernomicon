@@ -43,9 +43,9 @@ public class NewRegionDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewRegionDlgCtrlr create(String title, HDT_Country country)
+  public static NewRegionDlgCtrlr create(HDT_Country country)
   {
-    NewRegionDlgCtrlr dlg = HyperDlg.create("NewRegionDlg.fxml", title, true);
+    NewRegionDlgCtrlr dlg = HyperDlg.create("NewRegionDlg.fxml", "New State/Region", true);
     dlg.init(country);
     return dlg;
   }

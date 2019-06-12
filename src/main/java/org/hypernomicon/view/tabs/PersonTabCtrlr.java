@@ -808,7 +808,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     ivPerson.setOnMouseClicked(event ->
     {
-      PictureDlgCtrlr ctrlr = PictureDlgCtrlr.create("Edit Picture", viewPort);
+      PictureDlgCtrlr ctrlr = PictureDlgCtrlr.create(viewPort);
 
       if (ctrlr.showModal())
         viewPort = ctrlr.getViewPort();
@@ -926,7 +926,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     HDT_Work work = row.getRecord();
     HDT_Person curPerson = (HDT_Person) ui.activeRecord();
 
-    InvestigationsDlgCtrlr dlg = InvestigationsDlgCtrlr.create("Assign investigations - " + work.name(), work, curPerson);
+    InvestigationsDlgCtrlr dlg = InvestigationsDlgCtrlr.create(work, curPerson);
 
     if (dlg.showModal() == false)
       return;
@@ -1105,7 +1105,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     if ((newName.length() > 0) && (colNdx == 1))
       oldParent = null;
 
-    NewInstDlgCtrlr newInstDialog = NewInstDlgCtrlr.create("New Institution or Institutional Division", oldParent, newName, colNdx == 1);
+    NewInstDlgCtrlr newInstDialog = NewInstDlgCtrlr.create(oldParent, newName, colNdx == 1);
 
     if (newInstDialog.showModal())
     {

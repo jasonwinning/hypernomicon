@@ -30,6 +30,7 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 import static org.hypernomicon.model.records.HDT_RecordState.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.Util.*;
 
 public class HDI_OfflinePointerMulti extends HDI_OfflineBase
 {
@@ -50,7 +51,7 @@ public class HDI_OfflinePointerMulti extends HDI_OfflineBase
   {
     objIDs.add(objID);
 
-    if ((nestedItems != null) && (nestedItems.isEmpty() == false))
+    if (collEmpty(nestedItems) == false)
       objIDtoMaps.put(objID, nestedItems);
   }
 

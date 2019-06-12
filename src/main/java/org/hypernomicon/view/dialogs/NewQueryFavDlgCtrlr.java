@@ -37,9 +37,9 @@ public class NewQueryFavDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewQueryFavDlgCtrlr create(String title, String newName)
+  public static NewQueryFavDlgCtrlr create(String newName)
   {
-    NewQueryFavDlgCtrlr nqf = HyperDlg.create("NewQueryFavDlg.fxml", title, true);
+    NewQueryFavDlgCtrlr nqf = HyperDlg.create("NewQueryFavDlg.fxml", "Add Query Favorite", true);
     nqf.init(newName);
     return nqf;
   }

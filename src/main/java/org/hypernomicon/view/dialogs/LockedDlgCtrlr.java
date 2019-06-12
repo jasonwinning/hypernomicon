@@ -202,9 +202,9 @@ public class LockedDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static LockedDlgCtrlr create(String title, String otherCompName)
+  public static LockedDlgCtrlr create(String otherCompName)
   {
-    LockedDlgCtrlr ldc = HyperDlg.create("LockedDlg.fxml", title, true);
+    LockedDlgCtrlr ldc = HyperDlg.create("LockedDlg.fxml", "Database is Currently Locked", true);
     ldc.init(otherCompName);
     return ldc;
   }

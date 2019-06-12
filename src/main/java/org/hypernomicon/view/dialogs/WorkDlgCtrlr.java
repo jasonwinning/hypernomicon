@@ -28,7 +28,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
-
+import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.bib.authors.BibAuthors;
@@ -62,11 +62,14 @@ import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.StandardPopulator;
+import org.hypernomicon.view.previewWindow.PDFJSWrapper;
+import org.hypernomicon.view.previewWindow.PreviewWrapper;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
 import org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
+
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -78,7 +81,9 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -92,12 +97,16 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
+import javafx.stage.Screen;
 
 //---------------------------------------------------------------------------
 
 public class WorkDlgCtrlr extends HyperDlg
 {
+  @FXML private AnchorPane apMain;
   @FXML private Button btnRegenerateFilename, btnStop;
   @FXML private CheckBox chkCreateBibEntry, chkKeepFilenameUnchanged;
   @FXML private ComboBox<EntryType> cbEntryType;
@@ -111,35 +120,40 @@ public class WorkDlgCtrlr extends HyperDlg
   @FXML private TableView<HyperTableRow> tvAuthors, tvISBN;
   @FXML private TextArea taMisc;
   @FXML private TextField tfDOI, tfFileTitle, tfNewFile, tfOrigFile, tfTitle, tfYear;
+  @FXML private ToggleButton btnPreview;
   @FXML public Button btnCancel;
 
+  private AnchorPane apPreview;
+  private MasterDetailPane mdp;
   private HyperCB hcbType;
   private HyperTable htAuthors, htISBN;
   private HDT_WorkFile oldWorkFile = null, newWorkFile = null;
-
-  private FilePath origFilePath = null;
+  private PDFJSWrapper jsWrapper = null;
+  private FilePath previewFilePath = null, origFilePath = null;
   private BibData curBD = null;
   private HDT_Work curWork;
   private BibDataRetriever bibDataRetriever = null;
-  private boolean dontRegenerateFilename = false, alreadyChangingTitle = false;
+  private boolean dontRegenerateFilename = false, alreadyChangingTitle = false, previewInitialized = false;
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
 
   public List<ObjectGroup> getAuthorGroups() { return htAuthors.getAuthorGroups(curWork, 0, 2, 3, 4); }
   public boolean getCreateEntry()            { return chkCreateBibEntry.isVisible() && chkCreateBibEntry.isSelected(); }
 
+  @FXML private void btnLaunchClick()        { launchFile(origFilePath); }
+
 //---------------------------------------------------------------------------
 
-  public static WorkDlgCtrlr create(String title, FilePath filePathToUse)
+  public static WorkDlgCtrlr create(FilePath filePathToUse)
   {
-    WorkDlgCtrlr wdc = HyperDlg.create("WorkDlg.fxml", title, true);
+    WorkDlgCtrlr wdc = HyperDlg.create("WorkDlg.fxml", "Import New Work", true);
     wdc.init(null, filePathToUse);
     return wdc;
   }
 
-  public static WorkDlgCtrlr create(String title, HDT_WorkFile workFileToUse)
+  public static WorkDlgCtrlr create(HDT_WorkFile workFileToUse)
   {
-    WorkDlgCtrlr wdc = HyperDlg.create("WorkDlg.fxml", title, true);
+    WorkDlgCtrlr wdc = HyperDlg.create("WorkDlg.fxml", "Work File", true);
     wdc.init(workFileToUse, null);
     return wdc;
   }
@@ -376,6 +390,41 @@ public class WorkDlgCtrlr extends HyperDlg
 
   private void init(HDT_WorkFile workFileToUse, FilePath filePathToUse)
   {
+    mainPane.getChildren().remove(apMain);
+
+    apPreview = new AnchorPane();
+    mdp = new MasterDetailPane(Side.RIGHT, apMain, apPreview, false);
+    setAnchors(mdp, 0.0, 0.0, 0.0, 0.0);
+    mainPane.getChildren().add(mdp);
+
+    btnPreview.selectedProperty().bindBidirectional(mdp.showDetailNodeProperty());
+
+    mdp.showDetailNodeProperty().addListener((ob, ov, nv) ->
+    {
+      if (nv == false) return;
+
+      if ((previewInitialized == false) && (jxBrowserDisabled == false))
+      {
+        ObservableList<Screen> screens = Screen.getScreensForRectangle(dialogStage.getX(), dialogStage.getY(), dialogStage.getWidth(), dialogStage.getHeight());
+        double minWidth = 1600.0;
+
+        if (screens.size() == 1)
+          minWidth = screens.get(0).getVisualBounds().getWidth() - 60.0;
+
+        if (dialogStage.getWidth() < minWidth)
+        {
+          double diff = minWidth - dialogStage.getWidth();
+          dialogStage.setX(dialogStage.getX() - (diff / 2.0));
+          dialogStage.setWidth(minWidth);
+          ensureVisible(dialogStage, apMain.getPrefWidth(), apMain.getPrefHeight());
+        }
+
+        mdp.setDividerPosition(0.55);
+      }
+
+      updatePreview();
+    });
+
     initControls();
 
     onShown = () ->
@@ -450,6 +499,7 @@ public class WorkDlgCtrlr extends HyperDlg
     if (oldWorkFile != null)
     {
       origFilePath = oldWorkFile.filePath();
+      updatePreview();
       tfOrigFile.setText(origFilePath.toString());
     }
   }
@@ -457,9 +507,25 @@ public class WorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void btnLaunchClick()
+  private void updatePreview()
   {
-    launchFile(origFilePath);
+    if ((mdp.isShowDetailNode() == false) || jxBrowserDisabled) return;
+
+    if (previewInitialized == false) jsWrapper = new PDFJSWrapper(apPreview, null, null, null);
+
+    if (jxBrowserDisabled) return;
+
+    previewInitialized = true;
+
+    if ((origFilePath == null) && (previewFilePath != null))
+      jsWrapper.close();
+
+    if ((origFilePath == null) || origFilePath.equals(previewFilePath))
+      return;
+
+    previewFilePath = origFilePath;
+
+    PreviewWrapper.showFile(previewFilePath, 1, jsWrapper);
   }
 
 //---------------------------------------------------------------------------
@@ -594,6 +660,7 @@ public class WorkDlgCtrlr extends HyperDlg
     }
 
     origFilePath = chosenFile;
+    updatePreview();
     tfOrigFile.setText(origFilePath.toString());
 
     if ((tfTitle.getText().length() == 0) && (tfYear.getText().length() == 0))
@@ -608,6 +675,9 @@ public class WorkDlgCtrlr extends HyperDlg
     boolean rv = super.showModal();
 
     stopRetrieving();
+
+    if (previewInitialized)
+      jsWrapper.cleanup();
 
     return rv;
   }
@@ -647,7 +717,7 @@ public class WorkDlgCtrlr extends HyperDlg
         if ((pdfBD == null) && (queryBD == null))
         {
           if (launchIfNoData && appPrefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
-            btnLaunchClick();
+            mdp.setShowDetailNode(true);
 
           return;
         }
@@ -677,7 +747,7 @@ public class WorkDlgCtrlr extends HyperDlg
           populateFieldsFromBibData(pdfBD, true);
 
           if (launchIfNoData && appPrefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
-            btnLaunchClick();
+            mdp.setShowDetailNode(true);
         }
       });
 
@@ -699,7 +769,7 @@ public class WorkDlgCtrlr extends HyperDlg
     if (pdfBD == null)
     {
       if (launchIfNoData && appPrefs.getBoolean(PREF_KEY_AUTO_OPEN_PDF, true))
-        btnLaunchClick();
+        mdp.setShowDetailNode(true);
 
       return;
     }
@@ -820,7 +890,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
   public static void loadFromBibAuthors(BibAuthors bibAuthors, HyperTable htAuthors, boolean hasShowInFileCol, HDT_Work destWork)
   {
-    if ((bibAuthors == null) || bibAuthors.isEmpty()) return;
+    if (BibAuthors.isEmpty(bibAuthors)) return;
 
     ArrayList<PersonName> nameList = new ArrayList<>();
     ArrayList<HDT_Person> personList = new ArrayList<>();

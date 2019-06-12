@@ -49,9 +49,9 @@ public class NewInstDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewInstDlgCtrlr create(String title, HDT_Institution parent, String newName, boolean isParent)
+  public static NewInstDlgCtrlr create(HDT_Institution parent, String newName, boolean isParent)
   {
-    NewInstDlgCtrlr ndc = HyperDlg.create("NewInstDlg.fxml", title, true);
+    NewInstDlgCtrlr ndc = HyperDlg.create("NewInstDlg.fxml", "New Institution or Institutional Division", true);
     ndc.init(parent, newName, isParent);
     return ndc;
   }

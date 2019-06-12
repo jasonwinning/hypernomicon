@@ -43,9 +43,9 @@ public class ObjectOrderDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ObjectOrderDlgCtrlr create(String title, HyperTable ht, ObservableList<HyperTableRow> rows)
+  public static ObjectOrderDlgCtrlr create(HyperTable ht, ObservableList<HyperTableRow> rows)
   {
-    ObjectOrderDlgCtrlr ood = HyperDlg.create("ObjectOrderDlg.fxml", title, true);
+    ObjectOrderDlgCtrlr ood = HyperDlg.create("ObjectOrderDlg.fxml", "Change Order of Rows", true);
     ood.init(ht, rows);
     return ood;
   }

@@ -20,6 +20,7 @@ package org.hypernomicon;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Exceptions.*;
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.HDB_MessageType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -44,13 +45,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.HyperDB.HDB_MessageType;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.PathInfo;
+import org.hypernomicon.model.PathInfo.FileKind;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.util.filePath.FilePath;
 import javafx.application.Platform;
+import javafx.stage.Modality;
 
 //---------------------------------------------------------------------------
 
@@ -250,6 +254,11 @@ public class FolderTreeWatcher
 
             if (watcherEvent.isDirectory())
               registerTree(newPathInfo.getFilePath());
+            else if ((newPathInfo.getFileKind() == FileKind.fkFile) &&
+                     appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
+                     (newPathInfo.getParentFolder().getID() == HyperDB.UNENTERED_FOLDER_ID) &&
+                     (ui.windows.getOutermostModality() == Modality.NONE))
+              Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath()));
 
             Platform.runLater(fileManagerDlg::refresh);
 

@@ -58,9 +58,9 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static SelectColumnsDlgCtrlr create(String title)
+  public static SelectColumnsDlgCtrlr create()
   {
-    SelectColumnsDlgCtrlr scd = HyperDlg.create("SelectColumnsDlg.fxml", title, true);
+    SelectColumnsDlgCtrlr scd = HyperDlg.create("SelectColumnsDlg.fxml", "Select Columns", true);
     scd.init();
     return scd;
   }

@@ -113,6 +113,7 @@ public final class MainCtrlr
   @FXML private AnchorPane apFindBackground, apGoTo, apListGoTo, apStatus, midAnchorPane;
   @FXML private Button btnAdvancedSearch, btnBibMgr, btnDecrement, btnFileMgr, btnIncrement, btnMentions, btnPreviewWindow,
                        btnSave, btnDelete, btnRevert, btnCreateNew, btnBack, btnForward, btnSaveAll, btnTextSearch;
+  @FXML private CheckMenuItem mnuAutoImport;
   @FXML private ComboBox<HyperTableCell> cbGoTo;
   @FXML private GridPane gpBottom;
   @FXML private HBox topHBox;
@@ -168,9 +169,9 @@ public final class MainCtrlr
 
   @FXML private void mnuExitClick()           { shutDown(true, true, true); }
   @FXML private void mnuExitNoSaveClick()     { if (confirmDialog("Abandon changes and quit?")) shutDown(false, true, false); }
-  @FXML private void mnuAboutClick()          { AboutDlgCtrlr.create("About " + appTitle).showModal(); }
-  @FXML private void mnuChangeFavOrderClick() { FavOrderDlgCtrlr.create("Change Order of Favorites").showModal(); }
-  @FXML private void mnuSettingsClick()       { if (!cantSaveRecord()) OptionsDlgCtrlr.create(appTitle + " Settings").showModal(); }
+  @FXML private void mnuAboutClick()          { AboutDlgCtrlr.create().showModal(); }
+  @FXML private void mnuChangeFavOrderClick() { FavOrderDlgCtrlr.create().showModal(); }
+  @FXML private void mnuSettingsClick()       { if (!cantSaveRecord()) OptionsDlgCtrlr.create().showModal(); }
   @FXML private void mnuFindMentionsClick()   { if (!cantSaveRecord()) searchForMentions(activeRecord(), false); }
 
   public PersonTabCtrlr personHyperTab  () { return getHyperTab(personTabEnum  ); }
@@ -604,6 +605,11 @@ public final class MainCtrlr
       else
         showSearch(true, QueryType.fromRecordType(selectorType()), QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(-1, tfSelector.getText(), hdtNone), null, tfSelector.getText());
     });
+
+//---------------------------------------------------------------------------
+
+    mnuAutoImport.setSelected(appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true));
+    mnuAutoImport.setOnAction(event -> appPrefs.putBoolean(PREF_KEY_AUTO_IMPORT, mnuAutoImport.isSelected()));
 
 //---------------------------------------------------------------------------
 
@@ -1264,7 +1270,7 @@ public final class MainCtrlr
       if (confirmDialog("Save data to XML files?"))
         saveAllToDisk(false, false, false);
 
-      NewDatabaseDlgCtrlr dlg = NewDatabaseDlgCtrlr.create("Customize How Database Will Be Created", rootPath.toString());
+      NewDatabaseDlgCtrlr dlg = NewDatabaseDlgCtrlr.create(rootPath.toString());
 
       if (dlg.showModal() == false)
         return;
@@ -1503,18 +1509,16 @@ public final class MainCtrlr
       stream.forEach(entry ->
       {
         FilePath entryFilePath = new FilePath(entry);
+        if (entryFilePath.isDirectory() == false) return;
 
-        if (entryFilePath.isDirectory())
+        FilePath relFilePath = topicalPath.relativize(entryFilePath);
+
+        if (FilePath.isEmpty(relFilePath) == false)
         {
-          FilePath relFilePath = topicalPath.relativize(entryFilePath);
-
-          if (FilePath.isEmpty(relFilePath) == false)
-          {
-            MenuItem item = new MenuItem();
-            item.setText(relFilePath.toString());
-            item.setOnAction(event -> launchFile(entryFilePath));
-            mnuFolders.getItems().add(item);
-          }
+          MenuItem item = new MenuItem();
+          item.setText(relFilePath.toString());
+          item.setOnAction(event -> launchFile(entryFilePath));
+          mnuFolders.getItems().add(item);
         }
       });
     }
@@ -1534,7 +1538,7 @@ public final class MainCtrlr
 
     if (cantSaveRecord()) return;
 
-    ChangeIDDlgCtrlr ctrlr = ChangeIDDlgCtrlr.create("Change Record ID");
+    ChangeIDDlgCtrlr ctrlr = ChangeIDDlgCtrlr.create();
 
     if (ctrlr.showModal())
     {
@@ -1568,7 +1572,7 @@ public final class MainCtrlr
 
     if (cantSaveRecord()) return;
 
-    NewCategoryDlgCtrlr ctrlr = NewCategoryDlgCtrlr.create("New Category", type);
+    NewCategoryDlgCtrlr ctrlr = NewCategoryDlgCtrlr.create(type);
 
     if (ctrlr.showModal() == false) return;
 
@@ -1993,7 +1997,7 @@ public final class MainCtrlr
     String otherCompName = db.getLockOwner();
     if (otherCompName != null)
     {
-      if (LockedDlgCtrlr.create("Database is Currently Locked", otherCompName).showModal() == false)
+      if (LockedDlgCtrlr.create(otherCompName).showModal() == false)
         return false;
 
       if (db.getLockOwner() != null)
@@ -2480,10 +2484,7 @@ public final class MainCtrlr
       disableAllIff(activeRec == null, btnDelete, btnSave, btnRevert);
       btnRevert.setText("Revert");
 
-//      if (changed)
-//        btnRevert.setDisable(false);
-//      else
-//        btnRevert->Enabled = false;
+//      btnRevert.setDisable(changed == false);
 
       btnDecrement.setDisable((count == 0) || (ndx == 0));
       btnIncrement.setDisable((count == 0) || (ndx == (count - 1)));
@@ -2678,7 +2679,7 @@ public final class MainCtrlr
     else if (record1.getMainText().getHtml().equals(record2.getMainText().getHtml()))        desc = record1.getMainText().getHtml();
     else
     {
-      MergeSpokeDlgCtrlr frmMerge = MergeSpokeDlgCtrlr.create("Select how to merge fields", record1, record2);
+      MergeSpokeDlgCtrlr frmMerge = MergeSpokeDlgCtrlr.create(record1, record2);
 
       if (frmMerge.showModal())
         desc = frmMerge.getDesc();
@@ -2852,7 +2853,7 @@ public final class MainCtrlr
   {
     if (cantSaveRecord()) return;
 
-    ImportBibEntryDlgCtrlr ibed = ImportBibEntryDlgCtrlr.create("Import Bibliography File", lines, filePath);
+    ImportBibEntryDlgCtrlr ibed = ImportBibEntryDlgCtrlr.create(lines, filePath);
 
     if (ibed.getFailedToLoad() || !ibed.showModal()) return;
 

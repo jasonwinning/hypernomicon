@@ -24,6 +24,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.HyperTask;
@@ -41,9 +42,9 @@ public class ProgressDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ProgressDlgCtrlr create(String title)
+  public static ProgressDlgCtrlr create()
   {
-    ProgressDlgCtrlr pdc = HyperDlg.create("ProgressDlg.fxml", title, true);
+    ProgressDlgCtrlr pdc = HyperDlg.create("ProgressDlg.fxml", appTitle, true);
     pdc.init();
     return pdc;
   }

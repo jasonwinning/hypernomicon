@@ -38,9 +38,9 @@ public class ValueSelectDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ValueSelectDlgCtrlr create(String title, List<HyperTableCell> list)
+  public static ValueSelectDlgCtrlr create(List<HyperTableCell> list)
   {
-    ValueSelectDlgCtrlr vsd = HyperDlg.create("ValueSelectDlg.fxml", title, true);
+    ValueSelectDlgCtrlr vsd = HyperDlg.create("ValueSelectDlg.fxml", "Choose a Value", true);
     vsd.init(list);
     return vsd;
   }

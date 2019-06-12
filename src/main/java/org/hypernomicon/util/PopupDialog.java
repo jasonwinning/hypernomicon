@@ -35,8 +35,8 @@ public class PopupDialog
 
   public static enum DialogResult
   {
-    mrUnknown, mrNone,   mrOk,       mrCancel,    mrYes,   mrNo,      mrAbort,    mrRetry,  mrIgnore,  mrFail,
-    mrClose,   mrHelp,   mrTryAgain, mrContinue,  mrAll,   mrNoToAll, mrYesToAll, mrMove,   mrCopy
+    mrUnknown, mrNone, mrOk,       mrCancel,   mrYes, mrNo,      mrAbort,    mrRetry, mrIgnore, mrFail,
+    mrClose,   mrHelp, mrTryAgain, mrContinue, mrAll, mrNoToAll, mrYesToAll, mrMove,  mrCopy
   }
 
 //---------------------------------------------------------------------------

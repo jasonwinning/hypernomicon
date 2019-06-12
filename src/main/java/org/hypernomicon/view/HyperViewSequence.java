@@ -297,7 +297,7 @@ public class HyperViewSequence
       {
         case queryTabEnum : beforePart = "(Queries tab) "; break;
         case treeTabEnum  : beforePart = "(Tree tab) ";    break;
-        default       :                                break;
+        default           :                                break;
       }
 
       String typeName = db.getTypeName(record.getType());

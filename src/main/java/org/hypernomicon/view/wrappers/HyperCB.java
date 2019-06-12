@@ -373,8 +373,7 @@ public class HyperCB implements CommitableWrapper
         {
           if (populator.getValueType() == CellValueType.cvtRecord)
           {
-            RecordSelectDlgCtrlr ctrlr = RecordSelectDlgCtrlr.create("Choose a record", populator, cells,
-                convertToEnglishChars(cb.getEditor().getText()).trim());
+            RecordSelectDlgCtrlr ctrlr = RecordSelectDlgCtrlr.create(populator, cells, convertToEnglishChars(cb.getEditor().getText()).trim());
 
             if (ctrlr.showModal())
             {
@@ -389,7 +388,7 @@ public class HyperCB implements CommitableWrapper
           }
           else
           {
-            ValueSelectDlgCtrlr ctrlr = ValueSelectDlgCtrlr.create("Choose a value", cells);
+            ValueSelectDlgCtrlr ctrlr = ValueSelectDlgCtrlr.create(cells);
 
             if (ctrlr.showModal())
             {

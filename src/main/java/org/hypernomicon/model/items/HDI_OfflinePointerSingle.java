@@ -25,6 +25,7 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 
 import static org.hypernomicon.model.records.HDT_RecordState.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -56,9 +57,8 @@ public class HDI_OfflinePointerSingle extends HDI_OfflineBase
   {
     this.objID = objID;
 
-    if (nestedItems != null)
-      if (nestedItems.isEmpty() == false)
-        tagToNestedItem = nestedItems;
+    if (collEmpty(nestedItems) == false)
+      tagToNestedItem = nestedItems;
   }
 
 //---------------------------------------------------------------------------

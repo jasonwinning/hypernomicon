@@ -19,6 +19,7 @@ package org.hypernomicon.view.dialogs;
 
 import org.hypernomicon.HyperTask;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
@@ -39,9 +40,9 @@ public class InternetCheckDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static InternetCheckDlgCtrlr create(String title)
+  public static InternetCheckDlgCtrlr create()
   {
-    return HyperDlg.create("InternetCheckDlg.fxml", title, true);
+    return HyperDlg.create("InternetCheckDlg.fxml", appTitle, true);
   }
 
 //---------------------------------------------------------------------------

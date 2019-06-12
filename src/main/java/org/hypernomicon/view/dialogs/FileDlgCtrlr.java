@@ -379,10 +379,7 @@ public class FileDlgCtrlr extends HyperDlg
 
     dirChooser.setTitle("Select new location");
 
-    if (chosenFilePath.exists() && chosenFilePath.isDirectory())
-      dirChooser.setInitialDirectory(chosenFilePath.toFile());
-    else
-      dirChooser.setInitialDirectory(db.getRootPath().toFile());
+    dirChooser.setInitialDirectory(chosenFilePath.isDirectory() ? chosenFilePath.toFile() : db.getRootPath().toFile());
 
     chosenFilePath = ui.windows.showDirDialog(dirChooser, dialogStage);
     if (FilePath.isEmpty(chosenFilePath)) return;

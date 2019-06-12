@@ -50,9 +50,9 @@ public class RecordSelectDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static RecordSelectDlgCtrlr create(String title, Populator populator, List<HyperTableCell> list, String queryStr)
+  public static RecordSelectDlgCtrlr create(Populator populator, List<HyperTableCell> list, String queryStr)
   {
-    RecordSelectDlgCtrlr rsd = HyperDlg.create("RecordSelectDlg.fxml", title, true);
+    RecordSelectDlgCtrlr rsd = HyperDlg.create("RecordSelectDlg.fxml", "Choose a Record", true);
     rsd.init(list, populator, queryStr);
     return rsd;
   }

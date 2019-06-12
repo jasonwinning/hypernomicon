@@ -56,9 +56,9 @@ public class AboutDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static AboutDlgCtrlr create(String title)
+  public static AboutDlgCtrlr create()
   {
-    AboutDlgCtrlr adc = HyperDlg.create("AboutDlg.fxml", title, false);
+    AboutDlgCtrlr adc = HyperDlg.create("AboutDlg.fxml", "About " + appTitle, false);
     adc.init();
     return adc;
   }
@@ -151,8 +151,8 @@ public class AboutDlgCtrlr extends HyperDlg
       }
 
       if (updateNum.compareTo(new VersionNumber(2, version)) > 0)
-        nextVersionHtml = "<font style=\"color: #eef4ff;\"><b><a class=download href=\"\" onclick=\"openURL('https://sourceforge.net/projects/hypernomicon/files/latest/download'); return false;\">" +
-        "Newer version " + updateNum.toString() + " is available for download.</a></b></font>";
+        nextVersionHtml = "<b><a class=download href=\"\" onclick=\"openURL('https://sourceforge.net/projects/hypernomicon/files/latest/download'); return false;\">" +
+                          "Newer version " + updateNum.toString() + " is available for download.</a></b>";
       else
         nextVersionHtml = "You have the latest version.";
 
@@ -194,7 +194,9 @@ public class AboutDlgCtrlr extends HyperDlg
 
   private String getGeneralTabHtml()
   {
-    return htmlStart + "Version: " + version + "&nbsp;&nbsp;&nbsp;&nbsp;" + nextVersionHtml + "<br>" +
+    return htmlStart +
+
+        "Version: " + version + "&nbsp;&nbsp;&nbsp;&nbsp;" + nextVersionHtml + "<br>" +
         "Build date: " + buildDate + "<br>" +
         "Copyright \u00a9 2015-2019 Jason Winning.<br><br>" +
         "Operating system: " + SystemUtils.OS_NAME + "<br>" +

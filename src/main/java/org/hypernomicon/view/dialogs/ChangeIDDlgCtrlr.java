@@ -48,9 +48,9 @@ public class ChangeIDDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ChangeIDDlgCtrlr create(String title)
+  public static ChangeIDDlgCtrlr create()
   {
-    ChangeIDDlgCtrlr cid = HyperDlg.create("ChangeIDDlg.fxml", title, true);
+    ChangeIDDlgCtrlr cid = HyperDlg.create("ChangeIDDlg.fxml", "Change Record ID", true);
     cid.init();
     return cid;
   }

@@ -40,9 +40,9 @@ public class FavOrderDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static FavOrderDlgCtrlr create(String title)
+  public static FavOrderDlgCtrlr create()
   {
-    FavOrderDlgCtrlr fod = HyperDlg.create("FavOrderDlg.fxml", title, true);
+    FavOrderDlgCtrlr fod = HyperDlg.create("FavOrderDlg.fxml", "Change Order of Favorites", true);
     fod.init();
     return fod;
   }

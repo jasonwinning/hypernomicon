@@ -33,6 +33,7 @@ import org.apache.commons.io.FileUtils;
 import org.controlsfx.control.MasterDetailPane;
 
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -447,7 +448,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       if (fav == null)
       {
-        NewQueryFavDlgCtrlr ctrlr = NewQueryFavDlgCtrlr.create("Add Query Favorite", tfName.getText());
+        NewQueryFavDlgCtrlr ctrlr = NewQueryFavDlgCtrlr.create(tfName.getText());
 
         if (ctrlr.showModal() == false) return;
 
@@ -1161,12 +1162,9 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
             clearOperands(row, 3);
             vp3.setRestricted(row, false);
           }
-          else if (cat == hdcBoolean)
-            vp3.setPopulator(row, new BooleanPopulator());
-          else if (cat == hdcTernary)
-            vp3.setPopulator(row, new TernaryPopulator());
-          else
-            vp3.setPopulator(row, new StandardPopulator(objType));
+          else if (cat == hdcBoolean) vp3.setPopulator(row, new BooleanPopulator());
+          else if (cat == hdcTernary) vp3.setPopulator(row, new TernaryPopulator());
+          else                        vp3.setPopulator(row, new StandardPopulator(objType));
 
           return true;
 
@@ -1304,8 +1302,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   private ObjectProperty<ObservableList<ResultsRow>> propToUnbind = null;
   private ChangeListener<ResultsRow> cbListenerToRemove = null, tvListenerToRemove = null;
   private ComboBox<ResultsRow> cb;
-  private SimpleBooleanProperty includeEdited = new SimpleBooleanProperty(),
-                                excludeAnnots = new SimpleBooleanProperty();
+  private BooleanProperty includeEdited = new SimpleBooleanProperty(),
+                          excludeAnnots = new SimpleBooleanProperty();
 
   public static HyperTask task;
   public static int curQuery;
@@ -1417,26 +1415,39 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private void addFilesButton()
   {
-    ObservableList<CheckBoxOrCommand> items = FXCollections.observableArrayList(
+    ObservableList<Node> children = AnchorPane.class.cast(getTab().getContent()).getChildren();
+    ObservableList<CheckBoxOrCommand> items;
 
-      new CheckBoxOrCommand("Include edited works", includeEdited),
-      new CheckBoxOrCommand("Copy files without annotations", excludeAnnots),
-      new CheckBoxOrCommand("Clear Search Results Folder and Add All Results", () -> { mnuCopyAllClick();           fileBtn.hide(); }),
-      new CheckBoxOrCommand("Clear Search Results Folder",                     () -> { mnuClearSearchFolderClick(); fileBtn.hide(); }),
-      new CheckBoxOrCommand("Copy Selected to Search Results Folder",          () -> { mnuCopyToFolderClick();      fileBtn.hide(); }),
-      new CheckBoxOrCommand("Show Search Results Folder",                      () -> { mnuShowSearchFolderClick();  fileBtn.hide(); }));
+    if (fileBtn != null)
+    {
+      items = fileBtn.getItems();
+      fileBtn.setItems(null);
+      children.remove(fileBtn);
+    }
+    else
+    {
+      items = FXCollections.observableArrayList(
+
+        new CheckBoxOrCommand("Include edited works", includeEdited),
+        new CheckBoxOrCommand("Copy files without annotations", excludeAnnots),
+        new CheckBoxOrCommand("Clear Search Results Folder and Add All Results", () -> { mnuCopyAllClick          (); fileBtn.hide(); }),
+        new CheckBoxOrCommand("Clear Search Results Folder",                     () -> { mnuClearSearchFolderClick(); fileBtn.hide(); }),
+        new CheckBoxOrCommand("Copy Selected to Search Results Folder",          () -> { mnuCopyToFolderClick     (); fileBtn.hide(); }),
+        new CheckBoxOrCommand("Show Search Results Folder",                      () -> { mnuShowSearchFolderClick (); fileBtn.hide(); }));
+    }
 
     fileBtn = CheckBoxOrCommand.createComboBox(items, "Files");
 
-    fileBtn.setMaxSize(64.0, 24.0);
-    fileBtn.setMinSize(64.0, 24.0);
+    fileBtn.setMaxSize (64.0, 24.0);
+    fileBtn.setMinSize (64.0, 24.0);
     fileBtn.setPrefSize(64.0, 24.0);
 
-    AnchorPane.setTopAnchor(fileBtn, 2.0);
+    AnchorPane.setTopAnchor  (fileBtn, 2.0);
     AnchorPane.setRightAnchor(fileBtn, 0.0);
 
-    ObservableList<Node> children = AnchorPane.class.cast(getTab().getContent()).getChildren();
     children.add(children.indexOf(tabPane), fileBtn);
+
+    fileBtn.setOnHidden(event -> addFilesButton()); // This is necessary to deselect list item without making the button caption disappear
   }
 
 //---------------------------------------------------------------------------

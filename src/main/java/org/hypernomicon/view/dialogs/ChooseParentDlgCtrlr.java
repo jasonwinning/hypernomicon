@@ -57,9 +57,9 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ChooseParentDlgCtrlr create(String title, HDT_Record child, EnumSet<HDT_RecordType> types)
+  public static ChooseParentDlgCtrlr create(HDT_Record child, EnumSet<HDT_RecordType> types)
   {
-    ChooseParentDlgCtrlr cpd = HyperDlg.create("ChooseParentDlg.fxml", title, true);
+    ChooseParentDlgCtrlr cpd = HyperDlg.create("ChooseParentDlg.fxml", "Record Select", true);
     cpd.init(child, types);
     return cpd;
   }

@@ -40,7 +40,6 @@ import com.google.common.collect.Lists;
 
 public class DesktopApi
 {
-  @SuppressWarnings("unused")
   static boolean browse(String url)
   {
     if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC)
@@ -48,7 +47,7 @@ public class DesktopApi
 
     try
     {
-      new URI(url);
+      @SuppressWarnings("unused") URI uri = new URI(url);
     }
     catch (URISyntaxException e)
     {
@@ -98,8 +97,7 @@ public class DesktopApi
 //      if (exec(false, false, sb, "gvfs-open" , pathStr)) return true;
     }
 
-    return falseWithErrorMessage("Unable to open the file: " + pathStr +
-        (sb.length() > 0 ? "\n" + sb.toString() : "") + ".");
+    return falseWithErrorMessage("Unable to open the file: " + pathStr + (sb.length() > 0 ? "\n" + sb.toString() : "") + ".");
   }
 
 //---------------------------------------------------------------------------
@@ -109,10 +107,7 @@ public class DesktopApi
   {
     try
     {
-      if (!Desktop.isDesktopSupported())
-        return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ".");
-
-      if (!Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
+      if ( ! (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)))
         return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ".");
 
       Desktop.getDesktop().browse(new URI(url));
@@ -131,10 +126,7 @@ public class DesktopApi
   {
     try
     {
-      if (!Desktop.isDesktopSupported())
-        return falseWithErrorMessage("An error occurred while trying to open the file: " + filePath);
-
-      if (!Desktop.getDesktop().isSupported(Desktop.Action.OPEN))
+      if ( ! (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)))
         return falseWithErrorMessage("An error occurred while trying to open the file: " + filePath);
 
       Desktop.getDesktop().open(filePath.toFile());
@@ -153,10 +145,7 @@ public class DesktopApi
   {
     try
     {
-      if (!Desktop.isDesktopSupported())
-        return falseWithErrorMessage("An error occurred while trying to edit the file: " + filePath + ".");
-
-      if (!Desktop.getDesktop().isSupported(Desktop.Action.EDIT))
+      if ( ! (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.EDIT)))
         return falseWithErrorMessage("An error occurred while trying to edit the file: " + filePath + ".");
 
       Desktop.getDesktop().edit(filePath.toFile());

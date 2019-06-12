@@ -283,7 +283,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   {
     if (ui.cantSaveRecord()) return;
 
-    RecordDropdownDlgCtrlr<HDT_Term> rdd = RecordDropdownDlgCtrlr.create("Select a Term Record to Merge With", hdtTerm);
+    RecordDropdownDlgCtrlr<HDT_Term> rdd = RecordDropdownDlgCtrlr.create(hdtTerm);
     if (rdd.showModal() == false) return;
 
     HDT_Term otherTerm = rdd.getRecord();
@@ -299,7 +299,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
         return;
       }
 
-    MergeTermDlgCtrlr mtd = MergeTermDlgCtrlr.create("Specify How to Merge Fields", curTerm, otherTerm);
+    MergeTermDlgCtrlr mtd = MergeTermDlgCtrlr.create(curTerm, otherTerm);
     if (mtd.showModal() == false) return;
 
     String oldKey1 = curTerm.getSearchKey();
@@ -354,7 +354,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     HDT_Concept concept = curConcept;
 
-    SelectConceptDlgCtrlr frmSelectConcept = SelectConceptDlgCtrlr.create("Term select", concept);
+    SelectConceptDlgCtrlr frmSelectConcept = SelectConceptDlgCtrlr.create(concept);
 
     if (frmSelectConcept.showModal())
     {

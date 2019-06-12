@@ -427,8 +427,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       return;
     }
 
-    ChangeParentDlgCtrlr cpdc = ChangeParentDlgCtrlr.create("Copy or move record to destination",
-                                                            draggingRow.treeItem.getParent().getValue().getRecord(),
+    ChangeParentDlgCtrlr cpdc = ChangeParentDlgCtrlr.create(draggingRow.treeItem.getParent().getValue().getRecord(),
                                                             targetRow.getRecord(), draggingRow.getRecord(), db.relationIsMulti(newRelType));
 
     if (cpdc.showModal())

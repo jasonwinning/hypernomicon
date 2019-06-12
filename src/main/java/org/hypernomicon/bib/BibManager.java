@@ -305,7 +305,7 @@ public class BibManager extends HyperDlg
 
       HDT_Person person = findFirstHaving(row.getEntry().getAuthors(), bibAuthor -> HDT_Person.lookUpByName(bibAuthor.getName()));
 
-      SelectWorkDlgCtrlr dlg = SelectWorkDlgCtrlr.create("Select a work record", person);
+      SelectWorkDlgCtrlr dlg = SelectWorkDlgCtrlr.create(person);
 
       if (dlg.showModal())
         assignEntryToWork(dlg.getWork(), row.getEntry());

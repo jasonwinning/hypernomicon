@@ -52,9 +52,9 @@ public class MergeTermDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static MergeTermDlgCtrlr create(String title, HDT_Term term1, HDT_Term term2)
+  public static MergeTermDlgCtrlr create(HDT_Term term1, HDT_Term term2)
   {
-    MergeTermDlgCtrlr mtd = HyperDlg.create("MergeTermDlg.fxml", title, true);
+    MergeTermDlgCtrlr mtd = HyperDlg.create("MergeTermDlg.fxml", "Specify How to Merge Fields", true);
     mtd.init(term1, term2);
     return mtd;
   }

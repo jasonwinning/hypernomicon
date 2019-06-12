@@ -44,9 +44,9 @@ public class ChooseParentWorkFileDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ChooseParentWorkFileDlgCtrlr create(String title, HDT_Work work)
+  public static ChooseParentWorkFileDlgCtrlr create(HDT_Work work)
   {
-    ChooseParentWorkFileDlgCtrlr cpw = HyperDlg.create("ChooseParentWorkFileDlg.fxml", title, true);
+    ChooseParentWorkFileDlgCtrlr cpw = HyperDlg.create("ChooseParentWorkFileDlg.fxml", "Choose Work File", true);
     cpw.init(work);
     return cpw;
   }
