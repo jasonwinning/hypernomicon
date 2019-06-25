@@ -86,12 +86,12 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getWebLink()                               { return getTagString(tagWebLink); }
+  public String getWebURL()                                { return getTagString(tagWebURL); }
   public String getOrcID()                                 { return getTagString(tagORCID); }
   public PersonName getName()                              { return getName(false); }
   public String getNameLastFirst(boolean engChar)          { return getName(engChar).getLastFirst(); }
   public String getFullName(boolean engChar)               { return getName(engChar).getFull(); }
-  public void setWebLink(String newStr)                    { updateTagString(tagWebLink, newStr); }
+  public void setWebURL(String newStr)                     { updateTagString(tagWebURL, newStr); }
   public void setORCID(String newOrcid)                    { updateTagString(tagORCID, newOrcid); }
   public void setInstitutions(List<HDT_Institution> list)  { updateObjectsFromList(rtInstOfPerson, list); }
   void setFirstNameInternal(String newStr, boolean update) { setNameInternal(getLastName() + "|" + newStr.replace("|", ""), update); }
@@ -484,10 +484,10 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
       return;
     }
 
-    int x      = (int) viewPort.getMinX();
-    int y      = (int) viewPort.getMinY();
-    int width  = (int) viewPort.getWidth();
-    int height = (int) viewPort.getHeight();
+    int x      = (int) viewPort.getMinX(),
+        y      = (int) viewPort.getMinY(),
+        width  = (int) viewPort.getWidth(),
+        height = (int) viewPort.getHeight();
 
     updateTagString(tagPictureCrop, x + ";" + y + ";" + width + ";" + height);
   }

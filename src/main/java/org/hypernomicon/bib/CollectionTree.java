@@ -27,6 +27,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
 import static org.hypernomicon.bib.CollectionTree.BibCollectionType.*;
+import static org.hypernomicon.util.Util.*;
 
 public class CollectionTree
 {
@@ -78,24 +79,28 @@ public class CollectionTree
 
   void clear()
   {
-    if (treeView.getRoot() != null)
+    nullSwitch(treeView.getRoot(), root ->
     {
-      treeView.getRoot().getChildren().clear();
+      root.getChildren().clear();
       treeView.setRoot(null);
-    }
+    });
 
     keyToRow.clear();
 
-    treeView.setRoot(new TreeItem<BibCollectionRow>(null));
+    TreeItem<BibCollectionRow> root = new TreeItem<>(null);
+
+    treeView.setRoot(root);
     treeView.setShowRoot(false);
 
     treeRowAllEntries = new BibCollectionRow(bctAll);
     treeRowUnsorted = new BibCollectionRow(bctUnsorted);
     treeRowTrash = new BibCollectionRow(bctTrash);
 
-    treeView.getRoot().getChildren().add(treeRowAllEntries.getTreeItem());
-    treeView.getRoot().getChildren().add(treeRowUnsorted.getTreeItem());
-    treeView.getRoot().getChildren().add(treeRowTrash.getTreeItem());
+    ObservableList<TreeItem<BibCollectionRow>> children = root.getChildren();
+
+    children.add(treeRowAllEntries.getTreeItem());
+    children.add(treeRowUnsorted.getTreeItem());
+    children.add(treeRowTrash.getTreeItem());
   }
 
 //---------------------------------------------------------------------------

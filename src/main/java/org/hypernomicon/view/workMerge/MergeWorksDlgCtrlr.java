@@ -19,6 +19,7 @@ package org.hypernomicon.view.workMerge;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 
 import java.util.ArrayList;
@@ -28,18 +29,22 @@ import java.util.List;
 
 import java.io.IOException;
 
+import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.bib.data.BibData;
-import org.hypernomicon.bib.data.BibDataStandalone;
 import org.hypernomicon.bib.data.BibField;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.EntryType;
+import org.hypernomicon.bib.data.GUIBibData;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.view.dialogs.HyperDlg;
 import org.hypernomicon.view.dialogs.WorkDlgCtrlr;
+import org.hypernomicon.view.previewWindow.PDFJSWrapper;
+import org.hypernomicon.view.previewWindow.PreviewWrapper;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -48,6 +53,7 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -61,21 +67,26 @@ import javafx.stage.StageStyle;
 
 public class MergeWorksDlgCtrlr extends HyperDlg
 {
+  @FXML private AnchorPane apMain;
   @FXML private ComboBox<HyperTableCell> cbType1, cbType2, cbType3, cbType4;
   @FXML private GridPane gpAuthors, gpMain, gpTitle, gpType, gpYear;
   @FXML private RadioButton rbAuthors1, rbAuthors2, rbAuthors3, rbAuthors4,
                             rbTitle1, rbTitle2, rbTitle3, rbTitle4, rbType1, rbType2, rbType3, rbType4, rbYear1, rbYear2, rbYear3, rbYear4;
   @FXML private TableView<HyperTableRow> tvAuthors1, tvAuthors2, tvAuthors3, tvAuthors4;
   @FXML private TextField tfTitle1, tfTitle2, tfTitle3, tfTitle4, tfYear1, tfYear2, tfYear3, tfYear4;
+  @FXML private ToggleButton btnPreview;
   @FXML private Hyperlink hlFixCase;
   @FXML private CheckBox chkNewEntry;
   @FXML private Button btnLaunch;
 
+  private AnchorPane apPreview;
+  private MasterDetailPane mdp;
+  private PDFJSWrapper jsWrapper = null;
   private final EnumMap<BibFieldEnum, BibField> singleFields = new EnumMap<>(BibFieldEnum.class);
   private final ArrayList<WorkToMerge> works = new ArrayList<>(4);
   private final HashMap<BibFieldEnum, BibFieldRow> extraRows = new HashMap<>();
   private int nextRowNdx = 4;
-  private boolean creatingNewWork;
+  private boolean creatingNewWork, previewInitialized = false;
 
   public EntryType getEntryType()   { return nullSwitch(extraRows.get(bfEntryType), null, row -> EntryTypeCtrlr.class.cast(row).getEntryType()); }
   public boolean creatingNewEntry() { return chkNewEntry.isVisible() && chkNewEntry.isSelected(); }
@@ -97,6 +108,24 @@ public class MergeWorksDlgCtrlr extends HyperDlg
   private void init(BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
                     boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked) throws IOException
   {
+    apPreview = new AnchorPane();
+    mdp = WorkDlgCtrlr.addPreview(stagePane, apMain, apPreview, btnPreview);
+
+    mdp.showDetailNodeProperty().addListener((ob, ov, nv) ->
+    {
+      if ((nv == false) || previewInitialized || jxBrowserDisabled) return;
+
+      WorkDlgCtrlr.accommodatePreview(dialogStage, apMain, mdp);
+
+      jsWrapper = new PDFJSWrapper(apPreview, null, null, null);
+
+      if (jxBrowserDisabled) return;
+
+      previewInitialized = true;
+
+      PreviewWrapper.showFile(destWork.filePath(), 1, jsWrapper);
+    });
+
     this.creatingNewWork = creatingNewWork;
 
     if (creatingNewWork == false)
@@ -108,7 +137,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     btnLaunch.setOnAction(event -> destWork.launch(-1));
 
     if ((destWork == null) || (destWork.pathNotEmpty() == false))
-      btnLaunch.setDisable(true);
+      disableAll(btnLaunch, btnPreview);
 
     ArrayList<BibData> bdList = new ArrayList<>();
 
@@ -256,6 +285,19 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override public boolean showModal()
+  {
+    boolean rv = super.showModal();
+
+    if (previewInitialized)
+      jsWrapper.cleanup();
+
+    return rv;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void addField(BibFieldEnum bibFieldEnum, BibData bd1, BibData bd2, BibData bd3, BibData bd4) throws IOException
   {
     BibFieldRow row = BibFieldRow.create(bibFieldEnum, bd1, bd2, bd3, bd4);
@@ -294,7 +336,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 
     if (chkNewEntry.isVisible())
     {
-      BibData mergedBD = new BibDataStandalone();
+      BibData mergedBD = new GUIBibData();
 
       mergeInto(mergedBD);
 

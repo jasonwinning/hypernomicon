@@ -1534,7 +1534,9 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     clearingViews = false;
 
-    webView.getEngine().loadContent("");
+    if (ui.isShuttingDown() == false)
+      webView.getEngine().loadContent("");
+
     QueryView newQV = addQueryView();
     tabPane.getSelectionModel().select(newQV.tab);
   }

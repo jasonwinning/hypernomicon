@@ -57,9 +57,8 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   private HyperCB hcbRegion, hcbCountry, hcbType, hcbParentInst;
   private HDT_Institution curInst;
 
-  @FXML private TextField tfCity, tfName;
-  @FXML private Button btnLink, btnParent, btnNewRegion;
-  @FXML private TextField tfLink;
+  @FXML private TextField tfCity, tfName, tfURL;
+  @FXML private Button btnURL, btnParent, btnNewRegion;
   @FXML private ComboBox<HyperTableCell> cbType, cbParentInst, cbRegion, cbCountry;
   @FXML private TableView<HyperTableRow> tvSubInstitutions, tvPersons;
   @FXML private SplitPane spHoriz;
@@ -81,7 +80,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     tfName.setText(curInst.name());
     tfCity.setText(curInst.getCity());
-    tfLink.setText(curInst.getWebLink());
+    tfURL.setText(curInst.getURL());
 
     hcbCountry   .addAndSelectEntryOrBlank(curInst.country    , HDT_Record::name);
     hcbRegion    .addAndSelectEntryOrBlank(curInst.region     , HDT_Record::name);
@@ -98,7 +97,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       row.setCellValue(1, subInst, subInst.name());
       if (subInst.instType.isNotNull())
         row.setCellValue(2, subInst.instType.get(), subInst.instType.get().name());
-      row.setCellValue(3, subInst, subInst.getWebLink());
+      row.setCellValue(3, subInst, subInst.getURL());
     });
 
     if (curInst.isDeptOrFaculty() && curInst.parentInst.isNotNull())
@@ -243,7 +242,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     btnParent.setOnAction(event -> ui.goToRecord(getRecord(hcbParentInst.selectedHTC()), true));
 
-    btnLink.setOnAction(event -> openWebLink(tfLink.getText()));
+    btnURL.setOnAction(event -> openWebLink(tfURL.getText()));
   }
 
 //---------------------------------------------------------------------------
@@ -265,7 +264,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   {
     tfName.clear();
     tfCity.clear();
-    tfLink.clear();
+    tfURL.clear();
 
     hcbRegion.clear();
     hcbCountry.clear();
@@ -300,7 +299,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     curInst.setCity(tfCity.getText());
     curInst.setName(tfName.getText());
-    curInst.setWebLink(tfLink.getText());
+    curInst.setURL(tfURL.getText());
     curInst.region.setID(hcbRegion.selectedID());
     curInst.country.setID(hcbCountry.selectedID());
     curInst.instType.setID(hcbType.selectedID());
@@ -318,10 +317,10 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
         subInst.setName(row.getText(1));
         subInst.parentInst.setID(curInst.getID());
         subInst.instType.setID(row.getID(2));
-        subInst.setWebLink(row.getText(3));
+        subInst.setURL(row.getText(3));
 
         if ((subInst.name().length() == 0) &&
-            (subInst.getWebLink().length() == 0) &&
+            (subInst.getURL().length() == 0) &&
             (subInst.persons.isEmpty()))
           db.deleteRecord(hdtInstitution, subInstID);
       }

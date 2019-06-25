@@ -61,15 +61,16 @@ public class SearchResultFileList
       if (startPage < 1) startPage = 1;
       if (endPage < 1)   endPage = Integer.MAX_VALUE;
 
-      if (endPage < startPage)
+      if (startPage <= endPage)
       {
-        int x = endPage;
-        endPage = startPage;
-        startPage = x;
+        this.startPage = startPage;
+        this.endPage = endPage;
       }
-
-      this.startPage = startPage;
-      this.endPage = endPage;
+      else
+      {
+        this.startPage = endPage;
+        this.endPage = startPage;
+      }
     }
 
   //---------------------------------------------------------------------------
@@ -100,17 +101,8 @@ public class SearchResultFileList
 
     private SearchResultFile createCombined(SearchResultFile other)
     {
-      int newStartPage, newEndPage;
-
-      if (startPage < other.startPage)
-        newStartPage = startPage;
-      else
-        newStartPage = other.startPage;
-
-      if (endPage > other.endPage)
-        newEndPage = endPage;
-      else
-        newEndPage = other.endPage;
+      int newStartPage = startPage < other.startPage ? startPage : other.startPage,
+          newEndPage   = endPage   > other.endPage   ? endPage   : other.endPage;
 
       return new SearchResultFile(filePath, newStartPage, newEndPage);
     }

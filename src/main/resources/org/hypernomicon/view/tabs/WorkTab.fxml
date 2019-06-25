@@ -99,8 +99,8 @@
       </AnchorPane>
       <AnchorPane fx:id="apLowerRight" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
          <children>
-            <Button fx:id="btnOpenLink" mnemonicParsing="false" prefHeight="22.0" prefWidth="50.0" text="Link:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="5.0" />
-            <TextField fx:id="tfLink" layoutX="55.0" prefHeight="22.0" prefWidth="435.0" AnchorPane.leftAnchor="55.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+            <Button fx:id="btnURL" mnemonicParsing="false" prefHeight="22.0" prefWidth="50.0" text="URL:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="5.0" />
+            <TextField fx:id="tfURL" layoutX="55.0" prefHeight="22.0" prefWidth="435.0" AnchorPane.leftAnchor="55.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
          </children>
       </AnchorPane>
       <SplitPane fx:id="spVert" dividerPositions="0.25338753387533874, 0.7642276422764228" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">

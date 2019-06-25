@@ -99,12 +99,12 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   @FXML private Button btnGoogle, btnScholar;
   @FXML private ComboBox<HyperTableCell> cbRank, cbStatus, cbSubfield;
   @FXML private ImageView ivPerson;
-  @FXML private Label lblORCID, lblPersonLink, lblPicture, lblSearchKey;
+  @FXML private Label lblORCID, lblWebsite, lblPicture, lblSearchKey;
   @FXML private SplitPane spTopHoriz, spVert;
   @FXML private Tab tabNew, tabOverview;
   @FXML private TabPane tpPerson;
   @FXML private TableView<HyperTableRow> tvArguments, tvPersonDept, tvWorks;
-  @FXML private TextField tfORCID, tfPersonLink, tfSearchKey;
+  @FXML private TextField tfORCID, tfWebsite, tfSearchKey;
   @FXML public ComboBox<HyperTableCell> cbField;
   @FXML public TextField tfFirst, tfLast;
 
@@ -149,7 +149,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     alreadyChangingName = false;
 
     tfORCID.setText(curPerson.getOrcID());
-    tfPersonLink.setText(curPerson.getWebLink());
+    tfWebsite.setText(curPerson.getWebURL());
     tfSearchKey.setText(curPerson.getSearchKey());
 
     curPicture = curPerson.filePath();
@@ -506,7 +506,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     alreadyChangingName = false;
 
-    tfPersonLink.clear();
+    tfWebsite.clear();
     tfORCID.clear();
     tfSearchKey.clear();
 
@@ -603,7 +603,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
         (personName.getLast().equalsIgnoreCase(curPerson.getLastName()) == false))
       if (saveNameToRecord(personName) == false) return false;
 
-    curPerson.setWebLink(tfPersonLink.getText());
+    curPerson.setWebURL(tfWebsite.getText());
     curPerson.setORCID(tfORCID.getText());
     curPerson.rank.setID(hcbRank.selectedID());
     curPerson.field.setID(hcbField.selectedID());
@@ -797,7 +797,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     lblSearchKey.setOnMouseClicked(event -> lblSearchKeyClick());
 
-    lblPersonLink.setOnMouseClicked(event -> openWebLink(tfPersonLink.getText()));
+    lblWebsite.setOnMouseClicked(event -> openWebLink(tfWebsite.getText()));
 
     tpPerson.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> tpPersonChange(ov, nv));
 

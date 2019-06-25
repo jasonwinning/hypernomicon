@@ -34,10 +34,10 @@ import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibDataRetriever;
-import org.hypernomicon.bib.data.BibDataStandalone;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.CrossrefBibData;
 import org.hypernomicon.bib.data.EntryType;
+import org.hypernomicon.bib.data.GUIBibData;
 import org.hypernomicon.bib.data.GoogleBibData;
 import org.hypernomicon.bib.data.PDFBibData;
 import org.hypernomicon.model.items.HyperPath;
@@ -101,6 +101,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
+import javafx.stage.Stage;
 
 //---------------------------------------------------------------------------
 
@@ -390,37 +391,15 @@ public class WorkDlgCtrlr extends HyperDlg
 
   private void init(HDT_WorkFile workFileToUse, FilePath filePathToUse)
   {
-    mainPane.getChildren().remove(apMain);
-
     apPreview = new AnchorPane();
-    mdp = new MasterDetailPane(Side.RIGHT, apMain, apPreview, false);
-    setAnchors(mdp, 0.0, 0.0, 0.0, 0.0);
-    mainPane.getChildren().add(mdp);
-
-    btnPreview.selectedProperty().bindBidirectional(mdp.showDetailNodeProperty());
+    mdp = addPreview(stagePane, apMain, apPreview, btnPreview);
 
     mdp.showDetailNodeProperty().addListener((ob, ov, nv) ->
     {
       if (nv == false) return;
 
       if ((previewInitialized == false) && (jxBrowserDisabled == false))
-      {
-        ObservableList<Screen> screens = Screen.getScreensForRectangle(dialogStage.getX(), dialogStage.getY(), dialogStage.getWidth(), dialogStage.getHeight());
-        double minWidth = 1600.0;
-
-        if (screens.size() == 1)
-          minWidth = screens.get(0).getVisualBounds().getWidth() - 60.0;
-
-        if (dialogStage.getWidth() < minWidth)
-        {
-          double diff = minWidth - dialogStage.getWidth();
-          dialogStage.setX(dialogStage.getX() - (diff / 2.0));
-          dialogStage.setWidth(minWidth);
-          ensureVisible(dialogStage, apMain.getPrefWidth(), apMain.getPrefHeight());
-        }
-
-        mdp.setDividerPosition(0.55);
-      }
+        accommodatePreview(dialogStage, apMain, mdp);
 
       updatePreview();
     });
@@ -441,7 +420,7 @@ public class WorkDlgCtrlr extends HyperDlg
     };
 
     curWork = ui.workHyperTab().activeRecord();
-    curBD = new BibDataStandalone(curWork.getBibData());
+    curBD = new GUIBibData(curWork.getBibData());
 
     if ((db.bibLibraryIsLinked() == false) || (curWork.getBibEntryKey().length() > 0))
       setAllVisible(false, chkCreateBibEntry, cbEntryType);
@@ -502,6 +481,41 @@ public class WorkDlgCtrlr extends HyperDlg
       updatePreview();
       tfOrigFile.setText(origFilePath.toString());
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static MasterDetailPane addPreview(AnchorPane stagePane, AnchorPane apMain, AnchorPane apPreview, ToggleButton btnPreview)
+  {
+    stagePane.getChildren().remove(apMain);
+
+    MasterDetailPane mdp = new MasterDetailPane(Side.RIGHT, apMain, apPreview, false);
+    setAnchors(mdp, 0.0, 0.0, 0.0, 0.0);
+    stagePane.getChildren().add(mdp);
+
+    btnPreview.selectedProperty().bindBidirectional(mdp.showDetailNodeProperty());
+
+    return mdp;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void accommodatePreview(Stage dialogStage, AnchorPane apMain, MasterDetailPane mdp)
+  {
+    ObservableList<Screen> screens = Screen.getScreensForRectangle(dialogStage.getX(), dialogStage.getY(), dialogStage.getWidth(), dialogStage.getHeight());
+    double minWidth = screens.size() == 1 ? screens.get(0).getVisualBounds().getWidth() - 60.0 : 1600.0;
+
+    if (dialogStage.getWidth() < minWidth)
+    {
+      double diff = minWidth - dialogStage.getWidth();
+      dialogStage.setX(dialogStage.getX() - (diff / 2.0));
+      dialogStage.setWidth(minWidth);
+      ensureVisible(dialogStage, apMain.getPrefWidth(), apMain.getPrefHeight());
+    }
+
+    mdp.setDividerPosition(0.55);
   }
 
 //---------------------------------------------------------------------------
@@ -710,7 +724,7 @@ public class WorkDlgCtrlr extends HyperDlg
       setAllVisible(true, btnStop, progressBar);
 
       bibDataRetriever = new BibDataRetriever(httpClient, curBD, HDT_WorkType.getEnumVal(curBD.getWorkType()), getAuthorGroups(),
-                                              List.of(origFilePath), (pdfBD, queryBD) ->
+                                              safeListOf(origFilePath), (pdfBD, queryBD) ->
       {
         setAllVisible(false, btnStop, progressBar);
 
@@ -758,7 +772,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     try
     {
-      pdfBD = PDFBibData.createFromFiles(List.of(origFilePath));
+      pdfBD = PDFBibData.createFromFiles(safeListOf(origFilePath));
     }
     catch (IOException e)
     {
@@ -839,7 +853,7 @@ public class WorkDlgCtrlr extends HyperDlg
       doMerge(queryBD, null);
     };
 
-    BibData bd = new BibDataStandalone();
+    BibData bd = new GUIBibData();
     if (crossref)
     {
       bd.setStr(bfDOI, doi);
@@ -847,7 +861,7 @@ public class WorkDlgCtrlr extends HyperDlg
     }
     else
     {
-      bd.setMultiStr(bfISBNs, List.of(isbn));
+      bd.setMultiStr(bfISBNs, safeListOf(isbn));
       bibDataRetriever = BibDataRetriever.forGoogleBooks(httpClient, bd, null, doneHndlr);
     }
   }
@@ -958,9 +972,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     taMisc.setText(curBD.getStr(bfMisc));
 
-    HDT_WorkType workType = curBD.getWorkType();
-
-    hcbType.selectID(nullSwitch(workType, -1, HDT_Record::getID));
+    hcbType.selectID(nullSwitch(curBD.getWorkType(), -1, HDT_Record::getID));
 
     tfDOI.setText(curBD.getStr(bfDOI));
 

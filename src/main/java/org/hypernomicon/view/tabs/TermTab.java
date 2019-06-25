@@ -91,12 +91,12 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   private TabPane tpConcepts;
   private boolean alreadyChangingTab = false, updatingGlossaries = false;
 
-  @Override HDT_RecordType getType()                   { return hdtTerm; }
-  @Override public void enable(boolean enabled)        { ui.tabTerms.getContent().setDisable(enabled == false); }
-  @Override public void findWithinDesc(String text)    { ctrlr.hilite(text); }
-  @Override public TextViewInfo getMainTextInfo()      { return ctrlr.getMainTextInfo(); }
-  @Override public void setRecord(HDT_Concept concept) { curConcept = concept; curTerm = curConcept == null ? null : curConcept.term.get(); }
-  @Override public boolean saveToRecord()              { return ctrlr.save(curConcept); }
+  @Override HDT_RecordType getType()                { return hdtTerm; }
+  @Override public void enable(boolean enabled)     { ui.tabTerms.getContent().setDisable(enabled == false); }
+  @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
+  @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
+  @Override public void setRecord(HDT_Concept rec)  { curConcept = rec; curTerm = curConcept == null ? null : curConcept.term.get(); }
+  @Override public boolean saveToRecord()           { return ctrlr.save(curConcept); }
 
   private ConceptTab curTab()      { return (ConceptTab) tpConcepts.getSelectionModel().getSelectedItem(); }
 

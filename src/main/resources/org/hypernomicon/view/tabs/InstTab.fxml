@@ -51,8 +51,8 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                <children>
-                  <Button fx:id="btnLink" layoutY="3.0" mnemonicParsing="false" text="Link:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="3.0" />
-                  <TextField fx:id="tfLink" layoutX="44.0" layoutY="3.0" prefHeight="22.0" prefWidth="402.0" AnchorPane.leftAnchor="44.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
+                  <Button fx:id="btnURL" layoutY="3.0" mnemonicParsing="false" text="URL:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="3.0" />
+                  <TextField fx:id="tfURL" layoutX="44.0" layoutY="3.0" prefHeight="22.0" prefWidth="402.0" AnchorPane.leftAnchor="44.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
@@ -110,7 +110,7 @@
                                   <TableColumn maxWidth="47.0" minWidth="47.0" prefWidth="47.0" sortable="false" />
                                   <TableColumn prefWidth="174.0" sortable="false" text="Division" />
                                     <TableColumn prefWidth="75.0" text="Type" />
-                                    <TableColumn prefWidth="191.0" sortable="false" text="Link" />
+                                    <TableColumn prefWidth="191.0" sortable="false" text="Web URL" />
                                 </columns>
                               </TableView>
                            </children>

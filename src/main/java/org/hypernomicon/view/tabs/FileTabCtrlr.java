@@ -72,15 +72,15 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   public FileDlgCtrlr fdc = null;
   private HDT_MiscFile curMiscFile;
 
-  @Override public String getRecordName()                    { return tfName.getText(); }
-  @Override HDT_RecordType getType()                         { return hdtMiscFile; }
-  @Override public void enable(boolean enabled)              { ui.tabFiles.getContent().setDisable(enabled == false); }
-  @Override public void findWithinDesc(String text)          { mainText.hilite(text); }
-  @Override public TextViewInfo getMainTextInfo()            { return mainText.getViewInfo(); }
-  @Override public MainTextWrapper getMainTextWrapper()      { return mainText; }
-  @Override public void setRecord(HDT_MiscFile activeRecord) { curMiscFile = activeRecord; }
+  @Override public String getRecordName()               { return tfName.getText(); }
+  @Override HDT_RecordType getType()                    { return hdtMiscFile; }
+  @Override public void enable(boolean enabled)         { ui.tabFiles.getContent().setDisable(enabled == false); }
+  @Override public void findWithinDesc(String text)     { mainText.hilite(text); }
+  @Override public TextViewInfo getMainTextInfo()       { return mainText.getViewInfo(); }
+  @Override public MainTextWrapper getMainTextWrapper() { return mainText; }
+  @Override public void setRecord(HDT_MiscFile record)  { curMiscFile = record; }
 
-  @FXML public boolean btnManageClick()                      { return showFileDialog(null); }
+  @FXML public boolean btnManageClick()                 { return showFileDialog(null); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

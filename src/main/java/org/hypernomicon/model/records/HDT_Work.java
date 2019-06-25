@@ -97,17 +97,17 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   public String getMiscBib()     { return getTagString(tagMiscBib); }
   public String getDOI()         { return getTagString(tagDOI); }
   public List<String> getISBNs() { return matchISBN(getTagString(tagISBN)); }
-  public String getWebLink()     { return getTagString(tagWebLink); }
+  public String getURL()         { return getTagString(tagWebURL); }
   public Authors getAuthors()    { return authors; }
   public int getStartPageNum()   { return workFiles.isEmpty() ? -1 : getStartPageNum(workFiles.get(0)); }
   public int getEndPageNum()     { return workFiles.isEmpty() ? -1 : getEndPageNum(workFiles.get(0)); }
-  public boolean canLaunch()     { return ! (getPath().isEmpty() && getWebLink().isEmpty()); }
+  public boolean canLaunch()     { return ! (getPath().isEmpty() && getURL().isEmpty()); }
 
   public void setYear(String str)        { updateTagString(tagYear, str); }
   public void setBibEntryKey(String str) { updateBibEntryKey(str); }
   public void setMiscBib(String str)     { updateTagString(tagMiscBib, str); }
   public void setDOI(String str)         { updateTagString(tagDOI, matchDOI(str)); }
-  public void setWebLink(String str)     { updateTagString(tagWebLink, str); }
+  public void setURL(String str)         { updateTagString(tagWebURL, str); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -171,20 +171,19 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
   @Override public String getCBText()
   {
-    String authorStr = getShortAuthorsStr(false);
-    String yearStr = getYear();
-    String titleStr = name();
-
-    String cbStr = "";
+    String authorStr = getShortAuthorsStr(false),
+           yearStr = getYear(),
+           titleStr = name(),
+           cbStr = "";
 
     if (authorStr.length() > 0)
       cbStr = authorStr + " ";
 
     if (yearStr.length() > 0)
-      cbStr = cbStr + "(" + yearStr + ") ";
+      cbStr += "(" + yearStr + ") ";
 
     if (titleStr.length() > 0)
-      cbStr = cbStr + titleStr;
+      cbStr += titleStr;
 
     return cbStr;
   }
@@ -333,13 +332,13 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
   public void launch(int pageNum)
   {
-    if (workFiles.isEmpty() && getWebLink().isEmpty()) return;
+    if (workFiles.isEmpty() && getURL().isEmpty()) return;
 
     viewNow();
 
     if (getPath().isEmpty())
     {
-      openWebLink(getWebLink());
+      openWebLink(getURL());
       return;
     }
 
@@ -368,7 +367,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
     if (work.workFiles.isEmpty() == false)
       indicator = work.workFiles.get(0).filePath().getExtensionOnly().toLowerCase();
-    else if (safeStr(work.getWebLink()).length() > 0)
+    else if (safeStr(work.getURL()).length() > 0)
       indicator = "web";
 
     return indicator.length() == 0 ? str : new String(str + " (" + indicator + ")").trim();

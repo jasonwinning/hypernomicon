@@ -165,9 +165,8 @@ public final class Util
   {
     double pos = appPrefs.getDouble(key, -1.0);
 
-    if (pos < 0) return;
-
-    sp.setDividerPosition(ndx, pos);
+    if (pos >= 0)
+      sp.setDividerPosition(ndx, pos);
   }
 
 //---------------------------------------------------------------------------
@@ -718,8 +717,8 @@ public final class Util
 
     s = s.trim().toLowerCase();
 
-    if (s.equals(Boolean.TRUE.toString().trim().toLowerCase())) return true;
-    if (s.equals(Boolean.FALSE.toString().trim().toLowerCase())) return false;
+    if (s.equalsIgnoreCase(Boolean.TRUE .toString().trim())) return true;
+    if (s.equalsIgnoreCase(Boolean.FALSE.toString().trim())) return false;
 
     return (s.indexOf("yes") == 0) || (s.indexOf("tru") == 0);
   }
@@ -895,9 +894,8 @@ public final class Util
 
   public static void safeFocus(Node node)
   {
-    if (node.isDisabled()) return;
-
-    runInFXThread(node::requestFocus);
+    if (node.isDisabled() == false)
+      runInFXThread(node::requestFocus);
   }
 
 //---------------------------------------------------------------------------
@@ -1130,8 +1128,7 @@ public final class Util
 
     while ((start < str.length()) && (gotStart == false))
     {
-      char c = str.charAt(start);
-      if (Character.isAlphabetic(c))
+      if (Character.isAlphabetic(str.charAt(start)))
         gotStart = true;
       else
         start++;
@@ -1141,8 +1138,7 @@ public final class Util
 
     for (end = start + 1; end < str.length(); end++)
     {
-      char c = str.charAt(end);
-      if (Character.isAlphabetic(c) == false)
+      if (Character.isAlphabetic(str.charAt(end)) == false)
       {
         posObj.setValue(end);
         return str.substring(start, end);
@@ -1224,6 +1220,8 @@ public final class Util
   public static boolean collEmpty(Collection<?> c) { return c == null ? true : c.isEmpty(); }
   public static boolean collEmpty(Map<?, ?> m)     { return m == null ? true : m.isEmpty(); }
 
+  public static <E> List<E> safeListOf(E e1)       { return e1 == null ? List.of() : List.of(e1); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -1231,9 +1229,7 @@ public final class Util
   {
     E[] vals = cls.getEnumConstants();
 
-    if (vals == null) return null;
-    if (ord < 0) return null;
-    if (ord > (vals.length - 1)) return null;
+    if ((vals == null) || (ord < 0) || (ord > (vals.length - 1))) return null;
 
     return vals[ord];
   }
@@ -1317,9 +1313,8 @@ public final class Util
   public static void setFontSize(Node node)
   {
     double fontSize = appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
-    if (fontSize < 1) return;
-
-    node.setStyle("-fx-font-size: " + fontSize + "px;");
+    if (fontSize >= 1)
+      node.setStyle("-fx-font-size: " + fontSize + "px;");
   }
 
 //---------------------------------------------------------------------------

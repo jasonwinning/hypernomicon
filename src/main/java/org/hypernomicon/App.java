@@ -214,10 +214,8 @@ public final class App extends Application
       }
     }
 
-    if (hdbExists)
-      ui.loadDB();
-    else
-      ui.startEmpty();
+    if (hdbExists) ui.loadDB();
+    else           ui.startEmpty();
 
     if (args.size() > 0)
       ui.handleArgs(args);
@@ -291,14 +289,11 @@ public final class App extends Application
 
       scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
 
-      scene.setOnKeyPressed(event ->
+      scene.setOnKeyPressed(event -> { if (event.getCode() == KeyCode.ESCAPE)
       {
-        if (event.getCode() == KeyCode.ESCAPE)
-        {
-          ui.hideFindTable();
-          event.consume();
-        }
-      });
+        ui.hideFindTable();
+        event.consume();
+      }});
 
       KeyCombination keyComb = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
       scene.addEventHandler(KeyEvent.KEY_PRESSED, event ->

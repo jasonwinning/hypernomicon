@@ -154,7 +154,7 @@ public final class MainCtrlr
   public final List<TreeTargetType> treeTargetTypes = new ArrayList<>();
 
   public Tooltip ttDates;
-  private boolean selectorTabChangeIsProgrammatic = false, maximized = false, internetNotCheckedYet = true;
+  private boolean selectorTabChangeIsProgrammatic = false, maximized = false, internetNotCheckedYet = true, shuttingDown = false;
   private double toolBarWidth = 0.0, maxWidth = 0.0, maxHeight = 0.0;
 
   private static final String TREE_SELECT_BTN_CAPTION = "Select";
@@ -166,6 +166,7 @@ public final class MainCtrlr
   MenuBar getMenuBar()                         { return menuBar; }
   public TreeWrapper getTree()                 { return treeHyperTab().getTree(); }
   private Stage primaryStage()                 { return app.getPrimaryStage(); }
+  public boolean isShuttingDown()              { return shuttingDown; }
 
   @FXML private void mnuExitClick()           { shutDown(true, true, true); }
   @FXML private void mnuExitNoSaveClick()     { if (confirmDialog("Abandon changes and quit?")) shutDown(false, true, false); }
@@ -921,6 +922,7 @@ public final class MainCtrlr
         saveAllToDisk(false, false, false);
       }
 
+      shuttingDown = true;
       forEachHyperTab(HyperTab::clear);
 
       folderTreeWatcher.stop();
@@ -2075,7 +2077,7 @@ public final class MainCtrlr
 
   public boolean cantSaveRecord()
   {
-    if ((db.isLoaded() == false) || (activeTabEnum() == queryTabEnum) || (activeTabEnum() == treeTabEnum) || (activeRecord() == null))
+    if ((db.isLoaded() == false) || (activeTabEnum() == queryTabEnum) || (activeTabEnum() == treeTabEnum) || (activeRecord() == null) || shuttingDown)
       return false;
 
     CommitableWrapper.commitWrapper(primaryStage().getScene().getFocusOwner());
@@ -2088,7 +2090,7 @@ public final class MainCtrlr
 
   public void goToTreeRecord(HDT_Record record)
   {
-    if (db.isLoaded() == false) return;
+    if ((db.isLoaded() == false) || shuttingDown) return;
 
     if (cantSaveRecord())
     {
@@ -2153,7 +2155,7 @@ public final class MainCtrlr
 
   public void goToRecord(HDT_Record record, boolean save)
   {
-    if ((record == null) || (db.isLoaded() == false)) return;
+    if ((record == null) || (db.isLoaded() == false) || shuttingDown) return;
 
     treeSubjRecord = null;
     HDT_Investigation inv = null;

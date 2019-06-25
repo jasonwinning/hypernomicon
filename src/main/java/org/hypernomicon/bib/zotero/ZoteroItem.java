@@ -215,9 +215,9 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     {
       switch (bibFieldEnum)
       {
-        case bfYear : getWork().setYear   (newStr); return;
-        case bfDOI  : getWork().setDOI    (newStr); return;
-        case bfURL  : getWork().setWebLink(newStr); return;
+        case bfYear : getWork().setYear(newStr); return;
+        case bfDOI  : getWork().setDOI (newStr); return;
+        case bfURL  : getWork().setURL (newStr); return;
         default     : break;
       }
     }
@@ -332,7 +332,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
       {
         case bfDOI   : return getWork().getDOI();
         case bfYear  : return getWork().getYear();
-        case bfURL   : return getWork().getWebLink();
+        case bfURL   : return getWork().getURL();
         case bfTitle : return getWork().name();
         default      : break;
       }

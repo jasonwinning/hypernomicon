@@ -100,9 +100,9 @@ public class WorkBibData extends BibData
   {
     switch (bibFieldEnum)
     {
-      case bfYear : work.setYear(newStr);    return;
-      case bfDOI  : work.setDOI(newStr);     return;
-      case bfURL  : work.setWebLink(newStr); return;
+      case bfYear : work.setYear(newStr); return;
+      case bfDOI  : work.setDOI(newStr);  return;
+      case bfURL  : work.setURL(newStr);  return;
 
       default     : break;
     }
@@ -134,7 +134,7 @@ public class WorkBibData extends BibData
     {
       case bfDOI   : return work.getDOI();
       case bfYear  : return work.getYear();
-      case bfURL   : return work.getWebLink();
+      case bfURL   : return work.getURL();
       case bfTitle : return work.name();
       case bfMisc  : return work.getMiscBib();
 

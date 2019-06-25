@@ -39,7 +39,7 @@ public abstract class HyperTask extends Task<Boolean>
 
   private Thread thread;
 
-  @Override public void updateProgress(long   cur, long   total) { super.updateProgress((double)cur, (double)total); } // This increases the visibility from protected
+  @Override public void updateProgress(long   cur, long   total) { super.updateProgress((double)cur, (double)total); } // Increase visibility from protected
   @Override public void updateProgress(double cur, double total) { super.updateProgress(cur, total); }                 // to public for both of these functions
 
   public void setThread(Thread thread) { this.thread = thread; }

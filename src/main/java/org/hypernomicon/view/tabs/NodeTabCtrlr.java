@@ -57,8 +57,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
   @FXML TableView<HyperTableRow> tvLeftChildren, tvParents, tvRightChildren;
   @FXML ToolBar tbLinks;
   @FXML private Button btnGoogle, btnIEP, btnSEP, btnTree, btnWikipedia;
-  @FXML private Label lblGoTo1, lblGoTo2, lblGoTo3;
-  @FXML private Label lblMergeTerms;
+  @FXML private Label lblGoTo1, lblGoTo2, lblGoTo3, lblMergeTerms;
   @FXML private TextField tfName, tfSearchKey;
 
   private Label debateLink, noteLink, labelLink, conceptLink;

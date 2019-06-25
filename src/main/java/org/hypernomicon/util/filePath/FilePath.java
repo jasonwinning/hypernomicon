@@ -67,6 +67,24 @@ public class FilePath implements Comparable<FilePath>
   public boolean isDirectory()          { return innerVal.getFile().isDirectory(); }
   public FilePath getParent()           { return new FilePath(innerVal.getPath().getParent()); }
   public Instant lastModified()         { return Instant.ofEpochMilli(innerVal.getFile().lastModified()); }
+
+  /**
+   * Gets the extension of a filename.
+   * <p>
+   * This method returns the textual part of the filename after the last dot.
+   * There must be no directory separator after the dot.
+   * <pre>
+   * foo.txt      --&gt; "txt"
+   * a/b/c.jpg    --&gt; "jpg"
+   * a/b.txt/c    --&gt; ""
+   * a/b/c        --&gt; ""
+   * </pre>
+   * <p>
+   * The output will be the same irrespective of the machine that the code is running on.
+   *
+   * @return the extension of the file or an empty string if none exists or {@code null}
+   * if the filename is {@code null}.
+   */
   public String getExtensionOnly()      { return FilenameUtils.getExtension(innerVal.getPathStr()); }
 
   public boolean copyTo(FilePath destFilePath, boolean confirmOverwrite) throws IOException { return moveOrCopy(destFilePath, confirmOverwrite, false); }

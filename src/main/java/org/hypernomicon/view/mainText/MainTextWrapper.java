@@ -452,7 +452,7 @@ public final class MainTextWrapper
     displayItems = null;
     keyWorks = null;
 
-    if (show) showReadOnly();
+    if (show && (ui.isShuttingDown() == false)) showReadOnly();
   }
 
 //---------------------------------------------------------------------------

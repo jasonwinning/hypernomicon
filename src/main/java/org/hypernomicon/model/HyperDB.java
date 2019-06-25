@@ -1691,7 +1691,7 @@ public final class HyperDB
                          addTag("list_name",          tagListName,        "List Name");
                          addTag("first_name",         tagFirstName,       "First Name");
                          addTag("last_name",          tagLastName,        "Last Name");
-                         addTag("link",               tagWebLink,         "Link");
+                         addTag("link",               tagWebURL,          "Web URL");
                          addTag("orcid",              tagORCID,           "ORCID");
                          addTag("picture",            tagPicture,         "Picture");
                          addTag("picture_crop",       tagPictureCrop,     "Picture Crop");
@@ -1799,7 +1799,7 @@ public final class HyperDB
       addPointerSingle(hdtInstitution, rtParentInstOfInst, tagParentInst);
       addPointerSingle(hdtInstitution, rtRegionOfInst, tagRegion);
       addPointerSingle(hdtInstitution, rtCountryOfInst, tagCountry);
-      addStringItem(hdtInstitution, tagWebLink);
+      addStringItem(hdtInstitution, tagWebURL);
       addStringItem(hdtInstitution, tagCity);
 
       addStringItem(hdtInvestigation, tagName);
@@ -1817,7 +1817,7 @@ public final class HyperDB
       addPointerSingle(hdtPerson, rtRankOfPerson, tagRank);
       addPointerSingle(hdtPerson, rtFieldOfPerson, tagField);
       addPointerSingle(hdtPerson, rtSubfieldOfPerson, tagSubfield);
-      addStringItem(hdtPerson, tagWebLink);
+      addStringItem(hdtPerson, tagWebURL);
       addStringItem(hdtPerson, tagORCID);
       addPathItem(hdtPerson, rtNone, tagPicture);
       addStringItem(hdtPerson, tagPictureCrop);
@@ -1859,7 +1859,7 @@ public final class HyperDB
       addAuthorsItem();
       addPointerMulti(hdtWork, rtInvestigationOfWork, tagInvestigation);
       addPointerMulti(hdtWork, rtLabelOfWork, tagWorkLabel);
-      addStringItem(hdtWork, tagWebLink);
+      addStringItem(hdtWork, tagWebURL);
       addStringItem(hdtWork, tagYear);
       addBibEntryKeyItem();
       addStringItem(hdtWork, tagMiscBib);
@@ -1997,7 +1997,7 @@ public final class HyperDB
     tagInvestigation,  tagDebate,       tagArgument,     tagTerm,            tagConcept,         tagWork,           tagWorkType,     tagWorkLabel,
     tagField,          tagSubfield,     tagPosition,     tagPositionVerdict, tagArgumentVerdict, tagMiscFile,       tagWorkFile,     tagNote,
     tagGlossary,       tagPersonGroup,  tagFileType,     tagID,              tagType,            tagSortKey,        tagDOI,          tagISBN,
-    tagSearchKey,      tagRecord,       tagFirstName,    tagLastName,        tagWebLink,         tagORCID,          tagPicture,      tagPictureCrop,
+    tagSearchKey,      tagRecord,       tagFirstName,    tagLastName,        tagWebURL,          tagORCID,          tagPicture,      tagPictureCrop,
     tagWhyFamous,      tagName,         tagAbbreviation, tagCity,            tagDescription,     tagTitle,          tagFileName,     tagYear,
     tagMiscBib,        tagAuthor,       tagInFileName,   tagEditor,          tagTranslator,      tagAnnotated,      tagStartPageNum, tagEndPageNum,
     tagBibEntryKey,    tagComments,     tagLargerDebate, tagListName,        tagCounterargument, tagDefinition,     tagText,         tagActive,
@@ -2197,7 +2197,7 @@ public final class HyperDB
 
     if (paths == null) return;
 
-    paths.removeIf(path -> path.filePath().equals(filePath));
+    paths.removeIf(path -> filePath.equals(path.filePath()));
 
     if (paths.isEmpty())
       filenameMap.remove(name);

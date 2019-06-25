@@ -135,7 +135,7 @@ public class HDT_Position extends HDT_RecordWithConnector
             }
           }
 
-          else if ((work.getWebLink().isEmpty() == false) && (webPs == null))
+          else if ((work.getURL().isEmpty() == false) && (webPs == null))
           {
             if (work.authorRecords.size() > 0)
             {

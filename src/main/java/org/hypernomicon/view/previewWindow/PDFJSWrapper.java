@@ -35,6 +35,7 @@ import com.teamdev.jxbrowser.chromium.JSArray;
 import com.teamdev.jxbrowser.chromium.JSFunction;
 import com.teamdev.jxbrowser.chromium.JSObject;
 import com.teamdev.jxbrowser.chromium.JSValue;
+import com.teamdev.jxbrowser.chromium.LoadHTMLParams;
 import com.teamdev.jxbrowser.chromium.ProtocolHandler;
 import com.teamdev.jxbrowser.chromium.ProtocolService;
 import com.teamdev.jxbrowser.chromium.URLRequest;
@@ -309,6 +310,7 @@ public class PDFJSWrapper
 
     postBrowserLoadCode = stuffToDoAfterLoading;
 
+    browser.stop();
     browser.loadHTML(viewerHTMLStr);
   }
 
@@ -543,10 +545,10 @@ public class PDFJSWrapper
       opened = false;
       boolean readyToOpen = false;
 
-      for (int ndx = 0; (ndx < 100) && !readyToOpen; ndx++)
+      for (int ndx = 0; (ndx < 20) && !readyToOpen; ndx++)
       {
         readyToOpen = browser.executeJavaScriptAndReturnValue("'openPdfFile' in window").getBooleanValue();
-        if (!readyToOpen) sleepForMillis(50);
+        if (!readyToOpen) sleepForMillis(100);
       }
 
       if (!readyToOpen)

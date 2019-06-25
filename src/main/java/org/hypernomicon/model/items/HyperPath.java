@@ -103,7 +103,7 @@ public class HyperPath
     if ((record != null) && (record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID))
       return false;
 
-    return FilePath.isEmpty(getFileName());
+    return FilePath.isEmpty(fileName);
   }
 
 //---------------------------------------------------------------------------
@@ -114,7 +114,7 @@ public class HyperPath
     if ((record != null) && (record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID))
       return "Root";
 
-    return nullSwitch(getFileName(), "", fn -> fn.getNameOnly().toString());
+    return fileName == null ? "" : fileName.getNameOnly().toString();
   }
 
 //---------------------------------------------------------------------------
@@ -131,6 +131,8 @@ public class HyperPath
     else
       folder = null;
 
+    fileName = null;
+
     if (FilePath.isEmpty(filePath)   ||
         (filePath.exists() == false) ||
         (filePath.isFile() == false))   return;
@@ -145,7 +147,7 @@ public class HyperPath
   public static Set<HyperPath> getHyperPathSetForFilePath(FilePath filePath)
   {
     return nullSwitch(db.filenameMap.get(filePath.getNameOnly().toString()), new HashSet<>(),
-                      paths -> paths.stream().filter(path -> path.filePath().equals(filePath)).collect(Collectors.toSet()));
+                      paths -> paths.stream().filter(path -> filePath.equals(path.filePath())).collect(Collectors.toSet()));
   }
 
 //---------------------------------------------------------------------------
@@ -288,10 +290,10 @@ public class HyperPath
 
   public void assign(HDT_Folder parentFolder, FilePath nameOnly)
   {
-    if (FilePath.isEmpty(getFileName()) && FilePath.isEmpty(nameOnly)) return;
+    if (FilePath.isEmpty(fileName) && FilePath.isEmpty(nameOnly)) return;
 
-    if ((FilePath.isEmpty(getFileName()) == false) && (FilePath.isEmpty(nameOnly) == false))
-      if ((parentFolder() == parentFolder) && (getFileName().getNameOnly().equals(nameOnly.getNameOnly()))) return;
+    if ((FilePath.isEmpty(fileName) == false) && (FilePath.isEmpty(nameOnly) == false))
+      if ((parentFolder() == parentFolder) && (fileName.getNameOnly().equals(nameOnly.getNameOnly()))) return;
 
     clear();
     assignInternal(parentFolder, nameOnly);

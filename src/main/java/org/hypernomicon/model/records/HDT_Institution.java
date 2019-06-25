@@ -64,8 +64,8 @@ public class HDT_Institution extends HDT_RecordBase
   public boolean isDeptOrFaculty()    { return (instType.getID() == HDT_InstitutionType.FACULTY_INST_TYPE_ID) ||
                                                (instType.getID() == HDT_InstitutionType.DEPARTMENT_INST_TYPE_ID); }
 
-  public void setWebLink(String newLink) { updateTagString(tagWebLink, newLink); }
-  public String getWebLink()             { return getTagString(tagWebLink); }
+  public void setURL(String newURL) { updateTagString(tagWebURL, newURL); }
+  public String getURL()            { return getTagString(tagWebURL); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

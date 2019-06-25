@@ -524,14 +524,15 @@ public class PreviewWrapper
     refreshControls();
   }
 
-  private static final String UNABLE_TO_PREVIEW_HTML = "Unable to preview the file.";
+  private static final String UNABLE_TO_PREVIEW_HTML = "Unable to preview the file";
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
   public static String showFile(FilePath filePath, int pageNum, PDFJSWrapper jsWrapper)
   {
-    String mimetypeStr = getMediaType(filePath).toString();
+    String mimetypeStr = getMediaType(filePath).toString(),
+           errHtml = UNABLE_TO_PREVIEW_HTML + ": " + htmlEscaper.escape(filePath.toString());
 
     if (mimetypeStr.contains("pdf"))
     {
@@ -549,19 +550,18 @@ public class PreviewWrapper
 
         result.getWarnings().forEach(msg -> System.out.println(msg));
 
-        if (html.length() == 0) html = UNABLE_TO_PREVIEW_HTML;
-        jsWrapper.loadHtml(html);
+        jsWrapper.loadHtml(html.isBlank() ? errHtml : html);
       }
       catch (IOException e)
       {
-        jsWrapper.loadHtml(UNABLE_TO_PREVIEW_HTML);
+        jsWrapper.loadHtml(errHtml);
       }
     }
     else if (mimetypeStr.contains("html")  || mimetypeStr.contains("image")  || mimetypeStr.contains("plain") ||
              mimetypeStr.contains("video") || mimetypeStr.contains("audio"))
       jsWrapper.loadFile(filePath);
     else
-      jsWrapper.loadHtml(UNABLE_TO_PREVIEW_HTML);
+      jsWrapper.loadHtml(errHtml);
 
     return mimetypeStr;
   }

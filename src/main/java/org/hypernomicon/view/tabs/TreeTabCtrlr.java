@@ -79,7 +79,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public void enable(boolean enabled)   { ui.tabTree.getContent().setDisable(enabled == false); }
   @Override public void clear()                   { tree.clear(); }
   @Override public boolean saveToRecord()         { return true; }
-  @Override public void setRecord(HDT_Record ar)  { return; }
+  @Override public void setRecord(HDT_Record rec) { return; }
   @Override public HDT_Record activeRecord()      { return tree.selectedRecord(); }
   @Override public String getRecordName()         { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
   @Override public TextViewInfo getMainTextInfo() { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
@@ -268,7 +268,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       else
         tfPath.clear();
 
-      if (clearWV)
+      if (clearWV && (ui.isShuttingDown() == false))
         webView.getEngine().loadContent("");
 
       if (clearPreview)

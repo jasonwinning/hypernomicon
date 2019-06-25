@@ -61,7 +61,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
   @FXML private RadioButton rbAddNoCreate, rbCreateNoMerge, rbMerge, rbUseDupName, rbUseName;
   @FXML private TabPane tabPane;
   @FXML private TextField tfDupFirstName, tfDupLastName, tfDupSearchKey, tfFirstName, tfLastName, tfSearchKey;
-  @FXML private ToggleGroup grpAction;
+  @FXML private ToggleGroup grpAction, grpName;
 
   private HDT_Person person = null;
   private Author origAuthor = null;
@@ -147,6 +147,12 @@ public class NewPersonDlgCtrlr extends HyperDlg
       rbAddNoCreate.setDisable(true);
       rbCreateNoMerge.setSelected(true);
     }
+
+    grpName.selectedToggleProperty().addListener((ob, ov, nv) ->
+    {
+      if ((nv != null) && (grpAction.getSelectedToggle() == null))
+        rbMerge.setSelected(true);
+    });
 
     grpAction.selectedToggleProperty().addListener((ob, ov, nv) -> updateRadioButtons());
 
@@ -487,11 +493,11 @@ public class NewPersonDlgCtrlr extends HyperDlg
       if (tabPane.isVisible() == false) // Expand dialog vertically to reveal duplicate author tabs
       {
         double height = 419.0 * displayScale,
-               diff = dialogStage.getHeight() - mainPane.getHeight();
+               diff = dialogStage.getHeight() - stagePane.getHeight();
 
-         mainPane.setMinHeight(height);
-         mainPane.setMaxHeight(height);
-         mainPane.setPrefHeight(height);
+         stagePane.setMinHeight(height);
+         stagePane.setMaxHeight(height);
+         stagePane.setPrefHeight(height);
 
          dialogStage.setMinHeight(height + diff);
          dialogStage.setMaxHeight(height + diff);

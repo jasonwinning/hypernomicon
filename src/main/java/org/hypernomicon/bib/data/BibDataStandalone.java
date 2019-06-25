@@ -35,10 +35,9 @@ import static org.hypernomicon.bib.data.BibField.BibFieldType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
-public class BibDataStandalone extends BibData
+public abstract class BibDataStandalone extends BibData
 {
   private EntryType entryType;
-  private HDT_WorkType workType;
   private final LinkedHashSet<BibField> bibFields = new LinkedHashSet<>();
   private final HashMap<BibFieldEnum, BibField> bibFieldEnumToBibField = new HashMap<>();
   protected YearType yearType;      // Internally-used descriptor indicates where year field came from for purposes of determining priority
@@ -49,7 +48,7 @@ public class BibDataStandalone extends BibData
   public BibDataStandalone()
   {
     entryType = EntryType.etUnentered;
-    workType = null;
+    setWorkType(null);
 
     EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum ->
     {
@@ -65,33 +64,14 @@ public class BibDataStandalone extends BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public BibDataStandalone(BibData bd)
-  {
-    this();
-
-    EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum -> { switch (bibFieldEnum.getType())
-    {
-      case bftString      : setStr(bibFieldEnum, bd.getStr(bibFieldEnum)); break;
-      case bftMultiString : setMultiStr(bibFieldEnum, bd.getMultiStr(bibFieldEnum)); break;
-      case bftEntryType   : entryType = bd.getEntryType(); break;
-      case bftWorkType    : workType = bd.getWorkType(); break;
-      case bftAuthor      : break;
-    }});
-
-    bd.getAuthors().forEach(authors::add);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public boolean linkedToWork()                                { return false; }
   @Override public HDT_Work getWork()                                    { return null; }
   @Override public BibAuthors getAuthors()                               { return authors; }
   @Override public EntryType getEntryType()                              { return entryType; }
   @Override public void setMultiStr(BibFieldEnum bfe, List<String> list) { bibFieldEnumToBibField.get(bfe).setAll(list); }
   @Override public void setEntryType(EntryType entryType)                { this.entryType = entryType; }
-  @Override public void setWorkType(HDT_WorkType workType)               { this.workType = workType; }
-  @Override public HDT_WorkType getWorkType()                            { return workType; }
+  @Override public HDT_WorkType getWorkType()                            { return EntryType.toWorkType(getEntryType()); }
+  @Override public void setWorkType(HDT_WorkType workType)               { return; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -140,18 +120,14 @@ public class BibDataStandalone extends BibData
 
     switch (bibFieldEnum)
     {
-      case bfEntryType :
-        return entryType.getUserFriendlyName();
-
-      case bfWorkType :
-        return workType == null ? "" : workType.getCBText();
-
-      case bfContainerTitle: case bfMisc: case bfTitle:
-        return bibFieldEnumToBibField.get(bibFieldEnum).getStr();
-
-      case bfAuthors:     return authors.getStr(AuthorType.author);
-      case bfEditors:     return authors.getStr(AuthorType.editor);
-      case bfTranslators: return authors.getStr(AuthorType.translator);
+      case bfEntryType      : return entryType.getUserFriendlyName();
+      case bfWorkType       : return nullSwitch(getWorkType(), "", HDT_WorkType::getCBText);
+      case bfContainerTitle : // fall through
+      case bfMisc           : // fall through
+      case bfTitle          : return bibFieldEnumToBibField.get(bibFieldEnum).getStr();
+      case bfAuthors        : return authors.getStr(AuthorType.author);
+      case bfEditors        : return authors.getStr(AuthorType.editor);
+      case bfTranslators    : return authors.getStr(AuthorType.translator);
 
       default:
         messageDialog("Internal error #90227", mtError);

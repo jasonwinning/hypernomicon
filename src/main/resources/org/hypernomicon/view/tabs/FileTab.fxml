@@ -151,7 +151,7 @@
       </GridPane>
       <TabPane>
          <tabs>
-            <Tab closable="false" text="Records listing this as a Key Work">
+            <Tab closable="false" text="Records listing this under Key Works">
                <content>
                   <AnchorPane>
                      <children>

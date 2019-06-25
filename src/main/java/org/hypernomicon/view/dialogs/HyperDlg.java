@@ -38,15 +38,16 @@ public abstract class HyperDlg
 {
   protected boolean okClicked = false;
   protected Stage dialogStage;
-  protected AnchorPane mainPane;
+  protected AnchorPane stagePane;
   protected Runnable onShown = null;
   private double initHeight = -1, initWidth = -1;
   private boolean shownAlready = false;
 
 //---------------------------------------------------------------------------
 
-  public final Stage getStage()            { return dialogStage; }
-  public final boolean shownAlready()      { return shownAlready; }
+  public final Stage getStage()       { return dialogStage; }
+  public final boolean shownAlready() { return shownAlready; }
+
   protected abstract boolean isValid();
 
 //---------------------------------------------------------------------------
@@ -80,7 +81,7 @@ public abstract class HyperDlg
 
       final T dlg = loader.getController();
 
-      dlg.mainPane = mainPane;
+      dlg.stagePane = mainPane;
       dlg.dialogStage = dialogStage;
 
       dialogStage.setOnShown(event -> dlg.doOnShown());
@@ -100,10 +101,10 @@ public abstract class HyperDlg
 
   public final void setInitHeight(String prefKey)
   {
-    initHeight = appPrefs.getDouble(prefKey, mainPane.getPrefHeight());
+    initHeight = appPrefs.getDouble(prefKey, stagePane.getPrefHeight());
 
     if (initHeight < 350)
-      initHeight = mainPane.getPrefHeight();
+      initHeight = stagePane.getPrefHeight();
   }
 
 //---------------------------------------------------------------------------
@@ -111,10 +112,10 @@ public abstract class HyperDlg
 
   public final void setInitWidth(String prefKey)
   {
-    initWidth = appPrefs.getDouble(prefKey, mainPane.getPrefWidth());
+    initWidth = appPrefs.getDouble(prefKey, stagePane.getPrefWidth());
 
     if (initWidth < 350)
-      initWidth = mainPane.getPrefWidth();
+      initWidth = stagePane.getPrefWidth();
   }
 
 //---------------------------------------------------------------------------
@@ -136,25 +137,25 @@ public abstract class HyperDlg
   {
     if (shownAlready == false)
     {
-      if (safeStr(mainPane.getId()).equals("SpecialUI") == false)
+      if (safeStr(stagePane.getId()).equals("SpecialUI") == false)
       {
-        scaleNodeForDPI(mainPane);
-        setFontSize(mainPane);
+        scaleNodeForDPI(stagePane);
+        setFontSize(stagePane);
       }
     }
 
-    double diff = dialogStage.getHeight() - mainPane.getHeight();
+    double diff = dialogStage.getHeight() - stagePane.getHeight();
     if (diff == 0.0) diff = 30.0;
 
-    double val = mainPane.getMaxHeight();
+    double val = stagePane.getMaxHeight();
     if (val > 0)
       dialogStage.setMaxHeight(val + diff);
 
-    val = mainPane.getMinHeight();
+    val = stagePane.getMinHeight();
     if (val > 0)
       dialogStage.setMinHeight(val + diff);
 
-    val = mainPane.getMinWidth();
+    val = stagePane.getMinWidth();
     if (val > 0)
       dialogStage.setMinWidth(val + diff);
 
@@ -162,7 +163,7 @@ public abstract class HyperDlg
     {
       if (initWidth <= 0)
       {
-        val = mainPane.getPrefWidth();
+        val = stagePane.getPrefWidth();
         if (val > 0)
           dialogStage.setWidth(val + diff);
       }
@@ -171,7 +172,7 @@ public abstract class HyperDlg
 
       if (initHeight <= 0)
       {
-        val = mainPane.getPrefHeight();
+        val = stagePane.getPrefHeight();
         if (val > 0)
           dialogStage.setHeight(val + diff);
       }
@@ -187,7 +188,7 @@ public abstract class HyperDlg
   {
     dialogStage.show();
 
-    ensureVisible(dialogStage, mainPane.getPrefWidth(), mainPane.getPrefHeight());
+    ensureVisible(dialogStage, stagePane.getPrefWidth(), stagePane.getPrefHeight());
   }
 
 //---------------------------------------------------------------------------

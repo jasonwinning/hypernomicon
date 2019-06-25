@@ -256,8 +256,10 @@ public class FolderTreeWatcher
               registerTree(newPathInfo.getFilePath());
             else if ((newPathInfo.getFileKind() == FileKind.fkFile) &&
                      appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
+                     (ui.windows.getOutermostModality() == Modality.NONE) &&
                      (newPathInfo.getParentFolder().getID() == HyperDB.UNENTERED_FOLDER_ID) &&
-                     (ui.windows.getOutermostModality() == Modality.NONE))
+                     newPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf") &&
+                     (newPathInfo.getFilePath().size() > 0))
               Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath()));
 
             Platform.runLater(fileManagerDlg::refresh);
@@ -302,7 +304,17 @@ public class FolderTreeWatcher
 
             hyperPath = oldPathInfo.getHyperPath();
 
-            if (hyperPath != null)
+            if (hyperPath == null)
+            {
+              if ((newPathInfo.getFileKind() == FileKind.fkFile) &&
+                  appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
+                  (newPathInfo.getParentFolder().getID() == HyperDB.UNENTERED_FOLDER_ID) &&
+                  (ui.windows.getOutermostModality() == Modality.NONE) &&
+                  (oldPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf") == false) &&
+                  newPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf"))
+                Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath()));
+            }
+            else
             {
               if (hyperPath.getRecordsString().length() > 0)
               {
@@ -546,7 +558,6 @@ public class FolderTreeWatcher
 
         return FileVisitResult.CONTINUE;
       }
-
     });
   }
 

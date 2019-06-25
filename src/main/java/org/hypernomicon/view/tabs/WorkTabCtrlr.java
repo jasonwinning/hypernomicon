@@ -20,7 +20,7 @@ package org.hypernomicon.view.tabs;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibDataRetriever;
-import org.hypernomicon.bib.data.BibDataStandalone;
+import org.hypernomicon.bib.data.GUIBibData;
 import org.hypernomicon.bib.data.PDFBibData;
 import org.hypernomicon.model.SearchKeys;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
@@ -110,7 +110,7 @@ import javafx.stage.FileChooser;
 public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 {
   @FXML private AnchorPane apDescription, apLowerMid, apLowerRight;
-  @FXML private Button btnBibManager, btnLargerWork, btnLaunch, btnMergeBib, btnNewChapter, btnOpenLink,
+  @FXML private Button btnBibManager, btnLargerWork, btnLaunch, btnMergeBib, btnNewChapter, btnURL,
                        btnScholar, btnStop, btnTree, btnUseDOI, btnUseISBN, btnWorldCat, btnAutofill;
   @FXML private ComboBox<HyperTableCell> cbLargerWork, cbType;
   @FXML private Label lblSearchKey, lblTitle;
@@ -124,7 +124,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   @FXML private TableView<HyperTableRow> tvArguments, tvAuthors, tvISBN, tvInvestigations, tvKeyMentions,
                                          tvLabels, tvMiscFiles, tvSubworks, tvWorkFiles;
   @FXML private TextArea taEntry, taCrossref, taGoogleBooks, taMiscBib, taPdfMetadata;
-  @FXML private TextField tfDOI, tfLink, tfSearchKey, tfTitle;
+  @FXML private TextField tfDOI, tfURL, tfSearchKey, tfTitle;
   @FXML public TextField tfYear;
 
   private HyperTable htLabels, htSubworks, htInvestigations, htArguments, htMiscFiles, htWorkFiles, htKeyMentioners, htISBN;
@@ -132,7 +132,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private MainTextWrapper mainText;
   private final HashMap<Tab, String> tabCaptions = new HashMap<>();
   private boolean btnFolderAdded, inNormalMode = true, alreadyChangingTitle = false;
-  private double btnOpenLinkLeftAnchor, tfLinkLeftAnchor, tfLinkRightAnchor;
+  private double btnURLLeftAnchor, tfURLLeftAnchor, tfURLRightAnchor;
   private SplitMenuButton btnFolder = null;
   private HDT_Work curWork, lastWork = null;
   private BibDataRetriever bibDataRetriever = null;
@@ -478,7 +478,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     btnLaunch.setOnAction(event -> curWork.launch(getCurPageNum(curWork, null, true)));
 
-    btnOpenLink.setOnAction(event -> openWebLink(tfLink.getText()));
+    btnURL.setOnAction(event -> openWebLink(tfURL.getText()));
 
     btnLargerWork.setOnAction(event ->
     {
@@ -533,9 +533,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     EventHandler<ActionEvent> handler = event ->
     {
-      if (tfLink.getText().length() > 0)
-        if (tfLink.getText().charAt(0) != '(')
-          launchFile(new FilePath(tfLink.getText()));
+      if ((tfURL.getText().length() > 0) && (tfURL.getText().charAt(0) != '('))
+        launchFile(new FilePath(tfURL.getText()));
     };
 
     btnFolder.setOnAction(handler);
@@ -543,9 +542,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     addFolderMenuItem("Show in file manager", event ->
     {
-      if (tfLink.getText().length() > 0)
-        if (tfLink.getText().charAt(0) != '(')
-          ui.goToFileInManager(new FilePath(tfLink.getText()));
+      if ((tfURL.getText().length() > 0) && (tfURL.getText().charAt(0) != '('))
+        ui.goToFileInManager(new FilePath(tfURL.getText()));
     });
 
     lblSearchKey.setTooltip(new Tooltip("Regenerate search key"));
@@ -698,7 +696,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     tfDOI.setText(curWork.getDOI());
     tfSearchKey.setText(curWork.getSearchKey());
-    tfLink.setText(curWork.getWebLink());
+    tfURL.setText(curWork.getURL());
 
     htISBN.buildRows(curWork.getISBNs(), (row, isbn) -> row.setCellValue(0, -1, isbn, hdtNone));
 
@@ -912,9 +910,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     if (inNormalMode == false)
     {
       if (notInSame)
-        tfLink.setText("(The files are located in multiple folders.)");
+        tfURL.setText("(The files are located in multiple folders.)");
       else if (folder != null)
-        tfLink.setText(folder.filePath().toString());
+        tfURL.setText(folder.filePath().toString());
     }
   }
 
@@ -935,10 +933,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if (mentioner.getType() == hdtHub)
       {
         StrongLink link = HDT_Hub.class.cast(mentioner).getLink();
-        if (link.getDebate  () != null) typeStr = typeStr + (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtDebate);
-        if (link.getPosition() != null) typeStr = typeStr + (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtPosition);
-        if (link.getNote    () != null) typeStr = typeStr + (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtNote);
-        if (link.getConcept () != null) typeStr = typeStr + (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtTerm);
+        if (link.getDebate  () != null) typeStr += (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtDebate);
+        if (link.getPosition() != null) typeStr += (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtPosition);
+        if (link.getNote    () != null) typeStr += (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtNote);
+        if (link.getConcept () != null) typeStr += (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtTerm);
 
         if      (link.getConcept () != null) name = link.getConcept ().getCBText();
         else if (link.getDebate  () != null) name = link.getDebate  ().getCBText();
@@ -974,15 +972,15 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     btnFolder.setVisible(false);
 
-    setAllVisible(true, cbLargerWork, apLowerRight, btnOpenLink);
+    setAllVisible(true, cbLargerWork, apLowerRight, btnURL);
 
-    tfLink.setEditable(true);
-    AnchorPane.setLeftAnchor(btnOpenLink, btnOpenLinkLeftAnchor);
-    AnchorPane.setLeftAnchor(tfLink, tfLinkLeftAnchor);
-    AnchorPane.setRightAnchor(tfLink, tfLinkRightAnchor);
+    tfURL.setEditable(true);
+    AnchorPane.setLeftAnchor(btnURL, btnURLLeftAnchor);
+    AnchorPane.setLeftAnchor(tfURL, tfURLLeftAnchor);
+    AnchorPane.setRightAnchor(tfURL, tfURLRightAnchor);
 
-    apLowerMid.getChildren().remove(tfLink);
-    apLowerRight.getChildren().add(tfLink);
+    apLowerMid.getChildren().remove(tfURL);
+    apLowerRight.getChildren().add(tfURL);
 
     inNormalMode = true;
   }
@@ -1004,9 +1002,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     if (inNormalMode == false) return;
 
-    btnOpenLinkLeftAnchor = AnchorPane.getLeftAnchor(btnOpenLink);
-    tfLinkLeftAnchor = AnchorPane.getLeftAnchor(tfLink);
-    tfLinkRightAnchor = AnchorPane.getRightAnchor(tfLink);
+    btnURLLeftAnchor = AnchorPane.getLeftAnchor(btnURL);
+    tfURLLeftAnchor = AnchorPane.getLeftAnchor(tfURL);
+    tfURLRightAnchor = AnchorPane.getRightAnchor(tfURL);
 
     tfYear.setDisable(true);
     cbLargerWork.setDisable(true);
@@ -1021,22 +1019,22 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       btnFolderAdded = true;
     }
 
-    tfLink.setEditable(false);
+    tfURL.setEditable(false);
 
-    setAllVisible(false, cbLargerWork, apLowerRight, btnOpenLink);
+    setAllVisible(false, cbLargerWork, apLowerRight, btnURL);
 
-    apLowerRight.getChildren().remove(tfLink);
-    apLowerMid.getChildren().add(tfLink);
+    apLowerRight.getChildren().remove(tfURL);
+    apLowerMid.getChildren().add(tfURL);
 
     btnFolder.setVisible(true);
 
     Platform.runLater(() ->
     {
       AnchorPane.setLeftAnchor(btnFolder, btnLargerWork.getBoundsInParent().getMaxX() + 4.0);
-      AnchorPane.setLeftAnchor(tfLink, btnLargerWork.getBoundsInParent().getMaxX() + 4.0 + btnFolder.getWidth() + 4.0);
-      AnchorPane.setRightAnchor(tfLink, 2.0);
-      AnchorPane.setTopAnchor(btnFolder, AnchorPane.getTopAnchor(btnOpenLink));
-      btnFolder.setPrefHeight(btnOpenLink.getPrefHeight());
+      AnchorPane.setLeftAnchor(tfURL, btnLargerWork.getBoundsInParent().getMaxX() + 4.0 + btnFolder.getWidth() + 4.0);
+      AnchorPane.setRightAnchor(tfURL, 2.0);
+      AnchorPane.setTopAnchor(btnFolder, AnchorPane.getTopAnchor(btnURL));
+      btnFolder.setPrefHeight(btnURL.getPrefHeight());
     });
 
     inNormalMode = false;
@@ -1432,7 +1430,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     alreadyChangingTitle = false;
 
     tfSearchKey.setText("");
-    tfLink.setText("");
+    tfURL.setText("");
 
     htAuthors.clear();
     htLabels.clear();
@@ -1639,13 +1637,13 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       curWork.setYear("");
       curWork.setLargerWork(-1, true);
-      curWork.setWebLink("");
+      curWork.setURL("");
     }
     else
     {
       curWork.setYear(tfYear.getText());
       curWork.setLargerWork(hcbLargerWork.selectedID(), noIsbnUpdate);
-      curWork.setWebLink(tfLink.getText());
+      curWork.setURL(tfURL.getText());
     }
 
     if (needToSaveISBNs)
@@ -1853,7 +1851,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       ta.appendText(queryBD.createReport());
     };
 
-    BibData bd = new BibDataStandalone();
+    BibData bd = new GUIBibData();
 
     bd.setTitle(tfTitle.getText());
     bd.setStr(bfYear, tfYear.getText());
@@ -2003,7 +2001,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     bd.setTitle(tfTitle.getText());
     bd.setStr(bfYear, tfYear.getText());
-    bd.setStr(bfURL, tfLink.getText());
+    bd.setStr(bfURL, tfURL.getText());
     bd.setStr(bfDOI, tfDOI.getText());
     bd.setWorkType(hcbType.selectedRecord());
 

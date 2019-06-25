@@ -107,30 +107,18 @@ public class CrossrefBibData extends BibDataStandalone
     setEntryType(entryType);
     setWorkType(toWorkType(entryType));
 
-    setStr(bfPages, jsonObj.getStrSafe("page"));
+    setStr(bfPages    , jsonObj.getStrSafe("page"));
     setStr(bfPublisher, jsonObj.getStrSafe("publisher"));
 
-    if (jsonObj.containsKey(ytPublishedPrint.desc))
-    {
-      setStr(bfYear, jsonObj.getObj(ytPublishedPrint.desc).getArray("date-parts").getArray(0).getLongAsStrSafe(0));
-      yearType = ytPublishedPrint;
-    }
-    else if (jsonObj.containsKey(ytIssued.desc))
-    {
-      setStr(bfYear, jsonObj.getObj(ytIssued.desc).getArray("date-parts").getArray(0).getLongAsStrSafe(0));
-      yearType = ytIssued;
-    }
-    else if (jsonObj.containsKey(ytCreated.desc))
-    {
-      setStr(bfYear, jsonObj.getObj(ytCreated.desc).getArray("date-parts").getArray(0).getLongAsStrSafe(0));
-      yearType = ytCreated;
-    }
+    setDateIfPresent(jsonObj, ytPublishedPrint);
+    setDateIfPresent(jsonObj, ytIssued);
+    setDateIfPresent(jsonObj, ytCreated);
 
-    setStr(bfURL, jsonObj.getStrSafe("URL"));
+    setStr(bfURL   , jsonObj.getStrSafe("URL"));
     setStr(bfVolume, jsonObj.getStrSafe("volume"));
-    setStr(bfIssue, jsonObj.getStrSafe("issue"));
+    setStr(bfIssue , jsonObj.getStrSafe("issue"));
 
-    List<String> title = JsonArray.toStrList(jsonObj.getArray("title")),
+    List<String> title    = JsonArray.toStrList(jsonObj.getArray("title")),
                  subtitle = JsonArray.toStrList(jsonObj.getArray("subtitle"));
 
     if (strListsEqual(title, subtitle, true) == false)
@@ -139,8 +127,8 @@ public class CrossrefBibData extends BibDataStandalone
     setMultiStr(bfTitle, title);
 
     setMultiStr(bfContainerTitle, JsonArray.toStrList(jsonObj.getArray("container-title")));
-    setMultiStr(bfISBNs, JsonArray.toStrList(jsonObj.getArray("ISBN")));
-    setMultiStr(bfISSNs, JsonArray.toStrList(jsonObj.getArray("ISSN")));
+    setMultiStr(bfISBNs         , JsonArray.toStrList(jsonObj.getArray("ISBN")));
+    setMultiStr(bfISSNs         , JsonArray.toStrList(jsonObj.getArray("ISSN")));
 
     addAuthorsFromJson(jsonObj.getArray("author"    ), AuthorType.author);
     addAuthorsFromJson(jsonObj.getArray("editor"    ), AuthorType.editor);
@@ -148,6 +136,15 @@ public class CrossrefBibData extends BibDataStandalone
 
     if (fieldNotEmpty(bfDOI) == false)
       setDOI(queryDoi);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void setDateIfPresent(JsonObj jsonObj, YearType yt)
+  {
+    if (jsonObj.containsKey(yt.desc))
+      setYear(jsonObj.getObj(yt.desc).getArray("date-parts").getArray(0).getLongAsStrSafe(0), yt);
   }
 
 //---------------------------------------------------------------------------
