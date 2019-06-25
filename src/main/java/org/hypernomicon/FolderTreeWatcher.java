@@ -53,6 +53,8 @@ import org.hypernomicon.model.PathInfo.FileKind;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.filePath.FilePathSet;
+
 import javafx.application.Platform;
 import javafx.stage.Modality;
 
@@ -258,9 +260,11 @@ public class FolderTreeWatcher
                      appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
                      (ui.windows.getOutermostModality() == Modality.NONE) &&
                      (newPathInfo.getParentFolder().getID() == HyperDB.UNENTERED_FOLDER_ID) &&
-                     newPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf") &&
-                     (newPathInfo.getFilePath().size() > 0))
-              Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath()));
+                     newPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf"))
+              if (newPathInfo.getFilePath().size() > 0)
+                Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath()));
+              else
+                downloading.add(newPathInfo.getFilePath());
 
             Platform.runLater(fileManagerDlg::refresh);
 
@@ -298,23 +302,35 @@ public class FolderTreeWatcher
             break;
 
           case wekModify:
+
+            if ((newPathInfo.getFileKind() == FileKind.fkFile) &&
+                appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
+                (ui.windows.getOutermostModality() == Modality.NONE) &&
+                downloading.contains(newPathInfo.getFilePath()))
+            {
+              Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath()));
+              downloading.remove(newPathInfo.getFilePath());
+            }
+
             break;
 
           case wekRename:
 
             hyperPath = oldPathInfo.getHyperPath();
 
-            if (hyperPath == null)
+            boolean untrackedFile = (newPathInfo.getFileKind() == FileKind.fkFile) &&
+                                    ((hyperPath == null) || hyperPath.getRecordsString().isBlank());
+
+            if (untrackedFile)
             {
-              if ((newPathInfo.getFileKind() == FileKind.fkFile) &&
-                  appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
+              if (appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
                   (newPathInfo.getParentFolder().getID() == HyperDB.UNENTERED_FOLDER_ID) &&
                   (ui.windows.getOutermostModality() == Modality.NONE) &&
                   (oldPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf") == false) &&
                   newPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf"))
                 Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath()));
             }
-            else
+            else if (hyperPath != null)
             {
               if (hyperPath.getRecordsString().length() > 0)
               {
@@ -370,12 +386,12 @@ public class FolderTreeWatcher
                   });
                 }
               }
+            }
 
-              if (watcherEvent.isDirectory())
-              {
-                hyperPath.assign(hyperPath.parentFolder(), newPathInfo.getFilePath().getNameOnly());
-                registerTree(newPathInfo.getFilePath());
-              }
+            if ((hyperPath != null) && watcherEvent.isDirectory())
+            {
+              hyperPath.assign(hyperPath.parentFolder(), newPathInfo.getFilePath().getNameOnly());
+              registerTree(newPathInfo.getFilePath());
             }
 
             Platform.runLater(fileManagerDlg::refresh);
@@ -461,6 +477,7 @@ public class FolderTreeWatcher
 
   private WatchService watcher;
   private WatcherThread watcherThread;
+  private final FilePathSet downloading = new FilePathSet();
   private final HashMap<WatchKey, HDT_Folder> watchKeyToDir = new HashMap<>();
   public static final int FOLDER_TREE_WATCHER_POLL_TIME_MS = 100;
   private boolean stopRequested = false,
