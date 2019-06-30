@@ -177,7 +177,11 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
         if (hyperPath.getRecordsString().length() == 0)
         {
           HDT_RecordWithPath folder = hyperPath.getRecord();
-          if (folder.filePath().exists() == false)
+          if (folder == null) return true;
+
+          FilePath filePath = folder.filePath();
+
+          if (FilePath.isEmpty(filePath) || (filePath.exists() == false))
           {
             HDT_Folder.deleteFolderRecordTree((HDT_Folder) folder);
             return true;

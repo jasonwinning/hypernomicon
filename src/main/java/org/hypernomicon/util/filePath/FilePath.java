@@ -283,7 +283,17 @@ public class FilePath implements Comparable<FilePath>
       ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "RD /S /Q \"" + filePath + "\"");
       pb.redirectErrorStream(true);
 
-      String errStr = IOUtils.toString(pb.start().getInputStream(), StandardCharsets.UTF_8);
+      Process proc = pb.start();
+      try
+      {
+        proc.waitFor();
+      }
+      catch (InterruptedException e)
+      {
+        throw new IOException(e);
+      }
+
+      String errStr = IOUtils.toString(proc.getInputStream(), StandardCharsets.UTF_8);
 
       if (errStr.length() > 0)
       {
@@ -312,7 +322,17 @@ public class FilePath implements Comparable<FilePath>
       ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "ren \"" + srcFilePath + "\" \"" + destFilePath.getNameOnly() + "\"");
       pb.redirectErrorStream(true);
 
-      String errStr = IOUtils.toString(pb.start().getInputStream(), StandardCharsets.UTF_8);
+      Process proc = pb.start();
+      try
+      {
+        proc.waitFor();
+      }
+      catch (InterruptedException e)
+      {
+        throw new IOException(e);
+      }
+
+      String errStr = IOUtils.toString(proc.getInputStream(), StandardCharsets.UTF_8);
 
       if (errStr.length() > 0)
       {

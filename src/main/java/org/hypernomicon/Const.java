@@ -86,9 +86,14 @@ public final class Const
     PREF_KEY_CHECK_INTERNET = "checkInternet",
     PREF_KEY_AUTO_OPEN_PDF = "autoOpenWorkFile",
     PREF_KEY_AUTO_RETRIEVE_BIB = "autoRetrieveBib",
+    PREF_KEY_IMPORT_ACTION_DEFAULT = "importActionDefault",
     PREF_KEY_LINUX_WORKAROUND = "linuxWindowResizabilityWorkaround",
     PREF_KEY_PDFJS_SIDEBAR_VIEW = "pdfjsSidebarView",
     PREF_KEY_FONT_SIZE = "fontSize",
+
+    PREF_KEY_IMPORT_ACTION_MOVE = "move",
+    PREF_KEY_IMPORT_ACTION_COPY = "copy",
+    PREF_KEY_IMPORT_ACTION_NONE = "none",
 
     PREF_KEY_HT_ARG_PARENTS = "htArgParents",
     PREF_KEY_HT_ARG_SRC = "htArgSrc",

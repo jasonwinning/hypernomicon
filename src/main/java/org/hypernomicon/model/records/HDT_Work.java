@@ -41,7 +41,6 @@ import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.model.relations.ObjectGroup;
-import org.hypernomicon.util.filePath.FilePath;
 
 public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithPath
 {
@@ -311,20 +310,6 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
     subWorks.stream().filter(childWork -> childWork.workFiles.isEmpty())
                      .forEach(childWork -> childWork.addWorkFile(newID, true, confirmToRemoveFromUnenteredSet));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static FilePath getBasePathForWorkTypeID(int workTypeID)
-  {
-    switch (HDT_WorkType.workTypeIDToEnumVal(workTypeID))
-    {
-      case wtBook    :
-      case wtChapter : return db.booksPath();
-      case wtPaper   : return db.papersPath();
-      default        : return db.miscFilesPath();
-    }
   }
 
 //---------------------------------------------------------------------------

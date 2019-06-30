@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 import org.controlsfx.control.MasterDetailPane;
+import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.bib.authors.BibAuthors;
@@ -43,6 +44,7 @@ import org.hypernomicon.bib.data.PDFBibData;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -81,6 +83,8 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
@@ -98,7 +102,9 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -108,8 +114,8 @@ import javafx.stage.Stage;
 public class WorkDlgCtrlr extends HyperDlg
 {
   @FXML private AnchorPane apMain;
-  @FXML private Button btnRegenerateFilename, btnStop;
-  @FXML private CheckBox chkCreateBibEntry, chkKeepFilenameUnchanged;
+  @FXML private Button btnRegenerateFilename, btnStop, btnDest;
+  @FXML private CheckBox chkSetDefault, chkCreateBibEntry, chkKeepFilenameUnchanged;
   @FXML private ComboBox<EntryType> cbEntryType;
   @FXML private ComboBox<HyperTableCell> cbType;
   @FXML private Hyperlink hlCase;
@@ -120,8 +126,9 @@ public class WorkDlgCtrlr extends HyperDlg
   @FXML private SplitMenuButton btnAutoFill;
   @FXML private TableView<HyperTableRow> tvAuthors, tvISBN;
   @FXML private TextArea taMisc;
-  @FXML private TextField tfDOI, tfFileTitle, tfNewFile, tfOrigFile, tfTitle, tfYear;
+  @FXML private TextField tfDest, tfDOI, tfFileTitle, tfNewFile, tfOrigFile, tfTitle, tfYear;
   @FXML private ToggleButton btnPreview;
+  @FXML private ToggleGroup tgSelect;
   @FXML public Button btnCancel;
 
   private AnchorPane apPreview;
@@ -133,8 +140,9 @@ public class WorkDlgCtrlr extends HyperDlg
   private FilePath previewFilePath = null, origFilePath = null;
   private BibData curBD = null;
   private HDT_Work curWork;
+  private ObjectProperty<HDT_Folder> destFolder = new SimpleObjectProperty<>();
   private BibDataRetriever bibDataRetriever = null;
-  private boolean dontRegenerateFilename = false, alreadyChangingTitle = false, previewInitialized = false;
+  private boolean userOverrideDest = false, dontRegenerateFilename = false, alreadyChangingTitle = false, previewInitialized = false;
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
 
@@ -166,6 +174,9 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     lblAutoPopulated.setText("");
     tfOrigFile.setEditable(false);
+    hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), null);
+
+    destFolder.addListener((obs, ov, nv) -> tfDest.setText(nv == null ? "" : (nv.pathNotEmpty() ? db.getRootPath().relativize(nv.filePath()).toString() : "")));
 
     if (db.bibLibraryIsLinked())
       bibManagerDlg.initCB(cbEntryType);
@@ -247,8 +258,6 @@ public class WorkDlgCtrlr extends HyperDlg
       row -> (row.getText(0).length() > 0) && (row.getID(0) < 1),
       htAuthors::removeRow);
 
-    hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), null);
-
     tfTitle.textProperty().addListener((ob, oldValue, newValue) ->
     {
       int pos;
@@ -292,13 +301,15 @@ public class WorkDlgCtrlr extends HyperDlg
 
         tfNewFile.disableProperty().unbind();
 
-        disableAll(tfNewFile, tfFileTitle, tfYear, chkKeepFilenameUnchanged, btnRegenerateFilename, rbMove, rbCopy, rbCurrent);
+        disableAll(tfFileTitle, tfNewFile, tfDest, btnDest, chkSetDefault, tfYear, chkKeepFilenameUnchanged, btnRegenerateFilename, rbMove, rbCopy, rbCurrent);
       }
       else if (workTypeEnumVal != wtNone)
       {
-        enableAll(tfFileTitle, tfYear, chkKeepFilenameUnchanged, btnRegenerateFilename, rbMove, rbCopy);
+        enableAll(tfFileTitle, tfDest, btnDest, chkSetDefault, tfYear, chkKeepFilenameUnchanged, btnRegenerateFilename, rbMove, rbCopy);
 
         tfNewFile.disableProperty().bind(chkKeepFilenameUnchanged.selectedProperty());
+
+        updateDest();
       }
     });
 
@@ -335,6 +346,16 @@ public class WorkDlgCtrlr extends HyperDlg
     }));
 
     btnStop.setOnAction(event -> stopRetrieving());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateDest()
+  {
+    if (userOverrideDest) return;
+
+    destFolder.set(db.getImportFolderForWorkType(HDT_WorkType.getEnumVal(hcbType.selectedRecord())));
   }
 
 //---------------------------------------------------------------------------
@@ -413,7 +434,7 @@ public class WorkDlgCtrlr extends HyperDlg
       if (oldWorkFile == null)
       {
         if (filePathToUse == null)
-          btnBrowseClick();
+          btnSrcBrowseClick();
         else
           useChosenFile(filePathToUse);
       }
@@ -425,10 +446,21 @@ public class WorkDlgCtrlr extends HyperDlg
     if ((db.bibLibraryIsLinked() == false) || (curWork.getBibEntryKey().length() > 0))
       setAllVisible(false, chkCreateBibEntry, cbEntryType);
 
-    if (workFileToUse != null)
+    if (workFileToUse == null)
+    {
+      switch (db.prefs.get(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_MOVE))
+      {
+        case PREF_KEY_IMPORT_ACTION_MOVE : rbMove   .setSelected(true); break;
+        case PREF_KEY_IMPORT_ACTION_COPY : rbCopy   .setSelected(true); break;
+        case PREF_KEY_IMPORT_ACTION_NONE : rbCurrent.setSelected(true); break;
+      }
+    }
+    else
     {
       oldWorkFile = workFileToUse;
+      origFilePath = oldWorkFile.filePath();
       newWorkFile = oldWorkFile;
+
       rbCurrent.setSelected(true);
       rbCopy.setDisable(true);
     }
@@ -477,7 +509,6 @@ public class WorkDlgCtrlr extends HyperDlg
 
     if (oldWorkFile != null)
     {
-      origFilePath = oldWorkFile.filePath();
       updatePreview();
       tfOrigFile.setText(origFilePath.toString());
     }
@@ -602,7 +633,39 @@ public class WorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void btnBrowseClick()
+  @FXML private void btnDestBrowseClick()
+  {
+    DirectoryChooser dirChooser = new DirectoryChooser();
+
+    FilePath folderPath = nullSwitch(destFolder.getValue(), null, HDT_Folder::filePath);
+
+    if (FilePath.isEmpty(folderPath) || (folderPath.exists() == false))
+      dirChooser.setInitialDirectory(db.topicalPath().toFile());
+    else
+      dirChooser.setInitialDirectory(folderPath.toFile());
+
+    dirChooser.setTitle("Select Destination Folder");
+
+    FilePath filePath = ui.windows.showDirDialog(dirChooser, app.getPrimaryStage());
+
+    if (FilePath.isEmpty(filePath)) return;
+
+    HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, true);
+
+    if ((folder == null) || (folder.getID() == HyperDB.ROOT_FOLDER_ID))
+    {
+      messageDialog("You must choose a subfolder of the main database folder.", mtError);
+      return;
+    }
+
+    userOverrideDest = true;
+    destFolder.set(folder);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnSrcBrowseClick()
   {
     FileChooser fileChooser = new FileChooser();
 
@@ -1005,6 +1068,21 @@ public class WorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void updateImportActionDefault()
+  {
+    if (chkSetDefault.isSelected() == false) return;
+
+    if (rbMove.isSelected())
+      db.prefs.put(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_MOVE);
+    else if (rbCopy.isSelected())
+      db.prefs.put(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_COPY);
+    else
+      db.prefs.put(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_NONE);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override protected boolean isValid()
   {
     boolean success = true;
@@ -1032,6 +1110,7 @@ public class WorkDlgCtrlr extends HyperDlg
       if (oldWorkFile != null)
         return falseWithErrorMessage("Internal error #82709");
 
+      updateImportActionDefault();
       return true;
     }
 
@@ -1045,9 +1124,9 @@ public class WorkDlgCtrlr extends HyperDlg
     else
     {
       if (chkKeepFilenameUnchanged.isSelected())
-        newFilePath = HDT_Work.getBasePathForWorkTypeID(hcbType.selectedID()).resolve(origFilePath.getNameOnly());
+        newFilePath = destFolder.get().filePath().resolve(origFilePath.getNameOnly());
       else
-        newFilePath = HDT_Work.getBasePathForWorkTypeID(hcbType.selectedID()).resolve(tfNewFile.getText());
+        newFilePath = destFolder.get().filePath().resolve(tfNewFile.getText());
     }
 
     HDT_RecordWithPath existingFile = HyperPath.getFileFromFilePath(newFilePath);
@@ -1163,6 +1242,7 @@ public class WorkDlgCtrlr extends HyperDlg
     if ((oldWorkFile != null) && (newWorkFile.getID() != oldWorkFile.getID()))
       db.getObjectList(rtWorkFileOfWork, curWork, true).remove(oldWorkFile);
 
+    updateImportActionDefault();
     return true;
   }
 

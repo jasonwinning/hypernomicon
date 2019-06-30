@@ -32,7 +32,7 @@ import javafx.scene.layout.AnchorPane;
 public class WelcomeDlgCtrlr extends HyperDlg
 {
   @FXML private Button btnNew, btnClose;
-  @FXML private Hyperlink linkIntroVideo, linkForums, linkWiki, linkNews, linkMore;
+  @FXML private Hyperlink linkIntroVideo, linkFileMgmtVideo, linkForums, linkWiki, linkNews, linkMore;
   @FXML private AnchorPane apRecent;
 
   private boolean newClicked = false, openClicked = false;
@@ -69,10 +69,11 @@ public class WelcomeDlgCtrlr extends HyperDlg
       btnOkClick();
     });
 
-    linkIntroVideo.setOnAction(event -> openWebLink("http://hypernomicon.org/support.html"));
-    linkForums    .setOnAction(event -> openWebLink("https://sourceforge.net/p/hypernomicon/discussion/"));
-    linkWiki      .setOnAction(event -> openWebLink("https://sourceforge.net/p/hypernomicon/wiki/Home/"));
-    linkNews      .setOnAction(event -> openWebLink("https://sourceforge.net/p/hypernomicon/news/"));
+    linkIntroVideo   .setOnAction(event -> openWebLink("http://hypernomicon.org/support.html"));
+    linkFileMgmtVideo.setOnAction(event -> openWebLink("http://hypernomicon.org/support.html"));
+    linkForums       .setOnAction(event -> openWebLink("https://sourceforge.net/p/hypernomicon/discussion/"));
+    linkWiki         .setOnAction(event -> openWebLink("https://sourceforge.net/p/hypernomicon/wiki/Home/"));
+    linkNews         .setOnAction(event -> openWebLink("https://sourceforge.net/p/hypernomicon/news/"));
 
     ArrayList<String> mruList = ui.getHdbMRUs();
 

@@ -156,8 +156,8 @@ public final class HyperDB
   private boolean loaded       = false, deletionInProgress = false, pointerResolutionInProgress = false,
                   unableToLoad = false, initialized        = false, resolveAgain = false;
 
-  public boolean runningConversion     = false, // suppresses "view date" updating
-                 viewTestingInProgress = false;
+  public boolean runningConversion     = false, // suppresses "modified date" updating
+                 viewTestingInProgress = false; // suppresses "view date" updating
 
 //---------------------------------------------------------------------------
   @FunctionalInterface public interface RelationChangeHandler { void handle(HDT_Record subject, HDT_Record object, boolean affirm); }
@@ -966,7 +966,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HDT_RecordState getNextRecordFromXML(XMLEventReader eventReader) throws XMLStreamException
+  private HDT_RecordState getNextRecordFromXML(XMLEventReader eventReader) throws XMLStreamException, HyperDataException
   {
     while (eventReader.hasNext())
     {
@@ -993,7 +993,14 @@ public final class HyperDB
         switch (tag)
         {
           case tagID        : id = parseInt(attribute.getValue(), -1); break;
-          case tagType      : type = typeToTagStr.inverse().getOrDefault(attribute.getValue(), hdtNone); break;
+          case tagType      :
+
+            type = typeToTagStr.inverse().getOrDefault(attribute.getValue(), hdtNone);
+            if (type == hdtNone)
+              throw new HyperDataException("Invalid record type: " + attribute.getValue());
+
+            break;
+
           case tagSortKey   : sortKeyAttr = attribute.getValue(); break;
           case tagSearchKey : searchKey = attribute.getValue(); break;
           case tagListName  : listName = attribute.getValue(); break;
@@ -2192,6 +2199,8 @@ public final class HyperDB
 
   public void unmapFilePath(FilePath filePath)
   {
+    if (FilePath.isEmpty(filePath)) return;
+
     String name = filePath.getNameOnly().toString();
     Set<HyperPath> paths = filenameMap.get(name);
 
@@ -2201,6 +2210,20 @@ public final class HyperDB
 
     if (paths.isEmpty())
       filenameMap.remove(name);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HDT_Folder getImportFolderForWorkType(WorkTypeEnum workTypeEnum)
+  {
+    switch (workTypeEnum)
+    {
+      case wtBook    :
+      case wtChapter : return folders.getByID(BOOKS_FOLDER_ID);
+      case wtPaper   : return folders.getByID(PAPERS_FOLDER_ID);
+      default        : return folders.getByID(MISC_FOLDER_ID);
+    }
   }
 
 //---------------------------------------------------------------------------

@@ -207,9 +207,9 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     btnFolder.setText("Folder:");
     addFolderMenuItem("Show in system explorer", event -> launchFile(folderPath));
-    addFolderMenuItem("Show in file manager", event -> ui.goToFileInManager(folderPath));
-    addFolderMenuItem("Copy path to clipboard", event -> copyToClipboard(folderPath.toString()));
-    addFolderMenuItem("Unassign folder", event ->
+    addFolderMenuItem("Show in file manager"   , event -> ui.goToFileInManager(folderPath));
+    addFolderMenuItem("Copy path to clipboard" , event -> copyToClipboard(folderPath.toString()));
+    addFolderMenuItem("Unassign folder"        , event ->
     {
       if (ui.cantSaveRecord()) return;
       curNote.folder.set(null);

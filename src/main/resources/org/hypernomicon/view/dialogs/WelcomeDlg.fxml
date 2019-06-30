@@ -24,7 +24,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 
-<AnchorPane id="SpecialUI" maxHeight="314.0" minHeight="314.0" prefHeight="314.0" minWidth="778.0" styleClass="anchor-pane" stylesheets="@welcome.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.WelcomeDlgCtrlr">
+<AnchorPane id="SpecialUI" maxHeight="314.0" minHeight="314.0" minWidth="778.0" prefHeight="314.0" styleClass="anchor-pane" stylesheets="@welcome.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.WelcomeDlgCtrlr">
    <children>
       <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <center>
@@ -46,11 +46,12 @@
                         </AnchorPane>
                     </content>
                   </TitledPane>
-                  <TitledPane animated="false" collapsible="false" layoutX="37.0" layoutY="172.0" prefHeight="112.0" prefWidth="269.0" text="Training">
+                  <TitledPane animated="false" collapsible="false" layoutX="37.0" layoutY="172.0" prefHeight="112.0" prefWidth="269.0" text="Training Videos">
                      <content>
                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="0.0" prefWidth="29.0">
                            <children>
-                              <Hyperlink fx:id="linkIntroVideo" layoutX="6.0" layoutY="3.0" text="Introductory Tutorial Video" />
+                              <Hyperlink fx:id="linkIntroVideo" layoutX="6.0" layoutY="3.0" text="Introductory Tutorial" />
+                              <Hyperlink fx:id="linkFileMgmtVideo" layoutX="6.0" layoutY="22.0" text="Managing PDFs, Other Files, and Folders" />
                            </children>
                         </AnchorPane>
                      </content>

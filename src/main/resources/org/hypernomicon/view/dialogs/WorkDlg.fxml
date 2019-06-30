@@ -44,7 +44,7 @@
             <Label layoutX="14.0" layoutY="14.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 1." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0">
       </Label>
             <TextField fx:id="tfOrigFile" layoutX="104.0" layoutY="15.0" prefHeight="22.0" prefWidth="644.0" AnchorPane.leftAnchor="85.0" AnchorPane.rightAnchor="169.0" AnchorPane.topAnchor="15.0" />
-            <Button layoutX="755.0" layoutY="15.0" mnemonicParsing="false" onAction="#btnBrowseClick" prefHeight="22.0" prefWidth="44.0" text="..." AnchorPane.rightAnchor="118.0" AnchorPane.topAnchor="15.0" />
+            <Button layoutX="755.0" layoutY="15.0" mnemonicParsing="false" onAction="#btnSrcBrowseClick" prefHeight="22.0" prefWidth="44.0" text="..." AnchorPane.rightAnchor="118.0" AnchorPane.topAnchor="15.0" />
             <Button layoutX="806.0" layoutY="15.0" mnemonicParsing="false" onAction="#btnLaunchClick" prefHeight="22.0" prefWidth="99.0" text="Launch" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="15.0">
                <graphic>
                   <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
@@ -120,7 +120,7 @@
             <Label layoutX="14.0" layoutY="301.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 6." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="301.0">
       </Label>
             <Label layoutX="14.0" layoutY="326.0" prefHeight="34.0" prefWidth="57.0" text="Enter authors." wrapText="true" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="326.0" />
-            <TableView fx:id="tvAuthors" editable="true" layoutX="85.0" layoutY="300.0" prefHeight="260.0" prefWidth="663.0" AnchorPane.bottomAnchor="120.0" AnchorPane.leftAnchor="85.0" AnchorPane.rightAnchor="169.0" AnchorPane.topAnchor="300.0">
+            <TableView fx:id="tvAuthors" editable="true" layoutX="85.0" layoutY="300.0" prefHeight="232.0" prefWidth="663.0" AnchorPane.bottomAnchor="148.0" AnchorPane.leftAnchor="85.0" AnchorPane.rightAnchor="169.0" AnchorPane.topAnchor="300.0">
               <columns>
                 <TableColumn prefWidth="368.0" text="Name" />
                   <TableColumn editable="false" prefWidth="59.0" resizable="false" sortable="false" text="Record" />
@@ -129,7 +129,7 @@
                   <TableColumn editable="false" maxWidth="153.0" minWidth="30.0" prefWidth="44.0" resizable="false" sortable="false" text="Tr." />
               </columns>
             </TableView>
-            <TableView fx:id="tvISBN" editable="true" layoutX="730.0" layoutY="300.0" prefHeight="260.0" prefWidth="150.0" AnchorPane.bottomAnchor="120.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="300.0">
+            <TableView fx:id="tvISBN" editable="true" layoutX="730.0" layoutY="300.0" prefHeight="232.0" prefWidth="150.0" AnchorPane.bottomAnchor="148.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="300.0">
               <columns>
                 <TableColumn prefWidth="75.0" text="ISBN" />
               </columns>
@@ -137,21 +137,24 @@
                   <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                </columnResizePolicy>
             </TableView>
-            <Label layoutX="14.0" layoutY="343.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 7." AnchorPane.bottomAnchor="88.0" AnchorPane.leftAnchor="14.0">
+            <Label layoutX="14.0" layoutY="536.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 7." AnchorPane.bottomAnchor="114.0" AnchorPane.leftAnchor="14.0">
       </Label>
-            <TextField fx:id="tfNewFile" layoutX="85.0" layoutY="344.0" prefHeight="25.0" prefWidth="499.0" AnchorPane.bottomAnchor="88.0" AnchorPane.leftAnchor="85.0" AnchorPane.rightAnchor="333.0" />
-            <CheckBox fx:id="chkKeepFilenameUnchanged" layoutX="590.0" layoutY="571.0" mnemonicParsing="false" text="Keep filename unchanged" AnchorPane.bottomAnchor="92.0" AnchorPane.rightAnchor="168.0" />
-            <Button fx:id="btnRegenerateFilename" layoutX="755.0" layoutY="344.0" mnemonicParsing="false" onAction="#btnRegenerateFilenameClick" prefHeight="22.0" prefWidth="150.0" text="Regenerate filename" AnchorPane.bottomAnchor="88.0" AnchorPane.rightAnchor="12.0" />
-            <Label layoutX="14.0" layoutY="368.0" text="Edit filename to be used." AnchorPane.bottomAnchor="72.0" AnchorPane.leftAnchor="14.0" />
-            <Label layoutX="14.0" layoutY="391.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 8." AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="14.0">
+            <TextField fx:id="tfNewFile" layoutX="85.0" layoutY="537.0" prefHeight="25.0" prefWidth="499.0" AnchorPane.bottomAnchor="118.0" AnchorPane.leftAnchor="85.0" AnchorPane.rightAnchor="333.0" />
+            <CheckBox fx:id="chkKeepFilenameUnchanged" layoutX="590.0" layoutY="541.0" mnemonicParsing="false" text="Keep filename unchanged" AnchorPane.bottomAnchor="122.0" AnchorPane.rightAnchor="168.0" />
+            <Button fx:id="btnRegenerateFilename" layoutX="755.0" layoutY="537.0" mnemonicParsing="false" onAction="#btnRegenerateFilenameClick" prefHeight="22.0" prefWidth="150.0" text="Regenerate filename" AnchorPane.bottomAnchor="118.0" AnchorPane.rightAnchor="12.0" />
+            <Label layoutX="14.0" layoutY="561.0" text="Edit filename to be used." AnchorPane.bottomAnchor="102.0" AnchorPane.leftAnchor="14.0" />
+            <Label layoutX="14.0" layoutY="584.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 8." AnchorPane.bottomAnchor="66.0" AnchorPane.leftAnchor="14.0">
       </Label>
-            <RadioButton fx:id="rbMove" layoutX="88.0" layoutY="395.0" mnemonicParsing="false" selected="true" text="Move to new location" AnchorPane.bottomAnchor="44.0" AnchorPane.leftAnchor="88.0">
+            <RadioButton fx:id="rbMove" layoutX="88.0" layoutY="589.0" mnemonicParsing="false" selected="true" text="Move to dest. folder" AnchorPane.bottomAnchor="74.0" AnchorPane.leftAnchor="88.0">
                <toggleGroup>
                   <ToggleGroup fx:id="tgSelect" />
                </toggleGroup>
             </RadioButton>
-            <RadioButton fx:id="rbCopy" layoutX="229.0" layoutY="393.0" mnemonicParsing="false" text="Copy to new location" toggleGroup="$tgSelect" AnchorPane.bottomAnchor="44.0" AnchorPane.leftAnchor="229.0" />
-            <RadioButton fx:id="rbCurrent" layoutX="369.0" layoutY="393.0" mnemonicParsing="false" text="Use current location" toggleGroup="$tgSelect" AnchorPane.bottomAnchor="44.0" AnchorPane.leftAnchor="369.0" />
+            <RadioButton fx:id="rbCopy" layoutX="230.0" layoutY="589.0" mnemonicParsing="false" text="Copy to dest. folder:" toggleGroup="$tgSelect" AnchorPane.bottomAnchor="74.0" AnchorPane.leftAnchor="230.0" />
+            <TextField fx:id="tfDest" editable="false" layoutX="365.0" layoutY="585.0" prefHeight="22.0" prefWidth="492.0" AnchorPane.bottomAnchor="70.0" AnchorPane.leftAnchor="365.0" AnchorPane.rightAnchor="60.0" />
+            <Button fx:id="btnDest" layoutX="861.0" layoutY="585.0" mnemonicParsing="false" onAction="#btnDestBrowseClick" prefHeight="22.0" prefWidth="44.0" text="..." AnchorPane.bottomAnchor="70.0" AnchorPane.rightAnchor="12.0" />
+            <RadioButton fx:id="rbCurrent" layoutX="88.0" layoutY="614.0" mnemonicParsing="false" text="Use current location" toggleGroup="$tgSelect" AnchorPane.bottomAnchor="49.0" AnchorPane.leftAnchor="88.0" />
+            <CheckBox fx:id="chkSetDefault" layoutX="230.0" layoutY="614.0" mnemonicParsing="false" text="Default to this choice when importing" AnchorPane.bottomAnchor="49.0" AnchorPane.leftAnchor="230.0" />
             <Label layoutX="14.0" layoutY="416.0" prefHeight="17.0" prefWidth="344.0" text="Decide whether to move or copy file to the database folder." wrapText="true" AnchorPane.bottomAnchor="24.0" AnchorPane.leftAnchor="14.0" />
             <AnchorPane layoutX="677.0" layoutY="518.0" prefHeight="45.0" prefWidth="71.0" AnchorPane.bottomAnchor="21.0" AnchorPane.rightAnchor="169.0" />
             <Button fx:id="btnOk" layoutX="755.0" layoutY="647.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="22.0" prefWidth="74.0" text="OK" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="88.0" />
