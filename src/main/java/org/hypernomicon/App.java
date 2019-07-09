@@ -108,7 +108,7 @@ public final class App extends Application
   public static QueryView curQV;
   public static TikaConfig tika;
   public static boolean jxBrowserInitialized = false,
-                        jxBrowserDisabled = false;
+                        jxBrowserDisabled    = false;
   public static double displayScale;
   public static final FolderTreeWatcher folderTreeWatcher = new FolderTreeWatcher();
   public static final String appTitle = "Hypernomicon";

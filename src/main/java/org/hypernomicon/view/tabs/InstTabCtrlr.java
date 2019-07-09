@@ -78,9 +78,9 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   {
     HashMap<HDT_Person, HashSet<HDT_Institution>> peopleMap = new HashMap<>();
 
-    tfName.setText(curInst.name());
+    tfName.setText(curInst.name   ());
     tfCity.setText(curInst.getCity());
-    tfURL.setText(curInst.getURL());
+    tfURL .setText(curInst.getURL ());
 
     hcbCountry   .addAndSelectEntryOrBlank(curInst.country    , HDT_Record::name);
     hcbRegion    .addAndSelectEntryOrBlank(curInst.region     , HDT_Record::name);
@@ -94,9 +94,9 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     htSubInst.buildRows(curInst.subInstitutions, (row, subInst) ->
     {
-      row.setCellValue(1, subInst, subInst.name());
+      row.setCellValue(0, subInst, subInst.name());
       if (subInst.instType.isNotNull())
-        row.setCellValue(2, subInst.instType.get(), subInst.instType.get().name());
+        row.setCellValue(1, subInst.instType.get(), subInst.instType.get().name());
       row.setCellValue(3, subInst, subInst.getURL());
     });
 
@@ -112,7 +112,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     htPersons.buildRows(peopleMap.keySet(), (row, person) ->
     {
       row.setCellValue(0, person, person.listName());
-      row.setCellValue(1, person.rank.getID(), person.rank.isNotNull() ? person.rank.get().name() : "", hdtRank);
+      row.setCellValue(1, person.rank .getID(), person.rank .isNotNull() ? person.rank .get().name() : "", hdtRank);
       row.setCellValue(2, person.field.getID(), person.field.isNotNull() ? person.field.get().name() : "", hdtField);
 
       ArrayList<HDT_Institution> instList = new ArrayList<>(peopleMap.get(person));
@@ -169,20 +169,21 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
   @Override void init()
   {
-    htSubInst = new HyperTable(tvSubInstitutions, 1, true, PREF_KEY_HT_INST_SUB);
+    htSubInst = new HyperTable(tvSubInstitutions, 0, true, PREF_KEY_HT_INST_SUB);
 
-    htSubInst.addActionColWithButtonHandler(ctLinkBtn, 3, (row, colNdx) ->
+    htSubInst.addTextEditCol(hdtInstitution, true, false);
+    htSubInst.addCol(hdtInstitutionType, ctDropDownList);
+
+    htSubInst.addActionColWithButtonHandler(ctUrlBtn, 3, (row, colNdx) ->
     {
       String link = row.getText(colNdx);
 
       if (link.length() == 0)
-        searchGoogle(tfName.getText() + " " + row.getText(1), true);
+        searchGoogle(tfName.getText() + " " + row.getText(0), true);
       else
         openWebLink(row.getText(colNdx));
     });
 
-    htSubInst.addTextEditCol(hdtInstitution, true, false);
-    htSubInst.addCol(hdtInstitutionType, ctDropDownList);
     htSubInst.addTextEditCol(hdtInstitution, true, false);
 
     htSubInst.addContextMenuItem("Go to this record", HDT_Institution.class, inst -> ui.goToRecord(inst, true));
@@ -195,13 +196,13 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       ui.update();
     });
 
-    htSubInst.addChangeOrderMenuItem(true, () -> curInst.subInstitutions.reorder(htSubInst.saveToList(1, hdtInstitution), true));
+    htSubInst.addChangeOrderMenuItem(true, () -> curInst.subInstitutions.reorder(htSubInst.saveToList(0, hdtInstitution), true));
 
     htPersons = new HyperTable(tvPersons, 0, false, PREF_KEY_HT_INST_PEOPLE);
 
-    htPersons.addCol(hdtPerson, ctNone);
-    htPersons.addCol(hdtRank, ctNone);
-    htPersons.addCol(hdtField, ctNone);
+    htPersons.addCol(hdtPerson     , ctNone);
+    htPersons.addCol(hdtRank       , ctNone);
+    htPersons.addCol(hdtField      , ctNone);
     htPersons.addCol(hdtInstitution, ctNone);
 
     hcbCountry = new HyperCB(cbCountry, ctDropDownList, new StandardPopulator(hdtCountry), null);
@@ -264,12 +265,12 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   {
     tfName.clear();
     tfCity.clear();
-    tfURL.clear();
+    tfURL .clear();
 
-    hcbRegion.clear();
-    hcbCountry.clear();
+    hcbRegion    .clear();
+    hcbCountry   .clear();
     hcbParentInst.clear();
-    hcbType.clear();
+    hcbType      .clear();
 
     htSubInst.clear();
     htPersons.clear();
@@ -307,21 +308,21 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     htSubInst.getDataRows().forEach(row ->
     {
-      int subInstID = row.getID(1);
+      int subInstID = row.getID(0);
 
-      if ((subInstID > 0) || (row.getText(1).length() > 0) || (row.getText(3).length() > 0))
+      if ((subInstID > 0) || (row.getText(0).length() > 0) || (row.getText(3).length() > 0))
       {
         HDT_Institution subInst = subInstID < 1 ? db.createNewBlankRecord(hdtInstitution) : db.institutions.getByID(subInstID);
 
         subInstID = subInst.getID();
-        subInst.setName(row.getText(1));
+        subInst.setName(row.getText(0));
         subInst.parentInst.setID(curInst.getID());
-        subInst.instType.setID(row.getID(2));
+        subInst.instType.setID(row.getID(1));
         subInst.setURL(row.getText(3));
 
-        if ((subInst.name().length() == 0) &&
-            (subInst.getURL().length() == 0) &&
-            (subInst.persons.isEmpty()))
+        if ((subInst.name()  .isEmpty()) &&
+            (subInst.getURL().isEmpty()) &&
+            (subInst.persons .isEmpty()))
           db.deleteRecord(hdtInstitution, subInstID);
       }
     });

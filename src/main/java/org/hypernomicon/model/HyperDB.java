@@ -91,6 +91,7 @@ import org.hypernomicon.bib.BibCollection;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
+import org.hypernomicon.bib.mendeley.MendeleyWrapper;
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
@@ -640,15 +641,18 @@ public final class HyperDB
 
         String bibEncApiKey = prefs.get(PREF_KEY_BIB_API_KEY, ""),
                bibUserID = prefs.get(PREF_KEY_BIB_USER_ID, ""),
-               bibTypeDescriptor = prefs.get(PREF_KEY_BIB_LIBRARY_TYPE, "");
+               bibTypeDescriptor = prefs.get(PREF_KEY_BIB_LIBRARY_TYPE, ""),
+               bibEncAccessToken = prefs.get(PREF_KEY_BIB_ACCESS_TOKEN, ""),
+               bibEncRefreshToken = prefs.get(PREF_KEY_BIB_REFRESH_TOKEN, "");
 
-        if ((bibEncApiKey.length() > 0) && (bibUserID.length() > 0) && (bibTypeDescriptor.length() > 0))
+        if ((((bibEncApiKey.length() > 0) && (bibUserID.length() > 0)) || ((bibEncAccessToken.length() > 0) && (bibEncRefreshToken.length() > 0))) &&
+            (bibTypeDescriptor.length() > 0))
         {
           LibraryType libType = LibraryType.getByDescriptor(bibTypeDescriptor);
 
           try
           {
-            loadBibLibrary(libType, bibEncApiKey, bibUserID);
+            loadBibLibrary(libType, bibEncApiKey, bibUserID, bibEncAccessToken, bibEncRefreshToken);
           }
           catch (Exception e)
           {
@@ -705,7 +709,10 @@ public final class HyperDB
 
     prefs.remove(PREF_KEY_BIB_API_KEY);
     prefs.remove(PREF_KEY_BIB_USER_ID);
+    prefs.remove(PREF_KEY_BIB_ACCESS_TOKEN);
+    prefs.remove(PREF_KEY_BIB_REFRESH_TOKEN);
     prefs.remove(PREF_KEY_BIB_LIBRARY_VERSION);
+    prefs.remove(PREF_KEY_BIB_LAST_SYNC_TIME);
     prefs.remove(PREF_KEY_BIB_LIBRARY_TYPE);
 
     works.forEach(work -> work.setBibEntryKey(""));
@@ -719,7 +726,20 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void linkBibLibrary(LibraryType libType, String bibEncApiKey, String bibUserID) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
+  public void linkZoteroLibrary(String bibEncApiKey, String bibUserID) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
+  {
+    linkBibLibrary(LibraryType.ltZotero, bibEncApiKey, bibUserID, "", "");
+  }
+
+  public void linkMendeleyLibrary(String bibEncAccessToken, String bibEncRefreshToken) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
+  {
+    linkBibLibrary(LibraryType.ltMendeley, "", "", bibEncAccessToken, bibEncRefreshToken);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void linkBibLibrary(LibraryType libType, String bibEncApiKey, String bibUserID, String bibEncAccessToken, String bibEncRefreshToken) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
   {
     if (bibLibrary != null)
       throw new HDB_InternalError(21174);
@@ -736,23 +756,27 @@ public final class HyperDB
         folderTreeWatcher.createNewWatcherAndStart();
     }
 
-    loadBibLibrary(libType, bibEncApiKey, bibUserID);
+    loadBibLibrary(libType, bibEncApiKey, bibUserID, bibEncAccessToken, bibEncRefreshToken);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void loadBibLibrary(LibraryType libType, String bibEncApiKey, String bibUserID) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
+  private void loadBibLibrary(LibraryType libType, String bibEncApiKey, String bibUserID, String bibEncAccessToken, String bibEncRefreshToken) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
   {
     if (bibLibrary != null)
       throw new HDB_InternalError(21173);
 
-    String bibApiKey = CryptoUtil.decrypt("", bibEncApiKey);
+    String bibApiKey       = bibEncApiKey      .isBlank() ? "" : CryptoUtil.decrypt("", bibEncApiKey      ),
+           bibAccessToken  = bibEncAccessToken .isBlank() ? "" : CryptoUtil.decrypt("", bibEncAccessToken ),
+           bibRefreshToken = bibEncRefreshToken.isBlank() ? "" : CryptoUtil.decrypt("", bibEncRefreshToken);
+
     LibraryWrapper<? extends BibEntry, ? extends BibCollection> bLibrary;
 
     switch (libType)
     {
-      case ltZotero : bLibrary = new ZoteroWrapper(bibApiKey, bibUserID); break;
+      case ltZotero   : bLibrary = new ZoteroWrapper(bibApiKey, bibUserID); break;
+      case ltMendeley : bLibrary = new MendeleyWrapper(bibAccessToken, bibRefreshToken); break;
 
       default       : throw new HDB_InternalError(21175);
     }
@@ -763,6 +787,9 @@ public final class HyperDB
 
     prefs.put(PREF_KEY_BIB_API_KEY, bibEncApiKey);
     prefs.put(PREF_KEY_BIB_USER_ID, bibUserID);
+    prefs.put(PREF_KEY_BIB_ACCESS_TOKEN, bibEncAccessToken);
+    prefs.put(PREF_KEY_BIB_REFRESH_TOKEN, bibEncRefreshToken);
+
     prefs.put(PREF_KEY_BIB_LIBRARY_TYPE, libType.getDescriptor());
 
     bibChangedHandlers.forEach(Runnable::run);
@@ -1412,6 +1439,7 @@ public final class HyperDB
       prefs.remove(PREF_KEY_BIB_API_KEY);
       prefs.remove(PREF_KEY_BIB_USER_ID);
       prefs.remove(PREF_KEY_BIB_LIBRARY_VERSION);
+      prefs.remove(PREF_KEY_BIB_LAST_SYNC_TIME);
       prefs.remove(PREF_KEY_BIB_LIBRARY_TYPE);
     }
 

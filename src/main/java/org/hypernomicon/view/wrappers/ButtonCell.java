@@ -43,7 +43,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
 //---------------------------------------------------------------------------
 
-  public static enum ButtonAction { baEdit, baNew, baGo, baLink, baBrowse, baCustom, baNone }
+  public static enum ButtonAction { baEdit, baNew, baGo, baWeb, baBrowse, baCustom, baNone }
 
 //---------------------------------------------------------------------------
 
@@ -70,7 +70,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
         setAction(ctrlType == ctGoBtn ? ButtonAction.baGo : ButtonAction.baNew); break;
 
       case ctCustomBtn : setAction(ButtonAction.baCustom); break;
-      case ctLinkBtn   : setAction(ButtonAction.baLink  ); break;
+      case ctUrlBtn    : setAction(ButtonAction.baWeb   ); break;
       case ctBrowseBtn : setAction(ButtonAction.baBrowse); break;
       default          : break;
     }
@@ -137,12 +137,12 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
         break;
 
-      case baLink:
+      case baWeb:
 
         if (btnCaption.length() > 0)
           cellButton.setText(btnCaption);
         else
-          cellButton.setText("Link:");
+          cellButton.setText("URL:");
 
         cellButton.setGraphic(null);
         setOnAction((row, colNdx) -> openWebLink(row.getText(colNdx)));

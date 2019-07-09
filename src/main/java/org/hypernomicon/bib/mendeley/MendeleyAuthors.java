@@ -15,43 +15,42 @@
  *
  */
 
-package org.hypernomicon.bib.zotero;
+package org.hypernomicon.bib.mendeley;
 
-import org.hypernomicon.util.json.JsonArray;
-import org.hypernomicon.util.json.JsonObj;
+import java.util.ArrayList;
 
-public interface ZoteroEntity
+import org.hypernomicon.bib.authors.BibAuthor;
+import org.hypernomicon.bib.authors.BibAuthors;
+
+public class MendeleyAuthors extends BibAuthors
 {
-  public static enum ZoteroEntityType
+  MendeleyAuthors()
   {
-    zoteroItem,
-    zoteroCollection
+
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ZoteroEntityType getType();
-  void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge);
-  void saveToDisk(JsonArray jArr);
-  boolean isSynced();
-  long getVersion();
-  String getKey();
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static ZoteroEntity create(ZoteroWrapper zWrapper, JsonObj jObj)
+  @Override public void clear()
   {
-    JsonObj subObj = jObj.getObj("data");
 
-    if (subObj.getStrSafe("itemType").equals("attachment") == false)
-      return new ZoteroItem(zWrapper, jObj, false);
+  }
 
-    if (subObj.containsKey("parentCollection"))
-      return new ZoteroCollection(jObj);
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-    return null;
+  @Override public void getLists(ArrayList<BibAuthor> authorList, ArrayList<BibAuthor> editorList, ArrayList<BibAuthor> translatorList)
+  {
+
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void add(BibAuthor bibAuthor)
+  {
+
   }
 
 //---------------------------------------------------------------------------

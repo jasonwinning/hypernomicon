@@ -245,10 +245,15 @@ public class FolderTreeWatcher
         System.out.println("---------------------------");
       }
 
+      boolean alreadyImporting = false;
+
       for (WatcherEvent watcherEvent : eventList)
       {
         PathInfo oldPathInfo = watcherEvent.oldPathInfo,
                  newPathInfo = watcherEvent.newPathInfo;
+
+        if (ui.windows.getOutermostModality() != Modality.NONE)
+          alreadyImporting = true;
 
         switch (watcherEvent.kind)
         {
@@ -258,11 +263,15 @@ public class FolderTreeWatcher
               registerTree(newPathInfo.getFilePath());
             else if ((newPathInfo.getFileKind() == FileKind.fkFile) &&
                      appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
-                     (ui.windows.getOutermostModality() == Modality.NONE) &&
                      (newPathInfo.getParentFolder().getID() == HyperDB.UNENTERED_FOLDER_ID) &&
                      newPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf"))
               if (newPathInfo.getFilePath().size() > 0)
-                Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath()));
+              {
+                if (alreadyImporting == false)
+                  Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath()));
+
+                alreadyImporting = true;
+              }
               else
                 downloading.add(newPathInfo.getFilePath());
 
@@ -305,10 +314,12 @@ public class FolderTreeWatcher
 
             if ((newPathInfo.getFileKind() == FileKind.fkFile) &&
                 appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
-                (ui.windows.getOutermostModality() == Modality.NONE) &&
                 downloading.contains(newPathInfo.getFilePath()))
             {
-              Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath()));
+              if (alreadyImporting == false)
+                Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath()));
+
+              alreadyImporting = true;
               downloading.remove(newPathInfo.getFilePath());
             }
 
@@ -325,10 +336,14 @@ public class FolderTreeWatcher
             {
               if (appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
                   (newPathInfo.getParentFolder().getID() == HyperDB.UNENTERED_FOLDER_ID) &&
-                  (ui.windows.getOutermostModality() == Modality.NONE) &&
                   (oldPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf") == false) &&
                   newPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf"))
-                Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath()));
+              {
+                if (alreadyImporting == false)
+                  Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath()));
+
+                alreadyImporting = true;
+              }
             }
             else if (hyperPath != null)
             {

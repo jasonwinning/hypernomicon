@@ -233,8 +233,11 @@ public final class Const
     PREF_KEY_FN_MAX_CHAR = "fnMaxChar",
 
     PREF_KEY_BIB_LIBRARY_VERSION = "bibLibraryVersion",
+    PREF_KEY_BIB_LAST_SYNC_TIME = "bibLastSyncTime",
     PREF_KEY_BIB_API_KEY = "bibApiKey",
     PREF_KEY_BIB_USER_ID = "bibUserID",
+    PREF_KEY_BIB_ACCESS_TOKEN = "bibAccessToken",
+    PREF_KEY_BIB_REFRESH_TOKEN = "bibRefreshToken",
     PREF_KEY_BIB_LIBRARY_TYPE = "bibType",
 
     PREF_KEY_KEY_WORK_SORT_BY_NAME = "keyWorkSortByName",

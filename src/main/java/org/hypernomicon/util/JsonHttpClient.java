@@ -194,7 +194,7 @@ public class JsonHttpClient
       }
     }
 
-    if (contentType.contains("application/json"))
+    if (contentType.contains("json"))
     {
       try
       {

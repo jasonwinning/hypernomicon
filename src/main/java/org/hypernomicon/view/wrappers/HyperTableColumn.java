@@ -54,7 +54,7 @@ public class HyperTableColumn
 {
   public static enum HyperCtrlType
   {
-    ctNone,     ctIncremental, ctDropDownList, ctDropDown, ctEdit, ctLinkBtn,  ctBrowseBtn, ctGoBtn,
+    ctNone,     ctIncremental, ctDropDownList, ctDropDown, ctEdit, ctUrlBtn,   ctBrowseBtn, ctGoBtn,
     ctGoNewBtn, ctEditNewBtn,  ctCustomBtn,    ctCheckbox, ctIcon, ctInvSelect
   }
 
@@ -132,7 +132,7 @@ public class HyperTableColumn
 
     switch (ctrlType)
     {
-      case ctGoBtn : case ctGoNewBtn : case ctEditNewBtn : case ctBrowseBtn : case ctLinkBtn : case ctCustomBtn :
+      case ctGoBtn : case ctGoNewBtn : case ctEditNewBtn : case ctBrowseBtn : case ctUrlBtn : case ctCustomBtn :
 
         tc.setCellFactory(tableCol -> new ButtonCell(ctrlType, table, this, targetCol, btnHandler, btnCaption));
         break;

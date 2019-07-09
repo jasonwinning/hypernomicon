@@ -15,43 +15,37 @@
  *
  */
 
-package org.hypernomicon.bib.zotero;
+package org.hypernomicon.bib.mendeley;
 
-import org.hypernomicon.util.json.JsonArray;
-import org.hypernomicon.util.json.JsonObj;
+import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.builder.api.DefaultApi20;
+import com.github.scribejava.core.oauth.OAuth20Service;
 
-public interface ZoteroEntity
+public class MendeleyOAuthApi extends DefaultApi20
 {
-  public static enum ZoteroEntityType
+  private static OAuth20Service service = null;
+
+  @Override public String getAccessTokenEndpoint()        { return "https://api.mendeley.com/oauth/token"; }
+  @Override protected String getAuthorizationBaseUrl()    { return "https://api.mendeley.com/oauth/authorize"; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static class InstanceHolder       { private static final MendeleyOAuthApi INSTANCE = new MendeleyOAuthApi(); }
+  public static MendeleyOAuthApi instance() { return InstanceHolder.INSTANCE; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static OAuth20Service service()
   {
-    zoteroItem,
-    zoteroCollection
-  }
+    if (service == null) service = new ServiceBuilder("7087")
+      .apiSecret("ShGQ9F8yP9t3u3nR")
+      .callback("http://hypernomicon.org/verification.html")
+      .defaultScope("all")
+      .build(MendeleyOAuthApi.instance());
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  ZoteroEntityType getType();
-  void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge);
-  void saveToDisk(JsonArray jArr);
-  boolean isSynced();
-  long getVersion();
-  String getKey();
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static ZoteroEntity create(ZoteroWrapper zWrapper, JsonObj jObj)
-  {
-    JsonObj subObj = jObj.getObj("data");
-
-    if (subObj.getStrSafe("itemType").equals("attachment") == false)
-      return new ZoteroItem(zWrapper, jObj, false);
-
-    if (subObj.containsKey("parentCollection"))
-      return new ZoteroCollection(jObj);
-
-    return null;
+    return service;
   }
 
 //---------------------------------------------------------------------------

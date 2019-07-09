@@ -29,10 +29,13 @@ import java.util.concurrent.ExecutionException;
 import com.github.scribejava.core.exceptions.OAuthException;
 import com.github.scribejava.core.model.OAuth1AccessToken;
 import com.github.scribejava.core.model.OAuth1RequestToken;
+import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth.OAuth10aService;
+import com.github.scribejava.core.oauth.OAuth20Service;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
+import org.hypernomicon.bib.mendeley.MendeleyOAuthApi;
 import org.hypernomicon.bib.zotero.ZoteroOAuthApi;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
@@ -50,6 +53,7 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
@@ -66,7 +70,8 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 public class OptionsDlgCtrlr extends HyperDlg
 {
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
-  @FXML private Button btnAuthorize, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced;
+  @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize;
+  @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced;
   @FXML private CheckBox chkAddInitial, chkAutoOpenPDF, chkAutoRetrieveBib, chkInternet, chkLowercase,
                          chkPosix, chkTreatEdAsAuthor, chkYearLetter, chkUseSentenceCase, chkLinuxWorkaround;
   @FXML private ComboBox<String> cbComponent1, cbComponent2, cbComponent3, cbComponent4, cbComponent5;
@@ -119,15 +124,36 @@ public class OptionsDlgCtrlr extends HyperDlg
 
   private void init()
   {
-    btnAuthorize.setOnAction(event -> btnAuthorizeClick());
+    btnZoteroAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltZotero));
+    btnMendeleyAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltMendeley));
     lblRedirect.setOnMouseClicked(event -> openWebLink(authUrl.get()));
-    btnVerify.setOnAction(event -> btnVerifyClick());
+
+    btnVerify.setOnAction(event ->
+    {
+      if (tfVerificationCode.textProperty().isEmpty().get())
+      {
+        falseWithWarningMessage("You must enter a verification code.", tfVerificationCode);
+        return;
+      }
+
+      if (btnZoteroAuthorize.isSelected())
+        zoteroVerifyClick();
+      else
+        mendeleyVerifyClick();
+    });
+
     btnUnlink.setOnAction(event -> btnUnlinkClick());
+
+    btnMendeleyAuthorize.setVisible(app.debugging());
 
     authUrl = new SimpleStringProperty();
 
-    btnAuthorize.disableProperty().bind(authUrl.isNotEmpty());
+    btnZoteroAuthorize.disableProperty().bind(authUrl.isNotEmpty());
+    btnMendeleyAuthorize.disableProperty().bind(authUrl.isNotEmpty());
     lblRedirect.visibleProperty().bind(authUrl.isNotEmpty());
+
+    btnCodePaste.setOnAction(event -> tfVerificationCode.setText(getClipboardText(true)));
+    btnCodePaste.setTooltip(new Tooltip("Paste text from clipboard"));
 
     btnVerify.disableProperty().bind(tfVerificationCode.textProperty().isEmpty());
 
@@ -143,6 +169,7 @@ public class OptionsDlgCtrlr extends HyperDlg
 
     btnVerify.visibleProperty().bind(authUrl.isNotEmpty());
     lblRedirect.visibleProperty().bind(authUrl.isNotEmpty());
+    btnCodePaste.visibleProperty().bind(authUrl.isNotEmpty());
     tfVerificationCode.visibleProperty().bind(authUrl.isNotEmpty());
     lblStep2.visibleProperty().bind(authUrl.isNotEmpty());
     lblStep2Instructions.visibleProperty().bind(authUrl.isNotEmpty());
@@ -440,16 +467,26 @@ public class OptionsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void btnAuthorizeClick()
+  @SuppressWarnings("resource")
+  private void btnAuthorizeClick(LibraryType libType)
   {
     try
     {
-      @SuppressWarnings("resource")
-      OAuth10aService service = ZoteroOAuthApi.service();
+      if (libType == LibraryType.ltZotero)
+      {
+        OAuth10aService service = ZoteroOAuthApi.service();
 
-      requestToken = service.getRequestToken();
+        requestToken = service.getRequestToken();
 
-      authUrl.set(service.getAuthorizationUrl(requestToken));
+        authUrl.set(service.getAuthorizationUrl(requestToken));
+      }
+      else if (libType == LibraryType.ltMendeley)
+      {
+        OAuth20Service service = MendeleyOAuthApi.service();
+
+        lblStep2Instructions.setText(lblStep2Instructions.getText().replace("Zotero", "Mendeley"));
+        authUrl.set(service.getAuthorizationUrl());
+      }
     }
     catch (UnknownHostException e)
     {
@@ -464,17 +501,55 @@ public class OptionsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void btnVerifyClick()
+  private void mendeleyVerifyClick()
   {
     boolean success = false;
-    authUrl.set("");
 
-    if (tfVerificationCode.textProperty().isEmpty().get())
+    authUrl.set("");
+    btnZoteroAuthorize.setSelected(false);
+    btnMendeleyAuthorize.setSelected(false);
+
+    OAuth2AccessToken accessToken = null;
+
+    try (OAuth20Service service = MendeleyOAuthApi.service())
     {
-      falseWithWarningMessage("You must enter a verification code.", tfVerificationCode);
+      accessToken = service.getAccessToken(tfVerificationCode.getText());
+      success = true;
+    }
+    catch (UnknownHostException e)                                    { messageDialog("Unable to connect to host: " + e.getMessage(), mtError);  }
+    catch (OAuthException e)                                          { messageDialog("Verification code was rejected by the server.", mtError); }
+    catch (IOException | InterruptedException | ExecutionException e) { messageDialog("Verification failed: " + e.getMessage(), mtError); }
+
+    if (success == false) return;
+
+    try
+    {
+      System.out.println(accessToken.getRawResponse());
+
+      db.linkMendeleyLibrary(CryptoUtil.encrypt("", accessToken.getAccessToken()), CryptoUtil.encrypt("", accessToken.getRefreshToken()));
+    }
+    catch (Exception e)
+    {
+      messageDialog("Verification failed: " + e.getMessage(), mtError);
       return;
     }
 
+    SyncBibDlgCtrlr.create().sync();
+
+    setUnlinkMessage();
+    tabLinkToExtBibMgr.setContent(apUnlinkFromExtBibMgr);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void zoteroVerifyClick()
+  {
+    boolean success = false;
+
+    authUrl.set("");
+    btnZoteroAuthorize.setSelected(false);
+    btnMendeleyAuthorize.setSelected(false);
     OAuth1AccessToken accessToken = null;
 
     try (OAuth10aService service = ZoteroOAuthApi.service())
@@ -490,7 +565,7 @@ public class OptionsDlgCtrlr extends HyperDlg
 
     try
     {
-      db.linkBibLibrary(LibraryType.ltZotero, CryptoUtil.encrypt("", accessToken.getTokenSecret()), accessToken.getParameter("userID"));
+      db.linkZoteroLibrary(CryptoUtil.encrypt("", accessToken.getTokenSecret()), accessToken.getParameter("userID"));
     }
     catch (Exception e)
     {

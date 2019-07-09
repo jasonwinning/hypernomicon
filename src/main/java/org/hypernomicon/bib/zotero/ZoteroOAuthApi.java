@@ -32,7 +32,7 @@ public class ZoteroOAuthApi extends DefaultApi10a
   private static OAuth10aService service = null;
 
   @Override public SignatureService getSignatureService() { return new HMACSha1SignatureService(); }
-  @Override public OAuth1SignatureType getSignatureType() { return OAuth1SignatureType.Header; }
+  @Override public OAuth1SignatureType getSignatureType() { return OAuth1SignatureType.HEADER; }
   @Override public String getAccessTokenEndpoint()        { return "https://www.zotero.org/oauth/access"; }
   @Override public String getRequestTokenEndpoint()       { return "https://www.zotero.org/oauth/request"; }
   @Override protected String getAuthorizationBaseUrl()    { return "https://www.zotero.org/oauth/authorize"; }

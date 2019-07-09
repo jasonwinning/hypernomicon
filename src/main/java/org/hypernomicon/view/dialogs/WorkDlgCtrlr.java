@@ -251,7 +251,27 @@ public class WorkDlgCtrlr extends HyperDlg
     htAuthors.addCheckboxColWithUpdateHandler(handler);
     htAuthors.addCheckboxColWithUpdateHandler(handler);
 
-    htAuthors.addRemoveMenuItem();
+    htAuthors.addRemoveMenuItem(() ->
+    {
+      if (htAuthors.getDataRowCount() == 0) return;
+
+      HyperTableRow firstRecordRow = null;
+
+      for (HyperTableRow row : htAuthors.getDataRows())
+      {
+        if (row.getCheckboxValue(2))
+          return;
+
+        if ((firstRecordRow == null) && (row.getID(0) > 0))
+          firstRecordRow = row;
+      }
+
+      if (firstRecordRow == null)
+        htAuthors.dataRowStream().findFirst().orElseThrow().setCheckboxValue(2, true);
+      else
+        firstRecordRow.setCheckboxValue(2, true);
+    });
+
     htAuthors.addChangeOrderMenuItem(true);
 
     htAuthors.addContextMenuItem("Remove this row",

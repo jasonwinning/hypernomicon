@@ -15,41 +15,43 @@
  *
  */
 
-package org.hypernomicon.bib.zotero;
+package org.hypernomicon.bib.mendeley;
+
+import java.time.Instant;
 
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
-public interface ZoteroEntity
+public interface MendeleyEntity
 {
-  public static enum ZoteroEntityType
+  public static enum MendeleyEntityType
   {
-    zoteroItem,
-    zoteroCollection
+    mendeleyDocument,
+    mendeleyFolder
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ZoteroEntityType getType();
+  MendeleyEntityType getType();
   void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge);
   void saveToDisk(JsonArray jArr);
   boolean isSynced();
-  long getVersion();
+  Instant lastModified();
   String getKey();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ZoteroEntity create(ZoteroWrapper zWrapper, JsonObj jObj)
+  public static MendeleyEntity create(MendeleyWrapper mWrapper, JsonObj jObj)
   {
     JsonObj subObj = jObj.getObj("data");
 
     if (subObj.getStrSafe("itemType").equals("attachment") == false)
-      return new ZoteroItem(zWrapper, jObj, false);
+      return new MendeleyDocument(mWrapper, jObj, false);
 
     if (subObj.containsKey("parentCollection"))
-      return new ZoteroCollection(jObj);
+      return new MendeleyFolder(jObj);
 
     return null;
   }

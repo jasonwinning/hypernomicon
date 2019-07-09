@@ -26,6 +26,9 @@
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -431,12 +434,13 @@
                               </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                                  <children>
-                                    <Button fx:id="btnAuthorize" layoutY="5.0" maxWidth="140.0" minWidth="140.0" mnemonicParsing="false" prefWidth="140.0" text="Link to Zotero account" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="5.0" />
+                                    <ToggleButton fx:id="btnZoteroAuthorize" layoutY="5.0" maxWidth="140.0" minWidth="140.0" mnemonicParsing="false" prefWidth="140.0" text="Link to Zotero account" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="5.0" />
+                                    <ToggleButton fx:id="btnMendeleyAuthorize" layoutX="167.0" layoutY="5.0" maxWidth="160.0" minWidth="160.0" mnemonicParsing="false" prefWidth="160.0" text="Link to Mendeley account" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="143.0" AnchorPane.topAnchor="5.0" />
                                  </children>
                               </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
                                  <children>
-                                    <Label layoutY="-2.0" text="Click button to initiate process of linking to Zotero account." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
+                                    <Label layoutY="-2.0" text="Click button to initiate process of linking to reference manager account." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
                                  </children>
                               </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
@@ -465,7 +469,16 @@
                               </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                  <children>
-                                    <TextField fx:id="tfVerificationCode" layoutX="-65.0" layoutY="4.0" prefHeight="23.0" prefWidth="248.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0" />
+                                    <Button fx:id="btnCodePaste" maxHeight="23.0" minHeight="23.0" mnemonicParsing="false" prefHeight="23.0" prefWidth="38.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0">
+                                       <graphic>
+                                          <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../../resources/images/page_paste.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </Button>                                    
+                                    <TextField fx:id="tfVerificationCode" layoutX="-65.0" layoutY="4.0" prefHeight="23.0" prefWidth="248.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="40.0" AnchorPane.topAnchor="4.0" />
                                  </children>
                               </AnchorPane>
                               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="5">
