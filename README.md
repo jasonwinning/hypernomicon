@@ -30,11 +30,21 @@ The best way to get started with Hypernomicon is by downloading and installing o
 
 Or you can clone this repository and build from source (see below).
 
+## Learning ##
+
+To learn how to use Hypernomicon, watch and follow along with the [tutorial videos](https://www.youtube.com/playlist?list=PLCDXooVJfr1JKHT83awarYoIOhp0Xqr-B).
+
+Also check out the [FAQ document](https://sourceforge.net/p/hypernomicon/wiki/FAQ/) and [SourceForge discussion forums](https://sourceforge.net/p/hypernomicon/discussion/).
+
 ## Issues and Contributions ##
 
-Issues can be reported to the [Issue tracker](https://github.com/jasonwinning/hypernomicon/issues/)
+If you have a non-programming-related question or topic to discuss, please post to the [SourceForge discussion forums](https://sourceforge.net/p/hypernomicon/discussion/).
 
-Contributions can be submitted via [Pull requests](https://github.com/jasonwinning/hypernomicon/pulls/)
+To report a bug or make a feature request from the point of view of a user, please [create a ticket at SourceForge](https://sourceforge.net/p/hypernomicon/tickets/).
+
+If you are a programmer and have a code-related issue, bug, question, or feature request, please post to the [Github issue tracker](https://github.com/jasonwinning/hypernomicon/issues/).
+
+Contributions can be submitted via [Pull requests](https://github.com/jasonwinning/hypernomicon/pulls/).
 
 ## Building Hypernomicon ##
 
