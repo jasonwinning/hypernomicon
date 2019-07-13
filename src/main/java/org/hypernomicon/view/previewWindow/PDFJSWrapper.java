@@ -184,7 +184,6 @@ public class PDFJSWrapper
   {
     if (browser != null)
     {
-      browser.stop();
       removeFromAnchor(browserView);
       oldBrowser = browser;
     }
@@ -519,7 +518,6 @@ public class PDFJSWrapper
 
   void loadHtml(String html)
   {
-    browser.stop();
     cleanupPdfHtml();
     browser.loadHTML(html);
   }
@@ -529,7 +527,6 @@ public class PDFJSWrapper
 
   void loadFile(FilePath file)
   {
-    browser.stop();
     cleanupPdfHtml();
     browser.loadURL(file.toURLString());
   }
@@ -544,8 +541,6 @@ public class PDFJSWrapper
 
   void loadPdf(FilePath file, int initialPage)
   {
-    browser.stop();
-
     Runnable runnable = () ->
     {
       opened = false;
@@ -594,7 +589,6 @@ public class PDFJSWrapper
 
     disposing = true;
 
-    browser.stop();
     browser.addDisposeListener(event -> { disposing = false; });
 
     try
@@ -619,7 +613,6 @@ public class PDFJSWrapper
   {
     cleanupPdfHtml();
 
-    browser.stop();
     browser.addDisposeListener(event -> disposeHndlr.run());
 
     try
