@@ -42,6 +42,7 @@ import com.teamdev.jxbrowser.chromium.URLResponse;
 import com.teamdev.jxbrowser.chromium.events.ConsoleEvent.Level;
 import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
 import com.teamdev.jxbrowser.chromium.events.LoadAdapter;
+import com.teamdev.jxbrowser.chromium.internal.ipc.IPCException;
 import com.teamdev.jxbrowser.chromium.javafx.BrowserView;
 import com.teamdev.jxbrowser.chromium.javafx.DefaultDialogHandler;
 import com.teamdev.jxbrowser.chromium.javafx.internal.dialogs.MessageDialog;
@@ -60,8 +61,6 @@ import javafx.scene.layout.AnchorPane;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-// CTRL-click the following:  https://sites.google.com/a/teamdev.com/jxbrowser-support/documentation/programmer-s-guide
-
 public class PDFJSWrapper
 {
   private boolean ready = false, opened = false, pdfjsMode = true;
@@ -76,8 +75,6 @@ public class PDFJSWrapper
   private static final String basePlaceholder = "<!-- base placeholder -->";
   private final AnchorPane apBrowser;
   private Runnable postBrowserLoadCode = null;
-
-  private final boolean showJavascriptConsoleMessagesInJavaConsole = true;
 
   int getNumPages()    { return numPages; }
   void prepareToHide() { removeFromAnchor(browserView); }
@@ -187,6 +184,7 @@ public class PDFJSWrapper
   {
     if (browser != null)
     {
+      browser.stop();
       removeFromAnchor(browserView);
       oldBrowser = browser;
     }
@@ -232,7 +230,7 @@ public class PDFJSWrapper
       @Override public void onAlert(DialogParams params) { MessageDialog.show(browserView, "Alert", params.getMessage()); }
     });
 
-    if (showJavascriptConsoleMessagesInJavaConsole) browser.addConsoleListener(event ->
+    if (app.debugging()) browser.addConsoleListener(event ->
     {
       String msg = event.getMessage();
       Level level = event.getLevel();
@@ -242,8 +240,6 @@ public class PDFJSWrapper
 
       if (level == Level.LOG)
       {
-        if (app.debugging() == false) return;
-
         if (msg.toLowerCase().contains("unrecognized link type"))
           return;
       }
@@ -273,7 +269,15 @@ public class PDFJSWrapper
     {
       if (oldBrowser != null)
       {
-        oldBrowser.dispose();
+        try
+        {
+          oldBrowser.dispose();
+        }
+        catch (IPCException e)
+        {
+          messageDialog("An error occurred while disposing preview pane: " + e.getMessage(), mtError);
+        }
+
         oldBrowser = null;
       }
 
@@ -295,7 +299,7 @@ public class PDFJSWrapper
   private void cleanupPdfHtml()
   {
     if (pdfjsMode)
-      browser.executeJavaScript("if ('PDFViewerApplication' in window) PDFViewerApplication.cleanup();");
+      browser.executeJavaScriptAndReturnValue("if ('PDFViewerApplication' in window) PDFViewerApplication.cleanup();");
 
     pdfjsMode = false;
   }
@@ -507,7 +511,7 @@ public class PDFJSWrapper
       return;
     }
 
-    browser.executeJavaScript("closePdfFile();");
+    browser.executeJavaScriptAndReturnValue("closePdfFile();");
   }
 
 //---------------------------------------------------------------------------
@@ -515,6 +519,7 @@ public class PDFJSWrapper
 
   void loadHtml(String html)
   {
+    browser.stop();
     cleanupPdfHtml();
     browser.loadHTML(html);
   }
@@ -524,6 +529,7 @@ public class PDFJSWrapper
 
   void loadFile(FilePath file)
   {
+    browser.stop();
     cleanupPdfHtml();
     browser.loadURL(file.toURLString());
   }
@@ -538,6 +544,8 @@ public class PDFJSWrapper
 
   void loadPdf(FilePath file, int initialPage)
   {
+    browser.stop();
+
     Runnable runnable = () ->
     {
       opened = false;
@@ -586,8 +594,18 @@ public class PDFJSWrapper
 
     disposing = true;
 
+    browser.stop();
     browser.addDisposeListener(event -> { disposing = false; });
-    browser.dispose();
+
+    try
+    {
+      browser.dispose();
+    }
+    catch (IPCException e)
+    {
+      disposing = false;
+      messageDialog("An error occurred while disposing preview pane: " + e.getMessage(), mtError);
+    }
 
     while (disposing) sleepForMillis(30);
   }
@@ -601,8 +619,17 @@ public class PDFJSWrapper
   {
     cleanupPdfHtml();
 
+    browser.stop();
     browser.addDisposeListener(event -> disposeHndlr.run());
-    browser.dispose();
+
+    try
+    {
+      browser.dispose();
+    }
+    catch (IPCException e)
+    {
+      messageDialog("An error occurred while disposing preview pane: " + e.getMessage(), mtError);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -618,14 +645,14 @@ public class PDFJSWrapper
 
   private void printJSValue(JSValue val, int indent)
   {
-    if      (val.isNull())         { printIndented("NULL", indent); }
+    if      (val.isNull        ()) { printIndented("NULL", indent); }
     else if (val.isNumberObject()) { printIndented(String.valueOf(val.asNumberObject().getNumberValue()), indent); }
-    else if (val.isNumber())       { printIndented(String.valueOf(val.getNumberValue()), indent); }
-    else if (val.isBoolean())      { printIndented(String.valueOf(val.getBooleanValue()), indent); }
+    else if (val.isNumber      ()) { printIndented(String.valueOf(val.getNumberValue()), indent); }
+    else if (val.isBoolean     ()) { printIndented(String.valueOf(val.getBooleanValue()), indent); }
     else if (val.isStringObject()) { printIndented("\"" + val.asStringObject().getStringValue() + "\"", indent); }
-    else if (val.isString())       { printIndented("\"" + val.asString().getStringValue() + "\"", indent); }
-    else if (val.isUndefined())    { printIndented("UNDEFINED", indent); }
-    else if (val.isFunction())     { printIndented(JSFunction.class.cast(val.asFunction()).toJSONString(), indent); }
+    else if (val.isString      ()) { printIndented("\"" + val.asString().getStringValue() + "\"", indent); }
+    else if (val.isUndefined   ()) { printIndented("UNDEFINED", indent); }
+    else if (val.isFunction    ()) { printIndented(JSFunction.class.cast(val.asFunction()).toJSONString(), indent); }
 
     else if (val.isArray())
     {

@@ -524,8 +524,6 @@ public class OptionsDlgCtrlr extends HyperDlg
 
     try
     {
-      System.out.println(accessToken.getRawResponse());
-
       db.linkMendeleyLibrary(CryptoUtil.encrypt("", accessToken.getAccessToken()), CryptoUtil.encrypt("", accessToken.getRefreshToken()));
     }
     catch (Exception e)

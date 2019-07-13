@@ -45,13 +45,11 @@ public interface MendeleyEntity
 
   public static MendeleyEntity create(MendeleyWrapper mWrapper, JsonObj jObj)
   {
-    JsonObj subObj = jObj.getObj("data");
-
-    if (subObj.getStrSafe("itemType").equals("attachment") == false)
-      return new MendeleyDocument(mWrapper, jObj, false);
-
-    if (subObj.containsKey("parentCollection"))
+    if (jObj.containsKey("modified"))
       return new MendeleyFolder(jObj);
+
+    if (jObj.containsKey("type"))
+      return new MendeleyDocument(mWrapper, jObj, false);
 
     return null;
   }

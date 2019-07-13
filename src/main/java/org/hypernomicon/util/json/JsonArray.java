@@ -47,7 +47,6 @@ public class JsonArray
   public void clear()                     { jArr.clear(); }
   public JsonObj getObj(int ndx)          { return new JsonObj((JSONObject) jArr.get(ndx)); }
   public JsonArray getArray(int ndx)      { return new JsonArray((JSONArray) jArr.get(ndx)); }
-  public boolean contains(String collKey) { return jArr.contains(collKey); }
   public int size()                       { return jArr.size(); }
   public JsonNodeType getType(int ndx)    { return JsonObj.determineType(jArr.get(ndx)); }
   public String getLongAsStrSafe(int ndx) { return nullSwitch(jArr.get(ndx), "", obj -> String.valueOf(Long.class.cast(obj).longValue())); }

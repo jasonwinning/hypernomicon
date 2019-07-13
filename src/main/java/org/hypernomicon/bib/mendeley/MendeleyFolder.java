@@ -19,14 +19,14 @@ package org.hypernomicon.bib.mendeley;
 
 import java.time.Instant;
 
+import static org.hypernomicon.util.Util.*;
+
 import org.hypernomicon.bib.BibCollection;
-import org.hypernomicon.util.Util;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
 public class MendeleyFolder implements MendeleyEntity, BibCollection
 {
-  private boolean synced;
   private JsonObj jObj;
 
   public MendeleyFolder(JsonObj jObj)
@@ -35,11 +35,11 @@ public class MendeleyFolder implements MendeleyEntity, BibCollection
   }
 
   @Override public MendeleyEntityType getType() { return MendeleyEntityType.mendeleyFolder; }
-  @Override public boolean isSynced()           { return synced; }
+  @Override public boolean isSynced()           { return true; }
   @Override public String getCollectionKey()    { return getKey(); }
   @Override public String getName()             { return jObj.getStr("name"); }
   @Override public String getKey()              { return jObj.getStr("id"); }
-  @Override public Instant lastModified()       { return Util.parseIso8601(jObj.getStr("modified")); }
+  @Override public Instant lastModified()       { return parseIso8601(jObj.getStr("modified")); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -56,10 +56,6 @@ public class MendeleyFolder implements MendeleyEntity, BibCollection
   @Override public void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge)
   {
     this.jObj = jObj;
-    if (jObj.containsKey("synced") == false) return;
-
-    synced = jObj.getBoolean("synced", false);
-    jObj.remove("synced");
   }
 
 //---------------------------------------------------------------------------
@@ -67,9 +63,7 @@ public class MendeleyFolder implements MendeleyEntity, BibCollection
 
   @Override public void saveToDisk(JsonArray jArr)
   {
-    JsonObj jDiskObj = jObj.clone();
-    jDiskObj.put("synced", (isSynced() ? "true" : "false"));
-    jArr.add(jDiskObj);
+    jArr.add(jObj.clone());
   }
 
 //---------------------------------------------------------------------------

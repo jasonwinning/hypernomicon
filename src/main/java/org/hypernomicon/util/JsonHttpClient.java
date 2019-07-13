@@ -173,14 +173,6 @@ public class JsonHttpClient
     statusCode = response.getStatusLine().getStatusCode();
     reasonPhrase = response.getStatusLine().getReasonPhrase();
 
-    if (statusCode >= 400)
-    {
-      if (failHndlr != null)
-        runInFXThread(() -> failHndlr.accept(new HttpResponseException(statusCode, "Response from " + lastUrl + ": " + reasonPhrase)));
-
-      return false;
-    }
-
     HttpEntity entity = response.getEntity();
 
     headers = List.of(response.getAllHeaders());
@@ -226,6 +218,14 @@ public class JsonHttpClient
         if (failHndlr != null)
           runInFXThread(() -> failHndlr.accept(e));
       }
+    }
+
+    if (statusCode >= 400)
+    {
+      if (failHndlr != null)
+        runInFXThread(() -> failHndlr.accept(new HttpResponseException(statusCode, "Response from " + lastUrl + ": " + reasonPhrase)));
+
+      return false;
     }
 
     if (successHndlr != null)

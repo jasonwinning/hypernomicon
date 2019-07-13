@@ -713,6 +713,7 @@ public final class MainCtrlr
   {
     if (bibManagerDlg.getStage().isShowing())
     {
+      bibManagerDlg.refresh();
       windows.focusStage(bibManagerDlg.getStage());
       return;
     }

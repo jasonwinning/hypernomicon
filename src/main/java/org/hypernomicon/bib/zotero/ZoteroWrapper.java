@@ -270,16 +270,20 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     if (retryTime != null)
     {
       while ((retryTime.compareTo(Instant.now()) > 0) && (syncTask.isCancelled() == false))
+      {
         sleepForMillis(30);
+        if (syncTask.isCancelled()) throw new TerminateTaskException();
+      }
     }
 
     if (backoffTime != null)
     {
       while ((backoffTime.compareTo(Instant.now()) > 0) && (syncTask.isCancelled() == false))
+      {
         sleepForMillis(30);
+        if (syncTask.isCancelled()) throw new TerminateTaskException();
+      }
     }
-
-    if (syncTask.isCancelled()) throw new TerminateTaskException();
 
     if (isPost)
       rb = RequestBuilder.post()
@@ -341,6 +345,9 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     }));
 
     request = null;
+
+    if (syncTask.isCancelled()) throw new TerminateTaskException();
+
     return jsonArray;
   }
 
@@ -438,8 +445,6 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
       jArr = doWriteCommand(ZoteroCmd.writeItems, jArr.toString());
 
-      if (syncTask.isCancelled()) throw new TerminateTaskException();
-
       statusCode = jsonClient.getStatusCode();
 
       if (statusCode == HttpStatus.SC_OK)
@@ -454,7 +459,6 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         jSuccess.keySet().forEach(queueNdx ->
         {
           JsonObj jObj = jSuccess.getObj(queueNdx);
-          jObj.put("synced", "true");
           ZoteroItem item = uploadQueue.get(parseInt(queueNdx, -1)); // here we take advantage of the fact that the upload "queue" is an array
 
           String oldKey = item.getEntryKey();
@@ -511,8 +515,6 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
     JsonArray jArr = doReadCommand(versionsCmd, "", "");
 
-    if (syncTask.isCancelled()) throw new TerminateTaskException();
-
     if ((jsonClient.getStatusCode() == HttpStatus.SC_OK) || (jsonClient.getStatusCode() == HttpStatus.SC_NOT_MODIFIED))
       if (onlineLibVersion <= offlineLibVersion)
         return true;
@@ -551,15 +553,12 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       else
         jArr = doReadCommand(readCmd, keys, "");
 
-      if (syncTask.isCancelled()) throw new TerminateTaskException();
-
       if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
       {
         jArr.getObjs().forEach(jObj ->
         {
           String key = jObj.getStrSafe("key");
           ZEntity entity = keyToEntity.get(key);
-          jObj.put("synced", "true");
 
           if (entity == null)
           {
@@ -659,8 +658,6 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         changed = true;
       }
 
-      if (syncTask.isCancelled()) throw new TerminateTaskException();
-
       /*********************************************/
       /*         Retrieve remote updates           */
       /*********************************************/
@@ -683,12 +680,11 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
         JsonArray jArr = doReadCommand(ZoteroCmd.readDeletions, "", "");
 
-        if (syncTask.isCancelled()) throw new TerminateTaskException();
         if (jsonClient.getStatusCode() != HttpStatus.SC_OK) return false;
 
         jArr.getObj(0).getArray("items").getStrs().forEach(key ->
         {
-          if (keyToAllEntry.containsKey(key) && (keyToTrashEntry.containsKey(key) == false))
+          if (keyToAllEntry.containsKey(key))
           {
             // A remote deletion will simply override local changes. Undocument code to change this behavior.
 
@@ -700,22 +696,6 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
               if (work != null)
                 work.setBibEntryKey("");
 
-              keyToAllEntry.remove(key);
-//            }
-//            else
-//            {
-//              // Perform conflict resolution!
-//              noOp();
-//            }
-          }
-          else if (keyToTrashEntry.containsKey(key))
-          {
-            // A remote deletion will simply override local changes. Undocument code to change this behavior.
-
-//            ZoteroItem item = keyToTrashEntry.get(key);
-//
-//            if (item.isSynced())
-//            {
               keyToAllEntry.remove(key);
               keyToTrashEntry.remove(key);
 //            }
@@ -752,8 +732,6 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
           }
         });
 
-        if (syncTask.isCancelled()) throw new TerminateTaskException();
-
         if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
           offlineLibVersion = onlineLibVersion;
         else
@@ -763,8 +741,6 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         /*      Try sending local updates again      */
         /*********************************************/
         syncChangedEntriesToServer();
-
-        if (syncTask.isCancelled()) throw new TerminateTaskException();
 
         statusCode = jsonClient.getStatusCode();
       }

@@ -284,6 +284,15 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static long parseLong(String value, long def)
+  {
+    try { return Long.parseLong(value); }
+    catch (NumberFormatException nfe) { return def; }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static enum MessageDialogType
   {
     mtWarning,
@@ -731,6 +740,8 @@ public final class Util
    userReadableDateTimeFormatter = DateTimeFormatter.ofPattern("M/d/yyyy h:mm:ss a").withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
    userReadableTimeFormatter = DateTimeFormatter.ofPattern("h:mm:ss a").withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
 
+   httpDate = DateTimeFormatter.RFC_1123_DATE_TIME.withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
+
    iso8601Format = DateTimeFormatter.ISO_INSTANT.withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault()),
    iso8601FormatOffset = DateTimeFormatter.ISO_OFFSET_DATE_TIME.withLocale(Locale.getDefault()).withZone(ZoneId.systemDefault());
 
@@ -749,6 +760,9 @@ public final class Util
 
   public static String dateTimeToIso8601offset(TemporalAccessor t) { return iso8601FormatOffset.format(t); }
   public static Instant parseIso8601offset(String s)               { return Instant.from(iso8601FormatOffset.parse(s)); }
+
+  public static String dateTimeToHttpDate(TemporalAccessor t) { return httpDate.format(t); }
+  public static Instant parseHttpDate(String s)               { return Instant.from(httpDate.parse(s)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

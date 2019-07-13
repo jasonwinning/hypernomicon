@@ -128,8 +128,6 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     this.jObj = jObj;
     jData = jObj.getObj("data");
 
-    jObj.remove("synced");
-
     if (thisIsBackup)
     {
       jObj.remove("backupItem");

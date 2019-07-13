@@ -18,10 +18,14 @@
 package org.hypernomicon.bib.mendeley;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.bib.authors.BibAuthor;
+import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.WorkBibAuthors;
@@ -31,15 +35,19 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
+import com.google.common.collect.Lists;
+
+import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 public class MendeleyDocument extends BibEntry implements MendeleyEntity
 {
-  @SuppressWarnings("unused")
   private final MendeleyWrapper mWrapper;
   private JsonObj jObj;
   private MendeleyDocument backupItem = null;
+  private String note;
 
   MendeleyDocument(MendeleyWrapper mWrapper, JsonObj jObj, boolean thisIsBackup)
   {
@@ -52,15 +60,16 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unused")
   MendeleyDocument(MendeleyWrapper mWrapper, EntryType newType)
   {
     super(false);
 
     jObj = new JsonObj();
+    jObj.put(getFieldKey(bfEntryType), MendeleyWrapper.entryTypeMap.getOrDefault(newType, ""));
+
     this.mWrapper = mWrapper;
 
-    jObj.put("key", "_!_" + randomAlphanumericStr(12));
+    jObj.put("id", "_!_" + randomAlphanumericStr(12));
   }
 
 //---------------------------------------------------------------------------
@@ -75,8 +84,6 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
   @Override public String getEntryURL()
   {
-    if (isNewEntry()) return "";
-
     return "";
   }
 
@@ -105,7 +112,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
   {
     if (linkedToWork()) return new WorkBibAuthors(getWork());
 
-    return new MendeleyAuthors();
+    return new MendeleyAuthors(jObj);
   }
 
 //---------------------------------------------------------------------------
@@ -114,6 +121,39 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
   @Override public void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge)
   {
     this.jObj = jObj;
+
+    if (thisIsBackup)
+    {
+      jObj.remove("backupItem");
+      return;
+    }
+
+    JsonObj jBackupObj;
+
+    if (jObj.containsKey("backupItem"))
+    {
+      jBackupObj = jObj.getObj("backupItem");
+      jObj.remove("backupItem");
+    }
+    else
+      jBackupObj = jObj.clone();
+
+    backupItem = new MendeleyDocument(mWrapper, jBackupObj, true);
+
+    if ((updatingExistingDataFromServer == false) || (linkedToWork() == false)) return;
+
+    setMultiStr(bfTitle, backupItem.getMultiStr(bfTitle));
+    setMultiStr(bfISBNs, backupItem.getMultiStr(bfISBNs));
+    setMultiStr(bfMisc, backupItem.getMultiStr(bfMisc));
+    setStr(bfDOI, backupItem.getStr(bfDOI));
+    setStr(bfYear, backupItem.getStr(bfYear));
+    setStr(bfURL, backupItem.getStr(bfURL));
+
+    if (preMerge) return; // authors always get updated during merge
+
+    if (authorsChanged() == false) return;
+
+    mWrapper.doMerge(this, jBackupObj);
   }
 
 //---------------------------------------------------------------------------
@@ -121,7 +161,13 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
   @Override protected List<String> getCollKeys(boolean deletedOK)
   {
-    return null;
+    JsonArray collArray = jObj.getArray("folder_uuids");
+
+    if (collArray != null)
+      if ((mWrapper.getTrash().contains(this) == false) || deletedOK)
+        return Lists.newArrayList((Iterable<String>)collArray.getStrs());
+
+    return new ArrayList<>();
   }
 
 //---------------------------------------------------------------------------
@@ -137,7 +183,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
   @Override public EntryType getEntryType()
   {
-    return null;
+    return parseMendeleyType(jObj.getStrSafe(getFieldKey(bfEntryType)));
   }
 
 //---------------------------------------------------------------------------
@@ -147,6 +193,8 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
   {
     if (entryType == getEntryType()) return;
 
+    // jObj.put("type", MendeleyWrapper.entryTypeMap.getOrDefault(entryType, ""));
+
     throw new UnsupportedOperationException("change Mendeley entry type");
   }
 
@@ -155,7 +203,122 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
   @Override public void setStr(BibFieldEnum bibFieldEnum, String newStr)
   {
+    if (linkedToWork())
+    {
+      switch (bibFieldEnum)
+      {
+        case bfYear : getWork().setYear(newStr); return;
+        case bfDOI  : getWork().setDOI (newStr); return;
+        case bfURL  : getWork().setURL (newStr); return;
+        default     : break;
+      }
+    }
 
+    String fieldKey = getFieldKey(bibFieldEnum);
+
+    switch (bibFieldEnum)
+    {
+      case bfYear :
+
+        try
+        {
+          jObj.put(fieldKey, Long.parseLong(safeStr(newStr)));
+        }
+        catch (NumberFormatException nfe)
+        {
+          jObj.putNull(fieldKey);
+        }
+
+        return;
+
+      case bfDOI :
+
+        JsonObj idObj = jObj.getObj("identifiers");
+
+        if (idObj == null)
+        {
+          idObj = new JsonObj();
+          jObj.put("identifiers", idObj);
+        }
+
+        if (safeStr(newStr).isBlank())
+          idObj.putNull("doi");
+        else
+          idObj.put("doi", newStr);
+
+        return;
+
+      case bfURL :
+
+        if (safeStr(newStr).isBlank())
+          jObj.putNull("websites");
+        else
+        {
+          JsonArray jArr = new JsonArray();
+          jArr.add(newStr);
+          jObj.put("websites", jArr);
+        }
+
+        return;
+
+      case bfVolume : case bfIssue   : case bfPages    : case bfPublisher :
+      case bfPubLoc : case bfEdition : case bfLanguage :
+
+        break;
+
+      default : messageDialog("Internal error #90225", mtError); return;
+    }
+
+    if (safeStr(newStr).isBlank())
+    {
+      jObj.putNull(fieldKey);
+      return;
+    }
+
+    if (jObj.getStrSafe(fieldKey).equals(safeStr(newStr))) return;
+
+    jObj.put(fieldKey, newStr);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private String getFieldKey(BibFieldEnum bibFieldEnum)
+  {
+    switch (bibFieldEnum)
+    {
+      case bfEntryType : return "type";
+      case bfURL       : return "websites"; // array
+      case bfVolume    : return "volume";
+      case bfIssue     : return "issue";
+      case bfPages     : return "pages";
+      case bfPublisher : return "publisher";
+      case bfPubLoc    : return "city"; // There is also a "country" field
+      case bfEdition   : return "edition";
+      case bfLanguage  : return "language";
+      case bfYear      : return "year";
+
+      case bfContainerTitle : return "source";
+
+      case bfISBNs : return "isbn";
+      case bfISSNs : return "issn";
+      case bfDOI   : return "doi";
+
+      case bfTitle : return "title";
+      case bfMisc  : return ""; // Maybe need to use annotations?
+
+      // Acccording to the API, "Three types of annotations are available. Notes are scoped to documents and provide a
+      // high-level comments using styled text. Only a single note annotation can be attached to a document and
+      // subsequent attempts to create further note annotations will fail. Note annotations have a value of note for the member type."
+
+      case bfAuthors     : return "authors";
+      case bfEditors     : return "editors";
+      case bfTranslators : return "translators";
+
+      case bfWorkType : return "";
+    }
+
+    return "";
   }
 
 //---------------------------------------------------------------------------
@@ -173,6 +336,44 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
         case bfTitle : return getWork().name();
         default      : break;
       }
+    }
+
+    String fieldKey = getFieldKey(bibFieldEnum);
+
+    switch (bibFieldEnum)
+    {
+      case bfEntryType : return getEntryType().getUserFriendlyName();
+
+      case bfDOI :
+
+        return jObj.containsKey("identifiers") ? jObj.getObj("identifiers").getStrSafe("doi") : "";
+
+      case bfURL :
+
+        if (jObj.containsKey("websites") == false) return "";
+        JsonArray jArr = jObj.getArray("websites");
+        if (jArr.size() > 0) return jArr.getStr(0);
+        return "";
+
+      case bfVolume : case bfIssue   : case bfPages    : case bfPublisher :
+      case bfPubLoc : case bfEdition : case bfLanguage :
+
+        return jObj.getStrSafe(fieldKey);
+
+      case bfYear : return jObj.containsKey("year") ? jObj.getAsStr("year") : "";
+
+      case bfAuthors     : return getAuthors().getStr(AuthorType.author);
+      case bfEditors     : return getAuthors().getStr(AuthorType.editor);
+      case bfTranslators : return getAuthors().getStr(AuthorType.translator);
+
+      case bfContainerTitle : case bfTitle :
+
+        return BibField.buildTitle(getMultiStr(bibFieldEnum));
+
+      case bfMisc : return strListToStr(getMultiStr(bibFieldEnum), false, true);
+
+      default:
+        break;
     }
 
     return "";
@@ -193,6 +394,54 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
         default      : break;
       }
     }
+
+    String fieldKey = getFieldKey(bibFieldEnum), newStr = null;
+
+    switch (bibFieldEnum)
+    {
+      case bfContainerTitle : case bfTitle :
+
+        newStr = strListToStr(list, false);
+        if (jObj.getStrSafe(fieldKey).equals(safeStr(newStr))) return;
+
+        jObj.put(fieldKey, newStr);
+
+        return;
+
+      case bfMisc :
+
+        note = strListToStr(list, true);
+        return;
+
+      case bfISBNs : case bfISSNs :
+
+        if (collEmpty(list))
+          newStr = "";
+        else
+        {
+          removeDupsInStrList(list);
+          newStr = ultraTrim(convertToSingleLine(strListToStr(list, false)));
+        }
+
+        JsonObj idObj;
+
+        if (jObj.containsKey("identifiers"))
+          idObj = jObj.getObj("identifiers");
+        else
+        {
+          idObj = new JsonObj();
+          jObj.put("identifiers", idObj);
+        }
+
+        if (newStr.length() == 0)
+          idObj.remove(fieldKey);
+        else
+          idObj.put(fieldKey, newStr);
+
+        return;
+
+      default               : return;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -211,7 +460,25 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
       }
     }
 
-    return null;
+    switch (bibFieldEnum)
+    {
+      case bfTitle : case bfContainerTitle :
+
+        return convertMultiLineStrToStrList(jObj.getStrSafe(getFieldKey(bibFieldEnum)), false);
+
+      case bfMisc  : return convertMultiLineStrToStrList(safeStr(note), true);
+
+      case bfISBNs : case bfISSNs :
+
+        JsonObj idObj = jObj.getObj("identifiers");
+        if (idObj == null) return new ArrayList<>();
+
+        String str = idObj.getStrSafe(getFieldKey(bibFieldEnum));
+
+        return bibFieldEnum == bfISBNs ? matchISBN(str) : matchISSN(str);
+
+      default : return null;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -223,7 +490,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
     if (thisIsBackup) return true;
     if (authorsChanged()) return false;
 
-    return false;
+    return Arrays.stream(BibFieldEnum.values()).allMatch(bibFieldEnum -> fieldsAreEqual(bibFieldEnum, backupItem));
   }
 
 //---------------------------------------------------------------------------
@@ -231,7 +498,27 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
   private boolean authorsChanged()
   {
-    return true;
+    ArrayList<BibAuthor> authorList1     = new ArrayList<>(), authorList2     = new ArrayList<>(),
+                         editorList1     = new ArrayList<>(), editorList2     = new ArrayList<>(),
+                         translatorList1 = new ArrayList<>(), translatorList2 = new ArrayList<>();
+
+    getAuthors().getLists(authorList1, editorList1, translatorList1);
+    backupItem.getAuthors().getLists(authorList2, editorList2, translatorList2);
+
+    if ((authorList1    .size() != authorList2    .size()) ||
+        (editorList1    .size() != editorList2    .size()) ||
+        (translatorList1.size() != translatorList2.size()))   return true;
+
+    for (int ndx = 0; ndx < authorList1.size(); ndx++)
+      if (authorList1.get(ndx).getName().equalsExceptParenthetical(authorList2.get(ndx).getName()) == false) return true;
+
+    for (int ndx = 0; ndx < editorList1.size(); ndx++)
+      if (editorList1.get(ndx).getName().equalsExceptParenthetical(editorList2.get(ndx).getName()) == false) return true;
+
+    for (int ndx = 0; ndx < translatorList1.size(); ndx++)
+      if (translatorList1.get(ndx).getName().equalsExceptParenthetical(translatorList2.get(ndx).getName()) == false) return true;
+
+    return false;
   }
 
 //---------------------------------------------------------------------------
@@ -252,10 +539,30 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unused")
-  JsonObj exportJsonObjForUploadToServer(boolean missingKeysOK)
+  JsonObj exportJsonObjForUploadToServer()
   {
     JsonObj jServerObj = jObj.clone();
+
+    if (isNewEntry())
+      jServerObj.remove("id");
+
+    if (linkedToWork())
+    {
+      MendeleyDocument serverItem = new MendeleyDocument(mWrapper, jServerObj, true);
+
+      serverItem.setStr(bfDOI, getStr(bfDOI));
+      serverItem.setStr(bfYear, getStr(bfYear));
+      serverItem.setStr(bfURL, getStr(bfURL));
+      serverItem.setMultiStr(bfISBNs, getMultiStr(bfISBNs));
+      serverItem.setMultiStr(bfISSNs, getMultiStr(bfISSNs));
+      serverItem.setMultiStr(bfMisc, getMultiStr(bfMisc));
+      serverItem.setTitle(getStr(bfTitle));
+
+      BibAuthors serverAuthors = serverItem.getAuthors();
+      serverAuthors.clear();
+
+      getAuthors().forEach(serverAuthors::add);
+    }
 
     return jServerObj;
   }

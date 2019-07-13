@@ -19,6 +19,7 @@ package org.hypernomicon.view.previewWindow;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 
@@ -28,6 +29,7 @@ import java.util.Iterator;
 import com.melloware.jintellitype.JIntellitype;
 import com.teamdev.jxbrowser.chromium.BrowserCore;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
+import com.teamdev.jxbrowser.chromium.internal.ipc.IPCException;
 
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Record;
@@ -687,7 +689,14 @@ public class PreviewWindow extends HyperDlg
         }
       }
 
-      BrowserCore.shutdown();
+      try
+      {
+        BrowserCore.shutdown();
+      }
+      catch (IPCException e)
+      {
+        messageDialog("An error occurred while shutting down preview window: " + e.getMessage(), mtError);
+      }
 
       Platform.runLater(() ->
       {

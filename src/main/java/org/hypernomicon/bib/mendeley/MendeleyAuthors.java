@@ -20,13 +20,21 @@ package org.hypernomicon.bib.mendeley;
 import java.util.ArrayList;
 
 import org.hypernomicon.bib.authors.BibAuthor;
+import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.authors.BibAuthors;
+import org.hypernomicon.model.items.PersonName;
+import org.hypernomicon.util.json.JsonArray;
+import org.hypernomicon.util.json.JsonObj;
+
+import static org.hypernomicon.util.Util.*;
 
 public class MendeleyAuthors extends BibAuthors
 {
-  MendeleyAuthors()
-  {
+  private final JsonObj jsonObj;
 
+  MendeleyAuthors(JsonObj jsonObj)
+  {
+    this.jsonObj = jsonObj;
   }
 
 //---------------------------------------------------------------------------
@@ -34,7 +42,30 @@ public class MendeleyAuthors extends BibAuthors
 
   @Override public void clear()
   {
+    JsonArray authorsArr = jsonObj.getArray("authors"),
+              editorsArr = jsonObj.getArray("editors"),
+              transArr   = jsonObj.getArray("translators");
 
+    if (authorsArr != null) authorsArr.clear();
+    if (editorsArr != null) editorsArr.clear();
+    if (transArr   != null) transArr.clear();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void getList(JsonArray arr, ArrayList<BibAuthor> list, AuthorType aType)
+  {
+    if (arr == null) return;
+
+    arr.getObjs().forEach(jObj ->
+    {
+      String firstName = jObj.getStrSafe("first_name"),
+             lastName  = jObj.getStrSafe("last_name");
+
+      if ((firstName.length() > 0) || (lastName.length() > 0))
+        list.add(new BibAuthor(aType, new PersonName(firstName, lastName)));
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -42,7 +73,13 @@ public class MendeleyAuthors extends BibAuthors
 
   @Override public void getLists(ArrayList<BibAuthor> authorList, ArrayList<BibAuthor> editorList, ArrayList<BibAuthor> translatorList)
   {
+    authorList    .clear();
+    editorList    .clear();
+    translatorList.clear();
 
+    getList(jsonObj.getArray("authors"    ), authorList    , AuthorType.author    );
+    getList(jsonObj.getArray("editors"    ), editorList    , AuthorType.editor    );
+    getList(jsonObj.getArray("translators"), translatorList, AuthorType.translator);
   }
 
 //---------------------------------------------------------------------------
@@ -50,7 +87,34 @@ public class MendeleyAuthors extends BibAuthors
 
   @Override public void add(BibAuthor bibAuthor)
   {
+    String aTypeStr;
 
+    switch (bibAuthor.getType())
+    {
+      case author     : aTypeStr = "authors"    ; break;
+      case editor     : aTypeStr = "editors"    ; break;
+      case translator : aTypeStr = "translators"; break;
+      default         : return;
+    }
+
+    JsonObj personObj = new JsonObj();
+
+    String firstName = bibAuthor.getGiven();
+
+    while (firstName.contains("("))
+      firstName = removeFirstParenthetical(firstName);
+
+    personObj.put("first_name", firstName);
+    personObj.put("last_name", bibAuthor.getFamily());
+
+    JsonArray jArr = jsonObj.getArray(aTypeStr);
+    if (jArr == null)
+    {
+      jArr = new JsonArray();
+      jsonObj.put(aTypeStr, jArr);
+    }
+
+    jArr.add(personObj);
   }
 
 //---------------------------------------------------------------------------

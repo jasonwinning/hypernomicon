@@ -53,10 +53,10 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
   private final ObservableList<BibEntryRow> rows;
   private final Map<String, BibEntryRow> keyToRow;
   private final TableView<BibEntryRow> tv;
+  private boolean noRefresh = false;
 
   void updateKey(String oldKey, String newKey) { keyToRow.put(newKey, keyToRow.remove(oldKey)); }
   boolean containsKey(String bibEntryKey)      { return keyToRow.containsKey(bibEntryKey); }
-  void clear()                                 { rows.clear(); keyToRow.clear(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -130,8 +130,21 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  void clear()
+  {
+    noRefresh = true;
+    rows.clear();
+    keyToRow.clear();
+    noRefresh = false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   void refresh(Set<? extends BibEntry> entries)
   {
+    if (noRefresh) return;
+
     entries.forEach(entry ->
     {
       if (entry.getEntryType() != EntryType.etOther)
