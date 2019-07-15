@@ -22,24 +22,94 @@ import static org.hypernomicon.model.HyperDB.*;
 
 import java.util.List;
 
+import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibData;
+import org.hypernomicon.bib.data.EntryType;
+import org.hypernomicon.bib.mendeley.MendeleyDocument;
+import org.hypernomicon.bib.mendeley.MendeleyWrapper;
+import org.hypernomicon.bib.zotero.ZoteroItem;
+import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
+import org.hypernomicon.util.json.JsonArray;
+import org.hypernomicon.util.json.JsonObj;
 
-public abstract class BibEntry extends BibData
+public abstract class BibEntry extends BibData implements BibEntity
 {
   protected final boolean thisIsBackup;
+  protected JsonObj jObj;
+  protected BibEntry backupItem = null;
 
-  public abstract String getEntryKey();
   protected abstract List<String> getCollKeys(boolean deletedOK);
-  protected abstract boolean isSynced();
   protected abstract boolean isNewEntry();
   public abstract String getEntryURL();
 
   public BibEntry(boolean thisIsBackup)      { this.thisIsBackup = thisIsBackup; }
 
-  @Override public HDT_Work getWork()        { return thisIsBackup ? null  : db.getWorkByBibEntryKey(getEntryKey()); }
+  @Override public HDT_Work getWork()        { return thisIsBackup ? null  : db.getWorkByBibEntryKey(getKey()); }
   @Override protected boolean linkedToWork() { return thisIsBackup ? false : getWork() != null; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked")
+  public static <Entry_T extends BibEntry, Collection_T extends BibCollection> Entry_T create(LibraryType lType, LibraryWrapper<Entry_T, Collection_T> wrapper, JsonObj jObj, boolean thisIsBackup)
+  {
+    switch (lType)
+    {
+      case ltMendeley : return (Entry_T) new MendeleyDocument((MendeleyWrapper) wrapper, jObj, thisIsBackup);
+      case ltZotero   : return (Entry_T) new ZoteroItem      ((ZoteroWrapper  ) wrapper, jObj, thisIsBackup);
+      default         : return null;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked")
+  public static <Entry_T extends BibEntry, Collection_T extends BibCollection> Entry_T create(LibraryType lType, LibraryWrapper<Entry_T, Collection_T> wrapper, EntryType entryType)
+  {
+    switch (lType)
+    {
+      case ltMendeley : return (Entry_T) new MendeleyDocument((MendeleyWrapper) wrapper, entryType);
+      case ltZotero   : return (Entry_T) new ZoteroItem      ((ZoteroWrapper  ) wrapper, entryType);
+      default         : return null;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void saveToDisk(JsonArray jArr)
+  {
+    if (thisIsBackup) return;
+
+    JsonObj jDiskObj = jObj.clone();
+
+    if (backupItem != null)
+      jDiskObj.put("backupItem", backupItem.jObj);
+
+    jArr.add(jDiskObj);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public HDT_WorkType getWorkType()
+  {
+    if (linkedToWork()) return getWork().workType.get();
+
+    return EntryType.toWorkType(getEntryType());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void setWorkType(HDT_WorkType workType)
+  {
+    if (linkedToWork()) getWork().workType.set(workType);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -70,7 +140,7 @@ public abstract class BibEntry extends BibData
   {
     final int prime = 31;
     int result = 1;
-    result = prime * result + (getEntryKey() == null ? 0 : getEntryKey().hashCode());
+    result = prime * result + (getKey() == null ? 0 : getKey().hashCode());
     result = prime * result + (thisIsBackup ? 1231 : 1237);
     return result;
   }
@@ -85,11 +155,11 @@ public abstract class BibEntry extends BibData
     if (getClass() != obj.getClass()) return false;
     BibEntry other = (BibEntry) obj;
 
-    if (getEntryKey() == null)
+    if (getKey() == null)
     {
-      if (other.getEntryKey() != null) return false;
+      if (other.getKey() != null) return false;
     }
-    else if (!getEntryKey().equals(other.getEntryKey())) return false;
+    else if (!getKey().equals(other.getKey())) return false;
 
     return thisIsBackup == other.thisIsBackup;
   }

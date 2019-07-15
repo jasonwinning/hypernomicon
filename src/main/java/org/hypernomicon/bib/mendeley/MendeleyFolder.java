@@ -22,24 +22,19 @@ import java.time.Instant;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.bib.BibCollection;
-import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
-public class MendeleyFolder implements MendeleyEntity, BibCollection
+public class MendeleyFolder extends BibCollection implements MendeleyEntity
 {
-  private JsonObj jObj;
-
   public MendeleyFolder(JsonObj jObj)
   {
     update(jObj, false, false);
   }
 
-  @Override public MendeleyEntityType getType() { return MendeleyEntityType.mendeleyFolder; }
-  @Override public boolean isSynced()           { return true; }
-  @Override public String getCollectionKey()    { return getKey(); }
-  @Override public String getName()             { return jObj.getStr("name"); }
-  @Override public String getKey()              { return jObj.getStr("id"); }
-  @Override public Instant lastModified()       { return parseIso8601(jObj.getStr("modified")); }
+  @Override public boolean isSynced()     { return true; }
+  @Override public String getName()       { return jObj.getStr("name"); }
+  @Override public String getKey()        { return jObj.getStr("id"); }
+  @Override public Instant lastModified() { return parseIso8601(jObj.getStr("modified")); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -56,14 +51,6 @@ public class MendeleyFolder implements MendeleyEntity, BibCollection
   @Override public void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge)
   {
     this.jObj = jObj;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void saveToDisk(JsonArray jArr)
-  {
-    jArr.add(jObj.clone());
   }
 
 //---------------------------------------------------------------------------

@@ -18,24 +18,19 @@
 package org.hypernomicon.bib.zotero;
 
 import org.hypernomicon.bib.BibCollection;
-import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
-public class ZoteroCollection implements ZoteroEntity, BibCollection
+public class ZoteroCollection extends BibCollection implements ZoteroEntity
 {
-  private JsonObj jObj;
-
   public ZoteroCollection(JsonObj jObj)
   {
     update(jObj, false, false);
   }
 
-  @Override public ZoteroEntityType getType() { return ZoteroEntityType.zoteroCollection; }
-  @Override public boolean isSynced()         { return true; }
-  @Override public String getCollectionKey()  { return getKey(); }
-  @Override public String getName()           { return jObj.getObj("data").getStr("name"); }
-  @Override public String getKey()            { return jObj.getStr("key"); }
-  @Override public long getVersion()          { return jObj.getLong("version", 0); }
+  @Override public boolean isSynced() { return true; }
+  @Override public String getName()   { return jObj.getObj("data").getStr("name"); }
+  @Override public String getKey()    { return jObj.getStr("key"); }
+  @Override public long getVersion()  { return jObj.getLong("version", 0); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -52,14 +47,6 @@ public class ZoteroCollection implements ZoteroEntity, BibCollection
   @Override public void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge)
   {
     this.jObj = jObj;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void saveToDisk(JsonArray jArr)
-  {
-    jArr.add(jObj.clone());
   }
 
 //---------------------------------------------------------------------------

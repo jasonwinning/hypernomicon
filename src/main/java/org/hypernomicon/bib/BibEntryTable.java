@@ -81,7 +81,7 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
                                      tcAssocRecord = (TableColumn<BibEntryRow, String>) tv.getColumns().get(5),
                                      tcPublishedIn = (TableColumn<BibEntryRow, String>) tv.getColumns().get(6);
 
-    tcEntryKey   .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getEntryKey()));
+    tcEntryKey   .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getKey()));
     tcType       .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getEntryType().getUserFriendlyName()));
     tcAuthors    .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getAuthors().getStr()));
     tcTitle      .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfTitle)));
@@ -109,7 +109,7 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
     tcAssocRecord.setComparator(cmp);
 
     tcAssocRecord.setCellValueFactory(cellData -> new SimpleStringProperty
-      (nullSwitch(db.getWorkByBibEntryKey(cellData.getValue().getEntry().getEntryKey()), "", work -> String.valueOf(work.getID()))));
+      (nullSwitch(db.getWorkByBibEntryKey(cellData.getValue().getEntry().getKey()), "", work -> String.valueOf(work.getID()))));
 
     tv.setRowFactory(thisTV ->
     {
@@ -148,11 +148,11 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
     entries.forEach(entry ->
     {
       if (entry.getEntryType() != EntryType.etOther)
-        if (keyToRow.containsKey(entry.getEntryKey()) == false)
+        if (keyToRow.containsKey(entry.getKey()) == false)
         {
           BibEntryRow row = new BibEntryRow(entry);
           rows.add(row);
-          keyToRow.put(entry.getEntryKey(), row);
+          keyToRow.put(entry.getKey(), row);
         }
     });
 
@@ -160,7 +160,7 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
     {
       if (entries.contains(row.getEntry()) == false)
       {
-        keyToRow.remove(row.getEntry().getEntryKey());
+        keyToRow.remove(row.getEntry().getKey());
         return true;
       }
 
@@ -181,7 +181,7 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 
       BibEntryRow row = new BibEntryRow(entry);
       rows.add(row);
-      keyToRow.put(entry.getEntryKey(), row);
+      keyToRow.put(entry.getKey(), row);
     });
   }
 

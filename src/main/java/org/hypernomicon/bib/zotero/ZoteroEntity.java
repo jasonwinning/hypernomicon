@@ -17,26 +17,16 @@
 
 package org.hypernomicon.bib.zotero;
 
-import org.hypernomicon.util.json.JsonArray;
+import org.hypernomicon.bib.BibEntity;
 import org.hypernomicon.util.json.JsonObj;
 
-public interface ZoteroEntity
+public interface ZoteroEntity extends BibEntity
 {
-  public static enum ZoteroEntityType
-  {
-    zoteroItem,
-    zoteroCollection
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ZoteroEntityType getType();
-  void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge);
-  void saveToDisk(JsonArray jArr);
-  boolean isSynced();
   long getVersion();
-  String getKey();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

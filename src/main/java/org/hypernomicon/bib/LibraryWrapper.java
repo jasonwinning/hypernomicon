@@ -27,19 +27,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 import org.apache.http.client.methods.HttpUriRequest;
 import org.json.simple.parser.ParseException;
 
 import com.google.common.collect.EnumHashBiMap;
+import com.google.common.collect.ImmutableSet;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.data.EntryType;
+import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.json.JsonArray;
+import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.mainText.MainTextWrapper;
+import org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr;
 
-import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_T extends BibCollection>
 {
@@ -73,20 +80,19 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
   protected final Map<String, BibEntry_T> keyToAllEntry = new HashMap<>(), keyToTrashEntry = new HashMap<>();
   protected final Map<String, BibCollection_T> keyToColl = new HashMap<>();
 
+  protected final JsonHttpClient jsonClient = new JsonHttpClient();
   protected SyncTask syncTask = null;
   protected HttpUriRequest request = null;
   private BiConsumer<String, String> keyChangeHndlr;
 
   public abstract SyncTask createNewSyncTask();
-  public abstract void saveToDisk(FilePath filePath);
   public abstract void loadFromDisk(FilePath filePath) throws FileNotFoundException, IOException, ParseException;
-  public abstract Set<BibEntry_T> getNonTrashEntries();
-  public abstract Set<BibEntry_T> getCollectionEntries(String collKey);
-  public abstract Set<BibEntry_T> getUnsorted();
-  public abstract BibEntry_T addEntry(EntryType newType);
   public abstract LibraryType type();
   public abstract EnumHashBiMap<EntryType, String> getEntryTypeMap();
   public abstract String getHtml(BibEntryRow row);
+  public abstract void safePrefs();
+  public abstract String entryFileNode();
+  public abstract String collectionFileNode();
 
   public final Set<BibCollection_T> getColls()           { return new LinkedHashSet<>(keyToColl.values()); }
   public final Set<BibEntry_T> getTrash()                { return new LinkedHashSet<>(keyToTrashEntry.values()); }
@@ -171,7 +177,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
   protected static void addRowsToHtml(String fieldName, List<String> list, StringBuilder html)
   {
-    list.removeIf(str -> (str == null) || (ultraTrim(str).length() == 0));
+    list.removeIf(str -> str == null);
 
     if (list.size() == 0) return;
 
@@ -185,6 +191,165 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
     }
 
     html.append("</td></tr>");
+  }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  private Boolean fxThreadReturnValue = null;
+
+  public boolean doMerge(BibEntry_T entry, JsonObj jObj)
+  {
+    fxThreadReturnValue = null;
+
+    runInFXThread(() ->
+    {
+      MergeWorksDlgCtrlr mwd = null;
+
+      try
+      {
+        mwd = MergeWorksDlgCtrlr.create("Merge Remote Changes with Local Changes", entry, BibEntry.create(type(), this, jObj, true),
+                                        null, null, entry.getWork(), false, false, false);
+      }
+      catch (IOException e)
+      {
+        messageDialog("Unable to initialize merge dialog window.", mtError);
+        fxThreadReturnValue = Boolean.FALSE;
+        return;
+      }
+
+      entry.update(jObj, true, true);
+
+      if (mwd.showModal())
+        mwd.mergeInto(entry);
+
+      fxThreadReturnValue = Boolean.TRUE;
+    });
+
+    while (fxThreadReturnValue == null) sleepForMillis(100);
+
+    return fxThreadReturnValue.booleanValue();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public BibEntry_T addEntry(EntryType newType)
+  {
+    BibEntry_T item = BibEntry.create(type(), this, newType);
+
+    keyToAllEntry.put(item.getKey(), item);
+
+    return item;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public Set<BibEntry_T> getCollectionEntries(String collKey)
+  {
+    return getNonTrashEntries().stream().filter(item -> item.getCollKeys(false).contains(collKey))
+                                        .collect(ImmutableSet.toImmutableSet());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public Set<BibEntry_T> getNonTrashEntries()
+  {
+    return keyToAllEntry.values().stream().filter(item -> keyToTrashEntry.containsKey(item.getKey()) == false)
+                                          .collect(ImmutableSet.toImmutableSet());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public Set<BibEntry_T> getUnsorted()
+  {
+    Predicate<BibEntry_T> predicate = item ->
+    {
+      if (keyToTrashEntry.containsKey(item.getKey()))
+        return false;
+
+      return item.getCollKeys(true).stream().noneMatch(keyToColl::containsKey);
+    };
+
+    return keyToAllEntry.values().stream().filter(predicate).collect(ImmutableSet.toImmutableSet());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected void loadFromJSON(JsonObj jObj)
+  {
+    jObj.getArray(entryFileNode()).getObjs().forEach(itemJsonObj ->
+    {
+      BibEntry_T entry = BibEntry.create(type(), this, itemJsonObj, false);
+
+      if (entry == null) return;
+
+      keyToAllEntry.put(entry.getKey(), entry);
+    });
+
+    nullSwitch(jObj.getArray("trash"), jArr -> jArr.getObjs().forEach(itemJsonObj ->
+    {
+      BibEntry_T entry = BibEntry.create(type(), this, itemJsonObj, false);
+
+      if (entry == null) return;
+
+      keyToAllEntry.put(entry.getKey(), entry);
+      keyToTrashEntry.put(entry.getKey(), entry);
+    }));
+
+    nullSwitch(jObj.getArray(collectionFileNode()), jArr -> jArr.getObjs().forEach(collJsonObj ->
+    {
+      BibCollection_T coll = BibCollection.create(type(), collJsonObj);
+
+      if (coll == null) return;
+
+      keyToColl.put(coll.getKey(), coll);
+    }));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void saveToDisk(FilePath filePath)
+  {
+    JsonObj jMainObj = new JsonObj();
+
+    JsonArray jArr = new JsonArray();
+
+    for (BibEntry_T entry : getNonTrashEntries())
+      entry.saveToDisk(jArr);
+
+    jMainObj.put(entryFileNode(), jArr);
+
+    jArr = new JsonArray();
+
+    for (BibEntry_T entry : keyToTrashEntry.values())
+      entry.saveToDisk(jArr);
+
+    jMainObj.put("trash", jArr);
+
+    jArr = new JsonArray();
+
+    for (BibCollection_T coll : keyToColl.values())
+      coll.saveToDisk(jArr);
+
+    jMainObj.put(collectionFileNode(), jArr);
+
+    StringBuilder json = new StringBuilder(jMainObj.toString());
+
+    try
+    {
+      saveStringBuilderToFile(json, filePath);
+      safePrefs();
+    }
+    catch (IOException e)
+    {
+      messageDialog("An error occurred while saving bibliographic data to disk.", mtError);
+    }
   }
 
 //---------------------------------------------------------------------------

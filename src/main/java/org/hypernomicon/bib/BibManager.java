@@ -294,7 +294,7 @@ public class BibManager extends HyperDlg
 
       work.getBibData().copyAllFieldsFrom(row.getEntry(), false, false);
       work.getAuthors().setAll(row.getEntry().getAuthors());
-      work.setBibEntryKey(row.getEntry().getEntryKey());
+      work.setBibEntryKey(row.getEntry().getKey());
 
       ui.goToRecord(work, false);
     });
@@ -419,7 +419,7 @@ public class BibManager extends HyperDlg
     HDT_Work work = workRecordToAssign.get();
     BibEntry entry = libraryWrapper.addEntry(et);
 
-    work.setBibEntryKey(entry.getEntryKey());
+    work.setBibEntryKey(entry.getKey());
 
     workRecordToAssign.set(null);
 
@@ -462,7 +462,7 @@ public class BibManager extends HyperDlg
 
     if (mwd.showModal() == false) return;
 
-    work.setBibEntryKey(entry.getEntryKey());
+    work.setBibEntryKey(entry.getKey());
     mwd.mergeInto(entry);
 
     workRecordToAssign.set(null);

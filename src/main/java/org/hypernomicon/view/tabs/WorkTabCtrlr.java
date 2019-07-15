@@ -1715,7 +1715,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       }
 
       if (wdc.getCreateEntry())
-        curWork.setBibEntryKey(db.getBibLibrary().addEntry(wdc.getEntryType()).getEntryKey());
+        curWork.setBibEntryKey(db.getBibLibrary().addEntry(wdc.getEntryType()).getKey());
 
       curWork.getBibData().copyAllFieldsFrom(wdc.getBibDataFromGUI(), false, false);
 
@@ -1925,7 +1925,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if (mwd.creatingNewEntry())
       {
         BibEntry entry = db.getBibLibrary().addEntry(mwd.getEntryType());
-        curWork.setBibEntryKey(entry.getEntryKey());
+        curWork.setBibEntryKey(entry.getKey());
         destBD = entry;
       }
 
@@ -1961,7 +1961,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     if (mwd.creatingNewEntry())
     {
       BibEntry entry = db.getBibLibrary().addEntry(mwd.getEntryType());
-      curWork.setBibEntryKey(entry.getEntryKey());
+      curWork.setBibEntryKey(entry.getKey());
       workBibData = entry;
     }
 

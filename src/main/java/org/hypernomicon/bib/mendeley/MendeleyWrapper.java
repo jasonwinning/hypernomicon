@@ -20,6 +20,7 @@ package org.hypernomicon.bib.mendeley;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.EntryType.*;
+import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
@@ -40,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -57,23 +57,20 @@ import org.json.simple.parser.ParseException;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import com.google.common.collect.EnumHashBiMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
-import org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.bib.BibEntryRow;
 import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.data.EntryType;
-import org.hypernomicon.bib.mendeley.MendeleyEntity.MendeleyEntityType;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.util.AsyncHttpClient.HttpRequestType;
 import org.hypernomicon.util.CryptoUtil;
-import org.hypernomicon.util.JsonHttpClient;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -81,14 +78,11 @@ import org.hypernomicon.util.JsonHttpClient;
 public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFolder>
 {
   private String accessToken, refreshToken;
-  private final JsonHttpClient jsonClient;
   private Instant lastSyncTime = Instant.EPOCH;
 
   static final EnumHashBiMap<EntryType, String> entryTypeMap = initTypeMap();
 
   private static EnumMap<EntryType, JsonObj> templates = null;
-
-  @Override public LibraryType type() { return LibraryType.ltMendeley; }
 
   private static enum MendeleyCmd
   {
@@ -105,22 +99,19 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
   {
     this.accessToken = apiKey;
     this.refreshToken = refreshToken;
-    jsonClient = new JsonHttpClient();
   }
 
-  JsonObj getTemplate(EntryType type) { return templates.get(type); }
+  JsonObj getTemplate(EntryType type)          { return templates.get(type); }
+
+  @Override public LibraryType type()          { return LibraryType.ltMendeley; }
+  @Override public void safePrefs()            { db.prefs.put(PREF_KEY_BIB_LAST_SYNC_TIME, dateTimeToIso8601(lastSyncTime)); }
+  @Override public String entryFileNode()      { return "documents"; }
+  @Override public String collectionFileNode() { return "folders"; }
 
   @Override public EnumHashBiMap<EntryType, String> getEntryTypeMap() { return entryTypeMap; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-
-  public static enum HttpRequestType
-  {
-    get,
-    post,
-    patch
-  }
 
   private JsonArray doHttpRequest(String url, HttpRequestType requestType, String jsonData, String mediaType, StringBuilder nextUrl) throws IOException, UnsupportedOperationException, ParseException, TerminateTaskException
   {
@@ -183,6 +174,8 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
           String val = header.getValue();
           if (val.endsWith("rel=\"next\""))
             assignSB(nextUrl, val.split("<")[1].split(">")[0]);
+
+          break;
       }
     }));
 
@@ -236,7 +229,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
   private JsonArray createDocumentOnServer(JsonObj jsonObj) throws UnsupportedOperationException, IOException, ParseException, TerminateTaskException
   {
-    String url = "https://api.mendeley.com/documents",
+    String url       = "https://api.mendeley.com/documents",
            mediaType = "application/vnd.mendeley-document.1+json";
 
     JsonArray jsonArray = doHttpRequest(url, HttpRequestType.post, jsonObj.toString(), mediaType, null);
@@ -256,7 +249,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
   private JsonArray updateDocumentOnServer(JsonObj jsonObj) throws UnsupportedOperationException, IOException, ParseException, TerminateTaskException
   {
-    String url = "https://api.mendeley.com/documents/" + jsonObj.getStrSafe("id"),
+    String url       = "https://api.mendeley.com/documents/" + jsonObj.getStrSafe("id"),
            mediaType = "application/vnd.mendeley-document.1+json";
 
     jsonObj.remove("created");
@@ -344,56 +337,16 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private Boolean fxThreadReturnValue = null;
-
-  boolean doMerge(MendeleyDocument document, JsonObj jObj)
-  {
-    fxThreadReturnValue = null;
-
-    runInFXThread(() ->
-    {
-      MergeWorksDlgCtrlr mwd = null;
-
-      try
-      {
-        mwd = MergeWorksDlgCtrlr.create("Merge Remote Changes with Local Changes", document, new MendeleyDocument(this, jObj, true),
-                                        null, null, document.getWork(), false, false, false);
-      }
-      catch (IOException e)
-      {
-        messageDialog("Unable to initialize merge dialog window.", mtError);
-        fxThreadReturnValue = Boolean.FALSE;
-        return;
-      }
-
-      document.update(jObj, true, true);
-
-      if (mwd.showModal())
-        mwd.mergeInto(document);
-
-      fxThreadReturnValue = Boolean.TRUE;
-    });
-
-    while (fxThreadReturnValue == null) sleepForMillis(100);
-
-    return fxThreadReturnValue.booleanValue();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public SyncTask createNewSyncTask()
   {
     syncTask = new SyncTask() { @Override public Boolean call() throws TerminateTaskException, HyperDataException
     {
     //---------------------------------------------------------------------------
 
-      Set<String> trashedIDs = new HashSet<>(),
-                  nonTrashedIDs = new HashSet<>();
+      Set<String> trashedIDs = new HashSet<>(), nonTrashedIDs = new HashSet<>();
 
       try
       {
-
         do
         {
 
@@ -471,7 +424,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
             if (entry.isSynced() == false)
             {
               localChanges.add(entry);
-              String entryKey = entry.getEntryKey();
+              String entryKey = entry.getKey();
 
               if (remoteChangeIDtoObj.containsKey(entryKey))
               {
@@ -487,10 +440,8 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
             if (document == null)
             {
-              document = (MendeleyDocument) MendeleyEntity.create(MendeleyWrapper.this, jObj);
-
-              if (document != null)
-                keyToAllEntry.put(entryKey, document);
+              document = new MendeleyDocument(MendeleyWrapper.this, jObj, false);
+              keyToAllEntry.put(entryKey, document);
             }
             else
               document.update(jObj, true, false);
@@ -506,7 +457,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
             if (document.isNewEntry())
             {
-              String oldKey = document.getEntryKey();
+              String oldKey = document.getKey();
 
               JsonArray jsonArray = createDocumentOnServer(document.exportJsonObjForUploadToServer());
 
@@ -570,13 +521,9 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
           if (folder == null)
           {
-            folder = (MendeleyFolder) MendeleyEntity.create(MendeleyWrapper.this, jObj);
-
-            if (folder != null)
-            {
-              keyToColl.put(collKey, folder);
-              changed = true;
-            }
+            folder = new MendeleyFolder(jObj);
+            keyToColl.put(collKey, folder);
+            changed = true;
           }
           else
           {
@@ -630,55 +577,6 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void loadFromJSON(JsonObj jObj)
-  {
-    jObj.getArray("documents").getObjs().forEach(itemJsonObj ->
-    {
-      MendeleyEntity entity = MendeleyEntity.create(this, itemJsonObj);
-
-      if (entity == null) return;
-
-      if (entity.getType() == MendeleyEntityType.mendeleyDocument)
-      {
-        MendeleyDocument document = (MendeleyDocument) entity;
-
-        keyToAllEntry.put(entity.getKey(), document);
-      }
-    });
-
-    nullSwitch(jObj.getArray("trash"), jArr -> jArr.getObjs().forEach(itemJsonObj ->
-    {
-      MendeleyEntity entity = MendeleyEntity.create(this, itemJsonObj);
-
-      if (entity == null) return;
-
-      if (entity.getType() == MendeleyEntityType.mendeleyDocument)
-      {
-        MendeleyDocument document = (MendeleyDocument) entity;
-
-        keyToAllEntry.put(entity.getKey(), document);
-        keyToTrashEntry.put(entity.getKey(), document);
-      }
-    }));
-
-    nullSwitch(jObj.getArray("folders"), jArr -> jArr.getObjs().forEach(collJsonObj ->
-    {
-      MendeleyEntity entity = MendeleyEntity.create(this, collJsonObj);
-
-      if (entity == null) return;
-
-      if (entity.getType() == MendeleyEntityType.mendeleyFolder)
-      {
-        MendeleyFolder folder = (MendeleyFolder) entity;
-
-        keyToColl.put(folder.getKey(), folder);
-      }
-    }));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public void loadFromDisk(FilePath filePath) throws FileNotFoundException, IOException, ParseException
   {
     JsonObj jMainObj = null;
@@ -699,93 +597,6 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
       loadFromJSON(jMainObj);
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void saveToDisk(FilePath filePath)
-  {
-    JsonObj jMainObj = new JsonObj();
-
-    JsonArray jArr = new JsonArray();
-
-    for (MendeleyDocument entry : getNonTrashEntries())
-      entry.saveToDisk(jArr);
-
-    jMainObj.put("documents", jArr);
-
-    jArr = new JsonArray();
-
-    for (MendeleyDocument entry : keyToTrashEntry.values())
-      entry.saveToDisk(jArr);
-
-    jMainObj.put("trash", jArr);
-
-    jArr = new JsonArray();
-
-    for (MendeleyFolder coll : keyToColl.values())
-      coll.saveToDisk(jArr);
-
-    jMainObj.put("folders", jArr);
-
-    StringBuilder json = new StringBuilder(jMainObj.toString());
-
-    try
-    {
-      saveStringBuilderToFile(json, filePath);
-      db.prefs.put(PREF_KEY_BIB_LAST_SYNC_TIME, dateTimeToIso8601(lastSyncTime));
-    }
-    catch (IOException e)
-    {
-      messageDialog("An error occurred while saving bibliographic data to disk.", mtError);
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public MendeleyDocument addEntry(EntryType newType)
-  {
-    MendeleyDocument item = new MendeleyDocument(this, newType);
-
-    keyToAllEntry.put(item.getEntryKey(), item);
-
-    return item;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public Set<MendeleyDocument> getCollectionEntries(String collKey)
-  {
-    return getNonTrashEntries().stream().filter(item -> item.getCollKeys(false).contains(collKey))
-                                        .collect(ImmutableSet.toImmutableSet());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public Set<MendeleyDocument> getNonTrashEntries()
-  {
-    return keyToAllEntry.values().stream().filter(item -> keyToTrashEntry.containsKey(item.getEntryKey()) == false)
-                                          .collect(ImmutableSet.toImmutableSet());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public Set<MendeleyDocument> getUnsorted()
-  {
-    Predicate<MendeleyDocument> predicate = item ->
-    {
-      if (keyToTrashEntry.containsKey(item.getEntryKey()))
-        return false;
-
-      return item.getCollKeys(true).stream().noneMatch(keyToColl::containsKey);
-    };
-
-    return keyToAllEntry.values().stream().filter(predicate).collect(ImmutableSet.toImmutableSet());
   }
 
 //---------------------------------------------------------------------------
@@ -832,10 +643,10 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
   @Override public String getHtml(BibEntryRow row)
   {
-    MendeleyDocument item = (MendeleyDocument) nullSwitch(row, null, BibEntryRow::getEntry);
-    if (item == null) return "";
+    MendeleyDocument document = (MendeleyDocument) nullSwitch(row, null, BibEntryRow::getEntry);
+    if (document == null) return "";
 
-    JsonObj jObj  = item.exportJsonObjForUploadToServer();
+    JsonObj jObj  = document.exportJsonObjForUploadToServer();
     StringBuilder html = getHtmlStart();
 
     jObj.keySet().forEach(key ->
@@ -896,7 +707,10 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
         case STRING :
 
-          addStringHtml(fieldName, jObj.getStrSafe(key), html);
+          if (key.equals("notes"))
+            addRowsToHtml(fieldName, document.getMultiStr(bfMisc), html);
+          else
+            addStringHtml(fieldName, jObj.getStrSafe(key), html);
           break;
 
         case INTEGER :
@@ -934,7 +748,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     {
       PersonName personName;
       String firstName = ultraTrim(node.getStrSafe("first_name")),
-             lastName = ultraTrim(node.getStrSafe("last_name"));
+             lastName  = ultraTrim(node.getStrSafe("last_name" ));
 
       if ((firstName.length() > 0) || (lastName.length() > 0))
         personName = new PersonName(firstName, lastName);

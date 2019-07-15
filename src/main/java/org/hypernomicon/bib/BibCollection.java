@@ -17,10 +17,39 @@
 
 package org.hypernomicon.bib;
 
-public interface BibCollection
+import org.hypernomicon.bib.LibraryWrapper.LibraryType;
+import org.hypernomicon.bib.mendeley.MendeleyFolder;
+import org.hypernomicon.bib.zotero.ZoteroCollection;
+import org.hypernomicon.util.json.JsonArray;
+import org.hypernomicon.util.json.JsonObj;
+
+public abstract class BibCollection implements BibEntity
 {
-  String getCollectionKey();
-  boolean isSynced();
-  String getName();
-  String getParentKey();
+  protected JsonObj jObj;
+
+  public abstract String getName();
+  public abstract String getParentKey();
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void saveToDisk(JsonArray jArr) { jArr.add(jObj.clone()); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked")
+  public static <Collection_T extends BibCollection> Collection_T create(LibraryType lType, JsonObj jObj)
+  {
+    switch (lType)
+    {
+      case ltMendeley : return (Collection_T) new MendeleyFolder  (jObj);
+      case ltZotero   : return (Collection_T) new ZoteroCollection(jObj);
+      default         : return null;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

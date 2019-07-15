@@ -1798,13 +1798,13 @@ public final class Util
 
     if (list.isEmpty()) return list;
 
-    while (list.get(0).length() == 0)
+    while (list.get(0).isBlank())
     {
       list.remove(0);
       if (list.isEmpty()) return list;
     }
 
-    while (list.get(list.size() - 1).length() == 0)
+    while (list.get(list.size() - 1).isBlank())
     {
       list.remove(list.size() - 1);
       if (list.isEmpty()) return list;
@@ -1812,7 +1812,7 @@ public final class Util
 
     if (emptiesOK) return list;
 
-    list.removeIf(s -> ultraTrim(s).length() == 0);
+    list.removeIf(s -> ultraTrim(s).isBlank());
 
     return list;
   }

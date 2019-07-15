@@ -74,6 +74,16 @@ public class AsyncHttpClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static enum HttpRequestType
+  {
+    get,
+    post,
+    patch
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private HttpUriRequest request;
   private boolean stopped = true, cancelledByUser = false;
   private RequestThread requestThread;

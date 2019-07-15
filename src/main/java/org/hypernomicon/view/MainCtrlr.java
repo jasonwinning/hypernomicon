@@ -2922,7 +2922,7 @@ public final class MainCtrlr
     if (mwd.creatingNewEntry())
     {
       BibEntry entry = db.getBibLibrary().addEntry(mwd.getEntryType());
-      work.setBibEntryKey(entry.getEntryKey());
+      work.setBibEntryKey(entry.getKey());
       workBibData = entry;
     }
 

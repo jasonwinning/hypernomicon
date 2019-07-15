@@ -31,7 +31,6 @@ import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.WorkBibAuthors;
 import org.hypernomicon.bib.data.BibField;
 import org.hypernomicon.bib.data.EntryType;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 
@@ -45,11 +44,8 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 public class MendeleyDocument extends BibEntry implements MendeleyEntity
 {
   private final MendeleyWrapper mWrapper;
-  private JsonObj jObj;
-  private MendeleyDocument backupItem = null;
-  private String note;
 
-  MendeleyDocument(MendeleyWrapper mWrapper, JsonObj jObj, boolean thisIsBackup)
+  public MendeleyDocument(MendeleyWrapper mWrapper, JsonObj jObj, boolean thisIsBackup)
   {
     super(thisIsBackup);
 
@@ -60,7 +56,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  MendeleyDocument(MendeleyWrapper mWrapper, EntryType newType)
+  public MendeleyDocument(MendeleyWrapper mWrapper, EntryType newType)
   {
     super(false);
 
@@ -75,45 +71,15 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public MendeleyEntityType getType() { return MendeleyEntityType.mendeleyDocument; }
-  @Override public String getEntryKey()         { return getKey(); }
-  @Override public String toString()            { return jObj.toString(); }
-  @Override public String getKey()              { return jObj.getStr("id"); }
-  @Override protected boolean isNewEntry()      { return jObj.containsKey("last_modified") == false; }
-  @Override public Instant lastModified()       { return parseIso8601(jObj.getStr("last_modified")); }
+  @Override public String toString()        { return jObj.toString(); }
+  @Override public String getKey()          { return jObj.getStr("id"); }
+  @Override protected boolean isNewEntry()  { return jObj.containsKey("last_modified") == false; }
+  @Override public Instant lastModified()   { return parseIso8601(jObj.getStr("last_modified")); }
+  @Override public String getEntryURL()     { return ""; }
+  @Override public BibAuthors getAuthors()  { return linkedToWork() ? new WorkBibAuthors(getWork()) : new MendeleyAuthors(jObj); }
+  @Override public EntryType getEntryType() { return parseMendeleyType(jObj.getStrSafe(getFieldKey(bfEntryType))); }
 
-  @Override public String getEntryURL()
-  {
-    return "";
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HDT_WorkType getWorkType()
-  {
-    if (linkedToWork()) return getWork().workType.get();
-
-    return EntryType.toWorkType(getEntryType());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void setWorkType(HDT_WorkType workType)
-  {
-    if (linkedToWork()) getWork().workType.set(workType);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public BibAuthors getAuthors()
-  {
-    if (linkedToWork()) return new WorkBibAuthors(getWork());
-
-    return new MendeleyAuthors(jObj);
-  }
+  static EntryType parseMendeleyType(String mType) { return MendeleyWrapper.entryTypeMap.inverse().getOrDefault(mType, etOther); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -168,22 +134,6 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
         return Lists.newArrayList((Iterable<String>)collArray.getStrs());
 
     return new ArrayList<>();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  static EntryType parseMendeleyType(String mType)
-  {
-    return MendeleyWrapper.entryTypeMap.inverse().getOrDefault(mType, etOther);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public EntryType getEntryType()
-  {
-    return parseMendeleyType(jObj.getStrSafe(getFieldKey(bfEntryType)));
   }
 
 //---------------------------------------------------------------------------
@@ -305,7 +255,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
       case bfDOI   : return "doi";
 
       case bfTitle : return "title";
-      case bfMisc  : return ""; // Maybe need to use annotations?
+      case bfMisc  : return "notes";
 
       // Acccording to the API, "Three types of annotations are available. Notes are scoped to documents and provide a
       // high-level comments using styled text. Only a single note annotation can be attached to a document and
@@ -410,7 +360,12 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
       case bfMisc :
 
-        note = strListToStr(list, true);
+        newStr = list.stream().map(StringBuilder::new).reduce((all, one) -> all.append("<br>").append(one)).orElse(new StringBuilder()).toString();
+
+        if (jObj.getStrSafe(fieldKey).equals(safeStr(newStr))) return;
+
+        jObj.put(fieldKey, newStr);
+
         return;
 
       case bfISBNs : case bfISSNs :
@@ -419,15 +374,14 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
           newStr = "";
         else
         {
-          removeDupsInStrList(list);
-          newStr = ultraTrim(convertToSingleLine(strListToStr(list, false)));
+          ArrayList<String> list2 = new ArrayList<>(list);
+          removeDupsInStrList(list2);
+          newStr = ultraTrim(convertToSingleLine(strListToStr(list2, false)));
         }
 
-        JsonObj idObj;
+        JsonObj idObj = jObj.getObj("identifiers");
 
-        if (jObj.containsKey("identifiers"))
-          idObj = jObj.getObj("identifiers");
-        else
+        if (idObj == null)
         {
           idObj = new JsonObj();
           jObj.put("identifiers", idObj);
@@ -440,7 +394,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
         return;
 
-      default               : return;
+      default : return;
     }
   }
 
@@ -466,7 +420,16 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
         return convertMultiLineStrToStrList(jObj.getStrSafe(getFieldKey(bibFieldEnum)), false);
 
-      case bfMisc  : return convertMultiLineStrToStrList(safeStr(note), true);
+      case bfMisc  :
+
+        String note = jObj.getStrSafe(getFieldKey(bibFieldEnum));
+
+        note = note.replaceAll("<br>"   , "\n")
+                   .replaceAll("<[^>]*>", ""  );
+
+        note = trimLines(note);
+
+        return convertMultiLineStrToStrList(note, true);
 
       case bfISBNs : case bfISSNs :
 
@@ -519,21 +482,6 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
       if (translatorList1.get(ndx).getName().equalsExceptParenthetical(translatorList2.get(ndx).getName()) == false) return true;
 
     return false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void saveToDisk(JsonArray jArr)
-  {
-    if (thisIsBackup) return;
-
-    JsonObj jDiskObj = jObj.clone();
-
-    if (backupItem != null)
-      jDiskObj.put("backupItem", backupItem.jObj);
-
-    jArr.add(jDiskObj);
   }
 
 //---------------------------------------------------------------------------

@@ -51,7 +51,7 @@ public class BibCollectionRow
     this.type = type;
     this.coll = coll;
 
-    key = coll == null ? null : coll.getCollectionKey();
+    key = coll == null ? null : coll.getKey();
   }
 
 //---------------------------------------------------------------------------

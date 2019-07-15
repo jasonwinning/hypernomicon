@@ -48,7 +48,7 @@ public class MergeWorksMLCtrlr extends BibFieldRow
     else if (rb3.isSelected()) str = ta3.getText();
     else                       str = ta4.getText();
 
-    bd.setMultiStr(bibFieldEnum, convertMultiLineStrToStrList(str, false));
+    bd.setMultiStr(bibFieldEnum, convertMultiLineStrToStrList(str, true));
   }
 
 //---------------------------------------------------------------------------

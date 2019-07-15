@@ -15,13 +15,15 @@
  *
  */
 
-package org.hypernomicon.bib.mendeley;
+package org.hypernomicon.bib;
 
-import java.time.Instant;
+import org.hypernomicon.util.json.JsonArray;
+import org.hypernomicon.util.json.JsonObj;
 
-import org.hypernomicon.bib.BibEntity;
-
-public interface MendeleyEntity extends BibEntity
+public interface BibEntity
 {
-  Instant lastModified();
+  boolean isSynced();
+  void update(JsonObj jObj, boolean updatingExistingDataFromServer, boolean preMerge);
+  String getKey();
+  void saveToDisk(JsonArray jArr);
 }

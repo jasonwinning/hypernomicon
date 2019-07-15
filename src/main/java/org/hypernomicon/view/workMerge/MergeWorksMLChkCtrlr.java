@@ -45,10 +45,10 @@ public class MergeWorksMLChkCtrlr extends BibFieldRow
   {
     ArrayList<String> list = new ArrayList<>();
 
-    if (chk1.isSelected()) list.addAll(convertMultiLineStrToStrList(ta1.getText(), false));
-    if (chk2.isSelected()) list.addAll(convertMultiLineStrToStrList(ta2.getText(), false));
-    if (chk3.isSelected()) list.addAll(convertMultiLineStrToStrList(ta3.getText(), false));
-    if (chk4.isSelected()) list.addAll(convertMultiLineStrToStrList(ta4.getText(), false));
+    if (chk1.isSelected()) list.addAll(convertMultiLineStrToStrList(ta1.getText(), true));
+    if (chk2.isSelected()) list.addAll(convertMultiLineStrToStrList(ta2.getText(), true));
+    if (chk3.isSelected()) list.addAll(convertMultiLineStrToStrList(ta3.getText(), true));
+    if (chk4.isSelected()) list.addAll(convertMultiLineStrToStrList(ta4.getText(), true));
 
     bd.setMultiStr(bibFieldEnum, list);
   }
