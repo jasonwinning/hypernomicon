@@ -291,7 +291,11 @@ public class PDFBibData extends BibDataStandalone
           {
             bd.setMultiStr(bfTitle, Collections.emptyList());
 
-            elements.forEach(child -> bd.addStr(bfTitle, child.value));
+            elements.forEach(child ->
+            {
+              if (child.value.equalsIgnoreCase("untitled") == false)
+                bd.addStr(bfTitle, child.value);
+            });
           }
           else if (name.equals("description"))
           {
@@ -367,15 +371,12 @@ public class PDFBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("resource")
   public PDFBibData(FilePath filePath) throws IOException
   {
     super();
-    PDDocument pdfDoc = null;
 
-    try
+    try (PDDocument pdfDoc = PDDocument.load(filePath.toFile()))
     {
-      pdfDoc = PDDocument.load(filePath.toFile());
       setDocInfo(pdfDoc.getDocumentInformation());
       PDMetadata metadata = pdfDoc.getDocumentCatalog().getMetadata();
 
@@ -405,14 +406,6 @@ public class PDFBibData extends BibDataStandalone
       if (numPages > 7)
         parseAndExtractIDs(pdfDoc, pdfStripper, numPages - 3, numPages);
     }
-    finally
-    {
-      if (pdfDoc != null)
-      {
-        try { pdfDoc.close(); }
-        catch (IOException e) { throw e; }
-      }
-    }
   }
 
 //---------------------------------------------------------------------------
@@ -423,7 +416,7 @@ public class PDFBibData extends BibDataStandalone
     pdfStripper.setStartPage(startPage);
     pdfStripper.setEndPage(endPage);
 
-    String parsedText = pdfStripper.getText(pdfDoc).replace('\u0002', '/'); // sometimes slash in DOI is encoded as STX control character
+    String parsedText = pdfStripper.getText(pdfDoc);
 
     extractDOIandISBNs(parsedText);
 
@@ -488,7 +481,11 @@ public class PDFBibData extends BibDataStandalone
     }
 
     if (safeStr(docInfo.getTitle()).length() > 0)
-      setTitle(docInfo.getTitle());
+    {
+      String title = docInfo.getTitle();
+      if (title.equalsIgnoreCase("untitled") == false)
+        setTitle(title);
+    }
 
     if (safeStr(docInfo.getSubject()).length() > 0)
       addStr(bfMisc, docInfo.getSubject());

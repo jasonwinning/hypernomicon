@@ -91,6 +91,7 @@ public class AsyncHttpClient
 
   public boolean wasCancelledByUser() { return cancelledByUser; }
   public String lastUrl()             { return lastUrl; }
+  public void clearLastUrl()          { lastUrl = ""; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

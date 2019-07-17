@@ -190,11 +190,9 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
         JsonObj jsonObj = jsonArray.getObj(0);
         if (jsonObj.getStrSafe("errorId").equals("oauth/TOKEN_EXPIRED"))
         {
-          OAuth2AccessToken token;
-
           try (OAuth20Service service = MendeleyOAuthApi.service())
           {
-            token = MendeleyOAuthApi.service().refreshAccessToken(refreshToken);
+            OAuth2AccessToken token = service.refreshAccessToken(refreshToken);
 
             accessToken = token.getAccessToken();
             refreshToken = token.getRefreshToken();
@@ -232,6 +230,9 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     String url       = "https://api.mendeley.com/documents",
            mediaType = "application/vnd.mendeley-document.1+json";
 
+    if (jsonObj.getStrSafe("title").length() == 0)
+      jsonObj.put("title", " ");
+
     JsonArray jsonArray = doHttpRequest(url, HttpRequestType.post, jsonObj.toString(), mediaType, null);
 
     switch (jsonClient.getStatusCode())
@@ -251,6 +252,9 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
   {
     String url       = "https://api.mendeley.com/documents/" + jsonObj.getStrSafe("id"),
            mediaType = "application/vnd.mendeley-document.1+json";
+
+    if (jsonObj.getStrSafe("title").length() == 0)
+      jsonObj.put("title", " ");
 
     jsonObj.remove("created");
     jsonObj.remove("last_modified");

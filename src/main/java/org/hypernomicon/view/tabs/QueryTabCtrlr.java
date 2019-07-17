@@ -1303,7 +1303,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   private ChangeListener<ResultsRow> cbListenerToRemove = null, tvListenerToRemove = null;
   private ComboBox<ResultsRow> cb;
   private BooleanProperty includeEdited = new SimpleBooleanProperty(),
-                          excludeAnnots = new SimpleBooleanProperty();
+                          excludeAnnots = new SimpleBooleanProperty(),
+                          entirePDF     = new SimpleBooleanProperty();
 
   public static HyperTask task;
   public static int curQuery;
@@ -1430,6 +1431,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
         new CheckBoxOrCommand("Include edited works", includeEdited),
         new CheckBoxOrCommand("Copy files without annotations", excludeAnnots),
+        new CheckBoxOrCommand("Always copy entire PDF file", entirePDF),
         new CheckBoxOrCommand("Clear Search Results Folder and Add All Results", () -> { mnuCopyAllClick          (); fileBtn.hide(); }),
         new CheckBoxOrCommand("Clear Search Results Folder",                     () -> { mnuClearSearchFolderClick(); fileBtn.hide(); }),
         new CheckBoxOrCommand("Copy Selected to Search Results Folder",          () -> { mnuCopyToFolderClick     (); fileBtn.hide(); }),
@@ -1738,7 +1740,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private boolean copyFilesToFolder(boolean onlySelected)
   {
-    SearchResultFileList fileList = new SearchResultFileList();
+    SearchResultFileList fileList = new SearchResultFileList(entirePDF.get());
 
     if ((db.isLoaded() == false) || (results().size() < 1)) return false;
 

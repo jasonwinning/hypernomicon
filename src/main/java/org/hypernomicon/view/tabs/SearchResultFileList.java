@@ -38,6 +38,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.filePath.FilePathSet;
 
 import com.google.common.collect.Iterators;
 
@@ -148,10 +149,8 @@ public class SearchResultFileList
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    @SuppressWarnings("resource")
     private void copyToResultsFolder(boolean excludeAnnots, ArrayList<String> errList)
     {
-      PDDocument srcPdf = null, destPdf = null;
       PDFCloneUtility cloneUtil = null;
 
       try
@@ -166,10 +165,8 @@ public class SearchResultFileList
         {
           filePath.copyTo(destFilePath, false);
         }
-        else
+        else try (PDDocument srcPdf = PDDocument.load(filePath.toFile()))
         {
-          srcPdf = PDDocument.load(filePath.toFile());
-
           int numPages = srcPdf.getNumberOfPages();
 
           if (numPages > 0)
@@ -187,9 +184,8 @@ public class SearchResultFileList
             {
               filePath.copyTo(destFilePath, false);
             }
-            else
+            else try (PDDocument destPdf = new PDDocument())
             {
-              destPdf = new PDDocument();
               cloneUtil = new PDFCloneUtility(destPdf);
 
               for (int curPageNdx = startPage - 1; curPageNdx < endPage; curPageNdx++)
@@ -222,20 +218,6 @@ public class SearchResultFileList
       {
         errList.add("Error: Unable to copy \"" + filePath + "\". Reason: " + e.getMessage());
       }
-      finally
-      {
-        if (destPdf != null)
-        {
-          try { destPdf.close(); }
-          catch (Exception e) { errList.add("Error while closing source PDF: " + e.getMessage()); }
-        }
-
-        if (srcPdf != null)
-        {
-          try { srcPdf.close(); }
-          catch (Exception e) { errList.add("Error while closing source PDF: " + e.getMessage()); }
-        }
-      }
     }
   }
 
@@ -244,6 +226,13 @@ public class SearchResultFileList
 
   private final ArrayList<SearchResultFile> list = new ArrayList<>();
   private final ArrayList<String> errList = new ArrayList<>();
+  private final boolean copyingEntirePDFs;
+  private final FilePathSet filePathSet = new FilePathSet();
+
+  public SearchResultFileList(boolean copyingEntirePDFs)
+  {
+    this.copyingEntirePDFs = copyingEntirePDFs;
+  }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -268,6 +257,16 @@ public class SearchResultFileList
         {
           int startPage = work.getStartPageNum(workFile),
               endPage   = work.getEndPageNum  (workFile);
+
+          if (copyingEntirePDFs)
+          {
+            if (filePathSet.contains(workFile.filePath()))
+              continue;
+
+            filePathSet.add(workFile.filePath());
+            startPage = -1;
+            endPage = -1;
+          }
 
           if (((startPage < 1) && (endPage > 0)) ||
               ((endPage < 1) && (startPage > 0)))

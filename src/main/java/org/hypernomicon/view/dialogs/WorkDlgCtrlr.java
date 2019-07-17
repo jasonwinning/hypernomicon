@@ -251,7 +251,7 @@ public class WorkDlgCtrlr extends HyperDlg
     htAuthors.addCheckboxColWithUpdateHandler(handler);
     htAuthors.addCheckboxColWithUpdateHandler(handler);
 
-    htAuthors.addRemoveMenuItem(() ->
+    Runnable removeHandler = () ->
     {
       if (htAuthors.getDataRowCount() == 0) return;
 
@@ -270,13 +270,18 @@ public class WorkDlgCtrlr extends HyperDlg
         htAuthors.dataRowStream().findFirst().orElseThrow().setCheckboxValue(2, true);
       else
         firstRecordRow.setCheckboxValue(2, true);
+    };
+
+    htAuthors.addRemoveMenuItem(removeHandler);
+
+    htAuthors.addContextMenuItem("Remove this row", row -> (row.getText(0).length() > 0) && (row.getID(0) < 1), row ->
+    {
+      htAuthors.removeRow(row);
+      removeHandler.run();
     });
 
-    htAuthors.addChangeOrderMenuItem(true);
 
-    htAuthors.addContextMenuItem("Remove this row",
-      row -> (row.getText(0).length() > 0) && (row.getID(0) < 1),
-      htAuthors::removeRow);
+    htAuthors.addChangeOrderMenuItem(true);
 
     tfTitle.textProperty().addListener((ob, oldValue, newValue) ->
     {

@@ -467,25 +467,27 @@ public class OptionsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("resource")
   private void btnAuthorizeClick(LibraryType libType)
   {
     try
     {
       if (libType == LibraryType.ltZotero)
       {
-        OAuth10aService service = ZoteroOAuthApi.service();
+        try (OAuth10aService service = ZoteroOAuthApi.service())
+        {
+          requestToken = service.getRequestToken();
 
-        requestToken = service.getRequestToken();
-
-        authUrl.set(service.getAuthorizationUrl(requestToken));
+          authUrl.set(service.getAuthorizationUrl(requestToken));
+        }
       }
       else if (libType == LibraryType.ltMendeley)
       {
-        OAuth20Service service = MendeleyOAuthApi.service();
-
         lblStep2Instructions.setText(lblStep2Instructions.getText().replace("Zotero", "Mendeley"));
-        authUrl.set(service.getAuthorizationUrl());
+
+        try (OAuth20Service service = MendeleyOAuthApi.service())
+        {
+          authUrl.set(service.getAuthorizationUrl());
+        }
       }
     }
     catch (UnknownHostException e)

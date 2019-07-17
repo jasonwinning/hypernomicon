@@ -1901,8 +1901,21 @@ public final class Util
 
   public static String matchDOI(String str)
   {
+    str = prepareForIDMatch(str, false);
+
     Pattern p = Pattern.compile("(\\A|\\D)(10\\.\\d{4,}[0-9.]*/[a-zA-Z0-9\\-._;:()/\\\\]+)(\\z|\\D)");
     Matcher m = p.matcher(safeStr(str));
+
+    if (m.find()) return m.group(2);
+
+    str = str.replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0').replace('°', '0');
+
+    m = p.matcher(safeStr(str));
+
+    if (m.find()) return m.group(2);
+
+    p = Pattern.compile("([dD]0[i1])(10\\.\\d{4,}[0-9.]*/[a-zA-Z0-9\\-._;:()/\\\\]+)(\\z|\\D)");
+    m = p.matcher(safeStr(str));
 
     return m.find() ? m.group(2) : "";
   }
@@ -1920,7 +1933,7 @@ public final class Util
     if (list == null) list = new ArrayList<>();
     if (safeStr(str).length() == 0) return list;
 
-    str = str.replaceAll("\\p{Pd}", "-").toUpperCase(); // treat all dashes the same
+    str = prepareForIDMatch(str, true);
 
     Pattern p = Pattern.compile("(\\A|\\G|[^0-9\\-])(\\d{4}-\\d{3}[\\dxX])(\\z|[^0-9\\-])");
     Matcher m = p.matcher(str);
@@ -1976,15 +1989,28 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void matchISBNiteration(String str, List<String> list)
+  private static String prepareForIDMatch(String str, boolean disregardLetters)
   {
     str = str.replaceAll("\\p{Pd}", "-")  // treat all dashes the same
              .replaceAll("\\u00AD", "-")  // "soft hyphen" is not included in the \p{Pd} class
 
-             .replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0').replace('°', '0');
+        .replace('\u0002', '/'); // sometimes slash in DOI is encoded as STX control character
+
+    if (disregardLetters)
+      str = str.replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0').replace('°', '0');
 
     while (str.contains("--"))
       str = str.replace("--", "-");
+
+    return str;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void matchISBNiteration(String str, List<String> list)
+  {
+    str = prepareForIDMatch(str, true);
 
     Pattern p = Pattern.compile("(\\A|\\G|[^0-9\\-])((\\d-?){12}\\d)(\\z|[^0-9\\-])");
     Matcher m = p.matcher(str);

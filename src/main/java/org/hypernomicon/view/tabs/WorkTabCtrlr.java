@@ -17,6 +17,7 @@
 
 package org.hypernomicon.view.tabs;
 
+import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibDataRetriever;
@@ -1708,7 +1709,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       else
         wdc = WorkDlgCtrlr.create(workFile);
 
-      if (wdc.showModal() == false)
+      result = wdc.showModal();
+      FolderTreeWatcher.alreadyImporting = false;
+
+      if (result == false)
       {
         wdc = null;
         return false;
@@ -1832,6 +1836,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     setAllVisible(true, btnStop, progressBar);
 
     tabPane.requestLayout();
+    httpClient.clearLastUrl();
 
     Consumer<BibData> doneHndlr = queryBD ->
     {

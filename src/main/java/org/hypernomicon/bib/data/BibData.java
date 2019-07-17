@@ -95,6 +95,12 @@ public abstract class BibData
   public abstract void setWorkType(HDT_WorkType workType);
 
 //---------------------------------------------------------------------------
+
+  public void setTitle(String newTitle) { setMultiStr(bfTitle, Arrays.asList(newTitle)); }
+  protected void addISBN(String newStr) { matchISBN(newStr).forEach(isbn -> addStr(bfISBNs, isbn)); }
+  public void addISSN(String newStr)    { matchISSN(newStr).forEach(issn -> addStr(bfISSNs, issn)); }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public boolean entryTypeNotEmpty()
@@ -120,14 +126,6 @@ public abstract class BibData
       return getMultiStr(bibFieldEnum).size() > 0;
 
     return getStr(bibFieldEnum).length() > 0;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void setTitle(String newTitle)
-  {
-    setMultiStr(bfTitle, Arrays.asList(newTitle));
   }
 
 //---------------------------------------------------------------------------
@@ -159,22 +157,6 @@ public abstract class BibData
     String doi = matchDOI(newStr);
     if (doi.length() > 0)
       setStr(bfDOI, doi);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  protected void addISBN(String newStr)
-  {
-    matchISBN(newStr).forEach(isbn -> addStr(bfISBNs, isbn));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void addISSN(String newStr)
-  {
-    matchISSN(newStr).forEach(issn -> addStr(bfISSNs, issn));
   }
 
 //---------------------------------------------------------------------------

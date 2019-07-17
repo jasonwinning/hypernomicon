@@ -245,7 +245,7 @@ public class FolderTreeWatcher
         System.out.println("---------------------------");
       }
 
-      boolean alreadyImporting = false;
+      boolean dontImport = false;
 
       for (WatcherEvent watcherEvent : eventList)
       {
@@ -253,7 +253,7 @@ public class FolderTreeWatcher
                  newPathInfo = watcherEvent.newPathInfo;
 
         if (ui.windows.getOutermostModality() != Modality.NONE)
-          alreadyImporting = true;
+          dontImport = true;
 
         switch (watcherEvent.kind)
         {
@@ -267,7 +267,7 @@ public class FolderTreeWatcher
                      newPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf"))
               if (newPathInfo.getFilePath().size() > 0)
               {
-                if (alreadyImporting == false)
+                if ((alreadyImporting == false) && (dontImport == false))
                   Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath()));
 
                 alreadyImporting = true;
@@ -316,7 +316,7 @@ public class FolderTreeWatcher
                 appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
                 downloading.contains(newPathInfo.getFilePath()))
             {
-              if (alreadyImporting == false)
+              if ((alreadyImporting == false) && (dontImport == false))
                 Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath()));
 
               alreadyImporting = true;
@@ -339,7 +339,7 @@ public class FolderTreeWatcher
                   (oldPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf") == false) &&
                   newPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf"))
               {
-                if (alreadyImporting == false)
+                if ((alreadyImporting == false) && (dontImport == false))
                   Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath()));
 
                 alreadyImporting = true;
@@ -495,6 +495,7 @@ public class FolderTreeWatcher
   private final FilePathSet downloading = new FilePathSet();
   private final HashMap<WatchKey, HDT_Folder> watchKeyToDir = new HashMap<>();
   public static final int FOLDER_TREE_WATCHER_POLL_TIME_MS = 100;
+  public static boolean alreadyImporting = false;
   private boolean stopRequested = false,
                   stopped = true,
                   disabled = false;

@@ -45,10 +45,13 @@ public abstract class BibEntry extends BibData implements BibEntity
   protected abstract boolean isNewEntry();
   public abstract String getEntryURL();
 
-  public BibEntry(boolean thisIsBackup)      { this.thisIsBackup = thisIsBackup; }
+  public BibEntry(boolean thisIsBackup)       { this.thisIsBackup = thisIsBackup; }
 
-  @Override public HDT_Work getWork()        { return thisIsBackup ? null  : db.getWorkByBibEntryKey(getKey()); }
-  @Override protected boolean linkedToWork() { return thisIsBackup ? false : getWork() != null; }
+  @Override public HDT_Work getWork()         { return thisIsBackup ? null  : db.getWorkByBibEntryKey(getKey()); }
+  @Override protected boolean linkedToWork()  { return thisIsBackup ? false : getWork() != null; }
+  @Override public HDT_WorkType getWorkType() { return linkedToWork() ? getWork().workType.get() : EntryType.toWorkType(getEntryType()); }
+
+  @Override public void setWorkType(HDT_WorkType workType) { if (linkedToWork()) getWork().workType.set(workType); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -91,24 +94,6 @@ public abstract class BibEntry extends BibData implements BibEntity
       jDiskObj.put("backupItem", backupItem.jObj);
 
     jArr.add(jDiskObj);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public HDT_WorkType getWorkType()
-  {
-    if (linkedToWork()) return getWork().workType.get();
-
-    return EntryType.toWorkType(getEntryType());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public void setWorkType(HDT_WorkType workType)
-  {
-    if (linkedToWork()) getWork().workType.set(workType);
   }
 
 //---------------------------------------------------------------------------
