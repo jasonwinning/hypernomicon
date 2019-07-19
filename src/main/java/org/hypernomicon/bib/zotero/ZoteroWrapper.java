@@ -548,6 +548,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     // https://www.zotero.org/support/dev/web_api/v3/syncing
 
       int statusCode;
+      didMergeDuringSync = false;
 
       try
       {

@@ -85,6 +85,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
   protected HttpUriRequest request = null;
   private BiConsumer<String, String> keyChangeHndlr;
 
+  protected boolean didMergeDuringSync = false;
+
   public abstract SyncTask createNewSyncTask();
   public abstract void loadFromDisk(FilePath filePath) throws FileNotFoundException, IOException, ParseException;
   public abstract LibraryType type();
@@ -227,6 +229,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
     });
 
     while (fxThreadReturnValue == null) sleepForMillis(100);
+
+    didMergeDuringSync = true;
 
     return fxThreadReturnValue.booleanValue();
   }

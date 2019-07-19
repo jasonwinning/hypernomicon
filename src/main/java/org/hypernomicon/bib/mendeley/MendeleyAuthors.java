@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
+import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.json.JsonArray;
@@ -31,10 +32,12 @@ import static org.hypernomicon.util.Util.*;
 public class MendeleyAuthors extends BibAuthors
 {
   private final JsonObj jsonObj;
+  private final EntryType entryType;
 
-  MendeleyAuthors(JsonObj jsonObj)
+  MendeleyAuthors(JsonObj jsonObj, EntryType entryType)
   {
     this.jsonObj = jsonObj;
+    this.entryType = entryType;
   }
 
 //---------------------------------------------------------------------------
@@ -47,8 +50,29 @@ public class MendeleyAuthors extends BibAuthors
               transArr   = jsonObj.getArray("translators");
 
     if (authorsArr != null) authorsArr.clear();
+    if (transArr   != null) transArr  .clear();
+
+    if (ignoreEditors()) return;
+
     if (editorsArr != null) editorsArr.clear();
-    if (transArr   != null) transArr.clear();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private boolean ignoreEditors()
+  {
+    switch (entryType)
+    {
+      case etBookChapter : case etEncyclopediaArticle :
+
+        return true; // Mendeley stores the editor of work X's parent as the editor of X. Hypernomicon doesn't do that.
+                     // The best way to avoid most problems that can result from this is probably for Hypernomicon to just ignore
+                     // editors for work types where the parent's editor will often appear in the child's bibliography entry.
+      default :
+
+        return false;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -56,7 +80,7 @@ public class MendeleyAuthors extends BibAuthors
 
   private void getList(JsonArray arr, ArrayList<BibAuthor> list, AuthorType aType)
   {
-    if (arr == null) return;
+    if ((arr == null) || (ignoreEditors() && (aType == AuthorType.editor))) return;
 
     arr.getObjs().forEach(jObj ->
     {
@@ -92,8 +116,14 @@ public class MendeleyAuthors extends BibAuthors
     switch (bibAuthor.getType())
     {
       case author     : aTypeStr = "authors"    ; break;
-      case editor     : aTypeStr = "editors"    ; break;
       case translator : aTypeStr = "translators"; break;
+
+      case editor     :
+
+        if (ignoreEditors()) return;
+
+        aTypeStr = "editors"    ; break;
+
       default         : return;
     }
 

@@ -353,6 +353,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
       {
         do
         {
+          didMergeDuringSync = false;
 
 // Get list of remotely changed documents ---------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
@@ -484,7 +485,9 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 // If 412 status received, start over -------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------
 
-        } while (jsonClient.getStatusCode() == HttpStatus.SC_PRECONDITION_FAILED);
+        } while ((jsonClient.getStatusCode() == HttpStatus.SC_PRECONDITION_FAILED) || didMergeDuringSync);
+
+        didMergeDuringSync = false;
 
 // Get list of folders from server ----------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------

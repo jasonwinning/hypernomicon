@@ -816,7 +816,7 @@ public final class Util
 
   public static String ultraTrim(String text)
   {
-    return text.replaceAll("(^\\h*)|(\\h*$)", "");
+    return text.replaceAll("(^\\h+)|(\\h+$)", "");
   }
 
 //---------------------------------------------------------------------------
@@ -1291,34 +1291,36 @@ public final class Util
 
   public static String convertToEnglishCharsWithMap(String input, ArrayList<Integer> posMap)
   {
-    String output = transliterator2.transliterate(transliterator1.transliterate(input));
+    StringBuilder output = new StringBuilder();
 
     if (posMap == null) posMap = new ArrayList<>();
 
-    int outPos = 0;
     for (int inPos = 0; inPos < input.length(); inPos++)
     {
       char c = input.charAt(inPos);
-      String s = charMap.get(c);
+      String s;
 
-      if (s == null)
+      if (c == '\u2014')
+        s = String.valueOf(c);
+      else
       {
-        s = transliterator2.transliterate(transliterator1.transliterate(String.valueOf(c)));
+        s = charMap.get(c);
 
-        charMap.put(c, s);
+        if (s == null)
+        {
+          s = transliterator2.transliterate(transliterator1.transliterate(String.valueOf(c)));
+
+          charMap.put(c, s);
+        }
       }
 
-      if (s.equals("-") && (c == '\u2014'))
-        output = replaceChar(output, outPos, c);
+      output.append(s);
 
       for (int ndx = 0; ndx < s.length(); ndx++)
-      {
         posMap.add(inPos);
-        outPos++;
-      }
     }
 
-    return output;
+    return output.toString();
   }
 
 //---------------------------------------------------------------------------
@@ -1978,10 +1980,7 @@ public final class Util
 
     matchISBNiteration(str, list);
 
-    while (str.contains(" "))
-      str = str.replace(" ", "");
-
-    matchISBNiteration(str, list);
+    matchISBNiteration(str.replaceAll("\\h+", ""), list);  // remove horizontal whitespaces and check again
 
     return list;
   }

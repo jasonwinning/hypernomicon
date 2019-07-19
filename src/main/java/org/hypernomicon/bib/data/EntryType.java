@@ -46,6 +46,7 @@ public enum EntryType
   etEmail                ("Email"),                   etFeedItem             ("Feed Item"),
   etInternetCommunication("Internet Communication"),  etConference           ("Conference"),
   etConferencePaper      ("Conference Paper"),        etConferenceProceedings("Conference Proceedings"),
+  etProceedingsSeries    ("Proceedings Series"),      etPeerReview           ("Peer Review"),
   etPoster               ("Poster"),                  etSymposium            ("Symposium"),
   etSymposiumPaper       ("Symposium Paper"),         etSymposiumProceedings ("Symposium Proceedings"),
   etPresentation         ("Presentation"),            etReferenceBook        ("Reference Book"),
@@ -145,27 +146,6 @@ public enum EntryType
       case wtWebPage      : return etWebPage;
 
       default             : return etUnentered;
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static EntryType parsePrismAggregationType(String paType)
-  {
-    switch (paType.toLowerCase())
-    {
-      case "book"       : return etBook;
-      case "catalog"    : return etCatalogItem;
-      case "feed"       : return etFeedItem;
-      case "journal"    : return etJournalArticle;
-      case "magazine"   : return etMagazineArticle;
-      case "manual"     : return etManual;
-      case "newsletter" : return etNewsletterArticle;
-      case "other"      : return etOther;
-      case "pamphlet"   : return etPamphlet;
-
-      default           : return etOther;
     }
   }
 

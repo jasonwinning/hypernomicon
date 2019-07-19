@@ -145,7 +145,7 @@ public class GoogleBibData extends BibDataStandalone
     String url = "https://www.googleapis.com/books/v1/volumes?q=";
 
     if (isbn.length() > 0)
-      return url + escapeURL("isbn:" + isbn, false);
+      return url + "isbn:" + isbn;
 
     if (safeStr(title).length() == 0) return url;
 
@@ -166,15 +166,15 @@ public class GoogleBibData extends BibDataStandalone
           name = person.getLastNameEngChar();
 
         if (ed)
-          eds = eds + (eds.length() > 0 ? "+" : "") + "inauthor:" + name;
+          eds = eds + (eds.length() > 0 ? "+" : "") + "inauthor:" + escapeURL(name, false);
         else if (tr == false)
-          auths = auths + (auths.length() > 0 ? "+" : "") + "inauthor:" + name;
+          auths = auths + (auths.length() > 0 ? "+" : "") + "inauthor:" + escapeURL(name, false);
       }
     }
 
     if (auths.length() == 0) auths = eds;
 
-    title = convertToEnglishChars(title).trim().replace(":", "").replace("?", "").replace(' ', '+');
+    title = convertToEnglishChars(title).trim();
 
     if (title.length() > 0)
       url = url + escapeURL("\"" + title + "\"", false);
@@ -184,7 +184,7 @@ public class GoogleBibData extends BibDataStandalone
       if (title.length() > 0)
         url = url + "+";
 
-      url = url + escapeURL(auths, false);
+      url = url + auths;
     }
 
     return url;

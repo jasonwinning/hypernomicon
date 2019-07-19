@@ -18,6 +18,7 @@
 package org.hypernomicon.bib.data;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
+import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
@@ -328,7 +329,7 @@ public class PDFBibData extends BibDataStandalone
         {
           switch (name)
           {
-            case "aggregationType" : bd.setEntryType(EntryType.parsePrismAggregationType(value)); break;
+            case "aggregationType" : bd.setEntryType(parsePrismAggregationType(value)); break;
             case "issn"            : bd.addISSN(value);                  break;
             case "publicationName" : bd.addStr(bfContainerTitle, value); break;
             case "volume"          : bd.setStr(bfVolume, value);         break;
@@ -357,6 +358,27 @@ public class PDFBibData extends BibDataStandalone
           child.extractBibData(bd)));
 
       elements.forEach(child -> child.extractBibData(bd));
+    }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+    private EntryType parsePrismAggregationType(String paType)
+    {
+      switch (paType.toLowerCase())
+      {
+        case "book"       : return etBook;
+        case "catalog"    : return etCatalogItem;
+        case "feed"       : return etFeedItem;
+        case "journal"    : return etJournalArticle;
+        case "magazine"   : return etMagazineArticle;
+        case "manual"     : return etManual;
+        case "newsletter" : return etNewsletterArticle;
+        case "other"      : return etOther;
+        case "pamphlet"   : return etPamphlet;
+
+        default           : return etOther;
+      }
     }
   }
 
@@ -421,10 +443,7 @@ public class PDFBibData extends BibDataStandalone
     extractDOIandISBNs(parsedText);
 
     if (getStr(bfDOI).length() == 0)
-    {
-      parsedText = parsedText.replaceAll("\\h*", ""); // remove whitespace
-      extractDOIandISBNs(parsedText);
-    }
+      extractDOIandISBNs(parsedText.replaceAll("\\h+", ""));  // remove horizontal whitespaces and check again
   }
 
 //---------------------------------------------------------------------------

@@ -123,10 +123,7 @@ public final class SearchKeys
 
   public static String prepSearchKey(String newKey)
   {
-    newKey = ultraTrim(newKey).replaceAll("\\h", " ");
-
-    while (newKey.contains("  "))
-      newKey = newKey.replace("  ", " ");
+    newKey = ultraTrim(newKey).replaceAll("\\h+", " ");
 
     return convertToEnglishChars(newKey).replaceAll("\\p{Pd}", "-"); // treat all dashes the same within search keyword
   }

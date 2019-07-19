@@ -74,12 +74,22 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
   @Override public String toString()        { return jObj.toString(); }
   @Override public String getKey()          { return jObj.getStr("id"); }
   @Override protected boolean isNewEntry()  { return jObj.containsKey("last_modified") == false; }
-  @Override public Instant lastModified()   { return parseIso8601(jObj.getStr("last_modified")); }
   @Override public String getEntryURL()     { return ""; }
-  @Override public BibAuthors getAuthors()  { return linkedToWork() ? new WorkBibAuthors(getWork()) : new MendeleyAuthors(jObj); }
+  @Override public BibAuthors getAuthors()  { return linkedToWork() ? new WorkBibAuthors(getWork()) : new MendeleyAuthors(jObj, getEntryType()); }
   @Override public EntryType getEntryType() { return parseMendeleyType(jObj.getStrSafe(getFieldKey(bfEntryType))); }
 
   static EntryType parseMendeleyType(String mType) { return MendeleyWrapper.entryTypeMap.inverse().getOrDefault(mType, etOther); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public Instant lastModified()
+  {
+    String str = jObj.getStrSafe("last_modified");
+
+    return str.isBlank() ? Instant.now()      // If it does not yet exist in Mendeley, then for Mendeley's purposes it should be considered brand-new
+                         : parseIso8601(str);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

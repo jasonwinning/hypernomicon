@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.HttpResponseException;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
@@ -40,7 +41,7 @@ import org.json.simple.parser.ParseException;
 public class BibDataRetriever
 {
   private BibData pdfBD = null, queryBD = null;
-  private boolean stopped = false;
+  private boolean stopped = false, searchedCrossref = false;
 
   private final BibData workBD;
   private final AsyncHttpClient httpClient;
@@ -215,21 +216,28 @@ public class BibDataRetriever
 
     if (stage < 4)
     {
-      //   if this is a paper or there is no work type
+      //   if this is a newer book or a non-book
       //     use title, year, and authors to query Crossref for DOI and bib info
       //     if got bib info
       //       exit
 
-      if (queryCrossref && ((workTypeEnum == wtNone) || (workTypeEnum == wtPaper)) && (title.length() > 0))
+      String yearStr = workBD.getStr(bfYear);
+      if ((yearStr.length() > 0) && StringUtils.isNumeric(yearStr))
       {
-        if (stopped) return;
+        int year = parseInt(workBD.getStr(bfYear), -1);
 
-        CrossrefBibData.doHttpRequest(httpClient, title, workBD.getStr(bfYear), authorGroups, "", alreadyCheckedIDs, bd ->
+        if (queryCrossref && (title.length() > 0) && ((workTypeEnum != wtBook) || (year >= 2000)))
         {
-          queryBD = bd;
-          doStage(4);
-        }, this::finish);
-        return;
+          if (stopped) return;
+
+          CrossrefBibData.doHttpRequest(httpClient, title, workBD.getStr(bfYear), authorGroups, "", alreadyCheckedIDs, bd ->
+          {
+            searchedCrossref = true;
+            queryBD = bd;
+            doStage(4);
+          }, this::finish);
+          return;
+        }
       }
     }
 
@@ -309,7 +317,7 @@ public class BibDataRetriever
     //   if didn't try to do so earlier,
     //     use title, year, and authors to query Crossref for DOI and bib info
 
-    if (queryCrossref && ((workTypeEnum != wtNone) && (workTypeEnum != wtPaper)))
+    if (queryCrossref && (searchedCrossref == false))
     {
       if (stopped) return;
 

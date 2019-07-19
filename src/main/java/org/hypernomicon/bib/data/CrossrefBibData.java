@@ -49,6 +49,8 @@ public class CrossrefBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // CrossRef API documentation: https://github.com/CrossRef/rest-api-doc
+
   private static CrossrefBibData createFromJSON(JsonObj jsonObj, String title, String queryDoi)
   {
     JsonArray jsonArray;
@@ -109,12 +111,25 @@ public class CrossrefBibData extends BibDataStandalone
 
     setStr(bfPages    , jsonObj.getStrSafe("page"));
     setStr(bfPublisher, jsonObj.getStrSafe("publisher"));
+    setStr(bfPubLoc   , jsonObj.getStrSafe("publisher-location"));
 
     setDateIfPresent(jsonObj, ytPublishedPrint);
     setDateIfPresent(jsonObj, ytIssued);
     setDateIfPresent(jsonObj, ytCreated);
 
     setStr(bfURL   , jsonObj.getStrSafe("URL"));
+
+    if (jsonObj.containsKey("link"))
+    {
+      JsonArray linkArray = jsonObj.getArray("link");
+      if (linkArray.size() > 0)
+      {
+        String link = linkArray.getObj(0).getStrSafe("URL");
+        if (link.isBlank() == false)
+          setStr(bfURL, link);
+      }
+    }
+
     setStr(bfVolume, jsonObj.getStrSafe("volume"));
     setStr(bfIssue , jsonObj.getStrSafe("issue"));
 
@@ -160,6 +175,8 @@ public class CrossrefBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // List of types: https://api.crossref.org/v1/types
+
   private static EntryType parseCrossrefType(String crType)
   {
     switch (crType)
@@ -181,9 +198,11 @@ public class CrossrefBibData extends BibDataStandalone
       case "journal-volume"      : return etJournalVolume;
       case "monograph"           : return etMonograph;
       case "other"               : return etOther;
+      case "peer-review"         : return etPeerReview;
       case "posted-content"      : return etPostedContent;
       case "proceedings"         : return etConferenceProceedings;
       case "proceedings-article" : return etConferencePaper;
+      case "proceedings-series"  : return etProceedingsSeries;
       case "reference-book"      : return etReferenceBook;
       case "reference-entry"     : return etReferenceEntry;
       case "report"              : return etReport;
@@ -225,9 +244,9 @@ public class CrossrefBibData extends BibDataStandalone
           name = person.getLastNameEngChar();
 
         if (ed)
-          eds = eds + "+" + name;
+          eds = eds + " " + name;
         else if (tr == false)
-          auths = auths + "+" + name;
+          auths = auths + " " + name;
       }
     }
 
@@ -237,15 +256,13 @@ public class CrossrefBibData extends BibDataStandalone
     title = title.replace(":", "");
     title = title.replace("?", "");
 
-    title = title.replace(' ', '+');
-
     yearStr = safeStr(yearStr);
 
     if ((yearStr.length() > 0) && StringUtils.isNumeric(yearStr))
     {
       int year = parseInt(yearStr, -1);
       if (year > 1929)
-        url = url + "query=" + yearStr + "&";
+        url = url + "query.bibliographic=" + yearStr + "&";
     }
 
     if (auths.length() > 0)

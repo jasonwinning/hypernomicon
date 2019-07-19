@@ -302,7 +302,7 @@ public class MainText
     boolean modify = true;
     String newPlainText = extractTextFromHTML(newHtml).trim();
 
-    if (plainText.replaceAll("\\h*", "").equalsIgnoreCase(newPlainText.replaceAll("\\h*", "")))  // Remove all horizontal whitespaces and then compare
+    if (plainText.replaceAll("\\h+", "").equalsIgnoreCase(newPlainText.replaceAll("\\h+", "")))  // Remove all horizontal whitespaces and then compare
       modify = false;
 
     if (ultraTrim(convertToSingleLine(newPlainText)).length() == 0)

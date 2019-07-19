@@ -55,9 +55,30 @@ public class ZoteroAuthors extends BibAuthors
   {
     Iterators.removeIf(creatorsArr.getObjs(), creatorObj ->
     {
-      return getAuthorTypeForStr(creatorObj.getStrSafe("creatorType")) != null;  // If the creatorType does not map onto a Hypernomicon-aware
-    });                                                                          // type (author, editor, or translator), then ignore it
+      AuthorType aType = getAuthorTypeForStr(creatorObj.getStrSafe("creatorType"));
+
+      return ((aType != null) && ((aType != editor) || ignoreEditors()));    // If the creatorType does not map onto a Hypernomicon-aware
+    });                                                                      // type (author, editor, or translator), then ignore it
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private boolean ignoreEditors()
+  {
+    switch (entryType)
+    {
+      case etBookChapter : case etEncyclopediaArticle : case etConferencePaper : case etDictionaryEntry :
+
+        return true; // Zotero stores the editor of work X's parent as the editor of X. Hypernomicon doesn't do that.
+                     // The best way to avoid most problems that can result from this is probably for Hypernomicon to just ignore
+                     // editors for work types where the parent's editor will often appear in the child's bibliography entry.
+      default :
+
+        return false;
+    }
+  }
+
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -71,7 +92,7 @@ public class ZoteroAuthors extends BibAuthors
     creatorsArr.getObjs().forEach(creatorObj ->
     {
       AuthorType aType = getAuthorTypeForStr(creatorObj.getStrSafe("creatorType"));
-      if (aType == null) return;
+      if ((aType == null) || ((aType == editor) && ignoreEditors())) return;
 
       ArrayList<BibAuthor> list = null;
 
@@ -97,7 +118,10 @@ public class ZoteroAuthors extends BibAuthors
 
   @Override public void add(BibAuthor bibAuthor)
   {
-    String aTypeStr = getCreatorTypeStr(bibAuthor.getType());
+    AuthorType aType = bibAuthor.getType();
+    if ((aType == editor) && ignoreEditors()) return;
+
+    String aTypeStr = getCreatorTypeStr(aType);
     if (safeStr(aTypeStr).length() == 0) return;
 
     JsonObj creatorObj = new JsonObj();
