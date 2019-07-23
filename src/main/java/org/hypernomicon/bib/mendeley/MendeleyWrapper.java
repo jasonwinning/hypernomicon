@@ -278,9 +278,9 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
     if (jsonArray != null)
     {
-      JsonObj jObj = jsonArray.getObj(0);
-      if (jObj.containsKey("message"))
-        errMsg = jObj.getStr("message");
+      String jsonMsg = nullSwitch(jsonArray.getObj(0), "", jObj -> jObj.getStrSafe("message"));
+      if (jsonMsg.isBlank() == false)
+        errMsg = jsonMsg;
     }
 
     throw new HttpResponseException(jsonClient.getStatusCode(), errMsg);
@@ -654,7 +654,6 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     if (document == null) return "";
 
     JsonObj jObj  = document.exportJsonObjForUploadToServer();
-    StringBuilder html = getHtmlStart();
 
     jObj.keySet().forEach(key ->
     {
@@ -697,7 +696,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
                 break;
             }
 
-            addStringHtml(typeStr, idObj.getStrSafe(idType), html);
+            addFieldHtml(typeStr, makeStringHtml(typeStr, idObj.getStrSafe(idType)));
           });
           break;
 
@@ -706,23 +705,26 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
           JsonArray jArr = jObj.getArray(key);
 
           if (key.equals("authors") || key.equals("editors") || key.equals("translators"))
-            addCreatorsHtml(jArr, formatMendeleyFieldName(key.substring(0, key.length() - 1)), html);
+          {
+            fieldName =  formatMendeleyFieldName(key.substring(0, key.length() - 1));
+            addFieldHtml(fieldName, makeCreatorsHtml(jArr, fieldName));
+          }
           else
-            addArrayHtml(fieldName, jArr, html);
+            addFieldHtml(fieldName, makeArrayHtml(fieldName, jArr));
 
           break;
 
         case STRING :
 
           if (key.equals("notes"))
-            addRowsToHtml(fieldName, document.getMultiStr(bfMisc), html);
+            addFieldHtml(fieldName, makeHtmlRows(fieldName, document.getMultiStr(bfMisc)));
           else
-            addStringHtml(fieldName, jObj.getStrSafe(key), html);
+            addFieldHtml(fieldName, makeStringHtml(fieldName, jObj.getStrSafe(key)));
           break;
 
         case INTEGER :
 
-          addStringHtml(fieldName, jObj.getAsStr(key), html);
+          addFieldHtml(fieldName, makeStringHtml(fieldName, jObj.getAsStr(key)));
           break;
 
         default:
@@ -730,27 +732,29 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
       }
     });
 
-    return finishHtml(html);
+    return compileHtml();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addStringHtml(String fieldName, String str, StringBuilder html)
+  private static String makeStringHtml(String fieldName, String str)
   {
-    if (str.isBlank()) return;
+    if (str.isBlank()) return "";
 
     if (fieldName.equals("Type"))
       str = formatMendeleyFieldName(str);
 
-    addRowToHtml(fieldName, str, html);
+    return makeHtmlRow(fieldName, str);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addCreatorsHtml(JsonArray creatorsArr, String type, StringBuilder html)
+  private static String makeCreatorsHtml(JsonArray creatorsArr, String type)
   {
+    StringBuilder html = new StringBuilder();
+
     creatorsArr.getObjs().forEach(node ->
     {
       PersonName personName;
@@ -763,14 +767,16 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
         return;
 
       if (personName.isEmpty() == false)
-        addRowToHtml(type, personName.getLastFirst(), html);
+        html.append(makeHtmlRow(type, personName.getLastFirst()));
     });
+
+    return html.toString();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addArrayHtml(String fieldName, JsonArray jArr, StringBuilder html)
+  private static String makeArrayHtml(String fieldName, JsonArray jArr)
   {
     List<String> list;
 
@@ -779,7 +785,30 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     else
       list = Lists.newArrayList((Iterable<String>)jArr.getStrs());
 
-    addRowsToHtml(fieldName, list, html);
+    return makeHtmlRows(fieldName, list);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected List<String> getHtmlFieldOrder()
+  {
+    return List.of(
+
+        "Type",
+        "Title",
+        "Title",
+        "Year",
+        "Author",
+        "Editor",
+        "Translator",
+        "Source",
+        "Edition",
+        "Volume",
+        "Issue",
+        "Pages",
+        "City",
+        "Publisher");
   }
 
 //---------------------------------------------------------------------------

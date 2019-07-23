@@ -22,6 +22,7 @@ import static org.hypernomicon.model.HyperDB.*;
 
 import java.util.List;
 
+import org.hypernomicon.bib.BibManager.RelatedBibEntry;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibData;
@@ -41,6 +42,7 @@ public abstract class BibEntry extends BibData implements BibEntity
   protected JsonObj jObj;
   protected BibEntry backupItem = null;
 
+  protected abstract void syncBookAuthorsTo(RelatedBibEntry relative);
   protected abstract List<String> getCollKeys(boolean deletedOK);
   protected abstract boolean isNewEntry();
   public abstract String getEntryURL();

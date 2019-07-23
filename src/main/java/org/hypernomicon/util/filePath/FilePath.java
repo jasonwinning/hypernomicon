@@ -18,6 +18,7 @@
 package org.hypernomicon.util.filePath;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -216,7 +217,12 @@ public class FilePath implements Comparable<FilePath>
       }
 
       if (move)
+      {
+        if (isFile() && getParent().equals(db.unenteredPath()))
+          ui.notifyOfImport(this);
+
         Files.move(toPath(), destFilePath.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      }
       else
         Files.copy(toPath(), destFilePath.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }

@@ -23,7 +23,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.bib.BibManager.RelatedBibEntry;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
@@ -306,13 +308,15 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
       case bfDOI :
 
-        return jObj.containsKey("identifiers") ? jObj.getObj("identifiers").getStrSafe("doi") : "";
+        return nullSwitch(jObj.getObj("identifiers"), "", idObj -> idObj.getStrSafe("doi"));
 
       case bfURL :
 
-        if (jObj.containsKey("websites") == false) return "";
         JsonArray jArr = jObj.getArray("websites");
-        if (jArr.size() > 0) return jArr.getStr(0);
+
+        if ((jArr != null) && (jArr.size() > 0))
+          return jArr.getStr(0);
+
         return "";
 
       case bfVolume : case bfIssue   : case bfPages    : case bfPublisher :
@@ -320,7 +324,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
         return jObj.getStrSafe(fieldKey);
 
-      case bfYear : return jObj.containsKey("year") ? jObj.getAsStr("year") : "";
+      case bfYear : return jObj.getAsStr("year");
 
       case bfAuthors     : return getAuthors().getStr(AuthorType.author);
       case bfEditors     : return getAuthors().getStr(AuthorType.editor);
@@ -463,7 +467,14 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
     if (thisIsBackup) return true;
     if (authorsChanged()) return false;
 
-    return Arrays.stream(BibFieldEnum.values()).allMatch(bibFieldEnum -> fieldsAreEqual(bibFieldEnum, backupItem));
+    return Arrays.stream(BibFieldEnum.values()).allMatch(bibFieldEnum ->
+    {
+      if (bibFieldEnum == bfYear)
+        if (backupItem.getStr(bfYear).isBlank() && (StringUtils.isNumeric(getStr(bfYear)) == false))
+          return true;
+
+      return fieldsAreEqual(bibFieldEnum, backupItem);
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -481,6 +492,31 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
     if ((authorList1    .size() != authorList2    .size()) ||
         (editorList1    .size() != editorList2    .size()) ||
         (translatorList1.size() != translatorList2.size()))   return true;
+
+    // Now check book editors
+
+    if (MendeleyAuthors.class.cast(backupItem.getAuthors()).ignoreEditors())
+    {
+      JsonArray jArr1 = jObj.getArray("editors"),
+                jArr2 = MendeleyDocument.class.cast(backupItem).jObj.getArray("editors");
+
+      if ((jArr1 == null) != (jArr2 == null)) return true;
+      if (jArr1 != null)
+      {
+        if (jArr1.size() != jArr2.size()) return true;
+
+        for (int ndx = 0; ndx < jArr1.size(); ndx++)
+        {
+          JsonObj ed1 = jArr1.getObj(ndx),
+                  ed2 = jArr2.getObj(ndx);
+
+          if ((ed1 == null) != (ed2 == null)) return true;
+
+          if (ed1.getStrSafe("first_name").equals(ed2.getStrSafe("first_name")) == false) return true;
+          if (ed1.getStrSafe("last_name" ).equals(ed2.getStrSafe("last_name" )) == false) return true;
+        }
+      }
+    }
 
     for (int ndx = 0; ndx < authorList1.size(); ndx++)
       if (authorList1.get(ndx).getName().equalsExceptParenthetical(authorList2.get(ndx).getName()) == false) return true;
@@ -523,6 +559,73 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
     }
 
     return jServerObj;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void syncBookAuthorsTo(RelatedBibEntry relative)
+  {
+    MendeleyDocument dest = (MendeleyDocument) relative.entry;
+
+    switch (relative.relation)
+    {
+      case Child:
+
+        BibAuthors authors = getAuthors();
+
+        ArrayList<BibAuthor> authorList = new ArrayList<>(),
+                             editorList = new ArrayList<>(),
+                             translatorList = new ArrayList<>();
+
+        authors.getLists(authorList, editorList, translatorList);
+
+        JsonArray jsonArr = dest.jObj.getArray("editors");
+        if (jsonArr == null)
+        {
+          jsonArr = new JsonArray();
+          dest.jObj.put("editors", jsonArr);
+        }
+
+        jsonArr.clear();
+
+        for (BibAuthor editor : editorList)
+        {
+          JsonObj personObj = new JsonObj();
+
+          String firstName = editor.getGiven();
+
+          while (firstName.contains("("))
+            firstName = removeFirstParenthetical(firstName);
+
+          personObj.put("first_name", firstName);
+          personObj.put("last_name", editor.getFamily());
+
+          jsonArr.add(personObj);
+        }
+
+        break;
+
+      case Parent:
+
+        JsonObj newVersion = dest.exportJsonObjForUploadToServer();
+        newVersion.remove("authors");
+        newVersion.put("editors", jObj.getArray("editors").clone());
+
+        dest.getWork().getAuthors().setAll(new MendeleyAuthors(newVersion, dest.getEntryType()));
+
+        break;
+
+      case Sibling:
+
+        jsonArr = jObj.getArray("editors");
+        if (jsonArr == null)
+          dest.jObj.put("editors", new JsonArray());
+        else
+          dest.jObj.put("editors", jsonArr.clone());
+
+        break;
+    }
   }
 
 //---------------------------------------------------------------------------

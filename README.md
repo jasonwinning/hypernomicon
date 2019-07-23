@@ -19,7 +19,7 @@ Hypernomicon is perfect for: Anyone who works in a field (professionals, hobbyis
  * Notes taken during talks, meetings, seminars
  * Any other files or folders associated with any of the above (including notes)
  * Ability to manage (rename, move, etc.) files and folders while not losing associations with any of the above information
- * Associations between works and entries in your bibliography manager (currently integrates with Zotero; Mendeley in the near future)
+ * Associations between works and entries in your bibliography manager (currently integrates with Zotero and Mendeley)
 
 Hypernomicon keeps track of all of the above in a highly structured, thoroughly indexed and user friendly relational database, and automatically generates semantic hyperlinks between all of them so that you are constantly informed of ways all of your information is related that you had not realized.
 

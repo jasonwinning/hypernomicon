@@ -120,7 +120,7 @@ public class VersionNumber implements Comparable<VersionNumber>
   {
     for (int ndx = 0; ndx < Math.max(parts.size(), o.numParts()); ndx++)
     {
-      int cmp = Integer.compare(parts.get(ndx), o.getPart(ndx));
+      int cmp = Integer.compare(getPart(ndx), o.getPart(ndx));
       if (cmp != 0) return cmp;
     }
 

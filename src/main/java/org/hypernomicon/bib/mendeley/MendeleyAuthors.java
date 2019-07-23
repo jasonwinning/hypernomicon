@@ -21,8 +21,8 @@ import java.util.ArrayList;
 
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
-import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.authors.BibAuthors;
+import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
@@ -60,7 +60,7 @@ public class MendeleyAuthors extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean ignoreEditors()
+  boolean ignoreEditors()
   {
     switch (entryType)
     {

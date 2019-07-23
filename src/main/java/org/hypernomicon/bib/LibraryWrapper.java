@@ -19,9 +19,11 @@ package org.hypernomicon.bib;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -147,41 +149,85 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected static StringBuilder getHtmlStart()
+  protected String compileHtml()
   {
-    return new StringBuilder()
+    StringBuilder html = new StringBuilder()
 
         .append("<html><head>" + MainTextWrapper.getScriptContent() + "<style>")
         .append("td.fieldName { vertical-align: text-top; text-align: right; padding-right:10px; }</style></head><body>")
         .append("<table style=\"font-size:9pt; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,sans-serif; } line-height:10pt;\">");
-  }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+    List<String> fieldOrder = getHtmlFieldOrder();
 
-  protected static String finishHtml(StringBuilder html)
-  {
+    for (String fieldName : fieldOrder)
+    {
+      Iterator<FieldHtml> it = fieldHtmlList.iterator();
+
+      while (it.hasNext())
+      {
+        FieldHtml fieldHtml = it.next();
+
+        if (fieldHtml.fieldName.equalsIgnoreCase(fieldName))
+        {
+          html.append(fieldHtml.html);
+          it.remove();
+        }
+      }
+    }
+
+    fieldHtmlList.forEach(fieldHtml -> html.append(fieldHtml.html));
+
+    fieldHtmlList.clear();
+
     return html.append("</table></body></html>").toString();
   }
 
+  protected abstract List<String> getHtmlFieldOrder();
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected static void addRowToHtml(String fieldName, String str, StringBuilder html)
+  protected static String makeHtmlRow(String fieldName, String value)
   {
-    html.append("<tr><td class=\"fieldName\">" + fieldName + "</td><td>")
-        .append(str)
-        .append("</td></tr>");
+    return "<tr><td class=\"fieldName\">" + fieldName + "</td><td>" +
+           value +
+           "</td></tr>";
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected static void addRowsToHtml(String fieldName, List<String> list, StringBuilder html)
+  private static class FieldHtml
+  {
+    public final String fieldName;
+    public final String html;
+
+    private FieldHtml(String fieldName, String html)
+    {
+      this.fieldName = fieldName;
+      this.html = html;
+    }
+  }
+
+  private final List<FieldHtml> fieldHtmlList = new ArrayList<>();
+
+  protected void addFieldHtml(String fieldName, String html)
+  {
+    if (safeStr(html).isBlank()) return;
+
+    fieldHtmlList.add(new FieldHtml(fieldName, html));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  protected static String makeHtmlRows(String fieldName, List<String> list)
   {
     list.removeIf(str -> str == null);
 
-    if (list.size() == 0) return;
+    if (list.size() == 0) return "";
+
+    StringBuilder html = new StringBuilder();
 
     html.append("<tr><td class=\"fieldName\">" + fieldName + "</td><td>");
 
@@ -193,6 +239,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
     }
 
     html.append("</td></tr>");
+
+    return html.toString();
   }
 
   //---------------------------------------------------------------------------

@@ -90,6 +90,7 @@ public class RISBibData extends BibDataStandalone
 
           case "OP": break;    // Original Publication
           case "RP": break;    // Reprint Edition
+          case "ID": break;    // "Reference ID" (usually author last name and year with no space in between)
 
           case "ET": setStr(bfEdition, val); break;
           case "IS": setStr(bfIssue, val); break;
@@ -105,7 +106,6 @@ public class RISBibData extends BibDataStandalone
           case "LA": setStr(bfLanguage, val); break;
           case "PB": setStr(bfPublisher, val); break;
 
-
           case "SE": break;    // Section
 
           case "SP": setStartPage(val); break;
@@ -119,6 +119,8 @@ public class RISBibData extends BibDataStandalone
           case "VL": case "VO":
 
             setStr(bfVolume, val); break;
+
+          case "SN": addISSN(val); break;
 
           default :
 

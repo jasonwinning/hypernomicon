@@ -150,7 +150,7 @@ import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 public final class Util
 {
-  static final JSONParser jsonParser = new JSONParser();
+  public static final JSONParser jsonParser = new JSONParser();
 
   public static final StopWatch stopWatch1 = new StopWatch(), stopWatch2 = new StopWatch(), stopWatch3 = new StopWatch(),
                                 stopWatch4 = new StopWatch(), stopWatch5 = new StopWatch(), stopWatch6 = new StopWatch();
@@ -582,6 +582,20 @@ public final class Util
     dlg.addButton("Abort" , mrAbort);
     dlg.addButton("Retry" , mrRetry);
     dlg.addButton("Ignore", mrIgnore);
+
+    return dlg.showModal();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static DialogResult yesNoCancelDialog(String msg)
+  {
+    PopupDialog dlg = new PopupDialog(msg);
+
+    dlg.addButton("Yes"   , mrYes);
+    dlg.addButton("No"    , mrNo);
+    dlg.addButton("Cancel", mrCancel);
 
     return dlg.showModal();
   }
@@ -1464,7 +1478,7 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void runDelayedOutsideFXThread(int delayMS, Runnable runnable)
+  public static void runOutsideFXThread(int delayMS, Runnable runnable)
   {
     new Timer(true).schedule(new TimerTask() { @Override public void run() { runnable.run(); }}, delayMS);
   }
@@ -1472,9 +1486,17 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static void runOutsideFXThread(Runnable runnable)
+  {
+    new Thread(runnable).start();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static void nuclearOption(int delayMS)
   {
-    runDelayedOutsideFXThread(delayMS, () -> Runtime.getRuntime().halt(0));
+    runOutsideFXThread(delayMS, () -> Runtime.getRuntime().halt(0));
   }
 
 //---------------------------------------------------------------------------

@@ -226,7 +226,7 @@ public class BibDataRetriever
       {
         int year = parseInt(workBD.getStr(bfYear), -1);
 
-        if (queryCrossref && (title.length() > 0) && ((workTypeEnum != wtBook) || (year >= 2000)))
+        if (queryCrossref && (title.length() > 0) && ((workTypeEnum != wtBook) || (year >= 1998)))
         {
           if (stopped) return;
 

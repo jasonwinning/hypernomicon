@@ -1909,7 +1909,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       setAllVisible(false, btnStop, progressBar);
       if ((pdfBD == null) && (queryBD == null))
+      {
+        messageDialog("Unable to find bibliographic information.", mtInformation);
         return;
+      }
 
       MergeWorksDlgCtrlr mwd = null;
 

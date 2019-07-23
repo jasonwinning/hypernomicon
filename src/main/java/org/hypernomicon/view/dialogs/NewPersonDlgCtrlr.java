@@ -133,7 +133,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
     lblSearchKey.setOnMouseClicked(event -> setSearchKey(new PersonName(tfFirstName.getText(), tfLastName.getText())));
 
-    lblDupSearchKey.setOnMouseClicked(event -> setSearchKey(new PersonName(tfDupFirstName.getText(), tfDupLastName.getText()), tfDupSearchKey));
+    lblDupSearchKey.setOnMouseClicked(event -> regenerateDupSearchKey());
 
     tfFirstName.textProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -224,6 +224,14 @@ public class NewPersonDlgCtrlr extends HyperDlg
       finishDupSearch();
     else
       startDupThread(personName);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void regenerateDupSearchKey()
+  {
+    setSearchKey(new PersonName(tfDupFirstName.getText(), tfDupLastName.getText()), tfDupSearchKey);
   }
 
 //---------------------------------------------------------------------------
@@ -570,6 +578,9 @@ public class NewPersonDlgCtrlr extends HyperDlg
         lblDupType .setText(nullSwitch(work.workType.get(), "", HDT_WorkType::name));
         lblDupYear .setText(work.getYear());
       });
+
+      if (tfDupSearchKey.getText().isBlank())
+        regenerateDupSearchKey();
     }
 
     updateRadioButtons();

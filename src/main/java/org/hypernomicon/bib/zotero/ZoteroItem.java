@@ -24,6 +24,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.bib.BibManager.RelatedBibEntry;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
@@ -32,6 +33,7 @@ import org.hypernomicon.bib.authors.WorkBibAuthors;
 import org.hypernomicon.bib.data.BibField;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.util.json.JsonArray;
+import org.hypernomicon.util.json.JsonArray.JsonObjIterator;
 import org.hypernomicon.util.json.JsonObj;
 
 import com.google.common.collect.Lists;
@@ -217,6 +219,11 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final List<String> titleKeyList = Arrays.asList(
+
+      "publicationTitle", "bookTitle"   , "encyclopediaTitle", "proceedingsTitle", "dictionaryTitle",
+      "forumTitle",       "programTitle", "websiteTitle"     , "blogTitle"       , "seriesTitle");
+
   private String getFieldKey(BibFieldEnum bibFieldEnum)
   {
     switch (bibFieldEnum)
@@ -238,9 +245,8 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         JsonObj template = zWrapper.getTemplate(getEntryType());
         if (template == null) return "";
 
-        if      (template.containsKey("publicationTitle")) return "publicationTitle";
-        else if (template.containsKey("bookTitle"       )) return "bookTitle";
-        else if (template.containsKey("seriesTitle"     )) return "seriesTitle";
+        for (String titleKey : titleKeyList)
+          if (template.containsKey(titleKey)) return titleKey;
 
         return "";
 
@@ -435,6 +441,47 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         (editorList1    .size() != editorList2    .size()) ||
         (translatorList1.size() != translatorList2.size()))   return true;
 
+    // Now check book editors
+
+    if (ZoteroAuthors.class.cast(backupItem.getAuthors()).ignoreEditors())
+    {
+      JsonArray creatorsArr1 = jData.getArray("creators"),
+                creatorsArr2 = ZoteroItem.class.cast(backupItem).jData.getArray("creators");
+
+      if ((creatorsArr1 == null) != (creatorsArr2 == null)) return true;
+      if (creatorsArr1 != null)
+      {
+        JsonArray jArr1 = new JsonArray(), jArr2 = new JsonArray();
+
+        creatorsArr1.getObjs().forEach(creator ->
+        {
+          String type = creator.getStrSafe("creatorType");
+          if (type.equals("editor") || type.equals("bookAuthor"))
+            jArr1.add(creator);
+        });
+
+        creatorsArr2.getObjs().forEach(creator ->
+        {
+          String type = creator.getStrSafe("creatorType");
+          if (type.equals("editor") || type.equals("bookAuthor"))
+            jArr2.add(creator);
+        });
+
+        if (jArr1.size() != jArr2.size()) return true;
+
+        for (int ndx = 0; ndx < jArr1.size(); ndx++)
+        {
+          JsonObj ed1 = jArr1.getObj(ndx),
+                  ed2 = jArr2.getObj(ndx);
+
+          if (ed1.getStrSafe("creatorType").equals(ed2.getStrSafe("creatorType")) == false) return true;
+
+          if (ed1.getStrSafe("firstName").equals(ed2.getStrSafe("firstName")) == false) return true;
+          if (ed1.getStrSafe("lastName" ).equals(ed2.getStrSafe("lastName" )) == false) return true;
+        }
+      }
+    }
+
     for (int ndx = 0; ndx < authorList1.size(); ndx++)
       if (authorList1.get(ndx).getName().equalsExceptParenthetical(authorList2.get(ndx).getName()) == false) return true;
 
@@ -489,6 +536,131 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     }
 
     return isNewEntry() ? jServerObj.getObj("data") : jServerObj;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void syncBookAuthorsTo(RelatedBibEntry relative)
+  {
+    ZoteroItem dest = (ZoteroItem) relative.entry;
+
+    switch (relative.relation)
+    {
+      case Child:
+
+        BibAuthors authors = getAuthors();
+
+        ArrayList<BibAuthor> authorList = new ArrayList<>(),
+                             editorList = new ArrayList<>(),
+                             translatorList = new ArrayList<>();
+
+        authors.getLists(authorList, editorList, translatorList);
+
+        JsonArray creatorsArr = dest.jData.getArray("creators");
+
+        JsonObjIterator it = creatorsArr.getObjs();
+        while (it.hasNext())
+        {
+          JsonObj creator = it.next();
+          String type = creator.getStrSafe("creatorType");
+          if (type.equals("editor") || type.equals("bookAuthor"))
+            it.remove();
+        }
+
+        for (BibAuthor author : authorList)
+        {
+          JsonObj creatorObj = new JsonObj();
+
+          String firstName = author.getGiven();
+
+          while (firstName.contains("("))
+            firstName = removeFirstParenthetical(firstName);
+
+          creatorObj.put("firstName", firstName);
+          creatorObj.put("lastName", author.getFamily());
+          creatorObj.put("creatorType", "bookAuthor");
+
+          creatorsArr.add(creatorObj);
+        }
+
+        for (BibAuthor editor : editorList)
+        {
+          JsonObj creatorObj = new JsonObj();
+
+          String firstName = editor.getGiven();
+
+          while (firstName.contains("("))
+            firstName = removeFirstParenthetical(firstName);
+
+          creatorObj.put("firstName", firstName);
+          creatorObj.put("lastName", editor.getFamily());
+          creatorObj.put("creatorType", "editor");
+
+          creatorsArr.add(creatorObj);
+        }
+
+        break;
+
+      case Parent:
+
+        JsonObj jDestObj  = dest.exportJsonObjForUploadToServer(true),
+                jDestData = nullSwitch(jDestObj.getObj("data"), jDestObj);
+
+        JsonArray oldCreatorsArr = jDestData.getArray("creators"), newCreatorsArr = new JsonArray();
+
+        it = oldCreatorsArr.getObjs();
+        while (it.hasNext())
+        {
+          JsonObj creator = it.next();
+          String type = creator.getStrSafe("creatorType");
+          if (type.equals("editor") || type.equals("author"))
+            it.remove();
+        }
+
+        jData.getArray("creators").getObjs().forEach(oldCreator ->
+        {
+          String type = oldCreator.getStrSafe("creatorType");
+          if (type.equals("editor") || type.equals("bookAuthor"))
+          {
+            JsonObj newCreator = oldCreator.clone();
+            if (newCreator.getStrSafe("creatorType").equals("bookAuthor"))
+              newCreator.put("creatorType", "book");
+
+            newCreatorsArr.add(newCreator);
+          }
+        });
+
+        oldCreatorsArr.getObjs().forEach(creator -> newCreatorsArr.add(creator.clone()));
+
+        dest.getWork().getAuthors().setAll(new ZoteroAuthors(newCreatorsArr, dest.getEntryType()));
+
+        break;
+
+      case Sibling:
+
+        JsonArray destCreatorsArr = dest.jData.getArray("creators");
+
+        it = destCreatorsArr.getObjs();
+        while (it.hasNext())
+        {
+          JsonObj creator = it.next();
+          String type = creator.getStrSafe("creatorType");
+          if (type.equals("editor") || type.equals("bookAuthor"))
+            it.remove();
+        }
+
+        JsonArray srcCreatorsArr = jData.getArray("creators");
+
+        srcCreatorsArr.getObjs().forEach(creator ->
+        {
+          String type = creator.getStrSafe("creatorType");
+          if (type.equals("editor") || type.equals("bookAuthor"))
+            destCreatorsArr.add(creator.clone());
+        });
+
+        break;
+    }
   }
 
 //---------------------------------------------------------------------------

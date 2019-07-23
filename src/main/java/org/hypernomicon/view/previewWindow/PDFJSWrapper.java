@@ -42,6 +42,7 @@ import com.teamdev.jxbrowser.chromium.URLResponse;
 import com.teamdev.jxbrowser.chromium.events.ConsoleEvent.Level;
 import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
 import com.teamdev.jxbrowser.chromium.events.LoadAdapter;
+import com.teamdev.jxbrowser.chromium.internal.Environment;
 import com.teamdev.jxbrowser.chromium.internal.ipc.IPCException;
 import com.teamdev.jxbrowser.chromium.javafx.BrowserView;
 import com.teamdev.jxbrowser.chromium.javafx.DefaultDialogHandler;
@@ -266,19 +267,7 @@ public class PDFJSWrapper
 
     Runnable runnable = () ->
     {
-      if (oldBrowser != null)
-      {
-        try
-        {
-          oldBrowser.dispose();
-        }
-        catch (IPCException e)
-        {
-          messageDialog("An error occurred while disposing preview pane: " + e.getMessage(), mtError);
-        }
-
-        oldBrowser = null;
-      }
+      dispose(oldBrowser, false);
 
       if (stuffToDoAfterLoadingViewerHtml != null)
         stuffToDoAfterLoadingViewerHtml.run();
@@ -290,6 +279,42 @@ public class PDFJSWrapper
       runnable.run();
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void dispose(Browser browser, boolean wait)
+  {
+    if ((browser == null) || browser.isDisposed()) return;
+
+    if (wait)
+    {
+      disposing = true;
+
+      browser.addDisposeListener(event -> { disposing = false; });
+    }
+
+    Runnable runnable = () ->
+    {
+      try
+      {
+        browser.dispose();
+      }
+      catch (IPCException e)
+      {
+        disposing = false;
+        messageDialog("An error occurred while disposing preview pane: " + e.getMessage(), mtError);
+      }
+    };
+
+    if (Environment.isWindows())
+      runOutsideFXThread(runnable);
+    else
+      runInFXThread(runnable);
+
+    if (wait)
+      while (disposing) sleepForMillis(30);
   }
 
 //---------------------------------------------------------------------------
@@ -587,21 +612,7 @@ public class PDFJSWrapper
   {
     cleanupPdfHtml();
 
-    disposing = true;
-
-    browser.addDisposeListener(event -> { disposing = false; });
-
-    try
-    {
-      browser.dispose();
-    }
-    catch (IPCException e)
-    {
-      disposing = false;
-      messageDialog("An error occurred while disposing preview pane: " + e.getMessage(), mtError);
-    }
-
-    while (disposing) sleepForMillis(30);
+    dispose(browser, false);
   }
 
   private static boolean disposing = false;
@@ -613,16 +624,9 @@ public class PDFJSWrapper
   {
     cleanupPdfHtml();
 
-    browser.addDisposeListener(event -> disposeHndlr.run());
+    dispose(browser, true);
 
-    try
-    {
-      browser.dispose();
-    }
-    catch (IPCException e)
-    {
-      messageDialog("An error occurred while disposing preview pane: " + e.getMessage(), mtError);
-    }
+    disposeHndlr.run();
   }
 
 //---------------------------------------------------------------------------

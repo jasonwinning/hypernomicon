@@ -144,8 +144,6 @@ public class OptionsDlgCtrlr extends HyperDlg
 
     btnUnlink.setOnAction(event -> btnUnlinkClick());
 
-    btnMendeleyAuthorize.setVisible(app.debugging());
-
     authUrl = new SimpleStringProperty();
 
     btnZoteroAuthorize.disableProperty().bind(authUrl.isNotEmpty());
@@ -471,6 +469,9 @@ public class OptionsDlgCtrlr extends HyperDlg
   {
     try
     {
+      lblStep2Instructions.setText("Click link to open web site where you will authorize Hypernomicon to access your " +
+                                   libType.getUserFriendlyName() + " account and get verification code.");
+
       if (libType == LibraryType.ltZotero)
       {
         try (OAuth10aService service = ZoteroOAuthApi.service())
@@ -482,8 +483,6 @@ public class OptionsDlgCtrlr extends HyperDlg
       }
       else if (libType == LibraryType.ltMendeley)
       {
-        lblStep2Instructions.setText(lblStep2Instructions.getText().replace("Zotero", "Mendeley"));
-
         try (OAuth20Service service = MendeleyOAuthApi.service())
         {
           authUrl.set(service.getAuthorizationUrl());

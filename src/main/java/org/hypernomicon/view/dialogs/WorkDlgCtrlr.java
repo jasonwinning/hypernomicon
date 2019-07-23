@@ -901,13 +901,28 @@ public class WorkDlgCtrlr extends HyperDlg
 
     try
     {
-      MergeWorksDlgCtrlr mwd = MergeWorksDlgCtrlr.create("Merge Information From PDF File", curBD, bd1, bd2, null, curWork, false, false, false);
+      MergeWorksDlgCtrlr mwd = MergeWorksDlgCtrlr.create("Merge Information From PDF File", curBD,
+          bd1, bd2, null, curWork, false, curWork.getBibEntryKey().isBlank(), false, origFilePath);
 
       if (mwd.showModal())
       {
         lblAutoPopulated.setText("");
         mwd.mergeInto(curBD);
         populateFieldsFromBibData(curBD, true);
+
+        if (db.bibLibraryIsLinked() && curWork.getBibEntryKey().isBlank())
+        {
+          cbEntryType.getSelectionModel().select(mwd.getEntryType());
+          chkCreateBibEntry.setSelected(mwd.creatingNewEntry());
+
+          if (hcbType.selectedRecord() == null)
+          {
+            if (mwd.getEntryType() == EntryType.etBook)
+              hcbType.selectID(HDT_WorkType.get(wtBook).getID());
+            else if (mwd.getEntryType() == EntryType.etJournalArticle)
+              hcbType.selectID(HDT_WorkType.get(wtPaper).getID());
+          }
+        }
       }
     }
     catch (IOException e)

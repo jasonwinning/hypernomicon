@@ -103,7 +103,7 @@ public class JsonObj implements Cloneable
 
     try { otherObj = parseJsonObj(jObj.toJSONString()); } catch (ParseException e) { noOp(); }
 
-    return nullSwitch(otherObj, new JsonObj(null));
+    return otherObj;
   }
 
 //---------------------------------------------------------------------------

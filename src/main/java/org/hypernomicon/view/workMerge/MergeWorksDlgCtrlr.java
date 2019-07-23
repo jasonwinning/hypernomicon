@@ -38,6 +38,7 @@ import org.hypernomicon.bib.data.GUIBibData;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.relations.ObjectGroup;
+import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.dialogs.HyperDlg;
 import org.hypernomicon.view.dialogs.WorkDlgCtrlr;
 import org.hypernomicon.view.previewWindow.PDFJSWrapper;
@@ -95,10 +96,21 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 
   public static MergeWorksDlgCtrlr create(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
+                                          boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked, FilePath filePath) throws IOException
+  {
+    MergeWorksDlgCtrlr mwd = HyperDlg.createUsingFullPath("view/workMerge/MergeWorksDlg.fxml", title, true, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
+    mwd.init(bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChecked, filePath);
+    return mwd;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static MergeWorksDlgCtrlr create(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
                                           boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked) throws IOException
   {
     MergeWorksDlgCtrlr mwd = HyperDlg.createUsingFullPath("view/workMerge/MergeWorksDlg.fxml", title, true, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
-    mwd.init(bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChecked);
+    mwd.init(bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChecked, null);
     return mwd;
   }
 
@@ -106,10 +118,18 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 
   private void init(BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
-                    boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked) throws IOException
+                    boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked, FilePath filePath) throws IOException
   {
     apPreview = new AnchorPane();
     mdp = WorkDlgCtrlr.addPreview(stagePane, apMain, apPreview, btnPreview);
+
+    btnLaunch.setOnAction(event ->
+    {
+      if (FilePath.isEmpty(filePath) || filePath.equals(destWork.filePath()))
+        destWork.launch(-1);
+      else
+        launchFile(filePath);
+    });
 
     mdp.showDetailNodeProperty().addListener((ob, ov, nv) ->
     {
@@ -123,7 +143,10 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 
       previewInitialized = true;
 
-      PreviewWrapper.showFile(destWork.filePath(), 1, jsWrapper);
+      if (FilePath.isEmpty(filePath) || filePath.equals(destWork.filePath()))
+        PreviewWrapper.showFile(destWork.filePath(), 1, jsWrapper);
+      else
+        PreviewWrapper.showFile(filePath, 1, jsWrapper);
     });
 
     this.creatingNewWork = creatingNewWork;
@@ -134,9 +157,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
       nextRowNdx--;
     }
 
-    btnLaunch.setOnAction(event -> destWork.launch(-1));
-
-    if ((destWork == null) || (destWork.pathNotEmpty() == false))
+    if (FilePath.isEmpty(filePath) && ((destWork == null) || (destWork.pathNotEmpty() == false)))
       disableAll(btnLaunch, btnPreview);
 
     ArrayList<BibData> bdList = new ArrayList<>();

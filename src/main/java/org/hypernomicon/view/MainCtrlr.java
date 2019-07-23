@@ -72,6 +72,7 @@ import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -156,6 +157,8 @@ public final class MainCtrlr
   public Tooltip ttDates;
   private boolean selectorTabChangeIsProgrammatic = false, maximized = false, internetNotCheckedYet = true, shuttingDown = false;
   private double toolBarWidth = 0.0, maxWidth = 0.0, maxHeight = 0.0;
+  private long lastImportTime = 0;
+  private FilePath lastImportFilePath = null;
 
   private static final String TREE_SELECT_BTN_CAPTION = "Select";
 
@@ -1218,7 +1221,11 @@ public final class MainCtrlr
 
     if (db.isLoaded())
     {
-      if (confirmDialog("Save data to XML files?"))
+      DialogResult result = yesNoCancelDialog("Save data to XML files?");
+
+      if (result == mrCancel) return;
+
+      if (result == mrYes)
       {
         if (cantSaveRecord()) return;
         saveAllToDisk(false, false, false);
@@ -1270,7 +1277,11 @@ public final class MainCtrlr
 
     if (db.isLoaded())
     {
-      if (confirmDialog("Save data to XML files?"))
+      DialogResult result = yesNoCancelDialog("Save data to XML files?");
+
+      if (result == mrCancel) return;
+
+      if (result == mrYes)
         saveAllToDisk(false, false, false);
 
       NewDatabaseDlgCtrlr dlg = NewDatabaseDlgCtrlr.create(rootPath.toString());
@@ -1459,7 +1470,11 @@ public final class MainCtrlr
   {
     if (db.isLoaded())
     {
-      if (confirmDialog("Save data to XML files before closing?"))
+      DialogResult result = yesNoCancelDialog("Save data to XML files before closing?");
+
+      if (result == mrCancel) return;
+
+      if (result == mrYes)
       {
         if (cantSaveRecord()) return;
         saveAllToDisk(false, false, false);
@@ -2796,7 +2811,10 @@ public final class MainCtrlr
 
   public void newWorkAndWorkFile(HDT_Person person, FilePath filePathToUse)
   {
-    if (cantSaveRecord()) return;
+    if (filePathToUse.equals(lastImportFilePath) && ((Instant.now().toEpochMilli() - lastImportTime) < 10000))
+      return;
+
+    if ((filePathToUse.exists() == false) || cantSaveRecord()) return;
 
     HDT_Work work = db.createNewBlankRecord(hdtWork);
 
@@ -2951,6 +2969,15 @@ public final class MainCtrlr
 
     if (db.isLoaded() == false)
       Platform.runLater(this::showWelcomeWindow);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void notifyOfImport(FilePath filePath)
+  {
+    lastImportTime = Instant.now().toEpochMilli();
+    lastImportFilePath = filePath;
   }
 
 //---------------------------------------------------------------------------

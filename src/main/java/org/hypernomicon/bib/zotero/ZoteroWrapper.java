@@ -34,6 +34,7 @@ import java.net.UnknownHostException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.*;
@@ -787,8 +788,6 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     JsonObj jObj  = item.exportJsonObjForUploadToServer(true),
             jData = nullSwitch(jObj.getObj("data"), jObj);
 
-    StringBuilder html = getHtmlStart();
-
     jData.keySet().forEach(key ->
     {
       String fieldName = key;
@@ -812,15 +811,17 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
           JsonArray jArr = jData.getArray(key);
 
           if (key.equals("creators"))
-            addCreatorsHtml(jArr, html);
+            addFieldHtml("Creators", makeCreatorsHtml(jArr));
+          else if (key.equals("tags"))
+            addFieldHtml("Tags", makeTagsHtml(jArr));
           else
-            addArrayHtml(fieldName, jArr, html);
+            addFieldHtml(fieldName, makeArrayHtml(fieldName, jArr));
 
           break;
 
         case STRING:
 
-          addStringHtml(fieldName, jData.getStrSafe(key), html);
+          addFieldHtml(fieldName, makeStringHtml(fieldName, jData.getStrSafe(key)));
           break;
 
         default:
@@ -828,15 +829,15 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       }
     });
 
-    return finishHtml(html);
+    return compileHtml();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addStringHtml(String fieldName, String str, StringBuilder html)
+  private static String makeStringHtml(String fieldName, String str)
   {
-    if (str.length() == 0) return;
+    if (str.length() == 0) return "";
 
     if (fieldName.equals("Item Type"))
       str = camelToTitle(str);
@@ -844,14 +845,28 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     if (fieldName.equals("URL"))
       str = anchorTag(str, str);
 
-    addRowToHtml(fieldName, str, html);
+    return makeHtmlRow(fieldName, str);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addCreatorsHtml(JsonArray creatorsArr, StringBuilder html)
+  private static String makeTagsHtml(JsonArray tagsArr)
   {
+    List<String> list = new ArrayList<>();
+
+    tagsArr.getObjs().forEach(node -> list.add(node.getStrSafe("tag")));
+
+    return makeHtmlRows("Tags", list);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String makeCreatorsHtml(JsonArray creatorsArr)
+  {
+    StringBuilder html = new StringBuilder();
+
     creatorsArr.getObjs().forEach(node ->
     {
       String type = node.getStrSafe("creatorType");
@@ -871,16 +886,39 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         if (personName.isEmpty()) return;
       }
 
-      addRowToHtml(type, personName.getLastFirst(), html);
+      html.append(makeHtmlRow(type, personName.getLastFirst()));
     });
+
+    return html.toString();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static void addArrayHtml(String fieldName, JsonArray jArr, StringBuilder html)
+  private static String makeArrayHtml(String fieldName, JsonArray jArr)
   {
-    addRowsToHtml(fieldName, Lists.newArrayList((Iterable<String>)jArr.getStrs()), html);
+    return makeHtmlRows(fieldName, Lists.newArrayList((Iterable<String>)jArr.getStrs()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected List<String> getHtmlFieldOrder()
+  {
+    return List.of(
+
+        "Title",
+        "Item Type",
+        "Date",
+        "Creators",
+        "Publication Title",
+        "Book Title",
+        "Edition",
+        "Volume",
+        "Issue",
+        "Pages",
+        "Place",
+        "Publisher");
   }
 
 //---------------------------------------------------------------------------

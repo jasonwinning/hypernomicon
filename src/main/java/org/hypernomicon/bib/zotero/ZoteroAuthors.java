@@ -57,14 +57,16 @@ public class ZoteroAuthors extends BibAuthors
     {
       AuthorType aType = getAuthorTypeForStr(creatorObj.getStrSafe("creatorType"));
 
-      return ((aType != null) && ((aType != editor) || ignoreEditors()));    // If the creatorType does not map onto a Hypernomicon-aware
-    });                                                                      // type (author, editor, or translator), then ignore it
+      boolean keep = (aType == null) || ((aType == editor) && ignoreEditors());
+
+      return keep == false;    // If the creatorType does not map onto a Hypernomicon-aware
+    });                        // type (author, editor, or translator), then ignore it
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean ignoreEditors()
+  boolean ignoreEditors()
   {
     switch (entryType)
     {
@@ -78,7 +80,6 @@ public class ZoteroAuthors extends BibAuthors
         return false;
     }
   }
-
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

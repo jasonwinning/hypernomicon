@@ -36,6 +36,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import com.sun.javafx.webkit.Accessor;
+
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.items.KeyWork;
 import org.hypernomicon.model.items.MainText;
@@ -51,6 +53,7 @@ import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
+import javafx.collections.ListChangeListener.Change;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -61,10 +64,12 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
 import javafx.geometry.Side;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TitledPane;
@@ -80,6 +85,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
 import javafx.scene.robot.Robot;
 import javafx.scene.web.HTMLEditor;
+import javafx.scene.web.HTMLEditorSkin.Command;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 
@@ -293,6 +299,18 @@ public class MainTextCtrlr
 
     ToolBar bar = (ToolBar) he.lookup(".top-toolbar");
 
+    MenuItem menuItem0 = new MenuItem("Paste");
+    menuItem0.setOnAction(event -> Accessor.getPageFor(getWebView().getEngine()).executeCommand(Command.PASTE.getCommand(), null));
+
+    MenuItem menuItem1 = new MenuItem("Paste plain text");
+    menuItem1.setOnAction(getPlainTextAction(false));
+
+    MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks");
+    menuItem2.setOnAction(getPlainTextAction(true));
+
+    MenuButton btnPaste = new MenuButton("", getImageViewForRelativePath("resources/images/page_paste.png"), menuItem0, menuItem1, menuItem2);
+    btnPaste.setTooltip(new Tooltip("Paste"));
+
     Button btnLink = new Button("", getImageViewForRelativePath("resources/images/world_link.png"));
     btnLink.setTooltip(new Tooltip("Insert web link"));
     btnLink.setOnAction(event -> btnLinkClick());
@@ -313,7 +331,20 @@ public class MainTextCtrlr
       runDelayedInFXThread(5, 100, cbType::requestFocus);
     });
 
-    bar.getItems().addAll(btnLink, btnClear, btnEditLayout);
+    bar.getItems().addAll(btnLink, btnClear, btnEditLayout, btnPaste);
+
+    bar.getItems().addListener((Change<? extends Node> c) ->
+    {
+      while (c.next()) c.getAddedSubList().forEach(node ->
+      {
+        if (node instanceof Button)
+        {
+          Button button = (Button)node;
+          if (convertToSingleLine(strListToStr(button.getStyleClass(), false)).contains("paste"))
+            Platform.runLater(() -> bar.getItems().remove(button));
+        }
+      });
+    });
 
     he.setFocusTraversable(false);
   }

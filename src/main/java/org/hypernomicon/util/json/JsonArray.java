@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 
 import com.google.common.collect.Lists;
 
@@ -34,7 +35,7 @@ import static org.hypernomicon.util.Util.*;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-public class JsonArray
+public class JsonArray implements Cloneable
 {
   final JSONArray jArr;
 
@@ -141,6 +142,18 @@ public class JsonArray
       nextNdx--;
       lastNdx = -1;
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public final JsonArray clone()
+  {
+    JsonArray otherArr = null;
+
+    try { otherArr = new JsonArray((JSONArray)jsonParser.parse(jArr.toJSONString())); } catch (ParseException e) { noOp(); }
+
+    return otherArr;
   }
 
 //---------------------------------------------------------------------------
