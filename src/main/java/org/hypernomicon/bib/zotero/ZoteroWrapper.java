@@ -486,9 +486,10 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         keyToTrashEntry.entrySet().removeIf(entry -> jObj.containsKey(entry.getKey()) == false);
     }
 
-    String keys = "";
     while ((downloadQueue.size() > 0) && (jsonClient.getStatusCode() == HttpStatus.SC_OK))
     {
+      String keys = "";
+
       int downloadCount = (downloadQueue.size() > 50) ? 50 : downloadQueue.size();
       for (int ndx = 0; ndx < downloadCount; ndx++)
         keys = keys + (keys.length() == 0 ? downloadQueue.get(ndx) : "," + downloadQueue.get(ndx));
