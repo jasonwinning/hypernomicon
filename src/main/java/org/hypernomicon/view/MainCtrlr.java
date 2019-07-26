@@ -1134,38 +1134,46 @@ public final class MainCtrlr
 
   public boolean saveAllToDisk(boolean saveRecord, boolean restartWatcher, boolean updateUI)
   {
-    if (db.isLoaded() == false)
-      return falseWithErrorMessage("No database is currently loaded.");
+    try
+    {
+      if (db.isLoaded() == false)
+        return falseWithErrorMessage("No database is currently loaded.");
 
-    if (saveRecord && cantSaveRecord()) return false;
+      if (saveRecord && cantSaveRecord()) return false;
 
-    db.prefs.putInt(PREF_KEY_PERSON_ID     , personHyperTab  ().getActiveID());
-    db.prefs.putInt(PREF_KEY_INSTITUTION_ID, instHyperTab    ().getActiveID());
-    db.prefs.putInt(PREF_KEY_DEBATE_ID     , debateHyperTab  ().getActiveID());
-    db.prefs.putInt(PREF_KEY_POSITION_ID   , positionHyperTab().getActiveID());
-    db.prefs.putInt(PREF_KEY_ARGUMENT_ID   , argumentHyperTab().getActiveID());
-    db.prefs.putInt(PREF_KEY_WORK_ID       , workHyperTab    ().getActiveID());
-    db.prefs.putInt(PREF_KEY_TERM_ID       , termHyperTab    ().getActiveID());
-    db.prefs.putInt(PREF_KEY_FILE_ID       , fileHyperTab    ().getActiveID());
-    db.prefs.putInt(PREF_KEY_NOTE_ID       , noteHyperTab    ().getActiveID());
+      db.prefs.putInt(PREF_KEY_PERSON_ID     , personHyperTab  ().getActiveID());
+      db.prefs.putInt(PREF_KEY_INSTITUTION_ID, instHyperTab    ().getActiveID());
+      db.prefs.putInt(PREF_KEY_DEBATE_ID     , debateHyperTab  ().getActiveID());
+      db.prefs.putInt(PREF_KEY_POSITION_ID   , positionHyperTab().getActiveID());
+      db.prefs.putInt(PREF_KEY_ARGUMENT_ID   , argumentHyperTab().getActiveID());
+      db.prefs.putInt(PREF_KEY_WORK_ID       , workHyperTab    ().getActiveID());
+      db.prefs.putInt(PREF_KEY_TERM_ID       , termHyperTab    ().getActiveID());
+      db.prefs.putInt(PREF_KEY_FILE_ID       , fileHyperTab    ().getActiveID());
+      db.prefs.putInt(PREF_KEY_NOTE_ID       , noteHyperTab    ().getActiveID());
 
-    db.prefs.put(PREF_KEY_RECORD_TYPE, db.getTypeTagStr(activeType() == hdtNone ? hdtPerson : activeType()));
+      db.prefs.put(PREF_KEY_RECORD_TYPE, db.getTypeTagStr(activeType() == hdtNone ? hdtPerson : activeType()));
 
-    boolean watcherWasRunning = folderTreeWatcher.stop();
+      boolean watcherWasRunning = folderTreeWatcher.stop();
 
-    if (db.bibLibraryIsLinked())
-      bibManagerDlg.saveToDisk();
+      if (db.bibLibraryIsLinked())
+        bibManagerDlg.saveToDisk();
 
-    db.saveAllToDisk(favorites);
+      db.saveAllToDisk(favorites);
 
-    if (restartWatcher && watcherWasRunning)
-      folderTreeWatcher.createNewWatcherAndStart();
+      if (restartWatcher && watcherWasRunning)
+        folderTreeWatcher.createNewWatcherAndStart();
 
-    if (updateUI) update();
+      if (updateUI) update();
 
-    lblStatus.setText("Database last saved to XML files: " + timeToUserReadableStr(LocalDateTime.now()));
+      lblStatus.setText("Database last saved to XML files: " + timeToUserReadableStr(LocalDateTime.now()));
 
-    return true;
+      return true;
+    }
+    catch (Throwable e)
+    {
+      showStackTrace(e);
+      return false;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -2811,10 +2819,15 @@ public final class MainCtrlr
 
   public void newWorkAndWorkFile(HDT_Person person, FilePath filePathToUse)
   {
-    if (filePathToUse.equals(lastImportFilePath) && ((Instant.now().toEpochMilli() - lastImportTime) < 10000))
-      return;
+    if (filePathToUse != null)
+    {
+      if (filePathToUse.equals(lastImportFilePath) && ((Instant.now().toEpochMilli() - lastImportTime) < 10000))
+        return;
 
-    if ((filePathToUse.exists() == false) || cantSaveRecord()) return;
+      if (filePathToUse.exists() == false) return;
+    }
+
+    if (cantSaveRecord()) return;
 
     HDT_Work work = db.createNewBlankRecord(hdtWork);
 

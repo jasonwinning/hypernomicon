@@ -70,7 +70,7 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 public class OptionsDlgCtrlr extends HyperDlg
 {
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
-  @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize;
+  @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize, btnComputer, btnDatabase;
   @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced;
   @FXML private CheckBox chkAddInitial, chkAutoOpenPDF, chkAutoRetrieveBib, chkInternet, chkLowercase,
                          chkPosix, chkTreatEdAsAuthor, chkYearLetter, chkUseSentenceCase, chkLinuxWorkaround;
@@ -78,8 +78,8 @@ public class OptionsDlgCtrlr extends HyperDlg
   @FXML private Label lblCurrentlyLinked, lblExample, lblRedirect, lblStep2, lblStep2Instructions,
                       lblStep3, lblStep3Instructions, lblStep4, lblStep4Instructions;
   @FXML private Slider sliderFontSize;
-  @FXML private Tab tabLinkToExtBibMgr, tabDBSpecific, tabNaming, tabUnlinkFromExtBibMgr;
-  @FXML private TabPane tabPane;
+  @FXML private Tab tabLinkToExtBibMgr, tabDBSpecific, tabNaming, tabUnlinkFromExtBibMgr, tabWebButtons;
+  @FXML private TabPane tpMain, tpComputerSpecific, tpDBSpecific;
   @FXML private TextField tfExample, tfImageEditor, tfMaxChar, tfPDFReader, tfVerificationCode, tfTest1, tfTest2, tfTest3, tfTest4, tfTest5,
                           tfSepAfter1, tfSepAfter2, tfSepAfter3, tfSepAfter4, tfSepAfter5,
                           tfSepBefore1, tfSepBefore2, tfSepBefore3, tfSepBefore4, tfSepBefore5,
@@ -128,6 +128,20 @@ public class OptionsDlgCtrlr extends HyperDlg
     btnMendeleyAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltMendeley));
     lblRedirect.setOnMouseClicked(event -> openWebLink(authUrl.get()));
 
+    if (app.debugging() == false)
+      tpComputerSpecific.getTabs().remove(tabWebButtons);
+
+    btnComputer.selectedProperty().addListener((ob, ov, nv) ->
+    {
+      tpMain.getSelectionModel().select(nv.booleanValue() ? 0 : 1);
+    });
+
+    btnComputer.getToggleGroup().selectedToggleProperty().addListener((ob, oldVal, newVal) ->
+    {
+      if (newVal == null)
+        oldVal.setSelected(true);
+    });
+
     btnVerify.setOnAction(event ->
     {
       if (tfVerificationCode.textProperty().isEmpty().get())
@@ -155,10 +169,10 @@ public class OptionsDlgCtrlr extends HyperDlg
 
     btnVerify.disableProperty().bind(tfVerificationCode.textProperty().isEmpty());
 
-    tabPane.getTabs().remove(tabUnlinkFromExtBibMgr);
+    tpDBSpecific.getTabs().remove(tabUnlinkFromExtBibMgr);
 
     if (db.isLoaded() == false)
-      tabPane.getTabs().remove(tabLinkToExtBibMgr);
+      tpComputerSpecific.getTabs().remove(tabLinkToExtBibMgr);
     else if (db.bibLibraryIsLinked())
     {
       setUnlinkMessage();

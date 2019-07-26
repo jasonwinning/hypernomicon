@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.json.simple.parser.ParseException;
 
@@ -43,6 +44,7 @@ import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
+import org.hypernomicon.view.dialogs.LockedDlgCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr;
 
@@ -366,32 +368,42 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void saveToDisk(FilePath filePath)
+  void saveToDisk(FilePath filePath)
   {
-    JsonObj jMainObj = new JsonObj();
-
-    JsonArray jArr = new JsonArray();
-
-    for (BibEntry_T entry : getNonTrashEntries())
-      entry.saveToDisk(jArr);
-
-    jMainObj.put(entryFileNode(), jArr);
-
-    jArr = new JsonArray();
-
-    for (BibEntry_T entry : keyToTrashEntry.values())
-      entry.saveToDisk(jArr);
-
-    jMainObj.put("trash", jArr);
-
-    jArr = new JsonArray();
-
-    for (BibCollection_T coll : keyToColl.values())
-      coll.saveToDisk(jArr);
-
-    jMainObj.put(collectionFileNode(), jArr);
-
-    StringBuilder json = new StringBuilder(jMainObj.toString());
+    StringBuilder json = null;
+    
+    try
+    {
+      JsonObj jMainObj = new JsonObj();
+      
+      JsonArray jArr = new JsonArray();
+      
+      for (BibEntry_T entry : getNonTrashEntries())
+        entry.saveToDisk(jArr);
+  
+      jMainObj.put(entryFileNode(), jArr);
+  
+      jArr = new JsonArray();
+  
+      for (BibEntry_T entry : keyToTrashEntry.values())
+        entry.saveToDisk(jArr);
+  
+      jMainObj.put("trash", jArr);
+  
+      jArr = new JsonArray();
+  
+      for (BibCollection_T coll : keyToColl.values())
+        coll.saveToDisk(jArr);
+  
+      jMainObj.put(collectionFileNode(), jArr);
+  
+      json = new StringBuilder(jMainObj.toString());
+    }
+    catch (Throwable e)
+    {
+      showStackTrace(e);
+      return;
+    }
 
     try
     {
