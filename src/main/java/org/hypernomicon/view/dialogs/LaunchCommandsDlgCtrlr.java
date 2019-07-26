@@ -144,7 +144,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
     onShown = () -> disableCache(taCommands);
 
-    btnBrowse.setOnAction(event -> OptionsDlgCtrlr.browseClick(dialogStage, tfPath));
+    btnBrowse.setOnAction(event -> SettingsDlgCtrlr.browseClick(dialogStage, tfPath));
 
     taCommands.setText(appPrefs.get(commandsPrefKey, ""));
     tfPath.setText(appPrefs.get(appPrefKey, ""));

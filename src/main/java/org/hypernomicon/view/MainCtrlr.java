@@ -175,7 +175,7 @@ public final class MainCtrlr
   @FXML private void mnuExitNoSaveClick()     { if (confirmDialog("Abandon changes and quit?")) shutDown(false, true, false); }
   @FXML private void mnuAboutClick()          { AboutDlgCtrlr.create().showModal(); }
   @FXML private void mnuChangeFavOrderClick() { FavOrderDlgCtrlr.create().showModal(); }
-  @FXML private void mnuSettingsClick()       { if (!cantSaveRecord()) OptionsDlgCtrlr.create().showModal(); }
+  @FXML private void mnuSettingsClick()       { if (!cantSaveRecord()) SettingsDlgCtrlr.create().showModal(); }
   @FXML private void mnuFindMentionsClick()   { if (!cantSaveRecord()) searchForMentions(activeRecord(), false); }
 
   public PersonTabCtrlr personHyperTab  () { return getHyperTab(personTabEnum  ); }

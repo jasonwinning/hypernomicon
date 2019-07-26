@@ -35,7 +35,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane maxHeight="416.0" minHeight="356.0" minWidth="1026.0" prefHeight="416.0" prefWidth="1026.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.OptionsDlgCtrlr">
+<AnchorPane maxHeight="416.0" minHeight="356.0" minWidth="1026.0" prefHeight="416.0" prefWidth="1026.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.SettingsDlgCtrlr">
    <children>
       <TabPane fx:id="tpMain" layoutY="32.0" prefHeight="384.0" prefWidth="1026.0" styleClass="wizard" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="32.0">
         <tabs>

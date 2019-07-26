@@ -67,7 +67,7 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 //---------------------------------------------------------------------------
 
-public class OptionsDlgCtrlr extends HyperDlg
+public class SettingsDlgCtrlr extends HyperDlg
 {
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
   @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize, btnComputer, btnDatabase;
@@ -112,9 +112,9 @@ public class OptionsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static OptionsDlgCtrlr create()
+  public static SettingsDlgCtrlr create()
   {
-    OptionsDlgCtrlr odc = HyperDlg.create("OptionsDlg.fxml", appTitle + " Settings", true);
+    SettingsDlgCtrlr odc = HyperDlg.create("SettingsDlg.fxml", appTitle + " Settings", true);
     odc.init();
     return odc;
   }
