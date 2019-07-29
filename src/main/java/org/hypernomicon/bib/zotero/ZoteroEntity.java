@@ -35,10 +35,12 @@ public interface ZoteroEntity extends BibEntity
   {
     JsonObj subObj = jObj.getObj("data");
 
-    if (subObj.getStrSafe("itemType").equals("attachment") == false)
-      return new ZoteroItem(zWrapper, jObj, false);
-
-    if (subObj.containsKey("parentCollection"))
+    if (subObj.containsKey("itemType"))
+    {
+      if (subObj.getStrSafe("itemType").equals("attachment") == false)
+        return new ZoteroItem(zWrapper, jObj, false);
+    }
+    else if (subObj.containsKey("parentCollection"))
       return new ZoteroCollection(jObj);
 
     return null;
