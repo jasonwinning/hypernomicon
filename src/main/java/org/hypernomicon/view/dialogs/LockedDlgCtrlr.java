@@ -27,7 +27,6 @@ import javafx.scene.control.TextArea;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hypernomicon.InterComputerMsg;
 import org.hypernomicon.model.HyperDB.HDB_MessageType;
-import org.hypernomicon.util.Util;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.HDB_MessageType.*;
@@ -228,15 +227,15 @@ public class LockedDlgCtrlr extends HyperDlg
   private void init(Throwable e)
   {
     String stacktrace = ExceptionUtils.getStackTrace(e);
-    
+
     taOutput.setText(stacktrace);
-    
+
     btnTryTerminate.setText("Copy to Clipboard");
     btnTryTerminate.setOnAction(event -> copyToClipboard(stacktrace));
-    
+
     setAllVisible(false, btnTryComm, btnOverride, btnStop, lblSeconds);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

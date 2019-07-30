@@ -57,6 +57,7 @@ import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource;
+import org.hypernomicon.view.settings.SettingsDlgCtrlr;
 import org.hypernomicon.view.tabs.*;
 import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 import org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr;

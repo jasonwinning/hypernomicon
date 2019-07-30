@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.view.dialogs;
+package org.hypernomicon.view.settings;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +40,10 @@ import org.hypernomicon.bib.zotero.ZoteroOAuthApi;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
 import org.hypernomicon.util.CryptoUtil;
+import org.hypernomicon.view.dialogs.HyperDlg;
+import org.hypernomicon.view.dialogs.LaunchCommandsDlgCtrlr;
+import org.hypernomicon.view.dialogs.SyncBibDlgCtrlr;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -57,6 +61,8 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
 import static org.hypernomicon.App.*;
@@ -99,7 +105,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void browseClick(Window owner, TextField tf)
+  public static void browseClick(Window owner, TextField tf)
   {
     FileChooser fileChooser = new FileChooser();
 
@@ -114,7 +120,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
   public static SettingsDlgCtrlr create()
   {
-    SettingsDlgCtrlr odc = HyperDlg.create("SettingsDlg.fxml", appTitle + " Settings", true);
+    SettingsDlgCtrlr odc = HyperDlg.createUsingFullPath("view/settings/SettingsDlg.fxml", appTitle + " Settings", true, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
     odc.init();
     return odc;
   }
