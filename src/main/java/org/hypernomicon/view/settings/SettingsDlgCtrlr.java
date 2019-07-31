@@ -41,8 +41,6 @@ import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
 import org.hypernomicon.util.CryptoUtil;
 import org.hypernomicon.view.dialogs.HyperDlg;
-import org.hypernomicon.view.dialogs.LaunchCommandsDlgCtrlr;
-import org.hypernomicon.view.dialogs.SyncBibDlgCtrlr;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;

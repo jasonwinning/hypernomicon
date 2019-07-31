@@ -32,6 +32,7 @@ import org.hypernomicon.util.DesktopApi;
 import org.hypernomicon.util.FileDownloadUtility;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.settings.LaunchCommandsDlgCtrlr;
 import org.hypernomicon.view.tabs.PersonTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 

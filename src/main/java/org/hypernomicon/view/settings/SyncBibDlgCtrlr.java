@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.view.dialogs;
+package org.hypernomicon.view.settings;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.Util.*;
@@ -23,9 +23,13 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
 import org.hypernomicon.model.Exceptions.HyperDataException;
+import org.hypernomicon.view.dialogs.HyperDlg;
+
 import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
 import javafx.scene.control.ProgressBar;
+import javafx.stage.Modality;
+import javafx.stage.StageStyle;
 
 public class SyncBibDlgCtrlr extends HyperDlg
 {
@@ -40,7 +44,7 @@ public class SyncBibDlgCtrlr extends HyperDlg
 
   public static SyncBibDlgCtrlr create()
   {
-    return HyperDlg.create("SyncBibDlg.fxml", "Link to External Bibliography Manager", true);
+    return HyperDlg.createUsingFullPath("view/settings/SyncBibDlg.fxml", "Link to External Bibliography Manager", true, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
   }
 
 //---------------------------------------------------------------------------

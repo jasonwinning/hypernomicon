@@ -24,8 +24,8 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.WindowStack;
+import org.hypernomicon.view.settings.LaunchCommandsDlgCtrlr;
 import org.hypernomicon.view.dialogs.InternetCheckDlgCtrlr;
-import org.hypernomicon.view.dialogs.LaunchCommandsDlgCtrlr;
 import org.hypernomicon.view.dialogs.LockedDlgCtrlr;
 
 import static org.hypernomicon.App.*;
@@ -709,7 +709,7 @@ public final class Util
   {
     LockedDlgCtrlr.create("Error", e).showModal();
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

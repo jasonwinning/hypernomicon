@@ -15,18 +15,19 @@
  *
  */
 
-package org.hypernomicon.view.dialogs;
+package org.hypernomicon.view.settings;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.util.DesktopApi;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.dialogs.HyperDlg;
 import org.hypernomicon.view.settings.SettingsDlgCtrlr;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
-import static org.hypernomicon.view.dialogs.LaunchCommandsDlgCtrlr.LaunchCommandTypeEnum.*;
+import static org.hypernomicon.view.settings.LaunchCommandsDlgCtrlr.LaunchCommandTypeEnum.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,6 +42,8 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.stage.Modality;
+import javafx.stage.StageStyle;
 import javafx.util.StringConverter;
 
 public class LaunchCommandsDlgCtrlr extends HyperDlg
@@ -129,7 +132,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
   public static LaunchCommandsDlgCtrlr create(String title, String appPrefKey, String commandsPrefKey, String commandTypePrefKey)
   {
-    LaunchCommandsDlgCtrlr lcdc = HyperDlg.create("LaunchCommandsDlg.fxml", title, true);
+    LaunchCommandsDlgCtrlr lcdc = HyperDlg.createUsingFullPath("view/settings/LaunchCommandsDlg.fxml", title, true, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
     lcdc.init(appPrefKey, commandsPrefKey, commandTypePrefKey);
     return lcdc;
   }
