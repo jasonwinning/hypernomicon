@@ -32,7 +32,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="775.0" prefWidth="1103.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.NodeTabCtrlr">
+<AnchorPane prefHeight="775.0" prefWidth="1103.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.NodeTabCtrlr">
    <children>
       <SplitPane fx:id="spMain" dividerPositions="0.2910737386804657, 0.7089262613195343" layoutX="472.0" layoutY="270.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
@@ -108,8 +108,8 @@
                         </Label>
                         <GridPane fx:id="gpToolBar" GridPane.columnIndex="1" GridPane.rowIndex="2">
                           <columnConstraints>
-                            <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
-                            <ColumnConstraints halignment="RIGHT" hgrow="NEVER" maxWidth="341.0" minWidth="296.0" prefWidth="341.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" />
+                            <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" />
                           </columnConstraints>
                           <rowConstraints>
                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -151,24 +151,24 @@
                                     </Label>
                                 </items>
                               </ToolBar>
-                              <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="40.0" prefWidth="200.0" style="-fx-background-color: transparent;" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
+                              <ToolBar maxWidth="1.7976931348623157E308" nodeOrientation="RIGHT_TO_LEFT" prefHeight="40.0" style="-fx-background-color: transparent;" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.hgrow="ALWAYS">
                                 <items>
-                                    <Button fx:id="btnWikipedia" mnemonicParsing="false" style="-fx-label-padding: 0 10 0 10;" text="Wikipedia">
+                                    <Button fx:id="btnWebSrch4" mnemonicParsing="false" style="-fx-label-padding: 0 10 0 10;" text="Wikipedia">
                                        <opaqueInsets>
                                           <Insets />
                                        </opaqueInsets>
                                     </Button>
-                                    <Button fx:id="btnIEP" mnemonicParsing="false" style="-fx-label-padding: 0 10 0 10;" text="IEP">
+                                    <Button fx:id="btnWebSrch3" mnemonicParsing="false" style="-fx-label-padding: 0 10 0 10;" text="IEP">
                                        <opaqueInsets>
                                           <Insets />
                                        </opaqueInsets>
                                     </Button>
-                                    <Button fx:id="btnSEP" mnemonicParsing="false" style="-fx-label-padding: 0 10 0 10;" text="SEP">
+                                    <Button fx:id="btnWebSrch2" mnemonicParsing="false" style="-fx-label-padding: 0 10 0 10;" text="SEP">
                                        <opaqueInsets>
                                           <Insets />
                                        </opaqueInsets>
                                     </Button>
-                                    <Button fx:id="btnGoogle" mnemonicParsing="false" style="-fx-label-padding: 0 10 0 10;" text="Google">
+                                    <Button fx:id="btnWebSrch1" mnemonicParsing="false" style="-fx-label-padding: 0 10 0 10;" text="Google">
                                        <opaqueInsets>
                                           <Insets />
                                        </opaqueInsets>

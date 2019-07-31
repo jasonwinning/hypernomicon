@@ -85,6 +85,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public TextViewInfo getMainTextInfo() { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
   @Override public void setDividerPositions()     { return; }
   @Override public void getDividerPositions()     { return; }
+  @Override public void updateWebButtons()        { return; }
 
   public TreeWrapper getTree() { return tree; }
 

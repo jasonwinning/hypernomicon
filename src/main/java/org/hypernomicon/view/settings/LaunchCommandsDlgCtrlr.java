@@ -42,8 +42,6 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.stage.Modality;
-import javafx.stage.StageStyle;
 import javafx.util.StringConverter;
 
 public class LaunchCommandsDlgCtrlr extends HyperDlg
@@ -132,7 +130,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
   public static LaunchCommandsDlgCtrlr create(String title, String appPrefKey, String commandsPrefKey, String commandTypePrefKey)
   {
-    LaunchCommandsDlgCtrlr lcdc = HyperDlg.createUsingFullPath("view/settings/LaunchCommandsDlg.fxml", title, true, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
+    LaunchCommandsDlgCtrlr lcdc = HyperDlg.createUsingFullPath("view/settings/LaunchCommandsDlg.fxml", title, true);
     lcdc.init(appPrefKey, commandsPrefKey, commandTypePrefKey);
     return lcdc;
   }

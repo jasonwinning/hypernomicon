@@ -19,6 +19,7 @@ package org.hypernomicon.view.tabs;
 
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
+import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.view.dialogs.NewRegionDlgCtrlr;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.SubjectPopulator;
@@ -45,6 +46,7 @@ import java.util.List;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -62,6 +64,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   @FXML private ComboBox<HyperTableCell> cbType, cbParentInst, cbRegion, cbCountry;
   @FXML private TableView<HyperTableRow> tvSubInstitutions, tvPersons;
   @FXML private SplitPane spHoriz;
+  @FXML private Hyperlink hlMaps;
 
   @Override public String getRecordName()              { return tfName.getText(); }
   @Override HDT_RecordType getType()                   { return hdtInstitution; }
@@ -178,8 +181,12 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     {
       String link = row.getText(colNdx);
 
-      if (link.length() == 0)
-        searchGoogle(tfName.getText() + " " + row.getText(0), true);
+      if (link.isBlank())
+      {
+        ui.webButtonMap.get(PREF_KEY_INST_SRCH).first(WebButtonField.Name, tfName.getText())
+                                               .next (WebButtonField.DivisionName, row.getText(0))
+                                               .go();
+      }
       else
         openWebLink(row.getText(colNdx));
     });
@@ -243,7 +250,13 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     btnParent.setOnAction(event -> ui.goToRecord(getRecord(hcbParentInst.selectedHTC()), true));
 
-    btnURL.setOnAction(event -> openWebLink(tfURL.getText()));
+    btnURL.setOnAction(event ->
+    {
+      if (tfURL.getText().isBlank() == false)
+        openWebLink(tfURL.getText());
+      else
+        ui.webButtonMap.get(PREF_KEY_INST_SRCH).first(WebButtonField.Name, tfName.getText()).go();
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -251,11 +264,11 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
   @FXML private void linkClick()
   {
-    String link = "https://maps.google.com/maps?q=" + tfName.getText() + ",+" +
-                  tfCity.getText() + ",+" + hcbRegion.getText() + ",+" +
-                  hcbCountry.getText() + "&hl=en";
-
-    openWebLink(link.replace(' ', '+'));
+    ui.webButtonMap.get(PREF_KEY_INST_MAP_SRCH).first(WebButtonField.Name, tfName.getText())
+                                               .next (WebButtonField.City, tfCity.getText())
+                                               .next (WebButtonField.Region, hcbRegion.getText())
+                                               .next (WebButtonField.Country, hcbCountry.getText())
+                                               .go();
   }
 
 //---------------------------------------------------------------------------
@@ -367,6 +380,14 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   private boolean hasSubInstWithDifferentLocation(HDT_Institution instToCheck, HDT_Institution baseInst)
   {
     return instToCheck.subInstitutions.stream().anyMatch(subInst -> differentLocation(subInst, baseInst));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void updateWebButtons()
+  {
+    hlMaps.setText(ui.webButtonMap.get(PREF_KEY_INST_MAP_SRCH).getCaption());
   }
 
 //---------------------------------------------------------------------------

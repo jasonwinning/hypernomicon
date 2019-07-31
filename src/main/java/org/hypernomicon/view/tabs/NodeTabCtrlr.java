@@ -18,6 +18,7 @@
 package org.hypernomicon.view.tabs;
 
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.dialogs.SelectConceptDlgCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
@@ -56,7 +57,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
   @FXML SplitPane spChildren, spMain;
   @FXML TableView<HyperTableRow> tvLeftChildren, tvParents, tvRightChildren;
   @FXML ToolBar tbLinks;
-  @FXML private Button btnGoogle, btnIEP, btnSEP, btnTree, btnWikipedia;
+  @FXML private Button btnWebSrch1, btnWebSrch2, btnWebSrch3, btnWebSrch4, btnTree;
   @FXML private Label lblGoTo1, lblGoTo2, lblGoTo3, lblMergeTerms;
   @FXML private TextField tfName, tfSearchKey;
 
@@ -122,16 +123,16 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
         labelLink = null;
     }
 
-    btnGoogle   .setOnAction(event -> searchGoogle(tfName.getText(), true));
-    btnIEP      .setOnAction(event -> searchIEP(tfName.getText()));
-    btnSEP      .setOnAction(event -> searchSEP(tfName.getText()));
-    btnWikipedia.setOnAction(event -> searchWikipedia(tfName.getText()));
-    btnTree     .setOnAction(event -> ui.goToTreeRecord(ui.viewRecord()));
+    btnWebSrch1.setOnAction(event -> ui.webButtonMap.get(PREF_KEY_GEN_SRCH_1).first(WebButtonField.Name, tfName.getText()).go());
+    btnWebSrch2.setOnAction(event -> ui.webButtonMap.get(PREF_KEY_GEN_SRCH_2).first(WebButtonField.Name, tfName.getText()).go());
+    btnWebSrch3.setOnAction(event -> ui.webButtonMap.get(PREF_KEY_GEN_SRCH_3).first(WebButtonField.Name, tfName.getText()).go());
+    btnWebSrch4.setOnAction(event -> ui.webButtonMap.get(PREF_KEY_GEN_SRCH_4).first(WebButtonField.Name, tfName.getText()).go());
+    btnTree    .setOnAction(event -> ui.goToTreeRecord(ui.viewRecord()));
 
-    btnGoogle   .setTooltip(new Tooltip("Search record name in Google"));
-    btnIEP      .setTooltip(new Tooltip("Search record name in Internet Encyclopedia of Philosophy"));
-    btnSEP      .setTooltip(new Tooltip("Search record name in Stanford Encyclopedia of Philosophy"));
-    btnWikipedia.setTooltip(new Tooltip("Search record name in Wikipedia"));
+    btnWebSrch1.setTooltip(new Tooltip("Search record name in Google"));
+    btnWebSrch3.setTooltip(new Tooltip("Search record name in Internet Encyclopedia of Philosophy"));
+    btnWebSrch2.setTooltip(new Tooltip("Search record name in Stanford Encyclopedia of Philosophy"));
+    btnWebSrch4.setTooltip(new Tooltip("Search record name in Wikipedia"));
 
     double fontSize = appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
     if (fontSize < 0) fontSize = lblGoTo1.getFont().getSize();
@@ -449,6 +450,22 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
     record.viewNow();
 
     safeFocus(tfName);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void updateWebButtons()
+  {
+    btnWebSrch1.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH_1).getCaption());
+    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH_2).getCaption());
+    btnWebSrch3.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH_3).getCaption());
+    btnWebSrch4.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH_4).getCaption());
+
+    btnWebSrch1.setTooltip(new Tooltip("Search record name using " + btnWebSrch1.getText()));
+    btnWebSrch2.setTooltip(new Tooltip("Search record name using " + btnWebSrch2.getText()));
+    btnWebSrch3.setTooltip(new Tooltip("Search record name using " + btnWebSrch3.getText()));
+    btnWebSrch4.setTooltip(new Tooltip("Search record name using " + btnWebSrch4.getText()));
   }
 
 //---------------------------------------------------------------------------

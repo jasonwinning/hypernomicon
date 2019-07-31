@@ -60,8 +60,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.RowConstraints;
-import javafx.stage.Modality;
-import javafx.stage.StageStyle;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -98,7 +96,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
   public static MergeWorksDlgCtrlr create(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
                                           boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked, FilePath filePath) throws IOException
   {
-    MergeWorksDlgCtrlr mwd = HyperDlg.createUsingFullPath("view/workMerge/MergeWorksDlg.fxml", title, true, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
+    MergeWorksDlgCtrlr mwd = HyperDlg.createUsingFullPath("view/workMerge/MergeWorksDlg.fxml", title, true);
     mwd.init(bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChecked, filePath);
     return mwd;
   }
@@ -109,7 +107,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
   public static MergeWorksDlgCtrlr create(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
                                           boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked) throws IOException
   {
-    MergeWorksDlgCtrlr mwd = HyperDlg.createUsingFullPath("view/workMerge/MergeWorksDlg.fxml", title, true, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
+    MergeWorksDlgCtrlr mwd = HyperDlg.createUsingFullPath("view/workMerge/MergeWorksDlg.fxml", title, true);
     mwd.init(bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChecked, null);
     return mwd;
   }

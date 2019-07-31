@@ -43,7 +43,7 @@
   <columnConstraints>
     <ColumnConstraints hgrow="NEVER" maxWidth="53.0" minWidth="53.0" prefWidth="53.0" />
       <ColumnConstraints hgrow="SOMETIMES" />
-      <ColumnConstraints hgrow="SOMETIMES" percentWidth="40.0" />
+      <ColumnConstraints hgrow="SOMETIMES" percentWidth="42.0" />
   </columnConstraints>
   <rowConstraints>
     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
@@ -82,9 +82,9 @@
                <cursor>
                   <Cursor fx:constant="HAND" />
                </cursor></Label>
-            <TextField fx:id="tfSearchKey" layoutX="66.0" layoutY="3.0" prefHeight="22.0" prefWidth="331.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="148.0" AnchorPane.topAnchor="5.0" />
-            <Button fx:id="btnWorldCat" maxWidth="90.0" minWidth="61.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="75.0" text="WorldCat" AnchorPane.rightAnchor="68.0" AnchorPane.topAnchor="5.0" />
-            <Button fx:id="btnScholar" maxWidth="66.0" minWidth="64.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="64.0" text="Scholar" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+            <TextField fx:id="tfSearchKey" layoutX="66.0" layoutY="3.0" prefHeight="22.0" prefWidth="236.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="178.0" AnchorPane.topAnchor="5.0" />
+            <Button fx:id="btnWebSrch1" layoutX="304.0" layoutY="5.0" maxWidth="90.0" minWidth="61.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="86.0" text="WorldCat" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="5.0" />
+            <Button fx:id="btnWebSrch2" maxWidth="86.0" minWidth="86.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="86.0" text="PhilPapers" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
          </children>
       </AnchorPane>
       <AnchorPane fx:id="apLowerMid" GridPane.columnIndex="1" GridPane.rowIndex="1">

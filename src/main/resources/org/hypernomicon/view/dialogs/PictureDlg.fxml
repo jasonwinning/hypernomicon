@@ -126,7 +126,7 @@
             </AnchorPane>
             <AnchorPane GridPane.columnIndex="4" GridPane.rowIndex="3">
                <children>
-                  <Button fx:id="btnGoogle" layoutX="8.0" layoutY="1.0" mnemonicParsing="false" prefHeight="22.0" text="Google" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  <Button fx:id="btnWebSrch" layoutX="8.0" layoutY="1.0" mnemonicParsing="false" prefHeight="22.0" text="Google" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                </children>
             </AnchorPane>
             <Label fx:id="lblChangeName" text="Change file name:" underline="true" GridPane.rowIndex="4">

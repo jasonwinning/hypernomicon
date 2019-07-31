@@ -83,6 +83,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public abstract void getDividerPositions();
   public abstract void setRecord(HDT_CT record);
   public abstract void findWithinDesc(String text);
+  public abstract void updateWebButtons();
 
   public TextViewInfo getMainTextInfo()       { return new TextViewInfo(); }
   public MainTextWrapper getMainTextWrapper() { return null; }
@@ -273,6 +274,14 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
     enumToHyperTab.values().forEach(HyperTab::clearTabAndView);
     previewWindow.clearAll();
     fileManagerDlg.clearHistory();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void updateAllWebButtons()
+  {
+    enumToHyperTab.values().forEach(HyperTab::updateWebButtons);
   }
 
 //---------------------------------------------------------------------------

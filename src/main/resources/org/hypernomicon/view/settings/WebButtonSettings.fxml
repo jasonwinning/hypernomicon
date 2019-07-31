@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Copyright 2015-2019 Jason Winning
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="319.0" prefWidth="856.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.settings.WebButtonSettingsCtrlr">
+  <children>
+    <GridPane layoutX="14.0" layoutY="14.0" prefHeight="230.0" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="2.0">
+      <columnConstraints>
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" percentWidth="16.0" />
+          <ColumnConstraints fillWidth="false" hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" percentWidth="9.0" />
+        <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" percentWidth="18.0" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" percentWidth="9.0" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" percentWidth="12.0" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" percentWidth="9.0" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" percentWidth="18.0" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" percentWidth="9.0" />
+      </columnConstraints>
+      <rowConstraints>
+          <RowConstraints maxHeight="20.0" minHeight="20.0" prefHeight="20.0" vgrow="SOMETIMES" />
+        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      </rowConstraints>
+       <children>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+             <children>
+                <Label layoutX="14.0" layoutY="8.0" text="Person search 1" AnchorPane.rightAnchor="6.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+             <children>
+                <ComboBox fx:id="cbPersonSrch1" layoutX="39.0" layoutY="2.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
+             <children>
+                <Button fx:id="btnPersonSrch1Advanced" layoutY="2.0" mnemonicParsing="false" text="Advanced" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+             <children>
+                <Label layoutX="14.0" layoutY="8.0" text="Person search 2" AnchorPane.rightAnchor="6.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+             <children>
+                <ComboBox fx:id="cbPersonSrch2" layoutX="23.0" layoutY="2.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
+             <children>
+                <Button fx:id="btnPersonSrch2Advanced" layoutY="3.0" mnemonicParsing="false" text="Advanced" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
+             <children>
+                <Label layoutX="14.0" layoutY="7.0" text="Person image search" AnchorPane.rightAnchor="6.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
+             <children>
+                <ComboBox fx:id="cbPersonImgSrch" layoutX="14.0" layoutY="4.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="3">
+             <children>
+                <Button fx:id="btnPersonImgSrchAdvanced" layoutY="3.0" mnemonicParsing="false" text="Advanced" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
+             <children>
+                <Label layoutX="22.0" layoutY="8.0" text="Institution search" AnchorPane.rightAnchor="6.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="4">
+             <children>
+                <ComboBox fx:id="cbInstSrch" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="4">
+             <children>
+                <Button fx:id="btnInstSrchAdvanced" mnemonicParsing="false" text="Advanced" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5">
+             <children>
+                <Label layoutX="20.0" layoutY="8.0" text="Institution map search" AnchorPane.rightAnchor="6.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="5">
+             <children>
+                <ComboBox fx:id="cbInstMapSrch" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="5">
+             <children>
+                <Button fx:id="btnInstMapSrchAdvanced" mnemonicParsing="false" text="Advanced" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="1">
+             <children>
+                <Label layoutX="26.0" layoutY="6.0" text="Work search 1" AnchorPane.rightAnchor="6.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="6" GridPane.rowIndex="1">
+             <children>
+                <ComboBox fx:id="cbWorkSrch1" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="7" GridPane.rowIndex="1">
+             <children>
+                <Button fx:id="btnWorkSrch1Advanced" mnemonicParsing="false" text="Advanced" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="2">
+             <children>
+                <Label layoutX="14.0" layoutY="8.0" text="Work search 2" AnchorPane.rightAnchor="6.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="6" GridPane.rowIndex="2">
+             <children>
+                <ComboBox fx:id="cbWorkSrch2" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="7" GridPane.rowIndex="2">
+             <children>
+                <Button fx:id="btnWorkSrch2Advanced" mnemonicParsing="false" text="Advanced" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="3">
+             <children>
+                <Label layoutX="14.0" layoutY="6.0" text="General search 1" AnchorPane.rightAnchor="6.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="6" GridPane.rowIndex="3">
+             <children>
+                <ComboBox fx:id="cbGenSrch1" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="7" GridPane.rowIndex="3">
+             <children>
+                <Button fx:id="btnGenSrch1Advanced" mnemonicParsing="false" text="Advanced" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="4">
+             <children>
+                <Label layoutX="6.0" layoutY="6.0" text="General search 2" AnchorPane.rightAnchor="6.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="6" GridPane.rowIndex="6">
+             <children>
+                <ComboBox fx:id="cbGenSrch4" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="6" GridPane.rowIndex="5">
+             <children>
+                <ComboBox fx:id="cbGenSrch3" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="7" GridPane.rowIndex="5">
+             <children>
+                <Button fx:id="btnGenSrch3Advanced" mnemonicParsing="false" text="Advanced" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="6">
+             <children>
+                <Label layoutX="14.0" layoutY="6.0" text="General search 4" AnchorPane.rightAnchor="6.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="5">
+             <children>
+                <Label layoutY="7.0" text="General search 3" AnchorPane.rightAnchor="6.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="7" GridPane.rowIndex="6">
+             <children>
+                <Button fx:id="btnGenSrch4Advanced" mnemonicParsing="false" text="Advanced" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="6">
+             <children>
+                <Label layoutX="14.0" layoutY="6.0" text="DOI search" AnchorPane.rightAnchor="6.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="6">
+             <children>
+                <ComboBox fx:id="cbDOISrch" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="6">
+             <children>
+                <Button fx:id="btnDOISrchAdvanced" mnemonicParsing="false" text="Advanced" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="6" GridPane.rowIndex="4">
+             <children>
+                <ComboBox fx:id="cbGenSrch2" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="7" GridPane.rowIndex="4">
+             <children>
+                <Button fx:id="btnGenSrch2Advanced" mnemonicParsing="false" text="Advanced" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+             <children>
+                <TextField fx:id="tfPersonSrch1" layoutY="2.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+             <children>
+                <TextField fx:id="tfPersonSrch2" layoutX="-8.0" layoutY="4.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+             <children>
+                <TextField fx:id="tfPersonImgSrch" layoutX="-8.0" layoutY="2.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+               <children>
+                  <TextField fx:id="tfInstMapSrch" layoutY="4.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+               </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
+               <children>
+                  <TextField fx:id="tfDOISrch" layoutX="-53.0" layoutY="2.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+               </children></AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="1">
+             <children>
+                <TextField fx:id="tfWorkSrch1" layoutX="-8.0" layoutY="2.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="2">
+             <children>
+                <TextField fx:id="tfWorkSrch2" layoutX="-8.0" layoutY="4.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="3">
+             <children>
+                <TextField fx:id="tfGenSrch1" layoutX="-8.0" layoutY="4.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="4">
+             <children>
+                <TextField fx:id="tfGenSrch2" layoutX="-8.0" layoutY="4.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="5">
+             <children>
+                <TextField fx:id="tfGenSrch3" layoutX="-8.0" layoutY="4.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="6">
+             <children>
+                <TextField fx:id="tfGenSrch4" layoutX="-8.0" layoutY="4.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+             <children>
+                <Label alignment="CENTER" layoutY="2.0" text="Button caption" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="2.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5">
+             <children>
+                <Label alignment="CENTER" layoutY="2.0" text="Button caption" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="2.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
+             <children>
+                <Label alignment="CENTER" layoutY="2.0" text="Preset" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="2.0" />
+             </children>
+          </AnchorPane>
+          <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="6">
+             <children>
+                <Label alignment="CENTER" text="Preset" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="2.0" />
+             </children>
+          </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="7">
+               <children>
+                  <Label layoutX="14.0" layoutY="6.0" text="ISBN search" AnchorPane.rightAnchor="6.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+               <children>
+                  <TextField fx:id="tfISBNSrch" layoutX="-44.0" layoutY="2.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="7">
+               <children>
+                  <ComboBox fx:id="cbISBNSrch" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="7">
+               <children>
+                  <Button fx:id="btnISBNSrchAdvanced" layoutX="12.0" layoutY="2.0" mnemonicParsing="false" text="Advanced" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="3.0" />
+               </children>
+            </AnchorPane>
+       </children>
+    </GridPane>
+  </children>
+</AnchorPane>

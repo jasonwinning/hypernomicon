@@ -31,7 +31,6 @@ public final class MenuItemSchema<HDT_T extends HDT_Record, RowType extends Abst
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final private String caption;
   final private HDT_RecordType recordType;
   final private Predicate<HDT_T> condRecordHandler;
   final private Consumer<HDT_T> recordHandler;
@@ -39,6 +38,7 @@ public final class MenuItemSchema<HDT_T extends HDT_Record, RowType extends Abst
   final private Consumer<RowType> rowHandler;
 
   public boolean disabled = false;
+  private String caption;
 
 //---------------------------------------------------------------------------
 
@@ -67,7 +67,8 @@ public final class MenuItemSchema<HDT_T extends HDT_Record, RowType extends Abst
 
 //---------------------------------------------------------------------------
 
-  public String getCaption() { return caption; }
+  public String getCaption()             { return caption; }
+  public void setCaption(String caption) { this.caption = caption; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

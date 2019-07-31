@@ -79,6 +79,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   @Override public TextViewInfo getMainTextInfo()       { return mainText.getViewInfo(); }
   @Override public MainTextWrapper getMainTextWrapper() { return mainText; }
   @Override public void setRecord(HDT_MiscFile record)  { curMiscFile = record; }
+  @Override public void updateWebButtons()              { return; }
 
   @FXML public boolean btnManageClick()                 { return showFileDialog(null); }
 

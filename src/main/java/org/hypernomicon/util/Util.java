@@ -342,51 +342,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void searchGoogle(String str, boolean removeParen)
-  {
-    if (safeStr(str).length() > 0)
-      openWebLink("http://www.google.com/search?q=" + escapeURL(str, removeParen));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void searchGoogleImage(String str)
-  {
-    if (safeStr(str).length() > 0)
-      openWebLink("http://www.google.com/search?q=" + escapeURL(str, true) + "&tbm=isch");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void searchSEP(String str)
-  {
-    if (safeStr(str).length() > 0)
-      openWebLink("http://plato.stanford.edu/search/searcher.py?query=" + escapeURL(str, true));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void searchWikipedia(String str)
-  {
-    if (safeStr(str).length() > 0)
-      openWebLink("http://en.wikipedia.org/w/index.php?search=" + escapeURL(str, true));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void searchIEP(String str)
-  {
-    if (safeStr(str).length() > 0)
-      openWebLink("http://www.google.com/cse?cx=001101905209118093242%3Arsrjvdp2op4&ie=UTF-8&sa=Search&q=" + escapeURL(str, true));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static void searchORCID(String orcid, String first, String last)
   {
     if (orcid.length() > 0)
@@ -429,60 +384,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void searchScholar(String author, String title, String doi)
-  {
-    String param = "";
-
-    if (title.length() > 0)
-    {
-      String[] array = title.split("[.;:!?()]|--");
-
-      if (array.length > 1)
-        if (confirmDialog("Should the subtitle be omitted? It often works better to omit subtitles when searching Google Scholar."))
-          title = array[0];
-
-      param = "allintitle:\"" + ultraTrim(title) + "\"";
-    }
-
-    if (author.length() > 0)
-    {
-      if (param.length() > 0)
-        param = param + " ";
-
-      param = param + "author:\"" + author + "\"";
-    }
-
-    if (doi.length() > 0)
-    {
-      if (param.length() > 0)
-        param = param + " ";
-
-      param = param + doi;
-    }
-
-    if (param.length() > 0)
-      openWebLink("https://scholar.google.com/scholar?q=" + escapeURL(param, true));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void searchWorldCat(String lastName, String title, String year)
-  {
-    if ((lastName + title).length() == 0) return;
-
-    if (lastName.length() > 0)
-      lastName = "au%3A" + escapeURL(lastName, true);
-
-    if ((year.length() > 0) && StringUtils.isNumeric(year))
-      openWebLink("http://www.worldcat.org/search?q=" + lastName + "+ti%3A" + escapeURL(title, true) + "&fq=yr%3A" + year + ".." + year + "+%3E&qt=advanced");
-    else
-      openWebLink("http://www.worldcat.org/search?q=" + lastName + "+ti%3A" + escapeURL(title, true) + "&qt=advanced");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static void searchWorldCatISBN(String isbn)
   {
     List<String> list = matchISBN(isbn);
@@ -505,6 +406,8 @@ public final class Util
 
   public static void openWebLink(String url)
   {
+    url = url.trim();
+
     if (url.length() < 1) return;
 
     if (url.indexOf(":") == -1)

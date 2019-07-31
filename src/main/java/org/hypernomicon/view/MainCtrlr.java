@@ -49,6 +49,7 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.queryEngines.QueryEngine.QueryType;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
+import org.hypernomicon.util.WebButton;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.dialogs.*;
@@ -58,6 +59,7 @@ import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.view.settings.SettingsDlgCtrlr;
+import org.hypernomicon.view.settings.WebButtonSettingsCtrlr;
 import org.hypernomicon.view.tabs.*;
 import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 import org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr;
@@ -77,7 +79,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -141,6 +145,7 @@ public final class MainCtrlr
   @FXML public ToggleButton btnPointerLaunch;
 
   public final WindowStack windows = new WindowStack();
+  public final Map<String, WebButton> webButtonMap = new HashMap<>();
   public HyperViewSequence viewSequence;
   private final EnumHashBiMap<TabEnum, Tab> selectorTabs = EnumHashBiMap.create(TabEnum.class);
   private HyperFavorites favorites;
@@ -386,6 +391,8 @@ public final class MainCtrlr
         nullSwitch(selectorTabs.get(hyperTabEnum), selectorTab -> selectorTab.setGraphic(getImageViewForRelativePath(path)));
       });
     });
+
+    WebButtonSettingsCtrlr.loadPrefs();
 
     if (SystemUtils.IS_OS_MAC)
     {

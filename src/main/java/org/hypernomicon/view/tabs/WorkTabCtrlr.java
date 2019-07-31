@@ -38,6 +38,7 @@ import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
+import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
 import org.hypernomicon.view.HyperView.TextViewInfo;
@@ -112,7 +113,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 {
   @FXML private AnchorPane apDescription, apLowerMid, apLowerRight;
   @FXML private Button btnBibManager, btnLargerWork, btnLaunch, btnMergeBib, btnNewChapter, btnURL,
-                       btnScholar, btnStop, btnTree, btnUseDOI, btnUseISBN, btnWorldCat, btnAutofill;
+                       btnStop, btnTree, btnUseDOI, btnUseISBN, btnWebSrch1, btnWebSrch2, btnAutofill;
   @FXML private ComboBox<HyperTableCell> cbLargerWork, cbType;
   @FXML private Label lblSearchKey, lblTitle;
   @FXML private MenuItem mnuCrossref, mnuFindDOIonCrossref, mnuFindISBNonGoogleBooks, mnuGoogle, mnuShowMetadata, mnuStoreMetadata;
@@ -137,6 +138,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private SplitMenuButton btnFolder = null;
   private HDT_Work curWork, lastWork = null;
   private BibDataRetriever bibDataRetriever = null;
+  private MenuItemSchema<HDT_Record, HyperTableRow> isbnSrchMenuItemSchema;
   private final ObjectProperty<BibData> crossrefBD = new SimpleObjectProperty<>(),
                                         pdfBD      = new SimpleObjectProperty<>(),
                                         googleBD   = new SimpleObjectProperty<>();
@@ -180,8 +182,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     lowerTabPane.getTabs().forEach(tab -> tabCaptions.put(tab, tab.getText()));
 
-    btnWorldCat.setTooltip(new Tooltip("Search for this work in WorldCat"));
-    btnScholar.setTooltip(new Tooltip("Search for this work in Google Scholar"));
+    btnWebSrch1.setTooltip(new Tooltip("Search for this work in WorldCat"));
+    btnWebSrch2.setTooltip(new Tooltip("Search for this work in Google Scholar"));
 
     htAuthors = new HyperTable(tvAuthors, 1, true, PREF_KEY_HT_WORK_AUTHORS);
 
@@ -426,9 +428,13 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htISBN.addTextEditCol(hdtWork, true, false);
 
-    htISBN.addContextMenuItem("WorldCat",
-      row -> row.getText(0).length() > 0,
-      row -> searchWorldCatISBN(row.getText(0)));
+    isbnSrchMenuItemSchema = htISBN.addContextMenuItem("WorldCat",
+      row ->
+      {
+        List<String> list = matchISBN(row.getText(0));
+        return collEmpty(list) == false;
+      },
+      row -> ui.webButtonMap.get(PREF_KEY_ISBN_SRCH).first(WebButtonField.ISBN, row.getText(0)).go());
 
     htISBN.addContextMenuItem("Google Books query",
       row -> row.getText(0).length() > 0,
@@ -444,9 +450,20 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), null);
     hcbLargerWork = new HyperCB(cbLargerWork, ctDropDownList, new StandardPopulator(hdtWork), null);
 
-    btnWorldCat.setOnAction(event -> searchWorldCat(getFirstAuthorSingleName(), tfTitle.getText(), tfYear.getText()));
+    btnWebSrch1.setOnAction(event ->
+    {
+      ui.webButtonMap.get(PREF_KEY_WORK_SRCH_1).first(WebButtonField.SingleName, getFirstAuthorSingleName())
+                                               .next (WebButtonField.Title, tfTitle.getText())
+                                               .next (WebButtonField.NumericYear, tfYear.getText())
+                                               .go();
+    });
 
-    btnScholar.setOnAction(event -> searchScholar(getFirstAuthorSingleName(), tfTitle.getText(), ""));
+    btnWebSrch2.setOnAction(event ->
+    {
+      ui.webButtonMap.get(PREF_KEY_WORK_SRCH_2).first(WebButtonField.SingleName, getFirstAuthorSingleName())
+                                               .next (WebButtonField.QueryTitle, tfTitle.getText())
+                                               .go();
+    });
 
     btnDOI.setOnAction(event -> searchDOI(tfDOI.getText()));
 
@@ -459,8 +476,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     mnuGoogle.setOnAction(event ->
     {
-      if (tfDOI.getText().length() > 0)
-        searchGoogle("doi:" + tfDOI.getText(), false);
+      if (tfDOI.getText().isBlank()) return;
+
+      ui.webButtonMap.get(PREF_KEY_DOI_SRCH).first(WebButtonField.doi, tfDOI.getText()).go();
     });
 
     mnuCrossref.setOnAction(event ->
@@ -2016,6 +2034,20 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     bd.setMultiStr(bfMisc, convertMultiLineStrToStrList(taMiscBib.getText(), true));
 
     bd.getAuthors().setAllFromTable(getAuthorGroups());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void updateWebButtons()
+  {
+    btnWebSrch1.setText(ui.webButtonMap.get(PREF_KEY_WORK_SRCH_1).getCaption());
+    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_WORK_SRCH_2).getCaption());
+    mnuGoogle  .setText("Search this DOI using " + ui.webButtonMap.get(PREF_KEY_DOI_SRCH).getCaption());
+    isbnSrchMenuItemSchema.setCaption(ui.webButtonMap.get(PREF_KEY_ISBN_SRCH).getCaption());
+
+    btnWebSrch1.setTooltip(new Tooltip(btnWebSrch1.getText()));
+    btnWebSrch2.setTooltip(new Tooltip(btnWebSrch2.getText()));
   }
 
 //---------------------------------------------------------------------------

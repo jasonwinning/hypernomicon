@@ -28,8 +28,6 @@ import org.hypernomicon.view.dialogs.HyperDlg;
 import javafx.concurrent.Worker.State;
 import javafx.fxml.FXML;
 import javafx.scene.control.ProgressBar;
-import javafx.stage.Modality;
-import javafx.stage.StageStyle;
 
 public class SyncBibDlgCtrlr extends HyperDlg
 {
@@ -44,7 +42,7 @@ public class SyncBibDlgCtrlr extends HyperDlg
 
   public static SyncBibDlgCtrlr create()
   {
-    return HyperDlg.createUsingFullPath("view/settings/SyncBibDlg.fxml", "Link to External Bibliography Manager", true, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
+    return HyperDlg.createUsingFullPath("view/settings/SyncBibDlg.fxml", "Link to External Bibliography Manager", true);
   }
 
 //---------------------------------------------------------------------------

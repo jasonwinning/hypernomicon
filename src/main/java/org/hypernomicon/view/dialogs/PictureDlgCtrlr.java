@@ -31,6 +31,7 @@ import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.DesktopApi;
 import org.hypernomicon.util.FileDownloadUtility;
 import org.hypernomicon.util.PopupDialog;
+import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.settings.LaunchCommandsDlgCtrlr;
 import org.hypernomicon.view.tabs.PersonTabCtrlr;
@@ -75,7 +76,7 @@ public class PictureDlgCtrlr extends HyperDlg
   @FXML private TextField tfCurrent, tfFile, tfWeb;
   @FXML private Button btnBrowse, btnPaste;
   @FXML private TextField tfName;
-  @FXML private Button btnRefresh, btnDelete, btnShow, btnEdit, btnGoogle;
+  @FXML private Button btnRefresh, btnDelete, btnShow, btnEdit, btnWebSrch;
   @FXML private AnchorPane apPicture;
   @FXML private ImageView ivPicture;
   @FXML private Label lblChangeName;
@@ -186,10 +187,20 @@ public class PictureDlgCtrlr extends HyperDlg
       highlightFileInExplorer(filePath);
     });
 
-    btnGoogle.setOnAction(event ->
+    btnWebSrch.setText(ui.webButtonMap.get(PREF_KEY_PERSON_IMG_SRCH).getCaption());
+
+    btnWebSrch.setOnAction(event ->
     {
-      searchGoogleImage(personHyperTab.tfFirst.getText() + " " + personHyperTab.tfLast.getText() + " " +
-                        HyperTableCell.getCellText(personHyperTab.cbField.getSelectionModel().getSelectedItem()));
+      String first = personHyperTab.tfFirst.getText(),
+             last  = personHyperTab.tfLast.getText();
+
+      ui.webButtonMap.get(PREF_KEY_PERSON_IMG_SRCH)
+
+        .first(WebButtonField.FirstName , first)
+        .next (WebButtonField.LastName  , last)
+        .next (WebButtonField.SingleName, last.length() > 0 ? last : first)
+        .next (WebButtonField.Field     , HyperTableCell.getCellText(personHyperTab.cbField.getSelectionModel().getSelectedItem()))
+        .go();
     });
 
     ivPicture.setOnMousePressed(event ->

@@ -241,5 +241,19 @@ public final class Const
     PREF_KEY_BIB_LIBRARY_TYPE = "bibType",
 
     PREF_KEY_KEY_WORK_SORT_BY_NAME = "keyWorkSortByName",
-    PREF_KEY_RIGHT_CLICK_TO_LAUNCH = "rtClkToLaunch";
+    PREF_KEY_RIGHT_CLICK_TO_LAUNCH = "rtClkToLaunch",
+
+    PREF_KEY_PERSON_SRCH_1 = "personSrch1",
+    PREF_KEY_PERSON_SRCH_2 = "personSrch2",
+    PREF_KEY_PERSON_IMG_SRCH = "personImgSrch",
+    PREF_KEY_INST_SRCH = "instSrch",
+    PREF_KEY_INST_MAP_SRCH = "instMapSrch",
+    PREF_KEY_DOI_SRCH = "doiSrch",
+    PREF_KEY_ISBN_SRCH = "isbnSrch",
+    PREF_KEY_WORK_SRCH_1 = "workSrch1",
+    PREF_KEY_WORK_SRCH_2 = "workSrch2",
+    PREF_KEY_GEN_SRCH_1 = "genSrch1",
+    PREF_KEY_GEN_SRCH_2 = "genSrch2",
+    PREF_KEY_GEN_SRCH_3 = "genSrch3",
+    PREF_KEY_GEN_SRCH_4 = "genSrch4";
 }

@@ -21,7 +21,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
@@ -40,7 +39,7 @@ import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
-import org.hypernomicon.util.PopupDialog;
+import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.dialogs.InvestigationsDlgCtrlr;
@@ -69,7 +68,9 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
@@ -96,7 +97,7 @@ import javafx.scene.layout.Priority;
 public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 {
   @FXML private AnchorPane apOverview;
-  @FXML private Button btnGoogle, btnScholar;
+  @FXML private Button btnWebSrch1, btnWebSrch2;
   @FXML private ComboBox<HyperTableCell> cbRank, cbStatus, cbSubfield;
   @FXML private ImageView ivPerson;
   @FXML private Label lblORCID, lblWebsite, lblPicture, lblSearchKey;
@@ -740,8 +741,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     hcbField    = new HyperCB(cbField   , ctDropDownList, new StandardPopulator(hdtField)                , null);
     hcbSubfield = new HyperCB(cbSubfield, ctDropDown    , new SubjectPopulator (rtFieldOfSubfield, false), null);
 
-    btnGoogle.setTooltip(new Tooltip("Search for this person in Google"));
-    btnScholar.setTooltip(new Tooltip("Search for this person in Google Scholar"));
+    btnWebSrch1.setTooltip(new Tooltip("Search for this person in Google"));
+    btnWebSrch2.setTooltip(new Tooltip("Search for this person in Google Scholar"));
 
     tfFirst.setTooltip(new Tooltip("To indicate what name the person informally goes by, write it in parentheses. For example, \"William (Bill)\""));
 
@@ -803,8 +804,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     lblORCID.setOnMouseClicked(event -> searchORCID(tfORCID.getText(), tfFirst.getText(), tfLast.getText()));
 
-    btnGoogle.setOnAction(event -> searchGoogle(tfFirst.getText() + " " + tfLast.getText() + " " + getCellText(cbField.getSelectionModel().getSelectedItem()), true));
-    btnScholar.setOnAction(event -> btnScholarClick());
+    btnWebSrch1 .setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH_1));
+    btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH_2));
 
     ivPerson.setOnMouseClicked(event ->
     {
@@ -824,47 +825,17 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void btnScholarClick()
+  private EventHandler<ActionEvent> searchBtnEvent(String prefKey)
   {
-    String first1 = ultraTrim(removeFirstParenthetical(tfFirst.getText())),
-           last = ultraTrim(tfLast.getText());
-
-    int ndx = first1.indexOf(' ');
-
-    if (ndx < 0)
+    return event ->
     {
-      searchScholar(first1 + " " + last, "", "");
-      return;
-    }
-
-    String first3 = String.valueOf(first1.charAt(0));
-
-    for (; ndx >= 0; ndx = first1.indexOf(' ', ndx + 1))
-      first3 = first3 + String.valueOf(first1.charAt(ndx + 1));
-
-    first3 = first3.toUpperCase();
-
-    String first2 = ultraTrim(first1.replaceAll("^[^\\s]\\.", "")
-                                    .replaceAll("\\s[^\\s]\\.", ""));
-
-    ndx = first2.indexOf(' ');
-    if (ndx >=0)
-      first2 = first2.substring(0, ndx);
-
-    PopupDialog dlg = new PopupDialog("How should the name be phrased? Initials often works well with Google Scholar.");
-
-    dlg.addButton(first1 + " " + last, mrYes);
-    dlg.addButton(first2 + " " + last, mrNo);
-    dlg.addButton(first3 + " " + last, mrOk);
-    dlg.addButton("Cancel", mrCancel);
-
-    switch (dlg.showModal())
-    {
-      case mrYes : searchScholar(first1 + " " + last, "", ""); break;
-      case mrNo  : searchScholar(first2 + " " + last, "", ""); break;
-      case mrOk  : searchScholar(first3 + " " + last, "", ""); break;
-      default    : break;
-    }
+      ui.webButtonMap.get(prefKey).first(WebButtonField.FirstName, tfFirst.getText())
+                                  .next (WebButtonField.QueryName, tfFirst.getText())
+                                  .next (WebButtonField.LastName, tfLast.getText())
+                                  .next (WebButtonField.SingleName, tfLast.getText().length() > 0 ? tfLast.getText() : tfFirst.getText())
+                                  .next (WebButtonField.Field, getCellText(cbField.getSelectionModel().getSelectedItem()))
+                                  .go();
+    };
   }
 
 //---------------------------------------------------------------------------
@@ -1229,6 +1200,18 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     getDividerPosition(spTopHoriz, PREF_KEY_PERSON_TOP_HORIZ, 0);
     getDividerPosition(spVert, PREF_KEY_PERSON_MID_VERT, 0);
     getDividerPosition(spVert, PREF_KEY_PERSON_BOTTOM_VERT, 1);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void updateWebButtons()
+  {
+    btnWebSrch1.setText(ui.webButtonMap.get(PREF_KEY_PERSON_SRCH_1).getCaption());
+    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_PERSON_SRCH_2).getCaption());
+
+    btnWebSrch1.setTooltip(new Tooltip("Search for this person using " + btnWebSrch1.getText()));
+    btnWebSrch2.setTooltip(new Tooltip("Search for this person using " + btnWebSrch2.getText()));
   }
 
 //---------------------------------------------------------------------------

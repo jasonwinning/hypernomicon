@@ -1322,6 +1322,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public TextViewInfo getMainTextInfo()   { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
   @Override public void setDividerPositions()       { return; }
   @Override public void getDividerPositions()       { return; }
+  @Override public void updateWebButtons()          { return; }
   @Override public boolean saveToRecord()           { return false; }
   @Override public HDT_Record activeRecord()        { return curQV == null ? null : curQV.curResult; }
   @Override public String getRecordName()           { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }

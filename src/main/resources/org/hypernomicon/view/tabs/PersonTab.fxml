@@ -132,12 +132,12 @@
                                                    <children>
                                                       <AnchorPane>
                                                          <children>
-                                                            <Button fx:id="btnGoogle" mnemonicParsing="false" text="Google" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="0.0" GridPane.hgrow="ALWAYS" />
+                                                            <Button fx:id="btnWebSrch1" mnemonicParsing="false" text="Google" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="0.0" GridPane.hgrow="ALWAYS" />
                                                          </children>
                                                       </AnchorPane>
                                                       <AnchorPane GridPane.columnIndex="1">
                                                          <children>
-                                                            <Button fx:id="btnScholar" mnemonicParsing="false" text="Scholar" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
+                                                            <Button fx:id="btnWebSrch2" mnemonicParsing="false" text="Scholar" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
                                                          </children>
                                                       </AnchorPane>
                                                       <AnchorPane GridPane.columnIndex="2">

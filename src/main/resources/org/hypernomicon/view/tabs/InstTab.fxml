@@ -96,7 +96,7 @@
                         </AnchorPane>
                      </children>
                   </GridPane>
-                  <Hyperlink layoutX="823.0" layoutY="4.0" onAction="#linkClick" text="Google maps" AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="4.0" />
+                  <Hyperlink fx:id="hlMaps" layoutX="823.0" layoutY="4.0" onAction="#linkClick" text="Google maps" AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="4.0" />
                </children>
             </AnchorPane>
             <AnchorPane GridPane.columnSpan="2147483647" GridPane.rowIndex="3">

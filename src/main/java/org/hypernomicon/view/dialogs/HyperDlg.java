@@ -58,6 +58,11 @@ public abstract class HyperDlg
     return createUsingFullPath("view/dialogs/" + loc, title, resizable, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
   }
 
+  protected static final <T extends HyperDlg> T createUsingFullPath(String loc, String title, boolean resizable)
+  {
+    return createUsingFullPath(loc, title, resizable, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
+  }
+
   protected static final <T extends HyperDlg> T createUsingFullPath(String loc, String title, boolean resizable, StageStyle stageStyle, Modality modality)
   {
     try
