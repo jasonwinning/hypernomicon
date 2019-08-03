@@ -67,7 +67,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
       this.name = name;
     }
 
-    public static LaunchCommandTypeEnum getByPrefVal(String prefVal)
+    static LaunchCommandTypeEnum getByPrefVal(String prefVal)
     {
       return findFirst(EnumSet.allOf(LaunchCommandTypeEnum.class),
                        typeEnum -> typeEnum.prefVal.equals(prefVal));
@@ -76,11 +76,11 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  public static enum OperatingSystemEnum
+  private static enum OperatingSystemEnum
   {
     windows, mac, linux, other;
 
-    public static OperatingSystemEnum determine()
+    private static OperatingSystemEnum determine()
     {
       if (SystemUtils.IS_OS_WINDOWS) return windows;
       if (SystemUtils.IS_OS_MAC    ) return mac;
@@ -94,7 +94,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
   private static class Preset
   {
-    public Preset(OperatingSystemEnum opSys, String name, LaunchCommandTypeEnum commandType, String commandsPrefKey, String commands)
+    private Preset(OperatingSystemEnum opSys, String name, LaunchCommandTypeEnum commandType, String commandsPrefKey, String commands)
     {
       this.opSys = opSys;
       this.name = name;
@@ -107,16 +107,16 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
     final private LaunchCommandTypeEnum commandType;
     final private String commandsPrefKey, commands, name;
 
-    public boolean isCompatible() { return opSys == OperatingSystemEnum.determine(); }
+    private boolean isCompatible() { return opSys == OperatingSystemEnum.determine(); }
   }
 
 //---------------------------------------------------------------------------
 
-  public static final String appPathVar = "::::AppPath", filePathVar = "::::FilePath", pageNumVar = "::::PageNum";
+  private static final String appPathVar = "::::AppPath", filePathVar = "::::FilePath", pageNumVar = "::::PageNum";
 
   private String appPrefKey, commandsPrefKey, commandTypePrefKey;
 
-  public static final StringConverter<LaunchCommandTypeEnum> typeStrConv = new StringConverter<>()
+  private static final StringConverter<LaunchCommandTypeEnum> typeStrConv = new StringConverter<>()
   {
     @Override public String toString(LaunchCommandTypeEnum commandTypeEnum)
     { return commandTypeEnum == null ? "" : commandTypeEnum.name; }
@@ -128,7 +128,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static LaunchCommandsDlgCtrlr create(String title, String appPrefKey, String commandsPrefKey, String commandTypePrefKey)
+  static LaunchCommandsDlgCtrlr create(String title, String appPrefKey, String commandsPrefKey, String commandTypePrefKey)
   {
     LaunchCommandsDlgCtrlr lcdc = HyperDlg.createUsingFullPath("view/settings/LaunchCommandsDlg.fxml", title, true);
     lcdc.init(appPrefKey, commandsPrefKey, commandTypePrefKey);
@@ -253,7 +253,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String resolve(String commands, String appPath, FilePath filePath, int pageNum)
+  private static String resolve(String commands, String appPath, FilePath filePath, int pageNum)
   {
     while (commands.contains(appPathVar))
       commands = commands.replace(appPathVar, appPath);

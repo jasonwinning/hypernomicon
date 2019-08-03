@@ -18,14 +18,13 @@
 package org.hypernomicon.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 
-import static org.hypernomicon.util.PopupDialog.DialogResult.mrCancel;
-import static org.hypernomicon.util.PopupDialog.DialogResult.mrNo;
-import static org.hypernomicon.util.PopupDialog.DialogResult.mrOk;
-import static org.hypernomicon.util.PopupDialog.DialogResult.mrYes;
+import static org.hypernomicon.Const.*;
+import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.apache.commons.lang3.StringUtils;
@@ -83,6 +82,53 @@ public class WebButton
           return true;
       }
     }
+
+  //---------------------------------------------------------------------------
+
+    public static EnumSet<WebButtonField> getFieldsForPrefKey(String prefKey)
+    {
+      EnumSet<WebButtonField> fields = EnumSet.noneOf(WebButtonField.class);
+
+      switch (prefKey)
+      {
+        case PREF_KEY_PERSON_SRCH_1 : case PREF_KEY_PERSON_SRCH_2 : case PREF_KEY_PERSON_IMG_SRCH :
+
+          fields.add(FirstName); fields.add(LastName); fields.add(SingleName); fields.add(QueryName);
+          break;
+
+        case PREF_KEY_INST_SRCH :
+
+          fields.add(Name); fields.add(DivisionName);
+          break;
+
+        case PREF_KEY_INST_MAP_SRCH :
+
+          fields.add(Name); fields.add(City); fields.add(Region); fields.add(Country);
+          break;
+
+        case PREF_KEY_DOI_SRCH :
+
+          fields.add(doi);
+          break;
+
+        case PREF_KEY_ISBN_SRCH :
+
+          fields.add(ISBN);
+          break;
+
+        case PREF_KEY_WORK_SRCH_1 : case PREF_KEY_WORK_SRCH_2 :
+
+          fields.add(Title); fields.add(QueryTitle); fields.add(NumericYear); fields.add(SingleName); fields.add(ISBN); fields.add(doi);
+          break;
+
+        case PREF_KEY_GEN_SRCH_1 : case PREF_KEY_GEN_SRCH_2 : case PREF_KEY_GEN_SRCH_3 : case PREF_KEY_GEN_SRCH_4 :
+
+          fields.add(Name);
+          break;
+      }
+
+      return fields;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -91,13 +137,15 @@ public class WebButton
   public static class UrlPattern
   {
     private final EnumSet<WebButtonField> requiredFields;
-    private final String str;
+    public final String str;
 
     public UrlPattern(EnumSet<WebButtonField> requiredFields, String str)
     {
       this.requiredFields = requiredFields;
       this.str = str;
     }
+
+    public EnumSet<WebButtonField> reqFields() { return EnumSet.copyOf(requiredFields); }
   }
 
 //---------------------------------------------------------------------------
@@ -111,6 +159,7 @@ public class WebButton
   public WebButton(String name, String caption) { this.name = name; this.caption = caption; }
 
   public void addPattern(UrlPattern pattern) { patterns.add(pattern); }
+  public List<UrlPattern> getPatterns()      { return Collections.unmodifiableList(patterns); }
   public String getCaption()                 { return caption; }
   public void setCaption(String caption)     { this.caption = caption; }
 

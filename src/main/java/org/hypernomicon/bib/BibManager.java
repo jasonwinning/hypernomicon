@@ -69,7 +69,6 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToolBar;
-import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
@@ -120,7 +119,7 @@ public class BibManager extends HyperDlg
 
     if (libraryWrapper != null)
     {
-      btnSync.setTooltip(new Tooltip("Synchronize with " + libraryWrapper.type().getUserFriendlyName()));
+      setToolTip(btnSync, "Synchronize with " + libraryWrapper.type().getUserFriendlyName());
       initCB(cbNewType);
     }
 
@@ -233,8 +232,8 @@ public class BibManager extends HyperDlg
     btnMainWindow.setOnAction(event -> ui.windows.focusStage(app.getPrimaryStage()));
     btnSync.setOnAction(event -> sync());
 
-    btnStop.setTooltip(new Tooltip("Stop synchronizing"));
-    btnMainWindow.setTooltip(new Tooltip("Return to main application window"));
+    setToolTip(btnStop      , "Stop synchronizing");
+    setToolTip(btnMainWindow, "Return to main application window");
 
     btnUpdateRelatives.disableProperty().bind(btnStop.disabledProperty().not());
 

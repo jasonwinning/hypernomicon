@@ -277,8 +277,8 @@ public final class MainCtrlr
     chbBack = new ClickHoldButton(btnBack, Side.TOP);
     chbForward = new ClickHoldButton(btnForward, Side.TOP);
 
-    btnBack.setTooltip(new Tooltip("Click to go back, hold to see history"));
-    btnForward.setTooltip(new Tooltip("Click to go forward, hold to see history"));
+    setToolTip(btnBack   , "Click to go back, hold to see history"   );
+    setToolTip(btnForward, "Click to go forward, hold to see history");
 
     chbBack   .setOnAction(event -> btnBackClick());
     chbForward.setOnAction(event -> btnForwardClick());
@@ -351,20 +351,20 @@ public final class MainCtrlr
         oldValue.setSelected(true);
     });
 
-    btnPointerLaunch.setTooltip(new Tooltip("On right/secondary click on link to work record, launch work file"));
-    btnPointerPreview.setTooltip(new Tooltip("On right/secondary click on link to work record, show in preview window"));
+    setToolTip(btnPointerLaunch , "On right/secondary click on link to work record, launch work file");
+    setToolTip(btnPointerPreview, "On right/secondary click on link to work record, show in preview window");
 
-    btnMentions.setTooltip(new Tooltip("Show records whose description mentions this record"));
+    setToolTip(btnMentions, "Show records whose description mentions this record");
 
     btnIncrement.setOnAction(event -> incDecClick(true));
     btnDecrement.setOnAction(event -> incDecClick(false));
 
-    btnTextSearch.setTooltip(new Tooltip("Search within description"));
-    btnAdvancedSearch.setTooltip(new Tooltip("Start a new search in Queries tab"));
-    btnPreviewWindow.setTooltip(new Tooltip("Open Preview Window"));
-    btnBibMgr.setTooltip(new Tooltip("Open Bibliography Manager Window"));
-    btnFileMgr.setTooltip(new Tooltip("Open File Manager Window"));
-    btnSaveAll.setTooltip(new Tooltip("Save all records to XML files"));
+    setToolTip(btnTextSearch    , "Search within description");
+    setToolTip(btnAdvancedSearch, "Start a new search in Queries tab");
+    setToolTip(btnPreviewWindow , "Open Preview Window");
+    setToolTip(btnBibMgr        , "Open Bibliography Manager Window");
+    setToolTip(btnFileMgr       , "Open File Manager Window");
+    setToolTip(btnSaveAll       , "Save all records to XML files");
 
     apFindBackground.setOnMousePressed(event -> hideFindTable());
 

@@ -50,7 +50,6 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 
 public class NewPersonDlgCtrlr extends HyperDlg
@@ -128,8 +127,8 @@ public class NewPersonDlgCtrlr extends HyperDlg
       updateCurrentTab();
     });
 
-    lblSearchKey.setTooltip(new Tooltip("Regenerate search key"));
-    lblDupSearchKey.setTooltip(new Tooltip("Regenerate search key"));
+    setToolTip(lblSearchKey   , "Regenerate search key");
+    setToolTip(lblDupSearchKey, "Regenerate search key");
 
     lblSearchKey.setOnMouseClicked(event -> setSearchKey(new PersonName(tfFirstName.getText(), tfLastName.getText())));
 

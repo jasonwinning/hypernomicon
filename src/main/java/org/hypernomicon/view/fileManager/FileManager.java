@@ -70,7 +70,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.web.WebView;
@@ -275,17 +274,17 @@ public class FileManager extends HyperDlg
 
     recordTable.addDefaultMenuItems();
 
-    btnBack         .setTooltip(new Tooltip("Previous folder in history"));
-    btnForward      .setTooltip(new Tooltip("Next folder in history"));
-    btnCut          .setTooltip(new Tooltip("Cut"));
-    btnCopy         .setTooltip(new Tooltip("Copy"));
-    btnPaste        .setTooltip(new Tooltip("Paste"));
-    btnDelete       .setTooltip(new Tooltip("Delete"));
-    btnNewFolder    .setTooltip(new Tooltip("Create new folder"));
-    btnRename       .setTooltip(new Tooltip("Rename selected file or folder"));
-    btnRefresh      .setTooltip(new Tooltip("Refresh"));
-    btnMainWindow   .setTooltip(new Tooltip("Return to main application window"));
-    btnPreviewWindow.setTooltip(new Tooltip("Show preview window"));
+    setToolTip(btnBack         , "Previous folder in history");
+    setToolTip(btnForward      , "Next folder in history");
+    setToolTip(btnCut          , "Cut");
+    setToolTip(btnCopy         , "Copy");
+    setToolTip(btnPaste        , "Paste");
+    setToolTip(btnDelete       , "Delete");
+    setToolTip(btnNewFolder    , "Create new folder");
+    setToolTip(btnRename       , "Rename selected file or folder");
+    setToolTip(btnRefresh      , "Refresh");
+    setToolTip(btnMainWindow   , "Return to main application window");
+    setToolTip(btnPreviewWindow, "Show preview window");
   }
 
 //---------------------------------------------------------------------------

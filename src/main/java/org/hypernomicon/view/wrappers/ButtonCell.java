@@ -22,7 +22,6 @@ import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableRow;
-import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 
 import static org.hypernomicon.App.*;
@@ -170,16 +169,15 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
         break;
 
       default: break;
-
     }
 
-    cellButton.setTooltip(null);
+    setToolTip(cellButton, "");
     if (col.tooltips.containsKey(newAction) == false) return;
 
     String tooltip = col.tooltips.get(newAction);
     if ((tooltip == null) || (tooltip.length() == 0)) return;
 
-    cellButton.setTooltip(new Tooltip(tooltip));
+    setToolTip(cellButton, tooltip);
   }
 
 //---------------------------------------------------------------------------

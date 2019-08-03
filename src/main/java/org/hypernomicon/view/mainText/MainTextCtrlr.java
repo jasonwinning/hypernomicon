@@ -74,7 +74,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToolBar;
-import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
@@ -309,14 +308,14 @@ public class MainTextCtrlr
     menuItem2.setOnAction(getPlainTextAction(true));
 
     MenuButton btnPaste = new MenuButton("", getImageViewForRelativePath("resources/images/page_paste.png"), menuItem0, menuItem1, menuItem2);
-    btnPaste.setTooltip(new Tooltip("Paste"));
+    setToolTip(btnPaste, "Paste");
 
     Button btnLink = new Button("", getImageViewForRelativePath("resources/images/world_link.png"));
-    btnLink.setTooltip(new Tooltip("Insert web link"));
+    setToolTip(btnLink, "Insert web link");
     btnLink.setOnAction(event -> btnLinkClick());
 
     Button btnClear = new Button("", getImageViewForRelativePath("resources/images/broom.png"));
-    btnClear.setTooltip(new Tooltip("Clear"));
+    setToolTip(btnClear, "Clear");
     btnClear.setOnAction(event ->
     {
       clearText();
@@ -324,7 +323,7 @@ public class MainTextCtrlr
     });
 
     Button btnEditLayout = new Button("", getImageViewForRelativePath("resources/images/document_insert.png"));
-    btnEditLayout.setTooltip(new Tooltip("Edit layout"));
+    setToolTip(btnEditLayout, "Edit layout");
     btnEditLayout.setOnAction(event ->
     {
       hsPane.show(Side.RIGHT, true);

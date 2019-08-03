@@ -43,7 +43,6 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
-import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
@@ -129,10 +128,10 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
     btnWebSrch4.setOnAction(event -> ui.webButtonMap.get(PREF_KEY_GEN_SRCH_4).first(WebButtonField.Name, tfName.getText()).go());
     btnTree    .setOnAction(event -> ui.goToTreeRecord(ui.viewRecord()));
 
-    btnWebSrch1.setTooltip(new Tooltip("Search record name in Google"));
-    btnWebSrch3.setTooltip(new Tooltip("Search record name in Internet Encyclopedia of Philosophy"));
-    btnWebSrch2.setTooltip(new Tooltip("Search record name in Stanford Encyclopedia of Philosophy"));
-    btnWebSrch4.setTooltip(new Tooltip("Search record name in Wikipedia"));
+    setToolTip(btnWebSrch1, "Search record name in Google");
+    setToolTip(btnWebSrch3, "Search record name in Internet Encyclopedia of Philosophy");
+    setToolTip(btnWebSrch2, "Search record name in Stanford Encyclopedia of Philosophy");
+    setToolTip(btnWebSrch4, "Search record name in Wikipedia");
 
     double fontSize = appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
     if (fontSize < 0) fontSize = lblGoTo1.getFont().getSize();
@@ -226,7 +225,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
       {
         debateLink.setStyle("");
         debateLink.setText("Link to Debate/Position...");
-        debateLink.setTooltip(null);
+        setToolTip(debateLink, "");
         debateLink.setContextMenu(null);
         setLinkToEvent(debateLink, hdtDebate);
       }
@@ -246,7 +245,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
       {
         conceptLink.setStyle("");
         conceptLink.setText("Link to Term...");
-        conceptLink.setTooltip(null);
+        setToolTip(conceptLink, "");
         conceptLink.setContextMenu(null);
         conceptLink.setOnMouseClicked(mouseEvent ->
         {
@@ -270,7 +269,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
       {
         noteLink.setStyle("");
         noteLink.setText("Link to Note...");
-        noteLink.setTooltip(null);
+        setToolTip(noteLink, "");
         noteLink.setContextMenu(null);
         setLinkToEvent(noteLink, hdtNote);
       }
@@ -294,7 +293,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
       {
         labelLink.setStyle("");
         labelLink.setText("Link to Label...");
-        labelLink.setTooltip(null);
+        setToolTip(labelLink, "");
         labelLink.setContextMenu(null);
         setLinkToEvent(labelLink, hdtWorkLabel);
       }
@@ -302,7 +301,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 
     if (recordType == hdtConcept)
     {
-      lblMergeTerms.setTooltip(new Tooltip("Use right/secondary button to move this definition to a different term"));
+      setToolTip(lblMergeTerms, "Use right/secondary button to move this definition to a different term");
       lblMergeTerms.setContextMenu(new ContextMenu(makeMoveConceptItem()));
       lblMergeTerms.setOnMouseClicked(mouseEvent ->
       {
@@ -324,7 +323,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 
   private void setTooltip(Label label)
   {
-    label.setTooltip(new Tooltip("Use right/secondary button to unlink"));
+    setToolTip(label, "Use right/secondary button to unlink");
   }
 
 //---------------------------------------------------------------------------
@@ -462,10 +461,10 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
     btnWebSrch3.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH_3).getCaption());
     btnWebSrch4.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH_4).getCaption());
 
-    btnWebSrch1.setTooltip(new Tooltip("Search record name using " + btnWebSrch1.getText()));
-    btnWebSrch2.setTooltip(new Tooltip("Search record name using " + btnWebSrch2.getText()));
-    btnWebSrch3.setTooltip(new Tooltip("Search record name using " + btnWebSrch3.getText()));
-    btnWebSrch4.setTooltip(new Tooltip("Search record name using " + btnWebSrch4.getText()));
+    setToolTip(btnWebSrch1, "Search record name using " + btnWebSrch1.getText());
+    setToolTip(btnWebSrch2, "Search record name using " + btnWebSrch2.getText());
+    setToolTip(btnWebSrch3, "Search record name using " + btnWebSrch3.getText());
+    setToolTip(btnWebSrch4, "Search record name using " + btnWebSrch4.getText());
   }
 
 //---------------------------------------------------------------------------

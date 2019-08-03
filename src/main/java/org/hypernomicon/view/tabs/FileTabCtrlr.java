@@ -50,7 +50,6 @@ import javafx.scene.control.SplitMenuButton;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 
 //---------------------------------------------------------------------------
@@ -229,7 +228,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     btnLaunch.setOnAction(event -> { if (tfFileName.getText().length() > 0) launchFile(curMiscFile.filePath()); });
     btnShow  .setOnAction(event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.filePath()); });
 
-    btnManage.setTooltip(new Tooltip("Update or rename file"));
+    setToolTip(btnManage, "Update or rename file");
   }
 
 //---------------------------------------------------------------------------

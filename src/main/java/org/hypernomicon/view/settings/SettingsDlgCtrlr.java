@@ -49,7 +49,6 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
@@ -147,7 +146,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     lblRedirect.visibleProperty().bind(authUrl.isNotEmpty());
 
     btnCodePaste.setOnAction(event -> tfVerificationCode.setText(getClipboardText(true)));
-    btnCodePaste.setTooltip(new Tooltip("Paste text from clipboard"));
+    setToolTip(btnCodePaste, "Paste text from clipboard");
 
     btnVerify.disableProperty().bind(tfVerificationCode.textProperty().isEmpty());
 
@@ -203,7 +202,7 @@ public class SettingsDlgCtrlr extends HyperDlg
       appPrefs.putDouble(PREF_KEY_FONT_SIZE, newValue.doubleValue());
     });
 
-    sliderFontSize.setTooltip(new Tooltip("Base font size"));
+    setToolTip(sliderFontSize, "Base font size");
 
     initAppCheckBox(chkInternet, PREF_KEY_CHECK_INTERNET, true);
     initAppCheckBox(chkAutoOpenPDF, PREF_KEY_AUTO_OPEN_PDF, true);
@@ -227,7 +226,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static interface SettingsControl { void init(boolean noDB); void save(); }
+  static interface SettingsControl { void init(boolean noDB); void save(); }
 
   private SettingsControl initControl(Tab tab, String fxmlName)
   {
@@ -432,7 +431,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void browseClick(Window owner, TextField tf)
+  static void browseClick(Window owner, TextField tf)
   {
     FileChooser fileChooser = new FileChooser();
 

@@ -83,7 +83,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -741,10 +740,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     hcbField    = new HyperCB(cbField   , ctDropDownList, new StandardPopulator(hdtField)                , null);
     hcbSubfield = new HyperCB(cbSubfield, ctDropDown    , new SubjectPopulator (rtFieldOfSubfield, false), null);
 
-    btnWebSrch1.setTooltip(new Tooltip("Search for this person in Google"));
-    btnWebSrch2.setTooltip(new Tooltip("Search for this person in Google Scholar"));
+    setToolTip(btnWebSrch1, "Search for this person in Google");
+    setToolTip(btnWebSrch2, "Search for this person in Google Scholar");
 
-    tfFirst.setTooltip(new Tooltip("To indicate what name the person informally goes by, write it in parentheses. For example, \"William (Bill)\""));
+    setToolTip(tfFirst, "To indicate what name the person informally goes by, write it in parentheses. For example, \"William (Bill)\"");
 
     tfFirst.textProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -794,7 +793,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       }
     });
 
-    lblSearchKey.setTooltip(new Tooltip("Regenerate search key"));
+    setToolTip(lblSearchKey, "Regenerate search key");
 
     lblSearchKey.setOnMouseClicked(event -> lblSearchKeyClick());
 
@@ -1210,8 +1209,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     btnWebSrch1.setText(ui.webButtonMap.get(PREF_KEY_PERSON_SRCH_1).getCaption());
     btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_PERSON_SRCH_2).getCaption());
 
-    btnWebSrch1.setTooltip(new Tooltip("Search for this person using " + btnWebSrch1.getText()));
-    btnWebSrch2.setTooltip(new Tooltip("Search for this person using " + btnWebSrch2.getText()));
+    setToolTip(btnWebSrch1, "Search for this person using " + btnWebSrch1.getText());
+    setToolTip(btnWebSrch2, "Search for this person using " + btnWebSrch2.getText());
   }
 
 //---------------------------------------------------------------------------

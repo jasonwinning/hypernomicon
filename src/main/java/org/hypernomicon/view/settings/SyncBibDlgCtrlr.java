@@ -40,7 +40,7 @@ public class SyncBibDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static SyncBibDlgCtrlr create()
+  static SyncBibDlgCtrlr create()
   {
     return HyperDlg.createUsingFullPath("view/settings/SyncBibDlg.fxml", "Link to External Bibliography Manager", true);
   }
@@ -48,7 +48,7 @@ public class SyncBibDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean sync()
+  boolean sync()
   {
     onShown = () ->
     {

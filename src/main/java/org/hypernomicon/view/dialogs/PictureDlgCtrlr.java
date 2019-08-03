@@ -50,7 +50,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.control.Tooltip;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
@@ -106,7 +105,7 @@ public class PictureDlgCtrlr extends HyperDlg
     ivPicture.fitHeightProperty().bind(apPicture.heightProperty());
 
     btnPaste.setOnAction(event -> tfWeb.setText(getClipboardText(true)));
-    btnPaste.setTooltip(new Tooltip("Paste text from clipboard"));
+    setToolTip(btnPaste, "Paste text from clipboard");
 
     apPicture.widthProperty ().addListener((ob, oldValue, newValue) -> resizeCrop(newValue .doubleValue(), apPicture.getHeight  ()));
     apPicture.heightProperty().addListener((ob, oldValue, newValue) -> resizeCrop(apPicture.getWidth   (), newValue .doubleValue()));

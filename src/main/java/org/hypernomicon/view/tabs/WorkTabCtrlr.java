@@ -100,7 +100,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
@@ -182,8 +181,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     lowerTabPane.getTabs().forEach(tab -> tabCaptions.put(tab, tab.getText()));
 
-    btnWebSrch1.setTooltip(new Tooltip("Search for this work in WorldCat"));
-    btnWebSrch2.setTooltip(new Tooltip("Search for this work in Google Scholar"));
+    setToolTip(btnWebSrch1, "Search for this work in WorldCat");
+    setToolTip(btnWebSrch2, "Search for this work in Google Scholar");
 
     htAuthors = new HyperTable(tvAuthors, 1, true, PREF_KEY_HT_WORK_AUTHORS);
 
@@ -565,11 +564,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         ui.goToFileInManager(new FilePath(tfURL.getText()));
     });
 
-    lblSearchKey.setTooltip(new Tooltip("Regenerate search key"));
+    setToolTip(lblSearchKey, "Regenerate search key");
 
     lblSearchKey.setOnMouseClicked(event -> lblSearchKeyClick());
 
-    lblTitle.setTooltip(new Tooltip("Reformat title"));
+    setToolTip(lblTitle, "Reformat title");
 
     lblTitle.setOnMouseClicked(event ->
     {
@@ -874,7 +873,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       iv.setFitWidth(16);
       iv.setFitHeight(16);
       btnBibManager.setGraphic(iv);
-      btnBibManager.setTooltip(new Tooltip("Go to external bibliography manager entry"));
+      setToolTip(btnBibManager, "Go to external bibliography manager entry");
     }
 
     if (updatePreview)
@@ -1479,7 +1478,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       btnBibManager.setVisible(true);
       btnBibManager.setGraphic(iv);
-      btnBibManager.setTooltip(new Tooltip("Assign to external bibliography manager entry"));
+      setToolTip(btnBibManager, "Assign to external bibliography manager entry");
     }
     else
       btnBibManager.setVisible(false);
@@ -2046,8 +2045,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     mnuGoogle  .setText("Search this DOI using " + ui.webButtonMap.get(PREF_KEY_DOI_SRCH).getCaption());
     isbnSrchMenuItemSchema.setCaption(ui.webButtonMap.get(PREF_KEY_ISBN_SRCH).getCaption());
 
-    btnWebSrch1.setTooltip(new Tooltip(btnWebSrch1.getText()));
-    btnWebSrch2.setTooltip(new Tooltip(btnWebSrch2.getText()));
+    setToolTip(btnWebSrch1, btnWebSrch1.getText());
+    setToolTip(btnWebSrch2, btnWebSrch2.getText());
   }
 
 //---------------------------------------------------------------------------

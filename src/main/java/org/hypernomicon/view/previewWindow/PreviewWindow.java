@@ -46,7 +46,6 @@ import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Tab;
@@ -277,18 +276,18 @@ public class PreviewWindow extends HyperDlg
     chbBack    = new ClickHoldButton(btnPreviewBack   , Side.BOTTOM);
     chbForward = new ClickHoldButton(btnPreviewForward, Side.BOTTOM);
 
-    btnLock          .setTooltip(new Tooltip("Don't change the current view when a different record is selected in another window"));
-    btnPreviewNext   .setTooltip(new Tooltip("Go forward 1 page"));
-    btnPreviewPrev   .setTooltip(new Tooltip("Go back 1 page"));
-    btnPreviewBack   .setTooltip(new Tooltip("Click to go back, hold to see history"));
-    btnPreviewForward.setTooltip(new Tooltip("Click to go forward, hold to see history"));
-    btnFileBack      .setTooltip(new Tooltip("Go to the file that was viewed before this one"));
-    btnFileForward   .setTooltip(new Tooltip("Go to the file that was viewed after this one"));
-    btnHilitePrev    .setTooltip(new Tooltip("Go to previous annotated page"));
-    btnHiliteNext    .setTooltip(new Tooltip("Go to next annotated page"));
-    btnRefresh       .setTooltip(new Tooltip("Refresh current view"));
-    btnContents      .setTooltip(new Tooltip("Show list of works and page numbers assigned to this work file"));
-    sldPreview       .setTooltip(new Tooltip("Navigate to different page"));
+    setToolTip(btnLock          , "Don't change the current view when a different record is selected in another window");
+    setToolTip(btnPreviewNext   , "Go forward 1 page");
+    setToolTip(btnPreviewPrev   , "Go back 1 page");
+    setToolTip(btnPreviewBack   , "Click to go back, hold to see history");
+    setToolTip(btnPreviewForward, "Click to go forward, hold to see history");
+    setToolTip(btnFileBack      , "Go to the file that was viewed before this one");
+    setToolTip(btnFileForward   , "Go to the file that was viewed after this one");
+    setToolTip(btnHilitePrev    , "Go to previous annotated page");
+    setToolTip(btnHiliteNext    , "Go to next annotated page");
+    setToolTip(btnRefresh       , "Refresh current view");
+    setToolTip(btnContents      , "Show list of works and page numbers assigned to this work file");
+    setToolTip(sldPreview       , "Navigate to different page");
 
     chbBack.setOnAction(event ->
     {
@@ -525,10 +524,10 @@ public class PreviewWindow extends HyperDlg
   {
     dialogStage.setTitle(dialogTitle);
     tfPath.setText("");
-    tfPath.setTooltip(null);
+    setToolTip(tfPath, "");
     paneType.getChildren().clear();
     lblRecord.setText("");
-    lblRecord.setTooltip(null);
+    setToolTip(lblRecord, "");
     resetNavBtns();
     updateFileNavButtons();
 
@@ -573,7 +572,7 @@ public class PreviewWindow extends HyperDlg
     {
       paneType.getChildren().clear();
       lblRecord.setText("(None)");
-      lblRecord.setTooltip(null);
+      setToolTip(lblRecord, "");
       resetNavBtns();
     }
     else
@@ -585,7 +584,7 @@ public class PreviewWindow extends HyperDlg
       {
         String recStr = HDT_Work.class.cast(record).getCBText();
         lblRecord.setText(recStr);
-        lblRecord.setTooltip(new Tooltip(recStr));
+        setToolTip(lblRecord, recStr);
 
         enableAll(btnSetStart, btnStartPage, btnSetEnd, btnEndPage);
 
@@ -611,7 +610,7 @@ public class PreviewWindow extends HyperDlg
       else
       {
         lblRecord.setText(record.listName());
-        lblRecord.setTooltip(new Tooltip(record.listName()));
+        setToolTip(lblRecord, record.listName());
         resetNavBtns();
       }
     }
@@ -621,7 +620,7 @@ public class PreviewWindow extends HyperDlg
     sldPreview.setValue(pageNum);
 
     tfPath.setText(filePath.toString());
-    tfPath.setTooltip(new Tooltip(filePath.toString()));
+    setToolTip(tfPath, filePath.toString());
     dialogStage.setTitle(dialogTitle + " - " + filePath.getNameOnly());
 
     btnPreviewPrev.setDisable(pageNum == 1);

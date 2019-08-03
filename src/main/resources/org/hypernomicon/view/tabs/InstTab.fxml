@@ -84,8 +84,8 @@
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                            <children>
                               <Label text="State/Region:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
-                              <ComboBox fx:id="cbRegion" layoutX="118.0" prefHeight="25.0" prefWidth="155.0" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
                               <Button fx:id="btnNewRegion" layoutX="78.0" layoutY="3.0" mnemonicParsing="false" text="New" AnchorPane.leftAnchor="78.0" AnchorPane.topAnchor="3.0" />
+                              <ComboBox fx:id="cbRegion" layoutX="118.0" prefHeight="25.0" prefWidth="155.0" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
                            </children>
                         </AnchorPane>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">

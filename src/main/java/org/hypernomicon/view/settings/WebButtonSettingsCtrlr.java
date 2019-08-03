@@ -19,10 +19,13 @@ package org.hypernomicon.view.settings;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.util.Util.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.hypernomicon.util.WebButton;
@@ -51,19 +54,17 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
   private final List<ButtonControls> webBtnList = new ArrayList<>();
 
-  private static final List<WebButton> personSrchList    = new ArrayList<>(),
-                                       personImgSrchList = new ArrayList<>(),
-                                       instSrchList      = new ArrayList<>(),
-                                       instMapSrchList   = new ArrayList<>(),
-                                       doiSrchList       = new ArrayList<>(),
-                                       isbnSrchList      = new ArrayList<>(),
-                                       workSrchList      = new ArrayList<>(),
-                                       genSrchList       = new ArrayList<>();
+  private static final List<WebButton> personSrchList = new ArrayList<>(), personImgSrchList = new ArrayList<>(),
+                                       instSrchList   = new ArrayList<>(), instMapSrchList   = new ArrayList<>(),
+                                       doiSrchList    = new ArrayList<>(), isbnSrchList      = new ArrayList<>(),
+                                       workSrchList   = new ArrayList<>(), genSrchList       = new ArrayList<>();
+
+  private static final String CUSTOM_NAME = "Custom";
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class ButtonControls
+  public class ButtonControls
   {
     public final String prefKey;
     public final TextField tfCaption;
@@ -99,6 +100,27 @@ public class WebButtonSettingsCtrlr implements SettingsControl
         if (tfCaption == null) return;
         tfCaption.setText(nv == null ? "" : nv.getCaption());
       });
+
+      btnAdvanced.setOnAction(event ->
+      {
+        try
+        {
+          EditWebButtonsDlgCtrlr dlg = EditWebButtonsDlgCtrlr.create(getWebButton(this), prefKey);
+
+          if ((dlg.showModal() == false) || dlg.unchanged()) return;
+
+          WebButton webBtn = new WebButton(CUSTOM_NAME, tfCaption.getText());
+
+          dlg.getPatterns(webBtn);
+          cbPreset.getItems().removeIf(btn -> btn.name.equals(CUSTOM_NAME));
+          cbPreset.getItems().add(webBtn);
+          cbPreset.getSelectionModel().select(webBtn);
+        }
+        catch (IOException e)
+        {
+          showStackTrace(e);
+        }
+      });
     }
   }
 
@@ -123,7 +145,15 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     populatePresetControls();
 
-    webBtnList.forEach(btnCtrls -> btnCtrls.cbPreset.getSelectionModel().select(ui.webButtonMap.get(btnCtrls.prefKey)));
+    webBtnList.forEach(btnCtrls ->
+    {
+      WebButton webBtn = ui.webButtonMap.get(btnCtrls.prefKey);
+
+      if (webBtn.name.equals(CUSTOM_NAME))
+        btnCtrls.cbPreset.getItems().add(webBtn);
+
+      btnCtrls.cbPreset.getSelectionModel().select(webBtn);
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -298,6 +328,15 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     instMapSrchList.add(btn);
 
+    btn = new WebButton("Bing Maps", "Bing Maps");
+
+    btn.addPattern(new UrlPattern(EnumSet.of(WebButtonField.Name),
+        "http://www.bing.com/maps/default.aspx?where1=" + WebButtonField.Name.key + "," +
+        WebButtonField.City.key + "," + WebButtonField.Region.key + "," +
+        WebButtonField.Country.key));
+
+    instMapSrchList.add(btn);
+
  // DOI search menu command ------------------------------------------------------------------------------------------
  // ------------------------------------------------------------------------------------------------------------------
 
@@ -458,19 +497,55 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private WebButton getWebButton(ButtonControls btnCtrls)
+  {
+    WebButton webBtn = btnCtrls.cbPreset.getValue();
+    if (btnCtrls.tfCaption != null)
+      webBtn.setCaption(btnCtrls.tfCaption.getText());
+
+    return webBtn;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void save()
   {
     Preferences node = appPrefs.node("webButtons");
 
     webBtnList.forEach(btnCtrls ->
     {
-      WebButton webBtn = btnCtrls.cbPreset.getValue();
-      if (btnCtrls.tfCaption != null)
-        webBtn.setCaption(btnCtrls.tfCaption.getText());
+      WebButton webBtn = getWebButton(btnCtrls);
 
       ui.webButtonMap.put(btnCtrls.prefKey, webBtn);
 
       node.put(btnCtrls.prefKey, webBtn.name);
+
+      if (webBtn.name.equals(CUSTOM_NAME))
+      {
+        Preferences subNode = node.node(btnCtrls.prefKey);
+        try
+        {
+          subNode.clear();
+        }
+        catch (BackingStoreException e)
+        {
+          e.printStackTrace();
+        }
+
+        int ndx = 1;
+        for (UrlPattern pattern : webBtn.getPatterns())
+        {
+          Preferences patternNode = subNode.node("pattern" + String.format("%05d", ndx++));
+          patternNode.put("str", pattern.str);
+
+          patternNode.putInt("reqFieldCnt", pattern.reqFields().size());
+
+          int fieldNdx = 1;
+          for (WebButtonField field : pattern.reqFields())
+            patternNode.put("reqField" + String.valueOf(fieldNdx++), field.name());
+        }
+      }
 
       appPrefs.node("webButtonCaptions").put(btnCtrls.prefKey, webBtn.getCaption());
     });
@@ -481,33 +556,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void loadPrefs()
-  {
-    populatePresets();
-
-    Preferences node = appPrefs.node("webButtons");
-
-    loadPref(node, personSrchList   , PREF_KEY_PERSON_SRCH_1  );
-    loadPref(node, personSrchList   , PREF_KEY_PERSON_SRCH_2  );
-    loadPref(node, personImgSrchList, PREF_KEY_PERSON_IMG_SRCH);
-    loadPref(node, instSrchList     , PREF_KEY_INST_SRCH      );
-    loadPref(node, instMapSrchList  , PREF_KEY_INST_MAP_SRCH  );
-    loadPref(node, doiSrchList      , PREF_KEY_DOI_SRCH       );
-    loadPref(node, isbnSrchList     , PREF_KEY_ISBN_SRCH      );
-    loadPref(node, workSrchList     , PREF_KEY_WORK_SRCH_1    );
-    loadPref(node, workSrchList     , PREF_KEY_WORK_SRCH_2    );
-    loadPref(node, genSrchList      , PREF_KEY_GEN_SRCH_1     );
-    loadPref(node, genSrchList      , PREF_KEY_GEN_SRCH_2     );
-    loadPref(node, genSrchList      , PREF_KEY_GEN_SRCH_3     );
-    loadPref(node, genSrchList      , PREF_KEY_GEN_SRCH_4     );
-
-    HyperTab.updateAllWebButtons();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void loadPref(Preferences node, List<WebButton> srchList, String prefKey)
+  private static void loadPref(Preferences node, List<WebButton> srchList, String prefKey) throws BackingStoreException
   {
     String name = node.get(prefKey, ""),
            caption = appPrefs.node("webButtonCaptions").get(prefKey, "");
@@ -525,6 +574,64 @@ public class WebButtonSettingsCtrlr implements SettingsControl
         return;
       }
     }
+
+    if (name.equals(CUSTOM_NAME) == false) return;
+
+    WebButton webBtn = new WebButton(CUSTOM_NAME, caption);
+    Preferences subNode = node.node(prefKey);
+
+    for (String patternKey : subNode.childrenNames())
+    {
+      Preferences patternNode = subNode.node(patternKey);
+      String str = patternNode.get("str", "");
+      EnumSet<WebButtonField> reqFields = EnumSet.noneOf(WebButtonField.class);
+
+      int fieldNum = patternNode.getInt("reqFieldCnt", 0);
+
+      for (int fieldNdx = 1; fieldNdx <= fieldNum; fieldNdx++)
+      {
+        String fieldName = patternNode.get("reqField" + String.valueOf(fieldNdx), "");
+        if (fieldName.length() > 0)
+          reqFields.add(WebButtonField.valueOf(fieldName));
+      }
+
+      webBtn.addPattern(new UrlPattern(reqFields, str));
+    }
+
+    ui.webButtonMap.put(prefKey, webBtn);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void loadPrefs()
+  {
+    populatePresets();
+
+    try
+    {
+      Preferences node = appPrefs.node("webButtons");
+
+      loadPref(node, personSrchList   , PREF_KEY_PERSON_SRCH_1  );
+      loadPref(node, personSrchList   , PREF_KEY_PERSON_SRCH_2  );
+      loadPref(node, personImgSrchList, PREF_KEY_PERSON_IMG_SRCH);
+      loadPref(node, instSrchList     , PREF_KEY_INST_SRCH      );
+      loadPref(node, instMapSrchList  , PREF_KEY_INST_MAP_SRCH  );
+      loadPref(node, doiSrchList      , PREF_KEY_DOI_SRCH       );
+      loadPref(node, isbnSrchList     , PREF_KEY_ISBN_SRCH      );
+      loadPref(node, workSrchList     , PREF_KEY_WORK_SRCH_1    );
+      loadPref(node, workSrchList     , PREF_KEY_WORK_SRCH_2    );
+      loadPref(node, genSrchList      , PREF_KEY_GEN_SRCH_1     );
+      loadPref(node, genSrchList      , PREF_KEY_GEN_SRCH_2     );
+      loadPref(node, genSrchList      , PREF_KEY_GEN_SRCH_3     );
+      loadPref(node, genSrchList      , PREF_KEY_GEN_SRCH_4     );
+    }
+    catch (BackingStoreException e)
+    {
+      e.printStackTrace();
+    }
+
+    HyperTab.updateAllWebButtons();
   }
 
 //---------------------------------------------------------------------------
