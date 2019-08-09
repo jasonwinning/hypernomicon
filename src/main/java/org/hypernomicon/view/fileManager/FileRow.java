@@ -57,7 +57,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 //---------------------------------------------------------------------------
 
   public FilePath getFilePath() { return hyperPath.filePath(); }
-  boolean isDirectory()         { return hyperPath.filePath().isDirectory(); }
+  boolean isDirectory()         { return nullSwitch(hyperPath.filePath(), false, FilePath::isDirectory); }
   public HDT_Folder getFolder() { return hyperPath.parentFolder(); }
   String getFileName()          { return hyperPath.getNameStr(); }
   HyperPath getHyperPath()      { return hyperPath; }
@@ -85,7 +85,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
   {
     long size;
 
-    try                   { size = hyperPath.filePath().size(); }
+    try                   { size = hyperPath.filePath() == null ? 0 : hyperPath.filePath().size(); }
     catch (IOException e) { return new FileCellValue<>("", Long.valueOf(-1)); }
 
     if (size >= 1000)

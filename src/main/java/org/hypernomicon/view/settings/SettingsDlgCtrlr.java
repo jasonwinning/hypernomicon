@@ -85,6 +85,8 @@ public class SettingsDlgCtrlr extends HyperDlg
   @FXML private void btnImageEditorBrowseClick() { browseClick(dialogStage, tfImageEditor); }
   @FXML private void btnPDFReaderClick()         { browseClick(dialogStage, tfPDFReader); }
 
+  @Override protected boolean isValid() { return true; }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -108,9 +110,6 @@ public class SettingsDlgCtrlr extends HyperDlg
     btnZoteroAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltZotero));
     btnMendeleyAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltMendeley));
     lblRedirect.setOnMouseClicked(event -> openWebLink(authUrl.get()));
-
-    if (app.debugging() == false)
-      tpComputerSpecific.getTabs().remove(tabWebButtons);
 
     btnComputer.selectedProperty().addListener((ob, ov, nv) ->
     {
@@ -160,15 +159,15 @@ public class SettingsDlgCtrlr extends HyperDlg
       tabLinkToExtBibMgr.setContent(apUnlinkFromExtBibMgr);
     }
 
-    btnVerify.visibleProperty().bind(authUrl.isNotEmpty());
-    lblRedirect.visibleProperty().bind(authUrl.isNotEmpty());
-    btnCodePaste.visibleProperty().bind(authUrl.isNotEmpty());
-    tfVerificationCode.visibleProperty().bind(authUrl.isNotEmpty());
-    lblStep2.visibleProperty().bind(authUrl.isNotEmpty());
+    btnVerify           .visibleProperty().bind(authUrl.isNotEmpty());
+    lblRedirect         .visibleProperty().bind(authUrl.isNotEmpty());
+    btnCodePaste        .visibleProperty().bind(authUrl.isNotEmpty());
+    tfVerificationCode  .visibleProperty().bind(authUrl.isNotEmpty());
+    lblStep2            .visibleProperty().bind(authUrl.isNotEmpty());
     lblStep2Instructions.visibleProperty().bind(authUrl.isNotEmpty());
-    lblStep3.visibleProperty().bind(authUrl.isNotEmpty());
+    lblStep3            .visibleProperty().bind(authUrl.isNotEmpty());
     lblStep3Instructions.visibleProperty().bind(authUrl.isNotEmpty());
-    lblStep4.visibleProperty().bind(authUrl.isNotEmpty());
+    lblStep4            .visibleProperty().bind(authUrl.isNotEmpty());
     lblStep4Instructions.visibleProperty().bind(authUrl.isNotEmpty());
 
     initAppTextField(tfImageEditor, PREF_KEY_IMAGE_EDITOR);
@@ -216,9 +215,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     tabNaming.setDisable(noDB);
 
     if (noDB == false)
-    {
       initDBCheckBox(chkUseSentenceCase, PREF_KEY_SENTENCE_CASE, false);
-    }
 
     dialogStage.setOnHiding(event -> webBtnSettingsCtrlr.save());
   }
@@ -439,14 +436,6 @@ public class SettingsDlgCtrlr extends HyperDlg
     fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
 
     nullSwitch(ui.windows.showOpenDialog(fileChooser, owner), filePath -> tf.setText(filePath.toString()));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected boolean isValid()
-  {
-    return true;
   }
 
 //---------------------------------------------------------------------------

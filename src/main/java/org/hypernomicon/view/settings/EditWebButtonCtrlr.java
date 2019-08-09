@@ -74,7 +74,7 @@ public class EditWebButtonCtrlr
 
     tfPattern.textProperty().addListener((obs, ov, nv) -> dlg.setChanged());
 
-    fieldToChk.forEach((field, chk) -> chk.setOnAction(event -> dlg.setChanged()));
+    fieldToChk.values().forEach(chk -> chk.setOnAction(event -> dlg.setChanged()));
   }
 
 //---------------------------------------------------------------------------

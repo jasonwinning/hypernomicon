@@ -1458,6 +1458,8 @@ public final class Util
 
   public static MediaType getMediaType(FilePath filePath)
   {
+    if (filePath == null) return MediaType.OCTET_STREAM;
+
     Metadata metadata = new Metadata();
     metadata.set(Metadata.RESOURCE_NAME_KEY, filePath.toString());
 

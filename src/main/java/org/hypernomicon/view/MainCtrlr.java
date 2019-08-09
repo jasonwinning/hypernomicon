@@ -1475,7 +1475,7 @@ public final class MainCtrlr
     db.deleteRecord(type, record.getID());
 
     viewSequence.activateCurrentView();
-    fileManagerDlg.setNeedRefresh();
+    fileManagerDlg.refresh();
     return true;
   }
 

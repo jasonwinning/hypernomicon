@@ -154,8 +154,8 @@ public final class HyperDB
   private FilePath rootFilePath, hdbFilePath;
   private Instant dbCreationDate;
 
-  private boolean loaded       = false, deletionInProgress = false, pointerResolutionInProgress = false,
-                  unableToLoad = false, initialized        = false, resolveAgain = false;
+  private boolean loaded       = false, deletionInProgress = false, pointerResolutionInProgress     = false, resolveAgain = false,
+                  unableToLoad = false, initialized        = false, startMentionsRebuildAfterDelete = false;
 
   public boolean runningConversion     = false, // suppresses "modified date" updating
                  viewTestingInProgress = false; // suppresses "view date" updating
@@ -213,9 +213,9 @@ public final class HyperDB
 
 //---------------------------------------------------------------------------
 
-  public String getNestedString(HDT_Record subj, HDT_Record obj, Tag tag)      { return getRelSet(subj, obj).getNestedString(subj, obj, tag);  }
-  public boolean getNestedBoolean(HDT_Record subj, HDT_Record obj, Tag tag)    { return getRelSet(subj, obj).getNestedBoolean(subj, obj, tag); }
-  public Ternary getNestedTernary(HDT_Record subj, HDT_Record obj, Tag tag)    { return getRelSet(subj, obj).getNestedTernary(subj, obj, tag); }
+  public String     getNestedString (HDT_Record subj, HDT_Record obj, Tag tag) { return getRelSet(subj, obj).getNestedString (subj, obj, tag); }
+  public boolean    getNestedBoolean(HDT_Record subj, HDT_Record obj, Tag tag) { return getRelSet(subj, obj).getNestedBoolean(subj, obj, tag); }
+  public Ternary    getNestedTernary(HDT_Record subj, HDT_Record obj, Tag tag) { return getRelSet(subj, obj).getNestedTernary(subj, obj, tag); }
   public HDT_Record getNestedPointer(HDT_Record subj, HDT_Record obj, Tag tag) { return getRelSet(subj, obj).getNestedPointer(subj, obj, tag); }
   public boolean relationHasNestedValues(RelationType relType)                 { return relationSets.get(relType).getHasNestedItems(); }
   public HDI_Schema getNestedSchema(RelationType relType, Tag tag)             { return relationSets.get(relType).getSchema(tag); }
@@ -827,7 +827,8 @@ public final class HyperDB
 
   public void deleteRecord(HDT_RecordType type, int id)
   {
-    boolean doMentionsRebuild = false;
+    if (deletionInProgress == false)
+      startMentionsRebuildAfterDelete = false;
 
     if (isProtectedRecord(id, type))
     {
@@ -853,7 +854,7 @@ public final class HyperDB
     {
       if (mentionsIndex.isRebuilding())
       {
-        doMentionsRebuild = true;
+        startMentionsRebuildAfterDelete = true;
         mentionsIndex.stopRebuild();
       }
       else
@@ -892,8 +893,11 @@ public final class HyperDB
       folderTreeWatcher.createNewWatcherAndStart();
     }
 
-    if (doMentionsRebuild)
-      rebuildMentions();
+    if (startMentionsRebuildAfterDelete == false)
+      return;
+
+    rebuildMentions();
+    startMentionsRebuildAfterDelete = false;
   }
 
 //---------------------------------------------------------------------------
@@ -1689,86 +1693,86 @@ public final class HyperDB
 
     try
     {
-      persons          = addTag("person",             tagPerson,          "Person",                    HDT_Person         .class);
-      personStatuses   = addTag("person_status",      tagPersonStatus,    "Status",                    HDT_PersonStatus   .class);
-      institutions     = addTag("institution",        tagInstitution,     "Institution",               HDT_Institution    .class);
-      institutionTypes = addTag("institution_type",   tagInstitutionType, "Institution Type",          HDT_InstitutionType.class);
-      regions          = addTag("region",             tagRegion,          "State/Region",              HDT_Region         .class);
-      countries        = addTag("country",            tagCountry,         "Country",                   HDT_Country        .class);
-      ranks            = addTag("rank",               tagRank,            "Rank",                      HDT_Rank           .class);
-      investigations   = addTag("investigation",      tagInvestigation,   "Investigation",             HDT_Investigation  .class);
-      debates          = addTag("debate",             tagDebate,          "Problem/Debate",            HDT_Debate         .class);
-      arguments        = addTag("argument",           tagArgument,        "Argument",                  HDT_Argument       .class);
-      terms            = addTag("term",               tagTerm,            "Term",                      HDT_Term           .class);
-      concepts         = addTag("concept",            tagConcept,         "Concept",                   HDT_Concept        .class);
-      works            = addTag("work",               tagWork,            "Work",                      HDT_Work           .class);
-      workTypes        = addTag("work_type",          tagWorkType,        "Type of Work",              HDT_WorkType       .class);
-      workLabels       = addTag("work_label",         tagWorkLabel,       "Work Label",                HDT_WorkLabel      .class);
-      fields           = addTag("field",              tagField,           "Field",                     HDT_Field          .class);
-      subfields        = addTag("subfield",           tagSubfield,        "Subfield",                  HDT_Subfield       .class);
-      positions        = addTag("position",           tagPosition,        "Position",                  HDT_Position       .class);
-      positionVerdicts = addTag("position_verdict",   tagPositionVerdict, "Conclusion about Position", HDT_PositionVerdict.class);
-      argumentVerdicts = addTag("argument_verdict",   tagArgumentVerdict, "Conclusion about Argument", HDT_ArgumentVerdict.class);
-      miscFiles        = addTag("misc_file",          tagMiscFile,        "Misc. File",                HDT_MiscFile       .class);
-      workFiles        = addTag("work_file",          tagWorkFile,        "Work File",                 HDT_WorkFile       .class);
-      folders          = addTag("folder",             tagFolder,          "Folder",                    HDT_Folder         .class);
-      notes            = addTag("note",               tagNote,            "Note",                      HDT_Note           .class);
-      glossaries       = addTag("glossary",           tagGlossary,        "Glossary",                  HDT_Glossary       .class);
-      hubs             = addTag("hub",                tagHub,             "Record Hub",                HDT_Hub            .class);
-      personGroups     = addTag("person_group",       tagPersonGroup,     "Person Group",              HDT_PersonGroup    .class);
-      fileTypes        = addTag("file_type",          tagFileType,        "File Type",                 HDT_FileType       .class);
+      persons          = addTag("person"            , tagPerson,          "Person"                   , HDT_Person         .class);
+      personStatuses   = addTag("person_status"     , tagPersonStatus,    "Status"                   , HDT_PersonStatus   .class);
+      institutions     = addTag("institution"       , tagInstitution,     "Institution"              , HDT_Institution    .class);
+      institutionTypes = addTag("institution_type"  , tagInstitutionType, "Institution Type"         , HDT_InstitutionType.class);
+      regions          = addTag("region"            , tagRegion,          "State/Region"             , HDT_Region         .class);
+      countries        = addTag("country"           , tagCountry,         "Country"                  , HDT_Country        .class);
+      ranks            = addTag("rank"              , tagRank,            "Rank"                     , HDT_Rank           .class);
+      investigations   = addTag("investigation"     , tagInvestigation,   "Investigation"            , HDT_Investigation  .class);
+      debates          = addTag("debate"            , tagDebate,          "Problem/Debate"           , HDT_Debate         .class);
+      arguments        = addTag("argument"          , tagArgument,        "Argument"                 , HDT_Argument       .class);
+      terms            = addTag("term"              , tagTerm,            "Term"                     , HDT_Term           .class);
+      concepts         = addTag("concept"           , tagConcept,         "Concept"                  , HDT_Concept        .class);
+      works            = addTag("work"              , tagWork,            "Work"                     , HDT_Work           .class);
+      workTypes        = addTag("work_type"         , tagWorkType,        "Type of Work"             , HDT_WorkType       .class);
+      workLabels       = addTag("work_label"        , tagWorkLabel,       "Work Label"               , HDT_WorkLabel      .class);
+      fields           = addTag("field"             , tagField,           "Field"                    , HDT_Field          .class);
+      subfields        = addTag("subfield"          , tagSubfield,        "Subfield"                 , HDT_Subfield       .class);
+      positions        = addTag("position"          , tagPosition,        "Position"                 , HDT_Position       .class);
+      positionVerdicts = addTag("position_verdict"  , tagPositionVerdict, "Conclusion about Position", HDT_PositionVerdict.class);
+      argumentVerdicts = addTag("argument_verdict"  , tagArgumentVerdict, "Conclusion about Argument", HDT_ArgumentVerdict.class);
+      miscFiles        = addTag("misc_file"         , tagMiscFile,        "Misc. File"               , HDT_MiscFile       .class);
+      workFiles        = addTag("work_file"         , tagWorkFile,        "Work File"                , HDT_WorkFile       .class);
+      folders          = addTag("folder"            , tagFolder,          "Folder"                   , HDT_Folder         .class);
+      notes            = addTag("note"              , tagNote,            "Note"                     , HDT_Note           .class);
+      glossaries       = addTag("glossary"          , tagGlossary,        "Glossary"                 , HDT_Glossary       .class);
+      hubs             = addTag("hub"               , tagHub,             "Record Hub"               , HDT_Hub            .class);
+      personGroups     = addTag("person_group"      , tagPersonGroup,     "Person Group"             , HDT_PersonGroup    .class);
+      fileTypes        = addTag("file_type"         , tagFileType,        "File Type"                , HDT_FileType       .class);
 
-                         addTag("id",                 tagID,              "Record ID");
-                         addTag("type",               tagType,            "Record Type");
-                         addTag("sort_key",           tagSortKey,         "Sort Key");
-                         addTag("search_key",         tagSearchKey,       "Search Key");
-                         addTag("record",             tagRecord,          "Record");
-                         addTag("list_name",          tagListName,        "List Name");
-                         addTag("first_name",         tagFirstName,       "First Name");
-                         addTag("last_name",          tagLastName,        "Last Name");
-                         addTag("link",               tagWebURL,          "Web URL");
-                         addTag("orcid",              tagORCID,           "ORCID");
-                         addTag("picture",            tagPicture,         "Picture");
-                         addTag("picture_crop",       tagPictureCrop,     "Picture Crop");
-                         addTag("why_famous",         tagWhyFamous,       "Description");
-                         addTag("name",               tagName,            "Name");
-                         addTag("city",               tagCity,            "City");
-                         addTag("abbreviation",       tagAbbreviation,    "Abbreviation");
-                         addTag("description",        tagDescription,     "Description");
-                         addTag("title",              tagTitle,           "Title");
-                         addTag("file_name",          tagFileName,        "Filename");
-                         addTag("year",               tagYear,            "Year");
-                         addTag("bib_entry_key",      tagBibEntryKey,     "Bibliography Entry Key");
-                         addTag("misc_bib",           tagMiscBib,         "Misc. Bib. Info");
-                         addTag("doi",                tagDOI,             "DOI");
-                         addTag("isbn",               tagISBN,            "ISBN");
-                         addTag("author",             tagAuthor,          "Author");
-                         addTag("in_filename",        tagInFileName,      "Included in File Name");
-                         addTag("editor",             tagEditor,          "Editor");
-                         addTag("translator",         tagTranslator,      "Translator");
-                         addTag("start_page",         tagStartPageNum,    "Starting Page Number");
-                         addTag("end_page",           tagEndPageNum,      "Ending Page Number");
-                         addTag("annotated",          tagAnnotated,       "Annotated");
-                         addTag("comments",           tagComments,        "Description");
-                         addTag("larger_debate",      tagLargerDebate,    "Larger Debate");
-                         addTag("counterargument",    tagCounterargument, "Counterargument");
-                         addTag("definition",         tagDefinition,      "Definition");
-                         addTag("text",               tagText,            "Text");
-                         addTag("active",             tagActive,          "Active");
-                         addTag("larger_position",    tagLargerPosition,  "Larger Position");
-                         addTag("parent_institution", tagParentInst,      "Parent Institution");
-                         addTag("parent_glossary",    tagParentGlossary,  "Parent Glossary");
-                         addTag("parent_note",        tagParentNote,      "Parent Note");
-                         addTag("parent_folder",      tagParentFolder,    "Parent Folder");
-                         addTag("linked_record",      tagLinkedRecord,    "Linked Record");
-                         addTag("display_item",       tagDisplayRecord,   "Relevant Records");
-                         addTag("key_work",           tagKeyWork,         "Key Works");
-                         addTag("larger_work",        tagLargerWork,      "Larger Work");
-                         addTag("parent_label",       tagParentLabel,     "Parent Label");
-                         addTag("parent_group",       tagParentGroup,     "Parent Group");
-                         addTag("creation_date",      tagCreationDate,    "Date Created");
-                         addTag("modified_date",      tagModifiedDate,    "Date Modified");
-                         addTag("view_date",          tagViewDate,        "Date Last Viewed");
+                         addTag("id"                , tagID             , "Record ID");
+                         addTag("type"              , tagType           , "Record Type");
+                         addTag("sort_key"          , tagSortKey        , "Sort Key");
+                         addTag("search_key"        , tagSearchKey      , "Search Key");
+                         addTag("record"            , tagRecord         , "Record");
+                         addTag("list_name"         , tagListName       , "List Name");
+                         addTag("first_name"        , tagFirstName      , "First Name");
+                         addTag("last_name"         , tagLastName       , "Last Name");
+                         addTag("link"              , tagWebURL         , "Web URL");
+                         addTag("orcid"             , tagORCID          , "ORCID");
+                         addTag("picture"           , tagPicture        , "Picture");
+                         addTag("picture_crop"      , tagPictureCrop    , "Picture Crop");
+                         addTag("why_famous"        , tagWhyFamous      , "Description");
+                         addTag("name"              , tagName           , "Name");
+                         addTag("city"              , tagCity           , "City");
+                         addTag("abbreviation"      , tagAbbreviation   , "Abbreviation");
+                         addTag("description"       , tagDescription    , "Description");
+                         addTag("title"             , tagTitle          , "Title");
+                         addTag("file_name"         , tagFileName       , "Filename");
+                         addTag("year"              , tagYear           , "Year");
+                         addTag("bib_entry_key"     , tagBibEntryKey    , "Bibliography Entry Key");
+                         addTag("misc_bib"          , tagMiscBib        , "Misc. Bib. Info");
+                         addTag("doi"               , tagDOI            , "DOI");
+                         addTag("isbn"              , tagISBN           , "ISBN");
+                         addTag("author"            , tagAuthor         , "Author");
+                         addTag("in_filename"       , tagInFileName     , "Included in File Name");
+                         addTag("editor"            , tagEditor         , "Editor");
+                         addTag("translator"        , tagTranslator     , "Translator");
+                         addTag("start_page"        , tagStartPageNum   , "Starting Page Number");
+                         addTag("end_page"          , tagEndPageNum     , "Ending Page Number");
+                         addTag("annotated"         , tagAnnotated      , "Annotated");
+                         addTag("comments"          , tagComments       , "Description");
+                         addTag("larger_debate"     , tagLargerDebate   , "Larger Debate");
+                         addTag("counterargument"   , tagCounterargument, "Counterargument");
+                         addTag("definition"        , tagDefinition     , "Definition");
+                         addTag("text"              , tagText           , "Text");
+                         addTag("active"            , tagActive         , "Active");
+                         addTag("larger_position"   , tagLargerPosition , "Larger Position");
+                         addTag("parent_institution", tagParentInst     , "Parent Institution");
+                         addTag("parent_glossary"   , tagParentGlossary , "Parent Glossary");
+                         addTag("parent_note"       , tagParentNote     , "Parent Note");
+                         addTag("parent_folder"     , tagParentFolder   , "Parent Folder");
+                         addTag("linked_record"     , tagLinkedRecord   , "Linked Record");
+                         addTag("display_item"      , tagDisplayRecord  , "Relevant Records");
+                         addTag("key_work"          , tagKeyWork        , "Key Works");
+                         addTag("larger_work"       , tagLargerWork     , "Larger Work");
+                         addTag("parent_label"      , tagParentLabel    , "Parent Label");
+                         addTag("parent_group"      , tagParentGroup    , "Parent Group");
+                         addTag("creation_date"     , tagCreationDate   , "Date Created");
+                         addTag("modified_date"     , tagModifiedDate   , "Date Modified");
+                         addTag("view_date"         , tagViewDate       , "Date Last Viewed");
 
       typeToTag.keySet().forEach(type -> tagToObjType.put(typeToTag.get(type), type));
 
@@ -1778,20 +1782,20 @@ public final class HyperDB
 
       MainText.init();
 
-      tagToObjType.put(tagAuthor, hdtPerson);
-      tagToObjType.put(tagLargerDebate, hdtDebate);
-      tagToObjType.put(tagLargerPosition, hdtPosition);
-      tagToObjType.put(tagParentNote, hdtNote);
-      tagToObjType.put(tagParentGlossary, hdtGlossary);
-      tagToObjType.put(tagLinkedRecord, hdtAuxiliary);
-      tagToObjType.put(tagKeyWork, hdtAuxiliary);
-      tagToObjType.put(tagDisplayRecord, hdtAuxiliary);
-      tagToObjType.put(tagLargerWork, hdtWork);
-      tagToObjType.put(tagParentLabel, hdtWorkLabel);
-      tagToObjType.put(tagParentGroup, hdtPersonGroup);
-      tagToObjType.put(tagCounterargument, hdtArgument);
-      tagToObjType.put(tagParentFolder, hdtFolder);
-      tagToObjType.put(tagParentInst, hdtInstitution);
+      tagToObjType.put(tagAuthor         , hdtPerson     );
+      tagToObjType.put(tagLargerDebate   , hdtDebate     );
+      tagToObjType.put(tagLargerPosition , hdtPosition   );
+      tagToObjType.put(tagParentNote     , hdtNote       );
+      tagToObjType.put(tagParentGlossary , hdtGlossary   );
+      tagToObjType.put(tagLinkedRecord   , hdtAuxiliary  );
+      tagToObjType.put(tagKeyWork        , hdtAuxiliary  );
+      tagToObjType.put(tagDisplayRecord  , hdtAuxiliary  );
+      tagToObjType.put(tagLargerWork     , hdtWork       );
+      tagToObjType.put(tagParentLabel    , hdtWorkLabel  );
+      tagToObjType.put(tagParentGroup    , hdtPersonGroup);
+      tagToObjType.put(tagCounterargument, hdtArgument   );
+      tagToObjType.put(tagParentFolder   , hdtFolder     );
+      tagToObjType.put(tagParentInst     , hdtInstitution);
 
   /*****************************************************************************
   * ************************************************************************** *

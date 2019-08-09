@@ -46,7 +46,7 @@
       </ScrollPane>
       <Label layoutX="14.0" layoutY="475.0" text="Click field button to add field to pattern. If checked, then the field must be present for the pattern in question to be used." AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="14.0" />
       <Button fx:id="btnAdd" layoutX="829.0" layoutY="471.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="93.0" text="Add Pattern" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="154.0" />
-      <Button defaultButton="true" layoutX="927.0" layoutY="471.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="70.0" text="OK" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="79.0" />
-      <Button cancelButton="true" layoutX="1002.0" layoutY="471.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="70.0" text="Cancel" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="4.0" />            
+      <Button defaultButton="true" layoutX="927.0" layoutY="471.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="25.0" prefWidth="70.0" text="OK" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="79.0" />
+      <Button cancelButton="true" layoutX="1002.0" layoutY="471.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="25.0" prefWidth="70.0" text="Cancel" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="4.0" />            
    </children>
 </AnchorPane>
