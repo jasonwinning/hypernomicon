@@ -84,6 +84,7 @@ public final class Const
     PREF_KEY_NOTE_ID = "noteID",
     PREF_KEY_SENTENCE_CASE = "sentenceCase",
     PREF_KEY_CHECK_INTERNET = "checkInternet",
+    PREF_KEY_CHECK_FOR_NEW_VERSION = "checkForNewVersion",
     PREF_KEY_AUTO_OPEN_PDF = "autoOpenWorkFile",
     PREF_KEY_AUTO_RETRIEVE_BIB = "autoRetrieveBib",
     PREF_KEY_IMPORT_ACTION_DEFAULT = "importActionDefault",

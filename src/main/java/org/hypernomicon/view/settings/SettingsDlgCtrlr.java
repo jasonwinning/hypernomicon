@@ -66,7 +66,7 @@ public class SettingsDlgCtrlr extends HyperDlg
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
   @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize, btnComputer, btnDatabase;
   @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced;
-  @FXML private CheckBox chkAutoOpenPDF, chkAutoRetrieveBib, chkInternet, chkUseSentenceCase, chkLinuxWorkaround;
+  @FXML private CheckBox chkAutoOpenPDF, chkNewVersionCheck, chkAutoRetrieveBib, chkInternet, chkUseSentenceCase, chkLinuxWorkaround;
   @FXML private Label lblCurrentlyLinked, lblRedirect, lblStep2, lblStep2Instructions,
                       lblStep3, lblStep3Instructions, lblStep4, lblStep4Instructions;
   @FXML private Slider sliderFontSize;
@@ -204,6 +204,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     setToolTip(sliderFontSize, "Base font size");
 
     initAppCheckBox(chkInternet, PREF_KEY_CHECK_INTERNET, true);
+    initAppCheckBox(chkNewVersionCheck, PREF_KEY_CHECK_FOR_NEW_VERSION, true);
     initAppCheckBox(chkAutoOpenPDF, PREF_KEY_AUTO_OPEN_PDF, true);
     initAppCheckBox(chkAutoRetrieveBib, PREF_KEY_AUTO_RETRIEVE_BIB, true);
 

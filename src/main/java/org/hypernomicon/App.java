@@ -28,8 +28,13 @@ import static org.hypernomicon.view.tabs.HyperTab.*;
 import org.hypernomicon.bib.BibManager;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.util.AsyncHttpClient;
+import org.hypernomicon.util.JsonHttpClient;
+import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.MainCtrlr;
+import org.hypernomicon.view.dialogs.NewVersionDlgCtrlr;
 import org.hypernomicon.view.fileManager.FileManager;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.previewWindow.ContentsWindow;
@@ -50,7 +55,10 @@ import static java.lang.management.ManagementFactory.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -91,6 +99,7 @@ import javafx.scene.input.TransferMode;
 public final class App extends Application
 {
   private Stage primaryStage;
+  private VersionNumber version;
   private boolean testMainTextEditing = false;
   private double deltaX;
   private long swipeStartTime;
@@ -113,8 +122,9 @@ public final class App extends Application
   public static final FolderTreeWatcher folderTreeWatcher = new FolderTreeWatcher();
   public static final String appTitle = "Hypernomicon";
 
-  public Stage getPrimaryStage() { return primaryStage; }
-  public boolean debugging()     { return isDebugging; }
+  public Stage getPrimaryStage()    { return primaryStage; }
+  public boolean debugging()        { return isDebugging; }
+  public VersionNumber getVersion() { return version; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -186,6 +196,13 @@ public final class App extends Application
     if (!initMainWindows())
       return;
 
+    String versionStr = manifestValue("Impl-Version");
+
+    if (safeStr(versionStr).length() == 0)
+      versionStr = "1.15.3";
+
+    version = new VersionNumber(2, versionStr);
+
     boolean hdbExists = false;
     String srcName = appPrefs.get(PREF_KEY_SOURCE_FILENAME, "");
     if (srcName.isBlank() == false)
@@ -218,10 +235,48 @@ public final class App extends Application
     else           ui.startEmpty();
 
     if (args.size() > 0)
+    {
       ui.handleArgs(args);
+      return;
+    }
+
+    if (appPrefs.getBoolean(PREF_KEY_CHECK_FOR_NEW_VERSION, true)) checkForNewVersion(new AsyncHttpClient(), newVersion ->
+    {
+      if (newVersion.compareTo(app.getVersion()) > 0)
+        NewVersionDlgCtrlr.create().showModal();
+    }, e -> noOp());
 
     if (db.viewTestingInProgress && hdbExists)
       testUpdatingAllRecords();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void checkForNewVersion(AsyncHttpClient httpClient, Consumer<VersionNumber> successHndlr, Consumer<Exception> failHndlr)
+  {
+    JsonHttpClient.getArrayAsync("https://api.github.com/repos/jasonwinning/hypernomicon/releases", httpClient, jsonArray ->
+    {
+      VersionNumber updateNum =  app.version;
+      Pattern p = Pattern.compile("(\\A|\\D)(\\d(\\d|(\\.\\d))+)(\\z|\\D)");
+
+      for (JsonObj jsonObj : jsonArray.getObjs())
+      {
+        if (jsonObj.getBoolean("prerelease", false) == false)
+        {
+          Matcher m = p.matcher(jsonObj.getStrSafe("tag_name"));
+
+          if (m.find())
+          {
+            VersionNumber curNum = new VersionNumber(2, m.group(2));
+            if (curNum.compareTo(updateNum) > 0)
+              updateNum = curNum;
+          }
+        }
+      }
+
+      successHndlr.accept(updateNum);
+    }, failHndlr::accept);
   }
 
 //---------------------------------------------------------------------------

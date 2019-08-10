@@ -145,15 +145,20 @@
                                                 </AnchorPane>
                                                 <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="7">
                                                    <children>
-                                                      <CheckBox fx:id="chkAutoOpenPDF" layoutY="4.0" mnemonicParsing="false" text="Automatically preview selected file in Work File dialog" />
+                                                      <CheckBox fx:id="chkNewVersionCheck" layoutY="4.0" mnemonicParsing="false" text="Check for new application version on startup" />
                                                    </children>
                                                 </AnchorPane>
                                                 <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="8">
                                                    <children>
-                                                      <CheckBox fx:id="chkAutoRetrieveBib" layoutY="4.0" mnemonicParsing="false" text="Automatically retrieve bibliographic info for selected file internet in Work File dialog" />
+                                                      <CheckBox fx:id="chkAutoOpenPDF" layoutY="4.0" mnemonicParsing="false" text="Automatically preview selected file in Work File dialog" />
                                                    </children>
                                                 </AnchorPane>
                                                 <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="9">
+                                                   <children>
+                                                      <CheckBox fx:id="chkAutoRetrieveBib" layoutY="4.0" mnemonicParsing="false" text="Automatically retrieve bibliographic info for selected file internet in Work File dialog" />
+                                                   </children>
+                                                </AnchorPane>
+                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="10">
                                                    <children>
                                                       <CheckBox fx:id="chkLinuxWorkaround" layoutY="4.0" mnemonicParsing="false" text="Enable workaround for when parent windows stop being resizable" />
                                                    </children>
