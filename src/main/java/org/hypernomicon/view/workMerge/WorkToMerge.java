@@ -66,7 +66,7 @@ public class WorkToMerge
     this.bibData = bibData;
     this.creatingNewWork = creatingNewWork;
 
-    hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), null);
+    hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType));
 
     htAuthors = new HyperTable(tvAuthors, 0, true, "");
 

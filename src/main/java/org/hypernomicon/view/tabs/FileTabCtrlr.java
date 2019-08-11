@@ -218,8 +218,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     htKeyMentioners.addCol(hdtNone, ctNone);
     htKeyMentioners.addCol(hdtNone, ctNone);
 
-    hcbType = new HyperCB(cbType, ctDropDown, new StandardPopulator(hdtFileType), null);
-    hcbWork = new HyperCB(cbWork, ctDropDownList, new StandardPopulator(hdtWork), null);
+    hcbType = new HyperCB(cbType, ctDropDown, new StandardPopulator(hdtFileType), true);
+    hcbWork = new HyperCB(cbWork, ctDropDownList, new StandardPopulator(hdtWork), true);
 
     hcbWork.getComboBox().getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) -> cbWorkChange());
 
@@ -299,7 +299,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   public boolean showFileDialog(FilePath srcFilePath)
   {
-    fdc = FileDlgCtrlr.create("Miscellaneous file", hdtMiscFile, curMiscFile, ui.workHyperTab().activeRecord(), tfName.getText());
+    fdc = FileDlgCtrlr.create("Miscellaneous file", curMiscFile, tfName.getText());
 
     if (srcFilePath != null)
       fdc.setSrcFilePath(srcFilePath);

@@ -63,14 +63,14 @@ public class MergeSpokeDlgCtrlr extends HyperDlg
     mainText1 = record1.getMainText().getHtml();
     mainText2 = record2.getMainText().getHtml();
 
-    view1.getEngine().loadContent(makeLinksExternal(getHtmlEditorText(mainText1).replace("contenteditable=\"true\"", "contentEditable=\"false\"")));
-    view2.getEngine().loadContent(makeLinksExternal(getHtmlEditorText(mainText2).replace("contenteditable=\"true\"", "contentEditable=\"false\"")));
+    view1.getEngine().loadContent(makeLinksExternal(prepHtmlForDisplay(mainText1).replace("contenteditable=\"true\"", "contentEditable=\"false\"")));
+    view2.getEngine().loadContent(makeLinksExternal(prepHtmlForDisplay(mainText2).replace("contenteditable=\"true\"", "contentEditable=\"false\"")));
 
     if (extractTextFromHTML(mainText1).trim().length() == 0)
       if (extractTextFromHTML(mainText2).trim().length() > 0)
         rbDesc2.setSelected(true);
 
-    he3.setHtmlText(MainTextCtrlr.disableLinks(getHtmlEditorText("")));
+    he3.setHtmlText(MainTextCtrlr.disableLinks(""));
   }
 
 //---------------------------------------------------------------------------

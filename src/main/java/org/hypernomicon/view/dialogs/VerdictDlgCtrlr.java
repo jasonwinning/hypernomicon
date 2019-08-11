@@ -59,12 +59,12 @@ public class VerdictDlgCtrlr extends HyperDlg
     if (parent.getType() == hdtPosition)
     {
       lblParentType.setText("Target Position:");
-      hcbVerdict = new HyperCB(cbVerdict, ctDropDownList, new StandardPopulator(hdtPositionVerdict), null, false);
+      hcbVerdict = new HyperCB(cbVerdict, ctDropDownList, new StandardPopulator(hdtPositionVerdict));
     }
     else if (parent.getType() == hdtArgument)
     {
       lblParentType.setText("Target Argument:");
-      hcbVerdict = new HyperCB(cbVerdict, ctDropDownList, new StandardPopulator(hdtPositionVerdict), null, false);
+      hcbVerdict = new HyperCB(cbVerdict, ctDropDownList, new StandardPopulator(hdtPositionVerdict));
     }
     else
     {

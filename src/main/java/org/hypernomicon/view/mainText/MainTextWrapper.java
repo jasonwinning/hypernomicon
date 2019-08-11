@@ -33,7 +33,7 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
-
+import org.jsoup.parser.Parser;
 import org.hypernomicon.App;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
@@ -45,6 +45,7 @@ import org.hypernomicon.model.items.MainText.DisplayItem;
 import org.hypernomicon.model.items.MainText.DisplayItemType;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 
 import static org.hypernomicon.App.*;
@@ -56,6 +57,8 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Worker;
 import javafx.event.Event;
 import javafx.fxml.FXMLLoader;
@@ -133,7 +136,7 @@ public final class MainTextWrapper
           lastTextToHilite = new String(textToHilite);
 
         if (lastTextToHilite.length() > 0)
-          MainTextWrapper.hiliteText(textToHilite, we);
+          hiliteText(textToHilite, we);
 
         textToHilite = "";
       }
@@ -508,7 +511,7 @@ public final class MainTextWrapper
     if ((Jsoup.parse(html).text().trim().length() == 0) && (keyWorksSize == 0) && noDisplayRecords)
       beginEditing(false);
     else
-      setReadOnlyHTML(completeHtml, we, viewInfo, null);
+      setReadOnlyHTML(completeHtml, we, viewInfo, null, true);
 
     showing = true;
     curWrapper = this;
@@ -664,7 +667,7 @@ public final class MainTextWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getOpenRecordParms(HDT_Record record)
+  public static String getOpenRecordParms(HDT_Record record)
   {
     return String.valueOf(record.getType().ordinal()) + "," + record.getID();
   }
@@ -740,6 +743,14 @@ public final class MainTextWrapper
 
   public static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, TextViewInfo viewInfo, HDT_Record recordToHilite)
   {
+    setReadOnlyHTML(htmlToUse, weToUse, viewInfo, recordToHilite, false);
+  }
+
+  private static void setReadOnlyHTML(String htmlToUse, WebEngine weToUse, TextViewInfo viewInfo, HDT_Record recordToHilite, boolean alreadyPrepped)
+  {
+    if (alreadyPrepped == false)
+      htmlToUse = prepHtmlForDisplay(htmlToUse);
+
     if (textToHilite.length() == 0)
       lastTextToHilite = "";
 
@@ -770,7 +781,7 @@ public final class MainTextWrapper
     else
     {
       textToHilite = string;
-      MainTextWrapper.hiliteText(string, we);
+      hiliteText(string, we);
     }
   }
 
@@ -1107,7 +1118,7 @@ public final class MainTextWrapper
   private void setCompleteHtml()
   {
     HDT_WorkLabel curLabel = getLabelOfRecord(curRecord);
-    Document doc = Jsoup.parse(getHtmlEditorText(html));
+    Document doc = Jsoup.parse(prepHtmlForDisplay(html));
     StringBuilder innerHtml = new StringBuilder("");
     MutableBoolean firstOpen = new MutableBoolean(false);
     int keyWorksSize = getNestedKeyWorkCount(curRecord, keyWorks);
@@ -1436,6 +1447,108 @@ public final class MainTextWrapper
       curRecord.getMainText().setDisplayItemsFromList(displayItems);
       curRecord.getMainText().setKeyWorksFromList(keyWorks, true);
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String convertPlainMainTextToHtml(String input)
+  {
+    String output = "<html dir=\"ltr\"><head>" + mainTextHeadStyleTag() + "</head><body contenteditable=\"true\"><p><font face=\"Arial\" size=\"2\">";
+
+    input = trimLines(input);
+
+    input = input.replace("\t", "<span class=\"Apple-tab-span\" style=\"white-space:pre\"> </span>");
+
+    while (input.contains("\n\n"))
+      input = input.replace("\n\n", "\n<br>\n");
+
+    input = input.replace("\n", "</font></p><p><font face=\"Arial\" size=\"2\">");
+
+    output = output + input + "</font></p></body></html>";
+
+    return output;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static HDT_MiscFile getNextEmbeddedMiscFile(String str, MutableInt startNdx, MutableInt endNdx, ObjectProperty<Element> elementProp)
+  {
+    startNdx.setValue(str.indexOf("&lt;misc-file", startNdx.getValue()));
+    elementProp.set(null);
+
+    while (startNdx.getValue() >= 0)
+    {
+      endNdx.setValue(str.indexOf("&gt;", startNdx.getValue()));
+
+      if (endNdx.getValue() >= 0)
+      {
+        endNdx.add(4);
+        String tag = Parser.unescapeEntities(str.substring(startNdx.getValue(), endNdx.getValue()), true);
+
+        Document doc = Jsoup.parse(tag);
+
+        elementProp.set(doc.getElementsByTag("misc-file").first());
+
+        HDT_MiscFile miscFile = nullSwitch(elementProp.get(), null, element -> db.miscFiles.getByID(parseInt(element.attr("id"), -1)));
+
+        if (miscFile != null) return miscFile;
+      }
+    }
+
+    return null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String prepHtmlForDisplay(String str)
+  {
+    return prepHtmlForDisplay(str, false);
+  }
+
+  static String prepHtmlForDisplay(String str, boolean forEditor)
+  {
+    if (str.indexOf("</html>") > -1)
+    {
+      if (forEditor == false)
+      {
+        MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
+        ObjectProperty<Element> elementProp = new SimpleObjectProperty<>();
+
+        HDT_MiscFile miscFile = getNextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
+
+        while (miscFile != null)
+        {
+          String heightAttr = elementProp.get().attr("height"),
+                 widthAttr  = elementProp.get().attr("width");
+
+          if (heightAttr.isBlank() == false)
+            heightAttr = " height=\"" + heightAttr + "\"";
+
+          if (widthAttr.isBlank() == false)
+            widthAttr = " width=\"" + widthAttr + "\"";
+
+          String url = nullSwitch(miscFile.filePath(), "", FilePath::toURLString);
+
+          String tag = "<img src=\"" + url + "\" alt=\"\"" + heightAttr + widthAttr + "/><br>" +
+                "<a hypncon=\"true\" href=\"\" title=\"Go to this misc. file record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(miscFile) + "); return false;\">" + miscFile.name() + "</a>";
+
+          str = str.substring(0, startNdx.getValue()) + tag + safeSubstring(str, endNdx.getValue(), str.length());
+
+          startNdx.add(1);
+
+          miscFile = getNextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
+        }
+      }
+
+      return str;
+    }
+
+    if (str.equals("")) str = "<br>";
+
+    return convertPlainMainTextToHtml(str);
   }
 
 //---------------------------------------------------------------------------

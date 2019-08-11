@@ -23,16 +23,23 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableInt;
 
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.StrongLink;
+import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.util.BidiOneToManyRecordMap;
+import org.hypernomicon.view.mainText.MainTextWrapper;
+import org.jsoup.nodes.Element;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -133,6 +140,21 @@ class MentionsIndex
     if (record.hasMainText())
     {
       MainText mainText = ((HDT_RecordWithConnector)record).getMainText();
+
+      MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
+      ObjectProperty<Element> elementProp = new SimpleObjectProperty<>();
+
+      HDT_MiscFile miscFile = MainTextWrapper.getNextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
+
+      while (miscFile != null)
+      {
+        mentionedAnywhereToMentioners.addForward(miscFile, record);
+        mentionedInDescToMentioners.addForward(miscFile, record);
+
+        startNdx.add(1);
+        miscFile = MainTextWrapper.getNextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
+      }
+
       String plainText = mainText.getPlain();
 
       if (plainText.length() > 0)

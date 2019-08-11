@@ -201,7 +201,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (record.hasDesc())
         mainText = HDT_RecordWithDescription.class.cast(record).getDesc().getHtml();
 
-      MainTextWrapper.handleJSEvent(getHtmlEditorText(mainText), webView.getEngine(), new TextViewInfo());
+      MainTextWrapper.handleJSEvent(MainTextWrapper.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo());
     });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
@@ -262,7 +262,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
           String desc = record.hasDesc() ? ((HDT_RecordWithDescription)record).getDesc().getHtml() : "";
 
-          MainTextWrapper.setReadOnlyHTML(getHtmlEditorText(desc), webView.getEngine(), useViewInfo ? getView().getTextInfo() : new TextViewInfo(), null);
+          MainTextWrapper.setReadOnlyHTML(desc, webView.getEngine(), useViewInfo ? getView().getTextInfo() : new TextViewInfo(), null);
           clearWV = false;
         }
       }

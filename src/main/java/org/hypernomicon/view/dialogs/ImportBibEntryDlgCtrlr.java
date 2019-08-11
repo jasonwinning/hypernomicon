@@ -91,7 +91,7 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
     btnCreateNew.setOnAction(event -> doImport(true));
     btnExisting.setOnAction(event -> doImport(false));
 
-    hcbWork = new HyperCB(cbWork, ctDropDownList, new StandardPopulator(hdtWork), null, false);
+    hcbWork = new HyperCB(cbWork, ctDropDownList, new StandardPopulator(hdtWork));
     hcbWork.populate(false);
 
     if (cbWork.getItems().size() > 0)

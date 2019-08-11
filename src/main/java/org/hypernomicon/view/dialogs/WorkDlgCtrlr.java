@@ -174,7 +174,7 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     lblAutoPopulated.setText("");
     tfOrigFile.setEditable(false);
-    hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), null);
+    hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType));
 
     destFolder.addListener((obs, ov, nv) -> tfDest.setText(nv == null ? "" : (nv.pathNotEmpty() ? db.getRootPath().relativize(nv.filePath()).toString() : "")));
 

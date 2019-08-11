@@ -446,8 +446,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htISBN.addRefreshHandler(tabPane::requestLayout);
 
-    hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), null);
-    hcbLargerWork = new HyperCB(cbLargerWork, ctDropDownList, new StandardPopulator(hdtWork), null);
+    hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), true);
+    hcbLargerWork = new HyperCB(cbLargerWork, ctDropDownList, new StandardPopulator(hdtWork), true);
 
     btnWebSrch1.setOnAction(event ->
     {
@@ -1712,7 +1712,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (curWork.getWorkTypeEnum() == wtUnenteredSet)
     {
-      fdc = FileDlgCtrlr.create("Unentered Work File", hdtWorkFile, workFile, curWork, "");
+      fdc = FileDlgCtrlr.create("Unentered Work File", workFile, curWork);
 
       result = fdc.showModal();
       fdc = null;

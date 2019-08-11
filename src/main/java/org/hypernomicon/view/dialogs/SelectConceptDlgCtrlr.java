@@ -67,7 +67,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
   private void init(HDT_Concept oldConcept)
   {
-    hcbTerm = new HyperCB(cbTerm, ctDropDownList, new StandardPopulator(hdtTerm), null, false);
+    hcbTerm = new HyperCB(cbTerm, ctDropDownList, new StandardPopulator(hdtTerm));
 
     CustomRecordPopulator pop = new CustomRecordPopulator(hdtGlossary, (row, force) ->
     {
@@ -90,7 +90,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       return glossaries;
     });
 
-    hcbGlossary = new HyperCB(cbGlossary, ctDropDownList, pop, null);
+    hcbGlossary = new HyperCB(cbGlossary, ctDropDownList, pop);
 
     hcbTerm.addBlankEntry();
 

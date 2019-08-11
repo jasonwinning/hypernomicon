@@ -289,7 +289,7 @@ public final class MainCtrlr
 
     setSelectorTab(selectorTabPane.getTabs().get(selectorTabPane.getTabs().size() - 1));
 
-    hcbGoTo = new HyperCB(cbGoTo, ctDropDown, new RecordByTypePopulator(), null);
+    hcbGoTo = new HyperCB(cbGoTo, ctDropDown, new RecordByTypePopulator());
 
     htFind = new HyperTable(tvFind, 1, false, PREF_KEY_HT_FIND); htFind.disableRefreshAfterCellUpdate = true;
 

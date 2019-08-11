@@ -63,8 +63,8 @@ public class NewInstDlgCtrlr extends HyperDlg
   {
     Predicate<HDT_Record> popFilter = record -> HDT_Institution.class.cast(record).subInstitutions.size() > 0;
 
-    hcbParent = new HyperCB(cbParent, ctDropDownList, new StandardPopulator(hdtInstitution, popFilter, true), null, false);
-    hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType), null, false);
+    hcbParent = new HyperCB(cbParent, ctDropDownList, new StandardPopulator(hdtInstitution, popFilter, true));
+    hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType));
 
     hcbParent.dontCreateNewRecord = true;
 

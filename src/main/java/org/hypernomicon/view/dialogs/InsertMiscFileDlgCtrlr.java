@@ -17,59 +17,58 @@
 
 package org.hypernomicon.view.dialogs;
 
+import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
-import static org.hypernomicon.model.HyperDB.*;
 
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
-
-import static org.hypernomicon.util.Util.*;
-
+import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
+
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 
-public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
+public class InsertMiscFileDlgCtrlr extends HyperDlg
 {
-  @FXML private ComboBox<HyperTableCell> cbRecord;
+  @FXML private Button btnExisting, btnNew;
+  @FXML private ComboBox<HyperTableCell> cbExisting;
 
-  private HyperCB hcbRecord;
-  private String typeName;
+  private HDT_MiscFile miscFile = null;
+  private HyperCB hcbExisting;
+
+  public HDT_MiscFile getMiscFile()     { return miscFile; }
+
+  @Override protected boolean isValid() { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_T getRecord() { return hcbRecord.selectedRecord(); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static <HDT_T2 extends HDT_Record> RecordDropdownDlgCtrlr<HDT_T2> create(HDT_RecordType recordType)
+  public static InsertMiscFileDlgCtrlr create()
   {
-    RecordDropdownDlgCtrlr<HDT_T2> rdd = HyperDlg.create("RecordDropdownDlg.fxml", "Select a Term Record to Merge With", true);
-    rdd.init(recordType);
-    return rdd;
+    InsertMiscFileDlgCtrlr imfd = HyperDlg.create("InsertMiscFileDlg.fxml", "Insert Misc. File", true);
+    imfd.init();
+    return imfd;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_RecordType recordType)
+  private void init()
   {
-    hcbRecord = new HyperCB(cbRecord, ctDropDownList, new StandardPopulator(recordType));
-    typeName = db.getTypeName(recordType);
-  }
+    hcbExisting = new HyperCB(cbExisting, ctDropDownList, new StandardPopulator(hdtMiscFile));
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+    btnExisting.setOnAction(event ->
+    {
+      miscFile = hcbExisting.selectedRecord();
 
-  @Override protected boolean isValid()
-  {
-    if (hcbRecord.selectedID() >= 1) return true;
+      if (miscFile == null)
+        btnCancelClick();
 
-    return falseWithInfoMessage("Select a " + typeName + " record.", cbRecord);
+      btnOkClick();
+    });
+
+    btnNew.setOnAction(event -> btnOkClick());
   }
 
 //---------------------------------------------------------------------------

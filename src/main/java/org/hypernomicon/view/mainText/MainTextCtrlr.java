@@ -43,11 +43,14 @@ import org.hypernomicon.model.items.KeyWork;
 import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.MainText.DisplayItem;
 import org.hypernomicon.model.items.MainText.DisplayItemType;
+import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.view.controls.HiddenSidesPane;
+import org.hypernomicon.view.dialogs.FileDlgCtrlr;
+import org.hypernomicon.view.dialogs.InsertMiscFileDlgCtrlr;
 import org.hypernomicon.view.dialogs.NewLinkDlgCtrlr;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
@@ -111,7 +114,7 @@ public class MainTextCtrlr
 
   int getScrollPos()    { return nullSwitch(getWebView(), 0, webView -> MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
 
-  private void clearText()     { he.setHtmlText(disableLinks(getHtmlEditorText(""))); }
+  private void clearText()     { he.setHtmlText(disableLinks("")); }
   private WebView getWebView() { return (WebView) he.lookup("WebView"); }
 
 //---------------------------------------------------------------------------
@@ -160,8 +163,8 @@ public class MainTextCtrlr
 
     RecordTypePopulator rtp = new RecordTypePopulator(typeSet);
 
-    hcbType = new HyperCB(cbType, ctDropDownList, rtp, null);
-    hcbName = new HyperCB(cbName, ctDropDownList, new RecordByTypePopulator(), null);
+    hcbType = new HyperCB(cbType, ctDropDownList, rtp);
+    hcbName = new HyperCB(cbName, ctDropDownList, new RecordByTypePopulator());
 
     hcbType.getComboBox().getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -182,8 +185,8 @@ public class MainTextCtrlr
 
     rtp = new RecordTypePopulator(EnumSet.of(hdtWork, hdtMiscFile));
 
-    hcbKeyType = new HyperCB(cbKeyType, ctDropDownList, rtp, null);
-    hcbKeyName = new HyperCB(cbKeyName, ctDropDownList, new RecordByTypePopulator(), null);
+    hcbKeyType = new HyperCB(cbKeyType, ctDropDownList, rtp);
+    hcbKeyName = new HyperCB(cbKeyName, ctDropDownList, new RecordByTypePopulator());
 
     Background bg = new Background(new BackgroundFill(Color.SLATEBLUE, null, null));
 
@@ -314,6 +317,10 @@ public class MainTextCtrlr
     setToolTip(btnLink, "Insert web link");
     btnLink.setOnAction(event -> btnLinkClick());
 
+    Button btnPicture = new Button("", getImageViewForRelativePath("resources/images/picture_add.png"));
+    setToolTip(btnPicture, "Insert picture");
+    btnPicture.setOnAction(event -> btnPictureClick());
+
     Button btnClear = new Button("", getImageViewForRelativePath("resources/images/broom.png"));
     setToolTip(btnClear, "Clear");
     btnClear.setOnAction(event ->
@@ -330,7 +337,7 @@ public class MainTextCtrlr
       runDelayedInFXThread(5, 100, cbType::requestFocus);
     });
 
-    bar.getItems().addAll(btnLink, btnClear, btnEditLayout, btnPaste);
+    bar.getItems().addAll(btnLink, btnPicture, btnClear, btnEditLayout, btnPaste);
 
     bar.getItems().addListener((Change<? extends Node> c) ->
     {
@@ -496,6 +503,42 @@ public class MainTextCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void btnPictureClick()
+  {
+    InsertMiscFileDlgCtrlr imfd = InsertMiscFileDlgCtrlr.create();
+
+    if (imfd.showModal() == false) return;
+
+    HDT_MiscFile miscFile = imfd.getMiscFile();
+
+    if (miscFile == null)
+    {
+      miscFile = db.createNewBlankRecord(hdtMiscFile);
+
+      FileDlgCtrlr fdc = FileDlgCtrlr.create("New Image File Record", miscFile, "");
+
+      if (fdc.showModal() == false)
+      {
+        db.deleteRecord(hdtMiscFile, miscFile.getID());
+        return;
+      }
+
+      miscFile.setName(fdc.tfRecordName.getText());
+      miscFile.fileType.set(HyperTableCell.getRecord(fdc.cbType.getValue()));
+    }
+
+    WebEngine engine = getWebView().getEngine();
+
+    Accessor.getPageFor(engine).executeCommand(Command.INSERT_NEW_LINE.getCommand(), null);
+
+    String imageTag = "<misc-file id=\"" + miscFile.getID() + "\" width=\"300px\"/>";
+
+    engine.executeScript("insertHtmlAtCursor('" + htmlEscaper.escape(imageTag) + "<br>')");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void btnLinkClick()
   {
     WebEngine engine = getWebView().getEngine();
@@ -541,6 +584,8 @@ public class MainTextCtrlr
 
   public static String disableLinks(String hyperText)
   {
+    hyperText = MainTextWrapper.prepHtmlForDisplay(hyperText, true);
+
     return hyperText.replace("<style>", "<script>\n" +
         "function insertHtmlAtCursor(html)\n" +
         "{\n" +
@@ -694,7 +739,7 @@ public class MainTextCtrlr
       if (borderPane.getTop() == tpKeyWorks)
         borderPane.setTop(null);
 
-    he.setHtmlText(disableLinks(getHtmlEditorText(html)));
+    he.setHtmlText(disableLinks(html));
     taKeyWorks.setText(keyWorksText);
 
     if (hcbType.selectedType() == hdtNone)

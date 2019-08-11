@@ -128,14 +128,14 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperCB(ComboBox<HyperTableCell> cb, HyperCtrlType ctrlType, Populator newPopulator, HyperTableRow row)
+  public HyperCB(ComboBox<HyperTableCell> cb, HyperCtrlType ctrlType, Populator newPopulator)
   {
-    this(cb, ctrlType, newPopulator, row, true, null);
+    this(cb, ctrlType, newPopulator, null, false, null);
   }
 
-  public HyperCB(ComboBox<HyperTableCell> cb, HyperCtrlType ctrlType, Populator newPopulator, HyperTableRow row, boolean addToRegistry)
+  public HyperCB(ComboBox<HyperTableCell> cb, HyperCtrlType ctrlType, Populator newPopulator, boolean addToRegistry)
   {
-    this(cb, ctrlType, newPopulator, row, addToRegistry, null);
+    this(cb, ctrlType, newPopulator, null, addToRegistry, null);
   }
 
 //---------------------------------------------------------------------------

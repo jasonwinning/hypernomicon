@@ -60,9 +60,9 @@ public class NewCategoryDlgCtrlr extends HyperDlg
   private void init(HDT_RecordType recordType)
   {
     typePopulator = new RecordTypePopulator(EnumSet.of(hdtField, hdtCountry, hdtRank, hdtPersonStatus));
-    hcbRecordType = new HyperCB(cbRecordType, ctDropDownList, typePopulator, null, false);
+    hcbRecordType = new HyperCB(cbRecordType, ctDropDownList, typePopulator);
 
-    hcbCompare = new HyperCB(cbCompare, ctDropDownList, new RecordByTypePopulator(), null);
+    hcbCompare = new HyperCB(cbCompare, ctDropDownList, new RecordByTypePopulator());
 
     cbRecordType.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {

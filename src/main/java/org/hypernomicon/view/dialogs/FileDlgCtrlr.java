@@ -110,10 +110,17 @@ public class FileDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static FileDlgCtrlr create(String title, HDT_RecordType recordType, HDT_RecordWithPath curFileRecord, HDT_Work curWork, String recordName)
+  public static FileDlgCtrlr create(String title, HDT_MiscFile curFileRecord, String recordName)
   {
     FileDlgCtrlr fdc = HyperDlg.create("FileDlg.fxml", title, true);
-    fdc.init(recordType, curFileRecord, curWork, recordName);
+    fdc.init(hdtMiscFile, curFileRecord, null, recordName);
+    return fdc;
+  }
+
+  public static FileDlgCtrlr create(String title, HDT_WorkFile curFileRecord, HDT_Work curWork)
+  {
+    FileDlgCtrlr fdc = HyperDlg.create("FileDlg.fxml", title, true);
+    fdc.init(hdtWorkFile, curFileRecord, curWork, "");
     return fdc;
   }
 
@@ -128,7 +135,7 @@ public class FileDlgCtrlr extends HyperDlg
     srcFilePath = null;
     copyOnly = false;
 
-    hcbType = new HyperCB(cbType, ctDropDown, new StandardPopulator(hdtFileType), null);
+    hcbType = new HyperCB(cbType, ctDropDown, new StandardPopulator(hdtFileType));
 
     tfFileName.disableProperty().bind(chkDontChangeFilename.selectedProperty());
 

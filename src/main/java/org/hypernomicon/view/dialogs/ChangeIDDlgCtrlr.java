@@ -60,8 +60,8 @@ public class ChangeIDDlgCtrlr extends HyperDlg
 
   private void init()
   {
-    hcbType = new HyperCB(cbType, ctDropDownList, new RecordTypePopulator(), null, false);
-    hcbRecord = new HyperCB(cbRecord, ctDropDownList, new RecordByTypePopulator(), null);
+    hcbType = new HyperCB(cbType, ctDropDownList, new RecordTypePopulator());
+    hcbRecord = new HyperCB(cbRecord, ctDropDownList, new RecordByTypePopulator());
 
     cbType.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {

@@ -27,6 +27,7 @@ import org.hypernomicon.view.WindowStack;
 import org.hypernomicon.view.settings.LaunchCommandsDlgCtrlr;
 import org.hypernomicon.view.dialogs.InternetCheckDlgCtrlr;
 import org.hypernomicon.view.dialogs.LockedDlgCtrlr;
+import org.hypernomicon.view.mainText.MainTextWrapper;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -257,23 +258,7 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String convertPlainMainTextToHtml(String input)
-  {
-    String output = "<html dir=\"ltr\"><head>" + mainTextHeadStyleTag() + "</head><body contenteditable=\"true\"><p><font face=\"Arial\" size=\"2\">";
 
-    input = trimLines(input);
-
-    input = input.replace("\t", "<span class=\"Apple-tab-span\" style=\"white-space:pre\"> </span>");
-
-    while (input.contains("\n\n"))
-      input = input.replace("\n\n", "\n<br>\n");
-
-    input = input.replace("\n", "</font></p><p><font face=\"Arial\" size=\"2\">");
-
-    output = output + input + "</font></p></body></html>";
-
-    return output;
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -734,7 +719,7 @@ public final class Util
 
   public static String extractTextFromHTML(String html)
   {
-    return ultraTrim(Jsoup.parse(getHtmlEditorText(html)).text());
+    return ultraTrim(Jsoup.parse(MainTextWrapper.prepHtmlForDisplay(html)).text());
   }
 
 //---------------------------------------------------------------------------
@@ -750,14 +735,9 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String getHtmlEditorText(String str)
-  {
-    if (str.indexOf("</html>") > -1) return str;
 
-    if (str.equals("")) str = "<br>";
 
-    return convertPlainMainTextToHtml(str);
-  }
+
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

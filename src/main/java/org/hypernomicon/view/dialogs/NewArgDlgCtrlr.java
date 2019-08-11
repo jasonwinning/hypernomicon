@@ -80,9 +80,9 @@ public class NewArgDlgCtrlr extends HyperDlg
   {
     this.position = position;
 
-    hcbPerson = new HyperCB(cbPerson, ctDropDownList, new StandardPopulator(hdtPerson), null, false);
-    hcbPositionVerdict = new HyperCB(cbPositionVerdict, ctDropDownList, new StandardPopulator(hdtPositionVerdict), null);
-    hcbWork = new HyperCB(cbWork, ctDropDownList, new HybridSubjectPopulator(rtAuthorOfWork), null);
+    hcbPerson = new HyperCB(cbPerson, ctDropDownList, new StandardPopulator(hdtPerson));
+    hcbPositionVerdict = new HyperCB(cbPositionVerdict, ctDropDownList, new StandardPopulator(hdtPositionVerdict));
+    hcbWork = new HyperCB(cbWork, ctDropDownList, new HybridSubjectPopulator(rtAuthorOfWork));
 
     rbArgName1.setSelected(true);
 
@@ -125,7 +125,7 @@ public class NewArgDlgCtrlr extends HyperDlg
 
     tfPosition.setText(position.name());
 
-    MainTextWrapper.setReadOnlyHTML(getHtmlEditorText(position.getMainText().getHtml()), view.getEngine(), new TextViewInfo(), null);
+    MainTextWrapper.setReadOnlyHTML(position.getMainText().getHtml(), view.getEngine(), new TextViewInfo(), null);
 
     reviseSuggestions();
 

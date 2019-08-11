@@ -735,10 +735,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     htArguments.addCol(hdtNone    , ctNone);   // record type = hdtNone so that the column will sort purely based on the displayed text
     htArguments.addCol(hdtArgument, ctNone);
 
-    hcbRank     = new HyperCB(cbRank    , ctDropDownList, new StandardPopulator(hdtRank)                 , null);
-    hcbStatus   = new HyperCB(cbStatus  , ctDropDownList, new StandardPopulator(hdtPersonStatus)         , null);
-    hcbField    = new HyperCB(cbField   , ctDropDownList, new StandardPopulator(hdtField)                , null);
-    hcbSubfield = new HyperCB(cbSubfield, ctDropDown    , new SubjectPopulator (rtFieldOfSubfield, false), null);
+    hcbRank     = new HyperCB(cbRank    , ctDropDownList, new StandardPopulator(hdtRank                 ), true);
+    hcbStatus   = new HyperCB(cbStatus  , ctDropDownList, new StandardPopulator(hdtPersonStatus         ), true);
+    hcbField    = new HyperCB(cbField   , ctDropDownList, new StandardPopulator(hdtField                ), true);
+    hcbSubfield = new HyperCB(cbSubfield, ctDropDown    , new SubjectPopulator (rtFieldOfSubfield, false), true);
 
     setToolTip(btnWebSrch1, "Search for this person in Google");
     setToolTip(btnWebSrch2, "Search for this person in Google Scholar");

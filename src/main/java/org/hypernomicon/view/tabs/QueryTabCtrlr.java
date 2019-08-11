@@ -316,7 +316,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           if (curResult.hasDesc())
             mainText = HDT_RecordWithDescription.class.cast(curResult).getDesc().getHtml();
 
-          MainTextWrapper.setReadOnlyHTML(getHtmlEditorText(mainText), webView.getEngine(), new TextViewInfo(), getRecordToHilite());
+          MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), new TextViewInfo(), getRecordToHilite());
 
           if (curResult.getType() == hdtWork)
           {
@@ -1382,7 +1382,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (record.hasDesc())
         mainText = HDT_RecordWithDescription.class.cast(record).getDesc().getHtml();
 
-      MainTextWrapper.handleJSEvent(getHtmlEditorText(mainText), webView.getEngine(), new TextViewInfo());
+      MainTextWrapper.handleJSEvent(MainTextWrapper.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo());
     });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
