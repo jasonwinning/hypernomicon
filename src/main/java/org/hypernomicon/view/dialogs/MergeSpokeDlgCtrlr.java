@@ -18,11 +18,9 @@
 package org.hypernomicon.view.dialogs;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.view.mainText.MainTextWrapper.*;
+import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
-import org.hypernomicon.view.mainText.MainTextCtrlr;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.RadioButton;
@@ -70,7 +68,7 @@ public class MergeSpokeDlgCtrlr extends HyperDlg
       if (extractTextFromHTML(mainText2).trim().length() > 0)
         rbDesc2.setSelected(true);
 
-    he3.setHtmlText(MainTextCtrlr.disableLinks(""));
+    he3.setHtmlText(disableLinks(""));
   }
 
 //---------------------------------------------------------------------------
@@ -80,7 +78,7 @@ public class MergeSpokeDlgCtrlr extends HyperDlg
   {
     if      (rbDesc1.isSelected()) return mainText1;
     else if (rbDesc2.isSelected()) return mainText2;
-    else                           return MainTextCtrlr.getHtmlFromEditor(he3.getHtmlText());
+    else                           return getHtmlFromEditor(he3.getHtmlText());
   }
 
 //---------------------------------------------------------------------------

@@ -25,6 +25,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
 import static org.hypernomicon.view.populators.Populator.*;
+import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -34,7 +35,6 @@ import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import com.sun.javafx.webkit.Accessor;
 
@@ -104,7 +104,7 @@ public class MainTextCtrlr
 
   private HyperCB hcbType, hcbName, hcbKeyType, hcbKeyName;
   private HDT_RecordWithConnector curRecord;
-  BooleanProperty prop = null;
+  private BooleanProperty prop = null;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -112,7 +112,7 @@ public class MainTextCtrlr
   List<DisplayItem> getDisplayItems() { return lvRecords.getItems(); }
   boolean isEmpty()                   { return getHtmlAndKeyWorks(new ArrayList<>()).trim().length() == 0; }
 
-  int getScrollPos()    { return nullSwitch(getWebView(), 0, webView -> MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
+  int getScrollPos()    { return nullSwitch(getWebView(), 0, webView -> getWebEngineScrollPos(webView.getEngine())); }
 
   private void clearText()     { he.setHtmlText(disableLinks("")); }
   private WebView getWebView() { return (WebView) he.lookup("WebView"); }
@@ -577,50 +577,6 @@ public class MainTextCtrlr
 
       getWebView().getEngine().executeScript("insertHtmlAtCursor('" + text + "')");
     };
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String disableLinks(String hyperText)
-  {
-    hyperText = MainTextWrapper.prepHtmlForDisplay(hyperText, true);
-
-    return hyperText.replace("<style>", "<script>\n" +
-        "function insertHtmlAtCursor(html)\n" +
-        "{\n" +
-        "  var range, node;\n" +
-        "  if (window.getSelection && window.getSelection().getRangeAt)\n" +
-        "  {\n" +
-        "    if (window.getSelection().rangeCount < 1) window.getSelection().addRange(document.createRange());\n" +
-        "    range = window.getSelection().getRangeAt(0);\n" +
-        "    range.deleteContents();\n" +
-        "    node = range.createContextualFragment(html);\n" +
-        "    range.insertNode(node);\n" +
-        "  }\n" +
-        "  else if (document.selection && document.selection.createRange)\n" +
-        "  {\n" +
-        "    range = document.selection.createRange();\n" +
-        "    range.deleteContents();\n" +
-        "    range.pasteHTML(html);\n" +
-        "  }\n" +
-        "}\n\n" +
-        "</script><style>a { pointer-events: none; }");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String getHtmlFromEditor(String editorHtml)
-  {
-    Document doc = Jsoup.parse(editorHtml);
-
-    doc.getElementsByTag("script").forEach(Element::remove);
-    doc.getElementsByAttributeValue("id", "key_works").forEach(Element::remove);
-
-    editorHtml = doc.html();
-
-    return editorHtml.replace("a { pointer-events: none; }", "");
   }
 
 //---------------------------------------------------------------------------

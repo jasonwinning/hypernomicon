@@ -199,7 +199,7 @@ public final class App extends Application
     String versionStr = manifestValue("Impl-Version");
 
     if (safeStr(versionStr).length() == 0)
-      versionStr = "1.15.3";
+      versionStr = "1.16";
 
     version = new VersionNumber(2, versionStr);
 

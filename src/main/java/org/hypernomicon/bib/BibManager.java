@@ -47,7 +47,7 @@ import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.dialogs.HyperDlg;
 import org.hypernomicon.view.dialogs.SelectWorkDlgCtrlr;
-import org.hypernomicon.view.mainText.MainTextWrapper;
+import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -353,12 +353,12 @@ public class BibManager extends HyperDlg
 
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
     {
-      MainTextWrapper.handleJSEvent("", webView.getEngine(), new TextViewInfo());
+      MainTextUtil.handleJSEvent("", webView.getEngine(), new TextViewInfo());
     });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
-    MainTextWrapper.webViewAddZoom(webView, PREF_KEY_BIBMGR_ZOOM);
+    MainTextUtil.webViewAddZoom(webView, PREF_KEY_BIBMGR_ZOOM);
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------

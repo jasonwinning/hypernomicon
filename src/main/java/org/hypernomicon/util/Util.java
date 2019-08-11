@@ -27,7 +27,6 @@ import org.hypernomicon.view.WindowStack;
 import org.hypernomicon.view.settings.LaunchCommandsDlgCtrlr;
 import org.hypernomicon.view.dialogs.InternetCheckDlgCtrlr;
 import org.hypernomicon.view.dialogs.LockedDlgCtrlr;
-import org.hypernomicon.view.mainText.MainTextWrapper;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -140,7 +139,6 @@ import org.apache.tika.mime.MediaType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.jsoup.Jsoup;
 
 import com.google.common.escape.Escaper;
 import com.google.common.html.HtmlEscapers;
@@ -258,11 +256,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static int parseInt(String value, int def)
   {
     try { return Integer.parseInt(value); }
@@ -336,7 +329,6 @@ public final class Util
     else if ((first + last).length() > 0)
       openWebLink("https://orcid.org/orcid-search/quick-search/?searchQuery=" + escapeURL(last + ", " + first, true));
   }
-
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -522,11 +514,11 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean falseWithErrorMessage  (String msg)                   { return falseWithMessage(msg, mtError      , null); }
+  public static boolean falseWithErrorMessage  (String msg                  ) { return falseWithMessage(msg, mtError      , null       ); }
   public static boolean falseWithErrorMessage  (String msg, Node nodeToFocus) { return falseWithMessage(msg, mtError      , nodeToFocus); }
-  public static boolean falseWithWarningMessage(String msg)                   { return falseWithMessage(msg, mtWarning    , null); }
+  public static boolean falseWithWarningMessage(String msg                  ) { return falseWithMessage(msg, mtWarning    , null       ); }
   public static boolean falseWithWarningMessage(String msg, Node nodeToFocus) { return falseWithMessage(msg, mtWarning    , nodeToFocus); }
-  public static boolean falseWithInfoMessage   (String msg)                   { return falseWithMessage(msg, mtInformation, null); }
+  public static boolean falseWithInfoMessage   (String msg                  ) { return falseWithMessage(msg, mtInformation, null       ); }
   public static boolean falseWithInfoMessage   (String msg, Node nodeToFocus) { return falseWithMessage(msg, mtInformation, nodeToFocus); }
 
 //---------------------------------------------------------------------------
@@ -717,27 +709,12 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String extractTextFromHTML(String html)
-  {
-    return ultraTrim(Jsoup.parse(MainTextWrapper.prepHtmlForDisplay(html)).text());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   // Removes all horizontal whitespace characters [ \t\xA0\u1680\u180e\u2000-\u200a\u202f\u205f\u3000] at the beginning and end of the string
 
   public static String ultraTrim(String text)
   {
     return text.replaceAll("(^\\h+)|(\\h+$)", "");
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-
-
-
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

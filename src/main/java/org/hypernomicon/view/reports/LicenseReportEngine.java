@@ -28,7 +28,7 @@ import java.util.List;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
-import org.hypernomicon.view.mainText.MainTextWrapper;
+import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -88,9 +88,9 @@ public class LicenseReportEngine extends ReportEngine
 
   private static void processHtml(StringBuilder html)
   {
-    Document doc = MainTextWrapper.makeDocLinksExternal(Jsoup.parse(html.toString()));
+    Document doc = MainTextUtil.makeDocLinksExternal(Jsoup.parse(html.toString()));
 
-    assignSB(html, doc.html().replace("</head>", MainTextWrapper.getHeadContent()));
+    assignSB(html, doc.html().replace("</head>", MainTextUtil.headContent));
   }
 
 //---------------------------------------------------------------------------

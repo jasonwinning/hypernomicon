@@ -28,6 +28,7 @@ import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.dialogs.ChooseParentDlgCtrlr;
 import org.hypernomicon.view.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.view.dialogs.VerdictDlgCtrlr;
+import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.wrappers.HyperTreeCellValue;
 import org.hypernomicon.view.wrappers.TreeModel;
@@ -82,7 +83,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public void setRecord(HDT_Record rec) { return; }
   @Override public HDT_Record activeRecord()      { return tree.selectedRecord(); }
   @Override public String getRecordName()         { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
-  @Override public TextViewInfo getMainTextInfo() { return new TextViewInfo(MainTextWrapper.getWebEngineScrollPos(webView.getEngine())); }
+  @Override public TextViewInfo getMainTextInfo() { return new TextViewInfo(MainTextUtil.getWebEngineScrollPos(webView.getEngine())); }
   @Override public void setDividerPositions()     { return; }
   @Override public void getDividerPositions()     { return; }
   @Override public void updateWebButtons()        { return; }
@@ -201,7 +202,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (record.hasDesc())
         mainText = HDT_RecordWithDescription.class.cast(record).getDesc().getHtml();
 
-      MainTextWrapper.handleJSEvent(MainTextWrapper.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo());
+      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo());
     });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
@@ -218,7 +219,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       }
     });
 
-    MainTextWrapper.webViewAddZoom(webView, PREF_KEY_TREETAB_ZOOM);
+    MainTextUtil.webViewAddZoom(webView, PREF_KEY_TREETAB_ZOOM);
 
     ttv.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {

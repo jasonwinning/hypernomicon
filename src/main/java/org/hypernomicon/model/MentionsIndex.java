@@ -38,7 +38,7 @@ import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.util.BidiOneToManyRecordMap;
-import org.hypernomicon.view.mainText.MainTextWrapper;
+import org.hypernomicon.view.mainText.MainTextUtil;
 import org.jsoup.nodes.Element;
 
 import static org.hypernomicon.App.*;
@@ -144,7 +144,7 @@ class MentionsIndex
       MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
       ObjectProperty<Element> elementProp = new SimpleObjectProperty<>();
 
-      HDT_MiscFile miscFile = MainTextWrapper.getNextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
+      HDT_MiscFile miscFile = MainTextUtil.getNextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
 
       while (miscFile != null)
       {
@@ -152,7 +152,7 @@ class MentionsIndex
         mentionedInDescToMentioners.addForward(miscFile, record);
 
         startNdx.add(1);
-        miscFile = MainTextWrapper.getNextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
+        miscFile = MainTextUtil.getNextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
       }
 
       String plainText = mainText.getPlain();

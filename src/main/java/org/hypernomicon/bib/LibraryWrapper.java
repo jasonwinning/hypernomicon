@@ -43,7 +43,7 @@ import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
-import org.hypernomicon.view.mainText.MainTextWrapper;
+import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr;
 
 import static org.hypernomicon.model.HyperDB.*;
@@ -153,7 +153,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
   {
     StringBuilder html = new StringBuilder()
 
-        .append("<html><head>" + MainTextWrapper.getScriptContent() + "<style>")
+        .append("<html><head>" + MainTextUtil.scriptContent + "<style>")
         .append("td.fieldName { vertical-align: text-top; text-align: right; padding-right:10px; }</style></head><body>")
         .append("<table style=\"font-size:9pt; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,sans-serif; } line-height:10pt;\">");
 

@@ -57,6 +57,7 @@ import org.hypernomicon.util.filePath.FilePathSet;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.dialogs.HyperDlg;
 import org.hypernomicon.view.dialogs.RenameDlgCtrlr;
+import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -421,12 +422,12 @@ public class FileManager extends HyperDlg
       if (record.hasDesc())
         mainText = HDT_RecordWithDescription.class.cast(record).getDesc().getHtml();
 
-      MainTextWrapper.handleJSEvent(MainTextWrapper.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo());
+      MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo());
     });
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
-    MainTextWrapper.webViewAddZoom(webView, PREF_KEY_FILEMGR_ZOOM);
+    MainTextUtil.webViewAddZoom(webView, PREF_KEY_FILEMGR_ZOOM);
   }
 
 //---------------------------------------------------------------------------

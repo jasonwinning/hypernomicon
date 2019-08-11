@@ -22,6 +22,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
