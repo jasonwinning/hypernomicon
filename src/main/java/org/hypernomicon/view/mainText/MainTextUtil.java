@@ -842,6 +842,8 @@ public class MainTextUtil
 
         if (miscFile != null) return miscFile;
       }
+
+      startNdx.setValue(str.indexOf("&lt;misc-file", startNdx.getValue() + 1));
     }
 
     return null;
@@ -893,7 +895,6 @@ public class MainTextUtil
           str = str.substring(0, startNdx.getValue()) + tag + safeSubstring(str, endNdx.getValue(), str.length());
 
           startNdx.add(1);
-
           miscFile = getNextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
         }
       }

@@ -299,10 +299,10 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   public boolean showFileDialog(FilePath srcFilePath)
   {
-    fdc = FileDlgCtrlr.create("Miscellaneous file", curMiscFile, tfName.getText());
+    fdc = FileDlgCtrlr.create("Miscellaneous file", curMiscFile, tfName.getText(), false);
 
     if (srcFilePath != null)
-      fdc.setSrcFilePath(srcFilePath);
+      fdc.setSrcFilePath(srcFilePath, true);
 
     boolean result = fdc.showModal();
 

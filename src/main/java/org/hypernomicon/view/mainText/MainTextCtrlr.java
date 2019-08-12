@@ -515,12 +515,18 @@ public class MainTextCtrlr
     {
       miscFile = db.createNewBlankRecord(hdtMiscFile);
 
-      FileDlgCtrlr fdc = FileDlgCtrlr.create("New Image File Record", miscFile, "");
+      FileDlgCtrlr fdc = FileDlgCtrlr.create("Image File Record", miscFile, "", true);
 
       if (fdc.showModal() == false)
       {
         db.deleteRecord(hdtMiscFile, miscFile.getID());
         return;
+      }
+
+      if (miscFile != fdc.getFileRecord())
+      {
+        db.deleteRecord(hdtMiscFile, miscFile.getID());
+        miscFile = fdc.getFileRecord();
       }
 
       miscFile.setName(fdc.tfRecordName.getText());
