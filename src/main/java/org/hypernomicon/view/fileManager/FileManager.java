@@ -264,7 +264,7 @@ public class FileManager extends HyperDlg
     {
       if (ui.windows.getCyclingFocus()) return;
 
-      if ((newValue == null) || (newValue.booleanValue() == false)) return;
+      if (Boolean.TRUE.equals(newValue) == false) return;
 
       ui.windows.push(dialogStage);
 

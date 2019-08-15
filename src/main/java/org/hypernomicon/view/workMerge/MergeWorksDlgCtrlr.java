@@ -131,7 +131,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 
     mdp.showDetailNodeProperty().addListener((ob, ov, nv) ->
     {
-      if ((nv == false) || previewInitialized || jxBrowserDisabled) return;
+      if ((Boolean.TRUE.equals(nv) == false) || previewInitialized || jxBrowserDisabled) return;
 
       WorkDlgCtrlr.accommodatePreview(dialogStage, apMain, mdp);
 

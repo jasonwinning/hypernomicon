@@ -213,7 +213,7 @@ public final class MainCtrlr
     {
       if (windows.getCyclingFocus()) return;
 
-      if ((newValue == null) || (newValue.booleanValue() == false)) return;
+      if (Boolean.TRUE.equals(newValue) == false) return;
 
       windows.push(stage);
     });
@@ -244,7 +244,7 @@ public final class MainCtrlr
 
     stage.maximizedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (newValue && !oldValue)
+      if (Boolean.TRUE.equals(newValue) && Boolean.FALSE.equals(oldValue))
       {
         maximized = true;
         maxWidth = stage.getWidth();
@@ -335,13 +335,13 @@ public final class MainCtrlr
 
     btnPointerLaunch.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (newValue)
+      if (Boolean.TRUE.equals(newValue))
         appPrefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, true);
     });
 
     btnPointerPreview.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (newValue)
+      if (Boolean.TRUE.equals(newValue))
         appPrefs.putBoolean(PREF_KEY_RIGHT_CLICK_TO_LAUNCH, false);
     });
 
@@ -520,7 +520,7 @@ public final class MainCtrlr
 
     tfRecord.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (newValue)
+      if (Boolean.TRUE.equals(newValue))
         tfRecord.setText("");
       else
         updateBottomPanel(true);
@@ -530,7 +530,7 @@ public final class MainCtrlr
 
     tfID.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if ((newValue.booleanValue() == false) && (activeRecord() != null))
+      if ((Boolean.TRUE.equals(newValue) == false) && (activeRecord() != null))
         tfID.setText(String.valueOf(activeRecord().getID()));
       else
         tfID.setText("");
@@ -1262,6 +1262,9 @@ public final class MainCtrlr
 
   @FXML private void mnuNewDatabaseClick()
   {
+    if (SystemUtils.IS_OS_MAC)
+      messageDialog("Select an empty folder in which to create the new database.", mtInformation);
+
     DirectoryChooser dirChooser = new DirectoryChooser();
 
     File file = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, ""));

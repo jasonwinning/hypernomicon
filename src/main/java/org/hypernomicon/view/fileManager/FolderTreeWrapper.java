@@ -90,18 +90,17 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
           row.setText(null);
           row.setGraphic(null);
           row.setContextMenu(null);
+          return;
         }
-        else
-        {
-          if (newValue.getFilePath() == null) // happens right before a filerow is deleted sometimes
-            return;
 
-          row.setText(newValue.getFileName());
-          if (row.getGraphic() == null)
-            row.setGraphic(openImage);
+        if (newValue.getFilePath() == null) // happens right before a filerow is deleted sometimes
+          return;
 
-          row.setContextMenu(createContextMenu(newValue, fileTable.getContextMenuSchemata()));
-        }
+        row.setText(newValue.getFileName());
+        if (row.getGraphic() == null)
+          row.setGraphic(openImage);
+
+        row.setContextMenu(createContextMenu(newValue, fileTable.getContextMenuSchemata()));
       });
 
       setupDragHandlers(row);

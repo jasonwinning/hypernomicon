@@ -143,7 +143,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
   @Override public boolean equals(Object obj)
   {
     if (this == obj) return true;
-    if ((obj == null) || ((obj instanceof FileRow) == false)) return false;
+    if ((obj instanceof FileRow) == false) return false;
 
     return compareTo((FileRow)obj) == 0;
   }

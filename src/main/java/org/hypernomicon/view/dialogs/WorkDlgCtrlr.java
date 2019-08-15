@@ -442,7 +442,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     mdp.showDetailNodeProperty().addListener((ob, ov, nv) ->
     {
-      if (nv == false) return;
+      if (Boolean.TRUE.equals(nv) == false) return;
 
       if ((previewInitialized == false) && (jxBrowserDisabled == false))
         accommodatePreview(dialogStage, apMain, mdp);

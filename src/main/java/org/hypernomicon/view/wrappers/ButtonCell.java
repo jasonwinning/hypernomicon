@@ -175,7 +175,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
     if (col.tooltips.containsKey(newAction) == false) return;
 
     String tooltip = col.tooltips.get(newAction);
-    if ((tooltip == null) || (tooltip.length() == 0)) return;
+    if (safeStr(tooltip).isBlank()) return;
 
     setToolTip(cellButton, tooltip);
   }

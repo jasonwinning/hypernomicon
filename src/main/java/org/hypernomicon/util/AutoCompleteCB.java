@@ -70,7 +70,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
     {
       newHCB.somethingWasTyped = false;
 
-      if (newValue)
+      if (Boolean.TRUE.equals(newValue))
         startValue = hcb.selectedHTC();
       else
         selectClosestResultBasedOnTextFieldValue(false, false);

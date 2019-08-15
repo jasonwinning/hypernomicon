@@ -54,7 +54,7 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
   static HyperTableCell fromBoolean(boolean boolVal)            { return boolVal ? trueCell : falseCell; }
   public static int getCellID(HyperTableCell cell)              { return cell == null ? -1 : cell.id; }
   public static String getCellText(HyperTableCell cell)         { return cell == null ? "" : safeStr(cell.text); }
-  public static HDT_RecordType getCellType(HyperTableCell cell) { return ((cell == null) || (cell.type == null)) ? hdtNone : cell.type; }
+  public static HDT_RecordType getCellType(HyperTableCell cell) { return (cell == null) || (cell.type == null) ? hdtNone : cell.type; }
   public static boolean isEmpty(HyperTableCell cell)            { return cell == null ? true : cell.equals(HyperTableCell.blankCell); }
 
   @Override public HyperTableCell clone()

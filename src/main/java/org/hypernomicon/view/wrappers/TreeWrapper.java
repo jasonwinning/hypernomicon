@@ -97,17 +97,16 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
     ttv.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (newValue != null)
-        if (newValue.getValue() != null)
+      if ((newValue != null) && (newValue.getValue() != null))
+      {
+        TreeRow row = newValue.getValue();
+        if (row.getRecordType() != hdtNone)
         {
-          TreeRow row = newValue.getValue();
-          if (row.getRecordType() != hdtNone)
-          {
-            if (selectingFromCB == false)
-              tcb.select(row.getRecord());
-            return;
-          }
+          if (selectingFromCB == false)
+            tcb.select(row.getRecord());
+          return;
         }
+      }
 
       if (selectingFromCB == false)
         tcb.clearSelection();

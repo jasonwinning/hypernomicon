@@ -48,7 +48,7 @@ import javafx.scene.web.WebView;
 
 public class NewArgDlgCtrlr extends HyperDlg
 {
-  @FXML private CheckBox cbIncludeAuth;
+  @FXML private CheckBox chkIncludeAuth;
   @FXML private ComboBox<HyperTableCell> cbPerson, cbPositionVerdict, cbWork;
   @FXML private RadioButton rbArgName1, rbArgName2, rbArgName3, rbArgName4, rbArgName5, rbArgName6, rbArgName7, rbArgName8, rbExisting, rbNew;
   @FXML private TextField tfArgName1, tfArgName2, tfArgName3, tfArgName4, tfArgName5, tfArgName6, tfArgName7, tfArgName8, tfPosition, tfTitle;
@@ -116,7 +116,7 @@ public class NewArgDlgCtrlr extends HyperDlg
 
     tfTitle.textProperty().addListener((ob, oldText, newText) -> rbNew.setSelected(true));
 
-    cbIncludeAuth.selectedProperty().addListener((ob, oldSelected, newSelected) -> reviseSuggestions());
+    chkIncludeAuth.selectedProperty().addListener((ob, oldSelected, newSelected) -> reviseSuggestions());
 
     hcbPerson.addBlankEntry();
     hcbPositionVerdict.addAndSelectEntry(db.positionVerdicts.getByID(1), HDT_Record::getCBText);
@@ -151,7 +151,7 @@ public class NewArgDlgCtrlr extends HyperDlg
       reviseSuggestions();
     });
 
-    cbIncludeAuth.setSelected(true);
+    chkIncludeAuth.setSelected(true);
   }
 
 //---------------------------------------------------------------------------
@@ -186,7 +186,7 @@ public class NewArgDlgCtrlr extends HyperDlg
 
     revising = true;
 
-    if (cbIncludeAuth.isSelected())
+    if (chkIncludeAuth.isSelected())
     {
       HDT_Person person = hcbPerson.selectedRecord();
 

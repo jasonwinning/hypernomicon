@@ -117,7 +117,7 @@ public class PreviewWrapper
 
     btn.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (newValue) window.tpPreview.getSelectionModel().select(tab);
+      if (Boolean.TRUE.equals(newValue)) window.tpPreview.getSelectionModel().select(tab);
     });
   }
 

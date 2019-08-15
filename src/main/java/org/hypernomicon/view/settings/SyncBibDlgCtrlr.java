@@ -56,7 +56,7 @@ public class SyncBibDlgCtrlr extends HyperDlg
 
       syncTask.runningProperty().addListener((ob, wasRunning, isRunning) ->
       {
-        if (wasRunning && (isRunning == false))
+        if (wasRunning && Boolean.FALSE.equals(isRunning))
         {
           if ((syncTask.getState() == State.FAILED) || (syncTask.getState() == State.CANCELLED))
           {

@@ -174,7 +174,7 @@ public class BibManager extends HyperDlg
 
     syncTask.runningProperty().addListener((ob, wasRunning, isRunning) ->
     {
-      if ((wasRunning == false) || isRunning) return;
+      if (Boolean.FALSE.equals(wasRunning) || Boolean.TRUE.equals(isRunning)) return;
 
       btnStop.setDisable(true);
       seqT.stop();
@@ -408,7 +408,7 @@ public class BibManager extends HyperDlg
     {
       if (ui.windows.getCyclingFocus()) return;
 
-      if ((newValue == null) || (newValue == false)) return;
+      if (Boolean.TRUE.equals(newValue) == false) return;
 
       ui.windows.push(dialogStage);
 

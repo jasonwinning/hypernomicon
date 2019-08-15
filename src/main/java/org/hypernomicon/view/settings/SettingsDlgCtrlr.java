@@ -113,7 +113,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     btnComputer.selectedProperty().addListener((ob, ov, nv) ->
     {
-      tpMain.getSelectionModel().select(nv.booleanValue() ? 0 : 1);
+      tpMain.getSelectionModel().select(Boolean.TRUE.equals(nv) ? 0 : 1);
     });
 
     btnComputer.getToggleGroup().selectedToggleProperty().addListener((ob, oldVal, newVal) ->

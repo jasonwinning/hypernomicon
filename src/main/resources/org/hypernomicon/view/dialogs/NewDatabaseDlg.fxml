@@ -57,32 +57,32 @@
                               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                           </rowConstraints>
                            <children>
-                              <CheckBox fx:id="cbInst" mnemonicParsing="false" selected="true" text="Institutions and departments" GridPane.columnSpan="2">
+                              <CheckBox fx:id="chkInst" mnemonicParsing="false" selected="true" text="Institutions and departments" GridPane.columnSpan="2">
                                  <GridPane.margin>
                                     <Insets />
                                  </GridPane.margin>
                               </CheckBox>
-                              <CheckBox fx:id="cbFields" mnemonicParsing="false" selected="true" text="Fields and subfields" GridPane.columnSpan="2" GridPane.rowIndex="1">
+                              <CheckBox fx:id="chkFields" mnemonicParsing="false" selected="true" text="Fields and subfields" GridPane.columnSpan="2" GridPane.rowIndex="1">
                                  <GridPane.margin>
                                     <Insets />
                                  </GridPane.margin>
                               </CheckBox>
-                              <CheckBox fx:id="cbRanks" mnemonicParsing="false" selected="true" text="Ranks" GridPane.columnSpan="2" GridPane.rowIndex="2">
+                              <CheckBox fx:id="chkRanks" mnemonicParsing="false" selected="true" text="Ranks" GridPane.columnSpan="2" GridPane.rowIndex="2">
                                  <GridPane.margin>
                                     <Insets />
                                  </GridPane.margin>
                               </CheckBox>
-                              <CheckBox fx:id="cbStatus" mnemonicParsing="false" selected="true" text="Person statuses" GridPane.columnSpan="2" GridPane.rowIndex="3">
+                              <CheckBox fx:id="chkStatus" mnemonicParsing="false" selected="true" text="Person statuses" GridPane.columnSpan="2" GridPane.rowIndex="3">
                                  <GridPane.margin>
                                     <Insets />
                                  </GridPane.margin>
                               </CheckBox>
-                              <CheckBox fx:id="cbRegions" mnemonicParsing="false" selected="true" text="States/Regions" GridPane.columnSpan="2" GridPane.rowIndex="4">
+                              <CheckBox fx:id="chkRegions" mnemonicParsing="false" selected="true" text="States/Regions" GridPane.columnSpan="2" GridPane.rowIndex="4">
                                  <GridPane.margin>
                                     <Insets />
                                  </GridPane.margin>
                               </CheckBox>
-                              <CheckBox fx:id="cbCountries" mnemonicParsing="false" selected="true" text="Countries" GridPane.columnSpan="2" GridPane.rowIndex="5">
+                              <CheckBox fx:id="chkCountries" mnemonicParsing="false" selected="true" text="Countries" GridPane.columnSpan="2" GridPane.rowIndex="5">
                                  <GridPane.margin>
                                     <Insets />
                                  </GridPane.margin>

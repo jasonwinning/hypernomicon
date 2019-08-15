@@ -199,7 +199,7 @@ public class MainTextCtrlr
 
     prop.addListener((ob, oldValue, newValue) ->
     {
-      if (newValue)
+      if (Boolean.TRUE.equals(newValue))
         hsPane.setPinnedSide(Side.RIGHT);
       else
       {

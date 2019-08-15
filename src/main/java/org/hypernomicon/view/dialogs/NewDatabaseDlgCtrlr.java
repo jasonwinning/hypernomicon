@@ -35,7 +35,7 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 public class NewDatabaseDlgCtrlr extends HyperDlg
 {
-  @FXML private CheckBox cbInst, cbFields, cbRanks, cbStatus, cbRegions, cbCountries;
+  @FXML private CheckBox chkInst, chkFields, chkRanks, chkStatus, chkRegions, chkCountries;
   @FXML private TextField tfPapers, tfBooks, tfUnentered, tfPictures, tfTopicFolders, tfMiscFiles, tfResults;
 
   private String newPath;
@@ -110,18 +110,18 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
   {
     EnumSet<HDT_RecordType> choices = EnumSet.noneOf(HDT_RecordType.class);
 
-    if (cbCountries.isSelected()) choices.add(hdtCountry);
-    if (cbRegions.isSelected())   choices.add(hdtRegion);
+    if (chkCountries.isSelected()) choices.add(hdtCountry);
+    if (chkRegions  .isSelected()) choices.add(hdtRegion);
 
-    if (cbFields.isSelected())
+    if (chkFields.isSelected())
     {
       choices.add(hdtField);
       choices.add(hdtSubfield);
     }
 
-    if (cbInst.isSelected())      choices.add(hdtInstitution);
-    if (cbRanks.isSelected())     choices.add(hdtRank);
-    if (cbStatus.isSelected())    choices.add(hdtPersonStatus);
+    if (chkInst  .isSelected ())   choices.add(hdtInstitution);
+    if (chkRanks .isSelected ())   choices.add(hdtRank);
+    if (chkStatus.isSelected ())   choices.add(hdtPersonStatus);
 
     return choices;
   }
@@ -151,16 +151,16 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
 
     this.newPath = newPath;
 
-    cbCountries.selectedProperty().addListener((ob, ov, nv) ->
+    chkCountries.selectedProperty().addListener((ob, ov, nv) ->
     {
-      if (nv == false)
-        cbRegions.setSelected(false);
+      if (Boolean.TRUE.equals(nv) == false)
+        chkRegions.setSelected(false);
     });
 
-    cbRegions.selectedProperty().addListener((ob, ov, nv) ->
+    chkRegions.selectedProperty().addListener((ob, ov, nv) ->
     {
-      if (nv)
-        cbCountries.setSelected(true);
+      if (Boolean.TRUE.equals(nv))
+        chkCountries.setSelected(true);
     });
   }
 

@@ -337,7 +337,7 @@ public final class Util
   {
     int pos1 = str.indexOf('('), pos2 = str.indexOf(')');
 
-    if (pos1 > 0)
+    if (pos1 >= 0)
     {
       String result = str.substring(0, pos1).trim();
       if (pos2 > pos1)

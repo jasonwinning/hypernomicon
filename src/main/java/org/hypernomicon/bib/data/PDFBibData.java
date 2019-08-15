@@ -64,7 +64,7 @@ public class PDFBibData extends BibDataStandalone
 
     private PathParts(String str)
     {
-      if ((str == null) || (str.length() == 0)) return;
+      if (safeStr(str).isEmpty()) return;
 
       if (str.startsWith("["))
       {

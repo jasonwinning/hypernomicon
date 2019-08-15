@@ -112,10 +112,10 @@ public class PictureDlgCtrlr extends HyperDlg
 
     btnBrowse.setOnAction(event -> btnBrowseClick());
 
-    rbNone.   selectedProperty().addListener((ob, oldValue, newValue) -> { if (newValue) rbNoneSelected    (); });
-    rbCurrent.selectedProperty().addListener((ob, oldValue, newValue) -> { if (newValue) rbCurrentSelected (); });
-    rbFile.   selectedProperty().addListener((ob, oldValue, newValue) -> { if (newValue) rbFileSelected    (); });
-    rbWeb.    selectedProperty().addListener((ob, oldValue, newValue) -> { if (newValue) rbWebSelected     (); });
+    rbNone.   selectedProperty().addListener((ob, oldValue, newValue) -> { if (Boolean.TRUE.equals(newValue)) rbNoneSelected    (); });
+    rbCurrent.selectedProperty().addListener((ob, oldValue, newValue) -> { if (Boolean.TRUE.equals(newValue)) rbCurrentSelected (); });
+    rbFile.   selectedProperty().addListener((ob, oldValue, newValue) -> { if (Boolean.TRUE.equals(newValue)) rbFileSelected    (); });
+    rbWeb.    selectedProperty().addListener((ob, oldValue, newValue) -> { if (Boolean.TRUE.equals(newValue)) rbWebSelected     (); });
 
     tfWeb.setTextFormatter(new TextFormatter<>(change ->
     {

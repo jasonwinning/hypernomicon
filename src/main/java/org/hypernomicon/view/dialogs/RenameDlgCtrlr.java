@@ -86,19 +86,16 @@ public class RenameDlgCtrlr extends HyperDlg
     if (nameType == ntFolder)
       lblInvalid.setText("Invalid folder name!");
 
-    tfName.focusedProperty().addListener((ob, oldValue, newValue) ->
+    tfName.focusedProperty().addListener((ob, oldValue, newValue) -> Platform.runLater(() ->
     {
-      Platform.runLater(() ->
+      if (tfName.isFocused() && !tfName.getText().isEmpty())
       {
-        if (tfName.isFocused() && !tfName.getText().isEmpty())
-        {
-          if ((nameType != NameType.ntRecord) && (FilenameUtils.indexOfExtension(tfName.getText()) >= 0))
-            tfName.selectRange(0, FilenameUtils.indexOfExtension(tfName.getText()));
-          else
-            tfName.selectAll();
-        }
-      });
-    });
+        if ((nameType != NameType.ntRecord) && (FilenameUtils.indexOfExtension(tfName.getText()) >= 0))
+          tfName.selectRange(0, FilenameUtils.indexOfExtension(tfName.getText()));
+        else
+          tfName.selectAll();
+      }
+    }));
 
     tfName.textProperty().addListener((ob, oldValue, newValue) ->
     {

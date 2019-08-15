@@ -101,7 +101,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
         if (noListen) return;
         noListen = true;
 
-        if (newValue)
+        if (Boolean.TRUE.equals(newValue))
         {
           chkSelectNone.setSelected(false);
 
@@ -126,7 +126,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
         if (noListen) return;
         noListen = true;
 
-        if (newValue)
+        if (Boolean.TRUE.equals(newValue))
         {
           chkSelectAll.setSelected(false);
 
@@ -152,7 +152,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
         if (noListen) return;
         noListen = true;
 
-        if (newValue)
+        if (Boolean.TRUE.equals(newValue))
         {
           chkSelectNone.setSelected(false);
           chkType.children.forEach(chk -> chk.setSelected(true));
@@ -189,7 +189,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 
             TypeCheckBox tcb = chkField.parent;
 
-            if (newValue)
+            if (Boolean.TRUE.equals(newValue))
             {
               chkSelectNone.setSelected(false);
               if (tcb.children.stream().allMatch(CheckBox::isSelected))

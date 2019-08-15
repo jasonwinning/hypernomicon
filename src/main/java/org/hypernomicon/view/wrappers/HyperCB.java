@@ -185,7 +185,7 @@ public class HyperCB implements CommitableWrapper
 
     cb.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (newValue)
+      if (Boolean.TRUE.equals(newValue))
         populate(false);
     });
 

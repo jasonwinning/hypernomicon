@@ -135,8 +135,7 @@ public class ContentsWindow extends HyperDlg
     {
       if (ui.windows.getCyclingFocus()) return;
 
-      if (newValue == null) return;
-      if (newValue == false) return;
+      if (Boolean.TRUE.equals(newValue) == false) return;
 
       if (!mouseAlreadyHere)
         update(curWorkFile, previewWindow.curPage(), false);

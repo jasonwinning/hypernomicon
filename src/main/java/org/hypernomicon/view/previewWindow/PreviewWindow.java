@@ -227,7 +227,7 @@ public class PreviewWindow extends HyperDlg
 
     btnLock.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (newValue)
+      if (Boolean.TRUE.equals(newValue))
         btnLock.setGraphic(getImageViewForRelativePath("resources/images/lock.png"));
       else
       {
@@ -254,7 +254,7 @@ public class PreviewWindow extends HyperDlg
     {
       if ((oldValue == null) || (newValue == null)) return;
 
-      if (oldValue && (newValue == false))
+      if (oldValue.booleanValue() && Boolean.FALSE.equals(newValue))
       {
         if (tfPreviewPage.isDisabled() == false)
           curWrapper().setPreview((int) sldPreview.getValue(), true);
@@ -384,7 +384,7 @@ public class PreviewWindow extends HyperDlg
     {
       int pageNum = curWrapper().getPageNum();
 
-      if (newValue)
+      if (Boolean.TRUE.equals(newValue))
         tfPreviewPage.setText("");
       else
       {
@@ -422,7 +422,9 @@ public class PreviewWindow extends HyperDlg
 
     dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (ui.windows.getCyclingFocus() || (newValue != true)) return;
+      if (ui.windows.getCyclingFocus()) return;
+
+      if (Boolean.TRUE.equals(newValue) == false) return;
 
       ui.windows.push(dialogStage);
     });
