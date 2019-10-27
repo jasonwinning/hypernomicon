@@ -23,6 +23,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hypernomicon.model.records.HDT_RecordType;
 
@@ -33,7 +34,6 @@ public class ExternalColumnPopulator extends Populator
   private final HyperTable hT;
   private final int colNdx;
 
-  @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force) { return hT.getSelByCol(colNdx); }
   @Override public CellValueType getValueType()                                    { return cvtRecord; }
   @Override public HDT_RecordType getRecordType(HyperTableRow row)                 { return hT.getTypeByCol(colNdx); }
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)    { return equalMatch(row, cell); }
@@ -45,6 +45,16 @@ public class ExternalColumnPopulator extends Populator
   {
     this.hT = hT;
     this.colNdx = colNdx;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
+  {
+    return hT.getSelByCol(colNdx).stream()
+                                 .filter(cell -> filter == null ? true : filter.test(cell.getID()))
+                                 .collect(Collectors.toList());
   }
 
 //---------------------------------------------------------------------------

@@ -79,6 +79,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
     public boolean getChanged() { return changed; }
   }
 
+  private final ArrayList<String> keyList = new ArrayList<>();
+
   protected final Map<String, BibEntry_T> keyToAllEntry = new HashMap<>(), keyToTrashEntry = new HashMap<>();
   protected final Map<String, BibCollection_T> keyToColl = new HashMap<>();
 
@@ -104,8 +106,20 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
   public final Map<String, BibCollection> getKeyToColl() { return Collections.unmodifiableMap(keyToColl); }
 
   public BibEntry_T getEntryByKey(String key)            { return keyToAllEntry.get(key); }
+  public BibEntry_T getEntryByID(int id)                 { return keyToAllEntry.get(keyList.get(id - 1)); }
 
   public final void setKeyChangeHandler(BiConsumer<String, String> hndlr) { keyChangeHndlr = hndlr; }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  protected final void clear()
+  {
+    keyToAllEntry.clear();
+    keyToTrashEntry.clear();
+    keyToColl.clear();
+    keyList.clear();
+  }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -412,6 +426,22 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
     {
       messageDialog("An error occurred while saving bibliographic data to disk.", mtError);
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public int numericID(String key)
+  {
+    int ndx = keyList.indexOf(key);
+
+    if (ndx < 0)
+    {
+      ndx = keyList.size();
+      keyList.add(key);
+    }
+
+    return ndx + 1;
   }
 
 //---------------------------------------------------------------------------

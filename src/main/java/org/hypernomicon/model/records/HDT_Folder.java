@@ -51,9 +51,9 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     checkedForExistence = false;
 
     childFolders = getSubjList(rtParentFolderOfFolder);
-    miscFiles = getSubjList(rtFolderOfMiscFile);
-    workFiles = getSubjList(rtFolderOfWorkFile);
-    notes = getSubjList(rtFolderOfNote);
+    miscFiles    = getSubjList(rtFolderOfMiscFile    );
+    workFiles    = getSubjList(rtFolderOfWorkFile    );
+    notes        = getSubjList(rtFolderOfNote        );
 
     path = new HyperPath(getObjPointer(rtParentFolderOfFolder), this);
   }
@@ -61,11 +61,11 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public HyperPath getPath()      { return path; }
-  @Override public String name()            { return path.getNameStr(); }
-  @Override public String getCBText()       { return path.getNameStr(); }
-  @Override public String listName()        { return path.getNameStr(); }
-  @Override public void expire()            { path.clear(); super.expire(); }
+  @Override public HyperPath getPath() { return path; }
+  @Override public String name()       { return path.getNameStr(); }
+  @Override public String getCBText()  { return path.getNameStr(); }
+  @Override public String listName()   { return path.getNameStr(); }
+  @Override public void expire()       { path.clear(); super.expire(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -233,6 +233,14 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     if ( ! (notes.isEmpty() && workFiles.isEmpty() && miscFiles.isEmpty())) return false;
 
     return childFolders.stream().allMatch(HDT_Folder::hasNoNonFolderRecordDependencies);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HDT_Note closestAncestorNote()
+  {
+    return notes.isEmpty() ? nullSwitch(parentFolder(), db.notes.getByID(1), HDT_Folder::closestAncestorNote) : notes.get(0);
   }
 
 //---------------------------------------------------------------------------

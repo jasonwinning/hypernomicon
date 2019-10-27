@@ -18,12 +18,17 @@
 package org.hypernomicon.bib;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
+import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.HDT_RecordBase.makeSortKeyByType;
 import static org.hypernomicon.model.HyperDB.*;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.hypernomicon.bib.BibManager.RelatedBibEntry;
 import org.hypernomicon.bib.LibraryWrapper.LibraryType;
+import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.EntryType;
@@ -46,11 +51,12 @@ public abstract class BibEntry extends BibData implements BibEntity
   protected abstract List<String> getCollKeys(boolean deletedOK);
   protected abstract boolean isNewEntry();
   public abstract String getEntryURL();
+  public abstract LibraryWrapper<?, ?> getLibrary();
 
   public BibEntry(boolean thisIsBackup)       { this.thisIsBackup = thisIsBackup; }
 
   @Override public HDT_Work getWork()         { return thisIsBackup ? null  : db.getWorkByBibEntryKey(getKey()); }
-  @Override protected boolean linkedToWork()  { return thisIsBackup ? false : getWork() != null; }
+  @Override public boolean linkedToWork()     { return thisIsBackup ? false : getWork() != null; }
   @Override public HDT_WorkType getWorkType() { return linkedToWork() ? getWork().workType.get() : EntryType.toWorkType(getEntryType()); }
 
   @Override public void setWorkType(HDT_WorkType workType) { if (linkedToWork()) getWork().workType.set(workType); }
@@ -81,6 +87,33 @@ public abstract class BibEntry extends BibData implements BibEntity
       case ltZotero   : return (Entry_T) new ZoteroItem      ((ZoteroWrapper  ) wrapper, entryType);
       default         : return null;
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public int numericID()
+  {
+    return getLibrary().numericID(getKey());
+  }
+
+  public String getCBText()
+  {
+    String authorStr = getAuthors().getStr(),
+           yearStr = getStr(bfYear),
+           titleStr = getStr(bfTitle),
+           cbStr = "";
+
+    if (authorStr.length() > 0)
+      cbStr = authorStr + " ";
+
+    if (yearStr.length() > 0)
+      cbStr += "(" + yearStr + ") ";
+
+    if (titleStr.length() > 0)
+      cbStr += titleStr;
+
+    return cbStr;
   }
 
 //---------------------------------------------------------------------------
@@ -149,6 +182,48 @@ public abstract class BibEntry extends BibData implements BibEntity
     else if (!getKey().equals(other.getKey())) return false;
 
     return thisIsBackup == other.thisIsBackup;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static Comparator<BibEntry> comparator()
+  {
+    return (e1, e2) ->
+    {
+      ArrayList<BibAuthor> authorList = new ArrayList<>(),
+                           editorList = new ArrayList<>(),
+                           translatorList = new ArrayList<>(),
+                           authors1, authors2;
+
+      e1.getAuthors().getLists(authorList, editorList, translatorList);
+
+      authors1 = authorList.size() == 0 ? editorList : authorList;
+
+      authorList = new ArrayList<>();
+      editorList = new ArrayList<>();
+
+      e2.getAuthors().getLists(authorList, editorList, translatorList);
+
+      authors2 = authorList.size() == 0 ? editorList : authorList;
+
+      int cResult, numAuthors = Math.max(authors1.size(), authors2.size());
+
+      for (int ndx = 0; ndx < numAuthors; ndx++)
+      {
+        if ((ndx >= authors1.size()) || (ndx >= authors2.size()))
+          return authors1.size() - authors2.size();
+
+        cResult = authors1.get(ndx).getName().compareTo(authors2.get(ndx).getName());
+        if (cResult != 0) return cResult;
+      }
+
+      cResult = e1.getStr(bfYear).compareTo(e2.getStr(bfYear));
+      if (cResult != 0)
+        return cResult;
+
+      return makeSortKeyByType(e1.getStr(bfTitle), hdtWork).compareTo(makeSortKeyByType(e1.getStr(bfTitle), hdtWork));
+    };
   }
 
 //---------------------------------------------------------------------------

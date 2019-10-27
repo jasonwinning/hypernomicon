@@ -587,9 +587,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
   @Override public void loadFromDisk(FilePath filePath) throws FileNotFoundException, IOException, ParseException
   {
     JsonObj jMainObj = null;
-    keyToAllEntry.clear();
-    keyToTrashEntry.clear();
-    keyToColl.clear();
+    clear();
 
     try (InputStream in = new FileInputStream(filePath.toFile()))
     {

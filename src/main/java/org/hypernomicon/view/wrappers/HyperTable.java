@@ -23,7 +23,6 @@ import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import org.hypernomicon.model.HyperDB.Tag;
@@ -44,7 +43,6 @@ import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 import org.hypernomicon.view.populators.Populator.CellValueType;
-import org.hypernomicon.view.wrappers.TreeWrapper.TreeTargetType;
 
 import com.google.common.collect.HashBasedTable;
 
@@ -629,7 +627,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     Populator pop = null;
     RecordTypePopulator rtp = null;
 
-    ui.treeTargetTypes.clear();
+    ui.treeSelector.reset(ui.activeRecord(), true);
 
     if (colNdx > 0)
     {
@@ -639,15 +637,14 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
       {
         rtp = (RecordTypePopulator) pop;
 
-        rtp.getTypes().forEach(objType -> ui.treeTargetTypes.add(new TreeTargetType(getRelation(ui.activeType(), objType), objType)));
+        rtp.getTypes().forEach(objType -> ui.treeSelector.addTargetType(objType));
       }
     }
 
     if (rtp == null)
     {
       pop = cols.get(colNdx).getPopulator();
-      HDT_RecordType objType = pop.getRecordType(row);
-      ui.treeTargetTypes.add(new TreeTargetType(getRelation(ui.activeType(), objType), objType));
+      ui.treeSelector.addTargetType(pop.getRecordType(row));
     }
 
 // Determine start record and object record (to be replaced) for tree selection
@@ -655,11 +652,9 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     int startID = row.getID(colNdx);
     HDT_RecordType startType = row.getType(colNdx);
     if (startID > 0)
-      ui.treeObjRecord = db.records(startType).getByID(startID);
+      ui.treeSelector.setTarget(db.records(startType).getByID(startID));
     else
     {
-      ui.treeObjRecord = null;
-
       if (pop.getRecordType(row) == hdtWorkLabel)
       {
         List<HyperTableCell> choices = pop.populate(row, false);
@@ -677,8 +672,6 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
         startType = ui.activeRecord().getType();
       }
     }
-
-    ui.treeSubjRecord = ui.activeRecord();
 
     ui.goToTreeRecord(db.records(startType).getByID(startID));
   }

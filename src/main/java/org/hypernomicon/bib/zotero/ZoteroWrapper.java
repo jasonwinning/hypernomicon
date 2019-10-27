@@ -688,9 +688,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   @Override public void loadFromDisk(FilePath filePath) throws FileNotFoundException, IOException, ParseException
   {
     JsonObj jMainObj = null;
-    keyToAllEntry.clear();
-    keyToTrashEntry.clear();
-    keyToColl.clear();
+    clear();
 
     try (InputStream in = new FileInputStream(filePath.toFile()))
     {

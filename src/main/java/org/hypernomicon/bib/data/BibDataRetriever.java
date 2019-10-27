@@ -30,6 +30,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
@@ -40,10 +41,9 @@ import org.json.simple.parser.ParseException;
 
 public class BibDataRetriever
 {
-  private BibData pdfBD = null, queryBD = null;
+  private BibData workBD = null, pdfBD = null, queryBD = null;
   private boolean stopped = false, searchedCrossref = false;
 
-  private final BibData workBD;
   private final AsyncHttpClient httpClient;
   private final WorkTypeEnum workTypeEnum;
   private final List<ObjectGroup> authorGroups;
@@ -159,6 +159,8 @@ public class BibDataRetriever
       if (collEmpty(pdfFiles) == false) try
       {
         pdfBD = PDFBibData.createFromFiles(pdfFiles);
+
+        if (workBD == null) workBD = pdfBD;
       }
       catch (IOException e)
       {
@@ -235,7 +237,18 @@ public class BibDataRetriever
             searchedCrossref = true;
             queryBD = bd;
             doStage(4);
-          }, this::finish);
+
+          }, e ->
+          {
+            if ((e instanceof HttpResponseException) && (HttpResponseException.class.cast(e).getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE))
+            {
+              searchedCrossref = true;
+              messageDialog(e.getMessage(), mtError);
+              doStage(4);
+            }
+            else
+              finish(null);
+          });
           return;
         }
       }

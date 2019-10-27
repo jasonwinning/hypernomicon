@@ -37,8 +37,8 @@ import static org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod.
 
 public class SubjectPopulator extends Populator
 {
-  private final HashMap<HyperTableRow, Boolean> rowToChanged;
-  private final HashMap<HyperTableRow, List<HyperTableCell>> rowToChoices;
+  private final HashMap<HyperTableRow, Boolean> rowToChanged = new HashMap<>();
+  private final HashMap<HyperTableRow, List<HyperTableCell>> rowToChoices = new HashMap<>();
   private final HashMap<HyperTableRow, HDT_Record> rowToObj;
   private final RelationType relType;
   private final boolean trackObjByRow, nameOnly;
@@ -52,9 +52,6 @@ public class SubjectPopulator extends Populator
 
   public SubjectPopulator(RelationType relType, boolean trackObjByRow, boolean nameOnly)
   {
-    rowToChoices = new HashMap<>();
-    rowToChanged = new HashMap<>();
-
     this.relType = relType;
     this.trackObjByRow = trackObjByRow;
     this.nameOnly = nameOnly;
@@ -134,6 +131,9 @@ public class SubjectPopulator extends Populator
     boolean noneYet = true;
     for (HDT_Record subj : db.getSubjectList(relType, curObj))
     {
+      if ((filter != null) && (filter.test(subj.getID()) == false))
+        continue;
+
       if (noneYet)
       {
         choices.clear();

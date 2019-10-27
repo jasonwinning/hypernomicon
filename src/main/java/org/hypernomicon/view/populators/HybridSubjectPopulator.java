@@ -22,6 +22,7 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
@@ -54,6 +55,16 @@ public class HybridSubjectPopulator extends Populator
     subjPop = new SubjectPopulator(relType, true);
 
     this.relType = relType;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void setFilter(Predicate<Integer> filter)
+  {
+    super.setFilter(filter);
+    standardPop.setFilter(filter);
+    subjPop.setFilter(filter);
   }
 
 //---------------------------------------------------------------------------

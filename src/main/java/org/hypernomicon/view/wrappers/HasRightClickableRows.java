@@ -18,6 +18,7 @@
 package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
@@ -222,6 +223,14 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 
     addContextMenuItem("Show folder in system explorer", HDT_Note.class, HDT_Note::pathNotEmpty,
                        note -> highlightFileInExplorer(note.filePath()));
+
+    addContextMenuItem("Assign to note record", HDT_Folder.class, HDT_Folder::pathNotEmpty,
+                       folder ->
+                       {
+                         ui.treeSelector.reset(folder, false);
+                         ui.treeSelector.addTargetType(hdtNote);
+                         ui.goToTreeRecord(folder.closestAncestorNote());
+                       });
   }
 
 //---------------------------------------------------------------------------

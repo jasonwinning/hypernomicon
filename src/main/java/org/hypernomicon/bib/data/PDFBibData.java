@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
@@ -573,7 +574,7 @@ public class PDFBibData extends BibDataStandalone
     Iterator<FilePath> it = pdfFilePaths.iterator();
 
     while ((doi.length() == 0) && it.hasNext())
-      doi = matchDOI(it.next().getNameOnly().toString());
+      doi = matchDOI(FilenameUtils.removeExtension(it.next().getNameOnly().toString()));
 
     goodPdfBD.setStr(bfDOI, doi);
 

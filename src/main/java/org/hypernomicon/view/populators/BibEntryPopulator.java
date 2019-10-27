@@ -17,52 +17,53 @@
 
 package org.hypernomicon.view.populators;
 
-import static org.hypernomicon.view.populators.Populator.CellValueType.*;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import static org.hypernomicon.view.populators.Populator.CellValueType.*;
+import static org.hypernomicon.model.records.HDT_RecordType.*;
+
+import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-public class CustomRecordPopulator extends Populator
+public class BibEntryPopulator extends Populator
 {
 
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface PopulateHandler { List<HDT_Record> handle(HyperTableRow row, boolean force); }
+  @FunctionalInterface public static interface PopulateHandler { List<? extends BibEntry> handle(HyperTableRow row, boolean force); }
 
 //---------------------------------------------------------------------------
 
-  private HDT_RecordType recordType;
   private PopulateHandler handler;
 
 //---------------------------------------------------------------------------
 
-  public CustomRecordPopulator(HDT_RecordType recordType, PopulateHandler handler)
+  public BibEntryPopulator(PopulateHandler handler)
   {
-    this.recordType = recordType;
     this.handler = handler;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public CellValueType getValueType()                                 { return cvtRecord; }
-  @Override public HDT_RecordType getRecordType(HyperTableRow row)              { return recordType; }
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return equalMatch(row, cell); }
+  @Override public CellValueType getValueType() { return cvtBibEntry; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    return handler.handle(row, force).stream()
-                                     .filter(record -> filter == null ? true : filter.test(record.getID()))
-                                     .map(record -> new HyperTableCell(record, record.getCBText()))
-                                     .collect(Collectors.toList());
+    List<HyperTableCell> choices = handler.handle(row, force)
+                                          .stream()
+                                          .filter(bibEntry -> filter == null ? true : filter.test(bibEntry.numericID()))
+                                          .map(bibEntry -> new HyperTableCell(bibEntry.numericID(), bibEntry.getCBText(), hdtNone))
+                                          .collect((Collectors.toCollection(ArrayList::new)));
+
+    choices.add(HyperTableCell.blankCell);
+    return choices;
   }
 
 //---------------------------------------------------------------------------

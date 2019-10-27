@@ -1118,12 +1118,18 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     HDT_Person author = curWork.authorRecords.isEmpty() ? null : curWork.authorRecords.get(0);
 
-    SelectWorkDlgCtrlr dlg = SelectWorkDlgCtrlr.create(author);
+    SelectWorkDlgCtrlr dlg = SelectWorkDlgCtrlr.create(author, false, workFile.filePath());
 
     if (dlg.showModal() == false) return;
 
     HDT_Work newWork = dlg.getWork(),
              oldWork = curWork;
+
+    if (oldWork.getID() == newWork.getID())
+    {
+      falseWithErrorMessage("Source and destination are the same.");
+      return;
+    }
 
     int oldNdx = curWork.workFiles.indexOf(workFile),
         startPage = getCurPageNum(curWork, workFile, true),
@@ -1702,9 +1708,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean showWorkDialog(HDT_WorkFile workFile) { return showWorkDialog(workFile, null); }
+  public boolean showWorkDialog(HDT_WorkFile workFile) { return showWorkDialog(workFile, null, null); }
 
-  public boolean showWorkDialog(HDT_WorkFile workFile, FilePath filePathToUse)
+  public boolean showWorkDialog(HDT_WorkFile workFile, FilePath filePathToUse, BibData bdToUse)
   {
     boolean result;
 
@@ -1722,7 +1728,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     else
     {
       if ((workFile == null) && (filePathToUse != null))
-        wdc = WorkDlgCtrlr.create(filePathToUse);
+        wdc = WorkDlgCtrlr.create(filePathToUse, bdToUse);
       else
         wdc = WorkDlgCtrlr.create(workFile);
 
@@ -1875,17 +1881,26 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     BibData bd = new GUIBibData();
 
-    bd.setTitle(tfTitle.getText());
-    bd.setStr(bfYear, tfYear.getText());
-
     if (crossref)
     {
-      bd.setStr(bfDOI, safeStr(doi));
+      if (safeStr(doi).isBlank())
+      {
+        bd.setTitle(tfTitle.getText());
+        bd.setStr(bfYear, tfYear.getText());
+      }
+      else
+        bd.setStr(bfDOI, safeStr(doi));
+
       bibDataRetriever = BibDataRetriever.forCrossref(httpClient, bd, getAuthorGroups(), doneHndlr);
     }
     else
     {
-      if (collEmpty(isbns) == false)
+      if (collEmpty(isbns))
+      {
+        bd.setTitle(tfTitle.getText());
+        bd.setStr(bfYear, tfYear.getText());
+      }
+      else
         bd.setMultiStr(bfISBNs, isbns);
 
       bibDataRetriever = BibDataRetriever.forGoogleBooks(httpClient, bd, getAuthorGroups(), doneHndlr);

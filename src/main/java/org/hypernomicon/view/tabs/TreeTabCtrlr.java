@@ -130,7 +130,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     tcDesc.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getValue().getDescString()));
 
     tree.addContextMenuItem("Select", HDT_Record.class,
-      record -> (ui.treeSubjRecord != null) && (record != null) && db.isLoaded(),
+      record -> (ui.treeSelector.getBase() != null) && (record != null) && db.isLoaded(),
       record -> ui.treeSelect());
 
     tree.addContextMenuItem("Go to this record", HDT_Record.class,
@@ -322,6 +322,19 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     HDT_Record child = db.createNewBlankRecord(db.getSubjType(relType));
 
     db.getObjectList(relType, child, true).add(parent);
+
+    if (ui.treeSelector.getBase() != null)
+    {
+      RelationType selRelType = ui.treeSelector.getRelTypeForTargetType(child.getType());
+
+      if (selRelType == rtUnited)
+      {
+        if (ui.treeSelector.selectToUnite((HDT_RecordWithConnector) child, false))
+          return;
+      }
+      else if (selRelType != rtNone)
+        ui.treeSelector.select(child, false);
+    }
 
     ui.goToRecord(child, false);
   }

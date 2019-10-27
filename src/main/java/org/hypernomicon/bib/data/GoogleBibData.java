@@ -48,6 +48,13 @@ public class GoogleBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private String queryIsbn;
+
+  public String getQueryIsbn() { return safeStr(queryIsbn); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static GoogleBibData createFromJSON(JsonObj jsonObj, String title, String queryIsbn)
   {
     JsonArray jsonArray;
@@ -94,6 +101,8 @@ public class GoogleBibData extends BibDataStandalone
   private GoogleBibData(JsonObj jsonObj, String queryIsbn)
   {
     super();
+
+    this.queryIsbn = queryIsbn;
 
     String title    = jsonObj.getStrSafe("title"),
            subtitle = jsonObj.getStrSafe("subtitle");
@@ -166,9 +175,9 @@ public class GoogleBibData extends BibDataStandalone
           name = person.getLastNameEngChar();
 
         if (ed)
-          eds = eds + (eds.length() > 0 ? "+" : "") + "inauthor:" + escapeURL(name, false);
+          eds = eds + (eds.length() > 0 ? "+" : "") + escapeURL("\"" + name + "\"", false);
         else if (tr == false)
-          auths = auths + (auths.length() > 0 ? "+" : "") + "inauthor:" + escapeURL(name, false);
+          auths = auths + (auths.length() > 0 ? "+" : "") + escapeURL("\"" + name + "\"", false);
       }
     }
 

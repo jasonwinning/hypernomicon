@@ -35,6 +35,10 @@ public class WorkBibAuthors extends BibAuthors
 
   @Override public void getLists(ArrayList<BibAuthor> authorList, ArrayList<BibAuthor> editorList, ArrayList<BibAuthor> translatorList)
   {
+    authorList    .clear();
+    editorList    .clear();
+    translatorList.clear();
+
     work.getAuthors().forEach(author ->
     {
       if ((author.getIsEditor() == false) && (author.getIsTrans() == false))

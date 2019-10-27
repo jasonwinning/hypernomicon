@@ -184,6 +184,9 @@ public class MainTextUtil
       recordID = (Integer)jsToJava.getMember("recordID");
       recordTypeOrd = (Integer)jsToJava.getMember("recordType");
       recordType = getEnumVal(recordTypeOrd, HDT_RecordType.class);
+
+      if ((recordType == hdtNote) && (jsEvent == JS_EVENT_OPEN_PREVIEW))
+        jsEvent = JS_EVENT_LAUNCH_FILE;
     }
 
     switch (jsEvent)
@@ -227,6 +230,8 @@ public class MainTextUtil
 
           launchFile(file.filePath());
         }
+        else if (recordType == hdtNote)
+          launchFile(db.notes.getByID(recordID).getPath().filePath());
         else
           db.works.getByID(recordID).launch(-1);
 
@@ -412,13 +417,20 @@ public class MainTextUtil
   {
     String parms = getOpenRecordParms(record);
 
-    if (record.getType() == hdtMiscFile)
-      return "<a title=\"" + recordTooltip(record) + "\"" + style + " hypncon=\"true\" href=\"\" onclick=\"javascript:openFile(" + parms + "); return false;\">" + content + "</a>";
+    switch (record.getType())
+    {
+      case hdtMiscFile :
+        return "<a title=\"" + recordTooltip(record) + "\"" + style + " hypncon=\"true\" href=\"\" onclick=\"javascript:openFile(" + parms + "); return false;\">" + content + "</a>";
 
-    if (record.getType() == hdtWork)
-      return "<a title=\"" + recordTooltip(record) + "\"" + style + " hypncon=\"true\" oncontextmenu=\"openFile(" + parms + "); return false;\" href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
+      case hdtWork :
+        return "<a title=\"" + recordTooltip(record) + "\"" + style + " hypncon=\"true\" oncontextmenu=\"openFile(" + parms + "); return false;\" href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
 
-    return "<a title=\"" + recordTooltip(record) + "\"" + style + " hypncon=\"true\" href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
+      case hdtNote :
+        return "<a title=\"" + recordTooltip(record) + "\"" + style + " hypncon=\"true\" oncontextmenu=\"openFile(" + parms + "); return false;\" href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
+
+      default :
+        return "<a title=\"" + recordTooltip(record) + "\"" + style + " hypncon=\"true\" href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -854,7 +866,12 @@ public class MainTextUtil
 
   public static String extractTextFromHTML(String html)
   {
-    return ultraTrim(Jsoup.parse(prepHtmlForDisplay(html)).text());
+    return extractTextFromHTML(html, false);
+  }
+
+  public static String extractTextFromHTML(String html, boolean forComparison)
+  {
+    return ultraTrim(Jsoup.parse(prepHtmlForDisplay(html, forComparison)).text());
   }
 
 //---------------------------------------------------------------------------

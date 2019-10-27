@@ -63,20 +63,6 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   public final TreeModel<TreeRow> debateTree, termTree, labelTree, noteTree;
 
 //---------------------------------------------------------------------------
-
-  public static class TreeTargetType
-  {
-    public TreeTargetType(RelationType relType, HDT_RecordType objType)
-    {
-      this.relType = relType;
-      this.objType = objType;
-    }
-
-    public RelationType relType;
-    public HDT_RecordType objType;
-  }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public TreeWrapper(TreeTableView<TreeRow> ttv, boolean hasTerms, ComboBox<TreeRow> comboBox, boolean limitedControl)

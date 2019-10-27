@@ -17,6 +17,7 @@
 
 package org.hypernomicon.view.dialogs;
 
+import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
@@ -61,7 +62,7 @@ public class NewInstDlgCtrlr extends HyperDlg
 
   private void init(HDT_Institution parent, String newName, boolean isParent)
   {
-    Predicate<HDT_Record> popFilter = record -> HDT_Institution.class.cast(record).subInstitutions.size() > 0;
+    Predicate<Integer> popFilter = id -> db.institutions.getByID(id).subInstitutions.size() > 0;
 
     hcbParent = new HyperCB(cbParent, ctDropDownList, new StandardPopulator(hdtInstitution, popFilter, true));
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType));

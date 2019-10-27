@@ -90,7 +90,7 @@ public abstract class BibData
   public abstract String getStr(BibFieldEnum bibFieldEnum);
   public abstract BibAuthors getAuthors();
   public abstract HDT_Work getWork();
-  protected abstract boolean linkedToWork();
+  public abstract boolean linkedToWork();
   public abstract HDT_WorkType getWorkType();
   public abstract void setWorkType(HDT_WorkType workType);
 

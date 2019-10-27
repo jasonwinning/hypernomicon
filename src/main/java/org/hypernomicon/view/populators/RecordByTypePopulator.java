@@ -42,17 +42,16 @@ public class RecordByTypePopulator extends Populator
   private final HashMap<HyperTableRow, HDT_RecordType> rowToRecordType = new HashMap<>();
   private final HashMap<HyperTableRow, Boolean> rowToChanged = new HashMap<>();
   private final HashMap<HyperTableRow, List<HyperTableCell>> rowToChoices = new HashMap<>();
-  private final Predicate<HDT_Record> filter;
   private final boolean nameOnly;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public RecordByTypePopulator()                             { this(null, false); }
-  public RecordByTypePopulator(boolean nameOnly)             { this(null, nameOnly); }
-  public RecordByTypePopulator(Predicate<HDT_Record> filter) { this(filter, false); }
+  public RecordByTypePopulator()                          { this(null, false); }
+  public RecordByTypePopulator(boolean nameOnly)          { this(null, nameOnly); }
+  public RecordByTypePopulator(Predicate<Integer> filter) { this(filter, false); }
 
-  public RecordByTypePopulator(Predicate<HDT_Record> filter, boolean nameOnly)
+  public RecordByTypePopulator(Predicate<Integer> filter, boolean nameOnly)
   {
     this.filter = filter;
     this.nameOnly = nameOnly;
@@ -80,7 +79,7 @@ public class RecordByTypePopulator extends Populator
     {
       HDT_Record record = it.next();
 
-      if ((filter == null) || (filter.test(record)))
+      if ((filter == null) || filter.test(record.getID()))
         if (isUnstoredRecord(record.getID(), record.getType()) == false)
           return record;
     }
@@ -238,7 +237,7 @@ public class RecordByTypePopulator extends Populator
 
   private HyperTableCell getCell(HDT_Record record)
   {
-    if ((filter != null) && (filter.test(record) == false))
+    if ((filter != null) && (filter.test(record.getID()) == false))
       return null;
 
     if (nameOnly)

@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.BibManager.RelatedBibEntry;
+import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
@@ -80,7 +81,8 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
   @Override public BibAuthors getAuthors()  { return linkedToWork() ? new WorkBibAuthors(getWork()) : new MendeleyAuthors(jObj, getEntryType()); }
   @Override public EntryType getEntryType() { return parseMendeleyType(jObj.getStrSafe(getFieldKey(bfEntryType))); }
 
-  static EntryType parseMendeleyType(String mType) { return MendeleyWrapper.entryTypeMap.inverse().getOrDefault(mType, etOther); }
+  @Override public LibraryWrapper<?, ?> getLibrary() { return mWrapper; }
+  static EntryType parseMendeleyType(String mType)   { return MendeleyWrapper.entryTypeMap.inverse().getOrDefault(mType, etOther); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

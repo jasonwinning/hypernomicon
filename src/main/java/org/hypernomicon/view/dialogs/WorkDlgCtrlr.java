@@ -153,17 +153,17 @@ public class WorkDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  public static WorkDlgCtrlr create(FilePath filePathToUse)
+  public static WorkDlgCtrlr create(FilePath filePathToUse, BibData bdToUse)
   {
-    WorkDlgCtrlr wdc = HyperDlg.create("WorkDlg.fxml", "Import New Work", true);
-    wdc.init(null, filePathToUse);
+    WorkDlgCtrlr wdc = HyperDlg.create("WorkDlg.fxml", "Import New Work File", true);
+    wdc.init(null, filePathToUse, bdToUse);
     return wdc;
   }
 
   public static WorkDlgCtrlr create(HDT_WorkFile workFileToUse)
   {
     WorkDlgCtrlr wdc = HyperDlg.create("WorkDlg.fxml", "Work File", true);
-    wdc.init(workFileToUse, null);
+    wdc.init(workFileToUse, null, null);
     return wdc;
   }
 
@@ -435,7 +435,7 @@ public class WorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_WorkFile workFileToUse, FilePath filePathToUse)
+  private void init(HDT_WorkFile workFileToUse, FilePath filePathToUse, BibData bdToUse)
   {
     apPreview = new AnchorPane();
     mdp = addPreview(stagePane, apMain, apPreview, btnPreview);
@@ -461,7 +461,7 @@ public class WorkDlgCtrlr extends HyperDlg
         if (filePathToUse == null)
           btnSrcBrowseClick();
         else
-          useChosenFile(filePathToUse);
+          useChosenFile(filePathToUse, bdToUse);
       }
     };
 
@@ -701,13 +701,13 @@ public class WorkDlgCtrlr extends HyperDlg
 
     fileChooser.setInitialDirectory(db.unenteredPath().toFile());
 
-    useChosenFile(ui.windows.showOpenDialog(fileChooser, getStage()));
+    useChosenFile(ui.windows.showOpenDialog(fileChooser, getStage()), null);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void useChosenFile(FilePath chosenFile)
+  private void useChosenFile(FilePath chosenFile, BibData bdToUse)
   {
     if (FilePath.isEmpty(chosenFile)) return;
 
@@ -765,7 +765,9 @@ public class WorkDlgCtrlr extends HyperDlg
     updatePreview();
     tfOrigFile.setText(origFilePath.toString());
 
-    if ((tfTitle.getText().length() == 0) && (tfYear.getText().length() == 0))
+    if (bdToUse != null)
+      populateFieldsFromWebBD(bdToUse);
+    else if ((tfTitle.getText().length() == 0) && (tfYear.getText().length() == 0))
       extractDataFromPdf(appPrefs.getBoolean(PREF_KEY_AUTO_RETRIEVE_BIB, true), false, true);
   }
 
@@ -825,24 +827,9 @@ public class WorkDlgCtrlr extends HyperDlg
         }
 
         if (doMerge)
-        {
           doMerge(pdfBD, queryBD);
-        }
-        else if (queryBD instanceof CrossrefBibData)
-        {
-          lblAutoPopulated.setText("Fields auto-populated from Crossref, doi: " + queryBD.getStr(bfDOI));
-          populateFieldsFromBibData(queryBD, true);
-        }
-        else if (queryBD instanceof GoogleBibData)
-        {
-          List<String> list = matchISBN(httpClient.lastUrl());
-          if (collEmpty(list) == false)
-            lblAutoPopulated.setText("Fields auto-populated from Google Books, isbn: " + list.get(0));
-          else
-            lblAutoPopulated.setText("Fields have been auto-populated from Google Books");
-
-          populateFieldsFromBibData(queryBD, true);
-        }
+        else if ((queryBD instanceof CrossrefBibData) || (queryBD instanceof GoogleBibData))
+          populateFieldsFromWebBD(queryBD);
         else
         {
           lblAutoPopulated.setText("Fields auto-populated with information extracted from PDF file");
@@ -890,6 +877,27 @@ public class WorkDlgCtrlr extends HyperDlg
       lblAutoPopulated.setText("Fields auto-populated with information extracted from PDF file");
       populateFieldsFromBibData(pdfBD, true);
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void populateFieldsFromWebBD(BibData queryBD)
+  {
+    if (queryBD instanceof CrossrefBibData)
+    {
+      lblAutoPopulated.setText("Fields auto-populated from Crossref, doi: " + queryBD.getStr(bfDOI));
+    }
+    else if (queryBD instanceof GoogleBibData)
+    {
+      String isbn = GoogleBibData.class.cast(queryBD).getQueryIsbn();
+      if (isbn.isBlank())
+        lblAutoPopulated.setText("Fields have been auto-populated from Google Books");
+      else
+        lblAutoPopulated.setText("Fields auto-populated from Google Books, isbn: " + isbn);
+    }
+
+    populateFieldsFromBibData(queryBD, true);
   }
 
 //---------------------------------------------------------------------------

@@ -680,9 +680,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   {
     mainText = new MainTextWrapper(apOverview);
 
-    Predicate<HDT_Record> popFilter = record ->
+    Predicate<Integer> popFilter = id ->
     {
-      HDT_Institution inst = (HDT_Institution)record;
+      HDT_Institution inst = db.institutions.getByID(id);
 
       return (inst.subInstitutions.size() > 0) || inst.parentInst.isNull();
     };
@@ -1149,7 +1149,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
   @FXML private void btnNewWorkClick()
   {
-    ui.newWorkAndWorkFile(curPerson, null);
+    ui.newWorkAndWorkFile(curPerson, null, false);
   }
 
 //---------------------------------------------------------------------------

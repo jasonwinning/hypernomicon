@@ -22,6 +22,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -37,16 +38,20 @@ public abstract class Populator
 
   public static enum CellValueType
   {
-    cvtVaries,       cvtQuery,        cvtQueryType,      cvtRecordType,
-    cvtRecord,       cvtConnective,   cvtBoolean,        cvtTernary,
-    cvtOperand,      cvtTagItem,      cvtRelation
+    cvtVaries,   cvtQuery,       cvtQueryType,  cvtRecordType,
+    cvtRecord,   cvtConnective,  cvtBoolean,    cvtTernary,
+    cvtOperand,  cvtTagItem,     cvtRelation,   cvtBibEntry
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  protected Predicate<Integer> filter = null;
+
   public abstract List<HyperTableCell> populate(HyperTableRow row, boolean force);
   public abstract CellValueType getValueType();
+
+  public void setFilter(Predicate<Integer> filter) { this.filter = filter; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

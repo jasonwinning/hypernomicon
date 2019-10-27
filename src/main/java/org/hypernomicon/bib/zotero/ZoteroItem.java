@@ -24,6 +24,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.BibManager.RelatedBibEntry;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
@@ -82,7 +83,8 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
   @Override public BibAuthors getAuthors()  { return linkedToWork() ? new WorkBibAuthors(getWork()) : new ZoteroAuthors(jData.getArray("creators"), getEntryType()); }
   @Override public EntryType getEntryType() { return parseZoteroType(jData.getStrSafe(getFieldKey(bfEntryType))); }
 
-  static EntryType parseZoteroType(String zType) { return ZoteroWrapper.entryTypeMap.inverse().getOrDefault(zType, etOther); }
+  @Override public LibraryWrapper<?, ?> getLibrary() { return zWrapper; }
+  static EntryType parseZoteroType(String zType)     { return ZoteroWrapper.entryTypeMap.inverse().getOrDefault(zType, etOther); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

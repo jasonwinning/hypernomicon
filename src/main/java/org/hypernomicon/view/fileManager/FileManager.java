@@ -223,8 +223,16 @@ public class FileManager extends HyperDlg
 
     fileTable.addContextMenuItem("New work record", fileRow -> fileRow.getRecord() == null, fileRow ->
     {
-      ui.newWorkAndWorkFile(null, fileRow.getFilePath());
+      ui.newWorkAndWorkFile(null, fileRow.getFilePath(), false);
       refresh();
+    });
+
+    fileTable.addContextMenuItem("Assign to note record", FileRow::isDirectory, dirRow ->
+    {
+      HDT_Folder folder = (HDT_Folder) dirRow.getRecord();
+      ui.treeSelector.reset(folder, false);
+      ui.treeSelector.addTargetType(hdtNote);
+      ui.goToTreeRecord(folder.closestAncestorNote());
     });
 
     fileTable.addContextMenuItem("Cut", fileRow -> cutCopy(fileRow, false));

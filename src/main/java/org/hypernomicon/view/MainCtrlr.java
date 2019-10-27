@@ -21,7 +21,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.queryEngines.AllQueryEngine.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
@@ -44,7 +43,6 @@ import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
-import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.queryEngines.QueryEngine.QueryType;
 import org.hypernomicon.util.PopupDialog;
@@ -64,7 +62,6 @@ import org.hypernomicon.view.tabs.*;
 import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 import org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.view.wrappers.*;
-import org.hypernomicon.view.wrappers.TreeWrapper.TreeTargetType;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -156,9 +153,7 @@ public final class MainCtrlr
   private ComboBox<ResultsRow> cbResultGoTo = null;
   private ClickHoldButton chbBack, chbForward;
   private TextField tfSelector = null;
-
-  public HDT_Record treeSubjRecord = null, treeObjRecord = null;
-  public final List<TreeTargetType> treeTargetTypes = new ArrayList<>();
+  public final TreeSelector treeSelector = new TreeSelector();
 
   public Tooltip ttDates;
   private boolean selectorTabChangeIsProgrammatic = false, maximized = false, internetNotCheckedYet = true, shuttingDown = false;
@@ -1503,7 +1498,7 @@ public final class MainCtrlr
     clearAllTabsAndViews();
     lblStatus.setText("");
 
-    treeSubjRecord = null;
+    treeSelector.reset();
     closeWindows(false);
 
     try { db.close(null); }
@@ -2127,12 +2122,12 @@ public final class MainCtrlr
   {
     if ((db.isLoaded() == false) || shuttingDown) return;
 
+    if (windows.getOutermostStage() != primaryStage())
+      windows.focusStage(primaryStage());
+
     if (cantSaveRecord())
     {
-      treeSubjRecord = null;
-      treeObjRecord = null;
-      treeTargetTypes.clear();
-
+      treeSelector.reset();
       return;
     }
 
@@ -2192,7 +2187,7 @@ public final class MainCtrlr
   {
     if ((record == null) || (db.isLoaded() == false) || shuttingDown) return;
 
-    treeSubjRecord = null;
+    treeSelector.reset();
     HDT_Investigation inv = null;
 
     switch (record.getType())
@@ -2291,7 +2286,7 @@ public final class MainCtrlr
 
     int count = tab.getRecordCount();
 
-    treeSubjRecord = null;
+    treeSelector.reset();
 
     if (count > 0)
     {
@@ -2488,7 +2483,7 @@ public final class MainCtrlr
 
     else if (activeTabEnum == treeTabEnum)
     {
-      if (treeSubjRecord == null)
+      if (treeSelector.getBase() == null)
       {
         btnSave.setDisable(true);
         btnSave.setText("Accept Edits");
@@ -2603,7 +2598,7 @@ public final class MainCtrlr
 
   public void treeSelect()
   {
-    if (treeSubjRecord == null)
+    if (treeSelector.getBase() == null)
     {
       messageDialog("Internal error #91827", mtError);
       return;
@@ -2614,21 +2609,11 @@ public final class MainCtrlr
 
     if (record == null) return;
 
-    RelationType relType = findFirst(treeTargetTypes, ttType -> ttType.objType == record.getType(), rtNone, ttType -> ttType.relType);
+    RelationType relType = treeSelector.getRelTypeForTargetType(record.getType());
 
     if (relType == rtNone)
     {
-      String msg = "You must select a record of type: ";
-      int lastNdx = treeTargetTypes.size() - 1;
-
-      for (int ndx = 0; ndx <= lastNdx; ndx++)
-      {
-        msg += db.getTypeName(treeTargetTypes.get(ndx).objType);
-
-        if      ((ndx == 0) && (lastNdx == 1)) msg += " or ";
-        else if (ndx == (lastNdx - 1))         msg += ", or ";
-        else if (ndx < lastNdx)                msg += ", ";
-      }
+      String msg = "You must select a record of type: " + treeSelector.getTypesStr();
 
       messageDialog(msg + ".", mtError);
       return;
@@ -2636,77 +2621,18 @@ public final class MainCtrlr
 
     if (relType == rtUnited)
     {
-      treeSelectToUnite((HDT_RecordWithConnector) record);
+      treeSelector.selectToUnite((HDT_RecordWithConnector) record, true);
       return;
     }
 
-    if (treeObjRecord != null)
-      db.getObjectList(getRelation(treeSubjRecord.getType(), treeObjRecord.getType()), treeSubjRecord, true).remove(treeObjRecord);
-
-    HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, treeSubjRecord, true);
-
-    objList.add(record);
-    try { objList.throwLastException(); }
-    catch (RelationCycleException e)
-    {
-      messageDialog("Cannot use selected record: Records would be organized in a cycle as a result.", mtError);
-
-      if (treeObjRecord != null)
-        db.getObjectList(getRelation(treeSubjRecord.getType(), treeObjRecord.getType()), treeSubjRecord, true).add(treeObjRecord);
-    }
-
-    goToRecord(treeSubjRecord, false);
+    if (treeSelector.select(record, true))
+      goToRecord(treeSelector.getSubj(), false);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean treeSelectToUnite(HDT_RecordWithConnector record2)
-  {
-    HDT_RecordWithConnector record1 = (HDT_RecordWithConnector) treeSubjRecord;
-
-    if ((record2.getType() == record1.getType()))
-      return falseWithErrorMessage("You cannot connect records of the same type.");
-
-    if (record2.isLinked())
-    {
-      if ((record2.getLink().getSpoke(record1.getType()) != null))
-        return falseWithErrorMessage("The selected " + db.getTypeName(record2.getType()) + " is already connected to a " + db.getTypeName(record1.getType()) + ".");
-
-      if (record1.getType() == hdtDebate)
-        if ((record2.getLink().getSpoke(hdtPosition) != null))
-          return falseWithErrorMessage("The selected " + db.getTypeName(record2.getType()) + " is already connected to a " + db.getTypeName(hdtPosition) + ".");
-
-      if (record1.getType() == hdtPosition)
-        if ((record2.getLink().getSpoke(hdtDebate) != null))
-          return falseWithErrorMessage("The selected " + db.getTypeName(record2.getType()) + " is already connected to a " + db.getTypeName(hdtDebate) + ".");
-
-      if (record1.isLinked())
-        return falseWithErrorMessage("Both records are already linked to other records.");
-    }
-
-    if (record1.isLinked())
-    {
-      if ((record1.getLink().getSpoke(record2.getType()) != null))
-        return falseWithErrorMessage("The selected " + db.getTypeName(record1.getType()) + " is already connected to a " + db.getTypeName(record2.getType()) + ".");
-
-      if (record2.getType() == hdtDebate)
-        if ((record1.getLink().getSpoke(hdtPosition) != null))
-          return falseWithErrorMessage("The selected " + db.getTypeName(record1.getType()) + " is already connected to a " + db.getTypeName(hdtPosition) + ".");
-
-      if (record2.getType() == hdtPosition)
-        if ((record1.getLink().getSpoke(hdtDebate) != null))
-          return falseWithErrorMessage("The selected " + db.getTypeName(record1.getType()) + " is already connected to a " + db.getTypeName(hdtDebate) + ".");
-    }
-
-    uniteRecords(record1, record2);
-    return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void uniteRecords(HDT_RecordWithConnector record1, HDT_RecordWithConnector record2)
+  public void uniteRecords(HDT_RecordWithConnector record1, HDT_RecordWithConnector record2, boolean goToRecord2)
   {
     String desc;
 
@@ -2725,7 +2651,7 @@ public final class MainCtrlr
     }
 
     if (StrongLink.connectRecords(record1.getConnector(), record2.getConnector(), desc))
-      goToRecord(record1, false);
+      goToRecord(goToRecord2 ? record2 : record1, false);
     else
       update();
   }
@@ -2822,13 +2748,13 @@ public final class MainCtrlr
 
   @FXML private void importWorkFile()
   {
-    newWorkAndWorkFile(null, null);
+    newWorkAndWorkFile(null, null, false);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void newWorkAndWorkFile(HDT_Person person, FilePath filePathToUse)
+  public void newWorkAndWorkFile(HDT_Person person, FilePath filePathToUse, boolean promptForExistingRecord)
   {
     if (filePathToUse != null)
     {
@@ -2840,14 +2766,106 @@ public final class MainCtrlr
 
     if (cantSaveRecord()) return;
 
-    HDT_Work work = db.createNewBlankRecord(hdtWork);
+    HDT_Work work = null;
+    BibData bdToUse = null;
+    BibEntry bibEntry = null;
 
-    if (person != null)
+    if (promptForExistingRecord)
+    {
+      SelectWorkDlgCtrlr swdc = SelectWorkDlgCtrlr.create(person, true, filePathToUse);
+      if (swdc.showModal() == false) return;
+      work = swdc.getWork();
+      bdToUse = swdc.getBibData();
+      bibEntry = swdc.getBibEntry();
+      MergeWorksDlgCtrlr mwd = null;
+
+      if (work != null)
+      {
+        if (bibEntry != null)
+        {
+          if (work.getBibEntryKey().isBlank())
+          {
+            if (bibEntry.linkedToWork())
+            {
+              messageDialog("Internal error #62883", mtError);
+              return;
+            }
+
+            try
+            {
+              mwd = MergeWorksDlgCtrlr.create("Merge Fields", work.getBibData(), bibEntry, bdToUse, null, work, false, false, false);
+            }
+            catch (IOException e)
+            {
+              messageDialog("Unable to initialize merge dialog window.", mtError);
+              return;
+            }
+
+            if (mwd.showModal() == false) return;
+
+            work.setBibEntryKey(bibEntry.getKey());
+            mwd.mergeInto(bibEntry);
+            bdToUse = bibEntry;
+          }
+          else if (bibEntry.getKey().equals(work.getBibEntryKey()) == false)
+          {
+            messageDialog("Internal error #62884", mtError);
+            return;
+          }
+        }
+
+        if (mwd == null)
+        {
+          BibData workBD = work.getBibData();
+
+          try
+          {
+            mwd = MergeWorksDlgCtrlr.create("Merge Fields", workBD, bdToUse, null, null, work, false, false, false);
+          }
+          catch (IOException e)
+          {
+            messageDialog("Unable to initialize merge dialog window.", mtError);
+            return;
+          }
+
+          if (mwd.showModal() == false) return;
+
+          mwd.mergeInto(workBD);
+          bdToUse = workBD;
+        }
+      }
+    }
+
+    boolean deleteRecord = work == null;
+
+    if (work == null)
+    {
+      if ((bibEntry != null) && bibEntry.linkedToWork())
+      {
+        messageDialog("Internal error #62885", mtError);
+        return;
+      }
+
+      work = db.createNewBlankRecord(hdtWork);
+
+      if (bibEntry != null)
+      {
+        work.getBibData().copyAllFieldsFrom(bibEntry, false, false);
+        work.getAuthors().setAll(bibEntry.getAuthors());
+        work.setBibEntryKey(bibEntry.getKey());
+        bdToUse = bibEntry;
+      }
+    }
+
+    if ((person != null) && (work.getAuthors().containsPerson(person) == false))
       work.getAuthors().add(person);
 
     goToRecord(work, false);
 
-    if (workHyperTab().showWorkDialog(null, filePathToUse) == false)
+    if (workHyperTab().showWorkDialog(null, filePathToUse, bdToUse))
+      return;
+
+    if (deleteRecord)
       deleteCurrentRecord(false);
   }
 
@@ -2864,7 +2882,7 @@ public final class MainCtrlr
 
     if (mediaTypeStr.contains("pdf"))
     {
-      newWorkAndWorkFile(null, filePath);
+      newWorkAndWorkFile(null, filePath, true);
       return;
     }
 
@@ -2883,9 +2901,9 @@ public final class MainCtrlr
 
     switch (popup.showModal())
     {
-      case mrYes      : newWorkAndWorkFile(null, filePath); return;
-      case mrNo       : newMiscFile(null, filePath);        return;
-      case mrContinue : importBibFile(null, filePath);      return;
+      case mrYes      : newWorkAndWorkFile(null, filePath, true); return;
+      case mrNo       : newMiscFile       (null, filePath      ); return;
+      case mrContinue : importBibFile     (null, filePath      ); return;
 
       default         : return;
     }

@@ -301,16 +301,17 @@ public class MainText
   public void setHtml(String newHtml)
   {
     boolean modify = true;
-    String newPlainText = extractTextFromHTML(newHtml).trim();
+    String oldPlainText = extractTextFromHTML(htmlText, true).trim(),
+           newPlainText = extractTextFromHTML(newHtml, true).trim();
 
-    if (plainText.replaceAll("\\h+", "").equalsIgnoreCase(newPlainText.replaceAll("\\h+", "")))  // Remove all horizontal whitespaces and then compare
+    if (oldPlainText.replaceAll("\\h+", "").equalsIgnoreCase(newPlainText.replaceAll("\\h+", "")))  // Remove all horizontal whitespaces and then compare
       modify = false;
 
     if (ultraTrim(convertToSingleLine(newPlainText)).length() == 0)
-      if (ultraTrim(convertToSingleLine(plainText)).length() == 0)
+      if (ultraTrim(convertToSingleLine(oldPlainText)).length() == 0)
         modify = false;
 
-    setInternal(newHtml, newPlainText);
+    setInternal(newHtml, extractTextFromHTML(newHtml).trim());
 
     if (modify == false) return;
 

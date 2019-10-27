@@ -49,6 +49,7 @@ import static java.util.Collections.binarySearch;
 
 import java.net.InetAddress;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
@@ -358,6 +359,21 @@ public final class Util
       url = removeFirstParenthetical(url);
 
     return URLEncoder.encode(url.trim(), UTF_8);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String unescapeURL(String url)
+  {
+    try
+    {
+      return URLDecoder.decode(safeStr(url), UTF_8);
+    }
+    catch (IllegalArgumentException e)
+    {
+      return "";
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -1797,6 +1813,15 @@ public final class Util
 // But I've seen at least one Crossref DOI that included a colon
 
   public static String matchDOI(String str)
+  {
+    String doi = matchDOIiteration(str);
+
+    if (doi.length() > 0) return doi;
+
+    return matchDOIiteration(unescapeURL(str));
+  }
+
+  private static String matchDOIiteration(String str)
   {
     str = prepareForIDMatch(str, false);
 

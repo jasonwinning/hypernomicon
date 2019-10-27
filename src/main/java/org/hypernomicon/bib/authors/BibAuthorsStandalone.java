@@ -128,6 +128,10 @@ public class BibAuthorsStandalone extends BibAuthors
 
   @Override public void getLists(ArrayList<BibAuthor> authorList, ArrayList<BibAuthor> editorList, ArrayList<BibAuthor> translatorList)
   {
+    authorList    .clear();
+    editorList    .clear();
+    translatorList.clear();
+
     if (listsAreEmpty())
     {
       authorList.addAll(getOneLinerAsList());

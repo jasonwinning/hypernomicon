@@ -23,13 +23,11 @@ import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.dialogs.SelectConceptDlgCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.TreeWrapper.TreeTargetType;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
@@ -357,7 +355,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
     else
       return;
 
-    ui.uniteRecords(source, concept);
+    ui.uniteRecords(source, concept, false);
   }
 
 //---------------------------------------------------------------------------
@@ -369,16 +367,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
     {
       if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
       {
-        HDT_Record source = ui.viewRecord();
-
-        ui.treeSubjRecord = source;
-        ui.treeObjRecord = null;
-        ui.treeTargetTypes.clear();
-
-        ui.treeTargetTypes.add(new TreeTargetType(rtUnited, type));
-        if (type == hdtDebate)
-          ui.treeTargetTypes.add(new TreeTargetType(rtUnited, hdtPosition));
-
+        ui.treeSelector.linking(ui.viewRecord(), type);
         ui.goToTreeRecord(db.records(type).getByID(1));
       }
     });

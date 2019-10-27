@@ -22,7 +22,6 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import java.util.List;
 import java.util.function.Predicate;
 
-import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -37,11 +36,11 @@ public class StandardPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public StandardPopulator(HDT_RecordType objType)                               { this(objType, null  , false); }
-  public StandardPopulator(HDT_RecordType objType, boolean nameOnly)             { this(objType, null  , nameOnly); }
-  public StandardPopulator(HDT_RecordType objType, Predicate<HDT_Record> filter) { this(objType, filter, false); }
+  public StandardPopulator(HDT_RecordType objType)                            { this(objType, null  , false); }
+  public StandardPopulator(HDT_RecordType objType, boolean nameOnly)          { this(objType, null  , nameOnly); }
+  public StandardPopulator(HDT_RecordType objType, Predicate<Integer> filter) { this(objType, filter, false); }
 
-  public StandardPopulator(HDT_RecordType objType, Predicate<HDT_Record> filter, boolean nameOnly)
+  public StandardPopulator(HDT_RecordType objType, Predicate<Integer> filter, boolean nameOnly)
   {
     this.objType = objType;
 
@@ -65,6 +64,14 @@ public class StandardPopulator extends Populator
   @Override public HyperTableCell getChoiceByID(HyperTableRow row, int id)          { return rtp.getChoiceByID(dummyRow, id); }
   @Override public HyperTableCell addEntry(HyperTableRow row, int id, String value) { return rtp.addEntry(dummyRow, id, value); }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void setFilter(Predicate<Integer> filter)
+  {
+    super.setFilter(filter);
+    rtp.setFilter(filter);
+  }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
