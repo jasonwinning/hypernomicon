@@ -2793,7 +2793,8 @@ public final class MainCtrlr
 
             try
             {
-              mwd = MergeWorksDlgCtrlr.create("Merge Fields", work.getBibData(), bibEntry, bdToUse, null, work, false, false, false);
+              mwd = MergeWorksDlgCtrlr.create("Merge Fields", work.getBibData(), bibEntry, bdToUse, null, work, false, false, false,
+                                              nullSwitch(filePathToUse, work.filePath()));
             }
             catch (IOException e)
             {
@@ -2820,7 +2821,8 @@ public final class MainCtrlr
 
           try
           {
-            mwd = MergeWorksDlgCtrlr.create("Merge Fields", workBD, bdToUse, null, null, work, false, false, false);
+            mwd = MergeWorksDlgCtrlr.create("Merge Fields", workBD, bdToUse, null, null, work, false, false, false,
+                                            nullSwitch(filePathToUse, work.filePath()));
           }
           catch (IOException e)
           {
@@ -2965,7 +2967,8 @@ public final class MainCtrlr
 
     try
     {
-      mwd = MergeWorksDlgCtrlr.create("Import Into Existing Work Record", workBibData, bd, null, null, work, creatingNewWork, showNewEntry, newEntryChecked);
+      mwd = MergeWorksDlgCtrlr.create("Import Into " + (creatingNewWork ? "New" : "Existing") + " Work Record",
+                                      workBibData, bd, null, null, work, creatingNewWork, showNewEntry, newEntryChecked);
     }
     catch (IOException e)
     {

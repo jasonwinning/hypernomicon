@@ -23,6 +23,7 @@ import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.util.List;
 import java.util.Set;
@@ -42,6 +43,7 @@ import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
+import org.hypernomicon.util.json.JsonObj.JsonNodeType;
 
 public class CrossrefBibData extends BibDataStandalone
 {
@@ -57,6 +59,18 @@ public class CrossrefBibData extends BibDataStandalone
 
     try
     {
+      JsonNodeType jsonType = jsonObj.getType("message");
+
+      if (jsonType == JsonNodeType.ARRAY)
+      {
+        String message = jsonObj.getArray("message").getObj(0).getStrSafe("message");
+
+        if (message.isBlank() == false)
+          messageDialog(message, mtError);
+
+        return null;
+      }
+
       jsonObj = jsonObj.getObj("message");
       jsonArray = jsonObj.getArray("items");
 
@@ -273,7 +287,7 @@ public class CrossrefBibData extends BibDataStandalone
       if (auths.length() > 0)
         url = url + "&";
 
-      url = url + "query.title=" + escapeURL(title, false);
+      url = url + "query.bibliographic=" + escapeURL(title, false); // query.title is deprecated
     }
 
     return url;

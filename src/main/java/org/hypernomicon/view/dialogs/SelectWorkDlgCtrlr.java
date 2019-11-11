@@ -141,8 +141,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     {
       if (bibEntryIsConstant == false) return true;
 
-      HDT_Work work = db.works.getByID(id);
-      return work.getBibEntryKey().isBlank();
+      return db.works.getByID(id).getBibEntryKey().isBlank();
     });
 
     hcbWork = new HyperCB(cbWork, ctDropDownList, workPop);
@@ -161,7 +160,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
       return db.getBibLibrary().getNonTrashEntries().stream()
                                                     .filter(entry -> entry.linkedToWork() == false)
                                                     .sorted(BibEntry.comparator())
-                                                    .collect((Collectors.toCollection(ArrayList::new)));
+                                                    .collect(Collectors.toCollection(ArrayList::new));
     }));
 
     if (enableCreateNew == false)
@@ -382,7 +381,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addPreview(AnchorPane stagePane, AnchorPane apMain, AnchorPane apPreview, ToggleButton btnPreview)
+  private void addPreview(AnchorPane stagePane, AnchorPane apMain, AnchorPane apPreview, ToggleButton btnPreview)
   {
     setAnchors(apPreview, apMain.getPrefHeight(), 0.0, 0.0, 0.0);
     setAnchors(apMain, 0.0, null, 0.0, 0.0);
@@ -411,7 +410,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void accommodatePreview(Stage dialogStage, AnchorPane apMain)
+  private static void accommodatePreview(Stage dialogStage, AnchorPane apMain)
   {
     ObservableList<Screen> screens = Screen.getScreensForRectangle(dialogStage.getX(), dialogStage.getY(), dialogStage.getWidth(), dialogStage.getHeight());
     double minHeight = screens.size() == 1 ? screens.get(0).getVisualBounds().getHeight() - 60.0 : 900.0;
@@ -454,23 +453,18 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if ((hcbWork.selectedID() >= 1) || createNewClicked)
+    if ((hcbWork.selectedID() < 1) && (createNewClicked == false))
+      return falseWithInfoMessage("Select a work record.", cbWork);
+
+    if (db.bibLibraryIsLinked())
     {
-      if (db.bibLibraryIsLinked())
-      {
-        int id = hcbBibEntry.selectedID();
-        bibEntry = id < 1 ? null : db.getBibLibrary().getEntryByID(id);
-      }
-
-      if ((hcbWork.selectedID() >= 1) && (createNewClicked == false))
-        work = hcbWork.selectedRecord();
-      else
-        work = null;
-
-      return true;
+      int id = hcbBibEntry.selectedID();
+      bibEntry = id < 1 ? null : db.getBibLibrary().getEntryByID(id);
     }
 
-    return falseWithInfoMessage("Select a work record.", cbWork);
+    work = createNewClicked ? null : hcbWork.selectedRecord();
+
+    return true;
   }
 
 //---------------------------------------------------------------------------

@@ -24,6 +24,8 @@ import static org.hypernomicon.util.Util.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 
@@ -82,12 +84,12 @@ final class HyperCore<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final ArrayList<KeyIDpair> sortedKeys = new ArrayList<>();
-  private final ArrayList<Integer> sortedIDs = new ArrayList<>();
-  private final HashMap<Integer, String> idToKey = new HashMap<>();
-  private final HashMap<Integer, HDT_DT> idToRecord = new HashMap<>();
+  private final List<KeyIDpair> sortedKeys = new ArrayList<>();
+  private final List<Integer> sortedIDs = new ArrayList<>();
+  private final Map<Integer, String> idToKey = new HashMap<>();
+  private final Map<Integer, HDT_DT> idToRecord = new HashMap<>();
 
-  int idCount()                { return sortedIDs.size(); }
+  int size()                   { return sortedIDs.size(); }
   Stream<HDT_DT> stream()      { return sortedIDs.stream().map(idToRecord::get); }
   String getKeyByID(int id)    { return idToKey.get(id); }
   int getIDbyIDNdx(int ndx)    { return sortedIDs.get(ndx); }

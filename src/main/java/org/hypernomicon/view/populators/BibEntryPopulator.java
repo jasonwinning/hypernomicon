@@ -60,7 +60,7 @@ public class BibEntryPopulator extends Populator
                                           .stream()
                                           .filter(bibEntry -> filter == null ? true : filter.test(bibEntry.numericID()))
                                           .map(bibEntry -> new HyperTableCell(bibEntry.numericID(), bibEntry.getCBText(), hdtNone))
-                                          .collect((Collectors.toCollection(ArrayList::new)));
+                                          .collect(Collectors.toCollection(ArrayList::new));
 
     choices.add(HyperTableCell.blankCell);
     return choices;

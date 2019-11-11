@@ -48,7 +48,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
     private CoreAccessor(HyperCore<HDT_DT> core) { this.core = core; }
 
-    public int size()                            { return core.idCount(); }
+    public int size()                            { return core.size(); }
     public boolean containsID(int id)            { return core.containsID(id); }
     public Stream<HDT_DT> stream()               { return core.stream(); }
 
@@ -100,8 +100,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
     {
       if (!hasNext()) throw new NoSuchElementException();
 
-      if (byKey) return coreAccessor.getByKeyNdx(nextNdx++);
-      else       return coreAccessor.getByIDNdx(nextNdx++);
+      return byKey ? coreAccessor.getByKeyNdx(nextNdx++) : coreAccessor.getByIDNdx(nextNdx++);
     }
   }
 
@@ -280,7 +279,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
   void writeToXML(StringBuilder xml) throws HDB_InternalError, TerminateTaskException
   {
-    if (core.idCount() == 0) return;
+    if (core.size() == 0) return;
 
     int ndx = 0;
 
@@ -291,10 +290,8 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
       if (write && (type == hdtFolder))
       {
-        HDT_Folder folder = HDT_Folder.class.cast(record);
-
         if (isProtectedRecord(record.getID(), type) == false)
-          if (folder.hasNoNonFolderRecordDependencies())
+          if (HDT_Folder.class.cast(record).hasNoNonFolderRecordDependencies())
             write = false;
       }
 

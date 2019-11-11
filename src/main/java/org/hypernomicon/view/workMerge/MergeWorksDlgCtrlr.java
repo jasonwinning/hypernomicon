@@ -107,9 +107,8 @@ public class MergeWorksDlgCtrlr extends HyperDlg
   public static MergeWorksDlgCtrlr create(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
                                           boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked) throws IOException
   {
-    MergeWorksDlgCtrlr mwd = HyperDlg.createUsingFullPath("view/workMerge/MergeWorksDlg.fxml", title, true);
-    mwd.init(bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChecked, null);
-    return mwd;
+    return create(title, bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChecked,
+                  nullSwitch(destWork, null, HDT_Work::filePath));
   }
 
 //---------------------------------------------------------------------------

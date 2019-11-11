@@ -433,7 +433,7 @@ public class OmniFinder
 
         switch (record.getType())
         {
-          case hdtWork:
+          case hdtWork :
 
             HDT_Work work = (HDT_Work) record;
 
@@ -451,7 +451,7 @@ public class OmniFinder
 
             break;
 
-          case hdtMiscFile:
+          case hdtMiscFile :
 
             HDT_MiscFile miscFile = (HDT_MiscFile) record;
 
@@ -466,6 +466,15 @@ public class OmniFinder
             }
             else
               cells.set(3, new HyperTableCell(miscFile.authors.get(0).getID(), miscFile.getShortAuthorsStr(true), hdtPerson, hsmTextSimple));
+
+            break;
+
+          case hdtWorkLabel :
+
+            HDT_WorkLabel label = (HDT_WorkLabel) record;
+
+            cells.set(2, new HyperTableCell(label.getID(), "", hdtWorkLabel, hsmNumeric));
+            cells.set(3, new HyperTableCell(label.getID(), label.getExtendedText(), hdtWorkLabel));
 
             break;
 

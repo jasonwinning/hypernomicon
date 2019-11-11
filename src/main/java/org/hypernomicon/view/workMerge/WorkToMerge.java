@@ -72,7 +72,7 @@ public class WorkToMerge
 
     htAuthors.addCol(hdtPerson, ctDropDownList);
 
-    HDT_Work workRecord = nullSwitch(bibData.getWork(), destWork, work -> work);
+    HDT_Work workRecord = nullSwitch(bibData.getWork(), destWork);
 
     htAuthors.addCheckboxColWithUpdateHandler(createAuthorRecordHandler(htAuthors, () -> workRecord));
 
@@ -99,10 +99,12 @@ public class WorkToMerge
 
   private void loadFromWork(HDT_Work workRecord, RadioButton rbType)
   {
-    if (creatingNewWork)
+    if (creatingNewWork) // Work type row is removed when creatingNewWork is false
     {
       hcbType.addAndSelectEntryOrBlank(workRecord.workType, HDT_Record::name);
-      rbType.setSelected(true);
+
+      if (workRecord.workType.isNotNull())
+        rbType.setSelected(true);
     }
 
     htAuthors.buildRows(workRecord.getAuthors(), (row, author) ->

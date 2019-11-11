@@ -141,17 +141,19 @@ public class TreeSelector
 
   public boolean select(HDT_Record record, boolean showErrMsg)
   {
-    RelationType relType = getRelTypeForTargetType(record.getType());
+    final RelationType relType = getRelTypeForTargetType(record.getType());
+    RelationType oldRelType = null;
     int ndx = -1;
     HyperObjList<HDT_Record, HDT_Record> objList;
-    HDT_Record subj = getSubj(),
-               obj  = baseIsSubj ? target : base;
+    final HDT_Record subj = getSubj(),
+                     obj  = baseIsSubj ? target : base;
 
     if (target != null)
     {
-      objList = db.getObjectList(getRelation(subj.getType(), obj.getType()), subj, true);
+      oldRelType = getRelation(subj.getType(), obj.getType());
+      objList = db.getObjectList(oldRelType, subj, true);
       ndx = objList.indexOf(obj);
-      objList.remove(obj);
+      objList.remove(ndx);
     }
 
     if (baseIsSubj)
@@ -172,7 +174,7 @@ public class TreeSelector
         messageDialog("Cannot use selected record: Records would be organized in a cycle as a result.", mtError);
 
       if (target != null)
-        db.getObjectList(getRelation(subj.getType(), obj.getType()), subj, true).add(ndx, obj);
+        db.getObjectList(oldRelType, subj, true).add(ndx, obj);
 
       return false;
     }
