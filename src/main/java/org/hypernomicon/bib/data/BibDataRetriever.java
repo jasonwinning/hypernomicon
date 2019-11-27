@@ -135,7 +135,7 @@ public class BibDataRetriever
     }
 
     if ((queryBD == null) && (pdfBD == null) && (messageShown == false) && (collEmpty(pdfFiles) == false) && queryCrossref && queryGoogle)
-      falseWithWarningMessage("Unable to acquire bibliographic information from PDF files or online sources.");
+      falseWithWarningMessage("Unable to find bibliographic information in PDF file(s) or online sources.");
 
     doneHndlr.accept(pdfBD, queryBD);
   }
@@ -160,7 +160,10 @@ public class BibDataRetriever
       {
         pdfBD = PDFBibData.createFromFiles(pdfFiles);
 
-        if (workBD == null) workBD = pdfBD;
+        if (BibData.isEmpty(pdfBD))
+          pdfBD = null;
+        else if (workBD == null)
+          workBD = pdfBD;
       }
       catch (IOException e)
       {
@@ -173,7 +176,7 @@ public class BibDataRetriever
 
       if (queryCrossref)
       {
-        String doi = workBD.getStr(bfDOI);
+        String doi = workBD == null ? "" : workBD.getStr(bfDOI);
         if (doi.length() > 0)
         {
           if (stopped) return;
@@ -197,7 +200,7 @@ public class BibDataRetriever
 
       if (queryCrossref)
       {
-        String doi = pdfBD != null ? pdfBD.getStr(bfDOI) : "";
+        String doi = pdfBD == null ? "" : pdfBD.getStr(bfDOI);
         if (doi.length() > 0)
         {
           if (stopped) return;
@@ -212,9 +215,9 @@ public class BibDataRetriever
       }
     }
 
-    String title = ultraTrim(workBD.getStr(bfTitle));
+    String title = workBD == null ? "" : ultraTrim(workBD.getStr(bfTitle));
     if (title.isBlank())
-      title = pdfBD != null ? ultraTrim(pdfBD.getStr(bfTitle)) : "";
+      title = pdfBD == null ? "" : ultraTrim(pdfBD.getStr(bfTitle));
 
     if (stage < 4)
     {
@@ -223,16 +226,16 @@ public class BibDataRetriever
       //     if got bib info
       //       exit
 
-      String yearStr = workBD.getStr(bfYear);
+      String yearStr = workBD == null ? "" : workBD.getStr(bfYear);
       if ((yearStr.length() > 0) && StringUtils.isNumeric(yearStr))
       {
-        int year = parseInt(workBD.getStr(bfYear), -1);
+        int year = parseInt(yearStr, -1);
 
         if (queryCrossref && (title.length() > 0) && ((workTypeEnum != wtBook) || (year >= 1998)))
         {
           if (stopped) return;
 
-          CrossrefBibData.doHttpRequest(httpClient, title, workBD.getStr(bfYear), authorGroups, "", alreadyCheckedIDs, bd ->
+          CrossrefBibData.doHttpRequest(httpClient, title, yearStr, workTypeEnum == wtPaper, authorGroups, "", alreadyCheckedIDs, bd ->
           {
             searchedCrossref = true;
             queryBD = bd;
@@ -264,8 +267,7 @@ public class BibDataRetriever
       List<String> isbns = null;
       if (queryGoogle && ((workTypeEnum == wtNone) || (workTypeEnum == wtBook)))
       {
-        isbns = workBD.getMultiStr(bfISBNs);
-
+        isbns = workBD == null ? null : workBD.getMultiStr(bfISBNs);
         if (collEmpty(isbns) == false)
         {
           if (stopped) return;
@@ -290,7 +292,7 @@ public class BibDataRetriever
       List<String> isbns = null;
       if (queryGoogle && ((workTypeEnum == wtNone) || (workTypeEnum == wtBook)))
       {
-        isbns = pdfBD != null ? pdfBD.getMultiStr(bfISBNs) : null;
+        isbns = pdfBD == null ? null : pdfBD.getMultiStr(bfISBNs);
         if (collEmpty(isbns) == false)
         {
           if (stopped) return;
@@ -334,7 +336,10 @@ public class BibDataRetriever
     {
       if (stopped) return;
 
-      CrossrefBibData.doHttpRequest(httpClient, workBD.getStr(bfTitle), workBD.getStr(bfYear), authorGroups, "", alreadyCheckedIDs, bd ->
+      title = workBD == null ? "" : ultraTrim(workBD.getStr(bfTitle));
+      String yearStr = workBD == null ? "" : workBD.getStr(bfYear);
+
+      CrossrefBibData.doHttpRequest(httpClient, title, yearStr, workTypeEnum == wtPaper, authorGroups, "", alreadyCheckedIDs, bd ->
       {
         queryBD = bd;
         finish(null);

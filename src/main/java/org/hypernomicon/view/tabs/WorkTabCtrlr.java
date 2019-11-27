@@ -21,6 +21,7 @@ import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibDataRetriever;
+import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.data.GUIBibData;
 import org.hypernomicon.bib.data.PDFBibData;
 import org.hypernomicon.model.SearchKeys;
@@ -226,8 +227,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
         if (npdc.showModal())
         {
-          Populator pop = htAuthors.getPopulator(1);
-          pop.setChanged(row);                      // A new record has been created so force it to repopulate
+          htAuthors.getPopulator(1).setChanged(row);                      // A new record has been created so force it to repopulate
           htAuthors.selectID(1, row, npdc.getPerson().getID());
           saveToRecord();
           curWork.setPersonIsInFileName(npdc.getPerson(), isInFileName);
@@ -839,7 +839,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       htWorkFiles.getTV().getSortOrder().setAll(list);
 
-      updatePreview = (FilePath.isEmpty(filePath) == false) && (filePath.equals(previewWindow.getFilePath(pvsWorkTab)) == false);
+      updatePreview = FilePath.isEmpty(filePath) || (filePath.equals(previewWindow.getFilePath(pvsWorkTab)) == false);
     }
     else
     {
@@ -1595,17 +1595,15 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       SearchKeyword hyperKey = db.getKeyByKeyword((searchKey + keyLetter).trim());
       keyTaken = false;
 
-      if (hyperKey != null)
+      if ((hyperKey != null) && (hyperKey.record != work))
       {
-        if (hyperKey.record != work)
-        {
-          keyTaken = true;
+        keyTaken = true;
 
-          if (keyLetter == 'z') return "";
+        if (keyLetter == 'z') return "";
 
-          keyLetter = keyLetter == ' ' ? 'a' : (char)(keyLetter + 1);
-        }
+        keyLetter = keyLetter == ' ' ? 'a' : (char)(keyLetter + 1);
       }
+
     } while (keyTaken);
 
     searchKey = (searchKey + keyLetter).trim();
@@ -1708,9 +1706,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean showWorkDialog(HDT_WorkFile workFile) { return showWorkDialog(workFile, null, null); }
+  public boolean showWorkDialog(HDT_WorkFile workFile) { return showWorkDialog(workFile, null, null, false, EntryType.etUnentered); }
 
-  public boolean showWorkDialog(HDT_WorkFile workFile, FilePath filePathToUse, BibData bdToUse)
+  public boolean showWorkDialog(HDT_WorkFile workFile, FilePath filePathToUse, BibData bdToUse, boolean newEntryChecked, EntryType newEntryType)
   {
     boolean result;
 
@@ -1728,7 +1726,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     else
     {
       if ((workFile == null) && (filePathToUse != null))
-        wdc = WorkDlgCtrlr.create(filePathToUse, bdToUse);
+        wdc = WorkDlgCtrlr.create(filePathToUse, bdToUse, newEntryChecked, newEntryType);
       else
         wdc = WorkDlgCtrlr.create(workFile);
 
@@ -1818,9 +1816,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     tpBib.getSelectionModel().select(tabPdfMetadata);
 
-    List<FilePath> pdfFilePaths = curWork.workFiles.stream().filter(HDT_WorkFile::pathNotEmpty).
-                                                             map(HDT_WorkFile::filePath).
-                                                             collect(Collectors.toList());
+    List<FilePath> pdfFilePaths = curWork.workFiles.stream().filter(HDT_WorkFile::pathNotEmpty)
+                                                            .map(HDT_WorkFile::filePath)
+                                                            .collect(Collectors.toList());
     try
     {
       pdfBD.set(PDFBibData.createFromFiles(pdfFilePaths));

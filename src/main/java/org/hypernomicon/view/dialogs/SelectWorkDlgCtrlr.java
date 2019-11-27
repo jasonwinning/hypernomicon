@@ -91,6 +91,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
   public HDT_Work getWork()     { return work; }
   public BibEntry getBibEntry() { return bibEntry; }
   public BibData getBibData()   { return bd; }
+  public HDT_Person getAuthor() { return author; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -220,6 +221,9 @@ public class SelectWorkDlgCtrlr extends HyperDlg
       bibDataRetriever = new BibDataRetriever(httpClient, null, WorkTypeEnum.wtNone, null, safeListOf(filePathToUse), (pdfBD, queryBD) ->
       {
         setAllVisible(false, btnStop, progressBar);
+
+        if (BibData.isEmpty(pdfBD))
+          pdfBD = null;
 
         BibData bdToUse = queryBD == null ? pdfBD : queryBD;
 
@@ -456,13 +460,17 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     if ((hcbWork.selectedID() < 1) && (createNewClicked == false))
       return falseWithInfoMessage("Select a work record.", cbWork);
 
+    work = createNewClicked ? null : hcbWork.selectedRecord();
+    author = hcbAuthor.selectedRecord();
+
     if (db.bibLibraryIsLinked())
     {
       int id = hcbBibEntry.selectedID();
       bibEntry = id < 1 ? null : db.getBibLibrary().getEntryByID(id);
-    }
 
-    work = createNewClicked ? null : hcbWork.selectedRecord();
+      if ((bibEntry != null) && bibEntry.linkedToWork() && (work == null))
+        bibEntry = null;
+    }
 
     return true;
   }

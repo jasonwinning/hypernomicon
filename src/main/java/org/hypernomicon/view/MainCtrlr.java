@@ -36,6 +36,7 @@ import org.hypernomicon.App;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibTexBibData;
+import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.data.RISBibData;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HyperDataset;
@@ -2769,12 +2770,15 @@ public final class MainCtrlr
     HDT_Work work = null;
     BibData bdToUse = null;
     BibEntry bibEntry = null;
+    boolean newEntryChecked = false;
+    EntryType newEntryType = EntryType.etUnentered;
 
     if (promptForExistingRecord)
     {
       SelectWorkDlgCtrlr swdc = SelectWorkDlgCtrlr.create(person, true, filePathToUse);
       if (swdc.showModal() == false) return;
       work = swdc.getWork();
+      person = swdc.getAuthor();
       bdToUse = swdc.getBibData();
       bibEntry = swdc.getBibEntry();
       MergeWorksDlgCtrlr mwd = null;
@@ -2819,22 +2823,32 @@ public final class MainCtrlr
         {
           BibData workBD = work.getBibData();
 
-          try
+          if (bdToUse != null)
           {
-            mwd = MergeWorksDlgCtrlr.create("Merge Fields", workBD, bdToUse, null, null, work, false, false, false,
-                                            nullSwitch(filePathToUse, work.filePath()));
-          }
-          catch (IOException e)
-          {
-            messageDialog("Unable to initialize merge dialog window.", mtError);
-            return;
+            try
+            {
+              mwd = MergeWorksDlgCtrlr.create("Merge Fields", workBD, bdToUse, null, null, work, false, true, false,
+                                              nullSwitch(filePathToUse, work.filePath()));
+            }
+            catch (IOException e)
+            {
+              messageDialog("Unable to initialize merge dialog window.", mtError);
+              return;
+            }
+
+            if (mwd.showModal() == false) return;
+
+            mwd.mergeInto(workBD);
           }
 
-          if (mwd.showModal() == false) return;
-
-          mwd.mergeInto(workBD);
           bdToUse = workBD;
         }
+      }
+
+      if (mwd != null)
+      {
+        newEntryChecked = mwd.creatingNewEntry();
+        newEntryType = mwd.getEntryType();
       }
     }
 
@@ -2864,7 +2878,7 @@ public final class MainCtrlr
 
     goToRecord(work, false);
 
-    if (workHyperTab().showWorkDialog(null, filePathToUse, bdToUse))
+    if (workHyperTab().showWorkDialog(null, filePathToUse, bdToUse, newEntryChecked, newEntryType))
       return;
 
     if (deleteRecord)
@@ -2925,7 +2939,7 @@ public final class MainCtrlr
     lines = ibed.getLines();
     filePath = ibed.getFilePath();
 
-    String pathStr = (filePath == null ? "" : " " + filePath.toString());
+    String pathStr = filePath == null ? "" : (" " + filePath.toString());
 
     BibData bd = null;
     Exception ex = null;

@@ -235,6 +235,7 @@ public class FileManager extends HyperDlg
       ui.goToTreeRecord(folder.closestAncestorNote());
     });
 
+    fileTable.addContextMenuItem("New folder under this folder...", FileRow::isDirectory, dirRow -> newFolder((HDT_Folder) dirRow.getRecord()));
     fileTable.addContextMenuItem("Cut", fileRow -> cutCopy(fileRow, false));
     fileTable.addContextMenuItem("Copy", fileRow -> cutCopy(fileRow, true));
     pasteMenuItem = fileTable.addContextMenuItem("Paste into this folder", FileRow::isDirectory, dirRow -> paste(dirRow, clipboardCopying, false));
@@ -244,7 +245,7 @@ public class FileManager extends HyperDlg
     btnCopy.setOnAction(event -> cutCopy(null, true));
     btnPaste.setOnAction(event -> paste(null, clipboardCopying, false));
     btnDelete.setOnAction(event -> delete(null));
-    btnNewFolder.setOnAction(event -> newFolder());
+    btnNewFolder.setOnAction(event -> newFolder(curFolder));
 
     history = new FolderHistory(btnForward, btnBack);
 
@@ -1138,11 +1139,11 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void newFolder()
+  private void newFolder(HDT_Folder parentFolder)
   {
-    if (curFolder == null) return;
+    if (parentFolder == null) return;
 
-    RenameDlgCtrlr dlg = RenameDlgCtrlr.create("Create Folder in: " + curFolder.filePath(), ntFolder, "");
+    RenameDlgCtrlr dlg = RenameDlgCtrlr.create("Create Folder in: " + parentFolder.filePath(), ntFolder, "");
 
     if (dlg.showModal() == false) return;
 
@@ -1150,7 +1151,7 @@ public class FileManager extends HyperDlg
 
     try
     {
-      Files.createDirectory(curFolder.filePath().resolve(dlg.getNewName()).toPath());
+      Files.createDirectory(parentFolder.filePath().resolve(dlg.getNewName()).toPath());
     }
     catch (FileAlreadyExistsException e)
     {

@@ -153,17 +153,17 @@ public class WorkDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  public static WorkDlgCtrlr create(FilePath filePathToUse, BibData bdToUse)
+  public static WorkDlgCtrlr create(FilePath filePathToUse, BibData bdToUse, boolean newEntryChecked, EntryType newEntryType)
   {
     WorkDlgCtrlr wdc = HyperDlg.create("WorkDlg.fxml", "Import New Work File", true);
-    wdc.init(null, filePathToUse, bdToUse);
+    wdc.init(null, filePathToUse, bdToUse, newEntryChecked, newEntryType);
     return wdc;
   }
 
   public static WorkDlgCtrlr create(HDT_WorkFile workFileToUse)
   {
     WorkDlgCtrlr wdc = HyperDlg.create("WorkDlg.fxml", "Work File", true);
-    wdc.init(workFileToUse, null, null);
+    wdc.init(workFileToUse, null, null, false, EntryType.etUnentered);
     return wdc;
   }
 
@@ -435,7 +435,7 @@ public class WorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_WorkFile workFileToUse, FilePath filePathToUse, BibData bdToUse)
+  private void init(HDT_WorkFile workFileToUse, FilePath filePathToUse, BibData bdToUse, boolean newEntryChecked, EntryType newEntryType)
   {
     apPreview = new AnchorPane();
     mdp = addPreview(stagePane, apMain, apPreview, btnPreview);
@@ -463,10 +463,15 @@ public class WorkDlgCtrlr extends HyperDlg
         else
           useChosenFile(filePathToUse, bdToUse);
       }
+
+      if (newEntryType != EntryType.etUnentered)
+        cbEntryType.getSelectionModel().select(newEntryType);
     };
 
     curWork = ui.workHyperTab().activeRecord();
     curBD = new GUIBibData(curWork.getBibData());
+
+    chkCreateBibEntry.setSelected(newEntryChecked);
 
     if ((db.bibLibraryIsLinked() == false) || (curWork.getBibEntryKey().length() > 0))
       setAllVisible(false, chkCreateBibEntry, cbEntryType);
@@ -848,6 +853,9 @@ public class WorkDlgCtrlr extends HyperDlg
     try
     {
       pdfBD = PDFBibData.createFromFiles(safeListOf(origFilePath));
+
+      if (BibData.isEmpty(pdfBD))
+        pdfBD = null;
     }
     catch (IOException e)
     {

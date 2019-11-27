@@ -100,6 +100,8 @@ public abstract class BibData
   protected void addISBN(String newStr) { matchISBN(newStr).forEach(isbn -> addStr(bfISBNs, isbn)); }
   public void addISSN(String newStr)    { matchISSN(newStr).forEach(issn -> addStr(bfISSNs, issn)); }
 
+  public static boolean isEmpty(BibData bd) { return bd == null ? true : EnumSet.allOf(BibFieldEnum.class).stream().noneMatch(bd::fieldNotEmpty); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

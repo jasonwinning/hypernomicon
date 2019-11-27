@@ -476,11 +476,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
   private void refreshPicture()
   {
-    Image picture = null;
-
     if (FilePath.isEmpty(curPicture) == false)
     {
-      picture = new Image(curPicture.toURI().toString());
+      Image picture = new Image(curPicture.toURI().toString());
       if (!picture.isError())
       {
         ivPerson.setImage(picture);
@@ -510,13 +508,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     tfORCID.clear();
     tfSearchKey.clear();
 
-    if (db.isLoaded() && (FilePath.isEmpty(curPicture) == false))
-      if (curPicture.exists())
-      {
-        Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(curPicture);
-        if (set.isEmpty())
-          db.fileNoLongerInUse(curPicture);
-      }
+    if (db.isLoaded() && (FilePath.isEmpty(curPicture) == false) && curPicture.exists() && HyperPath.getHyperPathSetForFilePath(curPicture).isEmpty())
+      db.fileNoLongerInUse(curPicture);
 
     curPicture = null;
     ivPerson.setImage(null);
@@ -551,10 +544,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   {
     if (!saveSearchKey(curPerson, tfSearchKey)) return false;
 
-    if (FilePath.isEmpty(curPicture))
-      curPerson.getPath().assign(db.folders.getByID(PICTURES_FOLDER_ID), new FilePath(""));
-    else
-      curPerson.getPath().assign(db.folders.getByID(PICTURES_FOLDER_ID), curPicture.getNameOnly());
+    curPerson.getPath().assign(db.folders.getByID(PICTURES_FOLDER_ID), FilePath.isEmpty(curPicture) ? new FilePath("") : curPicture.getNameOnly());
 
     curPerson.setViewPort(viewPort);
 
@@ -711,8 +701,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     tvWorks.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (newValue == null) return;
-      if (oldValue == newValue) return;
+      if ((newValue == null) || (oldValue == newValue)) return;
 
       HDT_RecordWithPath record = newValue.getRecord();
 
@@ -847,11 +836,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
   private void updateSearchKey(PersonName personName, boolean overwrite)
   {
-    if (db.isLoaded() == false) return;
-    if (curPerson == null) return;
-
-    if (overwrite == false)
-      if (curPerson.getSearchKey().length() > 0) return;
+    if ((db.isLoaded() == false) || (curPerson == null)) return;
+    if ((overwrite == false) && (curPerson.getSearchKey().length() > 0)) return;
 
     StringBuilder sb = new StringBuilder();
     HDT_Person.makeSearchKey(personName, curPerson, sb);
@@ -962,12 +948,11 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
   private InvestigationView addInvView(HDT_Investigation inv)
   {
-    String newName = "", newSearchKey = "";
     InvestigationView iV = new InvestigationView();
 
     iV.id = inv.getID();
-    newName = inv.listName();
-    newSearchKey = inv.getSearchKey();
+    String newName = inv.listName(),
+           newSearchKey = inv.getSearchKey();
 
     iV.tab = new Tab();
     iV.tfName = new TextField(newName);
@@ -1056,6 +1041,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
         return HDT_Work.class.cast(record).investigations.contains(inv);
       });
+
       db.investigations.getByID(iV.id).viewNow();
     }
 
@@ -1067,11 +1053,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
   public void newInstClick(HyperTableRow row, String newName, int colNdx)
   {
-    HDT_Institution subInst, parentInst = null;
-
     if (ui.cantSaveRecord()) return;
 
-    HDT_Institution oldParent = row.getRecord(1);
+    HDT_Institution parentInst = null, oldParent = row.getRecord(1);
     if ((newName.length() > 0) && (colNdx == 1))
       oldParent = null;
 
@@ -1089,7 +1073,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
       if (parentInst == null) return;
 
-      subInst = db.createNewBlankRecord(hdtInstitution);
+      HDT_Institution subInst = db.createNewBlankRecord(hdtInstitution);
 
       subInst.parentInst.set(parentInst);
       subInst.setName(newInstDialog.tfName.getText());

@@ -53,9 +53,14 @@ public class CrossrefBibData extends BibDataStandalone
 
   // CrossRef API documentation: https://github.com/CrossRef/rest-api-doc
 
-  private static CrossrefBibData createFromJSON(JsonObj jsonObj, String title, String queryDoi)
+  private static CrossrefBibData createFromJSON(JsonObj jsonObj, String title, String yearStr, boolean isPaper, String queryDoi)
   {
     JsonArray jsonArray;
+
+    title = safeStr(title);
+
+    while (title.endsWith("."))
+      title = title.substring(0, title.length() - 1);
 
     try
     {
@@ -88,6 +93,25 @@ public class CrossrefBibData extends BibDataStandalone
       return null;
     }
 
+    int year = parseInt(yearStr, -1);
+    if (year > 1850)
+    {
+      for (JsonObj curObj : jsonArray.getObjs())
+      {
+        CrossrefBibData curBD = new CrossrefBibData(curObj, queryDoi);
+        int otherYear = parseInt(curBD.getStr(bfYear), Integer.MAX_VALUE);
+        String otherTitle = curBD.getStr(bfTitle);
+
+        while (otherTitle.endsWith("."))
+          otherTitle = otherTitle.substring(0, otherTitle.length() - 1);
+
+        if ((otherYear > 1850) && (((otherYear <= year) && isPaper) || (otherYear == year)) && otherTitle.equalsIgnoreCase(title))
+          return curBD;
+      }
+    }
+
+    // There are multiple matches but no exact year and title match
+
     LevenshteinDistance alg = LevenshteinDistance.getDefaultInstance();
     CrossrefBibData bestBD = null;
     double bestDist = Double.MAX_VALUE;
@@ -96,7 +120,12 @@ public class CrossrefBibData extends BibDataStandalone
     for (JsonObj curObj : jsonArray.getObjs())
     {
       CrossrefBibData curBD = new CrossrefBibData(curObj, queryDoi);
-      String curTitle = HDT_RecordBase.makeSortKeyByType(curBD.getStr(bfTitle), hdtWork);
+      String curTitle = curBD.getStr(bfTitle);
+
+      while (curTitle.endsWith("."))
+        curTitle = curTitle.substring(0, curTitle.length() - 1);
+
+      curTitle = HDT_RecordBase.makeSortKeyByType(curTitle, hdtWork);
       int len = Math.min(title.length(), curTitle.length());
       double curDist = (double)(alg.apply(safeSubstring(title, 0, len), safeSubstring(curTitle, 0, len))) / (double)len;
 
@@ -299,10 +328,10 @@ public class CrossrefBibData extends BibDataStandalone
   static void doHttpRequest(AsyncHttpClient httpClient, String doi, Set<String> alreadyCheckedIDs,
                             Consumer<BibData> successHndlr, Consumer<Exception> failHndlr)
   {
-    doHttpRequest(httpClient, null, null, null, doi, alreadyCheckedIDs, successHndlr, failHndlr);
+    doHttpRequest(httpClient, null, null, false, null, doi, alreadyCheckedIDs, successHndlr, failHndlr);
   }
 
-  static void doHttpRequest(AsyncHttpClient httpClient, String title, String yearStr, List<ObjectGroup> authGroups, String doi,
+  static void doHttpRequest(AsyncHttpClient httpClient, String title, String yearStr, boolean isPaper, List<ObjectGroup> authGroups, String doi,
                             Set<String> alreadyCheckedIDs, Consumer<BibData> successHndlr, Consumer<Exception> failHndlr)
   {
     if ((doi.length() > 0) && alreadyCheckedIDs.contains(doi.toLowerCase()))
@@ -315,7 +344,7 @@ public class CrossrefBibData extends BibDataStandalone
 
     JsonHttpClient.getObjAsync(CrossrefBibData.getQueryUrl(title, yearStr, authGroups, doi), httpClient, jsonObj ->
     {
-      BibData bd = CrossrefBibData.createFromJSON(jsonObj, title, doi);
+      BibData bd = CrossrefBibData.createFromJSON(jsonObj, title, yearStr, isPaper, doi);
 
       successHndlr.accept(bd);
 
