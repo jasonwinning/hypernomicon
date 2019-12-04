@@ -155,7 +155,7 @@ public abstract class BibData
 
   protected void setDOI(String newStr)
   {
-    if (safeStr(newStr).length() == 0) return;
+    if (safeStr(newStr).isEmpty()) return;
     String doi = matchDOI(newStr);
     if (doi.length() > 0)
       setStr(bfDOI, doi);

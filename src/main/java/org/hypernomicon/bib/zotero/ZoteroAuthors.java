@@ -123,7 +123,7 @@ public class ZoteroAuthors extends BibAuthors
     if ((aType == editor) && ignoreEditors()) return;
 
     String aTypeStr = getCreatorTypeStr(aType);
-    if (safeStr(aTypeStr).length() == 0) return;
+    if (safeStr(aTypeStr).isEmpty()) return;
 
     JsonObj creatorObj = new JsonObj();
     creatorObj.put("creatorType", aTypeStr);

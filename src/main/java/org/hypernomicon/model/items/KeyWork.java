@@ -162,16 +162,16 @@ public class KeyWork implements Comparable<KeyWork>
       HDT_Work work = (HDT_Work) record.getRecord();
       searchKey = WorkTabCtrlr.makeWorkSearchKey(work.getAuthors(), work.getYear(), work);
 
-      if (searchKey.length() == 0)
+      if (searchKey.isEmpty())
       {
         if (work.largerWork.isNotNull())
         {
           String lwSearchKey = new SplitString(work.largerWork.get().getSearchKey(), ';').next();
 
-          if (lwSearchKey.length() == 0)
+          if (lwSearchKey.isEmpty())
             lwSearchKey = WorkTabCtrlr.makeWorkSearchKey(work.largerWork.get().getAuthors(), work.largerWork.get().getYear(), work);
 
-          if (lwSearchKey.length() == 0)
+          if (lwSearchKey.isEmpty())
             lwSearchKey = (work.largerWork.get().getYear() + " " + work.largerWork.get().name()).trim();
 
           searchKey = new SplitString(work.name(), ':').next() + " in " +
@@ -212,7 +212,7 @@ public class KeyWork implements Comparable<KeyWork>
   {
     searchKeyInitialized = true;
 
-    if (searchKey.length() == 0)
+    if (searchKey.isEmpty())
       searchKey = makeSearchKey(); // Try using the author and year and see if that is a keyword match
 
     if (searchKey.length() > 0)
@@ -231,9 +231,9 @@ public class KeyWork implements Comparable<KeyWork>
 
     String activeKeyWord = record.getRecord().getFirstActiveKeyWord();
 
-    if (activeKeyWord.length() == 0)
+    if (activeKeyWord.isEmpty())
     {
-      if (searchKey.length() == 0)
+      if (searchKey.isEmpty())
         searchKey = makeSearchKey(); // Use the author and year; the only reason why it wasn't a keyword match is because there are no active keywords
 
       return false;

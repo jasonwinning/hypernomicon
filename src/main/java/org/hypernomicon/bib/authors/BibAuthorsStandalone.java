@@ -46,7 +46,7 @@ public class BibAuthorsStandalone extends BibAuthors
   }
 
   @Override public void add(BibAuthor author)   { authors.get(author.getType()).add(author); }
-  @Override public boolean isEmpty()            { return listsAreEmpty() && (safeStr(oneLiner).length() == 0); }
+  @Override public boolean isEmpty()            { return listsAreEmpty() && safeStr(oneLiner).isEmpty(); }
 
   public void setOneLiner(String str)           { oneLiner = ultraTrim(convertToSingleLine(safeStr(str))); }
 

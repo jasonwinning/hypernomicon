@@ -110,7 +110,7 @@ public class MainTextCtrlr
 //---------------------------------------------------------------------------
 
   List<DisplayItem> getDisplayItems() { return lvRecords.getItems(); }
-  boolean isEmpty()                   { return getHtmlAndKeyWorks(new ArrayList<>()).trim().length() == 0; }
+  boolean isEmpty()                   { return getHtmlAndKeyWorks(new ArrayList<>()).trim().isEmpty(); }
 
   int getScrollPos()    { return nullSwitch(getWebView(), 0, webView -> getWebEngineScrollPos(webView.getEngine())); }
 
@@ -403,7 +403,7 @@ public class MainTextCtrlr
     KeyWork keyWork = new KeyWork((HDT_RecordWithPath) db.records(keyType).getByID(keyID));
 
     String keyText = taKeyWorks.getText();
-    if (keyText.length() == 0)
+    if (keyText.isEmpty())
       keyText = keyWork.getEditorText();
     else
       keyText = keyText + ", " + keyWork.getEditorText();
@@ -571,7 +571,7 @@ public class MainTextCtrlr
     {
       String text = getClipboardText(noCarriageReturns);
 
-      if (text.length() == 0) return;
+      if (text.isEmpty()) return;
 
       text = htmlEscaper.escape(text);
 

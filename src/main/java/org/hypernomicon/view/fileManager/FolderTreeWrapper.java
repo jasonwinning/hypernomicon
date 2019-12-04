@@ -173,7 +173,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
       if (fileRow != null)
       {
         HyperPath hyperPath = fileRow.getHyperPath();
-        if (hyperPath.getRecordsString().length() == 0)
+        if (hyperPath.getRecordsString().isEmpty())
         {
           HDT_RecordWithPath folder = hyperPath.getRecord();
           if (folder == null) return true;

@@ -106,7 +106,7 @@ public class HDT_Position extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private PositionSource getSource(boolean noAuthorOK, boolean noWorkOK, boolean noFileNameOK)
+  private PositionSource getSource(boolean noAuthorOK, boolean noWorkOK, boolean notLaunchableOK)
   {
     PositionSource ps = new PositionSource();
     PositionSource webPs = null;
@@ -152,7 +152,7 @@ public class HDT_Position extends HDT_RecordWithConnector
 
           if (work.authorRecords.size() > 0)
           {
-            if (noFileNameOK)
+            if (notLaunchableOK)
             {
               ps.work = work;
               ps.author = work.authorRecords.get(0);
@@ -160,7 +160,7 @@ public class HDT_Position extends HDT_RecordWithConnector
             }
           }
 
-          if ((noAuthorOK) && (noFileNameOK))
+          if (noAuthorOK && notLaunchableOK)
           {
             ps.work = work;
             return ps;

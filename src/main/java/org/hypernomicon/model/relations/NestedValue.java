@@ -103,7 +103,7 @@ public class NestedValue
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean isEmpty(String str)        { return safeStr(str).length() == 0; }
+  public static boolean isEmpty(String str)        { return safeStr(str).isEmpty(); }
   public static boolean isEmpty(boolean bool)      { return !bool; }
   public static boolean isEmpty(Ternary ternary)   { return ternary == Ternary.Unset; }
   public static boolean isEmpty(int id)            { return id < 1; }

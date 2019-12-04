@@ -163,7 +163,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
       if (change.getText().length() > 1)
       {
-        if ((tfFirstName.getText().length() == 0) && (change.getControlText().length() == 0))
+        if (tfFirstName.getText().isEmpty() && change.getControlText().isEmpty())
         {
           alreadyChangingName = true;
           String newText = change.getControlNewText();
@@ -352,7 +352,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
   public static void doDupCheck(PersonForDupCheck person1, LinkedList<PersonForDupCheck> list, ArrayList<Author> matchedAuthors, HyperTask task, int ctr, int total) throws TerminateTaskException
   {
-    if (person1.fullLCNameEngChar.length() == 0) return;
+    if (person1.fullLCNameEngChar.isEmpty()) return;
 
     HashSet<HDT_Person> matchedPersons = new HashSet<>();
 

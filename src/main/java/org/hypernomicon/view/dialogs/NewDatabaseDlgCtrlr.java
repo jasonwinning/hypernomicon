@@ -47,7 +47,7 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
   {
     name = ultraTrim(name);
 
-    if (name.length() == 0)
+    if (name.isEmpty())
       return falseWithErrorMessage("Folder name cannot be blank.");
 
     if (name.equalsIgnoreCase(DEFAULT_XML_PATH))

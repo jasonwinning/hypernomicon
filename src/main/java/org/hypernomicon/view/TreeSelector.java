@@ -200,15 +200,15 @@ public class TreeSelector
 
     if (record2.isLinked())
     {
-      if ((record2.getLink().getSpoke(record1.getType()) != null))
+      if (record2.getLink().getSpoke(record1.getType()) != null)
         return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " is already connected to a " + db.getTypeName(record1.getType()) + ".");
 
       if (record1.getType() == hdtDebate)
-        if ((record2.getLink().getSpoke(hdtPosition) != null))
+        if (record2.getLink().getSpoke(hdtPosition) != null)
           return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " is already connected to a " + db.getTypeName(hdtPosition) + ".");
 
       if (record1.getType() == hdtPosition)
-        if ((record2.getLink().getSpoke(hdtDebate) != null))
+        if (record2.getLink().getSpoke(hdtDebate) != null)
           return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " is already connected to a " + db.getTypeName(hdtDebate) + ".");
 
       if (record1.isLinked())
@@ -217,15 +217,15 @@ public class TreeSelector
 
     if (record1.isLinked())
     {
-      if ((record1.getLink().getSpoke(record2.getType()) != null))
+      if (record1.getLink().getSpoke(record2.getType()) != null)
         return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " is already connected to a " + db.getTypeName(record2.getType()) + ".");
 
       if (record2.getType() == hdtDebate)
-        if ((record1.getLink().getSpoke(hdtPosition) != null))
+        if (record1.getLink().getSpoke(hdtPosition) != null)
           return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " is already connected to a " + db.getTypeName(hdtPosition) + ".");
 
       if (record2.getType() == hdtPosition)
-        if ((record1.getLink().getSpoke(hdtDebate) != null))
+        if (record1.getLink().getSpoke(hdtDebate) != null)
           falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " is already connected to a " + db.getTypeName(hdtDebate) + ".");
     }
 

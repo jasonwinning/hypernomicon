@@ -222,7 +222,7 @@ public class FileDlgCtrlr extends HyperDlg
     }
     else
     {
-      if (tfNewPath.getText().length() == 0)
+      if (tfNewPath.getText().isEmpty())
       {
         if (FilePath.isEmpty(srcFilePath) == false)
           tfNewPath.setText(srcFilePath.getDirOnly().toString());
@@ -441,16 +441,16 @@ public class FileDlgCtrlr extends HyperDlg
     if (FilePath.isEmpty(srcFilePath))
       return falseWithErrorMessage("You must enter a source file name.", tfCurrentPath);
 
-    if ((chkDontChangeFilename.isSelected() == false) && (tfFileName.getText().length() == 0))
+    if ((chkDontChangeFilename.isSelected() == false) && tfFileName.getText().isEmpty())
       return falseWithErrorMessage("You must enter a destination file name.", tfFileName);
 
-    if (tfNewPath.getText().length() == 0)
+    if (tfNewPath.getText().isEmpty())
       return falseWithErrorMessage("You must enter a destination path.", tfNewPath);
 
     if (recordType == hdtMiscFile)
     {
       int fileTypeID = hcbType.selectedID();
-      if ((fileTypeID < 1) && (hcbType.getText().length() == 0))
+      if ((fileTypeID < 1) && hcbType.getText().isEmpty())
         return falseWithErrorMessage("You must enter a file type.", cbType);
     }
 

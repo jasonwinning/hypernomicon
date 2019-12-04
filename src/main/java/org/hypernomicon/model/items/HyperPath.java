@@ -98,6 +98,8 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public boolean isNotEmpty() { return isEmpty() == false; }
+
   public boolean isEmpty()
   {
     if ((record != null) && (record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID))
@@ -351,7 +353,7 @@ public class HyperPath
 
     db.filenameMap.get(fileName.getNameOnly().toString()).removeIf(path ->
     {
-      return ((path.isEmpty() == false) &&
+      return (path.isNotEmpty() &&
               path.filePath().equals(filePath()) && // for this to work, folder records have to be brought online first
               (path != this));
     });

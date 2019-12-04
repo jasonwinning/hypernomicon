@@ -27,7 +27,6 @@ import org.hypernomicon.model.records.HDT_Record;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
-import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 
 public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
@@ -51,12 +50,7 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
     setOnMouseClicked(mouseEvent -> nullSwitch(getItem(), cellItem -> nullSwitch(cellItem.getRecord(), (HDT_Record record) ->
     {
       if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2))
-      {
-        if (table.dblClickHandler != null)
-          handleRecord(table.dblClickHandler, record);
-        else
-          ui.goToRecord(record, true);
-      }
+        handleRecord(table.dblClickHandler, record);
     })));
   }
 
@@ -64,9 +58,12 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private static <HDT_T extends HDT_Record> void handleRecord(Consumer<HDT_T> handler, HDT_Record record)
+  static <HDT_T extends HDT_Record> void handleRecord(Consumer<HDT_T> handler, HDT_Record record)
   {
-    handler.accept((HDT_T) record);
+    if (handler != null)
+      handler.accept((HDT_T) record);
+    else
+      ui.goToRecord(record, true);
   }
 
 //---------------------------------------------------------------------------
@@ -117,7 +114,7 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
     String text = HyperTableCell.getCellText(cell);
 
     setText(text);
-    setTooltip(text.length() == 0 ? null : new Tooltip(text));
+    setToolTip(this, text);
     setGraphic(null);
   }
 

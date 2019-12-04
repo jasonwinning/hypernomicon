@@ -412,7 +412,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           {
             if (getCellID(op1) > 0)
               htFields.selectID(2, row, getCellID(op1));
-            else if (getCellText(op1).length() == 0)
+            else if (getCellText(op1).isEmpty())
               htFields.selectType(2, row, getCellType(op1));
             else
               row.setCellValue(2, op1.clone());
@@ -422,7 +422,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           {
             if (getCellID(op2) > 0)
               htFields.selectID(3, row, getCellID(op2));
-            else if (getCellText(op2).length() == 0)
+            else if (getCellText(op2).isEmpty())
               htFields.selectType(3, row, getCellType(op2));
             else
               row.setCellValue(3, op2.clone());
@@ -437,7 +437,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (caption.length() > 0)
         tab.setText(caption);
 
-      return btnExecuteClick(caption.length() == 0);
+      return btnExecuteClick(caption.isEmpty());
     }
 
   //---------------------------------------------------------------------------
@@ -1649,7 +1649,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
               default :
 
                 String tagStrVal = record.getResultTextForTag(tag);
-                if (tagStrVal.length() == 0) return false;
+                if (tagStrVal.isEmpty()) return false;
 
                 return tagStrVal.trim().equalsIgnoreCase(getCellText(param3).trim()) == (getCellID(param2) == EQUAL_TO_OPERAND_ID);
             }
@@ -1657,7 +1657,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           case CONTAINS_OPERAND_ID : case DOES_NOT_CONTAIN_OPERAND_ID :
 
             String val3 = getCellText(param3).trim();
-            if (val3.length() == 0) return false;
+            if (val3.isEmpty()) return false;
 
             String tagStrVal = record.getResultTextForTag(tag).toLowerCase().trim();
 

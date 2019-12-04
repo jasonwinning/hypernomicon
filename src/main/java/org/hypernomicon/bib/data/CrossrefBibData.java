@@ -267,7 +267,7 @@ public class CrossrefBibData extends BibDataStandalone
     if (doi.length() > 0)
       return url + "/" + doi;
 
-    if (safeStr(title).length() == 0) return url;
+    if (safeStr(title).isEmpty()) return url;
 
     url = url + "?";
 
@@ -293,7 +293,7 @@ public class CrossrefBibData extends BibDataStandalone
       }
     }
 
-    if (auths.length() == 0) auths = eds;
+    if (auths.isEmpty()) auths = eds;
 
     title = convertToEnglishChars(title).trim();
     title = title.replace(":", "");

@@ -139,7 +139,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 
       default :
 
-        if (val.htmlText.length() == 0)
+        if (val.htmlText.isEmpty())
           mainText.setInternal("", "");
         else
           mainText.setInternal(val.htmlText, MainTextUtil.extractTextFromHTML(val.htmlText).trim());

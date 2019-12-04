@@ -139,7 +139,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 
   String getSortKey()
   {
-    if ((last.length() == 0) || (first.length() == 0))
+    if (last.isEmpty() || first.isEmpty())
       return last + first;
 
     return last + '\u0000' + first;
@@ -207,7 +207,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
     while (splitStr.hasNext())
     {
       nameStr = splitStr.next();
-      if (nameStr.length() == 0) continue;
+      if (nameStr.isEmpty()) continue;
 
       if (nameStr.endsWith("."))
       {
@@ -227,7 +227,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
       }
     }
 
-    if (getLast().length() == 0)
+    if (getLast().isEmpty())
       return getFirst();
 
     if (initialList.size() == 0)

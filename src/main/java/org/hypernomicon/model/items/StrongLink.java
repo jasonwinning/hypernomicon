@@ -180,8 +180,8 @@ public class StrongLink
     spoke1.link = link;
     spoke2.link = link;
 
-    if      (spoke1.getSpoke().name().length() == 0) spoke1.getSpoke().setName(spoke2.getSpoke().name());
-    else if (spoke2.getSpoke().name().length() == 0) spoke2.getSpoke().setName(spoke1.getSpoke().name());
+    if      (spoke1.getSpoke().name().isEmpty()) spoke1.getSpoke().setName(spoke2.getSpoke().name());
+    else if (spoke2.getSpoke().name().isEmpty()) spoke2.getSpoke().setName(spoke1.getSpoke().name());
 
     spokes.forEach(spoke ->
     {

@@ -359,7 +359,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
         String title = convertToSingleLine(change.getControlNewText());
 
-        if ((title.equals(title.toUpperCase())) || (title.equals(title.toLowerCase())))
+        if (title.equals(title.toUpperCase()) || title.equals(title.toLowerCase()))
           title = HDT_Work.fixCase(title);
 
         change.setRange(0, change.getControlText().length());
@@ -613,7 +613,7 @@ public class WorkDlgCtrlr extends HyperDlg
     String ext, year, fileName, newFileName = "";
 
     ext = FilenameUtils.getExtension(tfOrigFile.getText());
-    if (ext.length() == 0)
+    if (ext.isEmpty())
       ext = FilenameUtils.getExtension(tfNewFile.getText());
 
     year = tfYear.getText();
@@ -629,7 +629,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     fileName = HDT_WorkFile.makeFileName(authors, year, tfFileTitle.getText(), ext);
 
-    if (fileName.length() == 0)
+    if (fileName.isEmpty())
     {
       tfNewFile.setText("");
       return;
@@ -772,7 +772,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     if (bdToUse != null)
       populateFieldsFromWebBD(bdToUse);
-    else if ((tfTitle.getText().length() == 0) && (tfYear.getText().length() == 0))
+    else if (tfTitle.getText().isEmpty() && tfYear.getText().isEmpty())
       extractDataFromPdf(appPrefs.getBoolean(PREF_KEY_AUTO_RETRIEVE_BIB, true), false, true);
   }
 
@@ -1155,13 +1155,13 @@ public class WorkDlgCtrlr extends HyperDlg
     }
 
     if (chkKeepFilenameUnchanged.isSelected() == false)
-      if ((tfOrigFile.getText().length() > 0) && (tfNewFile.getText().length() == 0))
+      if ((tfOrigFile.getText().length() > 0) && tfNewFile.getText().isEmpty())
         return falseWithWarningMessage("Enter destination file name.", tfNewFile);
 
     if (hcbType.selectedID() < 1)
       return falseWithWarningMessage("Select a work type.", cbType);
 
-    if (tfOrigFile.getText().length() == 0)
+    if (tfOrigFile.getText().isEmpty())
     {
       if (oldWorkFile != null)
         return falseWithErrorMessage("Internal error #82709");

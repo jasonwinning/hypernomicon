@@ -143,7 +143,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
   private void btnCreateClick()
   {
-    if (tfSearchKey.getText().length() == 0)
+    if (tfSearchKey.getText().isEmpty())
     {
       falseWithErrorMessage("Unable to create term record: search key of term cannot be zero-length.", tfSearchKey);
       return;

@@ -123,7 +123,7 @@ public class MainText
   {
     String keyWorksStr = getKeyWorksString();
 
-    return ultraTrim(plainText + (keyWorksStr.length() == 0 ? "" : " Key works: " + keyWorksStr));
+    return ultraTrim(plainText + (keyWorksStr.isEmpty() ? "" : " Key works: " + keyWorksStr));
   }
 
 //---------------------------------------------------------------------------
@@ -307,8 +307,8 @@ public class MainText
     if (oldPlainText.replaceAll("\\h+", "").equalsIgnoreCase(newPlainText.replaceAll("\\h+", "")))  // Remove all horizontal whitespaces and then compare
       modify = false;
 
-    if (ultraTrim(convertToSingleLine(newPlainText)).length() == 0)
-      if (ultraTrim(convertToSingleLine(oldPlainText)).length() == 0)
+    if (ultraTrim(convertToSingleLine(newPlainText)).isEmpty())
+      if (ultraTrim(convertToSingleLine(oldPlainText)).isEmpty())
         modify = false;
 
     setInternal(newHtml, extractTextFromHTML(newHtml).trim());
@@ -326,7 +326,7 @@ public class MainText
   {
     plainText = safeStr(newPlainText);
 
-    if ((ultraTrim(convertToSingleLine(plainText)).length() == 0) && (newHtmlText.contains("&lt;misc-file ") == false))
+    if (ultraTrim(convertToSingleLine(plainText)).isEmpty() && (newHtmlText.contains("&lt;misc-file ") == false))
     {
       htmlText = "";
       plainText = "";

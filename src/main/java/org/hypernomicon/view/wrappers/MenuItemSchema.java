@@ -90,11 +90,9 @@ public final class MenuItemSchema<HDT_T extends HDT_Record, RowType extends Abst
   {
     if (condRecordHandler == null)
       return condRowHandler.test(row);
-    else
-    {
-      HDT_T record = (HDT_T) (recordType == hdtNone ? row.getRecord() : row.getRecordByType(recordType));
-      return record == null ? false : condRecordHandler.test(record);
-    }
+
+    HDT_T record = (HDT_T) (recordType == hdtNone ? row.getRecord() : row.getRecordByType(recordType));
+    return record == null ? false : condRecordHandler.test(record);
   }
 
 //---------------------------------------------------------------------------

@@ -156,7 +156,7 @@ public class GoogleBibData extends BibDataStandalone
     if (isbn.length() > 0)
       return url + "isbn:" + isbn;
 
-    if (safeStr(title).length() == 0) return url;
+    if (safeStr(title).isEmpty()) return url;
 
     String auths = "", eds = "";
     if (authGroups != null)
@@ -181,7 +181,7 @@ public class GoogleBibData extends BibDataStandalone
       }
     }
 
-    if (auths.length() == 0) auths = eds;
+    if (auths.isEmpty()) auths = eds;
 
     title = convertToEnglishChars(title).trim();
 

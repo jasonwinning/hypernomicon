@@ -87,6 +87,8 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
 
     onShown = () -> disableCache(taContents);
 
+    chkDeleteFile.disableProperty().bind(tfFile.textProperty().isEmpty());
+
     btnBrowse.setOnAction(event -> btnBrowseClick());
     btnCreateNew.setOnAction(event -> doImport(true));
     btnExisting.setOnAction(event -> doImport(false));

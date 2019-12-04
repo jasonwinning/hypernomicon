@@ -406,10 +406,10 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
   {
     if (record.getType() == hdtConcept)
     {
-      if (tfSearchKey.getText().length() == 0)
+      if (tfSearchKey.getText().isEmpty())
         return falseWithErrorMessage("Unable to modify record: search key of term cannot be zero-length.", tfSearchKey);
 
-      if (tfName.getText().length() == 0)
+      if (tfName.getText().isEmpty())
         return falseWithErrorMessage("Unable to modify record: term cannot be zero-length.", tfName);
     }
 

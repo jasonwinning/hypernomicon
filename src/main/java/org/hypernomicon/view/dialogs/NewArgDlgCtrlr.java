@@ -193,7 +193,7 @@ public class NewArgDlgCtrlr extends HyperDlg
       if (person != null) part1 = person.getLastName() + "'s ";
     }
 
-    String part2 = part1.length() == 0 ? "Argument " : "argument ";
+    String part2 = part1.isEmpty() ? "Argument " : "argument ";
 
     tfArgName1.setText(part1 + part2 + "for " + position.name());
     tfArgName2.setText(part1 + part2 + "for the " + position.name());

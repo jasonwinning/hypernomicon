@@ -194,7 +194,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
     String editorText = cb.getEditor().getText();
 
-    if (editorText.length() == 0) return false;
+    if (editorText.isEmpty()) return false;
 
     for (int ndx = 0; ndx < items.size(); ndx++)
     {

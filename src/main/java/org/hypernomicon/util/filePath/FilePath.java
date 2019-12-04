@@ -93,7 +93,7 @@ public class FilePath implements Comparable<FilePath>
 
   public boolean renameTo(String newNameStr) throws IOException { return moveOrCopy(getDirOnly().resolve(newNameStr), false, true); }
 
-  public static boolean isEmpty(FilePath filePath) { return (filePath == null) || (safeStr(filePath.toString()).length() == 0); }
+  public static boolean isEmpty(FilePath filePath) { return (filePath == null) || safeStr(filePath.toString()).isEmpty(); }
 
   @Override public int hashCode()            { return innerVal.hashCode(); }
   @Override public String toString()         { return innerVal.getPathStr(); }
@@ -243,7 +243,7 @@ public class FilePath implements Comparable<FilePath>
   public static boolean isFilenameValid(String fileName)
   {
     fileName = safeStr(fileName);
-    if (ultraTrim(fileName).length() == 0) return false;
+    if (ultraTrim(fileName).isEmpty()) return false;
 
     try
     {

@@ -492,7 +492,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
       int downloadCount = (downloadQueue.size() > 50) ? 50 : downloadQueue.size();
       for (int ndx = 0; ndx < downloadCount; ndx++)
-        keys = keys + (keys.length() == 0 ? downloadQueue.get(ndx) : "," + downloadQueue.get(ndx));
+        keys = keys + (keys.isEmpty() ? downloadQueue.get(ndx) : "," + downloadQueue.get(ndx));
 
       if (readCmd == ZoteroCmd.readCollections)
         jArr = doReadCommand(ZoteroCmd.readCollections, "", keys);
@@ -836,7 +836,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   private static String makeStringHtml(String fieldName, String str)
   {
-    if (str.length() == 0) return "";
+    if (str.isEmpty()) return "";
 
     if (fieldName.equals("Item Type"))
       str = camelToTitle(str);
@@ -870,7 +870,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     {
       String type = node.getStrSafe("creatorType");
 
-      if (type.length() == 0) return;
+      if (type.isEmpty()) return;
 
       type = camelToTitle(type);
       PersonName personName;

@@ -207,7 +207,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 
     HDT_Person person = makeSearchKey(name, null, searchKeySB);
 
-    return searchKeySB.toString().length() == 0 ? person : null;
+    return searchKeySB.toString().isEmpty() ? person : null;
   }
 
 //---------------------------------------------------------------------------
@@ -230,7 +230,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 
     private void add(String newKey, boolean newUseForDupCheck)
     {
-      if (newKey.length() == 0) return;
+      if (newKey.isEmpty()) return;
 
       if (lowerCase) newKey = newKey.toLowerCase();
 
@@ -300,7 +300,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
     while (splitStr.hasNext())
     {
       name = splitStr.next();
-      if (name.length() == 0) continue;
+      if (name.isEmpty()) continue;
 
       if (name.endsWith("."))
       {

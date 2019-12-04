@@ -892,6 +892,9 @@ public final class MainCtrlr
     });
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   // This assumes that the Queries tab is currently selected
   //
   private void discardLastQuery(boolean backClick)
@@ -1070,8 +1073,6 @@ public final class MainCtrlr
 
   public void updateBibImportMenus()
   {
-    setAllVisible(db.bibLibraryIsLinked(), mnuImportBibFile, mnuImportBibClipboard, mnuBibImportSeparator);
-
     if (db.bibLibraryIsLinked())
     {
       if (topToolBar.getItems().contains(btnBibMgr) == false)
@@ -1463,7 +1464,7 @@ public final class MainCtrlr
         msg = "Are you sure you want to delete this record?";
 
       String name = record.getCBText();
-      if (ultraTrim(name).length() == 0)
+      if (ultraTrim(name).isEmpty())
         name = activeTab().getRecordName();
 
       if (confirmDialog("Type: " + db.getTypeName(type) + "\n" +
@@ -1734,7 +1735,7 @@ public final class MainCtrlr
 
   public void initPositionContextMenu(HyperTable ht)
   {
-    ht.addContextMenuItem("Launch work file", HDT_Position.class,
+    ht.addContextMenuItem("Launch work", HDT_Position.class,
       pos -> pos.getLaunchableWork() != null,
       pos -> pos.getLaunchableWork().work.launch(-1));
 
@@ -2637,10 +2638,10 @@ public final class MainCtrlr
   {
     String desc;
 
-    if      ((record2.getType() == hdtWorkLabel) && (record2.isLinked() == false))           desc = record1.getMainText().getHtml();
-    else if (ultraTrim(convertToSingleLine(record1.getMainText().getPlain())).length() == 0) desc = record2.getMainText().getHtml();
-    else if (ultraTrim(convertToSingleLine(record2.getMainText().getPlain())).length() == 0) desc = record1.getMainText().getHtml();
-    else if (record1.getMainText().getHtml().equals(record2.getMainText().getHtml()))        desc = record1.getMainText().getHtml();
+    if      ((record2.getType() == hdtWorkLabel) && (record2.isLinked() == false))       desc = record1.getMainText().getHtml();
+    else if (ultraTrim(convertToSingleLine(record1.getMainText().getPlain())).isEmpty()) desc = record2.getMainText().getHtml();
+    else if (ultraTrim(convertToSingleLine(record2.getMainText().getPlain())).isEmpty()) desc = record1.getMainText().getHtml();
+    else if (record1.getMainText().getHtml().equals(record2.getMainText().getHtml()))    desc = record1.getMainText().getHtml();
     else
     {
       MergeSpokeDlgCtrlr frmMerge = MergeSpokeDlgCtrlr.create(record1, record2);
@@ -2675,7 +2676,7 @@ public final class MainCtrlr
     if (newValue.length() > 0)
       showFindTable();
 
-    if (newValue.length() == 0)
+    if (newValue.isEmpty())
     {
       tvFind.setPlaceholder(new Text(""));
       omniFinder.stop();

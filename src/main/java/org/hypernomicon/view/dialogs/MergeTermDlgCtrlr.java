@@ -72,13 +72,13 @@ public class MergeTermDlgCtrlr extends HyperDlg
     tfName1.setText(name1);
     tfName2.setText(name2);
 
-    if ((name1.length() == 0) && (name2.length() > 0))
+    if (name1.isEmpty() && (name2.length() > 0))
       rbName2.setSelected(true);
 
     tfKey1.setText(key1);
     tfKey2.setText(key2);
 
-    if ((key1.length() == 0) && (key2.length() > 0))
+    if (key1.isEmpty() && (key2.length() > 0))
       rbKey2.setSelected(true);
 
     tfName3.textProperty().addListener((ob, oldValue, newValue) -> rbName3.setSelected(true));

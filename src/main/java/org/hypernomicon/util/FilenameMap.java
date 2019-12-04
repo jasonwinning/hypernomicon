@@ -68,7 +68,7 @@ public class FilenameMap<T> implements Map<String, T>
 
     String realKey = findKey((String) key);
 
-    return realKey.length() == 0 ? null : nameToObject.get(realKey);
+    return realKey.isEmpty() ? null : nameToObject.get(realKey);
   }
 
 //---------------------------------------------------------------------------

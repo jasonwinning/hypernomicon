@@ -166,7 +166,7 @@ public final class MainTextWrapper
     if (alreadyPrepped == false)
       htmlToUse = prepHtmlForDisplay(htmlToUse);
 
-    if (textToHilite.length() == 0)
+    if (textToHilite.isEmpty())
       lastTextToHilite = "";
 
     if (viewInfo.scrollPos > 0)
@@ -247,7 +247,7 @@ public final class MainTextWrapper
 
     int keyWorksSize = keyWorks == null ? 0 : getNestedKeyWorkCount(curRecord, keyWorks);
 
-    if ((Jsoup.parse(html).text().trim().length() == 0) && (keyWorksSize == 0) && noDisplayRecords)
+    if (Jsoup.parse(html).text().trim().isEmpty() && (keyWorksSize == 0) && noDisplayRecords)
       beginEditing(false);
     else
       setReadOnlyHTML(completeHtml, we, viewInfo, null, true);
@@ -474,7 +474,7 @@ public final class MainTextWrapper
     if (doc.head().getElementsByTag("style").isEmpty())
       doc.head().prepend(mainTextHeadStyleTag());
 
-    if (doc.body().text().trim().length() == 0)
+    if (doc.body().text().trim().isEmpty())
       firstOpen.setTrue();
 
     MutableInt tagNdx = new MutableInt(0);

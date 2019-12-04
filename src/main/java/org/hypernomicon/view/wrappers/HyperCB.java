@@ -214,7 +214,7 @@ public class HyperCB implements CommitableWrapper
       if (adjusting || (preShowingValue == null) || (table == null) || (table.autoCommitListSelections == false)) return;
 
       String newText = HyperTableCell.getCellText(cb.getValue());
-      if (newText.length() == 0) return;
+      if (newText.isEmpty()) return;
 
       if (newText.equals(HyperTableCell.getCellText(preShowingValue)) == false)
         endEditModeIfInTable();
@@ -313,8 +313,8 @@ public class HyperCB implements CommitableWrapper
               {
                 if (personName.getFirst().length() > 0)
                 {
-                  if ((author.getFirstName(true).toLowerCase().contains(personName.getFirst())) ||
-                      (author.getLastName(true).toLowerCase().contains(personName.getFirst())))
+                  if (author.getFirstName(true).toLowerCase().contains(personName.getFirst()) ||
+                      author.getLastName(true).toLowerCase().contains(personName.getFirst()))
                   {
                     cells.add(cell);
                     added = true;
@@ -323,8 +323,8 @@ public class HyperCB implements CommitableWrapper
 
                 if (personName.getLast().length() > 0)
                 {
-                  if ((author.getFirstName(true).toLowerCase().contains(personName.getLast())) ||
-                      (author.getLastName(true).toLowerCase().contains(personName.getLast())))
+                  if (author.getFirstName(true).toLowerCase().contains(personName.getLast()) ||
+                      author.getLastName(true).toLowerCase().contains(personName.getLast()))
                   {
                     cells.add(cell);
                     added = true;

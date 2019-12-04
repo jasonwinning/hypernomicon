@@ -824,7 +824,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     setTabCaption(tabKeyMentions   , mentionerCnt);
 
     tfSearchKey.setText(curWork.getSearchKey());
-    if (tfSearchKey.getText().length() == 0)
+    if (tfSearchKey.getText().isEmpty())
       if (curWork.getYear().length() > 0)
         if (curWork.authorRecords.size() > 0)
           if (curWork.authorRecords.get(0).getLastName().length() > 0)
@@ -951,10 +951,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if (mentioner.getType() == hdtHub)
       {
         StrongLink link = HDT_Hub.class.cast(mentioner).getLink();
-        if (link.getDebate  () != null) typeStr += (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtDebate);
-        if (link.getPosition() != null) typeStr += (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtPosition);
-        if (link.getNote    () != null) typeStr += (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtNote);
-        if (link.getConcept () != null) typeStr += (typeStr.length() == 0 ? "" : ", ") + db.getTypeName(hdtTerm);
+        if (link.getDebate  () != null) typeStr += (typeStr.isEmpty() ? "" : ", ") + db.getTypeName(hdtDebate);
+        if (link.getPosition() != null) typeStr += (typeStr.isEmpty() ? "" : ", ") + db.getTypeName(hdtPosition);
+        if (link.getNote    () != null) typeStr += (typeStr.isEmpty() ? "" : ", ") + db.getTypeName(hdtNote);
+        if (link.getConcept () != null) typeStr += (typeStr.isEmpty() ? "" : ", ") + db.getTypeName(hdtTerm);
 
         if      (link.getConcept () != null) name = link.getConcept ().getCBText();
         else if (link.getDebate  () != null) name = link.getDebate  ().getCBText();
@@ -1576,7 +1576,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private static String makeWorkSearchKey(String name, String year, HDT_Work work)
   {
-    if ((name.length() == 0) || (year.length() == 0))
+    if (name.isEmpty() || year.isEmpty())
       return "";
 
     return makeWorkSearchKey(name + " " + year, work);
@@ -1618,7 +1618,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     WorkTypeEnum workTypeEnumVal = HDT_WorkType.workTypeIDToEnumVal(hcbType.selectedID());
 
-    if (tfSearchKey.getText().length() == 0)
+    if (tfSearchKey.getText().isEmpty())
       lblSearchKeyClick();
     else if (curWork.getYear().length() > 0)
     {
@@ -1769,7 +1769,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private void updateBibButtons()
   {
-    btnUseDOI.setDisable(getDoiFromBibTab().length() == 0);
+    btnUseDOI.setDisable(getDoiFromBibTab().isEmpty());
 
     btnUseISBN.setDisable(getIsbnsFromBibTab().size() == 0);
 

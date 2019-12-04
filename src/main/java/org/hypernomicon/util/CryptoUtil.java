@@ -44,7 +44,7 @@ public class CryptoUtil
 
   public static String encrypt(String secretKey, String plainText) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException
   {
-    if (secretKey.length() == 0) secretKey = defaultK;
+    if (secretKey.isEmpty()) secretKey = defaultK;
 
     SecretKey key = SecretKeyFactory.getInstance(algorithm)
                                     .generateSecret(new PBEKeySpec(secretKey.toCharArray(), salt, iterationCount));
@@ -60,7 +60,7 @@ public class CryptoUtil
 
   public static String decrypt(String secretKey, String encryptedText) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException
   {
-    if (secretKey.length() == 0) secretKey = defaultK;
+    if (secretKey.isEmpty()) secretKey = defaultK;
 
     SecretKey key = SecretKeyFactory.getInstance(algorithm)
                                     .generateSecret(new PBEKeySpec(secretKey.toCharArray(), salt, iterationCount));

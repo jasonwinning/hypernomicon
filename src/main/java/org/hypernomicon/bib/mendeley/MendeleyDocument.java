@@ -403,7 +403,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
           jObj.put("identifiers", idObj);
         }
 
-        if (newStr.length() == 0)
+        if (newStr.isEmpty())
           idObj.remove(fieldKey);
         else
           idObj.put(fieldKey, newStr);

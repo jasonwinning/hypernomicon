@@ -198,7 +198,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
         String oldDate = jData.getStrSafe(fieldKey);
         String oldYear = extractYear(oldDate);
-        if (oldYear.length() == 0) break;
+        if (oldYear.isEmpty()) break;
 
         if (oldYear.equals(newStr)) return;
 
@@ -391,8 +391,8 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
       case bfContainerTitle :
 
         String                            containerTitle = jData.getStrSafe("publicationTitle");
-        if (containerTitle.length() == 0) containerTitle = jData.getStrSafe("bookTitle");
-        if (containerTitle.length() == 0) containerTitle = jData.getStrSafe("seriesTitle");
+        if (containerTitle.isEmpty()) containerTitle = jData.getStrSafe("bookTitle");
+        if (containerTitle.isEmpty()) containerTitle = jData.getStrSafe("seriesTitle");
 
         return convertMultiLineStrToStrList(containerTitle, false);
 
@@ -435,9 +435,9 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
     // Backup item will not have authors of certain types if they are not allowed by Zotero for this entry type
 
-    if (ZoteroAuthors.getCreatorTypeStr(entryType, AuthorType.author    ).length() == 0) authorList1    .clear();
-    if (ZoteroAuthors.getCreatorTypeStr(entryType, AuthorType.editor    ).length() == 0) editorList1    .clear();
-    if (ZoteroAuthors.getCreatorTypeStr(entryType, AuthorType.translator).length() == 0) translatorList1.clear();
+    if (ZoteroAuthors.getCreatorTypeStr(entryType, AuthorType.author    ).isEmpty()) authorList1    .clear();
+    if (ZoteroAuthors.getCreatorTypeStr(entryType, AuthorType.editor    ).isEmpty()) editorList1    .clear();
+    if (ZoteroAuthors.getCreatorTypeStr(entryType, AuthorType.translator).isEmpty()) translatorList1.clear();
 
     if ((authorList1    .size() != authorList2    .size()) ||
         (editorList1    .size() != editorList2    .size()) ||

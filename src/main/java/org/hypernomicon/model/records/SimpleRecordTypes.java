@@ -46,9 +46,9 @@ public class SimpleRecordTypes
   {
     HyperPath getPath();
 
-    default boolean  pathNotEmpty()   { return nullSwitch(getPath(), false, path -> path.isEmpty() == false); }
-    default FilePath filePath()       { return nullSwitch(getPath(), null, HyperPath::filePath); }
-    default HDT_Folder parentFolder() { return nullSwitch(getPath(), null, HyperPath::parentFolder); }
+    default boolean  pathNotEmpty()   { return nullSwitch(getPath(), false, HyperPath::isNotEmpty); }
+    default FilePath filePath()       { return nullSwitch(getPath(), null , HyperPath::filePath); }
+    default HDT_Folder parentFolder() { return nullSwitch(getPath(), null , HyperPath::parentFolder); }
   }
 
   static abstract class HDT_SimpleRecord extends HDT_RecordBase

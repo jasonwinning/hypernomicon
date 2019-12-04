@@ -50,7 +50,7 @@ public final class SearchKeys
     {
       record = newRecord;
 
-      if (newKeyword.length() == 0)
+      if (newKeyword.isEmpty())
       {
         text = "";
         startOnly = false;

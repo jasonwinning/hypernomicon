@@ -31,10 +31,10 @@ public class NewLinkDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if (tfDisplayText.getText().trim().length() == 0)
+    if (tfDisplayText.getText().trim().isEmpty())
       return falseWithErrorMessage("Enter the text to be displayed.", tfDisplayText);
 
-    if (tfURL.getText().trim().length() == 0)
+    if (tfURL.getText().trim().isEmpty())
       return falseWithErrorMessage("Enter a web address (URL).", tfURL);
 
     return true;

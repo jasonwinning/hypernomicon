@@ -203,7 +203,7 @@ public class FileDownloadUtility
         if (origFileNameStr.indexOf('?') >= 0)
           origFileNameStr = origFileNameStr.substring(0, origFileNameStr.indexOf('?'));
 
-        if (origFileNameStr.length() == 0)
+        if (origFileNameStr.isEmpty())
         {
           if (assumeIsImage)
             origFileNameStr = "image" + ZoteroWrapper.generateWriteToken();
@@ -213,7 +213,7 @@ public class FileDownloadUtility
 
         String ext = FilenameUtils.getExtension(origFileNameStr);
 
-        if (ext.length() == 0)
+        if (ext.isEmpty())
         {
           if (contentType.length() > 0)
           {
@@ -230,7 +230,7 @@ public class FileDownloadUtility
           }
         }
 
-        if (assumeIsImage && (ext.length() == 0))
+        if (assumeIsImage && ext.isEmpty())
           origFileNameStr = FilenameUtils.getBaseName(origFileNameStr) + FilenameUtils.EXTENSION_SEPARATOR_STR + "jpg";
 
         assignSB(fileName, origFileNameStr);
@@ -254,7 +254,7 @@ public class FileDownloadUtility
       }
       else
       {
-        if (fileNameStr.length() == 0)
+        if (fileNameStr.isEmpty())
           saveFilePath = dirPath.resolve(fileName.toString());
         else
           saveFilePath = dirPath.resolve(fileNameStr);

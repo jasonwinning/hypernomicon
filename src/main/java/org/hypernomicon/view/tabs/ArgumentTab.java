@@ -275,13 +275,13 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
     htWhereMade.addContextMenuItem("Go to person record", HDT_Person.class,
       person -> ui.goToRecord(person, true));
 
-    htCounters.addContextMenuItem("Launch work file", HDT_Argument.class,
-      arg -> arg.works.stream().anyMatch(HDT_Work::pathNotEmpty),
-      arg -> findFirst(arg.works, HDT_Work::pathNotEmpty).launch(-1));
+    htCounters.addContextMenuItem("Launch work", HDT_Argument.class,
+      arg -> HDT_Work.hasLaunchableWork(arg.works),
+      arg -> HDT_Work.getLaunchableWork(arg.works).launch(-1));
 
     htCounters.addContextMenuItem("Go to work record", HDT_Argument.class,
       arg -> arg.works.size() > 0,
-      arg -> ui.goToRecord(nullSwitch(findFirst(arg.works, HDT_Work::pathNotEmpty), arg.works.get(0)), true));
+      arg -> ui.goToRecord(nullSwitch(HDT_Work.getLaunchableWork(arg.works), arg.works.get(0)), true));
 
     htCounters.addContextMenuItem("Go to person record", HDT_Person.class,
       person -> ui.goToRecord(person, true));

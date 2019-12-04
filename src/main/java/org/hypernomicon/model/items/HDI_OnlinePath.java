@@ -94,7 +94,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
         initPath();
 
         if (hyperPath == null) return;
-        if (hyperPath.isEmpty() && (val.fileName.length() == 0)) return;
+        if (hyperPath.isEmpty() && val.fileName.isEmpty()) return;
 
         hyperPath.assignNameInternal(new FilePath(val.fileName));
     }
@@ -114,7 +114,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 
   @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
   {
-    if (hyperPath.isEmpty() == false)
+    if (hyperPath.isNotEmpty())
       list.add(hyperPath.getFileName().getNameOnly().toString());
   }
 
@@ -153,18 +153,17 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
     val.folderID = -1;
     val.fileName = "";
 
-    if (hyperPath.isEmpty() == false)
-    {
-      HDT_Folder parentFolder = hyperPath.parentFolder();
+    if (hyperPath.isEmpty()) return;
 
-      if (parentFolder != null)
-        val.folderID = parentFolder.getID();
+    HDT_Folder parentFolder = hyperPath.parentFolder();
 
-      FilePath fileName = hyperPath.getFileName();
+    if (parentFolder != null)
+      val.folderID = parentFolder.getID();
 
-      if (fileName != null)
-        val.fileName = fileName.getNameOnly().toString();
-    }
+    FilePath fileName = hyperPath.getFileName();
+
+    if (fileName != null)
+      val.fileName = fileName.getNameOnly().toString();
   }
 
 //---------------------------------------------------------------------------

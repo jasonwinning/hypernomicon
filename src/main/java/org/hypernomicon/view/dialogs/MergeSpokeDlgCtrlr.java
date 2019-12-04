@@ -64,7 +64,7 @@ public class MergeSpokeDlgCtrlr extends HyperDlg
     view1.getEngine().loadContent(makeLinksExternal(prepHtmlForDisplay(mainText1).replace("contenteditable=\"true\"", "contentEditable=\"false\"")));
     view2.getEngine().loadContent(makeLinksExternal(prepHtmlForDisplay(mainText2).replace("contenteditable=\"true\"", "contentEditable=\"false\"")));
 
-    if (extractTextFromHTML(mainText1).trim().length() == 0)
+    if (extractTextFromHTML(mainText1).trim().isEmpty())
       if (extractTextFromHTML(mainText2).trim().length() > 0)
         rbDesc2.setSelected(true);
 

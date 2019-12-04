@@ -208,7 +208,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
         String roleText = "";
         if (work.personIsEditor(curPerson)) roleText = "Ed";
-        if (work.personIsTranslator(curPerson)) roleText = roleText.length() == 0 ? "Tr" : roleText + ", Tr";
+        if (work.personIsTranslator(curPerson)) roleText = roleText.isEmpty() ? "Tr" : roleText + ", Tr";
 
         row.setCellValue(2, work, roleText);
 
@@ -746,7 +746,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
       if (change.getText().length() > 1)
       {
-        if ((tfFirst.getText().length() == 0) && (change.getControlText().length() == 0))
+        if (tfFirst.getText().isEmpty() && change.getControlText().isEmpty())
         {
           alreadyChangingName = true;
           String newText = change.getControlNewText();

@@ -334,6 +334,26 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static boolean hasLaunchableWork(List<HDT_Work> works)
+  {
+    return findFirst(works, HDT_Work::canLaunch) != null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static HDT_Work getLaunchableWork(List<HDT_Work> works)
+  {
+    HDT_Work work = findFirst(works, HDT_Work::pathNotEmpty);
+    if (work == null)
+      work = findFirst(works, wrk -> wrk.getURL().isEmpty() == false);
+
+    return work;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public String getInvText(HDT_Person person)
   {
     return investigations.stream().filter(inv -> inv.person.get() == person)
@@ -355,7 +375,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     else if (safeStr(work.getURL()).length() > 0)
       indicator = "web";
 
-    return indicator.length() == 0 ? str : new String(str + " (" + indicator + ")").trim();
+    return indicator.isEmpty() ? str : new String(str + " (" + indicator + ")").trim();
   }
 
 //---------------------------------------------------------------------------

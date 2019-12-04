@@ -268,7 +268,7 @@ public class PictureDlgCtrlr extends HyperDlg
 
     FilePath filePath = db.picturesPath(tfName.getText());
     ext = filePath.getExtensionOnly();
-    if (ext.length() == 0) ext = "jpg";
+    if (ext.isEmpty()) ext = "jpg";
 
     String fileName = makeFileName(personHyperTab.tfLast.getText(), ext);
     HDT_Person person = personHyperTab.activeRecord();
@@ -512,8 +512,7 @@ public class PictureDlgCtrlr extends HyperDlg
 
     if (rbCurrent.isSelected())
     {
-      if (FilePath.isEmpty(personHyperTab.curPicture)) return;
-      if (tfName.getText().length() == 0) return;
+      if (FilePath.isEmpty(personHyperTab.curPicture) || tfName.getText().isEmpty()) return;
 
       src = personHyperTab.curPicture;
       dest = db.picturesPath(tfName.getText());
@@ -531,14 +530,14 @@ public class PictureDlgCtrlr extends HyperDlg
     {
       if (rbFile.isSelected())
       {
-        if (tfFile.getText().length() == 0) return;
+        if (tfFile.getText().isEmpty()) return;
         src = new FilePath(tfFile.getText());
         dest = db.picturesPath(tfName.getText());
         sameFile = src.equals(dest);
       }
       else
       {
-        if (tfWeb.getText().length() == 0) return;
+        if (tfWeb.getText().isEmpty()) return;
         sameFile = false;
       }
 
@@ -557,7 +556,7 @@ public class PictureDlgCtrlr extends HyperDlg
     String execPath = appPrefs.get(PREF_KEY_IMAGE_EDITOR, "");
     FilePath picturePath = db.picturesPath(tfName.getText());
 
-    if (execPath.length() == 0)
+    if (execPath.isEmpty())
       DesktopApi.edit(picturePath);
     else
       LaunchCommandsDlgCtrlr.launch(execPath, picturePath, PREF_KEY_IMAGE_EDITOR_COMMANDS, PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE, -1);
@@ -584,7 +583,7 @@ public class PictureDlgCtrlr extends HyperDlg
 
     removeCrop();
 
-    if (url.length() == 0)
+    if (url.isEmpty())
     {
       ivPicture.setImage(null);
       picture = null;
@@ -775,14 +774,14 @@ public class PictureDlgCtrlr extends HyperDlg
   // Perform checks before deleting previous image
   //---------------------------------------------------------------------------
 
-    if (newFileNewName.length() == 0)
+    if (newFileNewName.isEmpty())
       return falseWithErrorMessage("Name cannot be blank.", tfName);
 
     if (rbWeb.isSelected())
     {
       newFileOldName = "";
 
-      if (tfWeb.getText().length() == 0)
+      if (tfWeb.getText().isEmpty())
         return falseWithErrorMessage("Please enter a web address.", tfWeb);
 
       if (newFileNew.exists())
@@ -810,7 +809,7 @@ public class PictureDlgCtrlr extends HyperDlg
       newFileOrig = new FilePath(tfFile.getText());
       newFileOldName = newFileOrig.getNameOnly().toString();
 
-      if (FilePath.isEmpty(newFileOrig) || (newFileOldName.length() == 0))
+      if (FilePath.isEmpty(newFileOrig) || newFileOldName.isEmpty())
         return falseWithErrorMessage("Please specify a file from the local file system.", tfFile);
 
       if (newFileOrig.exists() == false)

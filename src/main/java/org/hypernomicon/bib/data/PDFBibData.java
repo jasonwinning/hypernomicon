@@ -443,7 +443,7 @@ public class PDFBibData extends BibDataStandalone
 
     extractDOIandISBNs(parsedText);
 
-    if (getStr(bfDOI).length() == 0)
+    if (getStr(bfDOI).isEmpty())
       extractDOIandISBNs(parsedText.replaceAll("\\h+", ""));  // remove horizontal whitespaces and check again
   }
 
@@ -545,7 +545,7 @@ public class PDFBibData extends BibDataStandalone
       if (firstPdfBD == null)
         firstPdfBD = lastPdfBD;
 
-      if (doi.length() == 0)
+      if (doi.isEmpty())
       {
         doi = safeStr(lastPdfBD.getStr(bfDOI));
 
@@ -573,7 +573,7 @@ public class PDFBibData extends BibDataStandalone
 
     Iterator<FilePath> it = pdfFilePaths.iterator();
 
-    while ((doi.length() == 0) && it.hasNext())
+    while (doi.isEmpty() && it.hasNext())
       doi = matchDOI(FilenameUtils.removeExtension(it.next().getNameOnly().toString()));
 
     goodPdfBD.setStr(bfDOI, doi);

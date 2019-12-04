@@ -343,7 +343,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     if ((tv.getSelectionModel().getSelectedItem() == showMoreRow) && (showMoreRow != null) && (onShowMore != null))
       onShowMore.run();
     else
-      ui.goToRecord(selectedRecord(), true);
+      ReadOnlyCell.handleRecord(dblClickHandler, selectedRecord());
   }
 
 //---------------------------------------------------------------------------
@@ -701,7 +701,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     addContextMenuItem("Change order",
       row ->
       {
-        if ((row.getRecord() == null) && (row.getText(mainCol).length() == 0)) return false;
+        if ((row.getRecord() == null) && row.getText(mainCol).isEmpty()) return false;
         if (getDataRowCount() < 2) return false;
         return (onlyIfCanAddRows == false) || canAddRows;
       },
@@ -755,8 +755,8 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     HashMap<Integer, Tag> map = new HashMap<>();
 
     map.put(inFileNameCol, tagInFileName); // Sometimes this is -1, that's okay
-    map.put(editorCol, tagEditor);
-    map.put(transCol, tagTranslator);
+    map.put(editorCol    , tagEditor);
+    map.put(transCol     , tagTranslator);
 
     return getObjectGroupList(work, rtAuthorOfWork, authorCol, map);
   }
@@ -776,7 +776,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
       if (row.getType(primaryColNdx) == objType)
       {
         int id = row.getID(primaryColNdx);
-        if ((id > 0) || row.getText(primaryColNdx).length() > 0)
+        if ((id > 0) || (row.getText(primaryColNdx).length() > 0))
         {
           HDT_Record obj;
           ObjectGroup group;
@@ -805,10 +805,10 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
                 {
                   switch (hdc)
                   {
-                    case hdcString        : val.str = db.getNestedString(subj, obj, tag); break;
-                    case hdcBoolean       : val.bool = db.getNestedBoolean(subj, obj, tag); break;
+                    case hdcString        : val.str     = db.getNestedString (subj, obj, tag); break;
+                    case hdcBoolean       : val.bool    = db.getNestedBoolean(subj, obj, tag); break;
                     case hdcTernary       : val.ternary = db.getNestedTernary(subj, obj, tag); break;
-                    case hdcNestedPointer : val.target = db.getNestedPointer(subj, obj, tag); break;
+                    case hdcNestedPointer : val.target  = db.getNestedPointer(subj, obj, tag); break;
                     default               : break;
                   }
                 }
@@ -825,10 +825,10 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
             }
             else switch (hdc)
             {
-              case hdcString        : val.str = row.getText(colNdx); break;
-              case hdcBoolean       : val.bool = row.getCheckboxValue(colNdx); break;
+              case hdcString        : val.str     = row.getText(colNdx); break;
+              case hdcBoolean       : val.bool    = row.getCheckboxValue(colNdx); break;
               case hdcTernary       : val.ternary = row.getCheckboxValue(colNdx) ? Ternary.True : Ternary.False; break;
-              case hdcNestedPointer : val.target = row.getRecord(colNdx); break;
+              case hdcNestedPointer : val.target  = row.getRecord(colNdx); break;
               default               : break;
             }
 

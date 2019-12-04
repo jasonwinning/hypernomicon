@@ -46,7 +46,6 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.Tooltip;
 
 //---------------------------------------------------------------------------
 
@@ -197,13 +196,13 @@ public class HyperTableColumn
               if (work.workType.isNotNull())
               {
                 setGraphic(getImageViewForRelativePath(ui.getGraphicRelativePath(work)));
-                setTooltip(new Tooltip(work.workType.get().getCBText()));
+                setToolTip(this, work.workType.get().getCBText());
                 return;
               }
             }
 
             setGraphic(getImageViewForRecordType(type));
-            setTooltip(new Tooltip(db.getTypeName(type)));
+            setToolTip(this, db.getTypeName(type));
           }
         });
 

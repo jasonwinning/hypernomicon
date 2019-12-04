@@ -267,7 +267,7 @@ public class BibManager extends HyperDlg
         }
       }
 
-      if ((newValue != null) && (newValue.getBibEntryKey().length() == 0))
+      if ((newValue != null) && newValue.getBibEntryKey().isEmpty())
       {
         lblSelect.setText("Assigning to work record: " + newValue.getCBText());
         setAllVisible(true, lblSelect, btnSelect, btnCreateNew, cbNewType);
@@ -333,9 +333,9 @@ public class BibManager extends HyperDlg
         assignEntryToWork(dlg.getWork(), row.getEntry());
     });
 
-    entryTable.addContextMenuItem("Launch work file", HDT_Work.class, HDT_Work::canLaunch, work -> work.launch(-1));
+    entryTable.addContextMenuItem("Launch work", HDT_Work.class, HDT_Work::canLaunch, work -> work.launch(-1));
 
-    entryTable.addContextMenuItem("Show in Preview Window", HDT_Work.class, HDT_Work::canLaunch, work ->
+    entryTable.addContextMenuItem("Show in Preview Window", HDT_Work.class, work -> work.getPath().isNotEmpty(), work ->
     {
       PreviewSource src = ui.determinePreviewContext();
       previewWindow.setPreview(src, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
@@ -679,7 +679,7 @@ public class BibManager extends HyperDlg
 
     String key = work.getBibEntryKey();
 
-    if (key.length() == 0) return;
+    if (key.isEmpty()) return;
 
     if (entryTable.containsKey(key))
     {

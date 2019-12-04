@@ -230,7 +230,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     String url       = "https://api.mendeley.com/documents",
            mediaType = "application/vnd.mendeley-document.1+json";
 
-    if (jsonObj.getStrSafe("title").length() == 0)
+    if (jsonObj.getStrSafe("title").isEmpty())
       jsonObj.put("title", " ");
 
     JsonArray jsonArray = doHttpRequest(url, HttpRequestType.post, jsonObj.toString(), mediaType, null);
@@ -253,7 +253,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     String url       = "https://api.mendeley.com/documents/" + jsonObj.getStrSafe("id"),
            mediaType = "application/vnd.mendeley-document.1+json";
 
-    if (jsonObj.getStrSafe("title").length() == 0)
+    if (jsonObj.getStrSafe("title").isEmpty())
       jsonObj.put("title", " ");
 
     jsonObj.remove("created");

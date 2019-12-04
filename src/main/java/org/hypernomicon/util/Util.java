@@ -196,7 +196,7 @@ public final class Util
   public static String getClipboardText(boolean noCarriageReturns)
   {
     String text = safeStr((String) Clipboard.getSystemClipboard().getContent(DataFormat.PLAIN_TEXT));
-    if (text.length() == 0) return "";
+    if (text.isEmpty()) return "";
 
     text = text.replace("\ufffd", ""); // I don't know what this is but it is usually appended at the end when copying text from Acrobat
 
@@ -236,7 +236,7 @@ public final class Util
   {
     input = safeStr(input);
 
-    if (ultraTrim(convertToSingleLine(input)).length() == 0) return "";
+    if (ultraTrim(convertToSingleLine(input)).isEmpty()) return "";
 
     List<String> list = convertMultiLineStrToStrList(input, true);
 
@@ -428,7 +428,7 @@ public final class Util
 
     String readerPath = appPrefs.get(PREF_KEY_PDF_READER, "");
 
-    if ((filePath.getExtensionOnly().toLowerCase().equals("pdf") == false) || (readerPath.length() == 0))
+    if ((filePath.getExtensionOnly().toLowerCase().equals("pdf") == false) || readerPath.isEmpty())
     {
       DesktopApi.open(filePath);
       return;
@@ -628,7 +628,11 @@ public final class Util
     }
 
     if (windowStack != null)
-      dlg.initOwner(windowStack.getOutermostStage());
+    {
+      Stage window = windowStack.getOutermostStage();
+      if (window.isShowing())
+        dlg.initOwner(window);
+    }
 
     Optional<ButtonType> result = dlg.showAndWait();
 
@@ -939,7 +943,7 @@ public final class Util
 
   public static String sentenceCase(String str)
   {
-    if (safeStr(str).length() == 0) return "";
+    if (safeStr(str).isEmpty()) return "";
 
     str = str.toLowerCase();
 
@@ -1853,7 +1857,7 @@ public final class Util
   public static List<String> matchISSN(String str, List<String> list)
   {
     if (list == null) list = new ArrayList<>();
-    if (safeStr(str).length() == 0) return list;
+    if (safeStr(str).isEmpty()) return list;
 
     str = prepareForIDMatch(str, true);
 
@@ -1896,7 +1900,7 @@ public final class Util
   public static List<String> matchISBN(String str, List<String> list)
   {
     if (list == null) list = new ArrayList<>();
-    if (safeStr(str).length() == 0) return list;
+    if (safeStr(str).isEmpty()) return list;
 
     matchISBNiteration(str, list);
 

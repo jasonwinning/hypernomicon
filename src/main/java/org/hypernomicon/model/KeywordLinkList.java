@@ -61,7 +61,7 @@ public final class KeywordLinkList
   {
     keys.clear();
 
-    if (text.length() == 0) return;
+    if (text.isEmpty()) return;
 
     ArrayList<Integer> posMap = new ArrayList<>();
     text = convertToEnglishCharsWithMap(text, posMap); // posMap maps output position (key) to input position (value)

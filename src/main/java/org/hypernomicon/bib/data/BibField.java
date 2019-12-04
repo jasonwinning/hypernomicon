@@ -142,7 +142,7 @@ public class BibField
     {
       titleStr = titleStr.trim();
 
-      if (titleStr.length() == 0) return;
+      if (titleStr.isEmpty()) return;
 
       if (sb.length() > 0)
       {
@@ -209,7 +209,7 @@ public class BibField
       return;
     }
 
-    if (ultraTrim(safeStr(newStr)).length() == 0) return;
+    if (ultraTrim(safeStr(newStr)).isEmpty()) return;
 
     switch (bibFieldEnum)
     {

@@ -52,7 +52,7 @@ public class RenameDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if (tfName.getText().length() == 0)
+    if (tfName.getText().isEmpty())
       return falseWithErrorMessage("Name cannot be zero-length.", tfName);
 
     if (nameType != ntRecord)
@@ -101,7 +101,7 @@ public class RenameDlgCtrlr extends HyperDlg
     {
       if ((newValue == null) || newValue.equals(oldValue)) return;
 
-      if (newValue.length() == 0)
+      if (newValue.isEmpty())
       {
         lblInvalid.setVisible(false);
         btnOk.setDisable(true);

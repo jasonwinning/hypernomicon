@@ -506,7 +506,7 @@ public final class HyperDB
     {
       favorites.saveToPrefNode();
 
-      if (prefs.get(PREF_KEY_SETTINGS_VERSION, "").length() == 0)
+      if (prefs.get(PREF_KEY_SETTINGS_VERSION, "").isEmpty())
         prefs.put(PREF_KEY_SETTINGS_VERSION, HDB_SETTINGS_VERSION.toString());
 
       prefs.put(PREF_KEY_DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));

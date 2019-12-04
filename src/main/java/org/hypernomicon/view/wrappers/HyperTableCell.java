@@ -105,9 +105,8 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
         return false;
 
       if ((id < 0) && (other.id < 0))
-        if (safeStr(text).length() == 0)
-          if (safeStr(other.text).length() == 0)
-            return true;
+        if (safeStr(text).isEmpty() && safeStr(other.text).isEmpty())
+          return true;
 
       return false;
     }
@@ -179,12 +178,12 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
     if ((id > 0) && (type != null) && (type != hdtNone))
       thisKey = db.records(type).getByID(id).getSortKey();
 
-    if (thisKey.length() == 0) thisKey = makeSortKeyByType(text, type);
+    if (thisKey.isEmpty()) thisKey = makeSortKeyByType(text, type);
 
     if ((otherCell.id > 0) && (otherCell.type != null) && (otherCell.type != hdtNone))
       otherKey = db.records(otherCell.type).getByID(otherCell.id).getSortKey();
 
-    if (otherKey.length() == 0) otherKey = makeSortKeyByType(otherCell.text, otherCell.type);
+    if (otherKey.isEmpty()) otherKey = makeSortKeyByType(otherCell.text, otherCell.type);
 
     return thisKey.compareTo(otherKey);
   }

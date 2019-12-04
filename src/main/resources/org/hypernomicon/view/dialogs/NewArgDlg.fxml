@@ -203,12 +203,12 @@
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <Button fx:id="btnOK" defaultButton="true" maxWidth="50.0" minWidth="50.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="50.0" text="OK">
+            <Button fx:id="btnOK" maxWidth="50.0" minWidth="50.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="50.0" text="OK">
                <GridPane.margin>
                   <Insets right="4.0" />
                </GridPane.margin>
             </Button>
-            <Button fx:id="btnCancel" cancelButton="true" maxWidth="50.0" minWidth="50.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="50.0" text="Cancel" GridPane.columnIndex="1">
+            <Button fx:id="btnCancel" maxWidth="50.0" minWidth="50.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="50.0" text="Cancel" GridPane.columnIndex="1">
                <GridPane.margin>
                   <Insets left="4.0" />
                </GridPane.margin>

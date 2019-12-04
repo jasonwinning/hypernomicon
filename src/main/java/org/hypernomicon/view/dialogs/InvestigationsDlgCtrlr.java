@@ -62,7 +62,7 @@ public class InvestigationsDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid() { return true; }
   public String newName()               { return tfNew.getText(); }
-  public boolean hasNew()               { return tfNew.getText().trim().length() == 0 ? false : chkNew.isSelected(); }
+  public boolean hasNew()               { return tfNew.getText().trim().isEmpty() ? false : chkNew.isSelected(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

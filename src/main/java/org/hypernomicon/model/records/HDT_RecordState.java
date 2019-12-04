@@ -286,7 +286,7 @@ public class HDT_RecordState
 
   public static void writeStringTag(StringBuilder xml, Tag tag, String tagText)
   {
-    if (tagText.length() == 0) return;
+    if (tagText.isEmpty()) return;
     xml.append("  <" + db.getTagStr(tag) + ">" + xmlContentEscaper.escape(tagText) + "</" + db.getTagStr(tag) + ">" + System.lineSeparator());
   }
 

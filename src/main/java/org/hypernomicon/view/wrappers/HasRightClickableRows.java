@@ -165,9 +165,9 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 
   final public void addDefaultMenuItems()
   {
-    addContextMenuItem("Launch work file", HDT_Work.class, HDT_Work::canLaunch, work -> work.launch(-1));
+    addContextMenuItem("Launch work", HDT_Work.class, HDT_Work::canLaunch, work -> work.launch(-1));
 
-    addContextMenuItem("Show in Preview Window", HDT_Work.class, HDT_Work::canLaunch,
+    addContextMenuItem("Show in Preview Window", HDT_Work.class, work -> work.getPath().isNotEmpty(),
                        work ->
                        {
                          PreviewSource src = ui.determinePreviewContext();

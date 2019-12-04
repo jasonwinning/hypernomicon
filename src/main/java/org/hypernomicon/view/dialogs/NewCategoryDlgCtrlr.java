@@ -105,10 +105,10 @@ public class NewCategoryDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if (tfNewName.getText().length() == 0)
+    if (tfNewName.getText().isEmpty())
       return falseWithErrorMessage("Record name cannot be blank.", tfNewName);
 
-    if (tfNewKey.getText().length() == 0)
+    if (tfNewKey.getText().isEmpty())
       return falseWithErrorMessage("Sort key cannot be blank.", tfNewKey);
 
     if (hcbRecordType.selectedType() == hdtNone)

@@ -64,7 +64,7 @@ public class AboutDlgCtrlr extends HyperDlg
   {
     buildDate = manifestValue("Build-Time");
 
-    if (safeStr(buildDate).length() == 0)
+    if (safeStr(buildDate).isEmpty())
       buildDate = "not found";
 
     String family = Font.getDefault().getFamily();

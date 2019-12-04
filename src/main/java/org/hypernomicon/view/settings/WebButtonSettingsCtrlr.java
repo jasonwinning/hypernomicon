@@ -561,7 +561,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
     String name = node.get(prefKey, ""),
            caption = appPrefs.node("webButtonCaptions").get(prefKey, "");
 
-    if (name.length() == 0) return;
+    if (name.isEmpty()) return;
 
     for (WebButton btn : srchList)
     {

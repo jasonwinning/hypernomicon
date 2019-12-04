@@ -193,12 +193,25 @@ public final class App extends Application
       return;
     }
 
-    if (!initMainWindows())
+    try
+    {
+      initMainWindows();
+    }
+    catch(IOException e)
+    {
+      messageDialog("Initialization error: " + e.getMessage(), mtError);
+
+      if (ui != null)
+        ui.shutDown(false, false, false);
+      else
+        Platform.exit();
+
       return;
+    }
 
     String versionStr = manifestValue("Impl-Version");
 
-    if (safeStr(versionStr).length() == 0)
+    if (safeStr(versionStr).isEmpty())
       versionStr = "1.17.1";
 
     version = new VersionNumber(2, versionStr);
@@ -328,179 +341,165 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean initMainWindows()
+  private void initMainWindows() throws IOException
   {
     Application.setUserAgentStylesheet(STYLESHEET_MODENA);
 
-    try
+    FXMLLoader loader = new FXMLLoader(App.class.getResource("view/Main.fxml"));
+    Region rootNode = loader.load();
+
+    ui = loader.getController();
+    ui.init();
+
+    Scene scene = new Scene(rootNode);
+
+    scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
+
+    scene.setOnKeyPressed(event -> { if (event.getCode() == KeyCode.ESCAPE)
     {
-      FXMLLoader loader = new FXMLLoader(App.class.getResource("view/Main.fxml"));
-      Region rootNode = loader.load();
-
-      ui = loader.getController();
-      ui.init();
-
-      Scene scene = new Scene(rootNode);
-
-      scene.getStylesheets().add(App.class.getResource("resources/css.css").toExternalForm());
-
-      scene.setOnKeyPressed(event -> { if (event.getCode() == KeyCode.ESCAPE)
-      {
-        ui.hideFindTable();
-        event.consume();
-      }});
-
-      KeyCombination keyComb = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
-      scene.addEventHandler(KeyEvent.KEY_PRESSED, event ->
-      {
-        if (keyComb.match(event))
-          ui.omniFocus();
-      });
-
-      scene.setOnScrollStarted(event ->
-      {
-        swipeStartTime = System.currentTimeMillis();
-        deltaX = event.getDeltaX();
-      });
-
-      scene.setOnScroll(event -> deltaX = deltaX + event.getDeltaX());
-
-      scene.setOnScrollFinished(event ->
-      {
-        double swipeTime = System.currentTimeMillis() - swipeStartTime;
-
-        if (swipeTime < 200)
-        {
-          if      (deltaX >  500) ui.btnBackClick();
-          else if (deltaX < -500) ui.btnForwardClick();
-        }
-      });
-
-      scene.addEventFilter(DragEvent.DRAG_OVER, event ->
-      {
-        if (event.getDragboard().hasContent(HYPERNOMICON_DATA_FORMAT))
-          return;
-
-        if (event.getDragboard().hasFiles())
-          event.acceptTransferModes(TransferMode.MOVE);
-
-        event.consume();
-      });
-
-      scene.addEventFilter(DragEvent.DRAG_DROPPED, event ->
-      {
-        if (event.getDragboard().hasContent(HYPERNOMICON_DATA_FORMAT))
-          return;
-
-        Dragboard board = event.getDragboard();
-
-        if (board.hasImage())
-          if (isDebugging)
-            System.out.println("has image");
-
-        if (board.hasFiles())
-        {
-          List<String> args = board.getFiles().stream().map(File::getAbsolutePath).collect(Collectors.toList());
-          Platform.runLater(() -> ui.handleArgs(args));
-          event.setDropCompleted(true);
-        }
-
-        event.consume();
-      });
-
-      primaryStage.setScene(scene);
-
-      primaryStage.getIcons().addAll(Stream.of("16x16", "32x32", "48x48", "64x64", "128x128", "256x256")
-                                           .map(str -> new Image(App.class.getResourceAsStream("resources/images/logo-" + str + ".png")))
-                                           .collect(Collectors.toList()));
       ui.hideFindTable();
+      event.consume();
+    }});
 
-      initScaling(rootNode);
+    KeyCombination keyComb = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
+    scene.addEventHandler(KeyEvent.KEY_PRESSED, event ->
+    {
+      if (keyComb.match(event))
+        ui.omniFocus();
+    });
 
-      double  x          = appPrefs.getDouble (PREF_KEY_WINDOW_X,          primaryStage.getX()),
-              y          = appPrefs.getDouble (PREF_KEY_WINDOW_Y,          primaryStage.getY()),
-              width      = appPrefs.getDouble (PREF_KEY_WINDOW_WIDTH,      primaryStage.getWidth()),
-              height     = appPrefs.getDouble (PREF_KEY_WINDOW_HEIGHT,     primaryStage.getHeight());
-      boolean fullScreen = appPrefs.getBoolean(PREF_KEY_WINDOW_FULLSCREEN, primaryStage.isFullScreen()),
-              maximized  = appPrefs.getBoolean(PREF_KEY_WINDOW_MAXIMIZED,  primaryStage.isMaximized());
+    scene.setOnScrollStarted(event ->
+    {
+      swipeStartTime = System.currentTimeMillis();
+      deltaX = event.getDeltaX();
+    });
 
-      primaryStage.setX(x); // set X and Y first so that window gets full-screened or
-      primaryStage.setY(y); // maximized onto the correct monitor if there are more than one
+    scene.setOnScroll(event -> deltaX = deltaX + event.getDeltaX());
 
-      if      (fullScreen) primaryStage.setFullScreen(true);
-      else if (maximized)  primaryStage.setMaximized(true);
-      else
+    scene.setOnScrollFinished(event ->
+    {
+      double swipeTime = System.currentTimeMillis() - swipeStartTime;
+
+      if (swipeTime < 200)
       {
-        primaryStage.setWidth(width);
-        primaryStage.setHeight(height);
+        if      (deltaX >  500) ui.btnBackClick();
+        else if (deltaX < -500) ui.btnForwardClick();
+      }
+    });
 
-        ensureVisible(primaryStage, rootNode.getPrefWidth(), rootNode.getPrefHeight());
+    scene.addEventFilter(DragEvent.DRAG_OVER, event ->
+    {
+      if (event.getDragboard().hasContent(HYPERNOMICON_DATA_FORMAT))
+        return;
+
+      if (event.getDragboard().hasFiles())
+        event.acceptTransferModes(TransferMode.MOVE);
+
+      event.consume();
+    });
+
+    scene.addEventFilter(DragEvent.DRAG_DROPPED, event ->
+    {
+      if (event.getDragboard().hasContent(HYPERNOMICON_DATA_FORMAT))
+        return;
+
+      Dragboard board = event.getDragboard();
+
+      if (board.hasImage())
+        if (isDebugging)
+          System.out.println("has image");
+
+      if (board.hasFiles())
+      {
+        List<String> args = board.getFiles().stream().map(File::getAbsolutePath).collect(Collectors.toList());
+        Platform.runLater(() -> ui.handleArgs(args));
+        event.setDropCompleted(true);
       }
 
-      primaryStage.show();
+      event.consume();
+    });
 
-      scaleNodeForDPI(rootNode);
-      MainTextWrapper.rescale();
-      getHyperTab(personTabEnum).rescale();
+    primaryStage.setScene(scene);
 
-      forEachHyperTab(HyperTab::setDividerPositions);
+    primaryStage.getIcons().addAll(Stream.of("16x16", "32x32", "48x48", "64x64", "128x128", "256x256")
+                                         .map(str -> new Image(App.class.getResourceAsStream("resources/images/logo-" + str + ".png")))
+                                         .collect(Collectors.toList()));
+    ui.hideFindTable();
 
-      bibManagerDlg = BibManager.create();
+    initScaling(rootNode);
 
-      bibManagerDlg.getStage().setX(appPrefs.getDouble(PREF_KEY_BM_WINDOW_X, bibManagerDlg.getStage().getX()));
-      bibManagerDlg.getStage().setY(appPrefs.getDouble(PREF_KEY_BM_WINDOW_Y, bibManagerDlg.getStage().getY()));
+    double  x          = appPrefs.getDouble (PREF_KEY_WINDOW_X,          primaryStage.getX()),
+            y          = appPrefs.getDouble (PREF_KEY_WINDOW_Y,          primaryStage.getY()),
+            width      = appPrefs.getDouble (PREF_KEY_WINDOW_WIDTH,      primaryStage.getWidth()),
+            height     = appPrefs.getDouble (PREF_KEY_WINDOW_HEIGHT,     primaryStage.getHeight());
+    boolean fullScreen = appPrefs.getBoolean(PREF_KEY_WINDOW_FULLSCREEN, primaryStage.isFullScreen()),
+            maximized  = appPrefs.getBoolean(PREF_KEY_WINDOW_MAXIMIZED,  primaryStage.isMaximized());
 
-      bibManagerDlg.setInitHeight(PREF_KEY_BM_WINDOW_HEIGHT);
-      bibManagerDlg.setInitWidth(PREF_KEY_BM_WINDOW_WIDTH);
+    primaryStage.setX(x); // set X and Y first so that window gets full-screened or
+    primaryStage.setY(y); // maximized onto the correct monitor if there are more than one
 
-      db.addBibChangedHandler(() ->
-      {
-        bibManagerDlg.setLibrary(db.getBibLibrary());
-
-        if ((db.bibLibraryIsLinked() == false) && bibManagerDlg.getStage().isShowing())
-          bibManagerDlg.getStage().close();
-
-        ui.updateBibImportMenus();
-
-        if (db.isLoaded())
-          ui.update();
-      });
-
-      fileManagerDlg = FileManager.create();
-
-      fileManagerDlg.getStage().setX(appPrefs.getDouble(PREF_KEY_FM_WINDOW_X, fileManagerDlg.getStage().getX()));
-      fileManagerDlg.getStage().setY(appPrefs.getDouble(PREF_KEY_FM_WINDOW_Y, fileManagerDlg.getStage().getY()));
-
-      fileManagerDlg.setInitHeight(PREF_KEY_FM_WINDOW_HEIGHT);
-      fileManagerDlg.setInitWidth(PREF_KEY_FM_WINDOW_WIDTH);
-
-      previewWindow = PreviewWindow.create();
-
-      previewWindow.getStage().setX(appPrefs.getDouble(PREF_KEY_PREV_WINDOW_X, previewWindow.getStage().getX()));
-      previewWindow.getStage().setY(appPrefs.getDouble(PREF_KEY_PREV_WINDOW_Y, previewWindow.getStage().getY()));
-
-      previewWindow.setInitWidth(PREF_KEY_PREV_WINDOW_WIDTH);
-      previewWindow.setInitHeight(PREF_KEY_PREV_WINDOW_HEIGHT);
-
-      contentsWindow = ContentsWindow.create();
-
-      contentsWindow.getStage().setX(appPrefs.getDouble(PREF_KEY_CONTENTS_WINDOW_X, contentsWindow.getStage().getX()));
-      contentsWindow.getStage().setY(appPrefs.getDouble(PREF_KEY_CONTENTS_WINDOW_Y, contentsWindow.getStage().getY()));
-
-      contentsWindow.setInitWidth(PREF_KEY_CONTENTS_WINDOW_WIDTH);
-      contentsWindow.setInitHeight(PREF_KEY_CONTENTS_WINDOW_HEIGHT);
-    }
-    catch(IOException e)
+    if      (fullScreen) primaryStage.setFullScreen(true);
+    else if (maximized)  primaryStage.setMaximized(true);
+    else
     {
-      messageDialog("Initialization error: " + e.getMessage(), mtError);
+      primaryStage.setWidth(width);
+      primaryStage.setHeight(height);
 
-      if (ui != null)
-        ui.shutDown(false, false, false);
-      else
-        Platform.exit();
+      ensureVisible(primaryStage, rootNode.getPrefWidth(), rootNode.getPrefHeight());
     }
 
-    return true;
+    primaryStage.show();
+
+    scaleNodeForDPI(rootNode);
+    MainTextWrapper.rescale();
+    getHyperTab(personTabEnum).rescale();
+
+    forEachHyperTab(HyperTab::setDividerPositions);
+
+    bibManagerDlg = BibManager.create();
+
+    bibManagerDlg.getStage().setX(appPrefs.getDouble(PREF_KEY_BM_WINDOW_X, bibManagerDlg.getStage().getX()));
+    bibManagerDlg.getStage().setY(appPrefs.getDouble(PREF_KEY_BM_WINDOW_Y, bibManagerDlg.getStage().getY()));
+
+    bibManagerDlg.setInitHeight(PREF_KEY_BM_WINDOW_HEIGHT);
+    bibManagerDlg.setInitWidth(PREF_KEY_BM_WINDOW_WIDTH);
+
+    db.addBibChangedHandler(() ->
+    {
+      bibManagerDlg.setLibrary(db.getBibLibrary());
+
+      if ((db.bibLibraryIsLinked() == false) && bibManagerDlg.getStage().isShowing())
+        bibManagerDlg.getStage().close();
+
+      ui.updateBibImportMenus();
+
+      if (db.isLoaded())
+        ui.update();
+    });
+
+    fileManagerDlg = FileManager.create();
+
+    fileManagerDlg.getStage().setX(appPrefs.getDouble(PREF_KEY_FM_WINDOW_X, fileManagerDlg.getStage().getX()));
+    fileManagerDlg.getStage().setY(appPrefs.getDouble(PREF_KEY_FM_WINDOW_Y, fileManagerDlg.getStage().getY()));
+
+    fileManagerDlg.setInitHeight(PREF_KEY_FM_WINDOW_HEIGHT);
+    fileManagerDlg.setInitWidth(PREF_KEY_FM_WINDOW_WIDTH);
+
+    previewWindow = PreviewWindow.create();
+
+    previewWindow.getStage().setX(appPrefs.getDouble(PREF_KEY_PREV_WINDOW_X, previewWindow.getStage().getX()));
+    previewWindow.getStage().setY(appPrefs.getDouble(PREF_KEY_PREV_WINDOW_Y, previewWindow.getStage().getY()));
+
+    previewWindow.setInitWidth(PREF_KEY_PREV_WINDOW_WIDTH);
+    previewWindow.setInitHeight(PREF_KEY_PREV_WINDOW_HEIGHT);
+
+    contentsWindow = ContentsWindow.create();
+
+    contentsWindow.getStage().setX(appPrefs.getDouble(PREF_KEY_CONTENTS_WINDOW_X, contentsWindow.getStage().getX()));
+    contentsWindow.getStage().setY(appPrefs.getDouble(PREF_KEY_CONTENTS_WINDOW_Y, contentsWindow.getStage().getY()));
+
+    contentsWindow.setInitWidth(PREF_KEY_CONTENTS_WINDOW_WIDTH);
+    contentsWindow.setInitHeight(PREF_KEY_CONTENTS_WINDOW_HEIGHT);
   }
 
 //---------------------------------------------------------------------------
