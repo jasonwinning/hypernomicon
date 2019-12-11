@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Tab;
@@ -336,7 +337,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
   private void saveObjectGroups(Tag tag, RelationType relType)
   {
-    HashMap<Integer, Tag> colNdxToTag = new HashMap<>();
+    Map<Integer, Tag> colNdxToTag = new HashMap<>();
     colNdxToTag.put(4, tag);
 
     List<ObjectGroup> tableGroups  = htParents.getObjectGroupList(curArgument, relType, 3, colNdxToTag);

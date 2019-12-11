@@ -18,6 +18,7 @@
 package org.hypernomicon.view.dialogs;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.hypernomicon.view.wrappers.ResultsTable.ColumnGroup;
 import javafx.fxml.FXML;
@@ -37,7 +38,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
   public static class TypeCheckBox extends CheckBox
   {
     private TypeCheckBox(String caption) { super(caption); }
-    private ArrayList<CheckBox> children = new ArrayList<>();
+    private List<CheckBox> children = new ArrayList<>();
   }
 
 //---------------------------------------------------------------------------

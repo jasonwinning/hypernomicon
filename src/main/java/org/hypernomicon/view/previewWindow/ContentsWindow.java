@@ -25,6 +25,8 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.util.ArrayList;
+import java.util.List;
+
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -184,7 +186,7 @@ public class ContentsWindow extends HyperDlg
 
     dialogStage.setTitle(dialogTitle + " - " + workFile.getPath().getNameStr());
 
-    ArrayList<HDT_Work> works = new ArrayList<>(workFile.works);
+    List<HDT_Work> works = new ArrayList<>(workFile.works);
 
     works.sort((work1, work2) ->
     {

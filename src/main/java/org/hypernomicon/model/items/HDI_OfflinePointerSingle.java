@@ -27,7 +27,6 @@ import static org.hypernomicon.model.records.HDT_RecordState.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.hypernomicon.model.HyperDB.*;
@@ -53,7 +52,7 @@ public class HDI_OfflinePointerSingle extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, LinkedHashMap<Tag, HDI_OfflineBase> nestedItems)
+  @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
   {
     this.objID = objID;
 

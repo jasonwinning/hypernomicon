@@ -232,8 +232,8 @@ public class MainText
 
     displayItems = Collections.synchronizedList(new ArrayList<>(src1.displayItems));
 
-    ArrayList<Connector> src1Connectors = new ArrayList<>(),
-                         src2Connectors = new ArrayList<>();
+    List<Connector> src1Connectors = new ArrayList<>(),
+                    src2Connectors = new ArrayList<>();
 
     if (src1.getRecord().getType() == hdtHub)
     {
@@ -499,7 +499,7 @@ public class MainText
   public Set<Connector> getDisplayers()
   {
     Set<MainText> displayers = db.getDisplayers(this);
-    HashSet<Connector> displayerConns = new HashSet<>();
+    Set<Connector> displayerConns = new HashSet<>();
 
     displayers.forEach(displayerText ->
     {

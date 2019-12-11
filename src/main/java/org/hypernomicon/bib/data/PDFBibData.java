@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 import org.apache.commons.io.FilenameUtils;
@@ -94,8 +95,8 @@ public class PDFBibData extends BibDataStandalone
     private final XMPNode parent;
     private final XMPMeta xmpMeta;
     private final XMPPropertyInfo propInfo;
-    private final LinkedHashMap<String, LinkedHashMap<String, XMPNode>> prefixToNameToChild = new LinkedHashMap<>();
-    private final ArrayList<XMPNode> elements = new ArrayList<>();
+    private final Map<String, Map<String, XMPNode>> prefixToNameToChild = new LinkedHashMap<>();
+    private final List<XMPNode> elements = new ArrayList<>();
     private final String ns, path, value, prefix, name;
     private final int arrayNdx;
 
@@ -161,7 +162,7 @@ public class PDFBibData extends BibDataStandalone
 
       if (subPath.contains(":"))
       {
-        LinkedHashMap<String, XMPNode> nameToChild;
+        Map<String, XMPNode> nameToChild;
 
         if (prefixToNameToChild.containsKey(parts.prefix) == false)
         {
@@ -194,7 +195,7 @@ public class PDFBibData extends BibDataStandalone
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    private void addCsvLines(ArrayList<String> csvFile)
+    private void addCsvLines(List<String> csvFile)
     {
       String line = "";
 
@@ -517,7 +518,7 @@ public class PDFBibData extends BibDataStandalone
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public void addCsvLines(ArrayList<String> csvFile)
+  public void addCsvLines(List<String> csvFile)
   {
     if (xmpRoot != null) xmpRoot.addCsvLines(csvFile);
   }
@@ -527,7 +528,7 @@ public class PDFBibData extends BibDataStandalone
 
   public static BibData createFromFiles(List<FilePath> filePaths) throws IOException
   {
-    ArrayList<FilePath> pdfFilePaths = new ArrayList<>(filePaths);
+    List<FilePath> pdfFilePaths = new ArrayList<>(filePaths);
 
     pdfFilePaths.removeIf(filePath -> (FilePath.isEmpty(filePath) || (filePath.exists() == false) ||
                                        (getMediaType(filePath).toString().contains("pdf") == false)));

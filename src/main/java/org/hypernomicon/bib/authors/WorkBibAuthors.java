@@ -17,7 +17,7 @@
 
 package org.hypernomicon.bib.authors;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.model.records.HDT_Work;
@@ -33,7 +33,7 @@ public class WorkBibAuthors extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getLists(ArrayList<BibAuthor> authorList, ArrayList<BibAuthor> editorList, ArrayList<BibAuthor> translatorList)
+  @Override public void getLists(List<BibAuthor> authorList, List<BibAuthor> editorList, List<BibAuthor> translatorList)
   {
     authorList    .clear();
     editorList    .clear();

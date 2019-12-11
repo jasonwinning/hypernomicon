@@ -98,7 +98,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
 
   public static String makeFileName(List<FileNameAuthor> authors, String year, String title, String ext)
   {
-    ArrayList<FileNameComponentConfig> configList = new ArrayList<>();
+    List<FileNameComponentConfig> configList = new ArrayList<>();
 
     String fileName = "";
 

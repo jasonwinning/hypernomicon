@@ -17,7 +17,7 @@
 
 package org.hypernomicon.model.items;
 
-import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
@@ -34,7 +34,7 @@ public abstract class HDI_OfflineBase extends HDI_Base
     this.recordState = recordState;
   }
 
-  public abstract void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, LinkedHashMap<Tag, HDI_OfflineBase> nestedItems);
+  public abstract void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems);
 
   public abstract void writeToXml(Tag tag, StringBuilder xml);
 }

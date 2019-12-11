@@ -390,7 +390,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
           newStr = "";
         else
         {
-          ArrayList<String> list2 = new ArrayList<>(list);
+          List<String> list2 = new ArrayList<>(list);
           removeDupsInStrList(list2);
           newStr = ultraTrim(convertToSingleLine(strListToStr(list2, false)));
         }
@@ -484,9 +484,9 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
   private boolean authorsChanged()
   {
-    ArrayList<BibAuthor> authorList1     = new ArrayList<>(), authorList2     = new ArrayList<>(),
-                         editorList1     = new ArrayList<>(), editorList2     = new ArrayList<>(),
-                         translatorList1 = new ArrayList<>(), translatorList2 = new ArrayList<>();
+    List<BibAuthor> authorList1     = new ArrayList<>(), authorList2     = new ArrayList<>(),
+                    editorList1     = new ArrayList<>(), editorList2     = new ArrayList<>(),
+                    translatorList1 = new ArrayList<>(), translatorList2 = new ArrayList<>();
 
     getAuthors().getLists(authorList1, editorList1, translatorList1);
     backupItem.getAuthors().getLists(authorList2, editorList2, translatorList2);
@@ -576,9 +576,9 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
         BibAuthors authors = getAuthors();
 
-        ArrayList<BibAuthor> authorList = new ArrayList<>(),
-                             editorList = new ArrayList<>(),
-                             translatorList = new ArrayList<>();
+        List<BibAuthor> authorList = new ArrayList<>(),
+                        editorList = new ArrayList<>(),
+                        translatorList = new ArrayList<>();
 
         authors.getLists(authorList, editorList, translatorList);
 

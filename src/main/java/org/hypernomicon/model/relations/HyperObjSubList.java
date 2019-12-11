@@ -29,8 +29,6 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extend
   private final int startNdx;
   private int endNdx;
 
-  @Override Exception getLastException() { return parentList.getLastException(); }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -119,7 +117,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extend
 
     parentList.add(endNdx, e);
 
-    if (parentList.getLastException() == null)
+    if (parentList.lastException == null)
     {
       endNdx++;
       return true;

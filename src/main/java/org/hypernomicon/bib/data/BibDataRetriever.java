@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -50,7 +51,7 @@ public class BibDataRetriever
   private final List<FilePath> pdfFiles;
   private final BiConsumer<BibData, BibData> doneHndlr;
   private final boolean queryCrossref, queryGoogle;
-  private final HashSet<String> alreadyCheckedIDs = new HashSet<>();
+  private final Set<String> alreadyCheckedIDs = new HashSet<>();
 
   public BibDataRetriever(AsyncHttpClient httpClient, BibData workBD, WorkTypeEnum workTypeEnum, List<ObjectGroup> authorGroups,
                           List<FilePath> pdfFiles, BiConsumer<BibData, BibData> doneHndlr)

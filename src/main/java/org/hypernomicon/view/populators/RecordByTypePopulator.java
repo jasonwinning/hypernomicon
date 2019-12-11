@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 import static org.hypernomicon.model.HyperDB.*;
@@ -39,9 +40,9 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class RecordByTypePopulator extends Populator
 {
-  private final HashMap<HyperTableRow, HDT_RecordType> rowToRecordType = new HashMap<>();
-  private final HashMap<HyperTableRow, Boolean> rowToChanged = new HashMap<>();
-  private final HashMap<HyperTableRow, List<HyperTableCell>> rowToChoices = new HashMap<>();
+  private final Map<HyperTableRow, HDT_RecordType> rowToRecordType = new HashMap<>();
+  private final Map<HyperTableRow, Boolean> rowToChanged = new HashMap<>();
+  private final Map<HyperTableRow, List<HyperTableCell>> rowToChoices = new HashMap<>();
   private final boolean nameOnly;
 
 //---------------------------------------------------------------------------
@@ -92,7 +93,7 @@ public class RecordByTypePopulator extends Populator
 
   // If num = 5, returns a list of the 5 most recently viewed records
 
-  private ArrayList<Integer> getRecent(HDT_RecordType recordType, int num)
+  private List<Integer> getRecent(HDT_RecordType recordType, int num)
   {
     Instant dates[] = new Instant[num];
     int ids[] = new int[num], pos[] = new int[num], revPos[] = new int[num];
@@ -142,7 +143,7 @@ public class RecordByTypePopulator extends Populator
       }
     }
 
-    ArrayList<Integer> recent = new ArrayList<>();
+    List<Integer> recent = new ArrayList<>();
 
     for (int ndx = 0; ndx < num; ndx++)
     {
@@ -178,7 +179,7 @@ public class RecordByTypePopulator extends Populator
 
     if (recordType == hdtNone) return choices;
 
-    HashMap<Integer, Boolean> map = new HashMap<>();
+    Map<Integer, Boolean> map = new HashMap<>();
     boolean firstAdd = true;
 
     if (recordType.getDisregardDates() == false)

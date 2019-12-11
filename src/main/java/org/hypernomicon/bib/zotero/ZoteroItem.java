@@ -390,7 +390,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
       case bfContainerTitle :
 
-        String                            containerTitle = jData.getStrSafe("publicationTitle");
+        String                        containerTitle = jData.getStrSafe("publicationTitle");
         if (containerTitle.isEmpty()) containerTitle = jData.getStrSafe("bookTitle");
         if (containerTitle.isEmpty()) containerTitle = jData.getStrSafe("seriesTitle");
 
@@ -424,9 +424,9 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
   private boolean authorsChanged()
   {
-    ArrayList<BibAuthor> authorList1     = new ArrayList<>(), authorList2     = new ArrayList<>(),
-                         editorList1     = new ArrayList<>(), editorList2     = new ArrayList<>(),
-                         translatorList1 = new ArrayList<>(), translatorList2 = new ArrayList<>();
+    List<BibAuthor> authorList1     = new ArrayList<>(), authorList2     = new ArrayList<>(),
+                    editorList1     = new ArrayList<>(), editorList2     = new ArrayList<>(),
+                    translatorList1 = new ArrayList<>(), translatorList2 = new ArrayList<>();
 
     getAuthors().getLists(authorList1, editorList1, translatorList1);
     backupItem.getAuthors().getLists(authorList2, editorList2, translatorList2);
@@ -553,9 +553,9 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
         BibAuthors authors = getAuthors();
 
-        ArrayList<BibAuthor> authorList = new ArrayList<>(),
-                             editorList = new ArrayList<>(),
-                             translatorList = new ArrayList<>();
+        List<BibAuthor> authorList = new ArrayList<>(),
+                        editorList = new ArrayList<>(),
+                        translatorList = new ArrayList<>();
 
         authors.getLists(authorList, editorList, translatorList);
 

@@ -19,7 +19,7 @@ package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.Tag.*;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
@@ -42,7 +42,7 @@ public class HDI_OnlinePersonName extends HDI_OnlineBase<HDI_OfflinePersonName>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
   {
     if (tag == tagLastName)
       list.add(record.listName());

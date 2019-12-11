@@ -20,6 +20,7 @@ package org.hypernomicon;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
@@ -57,7 +58,7 @@ class InterProcDaemon extends Thread
 
           if (numArgs > 0)
           {
-            ArrayList<String> args = new ArrayList<>();
+            List<String> args = new ArrayList<>();
 
             for (int ndx = 0; ndx < numArgs; ndx++)
             {

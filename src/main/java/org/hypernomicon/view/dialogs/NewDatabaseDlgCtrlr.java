@@ -19,6 +19,7 @@ package org.hypernomicon.view.dialogs;
 
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.util.filePath.FilePath;
@@ -167,9 +168,9 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HashMap<String, String> getFolders()
+  public Map<String, String> getFolders()
   {
-    HashMap<String, String> folders = new HashMap<>();
+    Map<String, String> folders = new HashMap<>();
 
     folders.put(PREF_KEY_PICTURES_PATH  , ultraTrim(tfPictures    .getText()));
     folders.put(PREF_KEY_BOOKS_PATH     , ultraTrim(tfBooks       .getText()));

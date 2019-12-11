@@ -63,13 +63,13 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_Record>
 {
-  private final HashSet<HDT_Subj> orphans = new HashSet<>();
+  private final Set<HDT_Subj> orphans = new HashSet<>();
   private ArrayListMultimap<HDT_Obj, HDT_Subj> objToSubjList = ArrayListMultimap.create();
   private ArrayListMultimap<HDT_Subj, HDT_Obj> subjToObjList = ArrayListMultimap.create();
-  private final HashBasedTable<HDT_Subj, HDT_Obj, LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> objectGroups = HashBasedTable.create();
-  private final LinkedHashMap<Tag, HDI_Schema> tagToSchema = new LinkedHashMap<>();
+  private final HashBasedTable<HDT_Subj, HDT_Obj, Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> objectGroups = HashBasedTable.create();
+  private final Map<Tag, HDI_Schema> tagToSchema = new LinkedHashMap<>();
   private final Map<Tag, HDT_RecordType> tagToTargetType = new EnumMap<>(Tag.class);
-  private final ArrayList<RelationChangeHandler> changeHandlers = new ArrayList<>();
+  private final List<RelationChangeHandler> changeHandlers = new ArrayList<>();
 
   private static final EnumMap<HDT_RecordType, Set<RelationSet<? extends HDT_Record, ? extends HDT_Record>>> orphanTypeToRelSets = new EnumMap<>(HDT_RecordType.class);
   private static final EnumBasedTable<HDT_RecordType, HDT_RecordType, RelationType> typeMappings = new EnumBasedTable<>(HDT_RecordType.class, HDT_RecordType.class);
@@ -252,7 +252,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   @SuppressWarnings({ "unchecked" })
   public void saveNestedValuesToOfflineMap(HDT_Subj subj, HDT_Obj obj, Map<Tag, HDI_OfflineBase> tagToNestedItem, HDT_RecordState recordState)
   {
-    LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items = objectGroups.get(subj, obj);
+    Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items = objectGroups.get(subj, obj);
     if (items == null) return;
 
     items.forEach((tag, onlineItem) ->
@@ -396,13 +396,13 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public List<ObjectGroup> getObjectGroupList(HDT_Subj subj, Collection<Tag> tags)
   {
-    ArrayList<ObjectGroup> list = new ArrayList<>();
+    List<ObjectGroup> list = new ArrayList<>();
     Set<HDT_Obj> objSet = new LinkedHashSet<>();
 
     if (subjToObjList.containsKey(subj))
       objSet.addAll(subjToObjList.get(subj));
 
-    Map<HDT_Obj, LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> objToObjItems = objectGroups.row(subj);
+    Map<HDT_Obj, Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> objToObjItems = objectGroups.row(subj);
 
     objToObjItems.forEach((primary, items) ->
     {
@@ -436,7 +436,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   private <HDI_Offline extends HDI_OfflineBase, HDI_Online extends HDI_OnlineBase<HDI_Offline>>
                 HDI_Online getNestedItem(HDT_Subj subj, HDT_Obj obj, Tag tag, boolean noCreate)
   {
-    LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items = objectGroups.get(subj, obj);
+    Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items = objectGroups.get(subj, obj);
 
     if (items == null)
     {
@@ -674,11 +674,11 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     if (hasNestedItems == false) return;
 
-    Iterator<Cell<HDT_Subj, HDT_Obj, LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>>> cellIt = objectGroups.cellSet().iterator();
+    Iterator<Cell<HDT_Subj, HDT_Obj, Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>>> cellIt = objectGroups.cellSet().iterator();
 
     while (cellIt.hasNext())
     {
-      Cell<HDT_Subj, HDT_Obj, LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> cell = cellIt.next();
+      Cell<HDT_Subj, HDT_Obj, Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> cell = cellIt.next();
 
       if      (HDT_Record.isEmptyThrowsException(cell.getRowKey()))    cellIt.remove();
       else if (HDT_Record.isEmptyThrowsException(cell.getColumnKey())) cellIt.remove();
@@ -715,7 +715,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       }
       else if (hasNestedItems)
       {
-        LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> nestedItemMap = objectGroups.get(subj, obj);
+        Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> nestedItemMap = objectGroups.get(subj, obj);
         if (nestedItemMap != null)
         {
           for (HDI_OnlineBase<? extends HDI_OfflineBase> nestedItem : nestedItemMap.values())
@@ -779,7 +779,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     private final int code;
     private final String title, subjTitle;
     private Tag subjTag;
-    private static final HashMap<Integer, RelationType> codeToVal;
+    private static final Map<Integer, RelationType> codeToVal;
 
   //---------------------------------------------------------------------------
 
@@ -845,10 +845,10 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void reorderObjects (HDT_Subj subj, ArrayList<HDT_Obj>  newObjList)  { reorderList(subj, newObjList,  subjToObjList); }
-  void reorderSubjects(HDT_Obj   obj, ArrayList<HDT_Subj> newSubjList) { reorderList(obj,  newSubjList, objToSubjList); }
+  void reorderObjects (HDT_Subj subj, List<HDT_Obj>  newObjList)  { reorderList(subj, newObjList,  subjToObjList); }
+  void reorderSubjects(HDT_Obj   obj, List<HDT_Subj> newSubjList) { reorderList(obj,  newSubjList, objToSubjList); }
 
-  private <HDT_Key extends HDT_Record, HDT_Value extends HDT_Record> void reorderList(HDT_Key key, ArrayList<HDT_Value> newValueList, ArrayListMultimap<HDT_Key, HDT_Value> map)
+  private <HDT_Key extends HDT_Record, HDT_Value extends HDT_Record> void reorderList(HDT_Key key, List<HDT_Value> newValueList, ArrayListMultimap<HDT_Key, HDT_Value> map)
   {
     if (key == null) throw new NullPointerException();
 

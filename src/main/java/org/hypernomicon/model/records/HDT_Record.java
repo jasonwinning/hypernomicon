@@ -22,7 +22,6 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -68,7 +67,7 @@ public interface HDT_Record
   boolean isDummy();
   boolean changeID(int newID);
 
-  void getAllStrings(ArrayList<String> list, boolean searchLinkedRecords);
+  void getAllStrings(List<String> list, boolean searchLinkedRecords);
   String name();
   Tag getNameTag();
   void setName(String str);

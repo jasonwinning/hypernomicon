@@ -27,6 +27,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -70,7 +71,7 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
   @Override public void setFromOfflineValue(HDI_OfflinePointerMulti val, Tag tag) throws RelationCycleException
   {
     HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
-    ArrayList<HDT_Record> newList = new ArrayList<>();
+    List<HDT_Record> newList = new ArrayList<>();
 
     HDT_RecordType objType = db.getObjType(relType);
 
@@ -104,7 +105,7 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
   {
     if (searchLinkedRecords)
       db.getObjectList(relType, record, false).forEach(objRecord -> list.add(objRecord.listName()));

@@ -22,6 +22,7 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 import org.hypernomicon.model.records.HDT_Record;
@@ -34,8 +35,8 @@ public class HybridSubjectPopulator extends Populator
 {
   private final StandardPopulator standardPop;
   private final SubjectPopulator subjPop;
-  private final HashMap<HyperTableRow, Populator> rowToPop;
-  private final HashMap<HyperTableRow, Boolean> rowToChanged;
+  private final Map<HyperTableRow, Populator> rowToPop;
+  private final Map<HyperTableRow, Boolean> rowToChanged;
   private final RelationType relType;
 
 //---------------------------------------------------------------------------

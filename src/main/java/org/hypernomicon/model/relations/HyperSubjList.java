@@ -17,7 +17,6 @@
 
 package org.hypernomicon.model.relations;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -166,7 +165,7 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void reorder(ArrayList<HDT_SubjType> list, boolean modTracking)
+  public void reorder(List<HDT_SubjType> list, boolean modTracking)
   {
     boolean changed = false;
 

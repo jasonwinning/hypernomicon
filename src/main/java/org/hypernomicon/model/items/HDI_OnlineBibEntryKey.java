@@ -17,7 +17,7 @@
 
 package org.hypernomicon.model.items;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
@@ -86,7 +86,7 @@ public class HDI_OnlineBibEntryKey extends HDI_OnlineBase<HDI_OfflineString>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords) { }
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords) { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

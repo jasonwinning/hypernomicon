@@ -38,7 +38,7 @@ import org.hypernomicon.model.items.*;
 
 public class HDT_RecordState
 {
-  public LinkedHashMap<Tag, HDI_OfflineBase> items;
+  public Map<Tag, HDI_OfflineBase> items;
   private static final String QUOTE = "\"";
 
   public int id;
@@ -125,7 +125,7 @@ public class HDT_RecordState
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void loadItemFromXML(Tag tag, String nodeText, HDT_RecordType objType, int objID, LinkedHashMap<Tag, HDI_OfflineBase> nestedItems) throws InvalidItemException
+  public void loadItemFromXML(Tag tag, String nodeText, HDT_RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems) throws InvalidItemException
   {
     stored = true;
 

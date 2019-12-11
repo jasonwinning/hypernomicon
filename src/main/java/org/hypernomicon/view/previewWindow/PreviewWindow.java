@@ -25,6 +25,7 @@ import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import com.melloware.jintellitype.JIntellitype;
 import com.teamdev.jxbrowser.chromium.BrowserCore;
@@ -83,9 +84,9 @@ public class PreviewWindow extends HyperDlg
 
   public boolean disablePreviewUpdating = false;
 
-  private final HashMap<PreviewSource, PreviewWrapper> srcToWrapper = new HashMap<>();
-  private final HashMap<PreviewSource, PreviewSetting> srcToSetting = new HashMap<>();
-  private static final HashMap<Tab, PreviewWrapper> tabToWrapper = new HashMap<>();
+  private final Map<PreviewSource, PreviewWrapper> srcToWrapper = new HashMap<>();
+  private final Map<PreviewSource, PreviewSetting> srcToSetting = new HashMap<>();
+  private static final Map<Tab, PreviewWrapper> tabToWrapper = new HashMap<>();
   private ClickHoldButton chbBack, chbForward;
 
   public void clearAll()                         { tabToWrapper.values().forEach(PreviewWrapper::reset); clearControls(); }

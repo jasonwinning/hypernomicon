@@ -20,6 +20,7 @@ package org.hypernomicon.queryEngines;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
@@ -58,7 +59,7 @@ public abstract class QueryEngine<HDT_T extends HDT_Record>
     private final int code;
     private final String caption;
     private final HDT_RecordType recordType;
-    private static final HashMap<Integer, QueryType> codeToValMap = new HashMap<>();
+    private static final Map<Integer, QueryType> codeToValMap = new HashMap<>();
     private static final EnumMap<QueryType, HDT_RecordType> queryTypeToRecordType;
     private static final EnumMap<HDT_RecordType, QueryType> recordTypeToQueryType;
 

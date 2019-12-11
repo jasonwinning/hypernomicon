@@ -17,7 +17,7 @@
 
 package org.hypernomicon.bib.zotero;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 
 import com.google.common.collect.ImmutableTable;
@@ -84,7 +84,7 @@ public class ZoteroAuthors extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getLists(ArrayList<BibAuthor> authorList, ArrayList<BibAuthor> editorList, ArrayList<BibAuthor> translatorList)
+  @Override public void getLists(List<BibAuthor> authorList, List<BibAuthor> editorList, List<BibAuthor> translatorList)
   {
     authorList.clear();
     editorList.clear();
@@ -95,7 +95,7 @@ public class ZoteroAuthors extends BibAuthors
       AuthorType aType = getAuthorTypeForStr(creatorObj.getStrSafe("creatorType"));
       if ((aType == null) || ((aType == editor) && ignoreEditors())) return;
 
-      ArrayList<BibAuthor> list = null;
+      List<BibAuthor> list = null;
 
       switch (aType)
       {

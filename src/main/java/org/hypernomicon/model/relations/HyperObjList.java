@@ -37,8 +37,6 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
   protected final boolean modTracking;
   private final List<HDT_ObjType> before = new ArrayList<>();
 
-  Exception getLastException() { return lastException; }
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -463,7 +461,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void reorder(ArrayList<HDT_ObjType> list)
+  public void reorder(List<HDT_ObjType> list)
   {
     boolean changed = false;
 

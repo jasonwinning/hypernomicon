@@ -31,7 +31,8 @@ import static org.hypernomicon.model.HyperDB.Tag.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class HDI_OfflineConnector extends HDI_OfflineBase
@@ -62,11 +63,11 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 
   int hubID;
   String htmlText;
-  final ArrayList<DisplayItem> displayItems;
-  final ArrayList<KeyWork> keyWorks;
-  final HashMap<HDT_RecordType, Set<Integer>> usedKeyWorks;
+  final List<DisplayItem> displayItems;
+  final List<KeyWork> keyWorks;
+  final Map<HDT_RecordType, Set<Integer>> usedKeyWorks;
 
-  private static HashMap<String, DisplayItemType> strToItemType = null;
+  private static Map<String, DisplayItemType> strToItemType = null;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -102,7 +103,7 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, LinkedHashMap<Tag, HDI_OfflineBase> nestedItems)
+  @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
   {
     switch (tag)
     {

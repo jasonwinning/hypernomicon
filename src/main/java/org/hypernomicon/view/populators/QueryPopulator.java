@@ -23,6 +23,7 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.queryEngines.QueryEngine.QueryType;
@@ -33,8 +34,8 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class QueryPopulator extends Populator
 {
-  private final HashMap<HyperTableRow, QueryType> rowToQueryType;
-  private final HashMap<HyperTableRow, List<HyperTableCell>> rowToChoices;
+  private final Map<HyperTableRow, QueryType> rowToQueryType;
+  private final Map<HyperTableRow, List<HyperTableCell>> rowToChoices;
 
   @Override public CellValueType getValueType() { return cvtQuery; }
 

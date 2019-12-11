@@ -19,6 +19,7 @@ package org.hypernomicon.model.items;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
@@ -34,7 +35,7 @@ import static org.hypernomicon.util.Util.*;
 
 public class HDI_OfflinePointerMulti extends HDI_OfflineBase
 {
-  final ArrayList<Integer> objIDs = new ArrayList<>();
+  final List<Integer> objIDs = new ArrayList<>();
   private final RelationType relType;
   public final Map<Integer, Map<Tag, HDI_OfflineBase>> objIDtoMaps = new LinkedHashMap<>();
 
@@ -47,7 +48,7 @@ public class HDI_OfflinePointerMulti extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, LinkedHashMap<Tag, HDI_OfflineBase> nestedItems)
+  @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
   {
     objIDs.add(objID);
 

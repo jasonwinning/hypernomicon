@@ -43,14 +43,13 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_ObjType get()            { return relSet.getObjectCount(subj) == 0 ? null : relSet.getObject(subj, 0); }
-  public int getID()                  { return nullSwitch(get(), -1, HDT_Record::getID); }
-  public boolean isNull()             { return get() == null; }
-  public boolean isNotNull()          { return get() != null; }
-  public Exception getLastException() { return lastException; }
+  public HDT_ObjType get()        { return relSet.getObjectCount(subj) == 0 ? null : relSet.getObject(subj, 0); }
+  public int getID()              { return nullSwitch(get(), -1, HDT_Record::getID); }
+  public boolean isNull()         { return get() == null; }
+  public boolean isNotNull()      { return get() != null; }
 
   @SuppressWarnings("unchecked")
-  public boolean setID(int newID)     { return set(newID < 1 ? null : (HDT_ObjType) db.records(relSet.getObjType()).getByID(newID)); }
+  public boolean setID(int newID) { return set(newID < 1 ? null : (HDT_ObjType) db.records(relSet.getObjType()).getByID(newID)); }
 
   @Override public int hashCode()           { return super.hashCode(); }
   @Override public boolean equals(Object o) { return o instanceof HyperObjPointer<?, ?> ? ((HyperObjPointer<?, ?>) o).get() == get() : false; }
@@ -92,8 +91,8 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
 
   public void throwLastException() throws RelationCycleException
   {
-    if (getLastException() instanceof RelationCycleException)
-      throw (RelationCycleException) getLastException();
+    if (lastException instanceof RelationCycleException)
+      throw (RelationCycleException) lastException;
   }
 
 //---------------------------------------------------------------------------

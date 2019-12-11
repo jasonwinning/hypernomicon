@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
@@ -50,8 +51,8 @@ import javafx.scene.control.TableView;
 
 public class DupAuthorsReportEngine extends ReportEngine
 {
-  private final ArrayList<HyperTableRow> rows = new ArrayList<>();
-  private final HashMap<HyperTableRow, ImmutableSet<Author>> rowToMatch = new HashMap<>();
+  private final List<HyperTableRow> rows = new ArrayList<>();
+  private final Map<HyperTableRow, ImmutableSet<Author>> rowToMatch = new HashMap<>();
   private HyperTable ht;
 
 //---------------------------------------------------------------------------
@@ -71,7 +72,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
     if (db.isLoaded() == false) return;
 
-    LinkedHashMap<Author, List<Author>> matchMap = new LinkedHashMap<>();
+    Map<Author, List<Author>> matchMap = new LinkedHashMap<>();
     LinkedList<PersonForDupCheck> list = createListForDupCheck();
 
     PersonForDupCheck person = list.poll();
@@ -81,7 +82,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
     while (list.size() > 0)
     {
-      ArrayList<Author> matchedAuthors = new ArrayList<>();
+      List<Author> matchedAuthors = new ArrayList<>();
       doDupCheck(person, list, matchedAuthors, task, ndx, total);
 
       if (matchedAuthors.size() > 0)

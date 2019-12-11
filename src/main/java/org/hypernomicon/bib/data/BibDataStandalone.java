@@ -21,6 +21,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
@@ -38,8 +40,8 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 public abstract class BibDataStandalone extends BibData
 {
   private EntryType entryType;
-  private final LinkedHashSet<BibField> bibFields = new LinkedHashSet<>();
-  private final HashMap<BibFieldEnum, BibField> bibFieldEnumToBibField = new HashMap<>();
+  private final Set<BibField> bibFields = new LinkedHashSet<>();
+  private final Map<BibFieldEnum, BibField> bibFieldEnumToBibField = new HashMap<>();
   protected YearType yearType;      // Internally-used descriptor indicates where year field came from for purposes of determining priority
   final BibAuthorsStandalone authors = new BibAuthorsStandalone();
 

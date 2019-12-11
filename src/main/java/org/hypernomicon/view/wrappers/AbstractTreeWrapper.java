@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view.wrappers;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.hypernomicon.model.records.HDT_Record;
 
@@ -37,7 +37,7 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
   public abstract SelectionModel<TreeItem<RowType>> getSelectionModel();
   public abstract void scrollToNdx(int ndx);
   public abstract void clear();
-  public abstract ArrayList<RowType> getRowsForRecord(HDT_Record record); // should never return null
+  public abstract List<RowType> getRowsForRecord(HDT_Record record); // should never return null
   public abstract void focusOnTreeCtrl();
   public abstract void expandMainBranches();
 
@@ -77,7 +77,7 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
 
     if (ndx == -1) ndx = 0;
 
-    ArrayList<RowType> list = getRowsForRecord(record);
+    List<RowType> list = getRowsForRecord(record);
     if (list.isEmpty()) return;
 
     if (list.size() <= ndx) ndx = 0;

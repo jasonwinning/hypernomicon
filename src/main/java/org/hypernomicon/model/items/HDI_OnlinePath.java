@@ -24,7 +24,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.rtNone;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
@@ -112,7 +112,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
   {
     if (hyperPath.isNotEmpty())
       list.add(hyperPath.getFileName().getNameOnly().toString());

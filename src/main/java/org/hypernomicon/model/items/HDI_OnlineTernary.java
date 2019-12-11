@@ -17,7 +17,7 @@
 
 package org.hypernomicon.model.items;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
@@ -33,10 +33,10 @@ public class HDI_OnlineTernary extends HDI_OnlineBase<HDI_OfflineTernary>
   public Ternary get()           { return value; }
   public void set(Ternary value) { this.value = value; }
 
-  @Override public void setFromOfflineValue(HDI_OfflineTernary val, Tag tag)                     { value = val.get(); }
-  @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords) { return; }
-  @Override public String getResultTextForTag(Tag tag)                                           { return value.toString(); }
-  @Override public void getToOfflineValue(HDI_OfflineTernary val, Tag tag)                       { val.value = value; }
+  @Override public void setFromOfflineValue(HDI_OfflineTernary val, Tag tag)                { value = val.get(); }
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords) { return; }
+  @Override public String getResultTextForTag(Tag tag)                                      { return value.toString(); }
+  @Override public void getToOfflineValue(HDI_OfflineTernary val, Tag tag)                  { val.value = value; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

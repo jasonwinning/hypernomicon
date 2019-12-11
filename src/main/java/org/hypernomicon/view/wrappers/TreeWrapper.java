@@ -26,6 +26,7 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.UnaryOperator;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -166,9 +167,9 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public ArrayList<TreeRow> getRowsForRecord(HDT_Record record)
+  @Override public List<TreeRow> getRowsForRecord(HDT_Record record)
   {
-    ArrayList<TreeRow> rows = new ArrayList<>();
+    List<TreeRow> rows = new ArrayList<>();
 
     rows.addAll(debateTree.getRowsForRecord(record));
     rows.addAll(noteTree  .getRowsForRecord(record));
@@ -246,7 +247,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   {
     TreeRow row = selectedItem().getValue();
 
-    ArrayList<TreeRow> list = getRowsForRecord(row.getRecord());
+    List<TreeRow> list = getRowsForRecord(row.getRecord());
     int ndx = list.indexOf(row);
 
     ndx = ndx + (increment ? 1 : -1);

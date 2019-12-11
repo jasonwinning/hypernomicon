@@ -30,7 +30,6 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.settings.LaunchCommandsDlgCtrlr.LaunchCommandTypeEnum.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -237,7 +236,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
       if (commandType == opSysCmdAndArgs)
       {
-        ArrayList<String> list = convertMultiLineStrToStrList(resolve(commands, appPath, filePath, pageNum), false);
+        List<String> list = convertMultiLineStrToStrList(resolve(commands, appPath, filePath, pageNum), false);
 
         if (list.size() > 1)
         {

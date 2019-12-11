@@ -23,7 +23,6 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.hypernomicon.HyperTask;
@@ -57,7 +56,7 @@ public class LicenseReportEngine extends ReportEngine
 
   @Override public List<HyperTableRow> getRows()
   {
-    ArrayList<HyperTableRow> rows = Lists.newArrayList(
+    List<HyperTableRow> rows = Lists.newArrayList(
       new HyperTableRow(FXCollections.observableArrayList(new HyperTableCell(-1, "LICENSE.html", hdtNone)), ht),
       new HyperTableRow(FXCollections.observableArrayList(new HyperTableCell(-1, "NOTICE.html" , hdtNone)), ht));
 

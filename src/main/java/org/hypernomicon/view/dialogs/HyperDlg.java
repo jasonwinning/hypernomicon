@@ -31,6 +31,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.Window;
 
 //---------------------------------------------------------------------------
 
@@ -76,7 +77,16 @@ public abstract class HyperDlg
       dialogStage.setResizable(resizable);
       dialogStage.initStyle(stageStyle);
 
-      dialogStage.initOwner(modality == Modality.NONE ? null : ui.windows.getOutermostStage());
+      Window owner = null;
+      if (modality != Modality.NONE)
+      {
+        owner = ui.windows.getOutermostStage();
+
+        if ((owner != null) && (owner.isShowing() == false))
+          owner = null;
+      }
+
+      dialogStage.initOwner(owner);
       dialogStage.getIcons().addAll(app.getPrimaryStage().getIcons());
       Scene scene = new Scene(mainPane);
       dialogStage.setScene(scene);

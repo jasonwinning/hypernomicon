@@ -23,8 +23,9 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.Map.Entry;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.HDT_WorkFile.FileNameAuthor;
@@ -48,7 +49,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
                 tfSepBefore1, tfSepBefore2, tfSepBefore3, tfSepBefore4, tfSepBefore5,
                 tfSepWithin1, tfSepWithin2, tfSepWithin3, tfSepWithin4, tfSepWithin5;
 
-  private final HashMap<String, Integer> componentMap = new LinkedHashMap<>();
+  private final Map<String, Integer> componentMap = new LinkedHashMap<>();
 
   @Override public void save() { }
 
@@ -224,7 +225,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
       }
     }
 
-    ArrayList<FileNameAuthor> authors = new ArrayList<>();
+    List<FileNameAuthor> authors = new ArrayList<>();
 
     for (String authorStr : author.split(";"))
     {

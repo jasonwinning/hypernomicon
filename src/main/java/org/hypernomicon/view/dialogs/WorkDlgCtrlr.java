@@ -23,6 +23,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -618,7 +619,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     year = tfYear.getText();
 
-    ArrayList<FileNameAuthor> authors = new ArrayList<>();
+    List<FileNameAuthor> authors = new ArrayList<>();
 
     htAuthors.getDataRows().forEach(row ->
     {
@@ -1025,9 +1026,9 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     if (BibAuthors.isEmpty(bibAuthors)) return;
 
-    ArrayList<PersonName> nameList = new ArrayList<>();
-    ArrayList<HDT_Person> personList = new ArrayList<>();
-    HashMap<PersonName, Boolean> nameToEd = new HashMap<>(), nameToTr = new HashMap<>();
+    List<PersonName> nameList = new ArrayList<>();
+    List<HDT_Person> personList = new ArrayList<>();
+    Map<PersonName, Boolean> nameToEd = new HashMap<>(), nameToTr = new HashMap<>();
 
     bibAuthors.getListsForWorkMerge(nameList, personList, nameToEd, nameToTr, destWork);
 

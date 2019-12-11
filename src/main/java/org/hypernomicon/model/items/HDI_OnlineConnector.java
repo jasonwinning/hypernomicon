@@ -17,7 +17,7 @@
 
 package org.hypernomicon.model.items;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
@@ -210,7 +210,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
   {
     list.add(connector.getMainText().getPlainForDisplay());  // Important: this needs to call the function, not access the member directly
   }

@@ -79,7 +79,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
     public boolean getChanged() { return changed; }
   }
 
-  private final ArrayList<String> keyList = new ArrayList<>();
+  private final List<String> keyList = new ArrayList<>();
 
   protected final Map<String, BibEntry_T> keyToAllEntry = new HashMap<>(), keyToTrashEntry = new HashMap<>();
   protected final Map<String, BibCollection_T> keyToColl = new HashMap<>();

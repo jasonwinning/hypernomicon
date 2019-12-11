@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.List;
 
 import static org.hypernomicon.util.Util.*;
 
@@ -165,7 +165,7 @@ public class DesktopApi
     return exec(showErrMsg, wait, errorSB, Lists.newArrayList(parts));
   }
 
-  public static boolean exec(boolean showErrMsg, boolean wait, StringBuilder errorSB, ArrayList<String> command)
+  public static boolean exec(boolean showErrMsg, boolean wait, StringBuilder errorSB, List<String> command)
   {
     if (SystemUtils.IS_OS_MAC)
     {

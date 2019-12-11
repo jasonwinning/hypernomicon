@@ -18,6 +18,7 @@
 package org.hypernomicon.view.wrappers;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
@@ -34,7 +35,7 @@ import javafx.util.StringConverter;
 class TreeCB
 {
   private final ComboBox<TreeRow> cb;
-  private final HashMap<HDT_Record, TreeRow> recordToRow;
+  private final Map<HDT_Record, TreeRow> recordToRow;
   private final ObservableList<TreeRow> rows;
   private boolean sorted = false;
   private final TreeWrapper tree;

@@ -449,9 +449,9 @@ public final class Authors implements Iterable<Author>
 
     if (BibAuthors.isEmpty(bibAuthors)) return;
 
-    ArrayList<PersonName> nameList = new ArrayList<>();
-    ArrayList<HDT_Person> personList = new ArrayList<>();
-    HashMap<PersonName, Boolean> nameToEd = new HashMap<>(), nameToTr = new HashMap<>();
+    List<PersonName> nameList = new ArrayList<>();
+    List<HDT_Person> personList = new ArrayList<>();
+    Map<PersonName, Boolean> nameToEd = new HashMap<>(), nameToTr = new HashMap<>();
 
     bibAuthors.getListsForWorkMerge(nameList, personList, nameToEd, nameToTr, work);
 

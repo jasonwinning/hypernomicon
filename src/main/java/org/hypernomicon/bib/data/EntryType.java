@@ -19,6 +19,7 @@ package org.hypernomicon.bib.data;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
@@ -90,7 +91,7 @@ public enum EntryType
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static final HashMap<String, EntryType> nameToType;
+  private static final Map<String, EntryType> nameToType;
   private final String userFriendlyName;
 
   private EntryType(String userFriendlyName) { this.userFriendlyName = userFriendlyName; }

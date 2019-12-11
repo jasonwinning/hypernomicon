@@ -22,6 +22,7 @@ import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,7 +41,7 @@ public class RISBibData extends BibDataStandalone
   {
     super();
 
-    boolean gotType = false;
+    boolean gotType = false, gotJournal = false;
 
     for (String line : lines)
     {
@@ -95,9 +96,18 @@ public class RISBibData extends BibDataStandalone
           case "ET": setStr(bfEdition, val); break;
           case "IS": setStr(bfIssue, val); break;
 
-          case "JF": case "JO":
+          case "JF":
 
-            addStr(bfContainerTitle, val); break;
+            setMultiStr(bfContainerTitle, Arrays.asList(val));
+            gotJournal = true;
+            break;
+
+          case "JO":
+
+            if (gotJournal == false)
+              setMultiStr(bfContainerTitle, Arrays.asList(val));
+
+            break;
 
           case "L1": case "L2": case "LK": case "UR":
 

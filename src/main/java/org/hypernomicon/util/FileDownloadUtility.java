@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.FilenameUtils;
@@ -48,8 +49,8 @@ public class FileDownloadUtility
 
   public static class Buffer extends InputStream
   {
-    private final ArrayList<byte[]> buffers = new ArrayList<>();
-    private final ArrayList<Integer> lengths = new ArrayList<>();
+    private final List<byte[]> buffers = new ArrayList<>();
+    private final List<Integer> lengths = new ArrayList<>();
     private int curBufferNdx = 0, curPosition = 0;
 
   //---------------------------------------------------------------------------

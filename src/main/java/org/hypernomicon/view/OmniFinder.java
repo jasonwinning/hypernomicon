@@ -29,6 +29,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
@@ -50,11 +51,11 @@ import javafx.scene.text.Text;
 public class OmniFinder
 {
   private final HyperTable htFind;
-  private final ArrayList<ObservableList<HyperTableCell>> cellLists = new ArrayList<>();
-  private final ArrayList<HyperTableRow> rows = new ArrayList<>();
+  private final List<ObservableList<HyperTableCell>> cellLists = new ArrayList<>();
+  private final List<HyperTableRow> rows = new ArrayList<>();
   private final EnumSet<TierEnum> tierSet;
   private final EnumMap<TierEnum, ImmutableSet<HDT_RecordType>> tierToTypeSet = new EnumMap<>(TierEnum.class);
-  private final HashSet<HDT_Record> records = new HashSet<>();
+  private final Set<HDT_Record> records = new HashSet<>();
 
   private String query = "";
   private Iterator<HDT_Record> source = null;
@@ -130,7 +131,7 @@ public class OmniFinder
   private class FinderThread extends Thread
   {
     private final HyperTable htFind;
-    private final ArrayList<HDT_Record> buffer = new ArrayList<>();
+    private final List<HDT_Record> buffer = new ArrayList<>();
 
     private TierEnum curTier;
     private boolean done = false, lastShowingMore, firstBuffer = true;
@@ -413,7 +414,7 @@ public class OmniFinder
 
       if (buffer.isEmpty()) return;
 
-      ArrayList<HyperTableRow> curRows = new ArrayList<>();
+      List<HyperTableRow> curRows = new ArrayList<>();
       ObservableList<HyperTableCell> cells;
 
       for (HDT_Record record : buffer)

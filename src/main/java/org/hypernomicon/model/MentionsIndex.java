@@ -54,7 +54,7 @@ class MentionsIndex
   private final List<Runnable> ndxCompleteHandlers;
   private final KeywordLinkList linkList = new KeywordLinkList();
   private final EnumSet<HDT_RecordType> types;
-  private final ArrayList<String> strList = new ArrayList<>();
+  private final List<String> strList = new ArrayList<>();
 
   private RebuildThread thread = null;
   private HyperTask task = null;

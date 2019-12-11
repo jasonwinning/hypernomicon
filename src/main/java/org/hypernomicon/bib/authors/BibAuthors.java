@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -46,7 +47,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public abstract void getLists(ArrayList<BibAuthor> authorList, ArrayList<BibAuthor> editorList, ArrayList<BibAuthor> translatorList);
+  public abstract void getLists(List<BibAuthor> authorList, List<BibAuthor> editorList, List<BibAuthor> translatorList);
 
   @SuppressWarnings("unused")
   public void add(BibAuthor author) { throw new UnsupportedOperationException("add"); }
@@ -96,9 +97,9 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
   @Override public Iterator<BibAuthor> iterator()
   {
-    ArrayList<BibAuthor> authorList = new ArrayList<>(),
-                         editorList = new ArrayList<>(),
-                         translatorList = new ArrayList<>();
+    List<BibAuthor> authorList = new ArrayList<>(),
+                    editorList = new ArrayList<>(),
+                    translatorList = new ArrayList<>();
 
     getLists(authorList, editorList, translatorList);
 
@@ -111,7 +112,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
   public void setAllFromTable(List<ObjectGroup> authGroups)
   {
     clear();
-    ArrayList<AuthorType> authorTypes = new ArrayList<>();
+    List<AuthorType> authorTypes = new ArrayList<>();
 
     authGroups.forEach(authGroup ->
     {
@@ -143,7 +144,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
   {
     if (isEmpty()) return;
 
-    ArrayList<BibAuthor> authorList = new ArrayList<>(), editorList = new ArrayList<>(), translatorList = new ArrayList<>();
+    List<BibAuthor> authorList = new ArrayList<>(), editorList = new ArrayList<>(), translatorList = new ArrayList<>();
 
     getLists(authorList, editorList, translatorList);
 
@@ -211,9 +212,9 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
     removeDupPersonRecordsFromLists(nameList, personList);
 
-    ArrayList<PersonName> nonRecordNames = new ArrayList<>();
-    ArrayList<Author> nonRecordAuthors = new ArrayList<>();
-    ArrayList<Integer> nameListIndices = new ArrayList<>();
+    List<PersonName> nonRecordNames = new ArrayList<>();
+    List<Author> nonRecordAuthors = new ArrayList<>();
+    List<Integer> nameListIndices = new ArrayList<>();
 
     for (int ndx = 0; ndx < nameList.size(); ndx++)
     {
@@ -229,7 +230,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
     if (nonRecordNames.size() > 0)
     {
-      List<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
+      List<List<Author>> matchedAuthorsList = new ArrayList<>();
 
       HyperTask task = NewPersonDlgCtrlr.createDupCheckTask(nonRecordNames, nonRecordAuthors, matchedAuthorsList, null);
 
@@ -237,7 +238,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
       for (int ndx = 0; ndx < matchedAuthorsList.size(); ndx++)
       {
-        ArrayList<Author> matchedAuthors = matchedAuthorsList.get(ndx);
+        List<Author> matchedAuthors = matchedAuthorsList.get(ndx);
 
         if (matchedAuthors.size() > 0)
         {
@@ -263,7 +264,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
   private void removeDupPersonRecordsFromLists(List<PersonName> nameList, List<HDT_Person> personList)
   {
-    HashSet<Integer> indicesToRemove = new HashSet<>();
+    Set<Integer> indicesToRemove = new HashSet<>();
 
     for (int ndx = 0; ndx < nameList.size(); ndx++)
     {

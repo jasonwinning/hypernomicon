@@ -49,7 +49,7 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final ArrayList<KeywordLink> keys = new ArrayList<>();
+  private final List<KeywordLink> keys = new ArrayList<>();
 
   public List<KeywordLink> getLinks() { return Collections.unmodifiableList(keys); }
   public void generate(String text)   { generate(text, false, null); }
@@ -63,7 +63,7 @@ public final class KeywordLinkList
 
     if (text.isEmpty()) return;
 
-    ArrayList<Integer> posMap = new ArrayList<>();
+    List<Integer> posMap = new ArrayList<>();
     text = convertToEnglishCharsWithMap(text, posMap); // posMap maps output position (key) to input position (value)
 
     boolean checkPeriods = false;
@@ -190,7 +190,7 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private int add(String text, int ndx, int matchLen, SearchKeyword key, ArrayList<Integer> posMap)
+  private int add(String text, int ndx, int matchLen, SearchKeyword key, List<Integer> posMap)
   {
     int right = ndx + matchLen, replaceLen;
 

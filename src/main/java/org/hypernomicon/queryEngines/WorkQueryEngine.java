@@ -33,6 +33,7 @@ import static org.hypernomicon.view.tabs.QueryTabCtrlr.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
@@ -47,7 +48,7 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
                            QUERY_4_OR_MORE_AUTHORS  = QUERY_FIRST_NDX + 2,
                            QUERY_ANALYZE_METADATA   = QUERY_FIRST_NDX + 3;
 
-  private static ArrayList<String> csvFile;
+  private static List<String> csvFile;
 
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
   {

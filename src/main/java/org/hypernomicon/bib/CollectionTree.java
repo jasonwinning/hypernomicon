@@ -34,7 +34,7 @@ public class CollectionTree
   static enum BibCollectionType { bctAll, bctUnsorted, bctTrash, bctUser }
 
   private final TreeView<BibCollectionRow> treeView;
-  private final HashMap<String, BibCollectionRow> keyToRow;
+  private final Map<String, BibCollectionRow> keyToRow;
 
   private BibCollectionRow treeRowAllEntries, treeRowUnsorted, treeRowTrash;
 

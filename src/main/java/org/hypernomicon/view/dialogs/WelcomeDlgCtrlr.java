@@ -22,7 +22,7 @@ import org.hypernomicon.util.filePath.FilePath;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -75,7 +75,7 @@ public class WelcomeDlgCtrlr extends HyperDlg
     linkWiki         .setOnAction(event -> openWebLink("https://sourceforge.net/p/hypernomicon/wiki/Home/"));
     linkNews         .setOnAction(event -> openWebLink("https://sourceforge.net/p/hypernomicon/news/"));
 
-    ArrayList<String> mruList = ui.getHdbMRUs();
+    List<String> mruList = ui.getHdbMRUs();
 
     double layoutY = 3;
     for (String mru : mruList)

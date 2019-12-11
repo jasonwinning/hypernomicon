@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -79,7 +81,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
   @Override public boolean update()
   {
-    HashMap<HDT_Person, HashSet<HDT_Institution>> peopleMap = new HashMap<>();
+    Map<HDT_Person, Set<HDT_Institution>> peopleMap = new HashMap<>();
 
     tfName.setText(curInst.name   ());
     tfCity.setText(curInst.getCity());
@@ -118,7 +120,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       row.setCellValue(1, person.rank .getID(), person.rank .isNotNull() ? person.rank .get().name() : "", hdtRank);
       row.setCellValue(2, person.field.getID(), person.field.isNotNull() ? person.field.get().name() : "", hdtField);
 
-      ArrayList<HDT_Institution> instList = new ArrayList<>(peopleMap.get(person));
+      List<HDT_Institution> instList = new ArrayList<>(peopleMap.get(person));
       instList.sort((inst1, inst2) -> inst1.name().compareTo(inst2.name()));
 
       String instStr = instList.stream().map(HDT_Institution::name).reduce((name1, name2) -> name1 + ", " + name2).orElse("");
@@ -137,7 +139,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addSiblingInsts(HDT_Institution sibInst, HDT_Institution cousinInst, HashMap<HDT_Person, HashSet<HDT_Institution>> peopleMap)
+  private void addSiblingInsts(HDT_Institution sibInst, HDT_Institution cousinInst, Map<HDT_Person, Set<HDT_Institution>> peopleMap)
   {
     cousinInst.subInstitutions.forEach(subInst -> addSiblingInsts(sibInst, subInst, peopleMap));
 
@@ -151,7 +153,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addPersonsFromInst(HDT_Institution nearestChildInst, HDT_Institution inst, HashMap<HDT_Person, HashSet<HDT_Institution>> peopleMap)
+  private void addPersonsFromInst(HDT_Institution nearestChildInst, HDT_Institution inst, Map<HDT_Person, Set<HDT_Institution>> peopleMap)
   {
     if (nearestChildInst == curInst)
       inst.subInstitutions.forEach(subInst -> addPersonsFromInst(subInst, subInst, peopleMap));

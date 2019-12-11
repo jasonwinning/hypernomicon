@@ -28,6 +28,9 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
@@ -170,7 +173,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
 
         if (searchDummy == null) return false;
 
-        ArrayList<String> list = new ArrayList<>();
+        List<String> list = new ArrayList<>();
         record.getAllStrings(list, true);
 
         for (String str : list)
@@ -324,8 +327,8 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
         {
           @Override protected void runFilter()
           {
-            HashMap<FilePath, HDT_Folder> map = new HashMap<>();
-            HashSet<HDT_Folder> set = new HashSet<>();
+            Map<FilePath, HDT_Folder> map = new HashMap<>();
+            Set<HDT_Folder> set = new HashSet<>();
 
             db.folders.forEach(folder ->
             {

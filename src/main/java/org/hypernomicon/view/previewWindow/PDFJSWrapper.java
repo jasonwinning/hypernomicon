@@ -448,9 +448,9 @@ public class PDFJSWrapper
     {
       if (retrievedDataHndlr == null) return;
 
-      ArrayList<Integer> hilitePages = new ArrayList<>();
-      HashMap<String, Integer> labelToPage = new HashMap<>();
-      HashMap<Integer, String> pageToLabel = new HashMap<>();
+      List<Integer> hilitePages = new ArrayList<>();
+      Map<String, Integer> labelToPage = new HashMap<>();
+      Map<Integer, String> pageToLabel = new HashMap<>();
 
       JSArray annotPages = obj.getProperty("annotPages").asArray();
 

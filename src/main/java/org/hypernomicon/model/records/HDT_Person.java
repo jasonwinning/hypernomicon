@@ -269,7 +269,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 
   // Returns last name, prepared for search key
 
-  private static String getSearchKeyComponents(String first, String last, ArrayList<String> nameList, ArrayList<String> initialList, StringBuilder nickNames)
+  private static String getSearchKeyComponents(String first, String last, List<String> nameList, List<String> initialList, StringBuilder nickNames)
   {
     String name;
 
@@ -304,7 +304,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 
       if (name.endsWith("."))
       {
-        if ((name.length() == 2) && (name.equals(name.toUpperCase())))  // true if it is an initial
+        if ((name.length() == 2) && name.equals(name.toUpperCase()))  // true if it is an initial
         {
           initialList.add(name.substring(0, 1));
           nameList.add("");
@@ -340,8 +340,8 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
     String first = personName.getFirst(), last = personName.getLast();
     StringBuilder nickNames = new StringBuilder();
 
-    ArrayList<String> nameList    = new ArrayList<>(),
-                      initialList = new ArrayList<>();
+    List<String> nameList    = new ArrayList<>(),
+                 initialList = new ArrayList<>();
 
     last = getSearchKeyComponents(first, last, nameList, initialList, nickNames);
 

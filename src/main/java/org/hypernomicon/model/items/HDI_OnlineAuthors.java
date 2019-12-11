@@ -21,8 +21,8 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
@@ -131,7 +131,7 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
   {
     if (searchLinkedRecords)
       authors.forEach(author -> list.add(author.getNameLastFirst()));

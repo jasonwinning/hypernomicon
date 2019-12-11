@@ -32,6 +32,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -363,7 +365,7 @@ public class MainTextCtrlr
     if (ui.cantSaveRecord()) return;
 
     HDT_RecordType keyType = hcbKeyType.selectedType();
-    ArrayList<KeyWork> keyWorks = new ArrayList<>(curRecord.getMainText().getKeyWorks());
+    List<KeyWork> keyWorks = new ArrayList<>(curRecord.getMainText().getKeyWorks());
 
     HDT_RecordWithPath keyRecord = db.createNewBlankRecord(keyType);
     keyWorks.add(new KeyWork(keyRecord));
@@ -393,7 +395,7 @@ public class MainTextCtrlr
 
     HDT_RecordType keyType = hcbKeyType.selectedType();
 
-    ArrayList<KeyWork> list = new ArrayList<>();
+    List<KeyWork> list = new ArrayList<>();
 
     getKeyWorks(list);
 
@@ -610,7 +612,7 @@ public class MainTextCtrlr
       aElement.remove();
     });
 
-    HashSet<HDT_RecordWithPath> keyWorkRecords = new HashSet<>();
+    Set<HDT_RecordWithPath> keyWorkRecords = new HashSet<>();
     KeywordLinkList list = new KeywordLinkList();
     String kwText = extractTextFromHTML(subDoc.html());
     list.generate(kwText);
@@ -683,7 +685,7 @@ public class MainTextCtrlr
 
       tpKeyWorks.setExpanded((keyWorks.size() > 0) || (record.getType() != hdtPerson));
 
-      HashMap<String, String> linkMap = new HashMap<>();
+      Map<String, String> linkMap = new HashMap<>();
       List<String> searchKeys = new ArrayList<>();
 
       keyWorks.forEach(keyWork ->

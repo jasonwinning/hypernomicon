@@ -24,6 +24,7 @@ import static org.hypernomicon.util.Util.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
@@ -37,9 +38,9 @@ import static org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod.
 
 public class SubjectPopulator extends Populator
 {
-  private final HashMap<HyperTableRow, Boolean> rowToChanged = new HashMap<>();
-  private final HashMap<HyperTableRow, List<HyperTableCell>> rowToChoices = new HashMap<>();
-  private final HashMap<HyperTableRow, HDT_Record> rowToObj;
+  private final Map<HyperTableRow, Boolean> rowToChanged = new HashMap<>();
+  private final Map<HyperTableRow, List<HyperTableCell>> rowToChoices = new HashMap<>();
+  private final Map<HyperTableRow, HDT_Record> rowToObj;
   private final RelationType relType;
   private final boolean trackObjByRow, nameOnly;
 

@@ -17,7 +17,7 @@
 
 package org.hypernomicon.model.items;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
@@ -46,7 +46,7 @@ public abstract class HDI_OnlineBase<HDI_Derived extends HDI_OfflineBase> extend
    */
   public void resolvePointers() throws HDB_InternalError { return; }
 
-  public abstract void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords);
+  public abstract void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords);
 
   public abstract String getResultTextForTag(Tag tag);
 }

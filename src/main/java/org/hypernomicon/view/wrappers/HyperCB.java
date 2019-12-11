@@ -20,6 +20,7 @@ package org.hypernomicon.view.wrappers;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -69,7 +70,7 @@ public class HyperCB implements CommitableWrapper
   private boolean adjusting = false;
   public boolean somethingWasTyped, listenForActionEvents = true, dontCreateNewRecord = false;
 
-  static final HashMap<ComboBox<HyperTableCell>, HyperCB> cbRegistry = new HashMap<>();
+  static final Map<ComboBox<HyperTableCell>, HyperCB> cbRegistry = new HashMap<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

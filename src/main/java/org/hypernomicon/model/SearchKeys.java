@@ -148,7 +148,7 @@ public final class SearchKeys
     {
       SearchKeyword keyword = new SearchKeyword(subStr.trim(), record);
 
-      if (keyword.text.length() < 1) continue;
+      if (keyword.text.isEmpty()) continue;
 
   // If the substring is too short, error out
   // ----------------------------------------

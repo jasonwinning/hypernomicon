@@ -17,7 +17,7 @@
 
 package org.hypernomicon.bib.mendeley;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
@@ -78,7 +78,7 @@ public class MendeleyAuthors extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void getList(JsonArray arr, ArrayList<BibAuthor> list, AuthorType aType)
+  private void getList(JsonArray arr, List<BibAuthor> list, AuthorType aType)
   {
     if ((arr == null) || (ignoreEditors() && (aType == AuthorType.editor))) return;
 
@@ -95,7 +95,7 @@ public class MendeleyAuthors extends BibAuthors
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getLists(ArrayList<BibAuthor> authorList, ArrayList<BibAuthor> editorList, ArrayList<BibAuthor> translatorList)
+  @Override public void getLists(List<BibAuthor> authorList, List<BibAuthor> editorList, List<BibAuthor> translatorList)
   {
     authorList    .clear();
     editorList    .clear();

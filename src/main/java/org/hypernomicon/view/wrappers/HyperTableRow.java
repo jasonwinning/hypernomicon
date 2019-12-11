@@ -18,6 +18,7 @@
 package org.hypernomicon.view.wrappers;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -39,7 +40,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 {
   final private ObservableList<HyperTableCell> cells;
   final private HyperTable table;
-  final private HashMap<Integer, Populator> populators = new HashMap<>();
+  final private Map<Integer, Populator> populators = new HashMap<>();
 
 //---------------------------------------------------------------------------
 

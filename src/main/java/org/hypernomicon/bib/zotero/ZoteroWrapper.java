@@ -367,7 +367,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   private boolean syncChangedEntriesToServer() throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
   {
-    ArrayList<ZoteroItem> uploadQueue = new ArrayList<>(); // implemented as array because indices are returned by server
+    List<ZoteroItem> uploadQueue = new ArrayList<>(); // implemented as array because indices are returned by server
     JsonArray jArr = new JsonArray();
 
     getAllEntries().forEach(entry ->
@@ -431,9 +431,9 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private void showWriteErrorMessages(JsonObj jUnchanged, JsonObj jFailed, ArrayList<ZoteroItem> uploadQueue)
+  private void showWriteErrorMessages(JsonObj jUnchanged, JsonObj jFailed, List<ZoteroItem> uploadQueue)
   {
-    ArrayList<String> errMsgList = Lists.newArrayList("Attempt(s) to upload changes to server failed:");
+    List<String> errMsgList = Lists.newArrayList("Attempt(s) to upload changes to server failed:");
 
     String unchanged = jUnchanged.keySet().stream().map(jUnchanged::getStr).reduce((s1, s2) -> s1 + ", " + s2).orElse("");
 
@@ -456,7 +456,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   @SuppressWarnings("unchecked")
   private <ZEntity extends ZoteroEntity> boolean getRemoteUpdates(ZoteroCmd versionsCmd, ZoteroCmd readCmd, Map<String, ZEntity> keyToEntity) throws TerminateTaskException, UnsupportedOperationException, IOException, ParseException
   {
-    ArrayList<String> downloadQueue = new ArrayList<>();
+    List<String> downloadQueue = new ArrayList<>();
 
     JsonArray jArr = doReadCommand(versionsCmd, "", "");
 

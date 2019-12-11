@@ -29,6 +29,7 @@ import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -54,7 +55,7 @@ public class HyperFavorites
 
   public static class QueryFavorite
   {
-    public final ArrayList<QueryRow> rows = new ArrayList<>();
+    public final List<QueryRow> rows = new ArrayList<>();
     public String name;
     public boolean autoexec;
 

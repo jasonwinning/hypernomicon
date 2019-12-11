@@ -20,6 +20,7 @@ package org.hypernomicon.view.workMerge;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
@@ -43,7 +44,7 @@ public class MergeWorksMLChkCtrlr extends BibFieldRow
 
   @Override public void mergeInto(BibData bd)
   {
-    ArrayList<String> list = new ArrayList<>();
+    List<String> list = new ArrayList<>();
 
     if (chk1.isSelected()) list.addAll(convertMultiLineStrToStrList(ta1.getText(), true));
     if (chk2.isSelected()) list.addAll(convertMultiLineStrToStrList(ta2.getText(), true));

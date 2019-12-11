@@ -422,7 +422,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 // Build list of locally changed documents and documents to merge; merge local and remote changes -------------------
 // ------------------------------------------------------------------------------------------------------------------
 
-          ArrayList<MendeleyDocument> localChanges = new ArrayList<>();
+          List<MendeleyDocument> localChanges = new ArrayList<>();
 
           getAllEntries().forEach(entry ->
           {

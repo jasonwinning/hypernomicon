@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,7 +42,7 @@ public abstract class BibData
 
 //---------------------------------------------------------------------------
 
-  private static final HashMap<String, YearType> descToYearType = new HashMap<>();
+  private static final Map<String, YearType> descToYearType = new HashMap<>();
 
   public static enum YearType
   {
@@ -228,7 +229,7 @@ public abstract class BibData
 
   public String createReport()
   {
-    ArrayList<String> list = new ArrayList<>();
+    List<String> list = new ArrayList<>();
     BibAuthors authors = getAuthors();
 
     addReportStr(bfTitle         , list);

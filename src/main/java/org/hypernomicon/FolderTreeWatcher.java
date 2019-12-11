@@ -42,6 +42,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -89,14 +90,14 @@ public class FolderTreeWatcher
   {
     private boolean done = false;
     private final WatchService watcher;
-    private final HashMap<WatchKey, HDT_Folder> watchKeyToDir;
+    private final Map<WatchKey, HDT_Folder> watchKeyToDir;
     private boolean sentResponse = false;
     private HDB_MessageType requestType;
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    WatcherThread(WatchService watcher, HashMap<WatchKey, HDT_Folder> watchKeyToDir)
+    WatcherThread(WatchService watcher, Map<WatchKey, HDT_Folder> watchKeyToDir)
     {
       super();
 
@@ -493,7 +494,7 @@ public class FolderTreeWatcher
   private WatchService watcher;
   private WatcherThread watcherThread;
   private final FilePathSet downloading = new FilePathSet();
-  private final HashMap<WatchKey, HDT_Folder> watchKeyToDir = new HashMap<>();
+  private final Map<WatchKey, HDT_Folder> watchKeyToDir = new HashMap<>();
   public static final int FOLDER_TREE_WATCHER_POLL_TIME_MS = 100;
   public static boolean alreadyImporting = false;
   private boolean stopRequested = false,

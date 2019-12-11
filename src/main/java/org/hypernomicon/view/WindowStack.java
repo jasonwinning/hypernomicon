@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.util.filePath.FilePath;
@@ -93,7 +94,7 @@ public final class WindowStack
 //---------------------------------------------------------------------------
 
   private final LinkedList<WindowWrapper> windows = new LinkedList<>();
-  private final HashMap<MenuItem, Boolean> itemsDisabled = new HashMap<>();
+  private final Map<MenuItem, Boolean> itemsDisabled = new HashMap<>();
   private boolean cyclingFocus = false;
 
 //---------------------------------------------------------------------------

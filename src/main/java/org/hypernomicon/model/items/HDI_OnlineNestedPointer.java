@@ -19,7 +19,7 @@ package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.*;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
@@ -81,9 +81,9 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
   {
-    if (searchLinkedRecords &&(target != null))
+    if (searchLinkedRecords && (target != null))
       list.add(target.listName());
   }
 

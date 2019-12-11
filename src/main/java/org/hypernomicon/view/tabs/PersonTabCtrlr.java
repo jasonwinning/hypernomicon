@@ -108,7 +108,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   @FXML public ComboBox<HyperTableCell> cbField;
   @FXML public TextField tfFirst, tfLast;
 
-  final private ArrayList<InvestigationView> invViews = new ArrayList<>();
+  final private List<InvestigationView> invViews = new ArrayList<>();
 
   private HyperTable htPersonInst, htWorks, htArguments;
   private MainTextWrapper mainText;
@@ -175,7 +175,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       row.setCellValue(2, inst, inst.name());
     });
 
-    HashSet<HDT_Record> topicRecordsAdded = new HashSet<>();
+    Set<HDT_Record> topicRecordsAdded = new HashSet<>();
 
     curPerson.works.forEach(work ->
     {
@@ -218,7 +218,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
         if (work.getAuthors().size() > 1)
         {
-          ArrayList<Author> authors = new ArrayList<>();
+          List<Author> authors = new ArrayList<>();
           int authorID = -1;
 
           for (Author author : work.getAuthors())
@@ -312,7 +312,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       htWorks.getTV().getSortOrder().setAll(List.of(htWorks.getTV().getColumns().get(0)));
     else
     {
-      ArrayList<TableColumn<HyperTableRow, ?>> list = new ArrayList<>(htWorks.getTV().getSortOrder());
+      List<TableColumn<HyperTableRow, ?>> list = new ArrayList<>(htWorks.getTV().getSortOrder());
 
       htWorks.getTV().getSortOrder().setAll(list);
     }
@@ -358,7 +358,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addMentioners(HDT_RecordWithPath mentioned, Set<HDT_Argument> argsToAdd, Set<HDT_Position> posToAdd, Set<HDT_Record> otherToAdd, HashSet<HDT_Record> topicRecordsAdded)
+  private void addMentioners(HDT_RecordWithPath mentioned, Set<HDT_Argument> argsToAdd, Set<HDT_Position> posToAdd, Set<HDT_Record> otherToAdd, Set<HDT_Record> topicRecordsAdded)
   {
     Consumer<HDT_WorkLabel> consumer = label ->
     {
@@ -398,11 +398,11 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean addArgToTopicTable(HDT_Argument argument, HashSet<HDT_Record> topicRecordsAdded, Set<HDT_Position> posToAdd, Set<HDT_Record> otherToAdd)
+  private boolean addArgToTopicTable(HDT_Argument argument, Set<HDT_Record> topicRecordsAdded, Set<HDT_Position> posToAdd, Set<HDT_Record> otherToAdd)
   {
     if (topicRecordsAdded.contains(argument)) return false;
 
-    ArrayList<HDT_Position> positions = new ArrayList<>();
+    List<HDT_Position> positions = new ArrayList<>();
 
     if (argument.positions.size() > 0)
     {
@@ -641,13 +641,13 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       return true;
     }
 
-    List<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
+    List<List<Author>> matchedAuthorsList = new ArrayList<>();
 
     HyperTask task = NewPersonDlgCtrlr.createDupCheckTask(singletonList(personName), singletonList(new Author(curPerson)), matchedAuthorsList, null);
 
     if (!HyperTask.performTaskWithProgressDialog(task)) return false;
 
-    ArrayList<Author> matchedAuthors = matchedAuthorsList.get(0);
+    List<Author> matchedAuthors = matchedAuthorsList.get(0);
 
     if (matchedAuthors.size() > 0)
     {

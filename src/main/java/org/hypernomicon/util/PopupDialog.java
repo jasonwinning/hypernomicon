@@ -18,6 +18,7 @@
 package org.hypernomicon.util;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
@@ -42,7 +43,7 @@ public class PopupDialog
 //---------------------------------------------------------------------------
 
   private final Alert dlg = new Alert(AlertType.CONFIRMATION);
-  private final LinkedHashMap<ButtonType, DialogResult> bTypeToResult = new LinkedHashMap<>();
+  private final Map<ButtonType, DialogResult> bTypeToResult = new LinkedHashMap<>();
 
   public DialogResult showModal() { return bTypeToResult.get(showAndWait(dlg)); }
 

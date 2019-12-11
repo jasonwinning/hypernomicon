@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -68,7 +69,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
   private HyperTask task;
   private Thread thread;
   private List<Author> matchedAuthors = null;
-  private final ArrayList<ArrayList<Author>> matchedAuthorsList = new ArrayList<>();
+  private final List<List<Author>> matchedAuthorsList = new ArrayList<>();
 
   public HDT_Person getPerson()     { return person; }
   public PersonName getName()       { return new PersonName(tfFirstName.getText(), tfLastName.getText()); }
@@ -90,7 +91,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewPersonDlgCtrlr create(PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor, ArrayList<Author> matchedAuthors)
+  public static NewPersonDlgCtrlr create(PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor, List<Author> matchedAuthors)
   {
     NewPersonDlgCtrlr npd = HyperDlg.create("NewPersonDlg.fxml", "Potential Duplicate(s)", true);
     npd.init(null, personName, searchKey, mustCreate, person, origAuthor, matchedAuthors);
@@ -100,7 +101,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(String name, PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor, ArrayList<Author> matchedAuthors)
+  private void init(String name, PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor, List<Author> matchedAuthors)
   {
     this.matchedAuthors = matchedAuthors;
     this.person = person;
@@ -318,7 +319,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
   public static LinkedList<PersonForDupCheck> createListForDupCheck()
   {
     LinkedList<PersonForDupCheck> list = new LinkedList<>();
-    HashSet<HDT_Person> persons = new HashSet<>();
+    Set<HDT_Person> persons = new HashSet<>();
 
     db.works.forEach(work -> work.getAuthors().forEach(author ->
     {
@@ -350,11 +351,11 @@ public class NewPersonDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void doDupCheck(PersonForDupCheck person1, LinkedList<PersonForDupCheck> list, ArrayList<Author> matchedAuthors, HyperTask task, int ctr, int total) throws TerminateTaskException
+  public static void doDupCheck(PersonForDupCheck person1, LinkedList<PersonForDupCheck> list, List<Author> matchedAuthors, HyperTask task, int ctr, int total) throws TerminateTaskException
   {
     if (person1.fullLCNameEngChar.isEmpty()) return;
 
-    HashSet<HDT_Person> matchedPersons = new HashSet<>();
+    Set<HDT_Person> matchedPersons = new HashSet<>();
 
     HDT_Work work1 = nullSwitch(person1.author, null, Author::getWork);
 
@@ -410,7 +411,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HyperTask createDupCheckTask(List<PersonName> nameList, List<Author> queryAuthors, List<ArrayList<Author>> matchedAuthorsList, Runnable finishHndlr)
+  public static HyperTask createDupCheckTask(List<PersonName> nameList, List<Author> queryAuthors, List<List<Author>> matchedAuthorsList, Runnable finishHndlr)
   {
     return new HyperTask() { @Override protected Boolean call() throws Exception
     {
@@ -422,7 +423,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
       for (int ndx = 0; ndx < nameList.size(); ndx++)
       {
-        ArrayList<Author> matchedAuthors = new ArrayList<>();
+        List<Author> matchedAuthors = new ArrayList<>();
         matchedAuthorsList.add(matchedAuthors);
         Author author = queryAuthors.get(ndx);
         PersonForDupCheck person = new PersonForDupCheck(nameList.get(ndx), author, author == null ? null : author.getPerson());

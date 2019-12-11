@@ -26,6 +26,7 @@ import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -126,7 +127,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     public ResultsTable resultsTable;
     private ReportTable reportTable;
 
-    public final ArrayList<ResultsRow> resultsBackingList = new ArrayList<>();
+    public final List<ResultsRow> resultsBackingList = new ArrayList<>();
     private SetMultimap<HDT_RecordType, ColumnGroupItem> recordTypeToColumnGroupItems;
 
     private Tab tab;
@@ -673,7 +674,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       // Build list of sources and list of unfiltered types
 
-      LinkedHashMap<HyperTableRow, QuerySource> sources = new LinkedHashMap<>();
+      Map<HyperTableRow, QuerySource> sources = new LinkedHashMap<>();
       boolean hasFiltered = false, hasUnfiltered = false;
       EnumSet<HDT_RecordType> unfilteredTypes = EnumSet.noneOf(HDT_RecordType.class);
 
@@ -1310,7 +1311,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   public static HyperTask task;
   public static int curQuery;
   public static HyperTableCell param1, param2, param3;
-  public final ArrayList<QueryView> queryViews = new ArrayList<>();
+  public final List<QueryView> queryViews = new ArrayList<>();
 
   public void setCB(ComboBox<ResultsRow> cb)        { this.cb = cb; updateCB(); }
   private void updateCB()                           { if (curQV != null) curQV.updateCB(); }
@@ -1559,7 +1560,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       case QUERY_ANY_FIELD_CONTAINS :
 
-        ArrayList<String> list = new ArrayList<>();
+        List<String> list = new ArrayList<>();
         record.getAllStrings(list, searchLinkedRecords);
 
         String val1 = getCellText(param1).toLowerCase();

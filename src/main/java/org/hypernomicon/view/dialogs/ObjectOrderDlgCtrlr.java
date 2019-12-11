@@ -18,6 +18,7 @@
 package org.hypernomicon.view.dialogs;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.hypernomicon.util.Util.*;
 
@@ -55,7 +56,7 @@ public class ObjectOrderDlgCtrlr extends HyperDlg
 
   private void init(HyperTable ht, ObservableList<HyperTableRow> rows)
   {
-    ArrayList<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
+    List<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
 
     this.rows = rows;
     tv.getColumns().clear();

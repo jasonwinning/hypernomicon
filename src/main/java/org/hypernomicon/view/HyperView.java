@@ -26,7 +26,7 @@ import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.tabs.HyperTab.*;
 
-import java.util.HashSet;
+import java.util.Set;
 
 import static org.hypernomicon.model.HyperDB.*;
 
@@ -37,7 +37,7 @@ public class HyperView<HDT_CT extends HDT_Record>
     public TextViewInfo()              { return; }
     public TextViewInfo(int scrollPos) { this.scrollPos = scrollPos; }
 
-    public HashSet<String> openDivits = null;
+    public Set<String> openDivits = null;
     public int scrollPos = 0;
     public boolean detailedWorks = false;
   }

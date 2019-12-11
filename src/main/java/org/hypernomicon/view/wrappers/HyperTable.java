@@ -90,7 +90,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   final private ObservableList<HyperTableRow> rows = FXCollections.observableArrayList();
   final private SortedList<HyperTableRow> sortedRows;
   final private FilteredList<HyperTableRow> filteredRows;
-  final ArrayList<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
+  final List<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
 
   Consumer<? extends HDT_Record> dblClickHandler = null;
   Runnable onShowMore = null;
@@ -100,11 +100,11 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public boolean disableRefreshAfterCellUpdate = false,
                  autoCommitListSelections = false;
 
-  private static final HashMap<TableView<?>, Double> rowHeight = new HashMap<>();
+  private static final Map<TableView<?>, Double> rowHeight = new HashMap<>();
   private static final HashBasedTable<TableView<?>, Orientation, ScrollBar> sbMap = HashBasedTable.create();
 
-  private static final HashMap<String, TableView<?>> registry = new HashMap<>();
-  private static final HashMap<String, HyperDlg> dialogs = new HashMap<>();
+  private static final Map<String, TableView<?>> registry = new HashMap<>();
+  private static final Map<String, HyperDlg> dialogs = new HashMap<>();
 
 //---------------------------------------------------------------------------
 
@@ -244,7 +244,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public static <RowType> void registerTable(TableView<RowType> tv, String prefID, HyperDlg dialog)
   {
-    if (prefID.length() < 1) return;
+    if (prefID.isEmpty()) return;
 
     registry.put(prefID, tv);
 
@@ -349,7 +349,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <RowType> void preventMovingColumns(TableView<RowType> tv, ArrayList<TableColumn<RowType, ?>> colList)
+  public static <RowType> void preventMovingColumns(TableView<RowType> tv, List<TableColumn<RowType, ?>> colList)
   {
     // This handsome block of code is the only way within JavaFX to prevent the user from moving columns around
     tv.getColumns().addListener((Change<? extends TableColumn<RowType, ?>> change) ->
@@ -752,7 +752,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public List<ObjectGroup> getAuthorGroups(HDT_Work work, int authorCol, int inFileNameCol, int editorCol, int transCol)
   {
-    HashMap<Integer, Tag> map = new HashMap<>();
+    Map<Integer, Tag> map = new HashMap<>();
 
     map.put(inFileNameCol, tagInFileName); // Sometimes this is -1, that's okay
     map.put(editorCol    , tagEditor);
@@ -766,7 +766,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public List<ObjectGroup> getObjectGroupList(HDT_Record subj, RelationType relType, int primaryColNdx, Map<Integer, Tag> colNdxToTag)
   {
-    ArrayList<ObjectGroup> list = new ArrayList<>();
+    List<ObjectGroup> list = new ArrayList<>();
     HDT_RecordType objType = db.getObjType(relType);
 
     db.getNestedTags(relType).stream().filter(Predicate.not(colNdxToTag::containsValue)).forEach(tag -> colNdxToTag.put(-1, tag));
@@ -847,7 +847,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public <HDT_T extends HDT_Record> ArrayList<HDT_T> saveToList(int colNdx, HDT_RecordType objType)
+  public <HDT_T extends HDT_Record> List<HDT_T> saveToList(int colNdx, HDT_RecordType objType)
   {
     return rows.stream().filter(row -> row.getType(colNdx) == objType)
                         .map(row -> row.getID(colNdx))

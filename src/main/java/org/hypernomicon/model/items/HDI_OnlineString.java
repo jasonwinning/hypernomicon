@@ -21,7 +21,7 @@ import static org.hypernomicon.model.HyperDB.Tag.tagListName;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
@@ -39,7 +39,7 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 
   public void set(String strValue) { this.strValue = strValue; }
 
-  @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords) { list.add(get()); }
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords) { list.add(get()); }
 
   @Override public String getResultTextForTag(Tag tag) { return get(); }
 

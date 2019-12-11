@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 import java.io.IOException;
 
 import org.controlsfx.control.MasterDetailPane;
@@ -82,8 +82,8 @@ public class MergeWorksDlgCtrlr extends HyperDlg
   private MasterDetailPane mdp;
   private PDFJSWrapper jsWrapper = null;
   private final EnumMap<BibFieldEnum, BibField> singleFields = new EnumMap<>(BibFieldEnum.class);
-  private final ArrayList<WorkToMerge> works = new ArrayList<>(4);
-  private final HashMap<BibFieldEnum, BibFieldRow> extraRows = new HashMap<>();
+  private final List<WorkToMerge> works = new ArrayList<>(4);
+  private final Map<BibFieldEnum, BibFieldRow> extraRows = new HashMap<>();
   private int nextRowNdx = 4;
   private boolean creatingNewWork, previewInitialized = false;
 
@@ -157,7 +157,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     if (FilePath.isEmpty(filePath) && ((destWork == null) || (destWork.pathNotEmpty() == false)))
       disableAll(btnLaunch, btnPreview);
 
-    ArrayList<BibData> bdList = new ArrayList<>();
+    List<BibData> bdList = new ArrayList<>();
 
     if (bd1 != null) bdList.add(bd1);
     if (bd2 != null) bdList.add(bd2);

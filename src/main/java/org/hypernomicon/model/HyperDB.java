@@ -135,9 +135,9 @@ public final class HyperDB
   final private EnumHashBiMap<HDT_RecordType, String> typeToTagStr = EnumHashBiMap.create(HDT_RecordType.class);
   final private SearchKeys searchKeys = new SearchKeys();
   final private MentionsIndex mentionsIndex = new MentionsIndex(dbMentionsNdxCompleteHandlers);
-  final private ArrayList<HDT_Record> initialNavList = new ArrayList<>();
+  final private List<HDT_Record> initialNavList = new ArrayList<>();
   final private EnumMap<HDT_RecordType, RelationChangeHandler> keyWorkHandlers = new EnumMap<>(HDT_RecordType.class);
-  final private HashMap<HDT_RecordWithPath, Set<HDT_RecordWithConnector>> keyWorkIndex = new HashMap<>();
+  final private Map<HDT_RecordWithPath, Set<HDT_RecordWithConnector>> keyWorkIndex = new HashMap<>();
   final private BidiOneToManyMainTextMap displayedAtIndex = new BidiOneToManyMainTextMap();
   final private Map<String, HDT_Work> bibEntryKeyToWork = new HashMap<>();
 
@@ -396,7 +396,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void finalizeXMLFile(ArrayList<StringBuilder> xmlList, ArrayList<String> filenameList, String fileName)
+  private void finalizeXMLFile(List<StringBuilder> xmlList, List<String> filenameList, String fileName)
   {
     xmlList.get(xmlList.size() - 1).append(System.lineSeparator() + "</records>");
     filenameList.add(fileName);
@@ -406,7 +406,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void writeDatasetToXML(ArrayList<StringBuilder> xmlList, HDT_RecordType type) throws HDB_InternalError, TerminateTaskException
+  private void writeDatasetToXML(List<StringBuilder> xmlList, HDT_RecordType type) throws HDB_InternalError, TerminateTaskException
   {
     StringBuilder xml = xmlList.get(xmlList.size() - 1);
 
@@ -437,8 +437,8 @@ public final class HyperDB
   {
     if (loaded == false) return false;
 
-    ArrayList<String> filenameList = new ArrayList<>();
-    ArrayList<StringBuilder> xmlList = Lists.newArrayList(new StringBuilder());
+    List<String> filenameList = new ArrayList<>();
+    List<StringBuilder> xmlList = Lists.newArrayList(new StringBuilder());
 
     task = new HyperTask() { @Override protected Boolean call() throws Exception
     {
@@ -549,7 +549,7 @@ public final class HyperDB
     if (dbChanged)
       dbPreChangeHandlers.forEach(Runnable::run);
 
-    final ArrayList<FilePath> xmlFileList = new ArrayList<>();
+    final List<FilePath> xmlFileList = new ArrayList<>();
 
     for (String fileName : new String[]{ OTHER_FILE_NAME,  PERSON_FILE_NAME,   INSTITUTION_FILE_NAME, INVESTIGATION_FILE_NAME,
                                          DEBATE_FILE_NAME, ARGUMENT_FILE_NAME, POSITION_FILE_NAME,    WORK_FILE_NAME,
@@ -673,7 +673,7 @@ public final class HyperDB
       return false;
     }
 
-    ArrayList<HDT_Work> worksToUnlink = new ArrayList<>();
+    List<HDT_Work> worksToUnlink = new ArrayList<>();
     bibEntryKeyToWork.forEach((bibEntryKey, work) ->
     {
       if ((bibLibrary == null) || (bibLibrary.getEntryByKey(bibEntryKey) == null))
@@ -1139,7 +1139,7 @@ public final class HyperDB
       while (xmlRecord != null)
       {
         boolean notDoneReadingRecord = eventReader.hasNext(), noInnerTags = true, wasAlreadyInStartTag = false;
-        LinkedHashMap<Tag, HDI_OfflineBase> nestedItems = null;
+        Map<Tag, HDI_OfflineBase> nestedItems = null;
         HDT_RecordType objType = hdtNone;
         XMLEvent event = null;
         String nodeText = "";
@@ -1249,7 +1249,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initNestedItems(HDT_RecordState xmlRecord, LinkedHashMap<Tag, HDI_OfflineBase> nestedItems, RelationType relation)
+  private void initNestedItems(HDT_RecordState xmlRecord, Map<Tag, HDI_OfflineBase> nestedItems, RelationType relation)
   {
     Collection<HDI_Schema> schemas = relationSets.get(relation).getSchemas();
     if (schemas == null) return;
@@ -1277,7 +1277,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void readNestedItem(HDT_RecordState xmlRecord, LinkedHashMap<Tag, HDI_OfflineBase> nestedItems, RelationType relationType, HDX_Element hdxElement, XMLEventReader eventReader) throws XMLStreamException, HyperDataException, InvalidItemException
+  private void readNestedItem(HDT_RecordState xmlRecord, Map<Tag, HDI_OfflineBase> nestedItems, RelationType relationType, HDX_Element hdxElement, XMLEventReader eventReader) throws XMLStreamException, HyperDataException, InvalidItemException
   {
     boolean notDone = eventReader.hasNext();
     String nodeText = "";
@@ -1412,7 +1412,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void close(EnumSet<HDT_RecordType> datasetsToKeep) throws HDB_InternalError
+  public void close(Set<HDT_RecordType> datasetsToKeep) throws HDB_InternalError
   {
     boolean bringOnline = datasetsToKeep != null; // Datasets remain online through process of creating a new database
 
@@ -1483,7 +1483,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void clearAllDataSets(EnumSet<HDT_RecordType> datasetsToKeep)
+  private void clearAllDataSets(Set<HDT_RecordType> datasetsToKeep)
   {
     if (datasetsToKeep != null) // It should only be non-null when a new database is being created
       datasetsToKeep.addAll(EnumSet.of(hdtWorkType, hdtPositionVerdict, hdtArgumentVerdict, hdtInstitutionType));
@@ -1498,7 +1498,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean newDB(FilePath newPath, EnumSet<HDT_RecordType> datasetsToKeep, HashMap<String, String> folders) throws HDB_InternalError
+  public boolean newDB(FilePath newPath, Set<HDT_RecordType> datasetsToKeep, Map<String, String> folders) throws HDB_InternalError
   {
     if (loaded == false) return false;
 

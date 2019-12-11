@@ -20,6 +20,7 @@ package org.hypernomicon.view.wrappers;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -55,7 +56,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 {
   private final TableView<ResultsRow> tv;
   private boolean datesAdded = false;
-  public static final ArrayList<ColumnGroup> colGroups = new ArrayList<>();
+  public static final List<ColumnGroup> colGroups = new ArrayList<>();
   private static ColumnGroup generalGroup;
 
   public TableView<ResultsRow> getTV() { return tv; }
@@ -106,7 +107,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
   {
     public final HDT_RecordType recordType;
     public final String caption;
-    public final ArrayList<ColumnGroupItem> items = new ArrayList<>();
+    public final List<ColumnGroupItem> items = new ArrayList<>();
     public TypeCheckBox checkBox;
 
     public ColumnGroup(HDT_RecordType recordType, Set<Tag> tags)

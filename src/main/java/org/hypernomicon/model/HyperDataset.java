@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -109,8 +111,8 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
   private final HyperCore<HDT_DT> core = new HyperCore<>();
   private final HDT_RecordType type;
-  private final ArrayList<HDT_DT> needIDs = new ArrayList<>();
-  private final LinkedHashMap<Tag, HDI_Schema> tagToSchema = new LinkedHashMap<>();
+  private final List<HDT_DT> needIDs = new ArrayList<>();
+  private final Map<Tag, HDI_Schema> tagToSchema = new LinkedHashMap<>();
   private boolean online = false;
   private HDT_Record recordToAssign = null;
   private int idToAssign = -1;

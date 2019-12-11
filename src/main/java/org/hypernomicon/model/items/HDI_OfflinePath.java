@@ -26,7 +26,7 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 
 import static org.hypernomicon.model.records.HDT_RecordState.*;
 
-import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -49,7 +49,7 @@ public class HDI_OfflinePath extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, LinkedHashMap<Tag, HDI_OfflineBase> nestedItems)
+  @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
   {
     if ((tag == Tag.tagParentFolder) || (tag == Tag.tagFolder))
       folderID = objID;

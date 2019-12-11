@@ -191,10 +191,10 @@ public abstract class BibEntry extends BibData implements BibEntity
   {
     return (e1, e2) ->
     {
-      ArrayList<BibAuthor> authorList = new ArrayList<>(),
-                           editorList = new ArrayList<>(),
-                           translatorList = new ArrayList<>(),
-                           authors1, authors2;
+      List<BibAuthor> authorList = new ArrayList<>(),
+                      editorList = new ArrayList<>(),
+                      translatorList = new ArrayList<>(),
+                      authors1, authors2;
 
       e1.getAuthors().getLists(authorList, editorList, translatorList);
 

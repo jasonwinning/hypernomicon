@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.commons.text.StringEscapeUtils.*;
 
@@ -531,7 +532,7 @@ public class MainTextUtil
   {
     List<String> searchKeys = new ArrayList<>();
 
-    HashMap<String, String> linkMap = getKeyWorkLinkMap(keyWorks, searchKeys, sortByName);
+    Map<String, String> linkMap = getKeyWorkLinkMap(keyWorks, searchKeys, sortByName);
 
     innerHtml.append(searchKeys.stream().map(searchKey -> new StringBuilder(linkMap.get(searchKey)))
                                .reduce((sb1, sb2) -> sb1.append(", ").append(sb2)).orElse(new StringBuilder()));
@@ -570,7 +571,7 @@ public class MainTextUtil
 
   private static void appendDetailedKeyWorkBody(List<KeyWork> keyWorks, StringBuilder innerHtml, boolean sortByName, boolean topmost)
   {
-    ArrayList<KeyWork> sortedKeys = new ArrayList<>(keyWorks);
+    List<KeyWork> sortedKeys = new ArrayList<>(keyWorks);
     MutableBoolean firstOne = new MutableBoolean(true);
 
     if (sortByName)
@@ -745,7 +746,7 @@ public class MainTextUtil
   {
     if ((parentLabel == null) || parentLabel.subLabels.isEmpty()) return;
 
-    ArrayList<HDT_WorkLabel> sortedLabels = new ArrayList<>(parentLabel.subLabels);
+    List<HDT_WorkLabel> sortedLabels = new ArrayList<>(parentLabel.subLabels);
     sortedLabels.sort((label1, label2) -> label1.name().compareToIgnoreCase(label2.name()));
 
     sortedLabels.forEach(label ->
@@ -786,10 +787,10 @@ public class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static HashMap<String, String> getKeyWorkLinkMap(List<KeyWork> keyWorks, List<String> sortedKeys, boolean sortByName)
+  private static Map<String, String> getKeyWorkLinkMap(List<KeyWork> keyWorks, List<String> sortedKeys, boolean sortByName)
   {
-    HashMap<String, String> linkMap = new HashMap<>();
-    HashMap<String, KeyWork> keyToKeyWork = new HashMap<>();
+    Map<String, String> linkMap = new HashMap<>();
+    Map<String, KeyWork> keyToKeyWork = new HashMap<>();
 
     keyWorks.forEach(keyWork ->
     {

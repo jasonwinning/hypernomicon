@@ -385,7 +385,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   private void reorderGlossaries(List<HDT_Glossary> newGlossaryList)
   {
-    ArrayList<HDT_Concept> newConceptList = new ArrayList<>();
+    List<HDT_Concept> newConceptList = new ArrayList<>();
 
     newGlossaryList.forEach(glossary -> newConceptList.add(curTerm.getConcept(glossary)));
 
@@ -439,7 +439,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     HDT_Concept concept = db.createNewBlankRecord(hdtConcept);
 
-    ArrayList<HDT_Concept> newList = new ArrayList<>(objList);
+    List<HDT_Concept> newList = new ArrayList<>(objList);
     newList.add(ndx, concept);
 
     curTerm.concepts.add(ndx, concept);

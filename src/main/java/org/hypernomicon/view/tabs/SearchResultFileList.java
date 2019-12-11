@@ -23,6 +23,7 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.cos.COSArray;
@@ -149,7 +150,7 @@ public class SearchResultFileList
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    private void copyToResultsFolder(boolean excludeAnnots, ArrayList<String> errList)
+    private void copyToResultsFolder(boolean excludeAnnots, List<String> errList)
     {
       PDFCloneUtility cloneUtil = null;
 
@@ -224,8 +225,8 @@ public class SearchResultFileList
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private final ArrayList<SearchResultFile> list = new ArrayList<>();
-  private final ArrayList<String> errList = new ArrayList<>();
+  private final List<SearchResultFile> list = new ArrayList<>();
+  private final List<String> errList = new ArrayList<>();
   private final boolean copyingEntirePDFs;
   private final FilePathSet filePathSet = new FilePathSet();
 

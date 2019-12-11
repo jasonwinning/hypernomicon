@@ -24,8 +24,8 @@ import org.hypernomicon.model.Exceptions.RelationCycleException;
 
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.hypernomicon.model.HDI_Schema;
@@ -89,7 +89,7 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getStrings(ArrayList<String> list, Tag tag, boolean searchLinkedRecords)
+  @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
   {
     if (searchLinkedRecords)
       db.getObjectList(relType, record, false).forEach(objRecord -> list.add(objRecord.listName()));

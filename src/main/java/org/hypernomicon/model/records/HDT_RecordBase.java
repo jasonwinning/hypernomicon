@@ -18,11 +18,11 @@
 package org.hypernomicon.model.records;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -66,7 +66,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   private final HyperDataset<? extends HDT_Record> dataset;
   protected final Tag nameTag;
   private final NameItem name;
-  private final LinkedHashMap<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items;
+  private final Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items;
   private final boolean dummyFlag;
   private final String sortKeyAttr;
   private final HDT_RecordType type;
@@ -559,7 +559,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void getAllStrings(ArrayList<String> list, boolean searchLinkedRecords)
+  @Override public void getAllStrings(List<String> list, boolean searchLinkedRecords)
   {
     getSearchKeys().forEach(key -> list.add(key.text));
 

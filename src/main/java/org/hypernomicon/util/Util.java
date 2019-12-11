@@ -79,7 +79,6 @@ import java.util.TimerTask;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -287,7 +286,7 @@ public final class Util
 
   public static void removeDupsInStrList(List<String> list)
   {
-    HashSet<String> set = new HashSet<>();
+    Set<String> set = new HashSet<>();
     Iterator<String> it = list.iterator();
 
     while (it.hasNext())
@@ -403,7 +402,7 @@ public final class Util
   {
     url = url.trim();
 
-    if (url.length() < 1) return;
+    if (url.isEmpty()) return;
 
     if (url.indexOf(":") == -1)
       url = "http://" + url;
@@ -629,9 +628,11 @@ public final class Util
 
     if (windowStack != null)
     {
-      Stage window = windowStack.getOutermostStage();
-      if (window.isShowing())
-        dlg.initOwner(window);
+      Stage owner = windowStack.getOutermostStage();
+      if ((owner != null) && (owner.isShowing() == false))
+        owner = null;
+
+      dlg.initOwner(owner);
     }
 
     Optional<ButtonType> result = dlg.showAndWait();
@@ -1187,14 +1188,14 @@ public final class Util
   private static final String NORMALIZE_ID = "NFD; [:Nonspacing Mark:] Remove; NFC";
   private static final Transliterator transliterator1 = Transliterator.getInstance("NFD; Any-Latin; NFC; " + NORMALIZE_ID),
                                       transliterator2 = Transliterator.getInstance("NFD; Latin-ASCII; NFC; " + NORMALIZE_ID);
-  private static final HashMap<Character, String> charMap = new HashMap<>();
+  private static final Map<Character, String> charMap = new HashMap<>();
 
   public static String convertToEnglishChars(String input)
   {
     return convertToEnglishCharsWithMap(input, null);
   }
 
-  public static String convertToEnglishCharsWithMap(String input, ArrayList<Integer> posMap)
+  public static String convertToEnglishCharsWithMap(String input, List<Integer> posMap)
   {
     StringBuilder output = new StringBuilder();
 
@@ -1254,8 +1255,7 @@ public final class Util
     try
     {
       Manifest manifest = new Manifest(new URL(manifestPath).openStream());
-      Attributes attr = manifest.getMainAttributes();
-      return attr.getValue(key);
+      return manifest.getMainAttributes().getValue(key);
 
     } catch (IOException e) { noOp(); }
 
@@ -1709,9 +1709,9 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ArrayList<String> convertMultiLineStrToStrList(String str, boolean emptiesOK)
+  public static List<String> convertMultiLineStrToStrList(String str, boolean emptiesOK)
   {
-    ArrayList<String> list = new ArrayList<>(Arrays.asList(str.split("\\r?\\n")));
+    List<String> list = new ArrayList<>(Arrays.asList(str.split("\\r?\\n")));
 
     if (list.isEmpty()) return list;
 
@@ -1820,9 +1820,7 @@ public final class Util
   {
     String doi = matchDOIiteration(str);
 
-    if (doi.length() > 0) return doi;
-
-    return matchDOIiteration(unescapeURL(str));
+    return doi.length() > 0 ? doi : matchDOIiteration(unescapeURL(str));
   }
 
   private static String matchDOIiteration(String str)

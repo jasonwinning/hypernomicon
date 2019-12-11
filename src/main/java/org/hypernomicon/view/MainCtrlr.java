@@ -2050,7 +2050,7 @@ public final class MainCtrlr
 
     if (success)
     {
-      ArrayList<String> mruList = getHdbMRUs();
+      List<String> mruList = getHdbMRUs();
       mruList.add(0, hdbPath.toString());
       saveHdbMRUs(mruList);
 
@@ -2081,7 +2081,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void saveHdbMRUs(ArrayList<String> mruList)
+  public void saveHdbMRUs(List<String> mruList)
   {
     mruList.removeIf(String::isBlank);
     removeDupsInStrList(mruList);
@@ -2093,9 +2093,9 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ArrayList<String> getHdbMRUs()
+  public List<String> getHdbMRUs()
   {
-    ArrayList<String> mruList = new ArrayList<>();
+    List<String> mruList = new ArrayList<>();
 
     for (int ndx = 0; ndx < HDB_MRU_SIZE; ndx++)
       mruList.add(appPrefs.get(PREF_KEY_HDB_MRU + String.valueOf(ndx + 1), ""));

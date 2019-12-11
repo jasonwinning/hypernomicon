@@ -73,6 +73,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -132,7 +133,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private HyperTable htLabels, htSubworks, htInvestigations, htArguments, htMiscFiles, htWorkFiles, htKeyMentioners, htISBN;
   private HyperCB hcbLargerWork;
   private MainTextWrapper mainText;
-  private final HashMap<Tab, String> tabCaptions = new HashMap<>();
+  private final Map<Tab, String> tabCaptions = new HashMap<>();
   private boolean btnFolderAdded, inNormalMode = true, alreadyChangingTitle = false;
   private double btnURLLeftAnchor, tfURLLeftAnchor, tfURLRightAnchor;
   private SplitMenuButton btnFolder = null;
@@ -835,7 +836,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (curWork == lastWork)
     {
-      ArrayList<TableColumn<HyperTableRow, ?>> list = new ArrayList<>(htWorkFiles.getTV().getSortOrder());
+      List<TableColumn<HyperTableRow, ?>> list = new ArrayList<>(htWorkFiles.getTV().getSortOrder());
 
       htWorkFiles.getTV().getSortOrder().setAll(list);
 
