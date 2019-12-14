@@ -103,9 +103,9 @@
                            <center>
                               <HBox fx:id="hBox" alignment="CENTER" pickOnBounds="false" spacing="4.0">
                                  <children>
-                                    <Button fx:id="btnOK" defaultButton="true" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="60.0" text="OK" />
+                                    <Button fx:id="btnOK" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="60.0" text="OK" />
                                     <Button fx:id="btnCreateNew" mnemonicParsing="false" text="Create New Record" />
-                                    <Button fx:id="btnCancel" cancelButton="true" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" />
+                                    <Button fx:id="btnCancel" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" />
                                  </children>
                               </HBox>
                            </center>

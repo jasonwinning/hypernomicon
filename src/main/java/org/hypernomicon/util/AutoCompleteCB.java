@@ -20,7 +20,7 @@ package org.hypernomicon.util;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
-import javafx.collections.ObservableList;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ComboBox;
@@ -33,6 +33,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Person;
@@ -121,7 +122,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
     hcb.somethingWasTyped = true;
 
-    ObservableList<HyperTableCell> items = cb.getItems();
+    List<HyperTableCell> items = cb.getItems();
 
     if (collEmpty(items))
     {
@@ -189,7 +190,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
   public static boolean scrollToValue(ComboBox<HyperTableCell> cb)
   {
-    ObservableList<HyperTableCell> items = cb.getItems();
+    List<HyperTableCell> items = cb.getItems();
     if (items == null) return false;
 
     String editorText = cb.getEditor().getText();

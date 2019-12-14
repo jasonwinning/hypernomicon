@@ -17,7 +17,6 @@
 
 package org.hypernomicon.view.dialogs;
 
-import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -29,6 +28,8 @@ import javafx.util.Callback;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.HyperFavorites.*;
+
+import java.util.List;
 
 public class FavOrderDlgCtrlr extends HyperDlg
 {
@@ -83,7 +84,7 @@ public class FavOrderDlgCtrlr extends HyperDlg
   {
     int oldNdx = lvRecord.getSelectionModel().getSelectedIndex() + FIRST_FAV_MENU_ITEM_NDX,
         newNdx = oldNdx + diff;
-    ObservableList<MenuItem> items = ui.mnuFavorites.getItems();
+    List<MenuItem> items = ui.mnuFavorites.getItems();
 
     if ((newNdx >= FIRST_FAV_MENU_ITEM_NDX) && (newNdx < items.size()))
     {
@@ -102,7 +103,7 @@ public class FavOrderDlgCtrlr extends HyperDlg
   {
     int oldNdx = lvQuery.getSelectionModel().getSelectedIndex(),
         newNdx = oldNdx + diff;
-    ObservableList<MenuItem> items = ui.mnuQueries.getItems();
+    List<MenuItem> items = ui.mnuQueries.getItems();
 
     if ((newNdx >= 0) && (newNdx < items.size()))
     {

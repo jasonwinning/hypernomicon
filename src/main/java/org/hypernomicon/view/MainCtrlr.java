@@ -58,6 +58,7 @@ import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.view.settings.SettingsDlgCtrlr;
+import org.hypernomicon.view.settings.SettingsDlgCtrlr.SettingsPage;
 import org.hypernomicon.view.settings.WebButtonSettingsCtrlr;
 import org.hypernomicon.view.tabs.*;
 import org.hypernomicon.view.tabs.HyperTab.TabEnum;
@@ -93,7 +94,6 @@ import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanExpression;
-import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
@@ -167,11 +167,11 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private ObservableList<ResultsRow> results() { return curQV.resultsTable.getTV().getItems(); }
-  MenuBar getMenuBar()                         { return menuBar; }
-  public TreeWrapper getTree()                 { return treeHyperTab().getTree(); }
-  private Stage primaryStage()                 { return app.getPrimaryStage(); }
-  public boolean isShuttingDown()              { return shuttingDown; }
+  private List<ResultsRow> results()          { return curQV.resultsTable.getTV().getItems(); }
+  MenuBar getMenuBar()                        { return menuBar; }
+  public TreeWrapper getTree()                { return treeHyperTab().getTree(); }
+  private Stage primaryStage()                { return app.getPrimaryStage(); }
+  public boolean isShuttingDown()             { return shuttingDown; }
 
   @FXML private void mnuExitClick()           { shutDown(true, true, true); }
   @FXML private void mnuExitNoSaveClick()     { if (confirmDialog("Abandon changes and quit?")) shutDown(false, true, false); }
@@ -1160,9 +1160,6 @@ public final class MainCtrlr
 
       boolean watcherWasRunning = folderTreeWatcher.stop();
 
-      if (db.bibLibraryIsLinked())
-        bibManagerDlg.saveToDisk();
-
       db.saveAllToDisk(favorites);
 
       if (restartWatcher && watcherWasRunning)
@@ -1982,6 +1979,26 @@ public final class MainCtrlr
     enableControls(db.isLoaded());
 
     viewSequence.init(getTabEnumByRecordType(db.parseTypeTagStr(db.prefs.get(PREF_KEY_RECORD_TYPE, ""))));
+
+    if (db.bibLibraryIsLinked() || db.prefs.getBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, true) == false)
+      return;
+
+    PopupDialog dlg = new PopupDialog("This database is not currently integrated with a reference manager account (like Mendeley or Zotero). Add one now?");
+
+    dlg.addButton("Yes", mrYes);
+    dlg.addButton("Remind me later" , mrNo);
+    dlg.addButton("Do not ask again for this database", mrIgnore);
+
+    DialogResult result = dlg.showModal();
+
+    if (result == mrNo)
+      db.prefs.putBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, true);
+
+    else if (result == mrIgnore)
+      db.prefs.putBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, false);
+
+    if (result == mrYes)
+      SettingsDlgCtrlr.create(SettingsPage.BibMgr).showModal();
   }
 
 //---------------------------------------------------------------------------
@@ -2615,9 +2632,7 @@ public final class MainCtrlr
 
     if (relType == rtNone)
     {
-      String msg = "You must select a record of type: " + treeSelector.getTypesStr();
-
-      messageDialog(msg + ".", mtError);
+      messageDialog("You must select a record of type: " + treeSelector.getTypesStr() + ".", mtError);
       return;
     }
 
@@ -2646,10 +2661,10 @@ public final class MainCtrlr
     {
       MergeSpokeDlgCtrlr frmMerge = MergeSpokeDlgCtrlr.create(record1, record2);
 
-      if (frmMerge.showModal())
-        desc = frmMerge.getDesc();
-      else
+      if (frmMerge.showModal() == false)
         return;
+
+      desc = frmMerge.getDesc();
     }
 
     if (StrongLink.connectRecords(record1.getConnector(), record2.getConnector(), desc))
@@ -2778,6 +2793,7 @@ public final class MainCtrlr
     {
       SelectWorkDlgCtrlr swdc = SelectWorkDlgCtrlr.create(person, true, filePathToUse);
       if (swdc.showModal() == false) return;
+
       work = swdc.getWork();
       person = swdc.getAuthor();
       bdToUse = swdc.getBibData();

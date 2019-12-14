@@ -116,6 +116,8 @@ public class SubjectPopulator extends Populator
     choices.clear();
     choices.add(HyperTableCell.blankCell);
 
+    if (db.isLoaded() == false) return choices;
+
     HDT_Record curObj;
 
     if (trackObjByRow)

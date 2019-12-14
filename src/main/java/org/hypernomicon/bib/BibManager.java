@@ -106,8 +106,6 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void saveToDisk() { libraryWrapper.saveToDisk(db.xmlPath(BIB_FILE_NAME)); }
-
   @Override public boolean isValid() { return true; }
 
 //---------------------------------------------------------------------------
@@ -226,8 +224,7 @@ public class BibManager extends HyperDlg
     entryTable = new BibEntryTable(tableView, PREF_KEY_HT_BIB_ENTRIES);
     collTree = new CollectionTree(treeView);
 
-    toolBar.getItems().remove(btnDelete);         // These are not
-    toolBar.getItems().remove(btnPreviewWindow);  // yet supported. (Not sure if the preview button is needed?)
+    toolBar.getItems().removeAll(btnDelete, btnPreviewWindow); // These are not yet supported. (Not sure if the preview button is needed?)
 
     btnMainWindow.setOnAction(event -> ui.windows.focusStage(app.getPrimaryStage()));
     btnSync.setOnAction(event -> sync());
@@ -498,36 +495,41 @@ public class BibManager extends HyperDlg
 
     BibEntry entry = curRow.getEntry();
 
-    list.forEach(relative ->
-    {
-      relative.entry.setStr(bfVolume   , entry.getStr(bfVolume   ));
-      relative.entry.setStr(bfPublisher, entry.getStr(bfPublisher));
-      relative.entry.setStr(bfPubLoc   , entry.getStr(bfPubLoc   ));
-      relative.entry.setStr(bfEdition  , entry.getStr(bfEdition  ));
-
-      switch (relative.relation)
-      {
-        case Child:
-
-          relative.entry.setMultiStr(bfContainerTitle, entry.getMultiStr(bfTitle));
-          break;
-
-        case Parent:
-
-          relative.entry.setMultiStr(bfTitle, entry.getMultiStr(bfContainerTitle));
-          break;
-
-        case Sibling:
-
-          relative.entry.setMultiStr(bfContainerTitle, entry.getMultiStr(bfContainerTitle));
-          break;
-      }
-
-      entry.syncBookAuthorsTo(relative);
-    });
+    list.forEach(relative -> updateRelative(relative, entry));
 
     refresh();
     ui.update();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void updateRelative(RelatedBibEntry relative, BibEntry entry)
+  {
+    relative.entry.setStr(bfVolume   , entry.getStr(bfVolume   ));
+    relative.entry.setStr(bfPublisher, entry.getStr(bfPublisher));
+    relative.entry.setStr(bfPubLoc   , entry.getStr(bfPubLoc   ));
+    relative.entry.setStr(bfEdition  , entry.getStr(bfEdition  ));
+
+    switch (relative.relation)
+    {
+      case Child:
+
+        relative.entry.setMultiStr(bfContainerTitle, entry.getMultiStr(bfTitle));
+        break;
+
+      case Parent:
+
+        relative.entry.setMultiStr(bfTitle, entry.getMultiStr(bfContainerTitle));
+        break;
+
+      case Sibling:
+
+        relative.entry.setMultiStr(bfContainerTitle, entry.getMultiStr(bfContainerTitle));
+        break;
+    }
+
+    entry.syncBookAuthorsTo(relative);
   }
 
 //---------------------------------------------------------------------------
@@ -598,6 +600,14 @@ public class BibManager extends HyperDlg
     BibEntry entry = libraryWrapper.addEntry(et);
 
     work.setBibEntryKey(entry.getKey());
+
+    if (childTypes.contains(et) && work.largerWork.isNotNull() && (work.largerWork.get().getBibEntryKey().isBlank() == false))
+    {
+      BibEntry parentEntry = libraryWrapper.getEntryByKey(work.largerWork.get().getBibEntryKey());
+
+      if (parentTypes.contains(parentEntry.getEntryType()))
+        updateRelative(new RelatedBibEntry(BibEntryRelation.Child, entry), parentEntry);
+    }
 
     workRecordToAssign.set(null);
 

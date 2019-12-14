@@ -40,7 +40,6 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.previewWindow.PDFJSWrapper.PDFJSCommand;
 import org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource;
 import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.ToggleButton;
@@ -275,7 +274,7 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean addMenuItem(ObservableList<MenuItem> menu, int ndx)
+  private boolean addMenuItem(List<MenuItem> menu, int ndx)
   {
     menu.add(getMenuItemForNavNdx(ndx));
 
@@ -285,7 +284,7 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void refreshNavMenu(ObservableList<MenuItem> menu, boolean isForward)
+  void refreshNavMenu(List<MenuItem> menu, boolean isForward)
   {
     menu.clear();
     if (curPrevFile == null) return;

@@ -86,7 +86,6 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
@@ -566,7 +565,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
   public static void accommodatePreview(Stage dialogStage, AnchorPane apMain, MasterDetailPane mdp)
   {
-    ObservableList<Screen> screens = Screen.getScreensForRectangle(dialogStage.getX(), dialogStage.getY(), dialogStage.getWidth(), dialogStage.getHeight());
+    List<Screen> screens = Screen.getScreensForRectangle(dialogStage.getX(), dialogStage.getY(), dialogStage.getWidth(), dialogStage.getHeight());
     double minWidth = screens.size() == 1 ? screens.get(0).getVisualBounds().getWidth() - 60.0 : 1600.0;
 
     if (dialogStage.getWidth() < minWidth)

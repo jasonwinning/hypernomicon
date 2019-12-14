@@ -423,8 +423,8 @@
                         </ImageView>
                      </graphic>
                   </Button>      
-                  <Button defaultButton="true" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="60.0" text="OK" />
-                  <Button cancelButton="true" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" />
+                  <Button mnemonicParsing="false" onAction="#btnOkClick" prefWidth="60.0" text="OK" />
+                  <Button mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" />
                </children>
             </HBox>
          </children>

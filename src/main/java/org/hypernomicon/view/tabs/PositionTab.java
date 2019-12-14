@@ -18,6 +18,7 @@
 package org.hypernomicon.view.tabs;
 
 import java.util.EnumSet;
+import java.util.List;
 
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.*;
@@ -41,7 +42,6 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
-import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 
 //---------------------------------------------------------------------------
@@ -136,7 +136,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
   @Override void init()
   {
-    ObservableList<TableColumn<HyperTableRow, ?>> cols;
+    List<TableColumn<HyperTableRow, ?>> cols;
 
     ctrlr.init(hdtPosition, this);
 

@@ -79,6 +79,12 @@ public class SettingsDlgCtrlr extends HyperDlg
   private boolean noDB;
   private SettingsControl webBtnSettingsCtrlr;
 
+  public static enum SettingsPage
+  {
+    CompGeneral,
+    BibMgr
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -92,15 +98,20 @@ public class SettingsDlgCtrlr extends HyperDlg
 
   public static SettingsDlgCtrlr create()
   {
+    return create(SettingsPage.CompGeneral);
+  }
+
+  public static SettingsDlgCtrlr create(SettingsPage page)
+  {
     SettingsDlgCtrlr odc = HyperDlg.createUsingFullPath("view/settings/SettingsDlg.fxml", appTitle + " Settings", true);
-    odc.init();
+    odc.init(page);
     return odc;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init()
+  private void init(SettingsPage page)
   {
     noDB = (db == null) || (db.prefs == null) || (db.isLoaded() == false);
 
@@ -194,8 +205,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     sliderFontSize.setValue(appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE));
     sliderFontSize.valueProperty().addListener((ob, oldValue, newValue) ->
     {
-      if ((oldValue == null) || (newValue == null)) return;
-      if ((oldValue.doubleValue() == newValue.doubleValue())) return;
+      if ((oldValue == null) || (newValue == null) || (oldValue.doubleValue() == newValue.doubleValue())) return;
       if (appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE) == newValue.doubleValue()) return;
 
       appPrefs.putDouble(PREF_KEY_FONT_SIZE, newValue.doubleValue());
@@ -203,10 +213,10 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     setToolTip(sliderFontSize, "Base font size");
 
-    initAppCheckBox(chkInternet, PREF_KEY_CHECK_INTERNET, true);
+    initAppCheckBox(chkInternet       , PREF_KEY_CHECK_INTERNET       , true);
     initAppCheckBox(chkNewVersionCheck, PREF_KEY_CHECK_FOR_NEW_VERSION, true);
-    initAppCheckBox(chkAutoOpenPDF, PREF_KEY_AUTO_OPEN_PDF, true);
-    initAppCheckBox(chkAutoRetrieveBib, PREF_KEY_AUTO_RETRIEVE_BIB, true);
+    initAppCheckBox(chkAutoOpenPDF    , PREF_KEY_AUTO_OPEN_PDF        , true);
+    initAppCheckBox(chkAutoRetrieveBib, PREF_KEY_AUTO_RETRIEVE_BIB    , true);
 
     chkLinuxWorkaround.setVisible(SystemUtils.IS_OS_LINUX);
 
@@ -219,6 +229,20 @@ public class SettingsDlgCtrlr extends HyperDlg
       initDBCheckBox(chkUseSentenceCase, PREF_KEY_SENTENCE_CASE, false);
 
     dialogStage.setOnHiding(event -> webBtnSettingsCtrlr.save());
+
+    onShown = () ->
+    {
+      switch (page)
+      {
+        case BibMgr:
+          btnDatabase.setSelected(true);
+          tpDBSpecific.getSelectionModel().select(tabLinkToExtBibMgr);
+          break;
+
+        default:
+          break;
+      }
+    };
   }
 
 //---------------------------------------------------------------------------

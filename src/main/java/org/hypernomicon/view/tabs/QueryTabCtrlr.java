@@ -1337,7 +1337,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private ObservableList<ResultsRow> results()
+  private List<ResultsRow> results()
   {
     if ((curQV == null) || (curQV.inRecordMode == false)) return FXCollections.observableArrayList();
 
@@ -1753,7 +1753,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       updateProgress(0, 1);
 
-      ObservableList<ResultsRow> resultRowList;
+      List<ResultsRow> resultRowList;
 
       if (onlySelected)
         resultRowList = curQV.resultsTable.getTV().getSelectionModel().getSelectedItems();

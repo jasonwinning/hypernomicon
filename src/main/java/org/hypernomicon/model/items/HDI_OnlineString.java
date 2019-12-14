@@ -17,7 +17,7 @@
 
 package org.hypernomicon.model.items;
 
-import static org.hypernomicon.model.HyperDB.Tag.tagListName;
+import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -41,7 +41,7 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 
   @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords) { list.add(get()); }
 
-  @Override public String getResultTextForTag(Tag tag) { return get(); }
+  @Override public String getResultTextForTag(Tag tag) { return convertToSingleLine(get()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

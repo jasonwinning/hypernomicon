@@ -177,7 +177,7 @@ public class RecordByTypePopulator extends Populator
     choices.clear();
     choices.add(HyperTableCell.blankCell);
 
-    if (recordType == hdtNone) return choices;
+    if ((recordType == hdtNone) || (db.isLoaded() == false)) return choices;
 
     Map<Integer, Boolean> map = new HashMap<>();
     boolean firstAdd = true;

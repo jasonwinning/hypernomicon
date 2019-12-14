@@ -26,7 +26,6 @@ import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
@@ -39,12 +38,12 @@ public class ObjectOrderDlgCtrlr extends HyperDlg
   @FXML private Button btnMoveUp, btnMoveDown;
   @FXML private TableView<HyperTableRow> tv;
 
-  private ObservableList<HyperTableRow> rows;
+  private List<HyperTableRow> rows;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ObjectOrderDlgCtrlr create(HyperTable ht, ObservableList<HyperTableRow> rows)
+  public static ObjectOrderDlgCtrlr create(HyperTable ht, List<HyperTableRow> rows)
   {
     ObjectOrderDlgCtrlr ood = HyperDlg.create("ObjectOrderDlg.fxml", "Change Order of Rows", true);
     ood.init(ht, rows);
@@ -54,7 +53,7 @@ public class ObjectOrderDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HyperTable ht, ObservableList<HyperTableRow> rows)
+  private void init(HyperTable ht, List<HyperTableRow> rows)
   {
     List<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
 

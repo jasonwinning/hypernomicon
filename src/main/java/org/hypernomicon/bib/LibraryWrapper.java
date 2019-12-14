@@ -380,7 +380,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void saveToDisk(FilePath filePath)
+  public void saveToDisk()
   {
     StringBuilder json = null;
 
@@ -419,7 +419,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
     try
     {
-      saveStringBuilderToFile(json, filePath);
+      saveStringBuilderToFile(json, db.xmlPath(BIB_FILE_NAME));
       safePrefs();
     }
     catch (IOException e)

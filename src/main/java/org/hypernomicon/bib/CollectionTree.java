@@ -19,9 +19,9 @@ package org.hypernomicon.bib;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
-import javafx.collections.ObservableList;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -96,7 +96,7 @@ public class CollectionTree
     treeRowUnsorted = new BibCollectionRow(bctUnsorted);
     treeRowTrash = new BibCollectionRow(bctTrash);
 
-    ObservableList<TreeItem<BibCollectionRow>> children = root.getChildren();
+    List<TreeItem<BibCollectionRow>> children = root.getChildren();
 
     children.add(treeRowAllEntries.getTreeItem());
     children.add(treeRowUnsorted.getTreeItem());
@@ -209,7 +209,7 @@ public class CollectionTree
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void insertTreeItem(ObservableList<TreeItem<BibCollectionRow>> list, BibCollectionRow newRow)
+  private void insertTreeItem(List<TreeItem<BibCollectionRow>> list, BibCollectionRow newRow)
   {
     for (int ndx = 0; ndx < list.size(); ndx++)
     {

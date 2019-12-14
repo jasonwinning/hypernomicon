@@ -94,7 +94,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
-import javafx.collections.ObservableList;
 import javafx.event.EventTarget;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
@@ -1274,7 +1273,7 @@ public final class Util
                                           null, Window::getScene), null, Scene::getRoot);
     if (parent == null) return;
 
-    ObservableList<Node> rootChildren = parent.getChildrenUnmodifiable();
+    List<Node> rootChildren = parent.getChildrenUnmodifiable();
     if (rootChildren.size() == 0) return;
 
     Node bridge = rootChildren.get(0).lookup(".context-menu");
@@ -1290,7 +1289,7 @@ public final class Util
       Node contextMenuContent = ((Parent)bridge).getChildrenUnmodifiable().get(0);
       Constructor<?> ctor = menuItemContainerClass.getDeclaredConstructor(contextMenuContentClass, MenuItem.class);
 
-      ObservableList<Node> list = VBox.class.cast(contextMenuContentClass.getMethod("getItemsContainer").invoke(contextMenuContent)).getChildren();
+      List<Node> list = VBox.class.cast(contextMenuContentClass.getMethod("getItemsContainer").invoke(contextMenuContent)).getChildren();
 
       list.clear();
       for (MenuItem item : items)

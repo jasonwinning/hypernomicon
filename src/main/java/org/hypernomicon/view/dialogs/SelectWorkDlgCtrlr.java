@@ -53,7 +53,6 @@ import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import com.google.common.collect.Lists;
 
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -416,7 +415,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
   private static void accommodatePreview(Stage dialogStage, AnchorPane apMain)
   {
-    ObservableList<Screen> screens = Screen.getScreensForRectangle(dialogStage.getX(), dialogStage.getY(), dialogStage.getWidth(), dialogStage.getHeight());
+    List<Screen> screens = Screen.getScreensForRectangle(dialogStage.getX(), dialogStage.getY(), dialogStage.getWidth(), dialogStage.getHeight());
     double minHeight = screens.size() == 1 ? screens.get(0).getVisualBounds().getHeight() - 60.0 : 900.0;
 
     if (dialogStage.getHeight() < minHeight)

@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import javafx.collections.ObservableList;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 
@@ -41,7 +40,7 @@ import javafx.scene.control.MenuItem;
 
 public class HyperFavorites
 {
-  final ObservableList<MenuItem> mainList, queryList;
+  final List<MenuItem> mainList, queryList;
   public static final int FIRST_FAV_MENU_ITEM_NDX = 4;
 
 //---------------------------------------------------------------------------
@@ -59,7 +58,7 @@ public class HyperFavorites
     public String name;
     public boolean autoexec;
 
-    public void removeFromList(ObservableList<MenuItem> items)
+    public void removeFromList(List<MenuItem> items)
     {
       nullSwitch(items.stream().map(item -> (FavMenuItem)item).filter(fav -> fav.isQuery && (fav.query == this)).findFirst().orElse(null),
                  items::remove);

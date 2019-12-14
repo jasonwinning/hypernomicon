@@ -21,7 +21,8 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
-import javafx.collections.ObservableList;
+import java.util.List;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Side;
@@ -47,7 +48,7 @@ public class ClickHoldButton
 
   public void setDisable(boolean disable)                  { btn.setDisable(disable); }
   public void setOnAction(EventHandler<ActionEvent> hndlr) { this.hndlr = hndlr; }
-  public ObservableList<MenuItem> getMenu()                { return btnMenu.getItems(); }
+  public List<MenuItem> getMenu()                          { return btnMenu.getItems(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -61,7 +62,7 @@ public class ClickHoldButton
 
     if ((parent instanceof Pane) && !(parent instanceof GridPane))
     {
-      ObservableList<Node> children = Pane.class.cast(parent).getChildren();
+      List<Node> children = Pane.class.cast(parent).getChildren();
       children.add(children.indexOf(btn), btnMenu);
     }
     else

@@ -50,6 +50,7 @@ public final class Const
   public static final String
 
     PREF_KEY_SETTINGS_VERSION = "settingsVersion",
+    PREF_KEY_NOTIFY_USER_NOT_LINKED = "notifyUnlinked",
     PREF_KEY_DB_CREATION_DATE = "dbCreationDate",
     PREF_KEY_SOURCE_PATH = "sourcePath",
     PREF_KEY_SOURCE_FILENAME = "sourceFile",

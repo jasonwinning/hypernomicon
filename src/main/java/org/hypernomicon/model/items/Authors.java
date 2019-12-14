@@ -424,7 +424,9 @@ public final class Authors implements Iterable<Author>
     if (sort)
       authors.sort(null);
 
-    for (int ndx = 0; ndx < authors.size(); ndx++)
+    int num = Math.min(6, authors.size());
+
+    for (int ndx = 0; ndx < num; ndx++)
     {
       if (ndx != 0)
       {
@@ -436,6 +438,9 @@ public final class Authors implements Iterable<Author>
 
       peopleStr = peopleStr + (firstInitials ? authors.get(ndx).getBibName() : authors.get(ndx).getNameLastFirst());
     }
+
+    if (num < authors.size())
+      peopleStr = peopleStr + " et al.";
 
     return peopleStr;
   }

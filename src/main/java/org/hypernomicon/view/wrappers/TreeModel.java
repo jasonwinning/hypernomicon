@@ -20,6 +20,7 @@ package org.hypernomicon.view.wrappers;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,7 +33,6 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.ImmutableSet;
 
-import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 
 import static org.hypernomicon.model.HyperDB.*;
@@ -206,7 +206,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void insertTreeItem(ObservableList<TreeItem<RowType>> list, RowType newRow)
+  private void insertTreeItem(List<TreeItem<RowType>> list, RowType newRow)
   {
     addToSortedList(list, treeWrapper.getTreeItem(newRow), (item1, item2) -> item1.getValue().compareTo(item2.getValue()));
   }

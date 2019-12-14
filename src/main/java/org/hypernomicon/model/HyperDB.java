@@ -437,6 +437,9 @@ public final class HyperDB
   {
     if (loaded == false) return false;
 
+    if (bibLibraryIsLinked())
+      bibLibrary.saveToDisk();
+
     List<String> filenameList = new ArrayList<>();
     List<StringBuilder> xmlList = Lists.newArrayList(new StringBuilder());
 
@@ -1033,8 +1036,8 @@ public final class HyperDB
             break;
 
           case tagSortKey   : sortKeyAttr = attribute.getValue(); break;
-          case tagSearchKey : searchKey = attribute.getValue(); break;
-          case tagListName  : listName = attribute.getValue(); break;
+          case tagSearchKey : searchKey   = attribute.getValue(); break;
+          case tagListName  : listName    = attribute.getValue(); break;
           default           : break;
         }
       }

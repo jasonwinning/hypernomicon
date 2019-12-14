@@ -36,7 +36,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
-import javafx.collections.ObservableList;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TabPane;
 
@@ -258,7 +257,7 @@ public class HyperViewSequence
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private void refreshNavMenu(ObservableList<MenuItem> menu, boolean isForward)
+  private void refreshNavMenu(List<MenuItem> menu, boolean isForward)
   {
     if (db.isLoaded() == false) return;
 
@@ -279,7 +278,7 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean addMenuItem(ObservableList<MenuItem> menu, int ndx)
+  private boolean addMenuItem(List<MenuItem> menu, int ndx)
   {
     MenuItem item;
     HyperView<? extends HDT_Record> view = viewList.get(ndx);
