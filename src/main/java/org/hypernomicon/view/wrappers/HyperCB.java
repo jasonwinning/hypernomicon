@@ -361,8 +361,11 @@ public class HyperCB implements CommitableWrapper
           if (added == false)
             if (cell.getText().toLowerCase().contains(str))
             {
-              cells.add(cell);
-              atLeastOneRealMatch = true;
+              if ((cell.getType() != hdtPerson) || (record != null)) // Don't use non-record author partial matches
+              {
+                cells.add(cell);
+                atLeastOneRealMatch = true;
+              }
             }
         }
 
@@ -455,7 +458,9 @@ public class HyperCB implements CommitableWrapper
               {
                 pop.populate(row, false);
                 row.setCellValue(colNdx, pop.addEntry(row, -1, npdc.getNameLastFirst()));
-              }
+
+                table.cancelEditing(); // For some reason in this case the keystroke event from earlier causes
+              }                        // the table to enter edit mode again
             }
           }
         }

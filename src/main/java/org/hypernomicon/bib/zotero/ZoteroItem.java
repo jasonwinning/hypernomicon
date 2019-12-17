@@ -574,10 +574,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         {
           JsonObj creatorObj = new JsonObj();
 
-          String firstName = author.getGiven();
-
-          while (firstName.contains("("))
-            firstName = removeFirstParenthetical(firstName);
+          String firstName = removeAllParentheticals(author.getGiven());
 
           creatorObj.put("firstName", firstName);
           creatorObj.put("lastName", author.getFamily());
@@ -590,10 +587,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         {
           JsonObj creatorObj = new JsonObj();
 
-          String firstName = editor.getGiven();
-
-          while (firstName.contains("("))
-            firstName = removeFirstParenthetical(firstName);
+          String firstName = removeAllParentheticals(editor.getGiven());
 
           creatorObj.put("firstName", firstName);
           creatorObj.put("lastName", editor.getFamily());

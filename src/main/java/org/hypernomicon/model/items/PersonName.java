@@ -197,10 +197,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
   String getBibName()
   {
     List<String> initialList = new ArrayList<>();
-    String nameStr, firstName = getFirst();
-
-    while (firstName.contains("("))
-      firstName = removeFirstParenthetical(firstName);
+    String nameStr, firstName = removeAllParentheticals(getFirst());
 
     SplitString splitStr = new SplitString(firstName, ' ');
 

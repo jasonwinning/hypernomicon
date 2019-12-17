@@ -241,9 +241,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
     if (list.size() == 0) return "";
 
-    StringBuilder html = new StringBuilder();
-
-    html.append("<tr><td class=\"fieldName\">" + fieldName + "</td><td>");
+    StringBuilder html = new StringBuilder("<tr><td class=\"fieldName\">" + fieldName + "</td><td>");
 
     for (int ndx = 0; ndx < list.size(); ndx++)
     {
@@ -252,9 +250,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
         html.append("<br>");
     }
 
-    html.append("</td></tr>");
-
-    return html.toString();
+    return html.append("</td></tr>").toString();
   }
 
   //---------------------------------------------------------------------------
@@ -352,9 +348,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
     {
       BibEntry_T entry = BibEntry.create(type(), this, itemJsonObj, false);
 
-      if (entry == null) return;
-
-      keyToAllEntry.put(entry.getKey(), entry);
+      if (entry != null)
+        keyToAllEntry.put(entry.getKey(), entry);
     });
 
     nullSwitch(jObj.getArray("trash"), jArr -> jArr.getObjs().forEach(itemJsonObj ->
@@ -371,9 +366,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
     {
       BibCollection_T coll = BibCollection.create(type(), collJsonObj);
 
-      if (coll == null) return;
-
-      keyToColl.put(coll.getKey(), coll);
+      if (coll != null)
+        keyToColl.put(coll.getKey(), coll);
     }));
   }
 

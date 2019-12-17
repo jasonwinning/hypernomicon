@@ -332,6 +332,17 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static String removeAllParentheticals(String str)
+  {
+    while (str.contains("("))
+      str = removeFirstParenthetical(str);
+
+    return str;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static String removeFirstParenthetical(String str)
   {
     int pos1 = str.indexOf('('), pos2 = str.indexOf(')');

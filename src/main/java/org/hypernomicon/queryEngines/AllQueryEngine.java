@@ -279,17 +279,12 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
             MutableBoolean choseNotToWait = new MutableBoolean();
             list.addAll(db.getMentionerSet(specifiedRecord, false, choseNotToWait));
 
-            while (list.contains(specifiedRecord))
-              list.remove(specifiedRecord);
+            list.removeIf(specifiedRecord::equals);
 
             if (specifiedRecord.getType() == hdtWork)
             {
               HDT_Work work = (HDT_Work) specifiedRecord;
-              work.workFiles.forEach(workFile ->
-              {
-                while (list.contains(workFile))
-                  list.remove(workFile);
-              });
+              work.workFiles.forEach(workFile -> list.removeIf(workFile::equals));
             }
 
             if (choseNotToWait.isTrue())

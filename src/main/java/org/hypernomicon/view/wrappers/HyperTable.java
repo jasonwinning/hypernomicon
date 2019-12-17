@@ -747,6 +747,11 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     runDelayedInFXThread(1, 200, () -> tv.edit(tv.getItems().indexOf(row), tv.getColumns().get(colNdx)));
   }
 
+  public void cancelEditing()
+  {
+    runDelayedInFXThread(1, 200, () -> tv.edit(-1, null));
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

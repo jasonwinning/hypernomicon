@@ -141,34 +141,33 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
     {
       HyperTableCell cell = it.next();
 
+      HDT_Record record = HyperTableCell.getRecord(cell);
       String cellText = HyperTableCell.getCellText(cell);
 
       if (cellText.toLowerCase().startsWith(typedLC))
       {
-        match = true;
-        editor.setText(typed + cellText.substring(typed.length()));
+        if ((cell.getType() != hdtPerson) || (record != null))
+        {
+          match = true;
+          editor.setText(typed + cellText.substring(typed.length()));
+        }
       }
 
-      if (match == false)
+      if ((match == false) && (record != null))
       {
-        HDT_Record record = HyperTableCell.getRecord(cell);
-
-        if (record != null)
+        if (record.getType() == hdtPerson)
         {
-          if (record.getType() == hdtPerson)
-          {
-            HDT_Person person = HDT_Person.class.cast(record);
-            if (person.getFullName(true).toLowerCase().startsWith(typedLC))
-            {
-              match = true;
-              editor.setText(typed + person.getFullName(true).substring(typed.length()));
-            }
-          }
-          else if (record.getNameEngChar().toLowerCase().startsWith(typedLC))
+          HDT_Person person = HDT_Person.class.cast(record);
+          if (person.getFullName(true).toLowerCase().startsWith(typedLC))
           {
             match = true;
-            editor.setText(typed + record.getNameEngChar().substring(typed.length()));
+            editor.setText(typed + person.getFullName(true).substring(typed.length()));
           }
+        }
+        else if (record.getNameEngChar().toLowerCase().startsWith(typedLC))
+        {
+          match = true;
+          editor.setText(typed + record.getNameEngChar().substring(typed.length()));
         }
       }
 
@@ -254,14 +253,11 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
     if ((inFocus == false) && (editorText.trim().length() > 0))
     {
-      if (limitToChoices)
+      if (limitToChoices && (found == false))
       {
-        if (!found)
-        {
-          selectionModel.clearSelection();
-          selectionModel.select(startValue);
-          return;
-        }
+        selectionModel.clearSelection();
+        selectionModel.select(startValue);
+        return;
       }
 
       // press enter key programmatically to have this entry added

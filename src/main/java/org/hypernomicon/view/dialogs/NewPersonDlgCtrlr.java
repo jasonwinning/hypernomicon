@@ -270,47 +270,35 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
   public static class PersonForDupCheck
   {
-    public PersonForDupCheck(Author author)
+    private final Author author;
+    private final PersonName name;
+    private final PotentialKeySet keySet, keySetNoNicknames;
+    private final String fullLCNameEngChar;
+
+    public PersonForDupCheck(PersonName name, Author author) { this(author, name, convertToEnglishChars(String.valueOf(name.getFull()))); }
+    public PersonForDupCheck(HDT_Person person)              { this(new Author(person)); }
+    public PersonForDupCheck(Author author)                  { this(author, author.getName(), author.getFullName(true)); }
+
+  //---------------------------------------------------------------------------
+
+    private PersonForDupCheck(Author author, PersonName name, String newFullNameEngChar)
     {
-      this.author = author;
-      keySet = HDT_Person.makeSearchKeySet(author.getName(), true, true, false);
-      keySetNoNicknames = HDT_Person.makeSearchKeySet(author.getName(), true, true, true);
-
-      fullLCNameEngChar = author.getFullName(true).toLowerCase();
-      while (fullLCNameEngChar.contains("("))
-        fullLCNameEngChar = removeFirstParenthetical(fullLCNameEngChar);
-
-      fullLCNameEngChar = ultraTrim(fullLCNameEngChar);
-
-      name = author.getName();
-    }
-
-    public PersonForDupCheck(PersonName name, Author author, HDT_Person person)
-    {
-      if ((author == null) && (person != null))
-        author = new Author(person);
-
       this.author = author;
       this.name = name;
 
       keySet = HDT_Person.makeSearchKeySet(name, true, true, false);
       keySetNoNicknames = HDT_Person.makeSearchKeySet(name, true, true, true);
 
-      fullLCNameEngChar = convertToEnglishChars(String.valueOf(name.getFull())).toLowerCase();
-      while (fullLCNameEngChar.contains("("))
-        fullLCNameEngChar = removeFirstParenthetical(fullLCNameEngChar);
+      newFullNameEngChar = removeAllParentheticals(newFullNameEngChar.toLowerCase());
 
-      fullLCNameEngChar = ultraTrim(fullLCNameEngChar);
+      fullLCNameEngChar = ultraTrim(newFullNameEngChar.replaceAll("  ", " ")).replaceAll("[.,;]", "");
     }
+
+  //---------------------------------------------------------------------------
 
     public HDT_Person getPerson() { return nullSwitch(author, null, Author::getPerson); }
     public Author getAuthor()     { return author; }
     public PersonName getName()   { return name; }
-
-    private Author author;
-    private PotentialKeySet keySet, keySetNoNicknames;
-    private String fullLCNameEngChar;
-    private PersonName name;
   }
 
 //---------------------------------------------------------------------------
@@ -339,7 +327,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
         list.add(personForDupCheck);
     }));
 
-    db.persons.stream().filter(person -> person.works.isEmpty()).map(Author::new).map(PersonForDupCheck::new).forEach(personForDupCheck ->
+    db.persons.stream().filter(person -> person.works.isEmpty()).map(PersonForDupCheck::new).forEach(personForDupCheck ->
     {
       if (personForDupCheck.fullLCNameEngChar.length() > 0)
         list.add(personForDupCheck);
@@ -426,7 +414,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
         List<Author> matchedAuthors = new ArrayList<>();
         matchedAuthorsList.add(matchedAuthors);
         Author author = queryAuthors.get(ndx);
-        PersonForDupCheck person = new PersonForDupCheck(nameList.get(ndx), author, author == null ? null : author.getPerson());
+        PersonForDupCheck person = new PersonForDupCheck(nameList.get(ndx), author);
 
         doDupCheck(person, list, matchedAuthors, this, ndx * list.size(), nameList.size() * list.size());
       }
@@ -472,8 +460,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
     matchedAuthors = matchedAuthorsList.size() > 0 ? matchedAuthorsList.get(0) : Collections.emptyList();
 
     if (origAuthor != null)
-      while (matchedAuthors.contains(origAuthor))
-        matchedAuthors.remove(origAuthor);
+      matchedAuthors.removeIf(origAuthor::equals);
 
     lblStatus.setText(matchedAuthors.size() + " potential duplicate(s) found.");
     lblStatus.setVisible(true);

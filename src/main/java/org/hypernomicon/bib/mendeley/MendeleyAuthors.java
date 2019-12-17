@@ -129,10 +129,7 @@ public class MendeleyAuthors extends BibAuthors
 
     JsonObj personObj = new JsonObj();
 
-    String firstName = bibAuthor.getGiven();
-
-    while (firstName.contains("("))
-      firstName = removeFirstParenthetical(firstName);
+    String firstName = removeAllParentheticals(bibAuthor.getGiven());
 
     personObj.put("first_name", firstName);
     personObj.put("last_name", bibAuthor.getFamily());

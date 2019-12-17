@@ -595,10 +595,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
         {
           JsonObj personObj = new JsonObj();
 
-          String firstName = editor.getGiven();
-
-          while (firstName.contains("("))
-            firstName = removeFirstParenthetical(firstName);
+          String firstName = removeAllParentheticals(editor.getGiven());
 
           personObj.put("first_name", firstName);
           personObj.put("last_name", editor.getFamily());

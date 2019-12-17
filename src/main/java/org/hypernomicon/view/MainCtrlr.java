@@ -69,7 +69,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -1321,8 +1320,7 @@ public final class MainCtrlr
     {
       FilePath srcFilePath = null;
 
-      try (InputStream is = App.class.getResourceAsStream("resources/blank_db.zip");
-           ZipInputStream zis = new ZipInputStream(is);)
+      try (ZipInputStream zis = new ZipInputStream(App.class.getResourceAsStream("resources/blank_db.zip")))
       {
         ZipEntry entry;
 
@@ -1342,13 +1340,11 @@ public final class MainCtrlr
             if (filePath.getExtensionOnly().equals("hdb"))
               srcFilePath = filePath;
 
-            try (FileOutputStream fos = new FileOutputStream(filePath.toFile());
-                 BufferedOutputStream bos = new BufferedOutputStream(fos, buffer.length))
+            try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath.toFile()), buffer.length))
             {
               while ((size = zis.read(buffer, 0, buffer.length)) != -1)
-              {
                 bos.write(buffer, 0, size);
-              }
+
               bos.flush();
             }
           }

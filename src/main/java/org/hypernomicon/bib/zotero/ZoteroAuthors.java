@@ -128,10 +128,7 @@ public class ZoteroAuthors extends BibAuthors
     JsonObj creatorObj = new JsonObj();
     creatorObj.put("creatorType", aTypeStr);
 
-    String firstName = bibAuthor.getGiven();
-
-    while (firstName.contains("("))
-      firstName = removeFirstParenthetical(firstName);
+    String firstName = removeAllParentheticals(bibAuthor.getGiven());
 
     creatorObj.put("firstName", firstName);
     creatorObj.put("lastName", bibAuthor.getFamily());
