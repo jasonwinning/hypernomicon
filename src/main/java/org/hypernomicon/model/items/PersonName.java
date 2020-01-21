@@ -45,6 +45,8 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
   public PersonName(String name)
   {
     name = ultraTrim(convertToSingleLine(safeStr(name)));
+    while (name.contains("  "))
+      name = name.replaceAll("  ", " ");
 
     if ((name.matches(".*[A-Z].*") == false) || (name.matches(".*[a-z].*") == false))
       name = titleCase(name);

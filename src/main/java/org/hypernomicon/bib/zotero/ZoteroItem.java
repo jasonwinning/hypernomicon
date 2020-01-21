@@ -553,8 +553,8 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
         BibAuthors authors = getAuthors();
 
-        List<BibAuthor> authorList = new ArrayList<>(),
-                        editorList = new ArrayList<>(),
+        List<BibAuthor> authorList     = new ArrayList<>(),
+                        editorList     = new ArrayList<>(),
                         translatorList = new ArrayList<>();
 
         authors.getLists(authorList, editorList, translatorList);
@@ -574,9 +574,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         {
           JsonObj creatorObj = new JsonObj();
 
-          String firstName = removeAllParentheticals(author.getGiven());
-
-          creatorObj.put("firstName", firstName);
+          creatorObj.put("firstName", removeAllParentheticals(author.getGiven()));
           creatorObj.put("lastName", author.getFamily());
           creatorObj.put("creatorType", "bookAuthor");
 
@@ -587,9 +585,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
         {
           JsonObj creatorObj = new JsonObj();
 
-          String firstName = removeAllParentheticals(editor.getGiven());
-
-          creatorObj.put("firstName", firstName);
+          creatorObj.put("firstName", removeAllParentheticals(editor.getGiven()));
           creatorObj.put("lastName", editor.getFamily());
           creatorObj.put("creatorType", "editor");
 

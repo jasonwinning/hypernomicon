@@ -593,7 +593,12 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         alreadyChangingTitle = true;
         String newText = change.getControlNewText();
         change.setRange(0, change.getControlText().length());
-        change.setText(ultraTrim(HDT_Work.fixCase(convertToSingleLine(newText))));
+        
+        newText = convertToSingleLine(newText);
+        while (newText.contains("  "))
+          newText = newText.replaceAll("  ", " ");
+        
+        change.setText(ultraTrim(HDT_Work.fixCase(newText)));
         alreadyChangingTitle = false;
       }
 

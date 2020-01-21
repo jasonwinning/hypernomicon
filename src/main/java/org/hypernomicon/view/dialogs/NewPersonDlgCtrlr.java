@@ -291,7 +291,10 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
       newFullNameEngChar = removeAllParentheticals(newFullNameEngChar.toLowerCase());
 
-      fullLCNameEngChar = ultraTrim(newFullNameEngChar.replaceAll("  ", " ")).replaceAll("[.,;]", "");
+      while (newFullNameEngChar.contains("  "))
+        newFullNameEngChar = newFullNameEngChar.replaceAll("  ", " ");
+      
+      fullLCNameEngChar = ultraTrim(newFullNameEngChar).replaceAll("[.,;]", "");
     }
 
   //---------------------------------------------------------------------------

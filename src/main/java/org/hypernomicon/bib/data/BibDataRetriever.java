@@ -136,7 +136,7 @@ public class BibDataRetriever
     }
 
     if ((queryBD == null) && (pdfBD == null) && (messageShown == false) && (collEmpty(pdfFiles) == false) && queryCrossref && queryGoogle)
-      falseWithWarningMessage("Unable to find bibliographic information in work file(s) or online sources.");
+      falseWithWarningMessage("Unable to find bibliographic information in work file(s) or online sources.\n\nIt might work to add more information manually and then click Auto-Fill.");
 
     doneHndlr.accept(pdfBD, queryBD);
   }

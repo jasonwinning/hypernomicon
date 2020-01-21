@@ -93,7 +93,13 @@ public final class KeywordLinkList
       String prefix = safeSubstring(text, ndx, ndx + 3);
 
       if (checkPeriods) // This happens less than 1 percent of the time
-        prefix = safeSubstring(prefix.replace(".", ". ").replaceAll("  ", " "), 0, 3);
+      {
+        prefix = prefix.replace(".", ". ");
+        while (prefix.contains("  "))
+          prefix = prefix.replaceAll("  ", " ");
+        
+        prefix = safeSubstring(prefix, 0, 3);
+      }
 
       SearchKeyword curKey = null;
       List<SearchKeyword> keys;
@@ -109,7 +115,10 @@ public final class KeywordLinkList
         if (checkPeriods) // This happens less than 1 percent of the time
         {
           matchLen = focusStr.length();
-          focusStr = focusStr.replace(".", ". ").replaceAll("  ", " ");
+          focusStr = focusStr.replace(".", ". ");
+          
+          while (focusStr.contains("  "))
+            focusStr = focusStr.replaceAll("  ", " ");
 
           matchLen = key.text.length() - (focusStr.length() - matchLen);
           focusStr = safeSubstring(focusStr, 0, key.text.length());

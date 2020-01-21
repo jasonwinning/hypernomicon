@@ -358,6 +358,8 @@ public class WorkDlgCtrlr extends HyperDlg
         alreadyChangingTitle = true;
 
         String title = convertToSingleLine(change.getControlNewText());
+        while (title.contains("  "))
+          title = title.replaceAll("  ", " ");
 
         if (title.equals(title.toUpperCase()) || title.equals(title.toLowerCase()))
           title = HDT_Work.fixCase(title);

@@ -40,6 +40,7 @@ import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.view.dialogs.NewPersonDlgCtrlr;
 
 import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.util.Util.*;
 
 public abstract class BibAuthors implements Iterable<BibAuthor>
 {
@@ -139,82 +140,75 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void getListsForWorkMerge(List<PersonName> nameList, List<HDT_Person> personList,
-                                   Map<PersonName, Boolean> nameToEd, Map<PersonName, Boolean> nameToTr, HDT_Work destWork)
+  public void getListsForWorkMerge(List<PersonName> nameList,         // list of names that will be shown in work merge dialog table 
+                                   List<HDT_Person> personList,       // person records that will be populated in work merge dialog table
+                                   Map<PersonName, Boolean> nameToEd, 
+                                   Map<PersonName, Boolean> nameToTr, 
+                                   HDT_Work destWork)
   {
     if (isEmpty()) return;
 
-    List<BibAuthor> authorList = new ArrayList<>(), editorList = new ArrayList<>(), translatorList = new ArrayList<>();
+    List<BibAuthor> authorList     = new ArrayList<>(),  // list of authors for this bib entry
+                    editorList     = new ArrayList<>(),  // list of editors for this bib entry
+                    translatorList = new ArrayList<>();  // list of translators for this bib entry
 
     getLists(authorList, editorList, translatorList);
 
     translatorList.forEach(bibAuthor ->
     {
-      PersonName name = bibAuthor.getName();
-      HDT_Person person = bibAuthor.getPerson();
+      PersonName name = bibAuthor.getName();      
+      if (name.isEmpty()) return;
 
-      if (name.isEmpty() == false)
+      if (nameList.contains(name) == false)
       {
-        if (nameList.contains(name) == false)
-        {
-          nameList.add(name);
-          personList.add(HDT_Person.lookUpByName(name));
-          nameToTr.put(name, true);
-          nameToEd.put(name, false);
-        }
-
-        if (person != null)
-          personList.set(nameList.indexOf(name), person);
+        nameList.add(name);
+        personList.add(HDT_Person.lookUpByName(name));
+        nameToTr.put(name, true);
+        nameToEd.put(name, false);
       }
+
+      nullSwitch(bibAuthor.getPerson(), person -> personList.set(nameList.indexOf(name), person));
     });
 
     editorList.forEach(bibAuthor ->
     {
       PersonName name = bibAuthor.getName();
-      HDT_Person person = bibAuthor.getPerson();
+      if (name.isEmpty()) return;
 
-      if (name.isEmpty() == false)
+      if (nameList.contains(name) == false)
       {
-        if (nameList.contains(name) == false)
-        {
-          nameList.add(name);
-          personList.add(HDT_Person.lookUpByName(name));
-        }
-
-        nameToTr.putIfAbsent(name, false);
-        nameToEd.put(name, true);
-
-        if (person != null)
-          personList.set(nameList.indexOf(name), person);
+        nameList.add(name);
+        personList.add(HDT_Person.lookUpByName(name));
       }
+
+      nameToTr.putIfAbsent(name, false);
+      nameToEd.put(name, true);
+
+      nullSwitch(bibAuthor.getPerson(), person -> personList.set(nameList.indexOf(name), person));
     });
 
     authorList.forEach(bibAuthor ->
     {
       PersonName name = bibAuthor.getName();
-      HDT_Person person = bibAuthor.getPerson();
+      if (name.isEmpty()) return;
 
-      if (name.isEmpty() == false)
+      if (nameList.contains(name) == false)
       {
-        if (nameList.contains(name) == false)
-        {
-          nameList.add(name);
-          personList.add(HDT_Person.lookUpByName(name));
-        }
-
-        nameToTr.put(name, false);
-        nameToEd.put(name, false);
-
-        if (person != null)
-          personList.set(nameList.indexOf(name), person);
+        nameList.add(name);
+        personList.add(HDT_Person.lookUpByName(name));
       }
+
+      nameToTr.put(name, false);
+      nameToEd.put(name, false);
+
+      nullSwitch(bibAuthor.getPerson(), person -> personList.set(nameList.indexOf(name), person));
     });
 
     removeDupPersonRecordsFromLists(nameList, personList);
 
-    List<PersonName> nonRecordNames = new ArrayList<>();
-    List<Author> nonRecordAuthors = new ArrayList<>();
-    List<Integer> nameListIndices = new ArrayList<>();
+    List<PersonName> nonRecordNames   = new ArrayList<>(); // list containing only non-record authors
+    List<Author>     nonRecordAuthors = new ArrayList<>(); // author objects for each non-record author
+    List<Integer>    nameListIndices  = new ArrayList<>(); // index into nameList for this non-record author
 
     for (int ndx = 0; ndx < nameList.size(); ndx++)
     {
@@ -228,34 +222,59 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
       }
     }
 
-    if (nonRecordNames.size() > 0)
+    int startNdx = 0;
+    
+    while (startNdx < nonRecordNames.size())
     {
-      List<List<Author>> matchedAuthorsList = new ArrayList<>();
+      List<List<Author>> matchedAuthorsList = new ArrayList<>(); // List of matches for each non-record author
 
-      HyperTask task = NewPersonDlgCtrlr.createDupCheckTask(nonRecordNames, nonRecordAuthors, matchedAuthorsList, null);
+      HyperTask task = NewPersonDlgCtrlr.createDupCheckTask(nonRecordNames  .subList(startNdx, nonRecordNames.size()), 
+                                                            nonRecordAuthors.subList(startNdx, nonRecordNames.size()), 
+                                                            matchedAuthorsList, 
+                                                            null);
 
       if (!HyperTask.performTaskWithProgressDialog(task)) return;
 
-      for (int ndx = 0; ndx < matchedAuthorsList.size(); ndx++)
+      int ndx;
+      
+      for (ndx = startNdx; ndx < nonRecordNames.size(); ndx++)
       {
-        List<Author> matchedAuthors = matchedAuthorsList.get(ndx);
-
+        List<Author> matchedAuthors = matchedAuthorsList.get(ndx - startNdx);
+        
         if (matchedAuthors.size() > 0)
         {
           int nameListNdx = nameListIndices.get(ndx);
-
-          NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.create(nonRecordAuthors.get(ndx).getName(), null, false, null, null, matchedAuthors);
+          PersonName name = nonRecordAuthors.get(ndx).getName();          
+          boolean ed = nameToEd.get(name), tr = nameToTr.get(name);          
+          NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.create(name, null, false, null, null, matchedAuthors);
 
           if (npdc.showModal() == false) return;
 
           if (npdc.getPerson() != null)
-            personList.set(nameListNdx, npdc.getPerson());
+          {
+            HDT_Person person = npdc.getPerson();
+            personList.set(nameListNdx, person);
+            name = person.getName();
+          }
           else
-            nameList.set(nameListNdx, npdc.getName());
+          {
+            personList.set(nameListNdx, null);
+            name = npdc.getName();
+          }
+          
+          nameList.set(nameListNdx, name);
+          nameToEd.put(name, ed);
+          nameToTr.put(name, tr);
+          
+          startNdx = ndx + 1;
+          break;
         }
       }
+      
+      if (ndx == nonRecordNames.size())
+        startNdx = ndx;
     }
-
+    
     removeDupPersonRecordsFromLists(nameList, personList);
   }
 
@@ -281,7 +300,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
     indicesToRemove.forEach(ndx ->
     {
       personList.remove(ndx.intValue());
-      nameList.remove(ndx.intValue());
+      nameList  .remove(ndx.intValue());
     });
   }
 
