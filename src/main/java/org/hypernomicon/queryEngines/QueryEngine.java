@@ -126,6 +126,8 @@ public abstract class QueryEngine<HDT_T extends HDT_Record>
 
   public abstract boolean needsMentionsIndex(int query);
 
+  public abstract int numOperands(int query);
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

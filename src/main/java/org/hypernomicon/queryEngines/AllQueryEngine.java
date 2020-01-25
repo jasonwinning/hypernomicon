@@ -86,26 +86,20 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
       case QUERY_RECORD_TYPE :
 
         vp1.setPopulator(row, new RecordTypePopulator());
-        vp2.setPopulator(row, null);
-        vp3.setPopulator(row, null);
         break;
 
       case QUERY_LINKING_TO_RECORD :
       case QUERY_MATCHING_RECORD :
-      case QUERY_RECORD_EQUALS:
-      case QUERY_MENTIONED_BY:
+      case QUERY_RECORD_EQUALS :
+      case QUERY_MENTIONED_BY :
 
         vp1.setPopulator(row, new RecordTypePopulator());
         vp2.setPopulator(row, new RecordByTypePopulator());
-        vp3.setPopulator(row, null);
         break;
 
       case QUERY_ASSOCIATED_WITH_PHRASE : case QUERY_MATCHING_STRING :
 
-        vp1.setPopulator(row, null);
         vp1.setRestricted(row, false);
-        vp2.setPopulator(row, null);
-        vp3.setPopulator(row, null);
         break;
     }
   }
@@ -368,6 +362,26 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
       default :
         return false;
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public int numOperands(int query)
+  {
+    switch (query)
+    {
+      case QUERY_DUPLICATE_FOLDERS :
+        return 0;
+
+      case QUERY_RECORD_TYPE : case QUERY_ASSOCIATED_WITH_PHRASE : case QUERY_MATCHING_STRING :
+        return 1;
+
+      case QUERY_RECORD_EQUALS : case QUERY_LINKING_TO_RECORD : case QUERY_MATCHING_RECORD : case QUERY_MENTIONED_BY :
+        return 2;
+    }
+
+    return 3;
   }
 
 //---------------------------------------------------------------------------

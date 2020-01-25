@@ -204,6 +204,14 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static RelationSet<HDT_Record, HDT_Record> createSet(RelationType relType) throws HDB_InternalError
+  {
+    return (relType == rtNone) || (relType == rtUnited) ? null : new RelationSet<>(relType);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static void addOrphanToAll(HDT_Record orphan)
   {
     Set<RelationSet<? extends HDT_Record, ? extends HDT_Record>> relSets = orphanTypeToRelSets.get(orphan.getType());
@@ -858,23 +866,12 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     if (existingValueList.size() != newValueList.size()) return;
 
-    if ((newValueList.stream().allMatch(existingValueList::contains) == false) ||
-        (existingValueList.stream().allMatch(newValueList::contains) == false))
+    if ((newValueList     .stream().allMatch(existingValueList::contains) == false) ||
+        (existingValueList.stream().allMatch(newValueList     ::contains) == false))
       return;
 
     for (int ndx = 0; ndx < existingValueList.size(); ndx++)
       existingValueList.set(ndx, newValueList.get(ndx));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static RelationSet<HDT_Record, HDT_Record> createSet(RelationType relType) throws HDB_InternalError
-  {
-    if ((relType == rtNone) || (relType == rtUnited))
-      return null;
-
-    return new RelationSet<>(relType);
   }
 
 //---------------------------------------------------------------------------

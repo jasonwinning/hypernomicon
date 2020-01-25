@@ -66,13 +66,7 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
   {
     switch (query)
     {
-      case QUERY_LIKELY_EDITED_VOLS :
-
-        vp1.setPopulator(row, null);
-        vp1.setRestricted(row, true);
-        vp2.setPopulator(row, null);
-        vp3.setPopulator(row, null);
-
+      default :
         break;
     }
   }
@@ -188,6 +182,22 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
   @Override public boolean needsMentionsIndex(int query)
   {
     return false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public int numOperands(int query)
+  {
+    switch (query)
+    {
+      case QUERY_LIKELY_EDITED_VOLS :
+      case QUERY_4_OR_MORE_AUTHORS  :
+      case QUERY_ANALYZE_METADATA   :
+        return 0;
+    }
+
+    return 3;
   }
 
 //---------------------------------------------------------------------------

@@ -212,7 +212,9 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
         programmaticFieldChange = tempPFC;
 
-        if (programmaticFieldChange == false)
+        if (programmaticFieldChange) return;
+
+        if (numOperands(row.getID(1), typeToEngine.get(getQueryType(row))) >= 1)
           htFields.edit(row, 2);
       });
 
@@ -229,12 +231,12 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           {
             GenericOperandPopulator gop = VariablePopulator.class.cast(nextPopulator).getPopulator(row);
             row.setCellValue(nextColNdx, gop.getChoiceByID(null, EQUAL_TO_OPERAND_ID));
-            if (tempPFC == false)
+            if ((tempPFC == false) && numOperands(row.getID(1), typeToEngine.get(getQueryType(row))) >= 3)
               htFields.edit(row, 4);
           }
           else
           {
-            if (tempPFC == false)
+            if ((tempPFC == false) && numOperands(row.getID(1), typeToEngine.get(getQueryType(row))) >= 2)
               htFields.edit(row, 3);
           }
 
@@ -252,7 +254,9 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
         programmaticFieldChange = tempPFC;
 
-        if (programmaticFieldChange == false)
+        if (programmaticFieldChange) return;
+
+        if (numOperands(row.getID(1), typeToEngine.get(getQueryType(row))) >= 3)
           htFields.edit(row, 4);
       });
 
@@ -915,6 +919,27 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       }
     }
 
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
+    private int numOperands(int query, QueryEngine<? extends HDT_Record> engine)
+    {
+      switch (query)
+      {
+        case QUERY_WHERE_FIELD : case QUERY_WHERE_RELATIVE :
+          return 3;
+
+        case QUERY_WITH_NAME_CONTAINING : case QUERY_ANY_FIELD_CONTAINS :
+          return 1;
+
+        case QUERY_LIST_ALL :
+          return 0;
+
+        default :
+          return engine.numOperands(query);
+      }
+    }
+
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
@@ -1043,7 +1068,13 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       QueryType queryType = getQueryType(row);
 
       if (queryType != qtReport)
-        typeToEngine.get(queryType).queryChange(query, row, vp1, vp2, vp3);
+      {
+        QueryEngine<? extends HDT_Record> engine = typeToEngine.get(queryType);
+
+        clearOperands(row, numOperands(query, engine) + 1);
+
+        engine.queryChange(query, row, vp1, vp2, vp3);
+      }
 
       return true;
     }
@@ -1189,8 +1220,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         return;
       }
 
-      if (startOpNum < 2) clearOperand(row, 1);
-      if (startOpNum < 3) clearOperand(row, 2);
+      if (startOpNum <= 1) clearOperand(row, 1);
+      if (startOpNum <= 2) clearOperand(row, 2);
       clearOperand(row, 3);
     }
 
