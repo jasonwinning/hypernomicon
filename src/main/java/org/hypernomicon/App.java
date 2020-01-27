@@ -62,9 +62,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
 
@@ -133,8 +133,8 @@ public final class App extends Application
   {
     app = this;
 
-    Logger.getLogger("org.apache").setLevel(Level.WARN);
-    BasicConfigurator.configure();
+    Configurator.initialize(new DefaultConfiguration());
+    Configurator.setRootLevel(Level.WARN);
 
     String rtArgs = getRuntimeMXBean().getInputArguments().toString();
     isDebugging = rtArgs.contains("-agentlib:jdwp") || rtArgs.contains("-Xrunjdwp");
