@@ -34,9 +34,9 @@ public class ExternalColumnPopulator extends Populator
   private final HyperTable hT;
   private final int colNdx;
 
-  @Override public CellValueType getValueType()                                    { return cvtRecord; }
-  @Override public HDT_RecordType getRecordType(HyperTableRow row)                 { return hT.getTypeByCol(colNdx); }
-  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)    { return equalMatch(row, cell); }
+  @Override public CellValueType getValueType()                                 { return cvtRecord; }
+  @Override public HDT_RecordType getRecordType(HyperTableRow row)              { return hT.getTypeByCol(colNdx); }
+  @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return equalMatch(row, cell); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

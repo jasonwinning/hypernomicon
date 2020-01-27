@@ -19,9 +19,7 @@ package org.hypernomicon.view.settings;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.util.Util.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -33,147 +31,47 @@ import org.hypernomicon.util.WebButton.UrlPattern;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.view.settings.SettingsDlgCtrlr.SettingsControl;
 import org.hypernomicon.view.tabs.HyperTab;
+import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.util.StringConverter;
 
 public class WebButtonSettingsCtrlr implements SettingsControl
 {
-  @FXML private Button btnPersonSrch1Advanced, btnPersonSrch2Advanced, btnPersonImgSrchAdvanced, btnInstSrchAdvanced, btnInstMapSrchAdvanced,
-                       btnDOISrchAdvanced, btnISBNSrchAdvanced, btnWorkSrch1Advanced, btnWorkSrch2Advanced,
-                       btnGenSrch1Advanced, btnGenSrch2Advanced, btnGenSrch3Advanced, btnGenSrch4Advanced;
-  @FXML private ComboBox<WebButton> cbPersonSrch1, cbPersonSrch2, cbPersonImgSrch, cbInstSrch, cbInstMapSrch, cbDOISrch, cbISBNSrch,
-                                    cbWorkSrch1, cbWorkSrch2, cbGenSrch1, cbGenSrch2, cbGenSrch3, cbGenSrch4;
-  @FXML private TextField tfPersonSrch1, tfPersonSrch2, tfPersonImgSrch, tfWorkSrch1, tfWorkSrch2, tfDOISrch, tfISBNSrch,
-                          tfInstMapSrch, tfGenSrch1, tfGenSrch2, tfGenSrch3, tfGenSrch4;
+  @FXML private Button btnPersonImgSrchAdvanced, btnInstSrchAdvanced, btnInstMapSrchAdvanced,
+                       btnDOISrchAdvanced, btnISBNSrchAdvanced;
+  @FXML private ComboBox<WebButton> cbPersonImgSrch, cbInstSrch, cbInstMapSrch, cbDOISrch, cbISBNSrch;
+  @FXML private TextField tfPersonImgSrch, tfDOISrch, tfISBNSrch, tfInstMapSrch;
+  @FXML private TableView<HyperTableRow> tvPersonSrch, tvWorkSrch, tvGenSrch;
 
-
-  private final List<ButtonControls> webBtnList = new ArrayList<>();
+  private final List<WebButtonCtrl> webBtnCtrlList = new ArrayList<>();
 
   private static final List<WebButton> personSrchList = new ArrayList<>(), personImgSrchList = new ArrayList<>(),
                                        instSrchList   = new ArrayList<>(), instMapSrchList   = new ArrayList<>(),
                                        doiSrchList    = new ArrayList<>(), isbnSrchList      = new ArrayList<>(),
-                                       workSrchList   = new ArrayList<>(), genSrchList       = new ArrayList<>();
+                                       workSrchList   = new ArrayList<>(), genSrchList       = new ArrayList<>(),
 
-  private static final String CUSTOM_NAME = "Custom";
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public class ButtonControls
-  {
-    public final String prefKey;
-    public final TextField tfCaption;
-    public final ComboBox<WebButton> cbPreset;
-    public final Button btnAdvanced;
-
-    public ButtonControls(String prefKey, TextField tfCaption, ComboBox<WebButton> cbPreset, Button btnAdvanced)
-    {
-      this.prefKey = prefKey;
-      this.tfCaption = tfCaption;
-      this.cbPreset = cbPreset;
-      this.btnAdvanced = btnAdvanced;
-
-      cbPreset.setConverter(new StringConverter<>()
-      {
-        @Override public String toString(WebButton btn)
-        {
-          return btn == null ? "" : btn.name;
-        }
-
-        @Override public WebButton fromString(String str)
-        {
-          for (WebButton btn : cbPreset.getItems())
-            if (btn.name.equalsIgnoreCase(str))
-              return btn;
-
-          return null;
-        }
-      });
-
-      cbPreset.getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) ->
-      {
-        if (tfCaption == null) return;
-        tfCaption.setText(nv == null ? "" : nv.getCaption());
-      });
-
-      btnAdvanced.setOnAction(event ->
-      {
-        try
-        {
-          EditWebButtonsDlgCtrlr dlg = EditWebButtonsDlgCtrlr.create(getWebButton(this), prefKey);
-
-          if ((dlg.showModal() == false) || dlg.unchanged()) return;
-
-          WebButton webBtn = new WebButton(CUSTOM_NAME, tfCaption.getText());
-
-          dlg.getPatterns(webBtn);
-          cbPreset.getItems().removeIf(btn -> btn.name.equals(CUSTOM_NAME));
-          cbPreset.getItems().add(webBtn);
-          cbPreset.getSelectionModel().select(webBtn);
-        }
-        catch (IOException e)
-        {
-          showStackTrace(e);
-        }
-      });
-    }
-  }
+                                       personSrchDefaults = new ArrayList<>(),
+                                       workSrchDefaults   = new ArrayList<>(),
+                                       genSrchDefaults    = new ArrayList<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void init(boolean noDB)
   {
-    webBtnList.add(new ButtonControls(PREF_KEY_PERSON_SRCH_1  , tfPersonSrch1  , cbPersonSrch1  , btnPersonSrch1Advanced));
-    webBtnList.add(new ButtonControls(PREF_KEY_PERSON_SRCH_2  , tfPersonSrch2  , cbPersonSrch2  , btnPersonSrch2Advanced));
-    webBtnList.add(new ButtonControls(PREF_KEY_PERSON_IMG_SRCH, tfPersonImgSrch, cbPersonImgSrch, btnPersonImgSrchAdvanced));
-    webBtnList.add(new ButtonControls(PREF_KEY_INST_SRCH      , null           , cbInstSrch     , btnInstSrchAdvanced));
-    webBtnList.add(new ButtonControls(PREF_KEY_INST_MAP_SRCH  , tfInstMapSrch  , cbInstMapSrch  , btnInstMapSrchAdvanced));
-    webBtnList.add(new ButtonControls(PREF_KEY_DOI_SRCH       , tfDOISrch      , cbDOISrch      , btnDOISrchAdvanced));
-    webBtnList.add(new ButtonControls(PREF_KEY_ISBN_SRCH      , tfISBNSrch     , cbISBNSrch     , btnISBNSrchAdvanced));
-    webBtnList.add(new ButtonControls(PREF_KEY_WORK_SRCH_1    , tfWorkSrch1    , cbWorkSrch1    , btnWorkSrch1Advanced));
-    webBtnList.add(new ButtonControls(PREF_KEY_WORK_SRCH_2    , tfWorkSrch2    , cbWorkSrch2    , btnWorkSrch2Advanced));
-    webBtnList.add(new ButtonControls(PREF_KEY_GEN_SRCH_1     , tfGenSrch1     , cbGenSrch1     , btnGenSrch1Advanced));
-    webBtnList.add(new ButtonControls(PREF_KEY_GEN_SRCH_2     , tfGenSrch2     , cbGenSrch2     , btnGenSrch2Advanced));
-    webBtnList.add(new ButtonControls(PREF_KEY_GEN_SRCH_3     , tfGenSrch3     , cbGenSrch3     , btnGenSrch3Advanced));
-    webBtnList.add(new ButtonControls(PREF_KEY_GEN_SRCH_4     , tfGenSrch4     , cbGenSrch4     , btnGenSrch4Advanced));
+    webBtnCtrlList.add(new WebButtonTable(PREF_KEY_PERSON_SRCH, personSrchList, personSrchDefaults, tvPersonSrch));
+    webBtnCtrlList.add(new WebButtonTable(PREF_KEY_WORK_SRCH  , workSrchList,   workSrchDefaults,   tvWorkSrch));
+    webBtnCtrlList.add(new WebButtonTable(PREF_KEY_GEN_SRCH   , genSrchList,    genSrchDefaults,    tvGenSrch));
 
-    populatePresetControls();
-
-    webBtnList.forEach(btnCtrls ->
-    {
-      WebButton webBtn = ui.webButtonMap.get(btnCtrls.prefKey);
-
-      if (webBtn.name.equals(CUSTOM_NAME))
-        btnCtrls.cbPreset.getItems().add(webBtn);
-
-      btnCtrls.cbPreset.getSelectionModel().select(webBtn);
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void populatePresetControls()
-  {
-    cbPersonSrch1  .setItems(FXCollections.observableArrayList(personSrchList   ));
-    cbPersonSrch2  .setItems(FXCollections.observableArrayList(personSrchList   ));
-    cbPersonImgSrch.setItems(FXCollections.observableArrayList(personImgSrchList));
-    cbInstSrch     .setItems(FXCollections.observableArrayList(instSrchList     ));
-    cbInstMapSrch  .setItems(FXCollections.observableArrayList(instMapSrchList  ));
-    cbDOISrch      .setItems(FXCollections.observableArrayList(doiSrchList      ));
-    cbISBNSrch     .setItems(FXCollections.observableArrayList(isbnSrchList     ));
-    cbWorkSrch1    .setItems(FXCollections.observableArrayList(workSrchList     ));
-    cbWorkSrch2    .setItems(FXCollections.observableArrayList(workSrchList     ));
-    cbGenSrch1     .setItems(FXCollections.observableArrayList(genSrchList      ));
-    cbGenSrch2     .setItems(FXCollections.observableArrayList(genSrchList      ));
-    cbGenSrch3     .setItems(FXCollections.observableArrayList(genSrchList      ));
-    cbGenSrch4     .setItems(FXCollections.observableArrayList(genSrchList      ));
+    webBtnCtrlList.add(new WebButtonBar(PREF_KEY_PERSON_IMG_SRCH, personImgSrchList, tfPersonImgSrch, cbPersonImgSrch, btnPersonImgSrchAdvanced));
+    webBtnCtrlList.add(new WebButtonBar(PREF_KEY_INST_SRCH      , instSrchList,      null           , cbInstSrch     , btnInstSrchAdvanced));
+    webBtnCtrlList.add(new WebButtonBar(PREF_KEY_INST_MAP_SRCH  , instMapSrchList,   tfInstMapSrch  , cbInstMapSrch  , btnInstMapSrchAdvanced));
+    webBtnCtrlList.add(new WebButtonBar(PREF_KEY_DOI_SRCH       , doiSrchList,       tfDOISrch      , cbDOISrch      , btnDOISrchAdvanced));
+    webBtnCtrlList.add(new WebButtonBar(PREF_KEY_ISBN_SRCH      , isbnSrchList,      tfISBNSrch     , cbISBNSrch     , btnISBNSrchAdvanced));
   }
 
 //---------------------------------------------------------------------------
@@ -194,7 +92,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
         "http://www.google.com/search?q=" + WebButtonField.SingleName.key + "%20" + WebButtonField.Field.key));
 
     personSrchList.add(btn);
-    ui.webButtonMap.put(PREF_KEY_PERSON_SRCH_1, btn);
+    personSrchDefaults.add(btn);
 
     btn = new WebButton("Scholar", "Scholar");
 
@@ -205,7 +103,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
         "https://scholar.google.com/scholar?q=author:%22" + WebButtonField.SingleName.key + "%22"));
 
     personSrchList.add(btn);
-    ui.webButtonMap.put(PREF_KEY_PERSON_SRCH_2, btn);
+    personSrchDefaults.add(btn);
 
     btn = new WebButton("PhilPapers", "PhilPapers");
 
@@ -407,7 +305,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
         "http://www.worldcat.org/search?q=bn%3A" + WebButtonField.ISBN.key + "&qt=advanced"));
 
     workSrchList.add(btn);
-    ui.webButtonMap.put(PREF_KEY_WORK_SRCH_1, btn);
+    workSrchDefaults.add(btn);
 
     btn = new WebButton("Google Scholar", "Scholar");
 
@@ -418,7 +316,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
         "https://scholar.google.com/scholar?q=intitle%3A%22" + WebButtonField.QueryTitle.key + "%22"));
 
     workSrchList.add(btn);
-    ui.webButtonMap.put(PREF_KEY_WORK_SRCH_2, btn);
+    workSrchDefaults.add(btn);
 
     btn = new WebButton("PhilPapers", "PhilPapers");
 
@@ -439,7 +337,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
         "http://www.google.com/search?q=" + WebButtonField.Name.key));
 
     genSrchList.add(btn);
-    ui.webButtonMap.put(PREF_KEY_GEN_SRCH_1, btn);
+    genSrchDefaults.add(btn);
 
     btn = new WebButton("Stanford Encyclopedia of Philosophy", "SEP");
 
@@ -447,7 +345,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
         "http://plato.stanford.edu/search/searcher.py?query=" + WebButtonField.Name.key));
 
     genSrchList.add(btn);
-    ui.webButtonMap.put(PREF_KEY_GEN_SRCH_2, btn);
+    genSrchDefaults.add(btn);
 
     btn = new WebButton("Internet Encyclopedia of Philosophy", "IEP");
 
@@ -455,7 +353,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
         "https://cse.google.com/cse?cx=001101905209118093242%3Arsrjvdp2op4&ie=UTF-8&q=" + WebButtonField.Name.key + "&sa=Search"));
 
     genSrchList.add(btn);
-    ui.webButtonMap.put(PREF_KEY_GEN_SRCH_3, btn);
+    genSrchDefaults.add(btn);
 
     btn = new WebButton("Wikipedia", "Wikipedia");
 
@@ -463,7 +361,7 @@ public class WebButtonSettingsCtrlr implements SettingsControl
         "http://en.wikipedia.org/w/index.php?search=" + WebButtonField.Name.key));
 
     genSrchList.add(btn);
-    ui.webButtonMap.put(PREF_KEY_GEN_SRCH_4, btn);
+    genSrchDefaults.add(btn);
 
     btn = new WebButton("Routledge Encyclopedia of Philosophy", "Routledge");
 
@@ -497,108 +395,15 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private WebButton getWebButton(ButtonControls btnCtrls)
-  {
-    WebButton webBtn = btnCtrls.cbPreset.getValue();
-    if (btnCtrls.tfCaption != null)
-      webBtn.setCaption(btnCtrls.tfCaption.getText());
-
-    return webBtn;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   @Override public void save()
   {
-    Preferences node = appPrefs.node("webButtons");
+    Preferences node = appPrefs.node(PREF_KEY_WEB_BUTTONS);
 
-    webBtnList.forEach(btnCtrls ->
-    {
-      WebButton webBtn = getWebButton(btnCtrls);
+    webBtnCtrlList.forEach(btnCtrls -> btnCtrls.saveToPrefNode(node));
 
-      ui.webButtonMap.put(btnCtrls.prefKey, webBtn);
+    HyperTab.updateAllWebButtons(node);
 
-      node.put(btnCtrls.prefKey, webBtn.name);
-
-      if (webBtn.name.equals(CUSTOM_NAME))
-      {
-        Preferences subNode = node.node(btnCtrls.prefKey);
-        try
-        {
-          subNode.clear();
-        }
-        catch (BackingStoreException e)
-        {
-          e.printStackTrace();
-        }
-
-        int ndx = 1;
-        for (UrlPattern pattern : webBtn.getPatterns())
-        {
-          Preferences patternNode = subNode.node("pattern" + String.format("%05d", ndx++));
-          patternNode.put("str", pattern.str);
-
-          patternNode.putInt("reqFieldCnt", pattern.reqFields().size());
-
-          int fieldNdx = 1;
-          for (WebButtonField field : pattern.reqFields())
-            patternNode.put("reqField" + String.valueOf(fieldNdx++), field.name());
-        }
-      }
-
-      appPrefs.node("webButtonCaptions").put(btnCtrls.prefKey, webBtn.getCaption());
-    });
-
-    HyperTab.updateAllWebButtons();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void loadPref(Preferences node, List<WebButton> srchList, String prefKey) throws BackingStoreException
-  {
-    String name = node.get(prefKey, ""),
-           caption = appPrefs.node("webButtonCaptions").get(prefKey, "");
-
-    if (name.isEmpty()) return;
-
-    for (WebButton btn : srchList)
-    {
-      if (btn.name.equals(name))
-      {
-        if (caption.length() > 0)
-          btn.setCaption(caption);
-
-        ui.webButtonMap.put(prefKey, btn);
-        return;
-      }
-    }
-
-    if (name.equals(CUSTOM_NAME) == false) return;
-
-    WebButton webBtn = new WebButton(CUSTOM_NAME, caption);
-    Preferences subNode = node.node(prefKey);
-
-    for (String patternKey : subNode.childrenNames())
-    {
-      Preferences patternNode = subNode.node(patternKey);
-      String str = patternNode.get("str", "");
-      EnumSet<WebButtonField> reqFields = EnumSet.noneOf(WebButtonField.class);
-
-      int fieldNum = patternNode.getInt("reqFieldCnt", 0);
-
-      for (int fieldNdx = 1; fieldNdx <= fieldNum; fieldNdx++)
-      {
-        String fieldName = patternNode.get("reqField" + String.valueOf(fieldNdx), "");
-        if (fieldName.length() > 0)
-          reqFields.add(WebButtonField.valueOf(fieldName));
-      }
-
-      webBtn.addPattern(new UrlPattern(reqFields, str));
-    }
-
-    ui.webButtonMap.put(prefKey, webBtn);
+    ui.update();
   }
 
 //---------------------------------------------------------------------------
@@ -610,28 +415,24 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
     try
     {
-      Preferences node = appPrefs.node("webButtons");
+      Preferences node = appPrefs.node(PREF_KEY_WEB_BUTTONS);
 
-      loadPref(node, personSrchList   , PREF_KEY_PERSON_SRCH_1  );
-      loadPref(node, personSrchList   , PREF_KEY_PERSON_SRCH_2  );
-      loadPref(node, personImgSrchList, PREF_KEY_PERSON_IMG_SRCH);
-      loadPref(node, instSrchList     , PREF_KEY_INST_SRCH      );
-      loadPref(node, instMapSrchList  , PREF_KEY_INST_MAP_SRCH  );
-      loadPref(node, doiSrchList      , PREF_KEY_DOI_SRCH       );
-      loadPref(node, isbnSrchList     , PREF_KEY_ISBN_SRCH      );
-      loadPref(node, workSrchList     , PREF_KEY_WORK_SRCH_1    );
-      loadPref(node, workSrchList     , PREF_KEY_WORK_SRCH_2    );
-      loadPref(node, genSrchList      , PREF_KEY_GEN_SRCH_1     );
-      loadPref(node, genSrchList      , PREF_KEY_GEN_SRCH_2     );
-      loadPref(node, genSrchList      , PREF_KEY_GEN_SRCH_3     );
-      loadPref(node, genSrchList      , PREF_KEY_GEN_SRCH_4     );
+      WebButtonTable.loadPref(node, personSrchList, PREF_KEY_PERSON_SRCH, personSrchDefaults);
+      WebButtonTable.loadPref(node, workSrchList  , PREF_KEY_WORK_SRCH  , workSrchDefaults  );
+      WebButtonTable.loadPref(node, genSrchList   , PREF_KEY_GEN_SRCH   , genSrchDefaults   );
+
+      WebButtonBar.loadPref(node, personImgSrchList, PREF_KEY_PERSON_IMG_SRCH);
+      WebButtonBar.loadPref(node, instSrchList     , PREF_KEY_INST_SRCH      );
+      WebButtonBar.loadPref(node, instMapSrchList  , PREF_KEY_INST_MAP_SRCH  );
+      WebButtonBar.loadPref(node, doiSrchList      , PREF_KEY_DOI_SRCH       );
+      WebButtonBar.loadPref(node, isbnSrchList     , PREF_KEY_ISBN_SRCH      );
+
+      HyperTab.updateAllWebButtons(node);
     }
     catch (BackingStoreException e)
     {
       e.printStackTrace();
     }
-
-    HyperTab.updateAllWebButtons();
   }
 
 //---------------------------------------------------------------------------

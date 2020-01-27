@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.prefs.Preferences;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -76,6 +77,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.SplitMenuButton;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -100,6 +102,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   @FXML private ComboBox<HyperTableCell> cbRank, cbStatus, cbSubfield;
   @FXML private ImageView ivPerson;
   @FXML private Label lblORCID, lblWebsite, lblPicture, lblSearchKey;
+  @FXML private SplitMenuButton smbWebSrch1;
   @FXML private SplitPane spTopHoriz, spVert;
   @FXML private Tab tabNew, tabOverview;
   @FXML private TabPane tpPerson;
@@ -109,6 +112,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   @FXML public TextField tfFirst, tfLast;
 
   final private List<InvestigationView> invViews = new ArrayList<>();
+
+  private static final String TOOLTIP_PREFIX = "Search for this person using ";
 
   private HyperTable htPersonInst, htWorks, htArguments;
   private MainTextWrapper mainText;
@@ -729,8 +734,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     hcbField    = new HyperCB(cbField   , ctDropDownList, new StandardPopulator(hdtField                ), true);
     hcbSubfield = new HyperCB(cbSubfield, ctDropDown    , new SubjectPopulator (rtFieldOfSubfield, false), true);
 
-    setToolTip(btnWebSrch1, "Search for this person in Google");
-    setToolTip(btnWebSrch2, "Search for this person in Google Scholar");
+    setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "Google");
+    setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Google Scholar");
 
     setToolTip(tfFirst, "To indicate what name the person informally goes by, write it in parentheses. For example, \"William (Bill)\"");
 
@@ -792,8 +797,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     lblORCID.setOnMouseClicked(event -> searchORCID(tfORCID.getText(), tfFirst.getText(), tfLast.getText()));
 
-    btnWebSrch1 .setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH_1));
-    btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH_2));
+    btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + "1"));
+    smbWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + "1"));
+    btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + "2"));
 
     ivPerson.setOnMouseClicked(event ->
     {
@@ -808,22 +814,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     initWorkContextMenu();
     initArgContextMenu();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private EventHandler<ActionEvent> searchBtnEvent(String prefKey)
-  {
-    return event ->
-    {
-      ui.webButtonMap.get(prefKey).first(WebButtonField.FirstName, tfFirst.getText())
-                                  .next (WebButtonField.QueryName, tfFirst.getText())
-                                  .next (WebButtonField.LastName, tfLast.getText())
-                                  .next (WebButtonField.SingleName, tfLast.getText().length() > 0 ? tfLast.getText() : tfFirst.getText())
-                                  .next (WebButtonField.Field, getCellText(cbField.getSelectionModel().getSelectedItem()))
-                                  .go();
-    };
   }
 
 //---------------------------------------------------------------------------
@@ -1188,13 +1178,29 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void updateWebButtons()
+  @Override void updateWebButtons(Preferences node)
   {
-    btnWebSrch1.setText(ui.webButtonMap.get(PREF_KEY_PERSON_SRCH_1).getCaption());
-    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_PERSON_SRCH_2).getCaption());
+    updateWebButtons(node, PREF_KEY_PERSON_SRCH, 2, btnWebSrch1, smbWebSrch1, TOOLTIP_PREFIX, this::searchBtnEvent);
 
-    setToolTip(btnWebSrch1, "Search for this person using " + btnWebSrch1.getText());
-    setToolTip(btnWebSrch2, "Search for this person using " + btnWebSrch2.getText());
+    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_PERSON_SRCH + "2").getCaption());
+
+    setToolTip(btnWebSrch2, TOOLTIP_PREFIX + btnWebSrch2.getText());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private EventHandler<ActionEvent> searchBtnEvent(String prefKey)
+  {
+    return event ->
+    {
+      ui.webButtonMap.get(prefKey).first(WebButtonField.FirstName, tfFirst.getText())
+                                  .next (WebButtonField.QueryName, tfFirst.getText())
+                                  .next (WebButtonField.LastName, tfLast.getText())
+                                  .next (WebButtonField.SingleName, tfLast.getText().length() > 0 ? tfLast.getText() : tfFirst.getText())
+                                  .next (WebButtonField.Field, getCellText(cbField.getSelectionModel().getSelectedItem()))
+                                  .go();
+    };
   }
 
 //---------------------------------------------------------------------------

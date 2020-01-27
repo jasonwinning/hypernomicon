@@ -77,6 +77,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -119,7 +120,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   @FXML private Label lblSearchKey, lblTitle;
   @FXML private MenuItem mnuCrossref, mnuFindDOIonCrossref, mnuFindISBNonGoogleBooks, mnuGoogle, mnuShowMetadata, mnuStoreMetadata;
   @FXML private ProgressBar progressBar;
-  @FXML private SplitMenuButton btnDOI;
+  @FXML private SplitMenuButton btnDOI, smbWebSrch1;
   @FXML private SplitPane spHoriz1, spHoriz2, spVert;
   @FXML private Tab tabArguments, tabBibDetails, tabCrossref, tabGoogleBooks, tabInvestigations, tabKeyMentions,
                     tabEntry, tabMiscBib, tabMiscFiles, tabPdfMetadata, tabSubworks, tabWorkFiles;
@@ -145,6 +146,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
                                         googleBD   = new SimpleObjectProperty<>();
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
+  private static final String TOOLTIP_PREFIX = "Search for this work in ";
 
   public FileDlgCtrlr fdc = null;
   public WorkDlgCtrlr wdc = null;
@@ -183,8 +185,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     lowerTabPane.getTabs().forEach(tab -> tabCaptions.put(tab, tab.getText()));
 
-    setToolTip(btnWebSrch1, "Search for this work in WorldCat");
-    setToolTip(btnWebSrch2, "Search for this work in Google Scholar");
+    setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "WorldCat");
+    setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Google Scholar");
 
     htAuthors = new HyperTable(tvAuthors, 1, true, PREF_KEY_HT_WORK_AUTHORS);
 
@@ -450,20 +452,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType), true);
     hcbLargerWork = new HyperCB(cbLargerWork, ctDropDownList, new StandardPopulator(hdtWork), true);
 
-    btnWebSrch1.setOnAction(event ->
-    {
-      ui.webButtonMap.get(PREF_KEY_WORK_SRCH_1).first(WebButtonField.SingleName, getFirstAuthorSingleName())
-                                               .next (WebButtonField.Title, tfTitle.getText())
-                                               .next (WebButtonField.NumericYear, tfYear.getText())
-                                               .go();
-    });
-
-    btnWebSrch2.setOnAction(event ->
-    {
-      ui.webButtonMap.get(PREF_KEY_WORK_SRCH_2).first(WebButtonField.SingleName, getFirstAuthorSingleName())
-                                               .next (WebButtonField.QueryTitle, tfTitle.getText())
-                                               .go();
-    });
+    btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_WORK_SRCH + "1"));
+    smbWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_WORK_SRCH + "1"));
+    btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_WORK_SRCH + "2"));
 
     btnDOI.setOnAction(event -> searchDOI(tfDOI.getText()));
 
@@ -593,11 +584,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         alreadyChangingTitle = true;
         String newText = change.getControlNewText();
         change.setRange(0, change.getControlText().length());
-        
+
         newText = convertToSingleLine(newText);
         while (newText.contains("  "))
           newText = newText.replaceAll("  ", " ");
-        
+
         change.setText(ultraTrim(HDT_Work.fixCase(newText)));
         alreadyChangingTitle = false;
       }
@@ -2057,15 +2048,32 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void updateWebButtons()
+  @Override void updateWebButtons(Preferences node)
   {
-    btnWebSrch1.setText(ui.webButtonMap.get(PREF_KEY_WORK_SRCH_1).getCaption());
-    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_WORK_SRCH_2).getCaption());
+    updateWebButtons(node, PREF_KEY_WORK_SRCH, 2, btnWebSrch1, smbWebSrch1, TOOLTIP_PREFIX, this::searchBtnEvent);
+
+    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_WORK_SRCH + "2").getCaption());
     mnuGoogle  .setText("Search this DOI using " + ui.webButtonMap.get(PREF_KEY_DOI_SRCH).getCaption());
     isbnSrchMenuItemSchema.setCaption(ui.webButtonMap.get(PREF_KEY_ISBN_SRCH).getCaption());
 
-    setToolTip(btnWebSrch1, btnWebSrch1.getText());
-    setToolTip(btnWebSrch2, btnWebSrch2.getText());
+    setToolTip(btnWebSrch2, TOOLTIP_PREFIX + btnWebSrch2.getText());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private EventHandler<ActionEvent> searchBtnEvent(String prefKey)
+  {
+    return event ->
+    {
+      ui.webButtonMap.get(prefKey).first(WebButtonField.SingleName, getFirstAuthorSingleName())
+                                  .next (WebButtonField.Title, tfTitle.getText())
+                                  .next (WebButtonField.QueryTitle, tfTitle.getText())
+                                  .next (WebButtonField.NumericYear, tfYear.getText())
+                                  .next (WebButtonField.doi, tfDOI.getText())
+                                  .next (WebButtonField.ISBN, htISBN.dataRowStream().map(row -> row.getText(0)).findFirst().orElse(""))
+                                  .go();
+    };
   }
 
 //---------------------------------------------------------------------------

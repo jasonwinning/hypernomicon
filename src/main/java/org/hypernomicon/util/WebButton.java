@@ -91,9 +91,9 @@ public class WebButton
 
       switch (prefKey)
       {
-        case PREF_KEY_PERSON_SRCH_1 : case PREF_KEY_PERSON_SRCH_2 : case PREF_KEY_PERSON_IMG_SRCH :
+        case PREF_KEY_PERSON_SRCH : case PREF_KEY_PERSON_IMG_SRCH :
 
-          fields.add(FirstName); fields.add(LastName); fields.add(SingleName); fields.add(QueryName);
+          fields.add(FirstName); fields.add(LastName); fields.add(SingleName); fields.add(QueryName); fields.add(Field);
           break;
 
         case PREF_KEY_INST_SRCH :
@@ -116,12 +116,12 @@ public class WebButton
           fields.add(ISBN);
           break;
 
-        case PREF_KEY_WORK_SRCH_1 : case PREF_KEY_WORK_SRCH_2 :
+        case PREF_KEY_WORK_SRCH :
 
           fields.add(Title); fields.add(QueryTitle); fields.add(NumericYear); fields.add(SingleName); fields.add(ISBN); fields.add(doi);
           break;
 
-        case PREF_KEY_GEN_SRCH_1 : case PREF_KEY_GEN_SRCH_2 : case PREF_KEY_GEN_SRCH_3 : case PREF_KEY_GEN_SRCH_4 :
+        case PREF_KEY_GEN_SRCH :
 
           fields.add(Name);
           break;
@@ -153,7 +153,7 @@ public class WebButton
 
   private final List<UrlPattern> patterns = new ArrayList<>();
   private final EnumMap<WebButtonField, String> values = new EnumMap<>(WebButtonField.class);
-  public final String name;
+  private String name;
   private String caption;
 
   public WebButton(String name, String caption) { this.name = name; this.caption = caption; }
@@ -162,6 +162,8 @@ public class WebButton
   public List<UrlPattern> getPatterns()      { return Collections.unmodifiableList(patterns); }
   public String getCaption()                 { return caption; }
   public void setCaption(String caption)     { this.caption = caption; }
+  public String getName()                    { return name; }
+  public void setName(String name)           { this.name = name; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -21,6 +21,7 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -38,9 +39,10 @@ public abstract class Populator
 
   public static enum CellValueType
   {
-    cvtVaries,   cvtQuery,       cvtQueryType,  cvtRecordType,
-    cvtRecord,   cvtConnective,  cvtBoolean,    cvtTernary,
-    cvtOperand,  cvtTagItem,     cvtRelation,   cvtBibEntry
+    cvtVaries,       cvtQuery,       cvtQueryType,  cvtRecordType,
+    cvtRecord,       cvtConnective,  cvtBoolean,    cvtTernary,
+    cvtOperand,      cvtTagItem,     cvtRelation,   cvtBibEntry,
+    cvtSrchBtnPreset
   }
 
 //---------------------------------------------------------------------------
@@ -96,6 +98,22 @@ public abstract class Populator
         return cell;
 
     return null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static Populator create(CellValueType cellValueType, HyperTableCell... cells)
+  {
+    return new SimplePopulator(cellValueType, Arrays.asList(cells));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static Populator create(CellValueType cellValueType, List<HyperTableCell> cells)
+  {
+    return new SimplePopulator(cellValueType, cells);
   }
 
 //---------------------------------------------------------------------------

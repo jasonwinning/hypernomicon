@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view.settings;
 
-import static org.hypernomicon.util.Util.showStackTrace;
+import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,8 +65,13 @@ public class EditWebButtonsDlgCtrlr extends HyperDlg
   {
     this.prefKey = prefKey;
 
-    for (UrlPattern urlPattern : webBtn.getPatterns())
-      addPattern(urlPattern);
+    if (webBtn == null)
+      addPattern(new UrlPattern(EnumSet.noneOf(WebButtonField.class), ""));
+    else
+    {
+      for (UrlPattern urlPattern : webBtn.getPatterns())
+        addPattern(urlPattern);
+    }
 
     btnAdd.setOnAction(event ->
     {
@@ -94,8 +99,7 @@ public class EditWebButtonsDlgCtrlr extends HyperDlg
     ctrlr.init(urlPattern, prefKey, this);
 
     GridPane.setRowIndex(ap, ctrlrList.size());
-
-    gpMain.getChildren().add(ap);
+    addToParent(ap, gpMain);
 
     ctrlrList.add(ctrlr);
   }

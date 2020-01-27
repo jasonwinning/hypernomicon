@@ -184,8 +184,8 @@ public final class MainTextWrapper
 
   public void clear(boolean show)
   {
-    removeFromAnchor(bpEditorRoot);
-    removeFromAnchor(view);
+    removeFromParent(bpEditorRoot);
+    removeFromParent(view);
 
     html = ""; completeHtml = "";
     curRecord = null;
@@ -224,8 +224,8 @@ public final class MainTextWrapper
 
     editing = false;
 
-    removeFromAnchor(bpEditorRoot);
-    removeFromAnchor(view);
+    removeFromParent(bpEditorRoot);
+    removeFromParent(view);
 
     parentPane.getChildren().setAll(view);
 
@@ -654,8 +654,8 @@ public final class MainTextWrapper
 
   public void beginEditing(boolean focus)
   {
-    removeFromAnchor(bpEditorRoot);
-    removeFromAnchor(view);
+    removeFromParent(bpEditorRoot);
+    removeFromParent(view);
 
     parentPane.getChildren().setAll(bpEditorRoot);
 

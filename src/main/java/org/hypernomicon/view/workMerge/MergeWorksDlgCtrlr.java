@@ -324,8 +324,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     AnchorPane ap = row.getAnchorPane();
 
     GridPane.setRowIndex(ap, nextRowNdx++);
-
-    gpMain.getChildren().add(ap);
+    addToParent(ap, gpMain);
 
     RowConstraints rc;
 

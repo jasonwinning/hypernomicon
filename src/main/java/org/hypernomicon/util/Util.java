@@ -120,6 +120,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
@@ -1340,9 +1341,43 @@ public final class Util
 
   // This function is what seems to have mostly fixed the HTML editor bugs
 
-  public static void removeFromAnchor(Node node)
+  public static Parent removeFromParent(Node node)
   {
-    nullSwitch((AnchorPane)node.getParent(), ap -> ap.getChildren().remove(node));
+    Parent parent = node.getParent();
+
+    if (parent instanceof Pane)
+    {
+      Pane pane = (Pane)parent;
+      pane.getChildren().remove(node);
+    }
+    else if (parent instanceof ToolBar)
+    {
+      ToolBar toolBar = (ToolBar)parent;
+      toolBar.getItems().remove(node);
+    }
+
+    return parent;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void addToParent(Node child, Parent parent)
+  {
+    if (parent instanceof Pane)
+    {
+      Pane pane = (Pane)parent;
+
+      if (pane.getChildren().contains(child) == false)
+        pane.getChildren().add(child);
+    }
+    else if (parent instanceof ToolBar)
+    {
+      ToolBar toolBar = (ToolBar)parent;
+
+      if (toolBar.getItems().contains(child) == false)
+        toolBar.getItems().add(child);
+    }
   }
 
 //---------------------------------------------------------------------------

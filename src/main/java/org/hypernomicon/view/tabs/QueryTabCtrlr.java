@@ -28,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -56,6 +57,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebView;
+
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.App;
 import org.hypernomicon.model.Exceptions.*;
@@ -68,6 +70,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.queryEngines.*;
+import org.hypernomicon.queryEngines.QueryEngine.QueryType;
 import org.hypernomicon.querySources.CombinedFilteredQuerySource;
 import org.hypernomicon.querySources.CombinedUnfilteredQuerySource;
 import org.hypernomicon.querySources.DatasetQuerySource;
@@ -92,7 +95,6 @@ import org.hypernomicon.view.wrappers.ResultsTable.ColumnGroupItem;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
 
-import org.hypernomicon.queryEngines.QueryEngine.QueryType;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
@@ -102,15 +104,12 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
-import static org.hypernomicon.view.populators.ConnectivePopulator.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.view.wrappers.ResultsTable.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.queryEngines.QueryEngine.QueryType.*;
-import static org.hypernomicon.view.populators.GenericOperandPopulator.*;
 import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
-import static org.hypernomicon.view.populators.BooleanPopulator.*;
 
 //---------------------------------------------------------------------------
 
@@ -179,7 +178,12 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       htFields.autoCommitListSelections = true;
 
-      htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, new QueryTypePopulator(), (row, cellVal, nextColNdx, nextPopulator) ->
+      Populator queryTypePopulator = Populator.create(cvtQueryType, EnumSet.allOf(QueryType.class)
+        .stream()
+        .map(queryType -> new HyperTableCell(queryType.getCode(), queryType.getCaption(), queryType.getRecordType()))
+        .collect(Collectors.toList()));
+
+      htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, queryTypePopulator, (row, cellVal, nextColNdx, nextPopulator) ->
       {
         int query = row.getID(1);
         QueryType qt = QueryType.codeToVal(HyperTableCell.getCellID(cellVal));
@@ -227,10 +231,10 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
           row.setCellValue(nextColNdx, new HyperTableCell(-1, "", nextPopulator.getRecordType(row)));
 
-          if ((HyperTableCell.getCellID(cellVal) >= 0) && (VariablePopulator.class.cast(nextPopulator).getPopulator(row) instanceof GenericOperandPopulator))
+          if ((HyperTableCell.getCellID(cellVal) >= 0) && (VariablePopulator.class.cast(nextPopulator).getPopulator(row).getValueType() == cvtOperand))
           {
-            GenericOperandPopulator gop = VariablePopulator.class.cast(nextPopulator).getPopulator(row);
-            row.setCellValue(nextColNdx, gop.getChoiceByID(null, EQUAL_TO_OPERAND_ID));
+            Populator pop = VariablePopulator.class.cast(nextPopulator).getPopulator(row);
+            row.setCellValue(nextColNdx, pop.getChoiceByID(null, EQUAL_TO_OPERAND_ID));
             if ((tempPFC == false) && numOperands(row.getID(1), typeToEngine.get(getQueryType(row))) >= 3)
               htFields.edit(row, 4);
           }
@@ -261,7 +265,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       });
 
       htFields.addColAltPopulatorWithActionHandler(hdtNone, ctDropDown, new VariablePopulator(), onAction);
-      htFields.addColAltPopulator(hdtNone, ctDropDownList, new ConnectivePopulator());
+      htFields.addColAltPopulator(hdtNone, ctDropDownList, Populator.create(cvtConnective, andCell, orCell));
 
       htFields.getColumns().forEach(col -> col.setDontCreateNewRecord(true));
 
@@ -557,7 +561,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       if (inRecordMode == false) return;
 
-      removeFromAnchor(tvResults);
+      removeFromParent(tvResults);
       reportTable.setParent(apResults);
 
       inRecordMode = false;
@@ -578,7 +582,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (inRecordMode) return;
 
       reportTable.removeFromParent();
-      apResults.getChildren().add(tvResults);
+      addToParent(tvResults, apResults);
 
       inRecordMode = true;
     }
@@ -1096,7 +1100,15 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         case QUERY_WHERE_RELATIVE :
         case QUERY_WHERE_FIELD :
 
-          vp2.setPopulator(row, new GenericOperandPopulator());
+          vp2.setPopulator(row, Populator.create(cvtOperand,
+
+              new HyperTableCell(EQUAL_TO_OPERAND_ID        , "Is or includes record", hdtNone),
+              new HyperTableCell(NOT_EQUAL_TO_OPERAND_ID    , "Excludes record"      , hdtNone),
+              new HyperTableCell(CONTAINS_OPERAND_ID        , "Contains text"        , hdtNone),
+              new HyperTableCell(DOES_NOT_CONTAIN_OPERAND_ID, "Doesn't contain text" , hdtNone),
+              new HyperTableCell(IS_EMPTY_OPERAND_ID        , "Is empty"             , hdtNone),
+              new HyperTableCell(IS_NOT_EMPTY_OPERAND_ID    , "Is not empty"         , hdtNone)));
+
           return true;
 
         default :
@@ -1195,8 +1207,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
             clearOperands(row, 3);
             vp3.setRestricted(row, false);
           }
-          else if (cat == hdcBoolean) vp3.setPopulator(row, new BooleanPopulator());
-          else if (cat == hdcTernary) vp3.setPopulator(row, new TernaryPopulator());
+          else if (cat == hdcBoolean) vp3.setPopulator(row, Populator.create(cvtBoolean, trueCell, falseCell));
+          else if (cat == hdcTernary) vp3.setPopulator(row, Populator.create(cvtTernary, unsetCell, trueCell, falseCell));
           else                        vp3.setPopulator(row, new StandardPopulator(objType));
 
           return true;
@@ -1316,7 +1328,20 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
                           QUERY_LIST_ALL             = 3,
                           QUERY_WHERE_FIELD          = 4,
                           QUERY_WHERE_RELATIVE       = 5,
-                          QUERY_FIRST_NDX            = 6;
+                          QUERY_FIRST_NDX            = 6,
+
+                          EQUAL_TO_OPERAND_ID         = 1,           AND_CONNECITVE_ID = 1,
+                          NOT_EQUAL_TO_OPERAND_ID     = 2,           OR_CONNECTIVE_ID  = 2,
+                          CONTAINS_OPERAND_ID         = 3,           TRUE_ID  = 1,
+                          DOES_NOT_CONTAIN_OPERAND_ID = 4,           FALSE_ID = 2,
+                          IS_EMPTY_OPERAND_ID         = 5,           UNSET_ID = 3,
+                          IS_NOT_EMPTY_OPERAND_ID     = 6;
+
+  private static final HyperTableCell andCell = new HyperTableCell(AND_CONNECITVE_ID, "and", hdtNone),
+                                      orCell  = new HyperTableCell(OR_CONNECTIVE_ID , "or" , hdtNone),
+                                      trueCell  = new HyperTableCell(TRUE_ID , "True" , hdtNone),
+                                      falseCell = new HyperTableCell(FALSE_ID, "False", hdtNone),
+                                      unsetCell = new HyperTableCell(UNSET_ID, "Unset", hdtNone);
 
   @FXML private CheckBox chkShowFields, chkShowDesc;
   @FXML private Button btnToggleFavorite, btnClear, btnExecute;
@@ -1355,7 +1380,6 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public TextViewInfo getMainTextInfo()   { return new TextViewInfo(MainTextUtil.getWebEngineScrollPos(webView.getEngine())); }
   @Override public void setDividerPositions()       { return; }
   @Override public void getDividerPositions()       { return; }
-  @Override public void updateWebButtons()          { return; }
   @Override public boolean saveToRecord()           { return false; }
   @Override public HDT_Record activeRecord()        { return curQV == null ? null : curQV.curResult; }
   @Override public String getRecordName()           { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
@@ -1520,7 +1544,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     curQV = qV;
     updateCB();
 
-    removeFromAnchor(webView);
+    removeFromParent(webView);
     curQV.apDescription.getChildren().setAll(webView);
 
     qV.refreshView();
@@ -1558,8 +1582,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     clearingViews = true;
 
-    removeFromAnchor(webView);
-    apDescription.getChildren().add(webView);
+    removeFromParent(webView);
+    addToParent(webView, apDescription);
 
     queryViews.removeIf(queryView ->
     {
@@ -1674,9 +1698,9 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
               case cvtBoolean :
 
-                if ((getCellID(param3) != TRUE_BOOLEAN_ID) && (getCellID(param3) != FALSE_BOOLEAN_ID)) return false;
+                if ((getCellID(param3) != TRUE_ID) && (getCellID(param3) != FALSE_ID)) return false;
 
-                return (record.getTagBoolean(tag) == (getCellID(param3) == TRUE_BOOLEAN_ID)) == (getCellID(param2) == EQUAL_TO_OPERAND_ID);
+                return (record.getTagBoolean(tag) == (getCellID(param3) == TRUE_ID)) == (getCellID(param2) == EQUAL_TO_OPERAND_ID);
 
               default :
 

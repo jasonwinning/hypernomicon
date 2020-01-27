@@ -24,6 +24,7 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.Author;
@@ -377,7 +378,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     if ((ctrlType == ctDropDown) || (ctrlType == ctDropDownList))
       return addColAltPopulator(objType, ctrlType, new StandardPopulator(objType));
 
-    return addColAltPopulator(objType, ctrlType, new EmptyPopulator());
+    return addColAltPopulator(objType, ctrlType, Populator.create(cvtRecord));
   }
 
 //---------------------------------------------------------------------------
@@ -679,7 +680,16 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addRemoveMenuItem() { addRemoveMenuItem(null); }
+  public void addRemoveMenuItem(Predicate<HyperTableRow> condRowHandler)
+  {
+    addContextMenuItem("Remove this row", condRowHandler, row ->
+    {
+      rows.remove(row);
+      doExternalRefresh();
+    });
+  }
+
+  public void addRemoveMenuItem() { addRemoveMenuItem((Runnable)null); }
 
   public void addRemoveMenuItem(Runnable handler)
   {

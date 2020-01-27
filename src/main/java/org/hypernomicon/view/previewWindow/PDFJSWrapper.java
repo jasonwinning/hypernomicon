@@ -78,8 +78,8 @@ public class PDFJSWrapper
   private Runnable postBrowserLoadCode = null;
 
   int getNumPages()    { return numPages; }
-  void prepareToHide() { removeFromAnchor(browserView); }
-  void prepareToShow() { apBrowser.getChildren().add(browserView); }
+  void prepareToHide() { removeFromParent(browserView); }
+  void prepareToShow() { addToParent(browserView, apBrowser); }
 
 //---------------------------------------------------------------------------
 
@@ -185,7 +185,7 @@ public class PDFJSWrapper
   {
     if (browser != null)
     {
-      removeFromAnchor(browserView);
+      removeFromParent(browserView);
       oldBrowser = browser;
     }
 
@@ -217,7 +217,7 @@ public class PDFJSWrapper
 
     setAnchors(browserView, 0.0, 0.0, 0.0, 0.0);
 
-    apBrowser.getChildren().add(browserView);
+    addToParent(browserView, apBrowser);
 
     addCustomProtocolHandler("jar");
 

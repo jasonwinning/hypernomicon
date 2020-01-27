@@ -18,6 +18,7 @@
 package org.hypernomicon.view.tabs;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
@@ -30,6 +31,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.prefs.Preferences;
 
 import org.hypernomicon.App;
 import org.hypernomicon.model.records.HDT_Record;
@@ -45,9 +48,14 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Exceptions.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Control;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SplitMenuButton;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
@@ -83,17 +91,17 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public abstract void getDividerPositions();
   public abstract void setRecord(HDT_CT record);
   public abstract void findWithinDesc(String text);
-  public abstract void updateWebButtons();
 
-  public TextViewInfo getMainTextInfo()       { return new TextViewInfo(); }
-  public MainTextWrapper getMainTextWrapper() { return null; }
-  public void rescale()                       { return; }
-  public int getRecordCount()                 { return db.records(getType()).size(); }
-  public final int getActiveID()              { return nullSwitch(activeRecord(), -1, HDT_Record::getID); }
-  public final HyperView<HDT_CT> getView()    { return view; }
-  public final HDT_CT viewRecord()            { return getView().getViewRecord(); }
-  public final Tab getTab()                   { return tab; }
-  public final TabEnum getTabEnum()           { return tabEnum; }
+  public TextViewInfo getMainTextInfo()          { return new TextViewInfo(); }
+  public MainTextWrapper getMainTextWrapper()    { return null; }
+  public void rescale()                          { return; }
+  public int getRecordCount()                    { return db.records(getType()).size(); }
+  public final int getActiveID()                 { return nullSwitch(activeRecord(), -1, HDT_Record::getID); }
+  public final HyperView<HDT_CT> getView()       { return view; }
+  public final HDT_CT viewRecord()               { return getView().getViewRecord(); }
+  public final Tab getTab()                      { return tab; }
+  public final TabEnum getTabEnum()              { return tabEnum; }
+  void updateWebButtons(Preferences node)        { return; }
 
   public void newClick(HDT_RecordType objType, HyperTableRow row) { }
 
@@ -279,9 +287,46 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void updateAllWebButtons()
+  public static void updateAllWebButtons(Preferences node)
   {
-    enumToHyperTab.values().forEach(HyperTab::updateWebButtons);
+    enumToHyperTab.values().forEach(hyperTab -> hyperTab.updateWebButtons(node));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static void updateWebButtons(Preferences node, String prefKey, int numDef, Button btn, SplitMenuButton smb, String toolTipPrefix,
+                                      Function<String, EventHandler<ActionEvent>> eventHndlr)
+  {
+    int count = node.getInt(prefKey + "Count", numDef);
+
+    if (count > numDef)
+    {
+      btn.setVisible(false);
+      smb.setVisible(true);
+
+      smb.setText(ui.webButtonMap.get(prefKey + "1").getCaption());
+      setToolTip(smb, toolTipPrefix + smb.getText());
+
+      smb.getItems().clear();
+
+      for (int ndx = numDef + 1; ndx <= count; ndx++)
+      {
+        String indexedPrefKey = prefKey + String.valueOf(ndx);
+
+        MenuItem item = new MenuItem(ui.webButtonMap.get(indexedPrefKey).getCaption());
+        item.setOnAction(eventHndlr.apply(indexedPrefKey));
+        smb.getItems().add(item);
+      }
+    }
+    else
+    {
+      smb.setVisible(false);
+      btn.setVisible(true);
+
+      btn.setText(ui.webButtonMap.get(prefKey + "1").getCaption());
+      setToolTip(btn, toolTipPrefix + btn.getText());
+    }
   }
 
 //---------------------------------------------------------------------------

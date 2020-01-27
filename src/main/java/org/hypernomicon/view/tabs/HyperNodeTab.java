@@ -18,6 +18,7 @@
 package org.hypernomicon.view.tabs;
 
 import java.io.IOException;
+import java.util.prefs.Preferences;
 
 import org.hypernomicon.App;
 import org.hypernomicon.model.records.HDT_Record;
@@ -32,7 +33,7 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 
   @Override public final MainTextWrapper getMainTextWrapper() { return ctrlr.getMainTextWrapper(); }
   @Override public String getRecordName()                     { return ctrlr.getRecordName(); }
-  @Override public void updateWebButtons()                    { ctrlr.updateWebButtons(); }
+  @Override void updateWebButtons(Preferences node)           { ctrlr.updateWebButtons(node); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

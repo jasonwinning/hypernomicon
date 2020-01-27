@@ -21,6 +21,7 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
+import org.hypernomicon.util.Util;
 import org.hypernomicon.view.tabs.QueryTabCtrlr.QueryView;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 import javafx.application.Platform;
@@ -64,7 +65,7 @@ public class ReportTable
 
   public void setParent(AnchorPane apResults)
   {
-    apResults.getChildren().add(tv);
+    addToParent(tv, apResults);
   }
 
   //---------------------------------------------------------------------------
@@ -72,7 +73,7 @@ public class ReportTable
 
   public void removeFromParent()
   {
-    removeFromAnchor(tv);
+    Util.removeFromParent(tv);
   }
 
 //---------------------------------------------------------------------------

@@ -48,7 +48,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
   public int getID(int ndx)                   { return cells.size() > ndx ? HyperTableCell.getCellID(cells.get(ndx)) : -1; }
   public String getText(int ndx)              { return cells.size() > ndx ? HyperTableCell.getCellText(cells.get(ndx)) : ""; }
   public HDT_RecordType getType(int ndx)      { return cells.size() > ndx ? HyperTableCell.getCellType(cells.get(ndx)) : hdtNone; }
-  public boolean getCheckboxValue(int colNdx) { return getID(colNdx) == HyperTableCell.trueCell.getID(); }
+  public boolean getCheckboxValue(int colNdx) { return getID(colNdx) == HyperTableCell.trueCheckboxCell.getID(); }
 
   @Override public HDT_RecordType getRecordType() { return getType(table.getMainColNdx()); }
   @Override public int getRecordID()              { return getID(table.getMainColNdx()); }
@@ -99,7 +99,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 //---------------------------------------------------------------------------
 
   public void setCheckboxValue(int colNdx, boolean boolVal) {
-    setCellValue(colNdx, HyperTableCell.fromBoolean(boolVal)); }
+    setCellValue(colNdx, HyperTableCell.checkboxCellFromBoolean(boolVal)); }
 
   public boolean setCellValue(int colNdx, HDT_Record record, String text) {
     return setCellValue(colNdx, new HyperTableCell(record, text)); }

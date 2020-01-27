@@ -31,12 +31,17 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
+import java.util.prefs.Preferences;
+
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SplitMenuButton;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -51,9 +56,10 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
   @FXML AnchorPane apDescription, apLowerPane;
   @FXML GridPane gpToolBar;
   @FXML Label lblParentCaption;
+  @FXML SplitMenuButton smbWebSrch1;
   @FXML SplitPane spChildren, spMain;
   @FXML TableView<HyperTableRow> tvLeftChildren, tvParents, tvRightChildren;
-  @FXML ToolBar tbLinks;
+  @FXML ToolBar tbLinks, tbButtons;
   @FXML private Button btnWebSrch1, btnWebSrch2, btnWebSrch3, btnWebSrch4, btnTree;
   @FXML private Label lblGoTo1, lblGoTo2, lblGoTo3, lblMergeTerms;
   @FXML private TextField tfName, tfSearchKey;
@@ -62,6 +68,8 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
   private HDT_RecordType recordType;
   private MainTextWrapper mainText;
   private HyperNodeTab<HDT_RT, HDT_CT> hyperTab;
+
+  private static final String TOOLTIP_PREFIX = "Search record name using ";
 
 //---------------------------------------------------------------------------
 
@@ -120,16 +128,17 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
         labelLink = null;
     }
 
-    btnWebSrch1.setOnAction(event -> ui.webButtonMap.get(PREF_KEY_GEN_SRCH_1).first(WebButtonField.Name, tfName.getText()).go());
-    btnWebSrch2.setOnAction(event -> ui.webButtonMap.get(PREF_KEY_GEN_SRCH_2).first(WebButtonField.Name, tfName.getText()).go());
-    btnWebSrch3.setOnAction(event -> ui.webButtonMap.get(PREF_KEY_GEN_SRCH_3).first(WebButtonField.Name, tfName.getText()).go());
-    btnWebSrch4.setOnAction(event -> ui.webButtonMap.get(PREF_KEY_GEN_SRCH_4).first(WebButtonField.Name, tfName.getText()).go());
+    btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + "1"));
+    smbWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + "1"));
+    btnWebSrch2.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + "2"));
+    btnWebSrch3.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + "3"));
+    btnWebSrch4.setOnAction(searchBtnEvent(PREF_KEY_GEN_SRCH + "4"));
     btnTree    .setOnAction(event -> ui.goToTreeRecord(ui.viewRecord()));
 
-    setToolTip(btnWebSrch1, "Search record name in Google");
-    setToolTip(btnWebSrch3, "Search record name in Internet Encyclopedia of Philosophy");
-    setToolTip(btnWebSrch2, "Search record name in Stanford Encyclopedia of Philosophy");
-    setToolTip(btnWebSrch4, "Search record name in Wikipedia");
+    setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "Google");
+    setToolTip(btnWebSrch3, TOOLTIP_PREFIX + "Internet Encyclopedia of Philosophy");
+    setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Stanford Encyclopedia of Philosophy");
+    setToolTip(btnWebSrch4, TOOLTIP_PREFIX + "Wikipedia");
 
     double fontSize = appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
     if (fontSize < 0) fontSize = lblGoTo1.getFont().getSize();
@@ -390,6 +399,17 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 
   void clear()
   {
+    if (btnWebSrch1.isVisible())
+    {
+      tbButtons.getItems().remove(smbWebSrch1);
+      addToParent(btnWebSrch1, tbButtons);
+    }
+    else
+    {
+      tbButtons.getItems().remove(btnWebSrch1);
+      addToParent(smbWebSrch1, tbButtons);
+    }
+
     tfName.clear();
     tfSearchKey.clear();
 
@@ -443,17 +463,29 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void updateWebButtons()
+  public void updateWebButtons(Preferences node)
   {
-    btnWebSrch1.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH_1).getCaption());
-    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH_2).getCaption());
-    btnWebSrch3.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH_3).getCaption());
-    btnWebSrch4.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH_4).getCaption());
+    HyperTab.updateWebButtons(node, PREF_KEY_GEN_SRCH, 4, btnWebSrch1, smbWebSrch1, TOOLTIP_PREFIX, this::searchBtnEvent);
 
-    setToolTip(btnWebSrch1, "Search record name using " + btnWebSrch1.getText());
-    setToolTip(btnWebSrch2, "Search record name using " + btnWebSrch2.getText());
-    setToolTip(btnWebSrch3, "Search record name using " + btnWebSrch3.getText());
-    setToolTip(btnWebSrch4, "Search record name using " + btnWebSrch4.getText());
+    btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + "2").getCaption());
+    btnWebSrch3.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + "3").getCaption());
+    btnWebSrch4.setText(ui.webButtonMap.get(PREF_KEY_GEN_SRCH + "4").getCaption());
+
+    setToolTip(btnWebSrch2, TOOLTIP_PREFIX + btnWebSrch2.getText());
+    setToolTip(btnWebSrch3, TOOLTIP_PREFIX + btnWebSrch3.getText());
+    setToolTip(btnWebSrch4, TOOLTIP_PREFIX + btnWebSrch4.getText());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private EventHandler<ActionEvent> searchBtnEvent(String prefKey)
+  {
+    return event ->
+    {
+      ui.webButtonMap.get(prefKey).first(WebButtonField.Name, tfName.getText())
+                                  .go();
+    };
   }
 
 //---------------------------------------------------------------------------

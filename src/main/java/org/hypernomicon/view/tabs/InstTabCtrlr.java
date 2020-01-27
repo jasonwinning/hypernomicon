@@ -44,6 +44,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.prefs.Preferences;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -387,7 +388,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void updateWebButtons()
+  @Override void updateWebButtons(Preferences node)
   {
     hlMaps.setText(ui.webButtonMap.get(PREF_KEY_INST_MAP_SRCH).getCaption());
   }

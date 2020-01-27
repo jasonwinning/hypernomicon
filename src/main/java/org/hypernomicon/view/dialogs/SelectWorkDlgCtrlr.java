@@ -395,13 +395,13 @@ public class SelectWorkDlgCtrlr extends HyperDlg
       {
         height = dialogStage.getHeight();
         dialogStage.setMaxHeight(Double.MAX_VALUE);
-        stagePane.getChildren().add(apPreview);
+        addToParent(apPreview, stagePane);
         accommodatePreview(dialogStage, apMain);
         updatePreview();
       }
       else if (ov.equals(Boolean.TRUE) && nv.equals(Boolean.FALSE))
       {
-        stagePane.getChildren().remove(apPreview);
+        removeFromParent(apPreview);
         dialogStage.setHeight(height);
         dialogStage.setMaxHeight(height);
       }

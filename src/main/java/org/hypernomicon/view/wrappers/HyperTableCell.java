@@ -36,8 +36,8 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
     hsmStandard, hsmTextSimple, hsmNumeric, hsmLast, hsmWork
   }
 
-  public static final HyperTableCell trueCell  = new HyperTableCell(1 , "", hdtNone),
-                                     falseCell = new HyperTableCell(0 , "", hdtNone),
+  public static final HyperTableCell trueCheckboxCell  = new HyperTableCell(1 , "", hdtNone),
+                                     falseCheckboxCell = new HyperTableCell(0 , "", hdtNone),
                                      blankCell = new HyperTableCell(-1, "", hdtNone);
 
   private int id;
@@ -49,13 +49,13 @@ public final class HyperTableCell implements Comparable <HyperTableCell>, Clonea
   public String getText()         { return text; }
   public HDT_RecordType getType() { return type; }
 
-  public <HDT_T extends HDT_Record> HDT_T getRecord()           { return HyperTableCell.getRecord(this); }
+  public <HDT_T extends HDT_Record> HDT_T getRecord()            { return HyperTableCell.getRecord(this); }
 
-  static HyperTableCell fromBoolean(boolean boolVal)            { return boolVal ? trueCell : falseCell; }
-  public static int getCellID(HyperTableCell cell)              { return cell == null ? -1 : cell.id; }
-  public static String getCellText(HyperTableCell cell)         { return cell == null ? "" : safeStr(cell.text); }
-  public static HDT_RecordType getCellType(HyperTableCell cell) { return (cell == null) || (cell.type == null) ? hdtNone : cell.type; }
-  public static boolean isEmpty(HyperTableCell cell)            { return cell == null ? true : cell.equals(HyperTableCell.blankCell); }
+  static HyperTableCell checkboxCellFromBoolean(boolean boolVal) { return boolVal ? trueCheckboxCell : falseCheckboxCell; }
+  public static int getCellID(HyperTableCell cell)               { return cell == null ? -1 : cell.id; }
+  public static String getCellText(HyperTableCell cell)          { return cell == null ? "" : safeStr(cell.text); }
+  public static HDT_RecordType getCellType(HyperTableCell cell)  { return (cell == null) || (cell.type == null) ? hdtNone : cell.type; }
+  public static boolean isEmpty(HyperTableCell cell)             { return cell == null ? true : cell.equals(HyperTableCell.blankCell); }
 
   @Override public HyperTableCell clone()
   { try { return (HyperTableCell) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }}
