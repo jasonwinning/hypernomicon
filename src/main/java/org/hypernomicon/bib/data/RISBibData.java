@@ -41,7 +41,8 @@ public class RISBibData extends BibDataStandalone
   {
     super();
 
-    boolean gotType = false, gotJournal = false;
+    String jf = "", jo = "", t2 = "", singleTitle = "";
+    boolean gotType = false;
 
     for (String line : lines)
     {
@@ -67,7 +68,12 @@ public class RISBibData extends BibDataStandalone
 
           case "ER":
 
-            if (gotType) return;
+            if (gotType)
+            {
+              setJournalTitle(jf, jo, t2, singleTitle);
+              return;
+            }
+
             throw new RISException();
 
           case "TY": setEntryType(parseRISType(val)); gotType = true; break;
@@ -96,18 +102,8 @@ public class RISBibData extends BibDataStandalone
           case "ET": setStr(bfEdition, val); break;
           case "IS": setStr(bfIssue, val); break;
 
-          case "JF":
-
-            setMultiStr(bfContainerTitle, Arrays.asList(val));
-            gotJournal = true;
-            break;
-
-          case "JO":
-
-            if (gotJournal == false)
-              setMultiStr(bfContainerTitle, Arrays.asList(val));
-
-            break;
+          case "JF": jf = val; break;
+          case "JO": jo = val; break;
 
           case "L1": case "L2": case "LK": case "UR":
 
@@ -121,7 +117,19 @@ public class RISBibData extends BibDataStandalone
           case "SP": setStartPage(val); break;
           case "EP": setEndPage  (val); break;
 
-          case "TI": case "TT": case "T1": case "T2": case "T3":
+          case "TI": case "TT": case "T1":
+
+            singleTitle = val;
+            addStr(bfTitle, val);
+            break;
+
+          case "T2":
+
+            t2 = val;
+            addStr(bfTitle, val);
+            break;
+
+          case "T3":
 
             addStr(bfTitle, val);
             break;
@@ -139,12 +147,40 @@ public class RISBibData extends BibDataStandalone
       }
       else if (ultraTrim(line).equals("ER"))
       {
-        if (gotType) return;
+        if (gotType)
+        {
+          setJournalTitle(jf, jo, t2, singleTitle);
+          return;
+        }
+
         throw new RISException();
       }
     }
 
     throw new RISException(); // It has to end with "ER"; otherwise malformed
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void setJournalTitle(String jf, String jo, String t2, String singleTitle)
+  {
+    String containerTitle;
+
+    if (getEntryType().equals(etJournalArticle) == false)
+      return;
+
+    if (safeStr(jf).isBlank() == false)
+      containerTitle = jf;
+    else if (safeStr(jo).isBlank() == false)
+      containerTitle = jo;
+    else
+    {
+      containerTitle = safeStr(t2);
+      setMultiStr(bfTitle, Arrays.asList(safeStr(singleTitle)));
+    }
+
+    setMultiStr(bfContainerTitle, Arrays.asList(safeStr(containerTitle)));
   }
 
 //---------------------------------------------------------------------------

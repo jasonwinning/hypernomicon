@@ -504,6 +504,7 @@ public class FolderTreeWatcher
   public void disable()       { stop(); disabled = true; }
   public void enable()        { disabled = false; }
   public boolean isDisabled() { return disabled; }
+  public boolean isRunning()  { return stopped ? false : nullSwitch(watcherThread, false, WatcherThread::isAlive); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -608,15 +609,6 @@ public class FolderTreeWatcher
 
     watcherThread = new WatcherThread(watcher, watchKeyToDir);
     stopped = false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean isRunning()
-  {
-    if (stopped == true) return false;
-    return nullSwitch(watcherThread, false, WatcherThread::isAlive);
   }
 
 //---------------------------------------------------------------------------

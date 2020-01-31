@@ -219,7 +219,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
         if (ISBNs.contains(isbn) == false)
           notAllInSW = true;
 
-      if ((notAllInLW == false) && (notAllInSW == true))
+      if ((notAllInLW == false) && notAllInSW)
       {
         updateISBNstrRecursively(largerWork.getTagString(tagISBN));
       }

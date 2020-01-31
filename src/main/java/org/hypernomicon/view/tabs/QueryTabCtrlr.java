@@ -1846,7 +1846,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     HyperTask.performTaskWithProgressDialog(task);
 
-    if (startWatcher == true)
+    if (startWatcher)
       folderTreeWatcher.createNewWatcherAndStart();
 
     fileList.showErrors();

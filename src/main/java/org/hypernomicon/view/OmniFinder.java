@@ -64,7 +64,8 @@ public class OmniFinder
   private HDT_RecordType typeFilter;
   public Runnable doneHndlr = null;
 
-  public boolean noResults() { return collEmpty(records); }
+  public boolean noResults()  { return collEmpty(records); }
+  private boolean isRunning() { return stopped ? false : nullSwitch(finderThread, false, FinderThread::isAlive); }
 
   protected enum TierEnum
   {
@@ -629,15 +630,6 @@ public class OmniFinder
       finderThread = new FinderThread(htFind);
 
     stopped = false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private boolean isRunning()
-  {
-    if (stopped == true) return false;
-    return nullSwitch(finderThread, false, FinderThread::isAlive);
   }
 
 //---------------------------------------------------------------------------

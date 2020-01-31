@@ -35,6 +35,40 @@ public abstract class Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static class SimplePopulator extends Populator
+  {
+  //---------------------------------------------------------------------------
+
+    private final CellValueType cellValueType;
+    private final List<HyperTableCell> choices;
+
+  //---------------------------------------------------------------------------
+
+    SimplePopulator(CellValueType cellValueType, List<HyperTableCell> choices)
+    {
+      this.cellValueType = cellValueType;
+      this.choices = choices;
+    }
+
+  //---------------------------------------------------------------------------
+
+    @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force) { return choices; }
+    @Override public CellValueType getValueType()                                    { return cellValueType; }
+    @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)    { return equalMatch(row, cell); }
+
+  //---------------------------------------------------------------------------
+
+    @Override public HyperTableCell getChoiceByID(HyperTableRow row, int id)
+    {
+      return nullSwitch(super.getChoiceByID(row, id), HyperTableCell.blankCell);
+    }
+
+  //---------------------------------------------------------------------------
+  }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
   public static final HyperTableRow dummyRow = new HyperTableRow(null, null);
 
   public static enum CellValueType
@@ -107,9 +141,6 @@ public abstract class Populator
   {
     return new SimplePopulator(cellValueType, Arrays.asList(cells));
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public static Populator create(CellValueType cellValueType, List<HyperTableCell> cells)
   {

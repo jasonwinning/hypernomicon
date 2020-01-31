@@ -87,6 +87,7 @@ public class AsyncHttpClient
   public boolean wasCancelledByUser() { return cancelledByUser; }
   public String lastUrl()             { return lastUrl; }
   public void clearLastUrl()          { lastUrl = ""; }
+  public boolean isRunning()          { return stopped ? false : nullSwitch(requestThread, false, RequestThread::isAlive); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -108,15 +109,6 @@ public class AsyncHttpClient
 
     requestThread = new RequestThread(responseHandler, failHndlr);
     stopped = false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean isRunning()
-  {
-    if (stopped == true) return false;
-    return nullSwitch(requestThread, false, RequestThread::isAlive);
   }
 
 //---------------------------------------------------------------------------

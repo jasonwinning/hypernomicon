@@ -934,14 +934,14 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static int populateDisplayersAndKeyMentioners(HDT_RecordWithPath record, HyperTable hyperTable)
+  static int populateDisplayersAndKeyMentioners(HDT_RecordWithPath record, HyperTable table)
   {
     Set<HDT_RecordWithConnector> set = db.getKeyWorkMentioners(record);
 
     if (record.hasMainText())
       db.getDisplayers(((HDT_RecordWithConnector)record).getMainText()).stream().map(MainText::getRecord).forEach(set::add);
 
-    hyperTable.buildRows(set, (row, mentioner) ->
+    table.buildRows(set, (row, mentioner) ->
     {
       String typeStr = "", name;
 

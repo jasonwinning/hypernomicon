@@ -31,19 +31,19 @@ import org.hypernomicon.model.records.HDT_RecordType;
 
 public class ExternalColumnPopulator extends Populator
 {
-  private final HyperTable hT;
+  private final HyperTable table;
   private final int colNdx;
 
   @Override public CellValueType getValueType()                                 { return cvtRecord; }
-  @Override public HDT_RecordType getRecordType(HyperTableRow row)              { return hT.getTypeByCol(colNdx); }
+  @Override public HDT_RecordType getRecordType(HyperTableRow row)              { return table.getTypeByCol(colNdx); }
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return equalMatch(row, cell); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ExternalColumnPopulator(HyperTable hT, int colNdx)
+  public ExternalColumnPopulator(HyperTable table, int colNdx)
   {
-    this.hT = hT;
+    this.table = table;
     this.colNdx = colNdx;
   }
 
@@ -52,9 +52,9 @@ public class ExternalColumnPopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    return hT.getSelByCol(colNdx).stream()
-                                 .filter(cell -> filter == null ? true : filter.test(cell.getID()))
-                                 .collect(Collectors.toList());
+    return table.getSelByCol(colNdx).stream()
+                                    .filter(cell -> filter == null ? true : filter.test(cell.getID()))
+                                    .collect(Collectors.toList());
   }
 
 //---------------------------------------------------------------------------

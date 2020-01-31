@@ -1467,7 +1467,7 @@ public final class Util
 
       while ((line = reader.readLine()) != null)
       {
-        if (keepEOLchars && strBuilder.length() > 0)
+        if (keepEOLchars && (strBuilder.length() > 0))
           strBuilder.append("\n");
 
         strBuilder.append(line);
