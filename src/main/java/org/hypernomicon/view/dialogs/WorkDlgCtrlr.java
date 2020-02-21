@@ -63,7 +63,6 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.previewWindow.PDFJSWrapper;
 import org.hypernomicon.view.previewWindow.PreviewWrapper;
@@ -425,8 +424,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
       if (npdc.showModal())
       {
-        Populator pop = htAuthors.getPopulator(0);
-        pop.setChanged(row);                      // A new record has been created so force it to repopulate
+        htAuthors.getPopulator(0).setChanged(row);              // A new record has been created so force it to repopulate
         htAuthors.selectID(0, row, npdc.getPerson().getID());
       }
       else

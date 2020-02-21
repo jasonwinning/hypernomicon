@@ -153,13 +153,13 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   public HyperTable htAuthors;
   public HyperCB hcbType;
 
-  @Override public String getRecordName()               { return tfTitle.getText(); }
-  @Override HDT_RecordType getType()                    { return hdtWork; }
-  @Override public void enable(boolean enabled)         { ui.tabWorks.getContent().setDisable(enabled == false); }
-  @Override public void findWithinDesc(String text)     { mainText.hilite(text); }
-  @Override public TextViewInfo getMainTextInfo()       { return mainText.getViewInfo(); }
-  @Override public void setRecord(HDT_Work work)        { curWork = work; }
-  @Override public MainTextWrapper getMainTextWrapper() { return mainText; }
+  @Override public String recordName()               { return tfTitle.getText(); }
+  @Override HDT_RecordType getType()                 { return hdtWork; }
+  @Override public void enable(boolean enabled)      { ui.tabWorks.getContent().setDisable(enabled == false); }
+  @Override public void findWithinDesc(String text)  { mainText.hilite(text); }
+  @Override public TextViewInfo mainTextInfo()       { return mainText.getViewInfo(); }
+  @Override public void setRecord(HDT_Work work)     { curWork = work; }
+  @Override public MainTextWrapper mainTextWrapper() { return mainText; }
 
   private List<Author> getAuthorsFromUI()      { return Authors.getListFromObjectGroups(getAuthorGroups(), curWork); }
   public String getShortAuthorsStr()           { return Authors.getShortAuthorsStr(getAuthorsFromUI(), false, true); }

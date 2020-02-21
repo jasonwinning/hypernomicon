@@ -214,7 +214,7 @@
                                         <children>
                                           <AnchorPane prefHeight="200.0" prefWidth="200.0">
                                                    <children>
-                                                      <CheckBox fx:id="chkUseSentenceCase" layoutY="4.0" mnemonicParsing="false" text="Use sentence case instead of title case for titles" />
+                                                      <CheckBox fx:id="chkUseSentenceCase" mnemonicParsing="false" text="Use sentence case instead of title case for titles" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="16.0" />
                                                    </children>
                                           </AnchorPane>
                                         </children>

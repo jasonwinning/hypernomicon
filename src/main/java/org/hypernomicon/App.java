@@ -322,7 +322,7 @@ public final class App extends Application
         if (record.getType() == hdtInvestigation)
           mainText = ui.personHyperTab().getInvMainTextWrapper(record.getID());
         else
-          mainText = ui.activeTab().getMainTextWrapper();
+          mainText = ui.activeTab().mainTextWrapper();
 
         if (mainText != null)
           mainText.beginEditing(false);

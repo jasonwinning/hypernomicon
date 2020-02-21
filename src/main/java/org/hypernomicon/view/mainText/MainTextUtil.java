@@ -513,7 +513,7 @@ public class MainTextUtil
 
   static void appendKeyWorkSpanAndBody(HDT_RecordWithConnector recordWMT, StringBuilder innerHtml, boolean sortByName, MutableInt tagNdx, boolean topmost, TextViewInfo viewInfo)
   {
-    innerHtml.append(getKeyWorkSpanElement(recordWMT, tagNdx, sortByName, topmost));
+    innerHtml.append(keyWorkSpanElement(recordWMT, tagNdx, sortByName, topmost));
 
     List<KeyWork> keyWorks = recordWMT.getMainText().getKeyWorks();
 
@@ -532,7 +532,7 @@ public class MainTextUtil
   {
     List<String> searchKeys = new ArrayList<>();
 
-    Map<String, String> linkMap = getKeyWorkLinkMap(keyWorks, searchKeys, sortByName);
+    Map<String, String> linkMap = keyWorkLinkMap(keyWorks, searchKeys, sortByName);
 
     innerHtml.append(searchKeys.stream().map(searchKey -> new StringBuilder(linkMap.get(searchKey)))
                                .reduce((sb1, sb2) -> sb1.append(", ").append(sb2)).orElse(new StringBuilder()));
@@ -644,7 +644,7 @@ public class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static int getWebEngineScrollPos(WebEngine theWE)
+  public static int webEngineScrollPos(WebEngine theWE)
   {
     return Integer.class.cast(theWE.executeScript("document.body.scrollTop")).intValue();
   }
@@ -699,7 +699,7 @@ public class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getKeyWorkSpanElement(HDT_RecordWithConnector recordWMT, MutableInt tagNdx, boolean sortByName, boolean topmost)
+  private static String keyWorkSpanElement(HDT_RecordWithConnector recordWMT, MutableInt tagNdx, boolean sortByName, boolean topmost)
   {
     tagNdx.increment();
 
@@ -787,7 +787,7 @@ public class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static Map<String, String> getKeyWorkLinkMap(List<KeyWork> keyWorks, List<String> sortedKeys, boolean sortByName)
+  private static Map<String, String> keyWorkLinkMap(List<KeyWork> keyWorks, List<String> sortedKeys, boolean sortByName)
   {
     Map<String, String> linkMap = new HashMap<>();
     Map<String, KeyWork> keyToKeyWork = new HashMap<>();
@@ -833,7 +833,7 @@ public class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HDT_MiscFile getNextEmbeddedMiscFile(String str, MutableInt startNdx, MutableInt endNdx, ObjectProperty<Element> elementProp)
+  public static HDT_MiscFile nextEmbeddedMiscFile(String str, MutableInt startNdx, MutableInt endNdx, ObjectProperty<Element> elementProp)
   {
     startNdx.setValue(str.indexOf("&lt;misc-file", startNdx.getValue()));
     elementProp.set(null);
@@ -892,7 +892,7 @@ public class MainTextUtil
         MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
         ObjectProperty<Element> elementProp = new SimpleObjectProperty<>();
 
-        HDT_MiscFile miscFile = getNextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
+        HDT_MiscFile miscFile = nextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
 
         while (miscFile != null)
         {
@@ -913,7 +913,7 @@ public class MainTextUtil
           str = str.substring(0, startNdx.getValue()) + tag + safeSubstring(str, endNdx.getValue(), str.length());
 
           startNdx.add(1);
-          miscFile = getNextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
+          miscFile = nextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
         }
       }
 

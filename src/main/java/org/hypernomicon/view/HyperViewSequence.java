@@ -109,7 +109,7 @@ public class HyperViewSequence
     if ((record != null) && HDT_Record.isEmpty(record)) // If concept was just deleted, active record (term) will be null
       return;                                           // so we also have to check view record (concept)
 
-    updateCurrentView(new HyperView<>(curTabEnum(), record, hyperTab.getMainTextInfo()));
+    updateCurrentView(new HyperView<>(curTabEnum(), record, hyperTab.mainTextInfo()));
   }
 
 //---------------------------------------------------------------------------

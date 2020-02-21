@@ -82,7 +82,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   abstract void init();
   abstract HDT_RecordType getType();
 
-  public abstract String getRecordName();
+  public abstract String recordName();
   public abstract boolean update();
   public abstract void clear();
   public abstract boolean saveToRecord();
@@ -92,16 +92,16 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public abstract void setRecord(HDT_CT record);
   public abstract void findWithinDesc(String text);
 
-  public TextViewInfo getMainTextInfo()          { return new TextViewInfo(); }
-  public MainTextWrapper getMainTextWrapper()    { return null; }
-  public void rescale()                          { return; }
-  public int getRecordCount()                    { return db.records(getType()).size(); }
-  public final int getActiveID()                 { return nullSwitch(activeRecord(), -1, HDT_Record::getID); }
-  public final HyperView<HDT_CT> getView()       { return view; }
-  public final HDT_CT viewRecord()               { return getView().getViewRecord(); }
-  public final Tab getTab()                      { return tab; }
-  public final TabEnum getTabEnum()              { return tabEnum; }
-  void updateWebButtons(Preferences node)        { return; }
+  public TextViewInfo mainTextInfo()       { return new TextViewInfo(); }
+  public MainTextWrapper mainTextWrapper() { return null; }
+  public void rescale()                    { return; }
+  public int getRecordCount()              { return db.records(getType()).size(); }
+  public final int getActiveID()           { return nullSwitch(activeRecord(), -1, HDT_Record::getID); }
+  public final HyperView<HDT_CT> getView() { return view; }
+  public final HDT_CT viewRecord()         { return getView().getViewRecord(); }
+  public final Tab getTab()                { return tab; }
+  public final TabEnum getTabEnum()        { return tabEnum; }
+  void updateWebButtons(Preferences node)  { return; }
 
   public void newClick(HDT_RecordType objType, HyperTableRow row) { }
 

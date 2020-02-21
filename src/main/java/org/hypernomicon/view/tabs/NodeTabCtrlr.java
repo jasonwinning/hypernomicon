@@ -73,10 +73,10 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 
 //---------------------------------------------------------------------------
 
-  String getRecordName()               { return tfName.getText(); }
-  void hilite(String text)             { mainText.hilite(text); }
-  TextViewInfo getMainTextInfo()       { return mainText.getViewInfo(); }
-  MainTextWrapper getMainTextWrapper() { return mainText; }
+  TextField nameCtrl()              { return tfName; }
+  void hilite(String text)          { mainText.hilite(text); }
+  TextViewInfo mainTextInfo()       { return mainText.getViewInfo(); }
+  MainTextWrapper mainTextWrapper() { return mainText; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -422,7 +422,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean save(HDT_CT record)
+  boolean saveToRecord(HDT_CT record)
   {
     if (record.getType() == hdtConcept)
     {

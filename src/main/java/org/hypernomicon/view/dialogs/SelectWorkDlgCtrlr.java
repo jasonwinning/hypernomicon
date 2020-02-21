@@ -198,7 +198,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
         return;
       }
 
-      ((BibEntryPopulator)hcbBibEntry.getPopulator()).populate(Populator.dummyRow, true);
+      hcbBibEntry.populate(true);
       String workBibEntryKey = nullSwitch(newValue.getRecord(), "", HDT_Work::getBibEntryKey);
       if (workBibEntryKey.isBlank() == false)
       {

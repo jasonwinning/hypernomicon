@@ -303,7 +303,7 @@ public final class MainTextWrapper
     if (viewInfo == null)
       viewInfo = new TextViewInfo();
 
-    viewInfo.scrollPos = getWebEngineScrollPos(we);
+    viewInfo.scrollPos = webEngineScrollPos(we);
 
     boolean sortByName = db.prefs.getBoolean(PREF_KEY_KEY_WORK_SORT_BY_NAME, true);
 

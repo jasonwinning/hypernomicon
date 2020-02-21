@@ -31,7 +31,6 @@ import static org.hypernomicon.util.Util.*;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.view.populators.*;
-import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
 import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
 
 //---------------------------------------------------------------------------
@@ -45,7 +44,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 //---------------------------------------------------------------------------
 
   public HyperTableCell getCell(int ndx)      { return cells.get(ndx); }
-  public int getID(int ndx)                   { return cells.size() > ndx ? HyperTableCell.getCellID(cells.get(ndx)) : -1; }
+  public int getID(int ndx)                   { return cells.size() > ndx ? HyperTableCell.getCellID  (cells.get(ndx)) : -1; }
   public String getText(int ndx)              { return cells.size() > ndx ? HyperTableCell.getCellText(cells.get(ndx)) : ""; }
   public HDT_RecordType getType(int ndx)      { return cells.size() > ndx ? HyperTableCell.getCellType(cells.get(ndx)) : hdtNone; }
   public boolean getCheckboxValue(int colNdx) { return getID(colNdx) == HyperTableCell.trueCheckboxCell.getID(); }
@@ -119,33 +118,29 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
   public boolean setCellValue(int colNdx, HyperTableCell newCell)  // return true if changed
   {
     HyperTableCell cell = cells.get(colNdx);
-    VariablePopulator vp;
     HyperTableColumn col = table.getColumn(colNdx);
     boolean restricted, isNotCheckBox = col.getCtrlType() != ctCheckbox;
 
-    if ((cell != null) && (newCell != null))
-      if (cell.equals(newCell))
-      {
-        if (isNotCheckBox) table.refresh();
-        return false;
-      }
+    if ((cell != null) && (newCell != null) && cell.equals(newCell))
+    {
+      if (isNotCheckBox) table.refresh();
+      return false;
+    }
 
     if (col.getObjType() == hdtNone)
       newCell = HyperTableCell.simpleSortValue(newCell);
 
-    if (col.getPopulator() != null)
+    Populator populator = col.getPopulator();
+
+    if (populator != null)
     {
-      if (col.getPopulator().getValueType() == cvtVaries)
-      {
-        vp = (VariablePopulator)col.getPopulator();
-        restricted = vp.getRestricted(this);
-      }
+      if (populator.getValueType() == cvtVaries)
+        restricted = ((VariablePopulator)populator).getRestricted(this);
       else
-        restricted = (col.getCtrlType() == ctDropDownList);
+        restricted = col.getCtrlType() == ctDropDownList;
 
       if (restricted)
       {
-        Populator populator = col.getPopulator();
         HyperTableCell matchedCell = populator.match(this, newCell);
 
         if (matchedCell != null)
@@ -159,24 +154,19 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     }
 
     cells.set(colNdx, newCell);
-    if (table.getCanAddRows())
-    {
-      if (table.getTV().getItems().get(table.getTV().getItems().size() - 1) == this)
-        table.newRow(false);
-    }
+    if (table.getCanAddRows() && (table.getTV().getItems().get(table.getTV().getItems().size() - 1) == this))
+      table.newRow(false);
 
     if ((table.disableRefreshAfterCellUpdate == false) && isNotCheckBox)
       table.refresh();
 
-    CellUpdateHandler handler = col.updateHandler;
-
-    if (handler != null)
+    if (col.updateHandler != null)
     {
       Populator nextPop = null;
       if (table.getColumns().size() > (colNdx + 1))
         nextPop = populators.get(colNdx + 1);
 
-      handler.handle(this, newCell, colNdx + 1, nextPop);
+      col.updateHandler.handle(this, newCell, colNdx + 1, nextPop);
 
       if ((table.getColumns().size() > (colNdx + 1)) && isNotCheckBox)
         table.refresh();

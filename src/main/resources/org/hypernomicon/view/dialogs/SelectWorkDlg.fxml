@@ -32,9 +32,9 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 
-<AnchorPane maxHeight="150.0" minHeight="150.0" minWidth="300.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.SelectWorkDlgCtrlr">
+<AnchorPane maxHeight="150.0" minHeight="150.0" minWidth="300.0" prefHeight="150.0" prefWidth="882.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.SelectWorkDlgCtrlr">
    <children>
-      <AnchorPane fx:id="apMain" minHeight="150.0" minWidth="300.0" prefHeight="150.0" prefWidth="759.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <AnchorPane fx:id="apMain" minHeight="150.0" minWidth="300.0" prefHeight="150.0" prefWidth="821.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
             <GridPane layoutX="280.0" layoutY="104.0" prefWidth="759.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
               <columnConstraints>
@@ -52,7 +52,7 @@
                   <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647">
                      <children>
                         <Label layoutX="14.0" layoutY="7.0" text="File:" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="3.0" />
-                        <TextField fx:id="tfFile" editable="false" layoutX="59.0" layoutY="2.0" prefHeight="25.0" prefWidth="622.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="62.0" AnchorPane.rightAnchor="74.0" />
+                        <TextField fx:id="tfFile" editable="false" layoutX="59.0" layoutY="2.0" prefHeight="25.0" prefWidth="622.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="127.0" AnchorPane.rightAnchor="74.0" />
                         <ToggleButton fx:id="btnPreview" layoutX="689.0" layoutY="1.0" mnemonicParsing="false" prefHeight="25.0" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="38.0">
                            <graphic>
                               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
@@ -76,13 +76,13 @@
                   <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
                      <children>
                         <Label layoutX="14.0" layoutY="11.0" text="Author:" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="3.0" />
-                        <ComboBox fx:id="cbAuthor" layoutX="58.0" layoutY="7.0" prefHeight="25.0" prefWidth="150.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="62.0" AnchorPane.rightAnchor="3.0" />
+                        <ComboBox fx:id="cbAuthor" layoutX="58.0" layoutY="7.0" prefHeight="25.0" prefWidth="150.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="127.0" AnchorPane.rightAnchor="3.0" />
                      </children>
                   </AnchorPane>
                   <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
                      <children>
-                        <Label layoutX="14.0" layoutY="10.0" text="Work:" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="3.0" />
-                        <ComboBox fx:id="cbWork" layoutX="58.0" layoutY="6.0" prefHeight="25.0" prefWidth="150.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="62.0" AnchorPane.rightAnchor="3.0" />
+                        <Label layoutX="14.0" layoutY="10.0" text="Existing Work Record:" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="3.0" />
+                        <ComboBox fx:id="cbWork" layoutX="127.0" layoutY="6.0" prefHeight="25.0" prefWidth="752.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="127.0" AnchorPane.rightAnchor="3.0" />
                      </children>
                   </AnchorPane>
                   <StackPane GridPane.columnSpan="2147483647" GridPane.rowIndex="4">
@@ -103,7 +103,7 @@
                            <center>
                               <HBox fx:id="hBox" alignment="CENTER" pickOnBounds="false" spacing="4.0">
                                  <children>
-                                    <Button fx:id="btnOK" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="60.0" text="OK" />
+                                    <Button fx:id="btnOK" maxWidth="164.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="25.0" prefWidth="164.0" text="Use Existing Work Record" />
                                     <Button fx:id="btnCreateNew" mnemonicParsing="false" text="Create New Record" />
                                     <Button fx:id="btnCancel" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" />
                                  </children>
@@ -114,8 +114,8 @@
                   </StackPane>
                   <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
                      <children>
-                        <Label layoutX="8.0" layoutY="6.0" text="Bib. Entry:" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="3.0" />
-                        <ComboBox fx:id="cbBibEntry" layoutX="63.0" layoutY="1.0" prefHeight="25.0" prefWidth="150.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="62.0" AnchorPane.rightAnchor="3.0" />
+                        <Label layoutX="8.0" layoutY="6.0" text="Existing Bib. Entry:" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="3.0" />
+                        <ComboBox fx:id="cbBibEntry" layoutX="63.0" layoutY="1.0" prefHeight="25.0" prefWidth="150.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="127.0" AnchorPane.rightAnchor="3.0" />
                      </children>
                   </AnchorPane>
                </children>

@@ -259,7 +259,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void copyAllFieldsFrom(BibData bd, boolean includeAuthors, boolean includeEntryType)
+  final public void copyAllFieldsFrom(BibData bd, boolean includeAuthors, boolean includeEntryType)
   {
     EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum -> { switch (bibFieldEnum.getType())
     {
@@ -288,9 +288,10 @@ public abstract class BibData
         break;
     }});
 
-    if (includeAuthors == false) return;
+    if ((includeAuthors == false) || bd.getAuthors().isEmpty()) return;
 
     BibAuthors authors = getAuthors();
+    authors.clear();
     bd.getAuthors().forEach(authors::add);
   }
 

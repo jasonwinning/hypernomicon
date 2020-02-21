@@ -143,8 +143,7 @@ public class NewArgDlgCtrlr extends HyperDlg
     {
       if (HyperTableCell.getCellID(oldCell) == HyperTableCell.getCellID(newCell)) return;
 
-      HybridSubjectPopulator subjPop = hcbWork.getPopulator();
-      subjPop.setObj(Populator.dummyRow, HyperTableCell.getRecord(newCell));
+      ((HybridSubjectPopulator) hcbWork.getPopulator()).setObj(Populator.dummyRow, HyperTableCell.getRecord(newCell));
       hcbWork.selectID(-1);
       rbNew.setSelected(true);
 

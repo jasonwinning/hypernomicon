@@ -94,9 +94,9 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   @Override HDT_RecordType getType()                { return hdtTerm; }
   @Override public void enable(boolean enabled)     { ui.tabTerms.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
-  @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
+  @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
   @Override public void setRecord(HDT_Concept rec)  { curConcept = rec; curTerm = curConcept == null ? null : curConcept.term.get(); }
-  @Override public boolean saveToRecord()           { return ctrlr.save(curConcept); }
+  @Override public boolean saveToRecord()           { return ctrlr.saveToRecord(curConcept); }
 
   private ConceptTab curTab()      { return (ConceptTab) tpConcepts.getSelectionModel().getSelectedItem(); }
 
@@ -179,7 +179,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     {
       if (alreadyChangingTab) return;
 
-      if (!ctrlr.save(curConcept))
+      if (!ctrlr.saveToRecord(curConcept))
       {
         alreadyChangingTab = true;
         tpConcepts.getSelectionModel().select(oldTab);
@@ -193,7 +193,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
       curConcept = ConceptTab.class.cast(newTab).concept;
 
-      ui.viewSequence.updateCurrentView(new HyperView<>(termTabEnum, curConcept, getMainTextInfo()));
+      ui.viewSequence.updateCurrentView(new HyperView<>(termTabEnum, curConcept, mainTextInfo()));
 
       HDT_Glossary glossary = curConcept.glossary.get();
       if (glossary.getID() > 1) glossary.viewNow();

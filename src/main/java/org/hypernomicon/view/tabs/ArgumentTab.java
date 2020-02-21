@@ -59,7 +59,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
   @Override HDT_RecordType getType()                { return hdtArgument; }
   @Override public void enable(boolean enabled)     { ui.tabArguments.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
-  @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
+  @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
   @Override public void setRecord(HDT_Argument arg) { curArgument = arg; }
 
 //---------------------------------------------------------------------------
@@ -310,7 +310,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
   {
     boolean okToSave = true;
 
-    if (!ctrlr.save(curArgument)) return false;
+    if (!ctrlr.saveToRecord(curArgument)) return false;
 
     for (HyperTableRow row : htParents.getDataRows())
     {

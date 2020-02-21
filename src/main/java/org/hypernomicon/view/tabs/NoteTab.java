@@ -71,7 +71,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
   @Override HDT_RecordType getType()                { return hdtNote; }
   @Override public void enable(boolean enabled)     { ui.tabNotes.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
-  @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
+  @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
   @Override public void setRecord(HDT_Note note)    { curNote = note; }
 
 //---------------------------------------------------------------------------
@@ -304,9 +304,14 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
       return;
     }
 
+    boolean noOtherNotes = folder.notes.isEmpty();
+
     curNote.folder.set(folder.getID() == TOPICAL_FOLDER_ID ? null : folder);
 
     ui.update();
+
+    if (noOtherNotes && (folder.getID() != TOPICAL_FOLDER_ID) && ctrlr.nameCtrl().getText().isBlank())
+      ctrlr.nameCtrl().setText(folder.getPath().getNameStr());
   }
 
 //---------------------------------------------------------------------------
@@ -333,7 +338,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override public boolean saveToRecord()
   {
-    if (!ctrlr.save(curNote)) return false;
+    if (!ctrlr.saveToRecord(curNote)) return false;
 
     curNote.setParentNotes(htParents.saveToList(2, hdtNote));
 

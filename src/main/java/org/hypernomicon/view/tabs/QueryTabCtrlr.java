@@ -197,8 +197,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
              (query != QUERY_LIST_ALL)))
           row.setCellValue(nextColNdx, new HyperTableCell(-1, "", nextPopulator.getRecordType(row)));
 
-        QueryPopulator qp = (QueryPopulator)nextPopulator;
-        qp.setQueryType(row, qt, this);
+        ((QueryPopulator)nextPopulator).setQueryType(row, qt, this);
 
         programmaticFieldChange = tempPFC;
 
@@ -229,11 +228,12 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           boolean tempPFC = programmaticFieldChange;
           programmaticFieldChange = true;
 
-          row.setCellValue(nextColNdx, new HyperTableCell(-1, "", nextPopulator.getRecordType(row)));
+          Populator pop = VariablePopulator.class.cast(nextPopulator).getPopulator(row);
 
-          if ((HyperTableCell.getCellID(cellVal) >= 0) && (VariablePopulator.class.cast(nextPopulator).getPopulator(row).getValueType() == cvtOperand))
+          row.setCellValue(nextColNdx, new HyperTableCell(-1, "", pop.getRecordType(row)));
+
+          if ((HyperTableCell.getCellID(cellVal) >= 0) && (pop.getValueType() == cvtOperand))
           {
-            Populator pop = VariablePopulator.class.cast(nextPopulator).getPopulator(row);
             row.setCellValue(nextColNdx, pop.getChoiceByID(null, EQUAL_TO_OPERAND_ID));
             if ((tempPFC == false) && numOperands(row.getID(1), typeToEngine.get(getQueryType(row))) >= 3)
               htFields.edit(row, 4);
@@ -1012,16 +1012,12 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       VariablePopulator vp1 = htFields.getPopulator(2), vp2 = htFields.getPopulator(3), vp3 = htFields.getPopulator(4);
       CellValueType valueType = nullSwitch(vp1.getPopulator(row), cvtVaries, Populator::getValueType);
-      boolean samePop = false;
 
       switch (query)
       {
         case QUERY_WITH_NAME_CONTAINING : case QUERY_ANY_FIELD_CONTAINS :
 
-          samePop = vp1.getRestricted(row) == false;
-
-          clearOperands(row, samePop ? 2 : 1);
-
+          clearOperands(row, vp1.getRestricted(row) ? 1 : 2);
           vp1.setRestricted(row, false);
 
           return false;
@@ -1033,14 +1029,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
         case QUERY_WHERE_RELATIVE :
 
-          if (valueType == cvtRelation)
-          {
-            RelationPopulator rp = vp1.getPopulator(row);
-            if (rp.getRecordType(row) == row.getType(0))
-              samePop = true;
-          }
-
-          if (samePop == false)
+          if ((valueType != cvtRelation) || (vp1.getPopulator(row).getRecordType(row) != row.getType(0)))
           {
             clearOperands(row, 1);
             vp1.setPopulator(row, new RelationPopulator(row.getType(0)));
@@ -1050,14 +1039,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
         case QUERY_WHERE_FIELD :
 
-          if (valueType == cvtTagItem)
-          {
-            TagItemPopulator tip = vp1.getPopulator(row);
-            if (tip.getRecordType(null) == row.getType(0))
-              samePop = true;
-          }
-
-          if (samePop == false)
+          if ((valueType != cvtTagItem) || (vp1.getPopulator(row).getRecordType(null) != row.getType(0)))
           {
             clearOperands(row, 1);
             vp1.setPopulator(row, new TagItemPopulator(row.getType(0)));
@@ -1377,12 +1359,12 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override public boolean update()                 { curQV.refreshView(); return true; }
   @Override public void setRecord(HDT_Record rec)   { if (curQV != null) curQV.setRecord(rec); }
   @Override public int getRecordCount()             { return results().size(); }
-  @Override public TextViewInfo getMainTextInfo()   { return new TextViewInfo(MainTextUtil.getWebEngineScrollPos(webView.getEngine())); }
+  @Override public TextViewInfo mainTextInfo()      { return new TextViewInfo(MainTextUtil.webEngineScrollPos(webView.getEngine())); }
   @Override public void setDividerPositions()       { return; }
   @Override public void getDividerPositions()       { return; }
   @Override public boolean saveToRecord()           { return false; }
   @Override public HDT_Record activeRecord()        { return curQV == null ? null : curQV.curResult; }
-  @Override public String getRecordName()           { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
+  @Override public String recordName()              { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
   @Override public int getRecordNdx()               { return getRecordCount() > 0 ? curQV.tvResults.getSelectionModel().getSelectedIndex() : -1; }
   @Override public void findWithinDesc(String text) { if (activeRecord() != null) MainTextWrapper.hiliteText(text, webView.getEngine()); }
 

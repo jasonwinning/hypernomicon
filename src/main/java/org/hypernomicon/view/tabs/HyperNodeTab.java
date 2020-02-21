@@ -31,9 +31,9 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 {
   NodeTabCtrlr<HDT_RT, HDT_CT> ctrlr;
 
-  @Override public final MainTextWrapper getMainTextWrapper() { return ctrlr.getMainTextWrapper(); }
-  @Override public String getRecordName()                     { return ctrlr.getRecordName(); }
-  @Override void updateWebButtons(Preferences node)           { ctrlr.updateWebButtons(node); }
+  @Override public final MainTextWrapper mainTextWrapper() { return ctrlr.mainTextWrapper(); }
+  @Override public String recordName()                     { return ctrlr.nameCtrl().getText(); }
+  @Override void updateWebButtons(Preferences node)        { ctrlr.updateWebButtons(node); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

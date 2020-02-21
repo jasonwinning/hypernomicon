@@ -1458,7 +1458,7 @@ public final class MainCtrlr
 
       String name = record.getCBText();
       if (ultraTrim(name).isEmpty())
-        name = activeTab().getRecordName();
+        name = activeTab().recordName();
 
       if (confirmDialog("Type: " + db.getTypeName(type) + "\n" +
                         "Name: " + name + "\n" +
@@ -2560,7 +2560,7 @@ public final class MainCtrlr
   {
     if (cantSaveRecord()) return false;
 
-    viewSequence.forwardToNewSlotAndView(new HyperView<>(queryTabEnum, queryHyperTab().activeRecord(), queryHyperTab().getMainTextInfo()));
+    viewSequence.forwardToNewSlotAndView(new HyperView<>(queryTabEnum, queryHyperTab().activeRecord(), queryHyperTab().mainTextInfo()));
 
     boolean result = queryHyperTab().showSearch(doSearch, type, query, fav, op1, op2, caption);
     updateFavorites();

@@ -54,7 +54,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
   @Override HDT_RecordType getType()                { return hdtPosition; }
   @Override public void enable(boolean enabled)     { ui.tabPositions.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
-  @Override public TextViewInfo getMainTextInfo()   { return ctrlr.getMainTextInfo(); }
+  @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
   @Override public void setRecord(HDT_Position pos) { curPosition = pos; }
 
 //---------------------------------------------------------------------------
@@ -229,7 +229,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
   @Override public boolean saveToRecord()
   {
-    if (!ctrlr.save(curPosition)) return false;
+    if (!ctrlr.saveToRecord(curPosition)) return false;
 
     curPosition.setLargerPositions(htParents.saveToList(3, hdtPosition));
     curPosition.setDebates(htParents.saveToList(3, hdtDebate));

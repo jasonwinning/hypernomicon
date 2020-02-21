@@ -69,7 +69,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   @FXML private SplitPane spHoriz;
   @FXML private Hyperlink hlMaps;
 
-  @Override public String getRecordName()              { return tfName.getText(); }
+  @Override public String recordName()                 { return tfName.getText(); }
   @Override HDT_RecordType getType()                   { return hdtInstitution; }
   @Override public void enable(boolean enabled)        { ui.tabInst.getContent().setDisable(enabled == false); }
   @Override public void setRecord(HDT_Institution rec) { curInst = rec; }

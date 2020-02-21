@@ -126,11 +126,11 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   private HDT_Person curPerson;
   private boolean alreadyChangingName = false;
 
-  @Override public String getRecordName()               { return new PersonName(tfFirst.getText(), tfLast.getText()).getLastFirst(); }
-  @Override HDT_RecordType getType()                    { return hdtPerson; }
-  @Override public void enable(boolean enabled)         { ui.tabPersons.getContent().setDisable(enabled == false); }
-  @Override public void setRecord(HDT_Person person)    { curPerson = person; }
-  @Override public MainTextWrapper getMainTextWrapper() { return mainText; }
+  @Override public String recordName()               { return new PersonName(tfFirst.getText(), tfLast.getText()).getLastFirst(); }
+  @Override HDT_RecordType getType()                 { return hdtPerson; }
+  @Override public void enable(boolean enabled)      { ui.tabPersons.getContent().setDisable(enabled == false); }
+  @Override public void setRecord(HDT_Person person) { curPerson = person; }
+  @Override public MainTextWrapper mainTextWrapper() { return mainText; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1145,7 +1145,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public TextViewInfo getMainTextInfo()
+  @Override public TextViewInfo mainTextInfo()
   {
     Tab tab = tpPerson.getSelectionModel().getSelectedItem();
 

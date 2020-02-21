@@ -114,7 +114,7 @@ public class MainTextCtrlr
   List<DisplayItem> getDisplayItems() { return lvRecords.getItems(); }
   boolean isEmpty()                   { return getHtmlAndKeyWorks(new ArrayList<>()).trim().isEmpty(); }
 
-  int getScrollPos()    { return nullSwitch(getWebView(), 0, webView -> getWebEngineScrollPos(webView.getEngine())); }
+  int getScrollPos()    { return nullSwitch(getWebView(), 0, webView -> webEngineScrollPos(webView.getEngine())); }
 
   private void clearText()     { he.setHtmlText(disableLinks("")); }
   private WebView getWebView() { return (WebView) he.lookup("WebView"); }
@@ -279,12 +279,12 @@ public class MainTextCtrlr
       btnRemove.setDisable(newValue.type != diRecord);
     });
 
-    btnMoveUp  .setOnAction(event -> btnMoveUpClick());
+    btnMoveUp  .setOnAction(event -> btnMoveUpClick  ());
     btnMoveDown.setOnAction(event -> btnMoveDownClick());
-    btnRemove  .setOnAction(event -> btnRemoveClick());
-    btnInsert  .setOnAction(event -> btnInsertClick());
-    btnAdd     .setOnAction(event -> btnAddClick());
-    btnNew     .setOnAction(event -> btnNewClick());
+    btnRemove  .setOnAction(event -> btnRemoveClick  ());
+    btnInsert  .setOnAction(event -> btnInsertClick  ());
+    btnAdd     .setOnAction(event -> btnAddClick     ());
+    btnNew     .setOnAction(event -> btnNewClick     ());
 
     webview.setOnContextMenuRequested(event ->
     {
@@ -297,8 +297,8 @@ public class MainTextCtrlr
       setHTMLContextMenu(menuItem1, menuItem2);
     });
 
-    he.setOnMouseClicked(Event::consume);
-    he.setOnMousePressed(Event::consume);
+    he.setOnMouseClicked (Event::consume);
+    he.setOnMousePressed (Event::consume);
     he.setOnMouseReleased(Event::consume);
 
     ToolBar bar = (ToolBar) he.lookup(".top-toolbar");

@@ -144,7 +144,7 @@ class MentionsIndex
       MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
       ObjectProperty<Element> elementProp = new SimpleObjectProperty<>();
 
-      HDT_MiscFile miscFile = MainTextUtil.getNextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
+      HDT_MiscFile miscFile = MainTextUtil.nextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
 
       while (miscFile != null)
       {
@@ -152,7 +152,7 @@ class MentionsIndex
         mentionedInDescToMentioners.addForward(miscFile, record);
 
         startNdx.add(1);
-        miscFile = MainTextUtil.getNextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
+        miscFile = MainTextUtil.nextEmbeddedMiscFile(mainText.getHtml(), startNdx, endNdx, elementProp);
       }
 
       String plainText = mainText.getPlain();
