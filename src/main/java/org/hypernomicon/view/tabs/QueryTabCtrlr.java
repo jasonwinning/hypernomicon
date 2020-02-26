@@ -228,9 +228,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           boolean tempPFC = programmaticFieldChange;
           programmaticFieldChange = true;
 
+          row.setCellValue(nextColNdx, new HyperTableCell(-1, "", nextPopulator.getRecordType(row)));
           Populator pop = VariablePopulator.class.cast(nextPopulator).getPopulator(row);
-
-          row.setCellValue(nextColNdx, new HyperTableCell(-1, "", pop.getRecordType(row)));
 
           if ((HyperTableCell.getCellID(cellVal) >= 0) && (pop.getValueType() == cvtOperand))
           {

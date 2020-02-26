@@ -129,7 +129,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
   public PersonName toLowerCase() { return new PersonName(first.toLowerCase(), last.toLowerCase()); }
   public String getFull()         { return String.valueOf(first + " " + last).trim(); }
   public String getSingle()       { return getLast().length() > 0 ? getLast() : getFirst(); }
-  PersonName toEngChar()          { return new PersonName(convertToEnglishChars(first), convertToEnglishChars(last)); }
+  public PersonName toEngChar()   { return new PersonName(convertToEnglishChars(first), convertToEnglishChars(last)); }
 
   @Override public PersonName clone()
   { try { return (PersonName) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }}
@@ -139,7 +139,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  String getSortKey()
+  public String getSortKey()
   {
     if (last.isEmpty() || first.isEmpty())
       return last + first;

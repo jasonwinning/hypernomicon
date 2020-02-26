@@ -212,7 +212,7 @@ public final class App extends Application
     String versionStr = manifestValue("Impl-Version");
 
     if (safeStr(versionStr).isEmpty())
-      versionStr = "1.17.2";
+      versionStr = "1.17.3";
 
     version = new VersionNumber(2, versionStr);
 

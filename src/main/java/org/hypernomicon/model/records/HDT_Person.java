@@ -207,7 +207,12 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 
     HDT_Person person = makeSearchKey(name, null, searchKeySB);
 
-    return searchKeySB.toString().isEmpty() ? person : null;
+    if (searchKeySB.toString().isEmpty())
+      return person;
+    
+    String sortKey = removeAllParentheticals(name.toEngChar().getSortKey());
+    
+    return findFirst(db.persons, p -> removeAllParentheticals(p.getSortKey()).equalsIgnoreCase(sortKey));
   }
 
 //---------------------------------------------------------------------------

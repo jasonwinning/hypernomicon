@@ -34,6 +34,7 @@ import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 
 import org.hypernomicon.App;
 import org.hypernomicon.bib.BibEntry;
+import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibTexBibData;
 import org.hypernomicon.bib.data.EntryType;
@@ -2886,7 +2887,7 @@ public final class MainCtrlr
       }
     }
 
-    if ((person != null) && (work.getAuthors().containsPerson(person) == false))
+    if ((person != null) && (work.getAuthors().containsPerson(person) == false) && ((bdToUse == null) || BibAuthors.isEmpty(bdToUse.getAuthors())))
       work.getAuthors().add(person);
 
     goToRecord(work, false);
