@@ -217,7 +217,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
         if (programmaticFieldChange) return;
 
-        if (numOperands(row.getID(1), typeToEngine.get(getQueryType(row))) >= 1)
+        if (numOperands(row.getID(1), getQueryType(row)) >= 1)
           htFields.edit(row, 2);
       });
 
@@ -234,12 +234,12 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           if ((HyperTableCell.getCellID(cellVal) >= 0) && (pop.getValueType() == cvtOperand))
           {
             row.setCellValue(nextColNdx, pop.getChoiceByID(null, EQUAL_TO_OPERAND_ID));
-            if ((tempPFC == false) && numOperands(row.getID(1), typeToEngine.get(getQueryType(row))) >= 3)
+            if ((tempPFC == false) && numOperands(row.getID(1), getQueryType(row)) >= 3)
               htFields.edit(row, 4);
           }
           else
           {
-            if ((tempPFC == false) && numOperands(row.getID(1), typeToEngine.get(getQueryType(row))) >= 2)
+            if ((tempPFC == false) && numOperands(row.getID(1), getQueryType(row)) >= 2)
               htFields.edit(row, 3);
           }
 
@@ -259,7 +259,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
         if (programmaticFieldChange) return;
 
-        if (numOperands(row.getID(1), typeToEngine.get(getQueryType(row))) >= 3)
+        if (numOperands(row.getID(1), getQueryType(row)) >= 3)
           htFields.edit(row, 4);
       });
 
@@ -606,7 +606,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       reportTable.format(reportEngine);
 
-      task = new HyperTask() { @Override protected Boolean call() throws Exception
+      task = new HyperTask("GenerateReport") { @Override protected Boolean call() throws Exception
       {
         updateMessage("Generating report...");
         updateProgress(0, 1);
@@ -754,7 +754,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       // Evaluate record queries
 
-      task = new HyperTask() { @Override protected Boolean call() throws Exception
+      task = new HyperTask("Query") { @Override protected Boolean call() throws Exception
       {
         boolean firstCall = true;
         HDT_Record record;
@@ -925,8 +925,11 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    private int numOperands(int query, QueryEngine<? extends HDT_Record> engine)
+    private int numOperands(int query, QueryType queryType)
     {
+      if (queryType == qtReport)
+        return 0;
+
       switch (query)
       {
         case QUERY_WHERE_FIELD : case QUERY_WHERE_RELATIVE :
@@ -939,7 +942,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           return 0;
 
         default :
-          return engine.numOperands(query);
+          return typeToEngine.get(queryType).numOperands(query);
       }
     }
 
@@ -1054,11 +1057,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       if (queryType != qtReport)
       {
-        QueryEngine<? extends HDT_Record> engine = typeToEngine.get(queryType);
-
-        clearOperands(row, numOperands(query, engine) + 1);
-
-        engine.queryChange(query, row, vp1, vp2, vp3);
+        clearOperands(row, numOperands(query, queryType) + 1);
+        typeToEngine.get(queryType).queryChange(query, row, vp1, vp2, vp3);
       }
 
       return true;
@@ -1207,7 +1207,10 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     public void clearOperands(HyperTableRow row, int startOpNum)
     {
-      if ((startOpNum > 3) || (startOpNum < 1))
+      if (startOpNum > 3)
+        return;
+
+      if (startOpNum < 1)
       {
         messageDialog("Internal error 90087", mtError);
         return;
@@ -1783,7 +1786,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     if ((db.isLoaded() == false) || (results().size() < 1)) return false;
 
-    task = new HyperTask() { @Override protected Boolean call() throws Exception
+    task = new HyperTask("BuildListOfFilesToCopy") { @Override protected Boolean call() throws Exception
     {
       updateMessage("Building list...");
 
@@ -1815,7 +1818,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     boolean startWatcher = folderTreeWatcher.stop();
 
-    task = new HyperTask() { @Override protected Boolean call() throws Exception
+    task = new HyperTask("CopyingFiles") { @Override protected Boolean call() throws Exception
     {
       updateMessage("Copying files...");
 

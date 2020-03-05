@@ -2892,6 +2892,9 @@ public final class MainCtrlr
 
     goToRecord(work, false);
 
+    if (bdToUse == BibData.NoneFoundBD)
+      bdToUse = work.getBibData();
+    
     if (workHyperTab().showWorkDialog(null, filePathToUse, bdToUse, newEntryChecked, newEntryType))
       return;
 

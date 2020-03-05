@@ -28,11 +28,12 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.HyperTask.HyperThread;
 
 public class ProgressDlgCtrlr extends HyperDlg
 {
   private Task<Boolean> task;
-  private Thread thread;
+  private HyperThread thread;
   private boolean alreadyDone = false, ownThread = true;
   private long lastPercent = -200;
 
@@ -129,7 +130,7 @@ public class ProgressDlgCtrlr extends HyperDlg
 
       if (ownThread)
       {
-        thread = new Thread(task);
+        thread = new HyperThread(task);
         task.setThread(thread);
         thread.start();
       }

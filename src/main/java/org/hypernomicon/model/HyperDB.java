@@ -200,6 +200,7 @@ public final class HyperDB
   public void addMentionsNdxCompleteHandler(Runnable handler)                               { dbMentionsNdxCompleteHandlers.add(handler); }
   public void addBibChangedHandler(Runnable handler)                                        { bibChangedHandlers.add(handler); }
   public void addDeleteHandler(Consumer<HDT_Record> handler)                                { recordDeleteHandlers.add(handler); }
+  public void replaceMainText(MainText oldMT, MainText newMT)                               { displayedAtIndex.replaceItem(oldMT, newMT); }
   public void rebuildMentions()                                                             { if (loaded) mentionsIndex.startRebuild(); }
   public void updateMentioner(HDT_Record record)                                            { if (loaded) mentionsIndex.updateMentioner(record); }
   public boolean waitUntilRebuildIsDone()                                                   { return mentionsIndex.waitUntilRebuildIsDone(); }
@@ -297,13 +298,13 @@ public final class HyperDB
   private FilePath getPrefPath(String prefKey, String fileNameStr)
   {
     String pathStr = appPrefs.get(PREF_KEY_SOURCE_PATH, "");
-    if (pathStr.equals("")) return null;
+    if (pathStr.isEmpty()) return null;
     FilePath sourcePath = new FilePath(pathStr);
 
     String relPath = prefs.get(prefKey, "");
-    if (relPath.equals("")) return null;
+    if (relPath.isEmpty()) return null;
 
-    if (fileNameStr.equals("")) return sourcePath.resolve(relPath);
+    if (fileNameStr.isEmpty()) return sourcePath.resolve(relPath);
 
     return sourcePath.resolve(relPath).resolve(fileNameStr);
   }
@@ -443,7 +444,7 @@ public final class HyperDB
     List<String> filenameList = new ArrayList<>();
     List<StringBuilder> xmlList = Lists.newArrayList(new StringBuilder());
 
-    task = new HyperTask() { @Override protected Boolean call() throws Exception
+    task = new HyperTask("SaveAllToDisk") { @Override protected Boolean call() throws Exception
     {
       updateMessage("Saving to XML files...");
 
@@ -566,7 +567,7 @@ public final class HyperDB
       xmlFileList.add(filePath);
     }
 
-    task = new HyperTask() { @Override protected Boolean call() throws Exception
+    task = new HyperTask("LoadDatabase") { @Override protected Boolean call() throws Exception
     {
       updateMessage("Loading database from folder " + rootFilePath + "...");
       updateProgress(0, 1);
@@ -590,7 +591,7 @@ public final class HyperDB
 
     accessors.values().forEach(coreAccessor -> totalTaskCount += coreAccessor.size());
 
-    task = new HyperTask() { @Override protected Boolean call() throws Exception
+    task = new HyperTask("BringDatabaseOnline") { @Override protected Boolean call() throws Exception
     {
       updateMessage("Starting database session...");
       updateProgress(0, 1);
@@ -913,14 +914,19 @@ public final class HyperDB
 
     pointerResolutionInProgress = true;
 
-    do
+    try
     {
-      resolveAgain = false;
-      for (HyperDataset<? extends HDT_Record> dataset : datasets.values())
-        dataset.resolvePointers();
-    } while (resolveAgain);
-
-    pointerResolutionInProgress = false;
+      do
+      {
+        resolveAgain = false;
+        for (HyperDataset<? extends HDT_Record> dataset : datasets.values())
+          dataset.resolvePointers();
+      } while (resolveAgain);
+    }
+    finally
+    {
+      pointerResolutionInProgress = false;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -1572,14 +1578,8 @@ public final class HyperDB
       return falseWithErrorMessage("Unable to create folder records for new database.");
     }
 
-    try
-    {
-      resolvePointers();
-    }
-    catch (HDB_InternalError e)
-    {
-      return falseWithErrorMessage(e.getMessage());
-    }
+    try { resolvePointers(); }
+    catch (HDB_InternalError e) { return falseWithErrorMessage(e.getMessage()); }
 
     loaded = true;
 
@@ -2208,14 +2208,6 @@ public final class HyperDB
     });
 
     return unmodifiableSet(set);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void replaceMainText(MainText oldMT, MainText newMT)
-  {
-    displayedAtIndex.replaceItem(oldMT, newMT);
   }
 
 //---------------------------------------------------------------------------

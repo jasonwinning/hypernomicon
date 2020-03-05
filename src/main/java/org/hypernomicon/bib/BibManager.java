@@ -37,6 +37,7 @@ import java.util.Set;
 
 import com.google.common.collect.EnumHashBiMap;
 
+import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.bib.CollectionTree.BibCollectionType;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
 import org.hypernomicon.bib.data.EntryType;
@@ -202,7 +203,7 @@ public class BibManager extends HyperDlg
       ui.saveAllToDisk(true, true, true);
     });
 
-    Thread thread = new Thread(syncTask);
+    HyperThread thread = new HyperThread(syncTask);
     thread.setDaemon(true);
     syncTask.setThread(thread);
     thread.start();

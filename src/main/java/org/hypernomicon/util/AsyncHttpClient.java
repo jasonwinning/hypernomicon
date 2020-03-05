@@ -19,6 +19,7 @@ package org.hypernomicon.util;
 
 import static org.hypernomicon.util.Util.*;
 
+import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions.*;
 
 import java.io.IOException;
@@ -34,14 +35,14 @@ public class AsyncHttpClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public class RequestThread extends Thread
+  public class RequestThread extends HyperThread
   {
     private ResponseHandler<? extends Boolean> responseHandler;
     private Consumer<Exception> failHndlr;
 
     public RequestThread(ResponseHandler<? extends Boolean> responseHandler, Consumer<Exception> failHndlr)
     {
-      super();
+      super("HttpRequest");
 
       setDaemon(true);
 

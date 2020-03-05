@@ -75,7 +75,7 @@
                   </AnchorPane>
                   <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
                      <children>
-                        <Label layoutX="14.0" layoutY="11.0" text="Author:" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="3.0" />
+                        <Label layoutX="14.0" layoutY="11.0" text="Existing Author:" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="3.0" />
                         <ComboBox fx:id="cbAuthor" layoutX="58.0" layoutY="7.0" prefHeight="25.0" prefWidth="150.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="127.0" AnchorPane.rightAnchor="3.0" />
                      </children>
                   </AnchorPane>

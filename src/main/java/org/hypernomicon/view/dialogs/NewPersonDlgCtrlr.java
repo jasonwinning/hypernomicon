@@ -18,6 +18,7 @@
 package org.hypernomicon.view.dialogs;
 
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.Author;
@@ -67,7 +68,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
   private Author origAuthor = null;
   private boolean alreadyChangingName = false, noTabUpdate = false;
   private HyperTask task;
-  private Thread thread;
+  private HyperThread thread;
   private List<Author> matchedAuthors = null;
   private final List<List<Author>> matchedAuthorsList = new ArrayList<>();
 
@@ -293,7 +294,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
       while (newFullNameEngChar.contains("  "))
         newFullNameEngChar = newFullNameEngChar.replaceAll("  ", " ");
-      
+
       fullLCNameEngChar = ultraTrim(newFullNameEngChar).replaceAll("[.,;]", "");
     }
 
@@ -404,7 +405,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
   public static HyperTask createDupCheckTask(List<PersonName> nameList, List<Author> queryAuthors, List<List<Author>> matchedAuthorsList, Runnable finishHndlr)
   {
-    return new HyperTask() { @Override protected Boolean call() throws Exception
+    return new HyperTask("CheckForDupAuthors") { @Override protected Boolean call() throws Exception
     {
       matchedAuthorsList.clear();
 
@@ -447,7 +448,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
     progressIndicator.progressProperty().bind(task.progressProperty());
 
-    thread = new Thread(task);
+    thread = new HyperThread(task);
     task.setThread(thread);
     thread.start();
   }

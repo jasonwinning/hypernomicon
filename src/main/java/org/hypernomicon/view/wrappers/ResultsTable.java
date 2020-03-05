@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
@@ -296,7 +297,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
     commencedAddingButton = true;
 
-    Thread thread = new Thread()
+    Thread thread = new HyperThread("ButtonAdder")
     {
       @Override public void run()
       {

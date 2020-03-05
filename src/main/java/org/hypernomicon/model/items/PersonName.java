@@ -210,7 +210,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
 
       if (nameStr.endsWith("."))
       {
-        if ((nameStr.length() == 2) && (nameStr.equals(nameStr.toUpperCase())))  // true if it is an initial
+        if ((nameStr.length() == 2) && nameStr.equals(nameStr.toUpperCase()))  // true if it is an initial
         {
           initialList.add(nameStr.substring(0, 1));
         }

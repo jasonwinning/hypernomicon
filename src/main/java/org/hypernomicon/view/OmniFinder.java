@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.Author;
@@ -129,7 +130,7 @@ public class OmniFinder
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private class FinderThread extends Thread
+  private class FinderThread extends HyperThread
   {
     private final HyperTable htFind;
     private final List<HDT_Record> buffer = new ArrayList<>();
@@ -145,7 +146,7 @@ public class OmniFinder
 
     FinderThread(HyperTable htFind)
     {
-      super();
+      super("OmniFinder");
 
       setDaemon(true);
       this.htFind = htFind;

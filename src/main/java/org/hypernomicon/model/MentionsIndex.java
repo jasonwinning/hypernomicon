@@ -30,6 +30,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.HDT_MiscFile;
@@ -193,7 +194,12 @@ class MentionsIndex
 
     HyperTask.performTaskWithProgressDialog(task);
 
-    return task.isDone();
+    if (task.isDone() == false)
+      return false;
+
+    try { thread.join(); } catch (InterruptedException e) { noOp(); }
+
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -207,7 +213,7 @@ class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  class RebuildThread extends Thread
+  class RebuildThread extends HyperThread
   {
     RebuildThread(HyperTask task)
     {
@@ -225,7 +231,7 @@ class MentionsIndex
   {
     stopRebuild();
 
-    task = new HyperTask()
+    task = new HyperTask("MentionsIndex")
     {
       @Override protected void done()
       {

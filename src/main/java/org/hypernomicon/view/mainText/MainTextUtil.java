@@ -920,7 +920,7 @@ public class MainTextUtil
       return str;
     }
 
-    if (str.equals("")) str = "<br>";
+    if (str.isEmpty()) str = "<br>";
 
     return convertPlainMainTextToHtml(str);
   }

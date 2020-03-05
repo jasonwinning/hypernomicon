@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.HyperDB.HDB_MessageType;
 import org.hypernomicon.model.items.HyperPath;
@@ -86,7 +87,7 @@ public class FolderTreeWatcher
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private class WatcherThread extends Thread
+  private class WatcherThread extends HyperThread
   {
     private boolean done = false;
     private final WatchService watcher;
@@ -99,7 +100,7 @@ public class FolderTreeWatcher
 
     WatcherThread(WatchService watcher, Map<WatchKey, HDT_Folder> watchKeyToDir)
     {
-      super();
+      super("FolderTreeWatcher");
 
       this.watcher = watcher;
       this.watchKeyToDir = watchKeyToDir;

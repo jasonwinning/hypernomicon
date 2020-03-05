@@ -21,6 +21,7 @@ import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
+import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.view.dialogs.HyperDlg;
@@ -70,7 +71,7 @@ public class SyncBibDlgCtrlr extends HyperDlg
         }
       });
 
-      Thread thread = new Thread(syncTask);
+      HyperThread thread = new HyperThread(syncTask);
       thread.setDaemon(true);
       syncTask.setThread(thread);
       thread.start();

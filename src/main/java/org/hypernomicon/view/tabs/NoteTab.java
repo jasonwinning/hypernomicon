@@ -216,6 +216,8 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
       ui.update();
     });
 
+    setToolTip(btnFolder, "Show folder in system explorer");
+
     AnchorPane ap = new AnchorPane();
     ap.getChildren().addAll(btnFolder, tfFolder, btnBrowse);
     AnchorPane.setLeftAnchor(btnFolder, 0.0);

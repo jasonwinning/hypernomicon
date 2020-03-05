@@ -524,7 +524,7 @@ public class FileManager extends HyperDlg
     final FilePathSet srcSet = new FilePathSet(), destSet = new FilePathSet();
     srcPathToHilite = null;
 
-    task = new HyperTask() { @Override protected Boolean call() throws Exception
+    task = new HyperTask("BuildFileList") { @Override protected Boolean call() throws Exception
     {
       updateMessage("Building list of files...");
       updateProgress(-1, -1);
@@ -546,7 +546,7 @@ public class FileManager extends HyperDlg
 
     if (!HyperTask.performTaskWithProgressDialog(task)) return false;
 
-    task = new HyperTask() { @Override protected Boolean call() throws Exception
+    task = new HyperTask("PasteChecks") { @Override protected Boolean call() throws Exception
     {
       updateMessage("Performing checks...");
       updateProgress(0, 1);
@@ -711,7 +711,7 @@ public class FileManager extends HyperDlg
 
     folderTreeWatcher.stop();
 
-    task = new HyperTask() { @Override protected Boolean call() throws Exception
+    task = new HyperTask("ObtainLocks") { @Override protected Boolean call() throws Exception
     {
       updateMessage("Obtaining locks...");
       updateProgress(0, 1);
@@ -770,7 +770,7 @@ public class FileManager extends HyperDlg
 
     folderTreeWatcher.stop();
 
-    task = new HyperTask() { @Override protected Boolean call() throws Exception
+    task = new HyperTask("PasteOperation") { @Override protected Boolean call() throws Exception
     {
       if (copying)
       {

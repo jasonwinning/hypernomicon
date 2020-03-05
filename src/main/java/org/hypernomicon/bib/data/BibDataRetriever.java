@@ -27,7 +27,6 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.StringUtils;
@@ -49,12 +48,14 @@ public class BibDataRetriever
   private final WorkTypeEnum workTypeEnum;
   private final List<ObjectGroup> authorGroups;
   private final List<FilePath> pdfFiles;
-  private final BiConsumer<BibData, BibData> doneHndlr;
+  private final RetrieveHandler doneHndlr;
   private final boolean queryCrossref, queryGoogle;
   private final Set<String> alreadyCheckedIDs = new HashSet<>();
 
+  public interface RetrieveHandler { public void handle(BibData pdfBD, BibData queryBD, boolean messageShown); }
+
   public BibDataRetriever(AsyncHttpClient httpClient, BibData workBD, WorkTypeEnum workTypeEnum, List<ObjectGroup> authorGroups,
-                          List<FilePath> pdfFiles, BiConsumer<BibData, BibData> doneHndlr)
+                          List<FilePath> pdfFiles, RetrieveHandler doneHndlr)
   {
     this(httpClient, workBD, workTypeEnum, authorGroups, pdfFiles, true, true, doneHndlr);
   }
@@ -63,7 +64,7 @@ public class BibDataRetriever
 //---------------------------------------------------------------------------
 
   private BibDataRetriever(AsyncHttpClient httpClient, BibData workBD, WorkTypeEnum workTypeEnum, List<ObjectGroup> authorGroups,
-                           List<FilePath> pdfFiles, boolean queryCrossref, boolean queryGoogle, BiConsumer<BibData, BibData> doneHndlr)
+                           List<FilePath> pdfFiles, boolean queryCrossref, boolean queryGoogle, RetrieveHandler doneHndlr)
   {
     this.workBD = workBD;
     this.httpClient = httpClient;
@@ -83,7 +84,7 @@ public class BibDataRetriever
   public static BibDataRetriever forCrossref(AsyncHttpClient httpClient, BibData workBD, List<ObjectGroup> authorGroups,
                                              Consumer<BibData> doneHndlr)
   {
-    return new BibDataRetriever(httpClient, workBD, wtNone, authorGroups, null, true, false, (pdfBD, queryBD) -> doneHndlr.accept(queryBD));
+    return new BibDataRetriever(httpClient, workBD, wtNone, authorGroups, null, true, false, (pdfBD, queryBD, ms) -> doneHndlr.accept(queryBD));
   }
 
 //---------------------------------------------------------------------------
@@ -92,7 +93,7 @@ public class BibDataRetriever
   public static BibDataRetriever forGoogleBooks(AsyncHttpClient httpClient, BibData workBD, List<ObjectGroup> authorGroups,
                                                 Consumer<BibData> doneHndlr)
   {
-    return new BibDataRetriever(httpClient, workBD, wtNone, authorGroups, null, false, true, (pdfBD, queryBD) -> doneHndlr.accept(queryBD));
+    return new BibDataRetriever(httpClient, workBD, wtNone, authorGroups, null, false, true, (pdfBD, queryBD, ms) -> doneHndlr.accept(queryBD));
   }
 
 //---------------------------------------------------------------------------
@@ -136,9 +137,12 @@ public class BibDataRetriever
     }
 
     if ((queryBD == null) && (pdfBD == null) && (messageShown == false) && (collEmpty(pdfFiles) == false) && queryCrossref && queryGoogle)
+    {
       falseWithWarningMessage("Unable to find bibliographic information in work file(s) or online sources.\n\nIt might work to add more information manually and then click Auto-Fill.");
+      messageShown = true;
+    }
 
-    doneHndlr.accept(pdfBD, queryBD);
+    doneHndlr.handle(pdfBD, queryBD, messageShown);
   }
 
 //---------------------------------------------------------------------------

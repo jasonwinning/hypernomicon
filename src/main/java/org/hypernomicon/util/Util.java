@@ -18,6 +18,7 @@
 package org.hypernomicon.util;
 
 import org.hypernomicon.App;
+import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
@@ -1424,7 +1425,7 @@ public final class Util
 
   public static void runOutsideFXThread(Runnable runnable)
   {
-    new Thread(runnable).start();
+    new HyperThread(runnable, "Util").start();
   }
 
 //---------------------------------------------------------------------------

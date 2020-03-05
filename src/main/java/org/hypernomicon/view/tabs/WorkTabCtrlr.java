@@ -1932,12 +1932,13 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     setAllVisible(true, btnStop, progressBar);
 
     bibDataRetriever = new BibDataRetriever(httpClient, curWork.getBibData(), curWork.getWorkTypeEnum(), getAuthorGroups(),
-                                            pdfFilePaths, (pdfBD, queryBD) ->
+                                            pdfFilePaths, (pdfBD, queryBD, messageShown) ->
     {
       setAllVisible(false, btnStop, progressBar);
       if ((pdfBD == null) && (queryBD == null))
       {
-        messageDialog("Unable to find bibliographic information.", mtInformation);
+        if (messageShown == false)
+          messageDialog("Unable to find bibliographic information.", mtInformation);
         return;
       }
 

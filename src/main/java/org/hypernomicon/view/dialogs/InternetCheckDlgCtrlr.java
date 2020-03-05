@@ -18,6 +18,7 @@
 package org.hypernomicon.view.dialogs;
 
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.HyperTask.HyperThread;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
@@ -62,7 +63,7 @@ public class InternetCheckDlgCtrlr extends HyperDlg
   {
     okClicked = false;
 
-    task = new HyperTask() { @Override protected Boolean call() throws Exception
+    task = new HyperTask("CheckForInternet") { @Override protected Boolean call() throws Exception
     {
       HttpURLConnection con;
       try
@@ -87,7 +88,7 @@ public class InternetCheckDlgCtrlr extends HyperDlg
     {
       task.setOnSucceeded(event -> getStage().close());
 
-      Thread thread = new Thread(task);
+      HyperThread thread = new HyperThread(task);
       task.setThread(thread);
       thread.start();
     };

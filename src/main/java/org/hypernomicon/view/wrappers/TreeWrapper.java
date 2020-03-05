@@ -111,7 +111,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       {
         nullSwitch(row.getItem(), treeRow -> nullSwitch(treeRow.treeItem, treeItem -> nullSwitch(treeRow.getRecord(), record ->
         {
-          if (db.isLoaded() && (mouseEvent.getButton().equals(MouseButton.PRIMARY)) && (mouseEvent.getClickCount() == 2) && treeItem.isLeaf())
+          if (db.isLoaded() && mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2) && treeItem.isLeaf())
             ui.goToRecord(record, false);
         })));
       });

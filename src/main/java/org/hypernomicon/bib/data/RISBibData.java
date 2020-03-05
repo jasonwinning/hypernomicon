@@ -46,7 +46,7 @@ public class RISBibData extends BibDataStandalone
 
     for (String line : lines)
     {
-      if (line.isEmpty() || line.equals("") || line.matches("^\\s*$"))
+      if (line.isEmpty() || line.matches("^\\s*$"))
         continue;
 
       extractDOIandISBNs(line);

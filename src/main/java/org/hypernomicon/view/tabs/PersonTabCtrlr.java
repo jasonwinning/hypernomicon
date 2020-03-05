@@ -98,7 +98,7 @@ import javafx.scene.layout.Priority;
 public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 {
   @FXML private AnchorPane apOverview;
-  @FXML private Button btnWebSrch1, btnWebSrch2;
+  @FXML private Button btnWebSrch1, btnWebSrch2, btnPaste;
   @FXML private ComboBox<HyperTableCell> cbRank, cbStatus, cbSubfield;
   @FXML private ImageView ivPerson;
   @FXML private Label lblORCID, lblWebsite, lblPicture, lblSearchKey;
@@ -811,6 +811,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       PictureDlgCtrlr.httpClient.stop();
       refreshPicture();
     });
+
+    btnPaste.setOnAction(event -> tfWebsite.setText(getClipboardText(true)));
+    setToolTip(btnPaste, "Paste text from clipboard");
 
     initWorkContextMenu();
     initArgContextMenu();

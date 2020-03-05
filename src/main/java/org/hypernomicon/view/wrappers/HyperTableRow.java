@@ -121,7 +121,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
     HyperTableColumn col = table.getColumn(colNdx);
     boolean restricted, isNotCheckBox = col.getCtrlType() != ctCheckbox;
 
-    if ((cell != null) && (newCell != null) && cell.equals(newCell))
+    if ((cell != null) && cell.equals(newCell))
     {
       if (isNotCheckBox) table.refresh();
       return false;

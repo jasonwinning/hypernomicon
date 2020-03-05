@@ -135,6 +135,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     addPreview(stagePane, apMain, apPreview, btnPreview);
 
     hcbAuthor = new HyperCB(cbAuthor, ctDropDownList, new StandardPopulator(hdtPerson));
+    hcbAuthor.dontCreateNewRecord = true;
 
     HybridSubjectPopulator workPop = new HybridSubjectPopulator(rtAuthorOfWork);
     workPop.setFilter(id ->
@@ -217,7 +218,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     {
       setAllVisible(true, btnStop, progressBar);
 
-      bibDataRetriever = new BibDataRetriever(httpClient, null, WorkTypeEnum.wtNone, null, safeListOf(filePathToUse), (pdfBD, queryBD) ->
+      bibDataRetriever = new BibDataRetriever(httpClient, null, WorkTypeEnum.wtNone, null, safeListOf(filePathToUse), (pdfBD, queryBD, ms) ->
       {
         setAllVisible(false, btnStop, progressBar);
 
@@ -226,7 +227,11 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
         BibData bdToUse = queryBD == null ? pdfBD : queryBD;
 
-        if (bdToUse == null) return;
+        if (bdToUse == null)
+        {
+          bd = BibData.NoneFoundBD;
+          return;
+        }
 
         bd = bdToUse;
 

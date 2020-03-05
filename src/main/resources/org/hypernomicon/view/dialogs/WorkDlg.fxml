@@ -43,8 +43,17 @@
          <children>
             <Label layoutX="14.0" layoutY="14.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 1." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0">
       </Label>
-            <TextField fx:id="tfOrigFile" layoutX="104.0" layoutY="15.0" prefHeight="22.0" prefWidth="644.0" AnchorPane.leftAnchor="85.0" AnchorPane.rightAnchor="169.0" AnchorPane.topAnchor="15.0" />
-            <Button layoutX="755.0" layoutY="15.0" mnemonicParsing="false" onAction="#btnSrcBrowseClick" prefHeight="22.0" prefWidth="44.0" text="..." AnchorPane.rightAnchor="118.0" AnchorPane.topAnchor="15.0" />
+            <Button fx:id="btnPaste" layoutX="77.0" layoutY="17.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="32.0" AnchorPane.leftAnchor="85.0" AnchorPane.topAnchor="15.0">
+               <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../../resources/images/page_paste.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
+            <TextField fx:id="tfOrigFile" layoutX="120.0" layoutY="15.0" prefHeight="25.0" prefWidth="628.0" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="161.0" AnchorPane.topAnchor="15.0" />
+            <Button layoutX="759.0" layoutY="15.0" mnemonicParsing="false" onAction="#btnSrcBrowseClick" prefHeight="22.0" prefWidth="44.0" text="..." AnchorPane.rightAnchor="114.0" AnchorPane.topAnchor="15.0" />
             <Button layoutX="806.0" layoutY="15.0" mnemonicParsing="false" onAction="#btnLaunchClick" prefHeight="22.0" prefWidth="99.0" text="Launch" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="15.0">
                <graphic>
                   <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
@@ -57,7 +66,7 @@
             <Label layoutX="14.0" layoutY="39.0" text="(If this isn't done automatically) click [...] to browse to file, then click launch. The file will open." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="39.0" />
             <Label layoutX="14.0" layoutY="63.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 2." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="63.0">
       </Label>
-            <TextField fx:id="tfTitle" layoutX="104.0" layoutY="64.0" prefHeight="25.0" prefWidth="712.0" AnchorPane.leftAnchor="85.0" AnchorPane.rightAnchor="118.0" AnchorPane.topAnchor="64.0" />
+            <TextField fx:id="tfTitle" layoutX="104.0" layoutY="64.0" prefHeight="25.0" prefWidth="712.0" AnchorPane.leftAnchor="85.0" AnchorPane.rightAnchor="114.0" AnchorPane.topAnchor="64.0" />
             <ToggleButton fx:id="btnPreview" layoutX="818.0" layoutY="64.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="99.0" text="Preview" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="64.0">
                <graphic>
                   <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">

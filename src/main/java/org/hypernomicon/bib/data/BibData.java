@@ -44,6 +44,8 @@ public abstract class BibData
 
   private static final Map<String, YearType> descToYearType = new HashMap<>();
 
+  public static final BibData NoneFoundBD = new GUIBibData(); 
+  
   public static enum YearType
   {
     ytUnknown(""),

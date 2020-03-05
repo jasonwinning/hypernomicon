@@ -25,6 +25,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.InterComputerMsg;
 import org.hypernomicon.model.HyperDB.HDB_MessageType;
 
@@ -50,7 +51,7 @@ public class LockedDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  private class MessageSenderThread extends Thread
+  private class MessageSenderThread extends HyperThread
   {
     private LockedDlgCtrlr dlg;
     private InterComputerMsg sentMsg;
@@ -58,7 +59,7 @@ public class LockedDlgCtrlr extends HyperDlg
 
     private MessageSenderThread(LockedDlgCtrlr dlg, InterComputerMsg sentMsg)
     {
-      super();
+      super("InterComputerMessage");
       this.dlg = dlg;
       this.sentMsg = sentMsg;
       done = false;

@@ -75,6 +75,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
   public static abstract class SyncTask extends HyperTask
   {
+    public SyncTask() { super("SyncReferenceLibrary"); }
+
     protected boolean changed = false;
     public boolean getChanged() { return changed; }
   }

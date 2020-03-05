@@ -436,7 +436,7 @@ public class HyperCB implements CommitableWrapper
               }
           }
 
-          NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.create(false, cb.getEditor().getText(), null);
+          NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.create(table == null, cb.getEditor().getText(), null);
 
           if (npdc.showModal())
           {

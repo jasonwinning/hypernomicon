@@ -113,7 +113,7 @@ import javafx.stage.Stage;
 public class WorkDlgCtrlr extends HyperDlg
 {
   @FXML private AnchorPane apMain;
-  @FXML private Button btnRegenerateFilename, btnStop, btnDest;
+  @FXML private Button btnRegenerateFilename, btnStop, btnDest, btnPaste;
   @FXML private CheckBox chkSetDefault, chkCreateBibEntry, chkKeepFilenameUnchanged;
   @FXML private ComboBox<EntryType> cbEntryType;
   @FXML private ComboBox<HyperTableCell> cbType;
@@ -181,6 +181,15 @@ public class WorkDlgCtrlr extends HyperDlg
       bibManagerDlg.initCB(cbEntryType);
 
     tfNewFile.disableProperty().bind(chkKeepFilenameUnchanged.selectedProperty());
+
+    btnPaste.setOnAction(event ->
+    {
+      FilePath filePath = new FilePath(getClipboardText(true));
+      if (filePath.exists())
+        useChosenFile(filePath, null);
+    });
+
+    setToolTip(btnPaste, "Paste file path from clipboard");
 
     mnuPopulateUsingDOI.setOnAction(event ->
     {
@@ -819,7 +828,7 @@ public class WorkDlgCtrlr extends HyperDlg
       setAllVisible(true, btnStop, progressBar);
 
       bibDataRetriever = new BibDataRetriever(httpClient, curBD, HDT_WorkType.getEnumVal(curBD.getWorkType()), getAuthorGroups(),
-                                              safeListOf(origFilePath), (pdfBD, queryBD) ->
+                                              safeListOf(origFilePath), (pdfBD, queryBD, ms) ->
       {
         setAllVisible(false, btnStop, progressBar);
 

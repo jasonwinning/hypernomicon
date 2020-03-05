@@ -22,17 +22,19 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hypernomicon.HyperTask.HyperThread;
+
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
-class InterProcDaemon extends Thread
+class InterProcDaemon extends HyperThread
 {
   static final int PORT = 59346;
 
   InterProcDaemon()
   {
-    super();
+    super("InterProc");
     setDaemon(true);
   }
 
