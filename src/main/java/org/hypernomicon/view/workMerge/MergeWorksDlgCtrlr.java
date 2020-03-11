@@ -37,6 +37,7 @@ import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.data.GUIBibData;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
+import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.dialogs.HyperDlg;
@@ -196,7 +197,8 @@ public class MergeWorksDlgCtrlr extends HyperDlg
       deleteGridPaneColumn(gpAuthors, 2);
     }
 
-    if ((db.bibLibraryIsLinked() == false) || (showNewEntry == false) || (destWork.getBibEntryKey().isBlank() == false))
+    if ((db.bibLibraryIsLinked() == false) || (showNewEntry == false) || (destWork.getBibEntryKey().isBlank() == false) ||
+        HDT_Work.isUnenteredSet(destWork))
       chkNewEntry.setVisible(false);
     else
     {
@@ -350,6 +352,9 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 
       if (workType == null)
         return falseWithWarningMessage("Select a work type.");
+
+      if (workType.enumVal() == WorkTypeEnum.wtUnenteredSet)
+        return falseWithWarningMessage("Select a different work type.");
     }
 
     if (chkNewEntry.isVisible())

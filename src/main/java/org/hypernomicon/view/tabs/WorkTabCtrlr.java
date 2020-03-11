@@ -46,7 +46,6 @@ import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.dialogs.ChooseParentWorkFileDlgCtrlr;
 import org.hypernomicon.view.dialogs.FileDlgCtrlr;
 import org.hypernomicon.view.dialogs.NewPersonDlgCtrlr;
-import org.hypernomicon.view.dialogs.SelectWorkDlgCtrlr;
 import org.hypernomicon.view.dialogs.WorkDlgCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.*;
@@ -135,7 +134,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private HyperCB hcbLargerWork;
   private MainTextWrapper mainText;
   private final Map<Tab, String> tabCaptions = new HashMap<>();
-  private boolean btnFolderAdded, inNormalMode = true, alreadyChangingTitle = false;
+  private boolean btnFolderAdded, inNormalMode = true, alreadyChangingTitle = false, programmaticTypeChange = false;
   private double btnURLLeftAnchor, tfURLLeftAnchor, tfURLRightAnchor;
   private SplitMenuButton btnFolder = null;
   private HDT_Work curWork, lastWork = null;
@@ -363,7 +362,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         HDT_WorkFile oldWorkFile = htWorkFiles.selectedRecord();
 
         if (oldWorkFile == null)
-          curWork.addWorkFile(workFile.getID(), true, true);
+          curWork.addWorkFile(workFile.getID());
         else
           curWork.replaceWorkFile(oldWorkFile, workFile);
 
@@ -380,9 +379,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       return curWork.getWorkTypeEnum() == wtUnenteredSet;
     };
 
-    htWorkFiles.addContextMenuItem("Move to an existing work record", HDT_WorkFile.class, condHandler, this::moveFileToDifferentWork);
-
-    htWorkFiles.addContextMenuItem("Move to a new work record", HDT_WorkFile.class, condHandler, this::moveFileToNewWork);
+    htWorkFiles.addContextMenuItem("Move to a dedicated work record", HDT_WorkFile.class, condHandler, this::moveUnenteredWorkFile);
 
     htWorkFiles.addContextMenuItem("Remove file", HDT_WorkFile.class, HDT_WorkFile::pathNotEmpty,
       workFile ->
@@ -503,7 +500,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     cbType.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (newValue == null) return;
+      if (programmaticTypeChange || (newValue == null)) return;
 
       WorkTypeEnum workTypeEnumVal = HDT_WorkType.workTypeIDToEnumVal(HyperTableCell.getCellID(newValue)),
                    oldEnumVal = curWork.getWorkTypeEnum();
@@ -512,7 +509,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       {
         if (oldEnumVal == wtUnenteredSet)
         {
+          programmaticTypeChange = true;
           messageDialog("You cannot change the work type after it has been set to Unentered Set of Work Files.", mtError);
+          programmaticTypeChange = false;
+
           Platform.runLater(() -> cbType.setValue(oldValue));
           return;
         }
@@ -521,11 +521,26 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       }
       else
       {
-        if ((oldEnumVal != wtUnenteredSet) && (oldEnumVal != wtNone))
+        if (oldEnumVal != wtUnenteredSet)
         {
-          messageDialog("You cannot change a work with an existing work type into an unentered set of work files.", mtError);
-          Platform.runLater(() -> cbType.setValue(oldValue));
-          return;
+          if (oldEnumVal != wtNone)
+          {
+            programmaticTypeChange = true;
+            messageDialog("You cannot change a work with an existing work type into an unentered set of work files.", mtError);
+            programmaticTypeChange = false;
+
+            Platform.runLater(() -> cbType.setValue(oldValue));
+            return;
+          }
+          else if (curWork.getBibEntryKey().length() > 0)
+          {
+            programmaticTypeChange = true;
+            messageDialog("You cannot change a work that is assigned to a " + db.getBibLibrary().type().getUserFriendlyName() + " entry into an unentered set of work files.", mtError);
+            programmaticTypeChange = false;
+
+            Platform.runLater(() -> cbType.setValue(oldValue));
+            return;
+          }
         }
 
         changeToUnenteredSetMode();
@@ -1075,81 +1090,22 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void moveFileToNewWork(HDT_WorkFile workFile)
+  private void moveUnenteredWorkFile(HDT_WorkFile workFile)
   {
-    if (ui.cantSaveRecord()) return;
+    int startPage = getCurPageNum(curWork, workFile, true ),
+        endPage   = getCurPageNum(curWork, workFile, false);
 
-    HDT_Work oldWork = curWork,
-             newWork = db.createNewBlankRecord(hdtWork);
+    HDT_Work.sourceUnenteredWork = curWork;
 
-    int oldNdx = curWork.workFiles.indexOf(workFile),
-        startPage = getCurPageNum(curWork, workFile, true),
-        endPage = getCurPageNum(curWork, workFile, false);
-
-    newWork.addWorkFile(workFile.getID(), false, false);
-    Authors authors = newWork.getAuthors();
-
-    curWork.getAuthors().forEach(authors::add);
-
-    newWork.setStartPageNum(workFile, startPage);
-    newWork.setEndPageNum(workFile, endPage);
-
-    ui.goToRecord(newWork, false);
-
-    if (showWorkDialog(workFile)) return;
-
-    db.getObjectList(rtWorkFileOfWork, oldWork, true).add(oldNdx, workFile);
-
-    oldWork.setStartPageNum(workFile, startPage);
-    oldWork.setEndPageNum(workFile, endPage);
-
-    ui.deleteCurrentRecord(false);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void moveFileToDifferentWork(HDT_WorkFile workFile)
-  {
-    if (ui.cantSaveRecord()) return;
-
-    HDT_Person author = curWork.authorRecords.isEmpty() ? null : curWork.authorRecords.get(0);
-
-    SelectWorkDlgCtrlr dlg = SelectWorkDlgCtrlr.create(author, false, workFile.filePath());
-
-    if (dlg.showModal() == false) return;
-
-    HDT_Work newWork = dlg.getWork(),
-             oldWork = curWork;
-
-    if (oldWork.getID() == newWork.getID())
+    if (ui.importWorkFile(curWork.authorRecords.isEmpty() ? null : curWork.authorRecords.get(0), workFile.filePath(), true))
     {
-      falseWithErrorMessage("Source and destination are the same.");
-      return;
+      curWork.setStartPageNum(workFile, startPage);
+      curWork.setEndPageNum(workFile, endPage);
+
+      ui.update();
     }
 
-    int oldNdx = curWork.workFiles.indexOf(workFile),
-        startPage = getCurPageNum(curWork, workFile, true),
-        endPage = getCurPageNum(curWork, workFile, false);
-
-    newWork.addWorkFile(workFile.getID(), false, false);
-
-    newWork.setStartPageNum(workFile, startPage);
-    newWork.setEndPageNum(workFile, endPage);
-
-    ui.goToRecord(newWork, false);
-
-    if (showWorkDialog(workFile)) return;
-
-    db.getObjectList(rtWorkFileOfWork, oldWork, true).add(oldNdx, workFile);
-    db.getObjectList(rtWorkFileOfWork, newWork, true).remove(workFile);
-
-    refreshFiles();
-
-    oldWork.setStartPageNum(workFile, startPage);
-    oldWork.setEndPageNum(workFile, endPage);
-
-    ui.btnBackClick();
+    HDT_Work.sourceUnenteredWork = null;
   }
 
 //---------------------------------------------------------------------------
@@ -1208,7 +1164,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     if (ui.cantSaveRecord()) return;
 
-    if (curWork.getWorkTypeEnum() == wtUnenteredSet)
+    if (HDT_Work.isUnenteredSet(curWork))
     {
       addMultipleFiles();
       return;
@@ -1350,7 +1306,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         return;
       }
 
-      curWork.addWorkFile(workFile.getID(), true, true);
+      curWork.addWorkFile(workFile.getID());
     }
 
     ui.update();
@@ -1711,9 +1667,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (ui.cantSaveRecord()) return false;
 
-    if (curWork.getWorkTypeEnum() == wtUnenteredSet)
+    if (HDT_Work.isUnenteredSet(curWork))
     {
       fdc = FileDlgCtrlr.create("Unentered Work File", workFile, curWork);
+
+      fdc.setSrcFilePath(filePathToUse, true);
 
       result = fdc.showModal();
       fdc = null;

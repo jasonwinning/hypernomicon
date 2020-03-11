@@ -98,7 +98,7 @@ import javafx.scene.layout.Priority;
 public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 {
   @FXML private AnchorPane apOverview;
-  @FXML private Button btnWebSrch1, btnWebSrch2, btnPaste;
+  @FXML private Button btnWebSrch1, btnWebSrch2, btnPaste, btnNewWork;
   @FXML private ComboBox<HyperTableCell> cbRank, cbStatus, cbSubfield;
   @FXML private ImageView ivPerson;
   @FXML private Label lblORCID, lblWebsite, lblPicture, lblSearchKey;
@@ -675,6 +675,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   {
     mainText = new MainTextWrapper(apOverview);
 
+    btnNewWork.setOnAction(event -> ui.importWorkFile(curPerson, null, false));
+    setToolTip(btnNewWork, "Create new work record with this person as author");
+
     Predicate<Integer> popFilter = id ->
     {
       HDT_Institution inst = db.institutions.getByID(id);
@@ -1119,14 +1122,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       default:
         break;
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnNewWorkClick()
-  {
-    ui.newWorkAndWorkFile(curPerson, null, false);
   }
 
 //---------------------------------------------------------------------------

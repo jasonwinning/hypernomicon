@@ -131,6 +131,14 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static boolean isUnenteredSet(HDT_Work work)
+  {
+    return work == null ? false : work.getWorkTypeEnum() == WorkTypeEnum.wtUnenteredSet;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void setAuthors(List<ObjectGroup> newGroups)
   {
     boolean theSame = true;
@@ -246,7 +254,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
     if (workFiles.isEmpty())
     {
-      largerWork.workFiles.forEach(workFile -> addWorkFile(workFile.getID(), true, true));
+      largerWork.workFiles.forEach(workFile -> addWorkFile(workFile.getID()));
       return;
     }
 
@@ -261,7 +269,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
       if (confirmDialog("Currently, " + workFiles.size() + msg + "attached to the child work. Replace with parent work file(s)?"))
       {
         getObjList(rtWorkFileOfWork).clear();
-        largerWork.workFiles.forEach(workFile -> addWorkFile(workFile.getID(), true, true));
+        largerWork.workFiles.forEach(workFile -> addWorkFile(workFile.getID()));
       }
     }
   }
@@ -284,7 +292,9 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addWorkFile(int newID, boolean alsoAddToEmptySubworks, boolean confirmToRemoveFromUnenteredSet)
+  public static HDT_Work sourceUnenteredWork = null;
+
+  public void addWorkFile(int newID)
   {
     HDT_WorkFile workFile = db.workFiles.getByID(newID);
 
@@ -292,24 +302,13 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
     workFile.works.forEach(work ->
     {
-      if ((work.getID() != getID()) && (work.getWorkTypeEnum() == WorkTypeEnum.wtUnenteredSet))
-      {
-        boolean okToRemoveFromUnenteredSet;
-
-        if (confirmToRemoveFromUnenteredSet)
-          okToRemoveFromUnenteredSet = confirmDialog("Okay to remove the file from the the unentered set of work files: \"" + work.name() + "\"?");
-        else
-          okToRemoveFromUnenteredSet = true;
-
-        if (okToRemoveFromUnenteredSet)
+      if ((work.getID() != getID()) && HDT_Work.isUnenteredSet(work) &&
+        ((sourceUnenteredWork == work) || confirmDialog("Okay to remove the file from the the unentered set of work files: \"" + work.name() + "\"?")))
           db.getObjectList(rtWorkFileOfWork, work, true).remove(workFile);
-      }
     });
 
-    if (alsoAddToEmptySubworks == false) return;
-
     subWorks.stream().filter(childWork -> childWork.workFiles.isEmpty())
-                     .forEach(childWork -> childWork.addWorkFile(newID, true, confirmToRemoveFromUnenteredSet));
+                     .forEach(childWork -> childWork.addWorkFile(newID));
   }
 
 //---------------------------------------------------------------------------

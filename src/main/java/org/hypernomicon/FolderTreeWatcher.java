@@ -270,7 +270,7 @@ public class FolderTreeWatcher
               if (newPathInfo.getFilePath().size() > 0)
               {
                 if ((alreadyImporting == false) && (dontImport == false))
-                  Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath(), true));
+                  Platform.runLater(() -> ui.importWorkFile(null, newPathInfo.getFilePath(), true));
 
                 alreadyImporting = true;
               }
@@ -319,7 +319,7 @@ public class FolderTreeWatcher
                 downloading.contains(newPathInfo.getFilePath()))
             {
               if ((alreadyImporting == false) && (dontImport == false))
-                Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath(), true));
+                Platform.runLater(() -> ui.importWorkFile(null, newPathInfo.getFilePath(), true));
 
               alreadyImporting = true;
               downloading.remove(newPathInfo.getFilePath());
@@ -342,7 +342,7 @@ public class FolderTreeWatcher
                   newPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf"))
               {
                 if ((alreadyImporting == false) && (dontImport == false))
-                  Platform.runLater(() -> ui.newWorkAndWorkFile(null, newPathInfo.getFilePath(), true));
+                  Platform.runLater(() -> ui.importWorkFile(null, newPathInfo.getFilePath(), true));
 
                 alreadyImporting = true;
               }

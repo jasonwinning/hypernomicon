@@ -173,7 +173,9 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     lblAutoPopulated.setText("");
     tfOrigFile.setEditable(false);
+
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtWorkType));
+    hcbType.getPopulator().setFilter(id -> HDT_WorkType.workTypeIDToEnumVal(id) != WorkTypeEnum.wtUnenteredSet);
 
     destFolder.addListener((obs, ov, nv) -> tfDest.setText(nv == null ? "" : (nv.pathNotEmpty() ? db.getRootPath().relativize(nv.filePath()).toString() : "")));
 
@@ -828,7 +830,7 @@ public class WorkDlgCtrlr extends HyperDlg
       setAllVisible(true, btnStop, progressBar);
 
       bibDataRetriever = new BibDataRetriever(httpClient, curBD, HDT_WorkType.getEnumVal(curBD.getWorkType()), getAuthorGroups(),
-                                              safeListOf(origFilePath), (pdfBD, queryBD, ms) ->
+                                              safeListOf(origFilePath), (pdfBD, queryBD, messageShown) ->
       {
         setAllVisible(false, btnStop, progressBar);
 
@@ -1244,7 +1246,7 @@ public class WorkDlgCtrlr extends HyperDlg
             if (newWorkFile == null)
               return falseWithErrorMessage("Internal error #67830");
 
-            curWork.addWorkFile(newWorkFile.getID(), true, true);
+            curWork.addWorkFile(newWorkFile.getID());
           }
           else
           {
@@ -1271,7 +1273,7 @@ public class WorkDlgCtrlr extends HyperDlg
             if (newWorkFile == null)
               return falseWithErrorMessage("Internal error #67830");
 
-            curWork.addWorkFile(newWorkFile.getID(), true, true);
+            curWork.addWorkFile(newWorkFile.getID());
           }
         }
         else if (oldWorkFile == newWorkFile)
@@ -1292,7 +1294,7 @@ public class WorkDlgCtrlr extends HyperDlg
             return falseWithErrorMessage("Unable to move the file. Reason: Cannot change assignment from one file to another that is already assigned to a different file record.");
 
           success = newWorkFile.getPath().moveToFolder(HyperPath.getFolderFromFilePath(newFilePath.getDirOnly(), true).getID(), true, true, newFilePath.getNameOnly().toString());
-          if (success) curWork.addWorkFile(newWorkFile.getID(), true, true);
+          if (success) curWork.addWorkFile(newWorkFile.getID());
         }
       }
     }

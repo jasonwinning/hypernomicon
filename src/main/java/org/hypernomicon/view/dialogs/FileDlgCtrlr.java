@@ -157,16 +157,8 @@ public class FileDlgCtrlr extends HyperDlg
 
     onShown = () ->
     {
-      if (recordType == hdtWorkFile)
-      {
-        if (curFileRecord == null)
-          btnBrowseOldClick(true);
-      }
-      else
-      {
-        if (FilePath.isEmpty(srcFilePath))
-          btnBrowseOldClick(true);
-      }
+      if (FilePath.isEmpty(srcFilePath))
+        btnBrowseOldClick(true);
     };
   }
 
@@ -308,7 +300,7 @@ public class FileDlgCtrlr extends HyperDlg
     }
     else  // chosen file is not already attached to a record
     {
-      if (db.getRootPath().isSubpath(newSrc))
+      if (db.getRootPath().isSubpath(newSrc) && (db.unenteredPath().isSubpath(newSrc) == false))
       {
         rbNeither.setDisable(false);
       }
@@ -316,7 +308,7 @@ public class FileDlgCtrlr extends HyperDlg
       {
         if (rbNeither.isSelected())
           rbMove.setSelected(true);
-        rbNeither.setDisable(true);
+        rbNeither.setDisable(db.unenteredPath().isSubpath(newSrc) == false);
       }
 
       rbMove.setDisable(false);
@@ -550,7 +542,7 @@ public class FileDlgCtrlr extends HyperDlg
         return falseWithErrorMessage("Internal error #67830");
 
       workFile.setName(tfRecordName.getText());
-      curWork.addWorkFile(workFile.getID(), true, true);
+      curWork.addWorkFile(workFile.getID());
     }
     else
     {

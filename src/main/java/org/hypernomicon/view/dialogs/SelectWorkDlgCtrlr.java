@@ -88,24 +88,24 @@ public class SelectWorkDlgCtrlr extends HyperDlg
   private boolean createNewClicked = false, previewInitialized = false, bibEntryIsConstant;
 
   public HDT_Work getWork()     { return work; }
-  public BibEntry getBibEntry() { return bibEntry; }
+  public BibEntry getBibEntry() { return HDT_Work.isUnenteredSet(work) ? null : bibEntry; }
   public BibData getBibData()   { return bd; }
   public HDT_Person getAuthor() { return author; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static SelectWorkDlgCtrlr create(HDT_Person authorToUse, boolean enableCreateNew, FilePath filePathToUse)
+  public static SelectWorkDlgCtrlr create(HDT_Person authorToUse, FilePath filePathToUse)
   {
     SelectWorkDlgCtrlr swd = HyperDlg.create("SelectWorkDlg.fxml", "Select a Work Record", true);
-    swd.init(authorToUse, enableCreateNew, filePathToUse, true, null, false);
+    swd.init(authorToUse, true, filePathToUse, true, null, false);
     return swd;
   }
 
-  public static SelectWorkDlgCtrlr create(HDT_Person authorToUse, boolean enableCreateNew, BibEntry bibEntryToUse)
+  public static SelectWorkDlgCtrlr create(HDT_Person authorToUse, BibEntry bibEntryToUse)
   {
     SelectWorkDlgCtrlr swd = HyperDlg.create("SelectWorkDlg.fxml", "Select a Work Record", true);
-    swd.init(authorToUse, enableCreateNew, null, false, bibEntryToUse, true);
+    swd.init(authorToUse, false, null, false, bibEntryToUse, true);
     return swd;
   }
 
@@ -142,7 +142,9 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     {
       if (bibEntryIsConstant == false) return true;
 
-      return db.works.getByID(id).getBibEntryKey().isBlank();
+      HDT_Work work = db.works.getByID(id);
+
+      return HDT_Work.isUnenteredSet(work) ? false : work.getBibEntryKey().isBlank();
     });
 
     hcbWork = new HyperCB(cbWork, ctDropDownList, workPop);
@@ -210,7 +212,9 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
       hcbBibEntry.selectID(-1);
 
-      if (enableCreateNew)
+      if (HDT_Work.isUnenteredSet(newValue.getRecord()))
+        cbBibEntry.setDisable(true);
+      else if (enableCreateNew)
         cbBibEntry.setDisable(false);
     });
 
@@ -218,7 +222,8 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     {
       setAllVisible(true, btnStop, progressBar);
 
-      bibDataRetriever = new BibDataRetriever(httpClient, null, WorkTypeEnum.wtNone, null, safeListOf(filePathToUse), (pdfBD, queryBD, ms) ->
+      bibDataRetriever = new BibDataRetriever(httpClient, null, WorkTypeEnum.wtNone, null,
+                                              safeListOf(filePathToUse), (pdfBD, queryBD, messageShown) ->
       {
         setAllVisible(false, btnStop, progressBar);
 

@@ -217,13 +217,13 @@ public class FileManager extends HyperDlg
 
     fileTable.addContextMenuItem("New misc. file record", fileRow -> fileRow.getRecord() == null, fileRow ->
     {
-      ui.newMiscFile(fileRow, null);
+      ui.importMiscFile(fileRow, null);
       refresh();
     });
 
     fileTable.addContextMenuItem("New work record", fileRow -> fileRow.getRecord() == null, fileRow ->
     {
-      ui.newWorkAndWorkFile(null, fileRow.getFilePath(), false);
+      ui.importWorkFile(null, fileRow.getFilePath(), false);
       refresh();
     });
 

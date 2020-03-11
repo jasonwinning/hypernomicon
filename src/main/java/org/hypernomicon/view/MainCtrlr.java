@@ -41,6 +41,7 @@ import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.data.RISBibData;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
@@ -309,6 +310,8 @@ public final class MainCtrlr
     hcbGoTo.setInnerOnAction(event -> recordLookup());
     hcbGoTo.dontCreateNewRecord = true;
 
+    mnuImportWork        .setOnAction(event -> importWorkFile(null, null, false));
+    mnuImportFile        .setOnAction(event -> importMiscFile(null, null));
     mnuImportBibFile     .setOnAction(event -> importBibFile(null, null));
     mnuImportBibClipboard.setOnAction(event -> importBibFile(convertMultiLineStrToStrList(getClipboardText(false), false), null));
 
@@ -2729,15 +2732,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void importMiscFile()
-  {
-    newMiscFile(null, null);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void newMiscFile(FileRow fileRow, FilePath filePath)
+  public void importMiscFile(FileRow fileRow, FilePath filePath)
   {
     if (ui.cantSaveRecord()) return;
 
@@ -2760,25 +2755,17 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void importWorkFile()
-  {
-    newWorkAndWorkFile(null, null, false);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void newWorkAndWorkFile(HDT_Person person, FilePath filePathToUse, boolean promptForExistingRecord)
+  public boolean importWorkFile(HDT_Person person, FilePath filePathToUse, boolean promptForExistingRecord)
   {
     if (filePathToUse != null)
     {
       if (filePathToUse.equals(lastImportFilePath) && ((Instant.now().toEpochMilli() - lastImportTime) < 10000))
-        return;
+        return false;
 
-      if (filePathToUse.exists() == false) return;
+      if (filePathToUse.exists() == false) return false;
     }
 
-    if (cantSaveRecord()) return;
+    if (cantSaveRecord()) return false;
 
     HDT_Work work = null;
     BibData bdToUse = null;
@@ -2788,8 +2775,8 @@ public final class MainCtrlr
 
     if (promptForExistingRecord)
     {
-      SelectWorkDlgCtrlr swdc = SelectWorkDlgCtrlr.create(person, true, filePathToUse);
-      if (swdc.showModal() == false) return;
+      SelectWorkDlgCtrlr swdc = SelectWorkDlgCtrlr.create(person, filePathToUse);
+      if (swdc.showModal() == false) return false;
 
       work = swdc.getWork();
       person = swdc.getAuthor();
@@ -2806,7 +2793,7 @@ public final class MainCtrlr
             if (bibEntry.linkedToWork())
             {
               messageDialog("Internal error #62883", mtError);
-              return;
+              return false;
             }
 
             try
@@ -2817,10 +2804,10 @@ public final class MainCtrlr
             catch (IOException e)
             {
               messageDialog("Unable to initialize merge dialog window.", mtError);
-              return;
+              return false;
             }
 
-            if (mwd.showModal() == false) return;
+            if (mwd.showModal() == false) return false;
 
             work.setBibEntryKey(bibEntry.getKey());
             mwd.mergeInto(bibEntry);
@@ -2829,7 +2816,7 @@ public final class MainCtrlr
           else if (bibEntry.getKey().equals(work.getBibEntryKey()) == false)
           {
             messageDialog("Internal error #62884", mtError);
-            return;
+            return false;
           }
         }
 
@@ -2837,7 +2824,7 @@ public final class MainCtrlr
         {
           BibData workBD = work.getBibData();
 
-          if (bdToUse != null)
+          if ((bdToUse != null) && (bdToUse != BibData.NoneFoundBD))
           {
             try
             {
@@ -2847,10 +2834,10 @@ public final class MainCtrlr
             catch (IOException e)
             {
               messageDialog("Unable to initialize merge dialog window.", mtError);
-              return;
+              return false;
             }
 
-            if (mwd.showModal() == false) return;
+            if (mwd.showModal() == false) return false;
 
             mwd.mergeInto(workBD);
           }
@@ -2873,33 +2860,44 @@ public final class MainCtrlr
       if ((bibEntry != null) && bibEntry.linkedToWork())
       {
         messageDialog("Internal error #62885", mtError);
-        return;
+        return false;
       }
 
       work = db.createNewBlankRecord(hdtWork);
+      Authors authors = work.getAuthors();
 
       if (bibEntry != null)
       {
         work.getBibData().copyAllFieldsFrom(bibEntry, false, false);
-        work.getAuthors().setAll(bibEntry.getAuthors());
+        authors.setAll(bibEntry.getAuthors());
         work.setBibEntryKey(bibEntry.getKey());
         bdToUse = bibEntry;
       }
+
+      if ((HDT_Work.sourceUnenteredWork != null) && authors.isEmpty())
+        HDT_Work.sourceUnenteredWork.getAuthors().forEach(authors::add);
     }
 
-    if ((person != null) && (work.getAuthors().containsPerson(person) == false) && ((bdToUse == null) || BibAuthors.isEmpty(bdToUse.getAuthors())))
-      work.getAuthors().add(person);
+    if ((bdToUse == null) || BibAuthors.isEmpty(bdToUse.getAuthors()))
+    {
+      Authors authors = work.getAuthors();
+
+      if ((person != null) && (authors.containsPerson(person) == false))
+        authors.add(person);
+    }
 
     goToRecord(work, false);
 
     if (bdToUse == BibData.NoneFoundBD)
       bdToUse = work.getBibData();
-    
+
     if (workHyperTab().showWorkDialog(null, filePathToUse, bdToUse, newEntryChecked, newEntryType))
-      return;
+      return true;
 
     if (deleteRecord)
       deleteCurrentRecord(false);
+
+    return false;
   }
 
 //---------------------------------------------------------------------------
@@ -2915,7 +2913,7 @@ public final class MainCtrlr
 
     if (mediaTypeStr.contains("pdf"))
     {
-      newWorkAndWorkFile(null, filePath, true);
+      importWorkFile(null, filePath, true);
       return;
     }
 
@@ -2934,9 +2932,9 @@ public final class MainCtrlr
 
     switch (popup.showModal())
     {
-      case mrYes      : newWorkAndWorkFile(null, filePath, true); return;
-      case mrNo       : newMiscFile       (null, filePath      ); return;
-      case mrContinue : importBibFile     (null, filePath      ); return;
+      case mrYes      : importWorkFile(null, filePath, true); return;
+      case mrNo       : importMiscFile(null, filePath      ); return;
+      case mrContinue : importBibFile (null, filePath      ); return;
 
       default         : return;
     }

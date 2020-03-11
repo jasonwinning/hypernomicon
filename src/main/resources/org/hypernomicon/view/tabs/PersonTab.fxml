@@ -158,7 +158,7 @@
                                                       </AnchorPane>
                                                       <AnchorPane GridPane.columnIndex="2">
                                                          <children>
-                                                            <Button mnemonicParsing="false" onAction="#btnNewWorkClick" text="New work..." AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS" />
+                                                            <Button fx:id="btnNewWork" mnemonicParsing="false" text="New work..." AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS" />
                                                          </children>
                                                       </AnchorPane>
                                                    </children>

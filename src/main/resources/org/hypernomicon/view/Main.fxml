@@ -59,8 +59,8 @@
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <MenuItem fx:id="mnuCloseDatabase" mnemonicParsing="false" onAction="#mnuCloseClick" text="Close Database..." />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem fx:id="mnuImportWork" mnemonicParsing="false" onAction="#importWorkFile" text="Import Work File" />
-                        <MenuItem fx:id="mnuImportFile" mnemonicParsing="false" onAction="#importMiscFile" text="Import Misc. File" />
+                        <MenuItem fx:id="mnuImportWork" mnemonicParsing="false" text="Import Work File" />
+                        <MenuItem fx:id="mnuImportFile" mnemonicParsing="false" text="Import Misc. File" />
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <MenuItem fx:id="mnuImportBibFile" mnemonicParsing="false" text="Import Bibliographic Entry File" />
                         <MenuItem fx:id="mnuImportBibClipboard" mnemonicParsing="false" text="Import Bibliographic Entry from Clipboard" />

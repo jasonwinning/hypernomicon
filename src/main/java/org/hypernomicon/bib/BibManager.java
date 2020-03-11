@@ -325,7 +325,7 @@ public class BibManager extends HyperDlg
 
       HDT_Person person = findFirstHaving(row.getEntry().getAuthors(), bibAuthor -> HDT_Person.lookUpByName(bibAuthor.getName()));
 
-      SelectWorkDlgCtrlr dlg = SelectWorkDlgCtrlr.create(person, false, row.getEntry());
+      SelectWorkDlgCtrlr dlg = SelectWorkDlgCtrlr.create(person, row.getEntry());
 
       if (dlg.showModal())
         assignEntryToWork(dlg.getWork(), row.getEntry());
@@ -629,6 +629,13 @@ public class BibManager extends HyperDlg
     HDT_Work work = workRecordToAssign.get();
     BibEntry entry = tableView.getSelectionModel().getSelectedItem().getEntry();
 
+    if (HDT_Work.isUnenteredSet(work))
+    {
+      messageDialog("Cannot assign a bibliographic entry to a work record of that type.", mtError);
+      workRecordToAssign.set(null);
+      return;
+    }
+
     assignEntryToWork(work, entry);
   }
 
@@ -686,6 +693,12 @@ public class BibManager extends HyperDlg
 
   public void goToWork(HDT_Work work)
   {
+    if (HDT_Work.isUnenteredSet(work))
+    {
+      workRecordToAssign.set(null);
+      return;
+    }
+
     workRecordToAssign.set(work);
 
     String key = work.getBibEntryKey();

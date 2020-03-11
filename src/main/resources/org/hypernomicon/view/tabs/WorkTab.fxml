@@ -39,7 +39,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.WorkTabCtrlr">
+<GridPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.WorkTabCtrlr">
   <columnConstraints>
     <ColumnConstraints hgrow="NEVER" maxWidth="53.0" minWidth="53.0" prefWidth="53.0" />
       <ColumnConstraints hgrow="SOMETIMES" />
@@ -305,7 +305,7 @@
                                     </Tab>
                                  </tabs>
                               </TabPane>
-                              <Button fx:id="btnBibManager" layoutX="671.0" layoutY="2.0" mnemonicParsing="false" prefWidth="32.0" AnchorPane.rightAnchor="167.0" AnchorPane.topAnchor="2.0">
+                              <Button fx:id="btnBibManager" layoutX="646.0" layoutY="2.0" mnemonicParsing="false" prefWidth="32.0" AnchorPane.rightAnchor="192.0" AnchorPane.topAnchor="2.0">
                                  <graphic>
                                     <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
@@ -314,7 +314,7 @@
                                     </ImageView>
                                  </graphic>
                               </Button>
-                              <Button fx:id="btnNewChapter" mnemonicParsing="false" onAction="#btnNewChapterClick" prefHeight="24.0" prefWidth="86.0" text="New Chapter" AnchorPane.rightAnchor="79.0" AnchorPane.topAnchor="2.0" />
+                              <Button fx:id="btnNewChapter" mnemonicParsing="false" onAction="#btnNewChapterClick" prefHeight="25.0" prefWidth="112.0" text="New Chapter" AnchorPane.rightAnchor="79.0" AnchorPane.topAnchor="2.0" />
                               <Button fx:id="btnLaunch" mnemonicParsing="false" prefHeight="24.0" prefWidth="75.0" text="Launch" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0">
                                  <graphic>
                                     <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
