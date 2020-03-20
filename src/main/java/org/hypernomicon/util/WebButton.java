@@ -28,6 +28,7 @@ import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hypernomicon.util.PopupDialog.DialogResult;
 
 public class WebButton
 {
@@ -238,16 +239,18 @@ public class WebButton
             if (ndx >=0)
               first2 = first2.substring(0, ndx);
 
-            PopupDialog dlg = new PopupDialog("How should the name be phrased? Initials often works well with Google Scholar.");
-
             String last = values.get(WebButtonField.LastName);
 
-            dlg.addButton(first1 + " " + last, mrYes);
-            dlg.addButton(first2 + " " + last, mrNo);
-            dlg.addButton(first3 + " " + last, mrOk);
-            dlg.addButton("Cancel", mrCancel);
+            DialogResult result = new PopupDialog("How should the name be phrased? Initials often works well with Google Scholar.")
 
-            switch (dlg.showModal())
+              .addButton(first1 + " " + last, mrYes)
+              .addButton(first2 + " " + last, mrNo)
+              .addButton(first3 + " " + last, mrOk)
+              .addButton("Cancel", mrCancel)
+
+              .showModal();
+
+            switch (result)
             {
               case mrYes : value = first1; break;
               case mrNo  : value = first2; break;

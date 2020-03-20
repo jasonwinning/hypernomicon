@@ -121,8 +121,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
     if (!isDir)
       determineType();
 
-    graphic = getImageViewForRelativePath(getImageRelPathForFilePath(hyperPath.filePath(), mimetype, isDir));
-    return graphic;
+    return graphic = getImageViewForRelativePath(getImageRelPathForFilePath(hyperPath.filePath(), mimetype, isDir));
   }
 
 //---------------------------------------------------------------------------
@@ -162,14 +161,14 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 
   @Override public int compareTo(FileRow o)
   {
-    if (o == null) return 1;
-    if (hyperPath == null) return o.hyperPath == null ? 0 : -1;
+    if (o           == null) return 1;
+    if (  hyperPath == null) return o.hyperPath == null ? 0 : -1;
     if (o.hyperPath == null) return 1;
 
-    FilePath fileName  =   hyperPath.getFileName(),
+    FilePath  fileName =   hyperPath.getFileName(),
              oFileName = o.hyperPath.getFileName();
 
-    if (FilePath.isEmpty(fileName)) return FilePath.isEmpty(oFileName) ? 0 : -1;
+    if (FilePath.isEmpty(fileName )) return FilePath.isEmpty(oFileName) ? 0 : -1;
     if (FilePath.isEmpty(oFileName)) return 1;
 
     return fileName.toPath().compareTo(oFileName.toPath());

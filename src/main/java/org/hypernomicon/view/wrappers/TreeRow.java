@@ -96,9 +96,8 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
     if (getRecordType() != hdtWork)
     {
       typeName = db.getTypeName(record.getType());
-      if (record.isUnitable())
-        if (((HDT_RecordWithConnector)record).isLinked())
-          typeName = typeName + " (linked)";
+      if (record.isUnitable() && ((HDT_RecordWithConnector)record).isLinked())
+        typeName = typeName + " (linked)";
 
       return typeName;
     }

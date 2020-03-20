@@ -487,13 +487,13 @@ public final class Util
 
   public static DialogResult abortRetryIgnoreDialog(String msg)
   {
-    PopupDialog dlg = new PopupDialog(msg);
+    return new PopupDialog(msg)
 
-    dlg.addButton("Abort" , mrAbort);
-    dlg.addButton("Retry" , mrRetry);
-    dlg.addButton("Ignore", mrIgnore);
+      .addButton("Abort" , mrAbort)
+      .addButton("Retry" , mrRetry)
+      .addButton("Ignore", mrIgnore)
 
-    return dlg.showModal();
+      .showModal();
   }
 
 //---------------------------------------------------------------------------
@@ -501,13 +501,13 @@ public final class Util
 
   public static DialogResult yesNoCancelDialog(String msg)
   {
-    PopupDialog dlg = new PopupDialog(msg);
+    return new PopupDialog(msg)
 
-    dlg.addButton("Yes"   , mrYes);
-    dlg.addButton("No"    , mrNo);
-    dlg.addButton("Cancel", mrCancel);
+      .addButton("Yes"   , mrYes)
+      .addButton("No"    , mrNo)
+      .addButton("Cancel", mrCancel)
 
-    return dlg.showModal();
+      .showModal();
   }
 
 //---------------------------------------------------------------------------
@@ -515,14 +515,14 @@ public final class Util
 
   public static DialogResult seriesConfirmDialog(String msg)
   {
-    PopupDialog dlg = new PopupDialog(msg);
+    return new PopupDialog(msg)
 
-    dlg.addButton("Yes"       , mrYes);
-    dlg.addButton("No"        , mrNo);
-    dlg.addButton("Yes to all", mrYesToAll);
-    dlg.addButton("No to all" , mrNoToAll);
+      .addButton("Yes"       , mrYes)
+      .addButton("No"        , mrNo)
+      .addButton("Yes to all", mrYesToAll)
+      .addButton("No to all" , mrNoToAll)
 
-    return dlg.showModal();
+      .showModal();
   }
 
 //---------------------------------------------------------------------------
@@ -530,12 +530,12 @@ public final class Util
 
   public static boolean confirmDialog(String msg)
   {
-    PopupDialog dlg = new PopupDialog(msg);
+    return new PopupDialog(msg)
 
-    dlg.addButton("Yes", mrYes);
-    dlg.addButton("No" , mrNo);
+      .addButton("Yes", mrYes)
+      .addButton("No" , mrNo)
 
-    return dlg.showModal() == mrYes;
+      .showModal() == mrYes;
   }
 
 //---------------------------------------------------------------------------
@@ -726,17 +726,12 @@ public final class Util
 
   public static String safeSubstring(String str, int start, int end)
   {
-    if (str == null) return "";
+    if (start < 0    ) start = 0;
+    if (end   < start) end   = start;
 
-    if (start < 0) start = 0;
+    if ((str == null) || (start >= str.length())) return "";
 
-    if (start >= str.length()) return "";
-
-    if (end < start) end = start;
-
-    if (end > str.length()) return str.substring(start);
-
-    return str.substring(start, end);
+    return end > str.length() ? str.substring(start) : str.substring(start, end);
   }
 
 //---------------------------------------------------------------------------

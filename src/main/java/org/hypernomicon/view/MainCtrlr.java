@@ -1836,12 +1836,14 @@ public final class MainCtrlr
         record = term;
       else
       {
-        PopupDialog dlg = new PopupDialog("Which record?");
+        DialogResult result = new PopupDialog("Which record?")
 
-        dlg.addButton("Term", mrYes);
-        dlg.addButton("Concept", mrNo);
+          .addButton("Term", mrYes)
+          .addButton("Concept", mrNo)
 
-        if (dlg.showModal() == mrYes)
+          .showModal();
+
+        if (result == mrYes)
           record = term;
       }
     }
@@ -1983,13 +1985,13 @@ public final class MainCtrlr
     if (db.bibLibraryIsLinked() || db.prefs.getBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, true) == false)
       return;
 
-    PopupDialog dlg = new PopupDialog("This database is not currently integrated with a reference manager account (like Mendeley or Zotero). Add one now?");
+    DialogResult result = new PopupDialog("This database is not currently integrated with a reference manager account (like Mendeley or Zotero). Add one now?")
 
-    dlg.addButton("Yes", mrYes);
-    dlg.addButton("Remind me later" , mrNo);
-    dlg.addButton("Do not ask again for this database", mrIgnore);
+      .addButton("Yes", mrYes)
+      .addButton("Remind me later" , mrNo)
+      .addButton("Do not ask again for this database", mrIgnore)
 
-    DialogResult result = dlg.showModal();
+      .showModal();
 
     if (result == mrNo)
       db.prefs.putBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, true);
@@ -2923,14 +2925,16 @@ public final class MainCtrlr
       return;
     }
 
-    PopupDialog popup = new PopupDialog("What should the file be imported as?");
+    DialogResult result = new PopupDialog("What should the file be imported as?")
 
-    popup.addButton("Work", mrYes);
-    popup.addButton("Misc. file", mrNo);
-    popup.addButton("Bibliographic details", mrContinue);
-    popup.addButton("Cancel", mrCancel);
+      .addButton("Work", mrYes)
+      .addButton("Misc. file", mrNo)
+      .addButton("Bibliographic details", mrContinue)
+      .addButton("Cancel", mrCancel)
 
-    switch (popup.showModal())
+      .showModal();
+
+    switch (result)
     {
       case mrYes      : importWorkFile(null, filePath, true); return;
       case mrNo       : importMiscFile(null, filePath      ); return;

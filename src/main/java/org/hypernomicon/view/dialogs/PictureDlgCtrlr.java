@@ -31,6 +31,7 @@ import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.DesktopApi;
 import org.hypernomicon.util.FileDownloadUtility;
 import org.hypernomicon.util.PopupDialog;
+import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.settings.LaunchCommandsDlgCtrlr;
@@ -858,12 +859,14 @@ public class PictureDlgCtrlr extends HyperDlg
     {
       if (newFileOrig.equals(newFileNew) == false)
       {
-        PopupDialog dlg = new PopupDialog("Should the file be moved or copied from its present location?");
+        DialogResult result = new PopupDialog("Should the file be moved or copied from its present location?")
 
-        dlg.addButton("Move", mrMove);
-        dlg.addButton("Copy", mrCopy);
+          .addButton("Move", mrMove)
+          .addButton("Copy", mrCopy)
 
-        if (dlg.showModal() == mrMove)
+          .showModal();
+
+        if (result == mrMove)
         {
           try
           {

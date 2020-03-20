@@ -293,13 +293,13 @@ public class FileTable extends DragNDropContainer<FileRow>
 
   @Override public void dragDroppedOnto(FileRow targetRow)
   {
-    PopupDialog dlg = new PopupDialog("Move or copy?");
+    DialogResult result = new PopupDialog("Move or copy?")
 
-    dlg.addButton("Move", mrMove);
-    dlg.addButton("Copy", mrCopy);
-    dlg.addButton("Cancel", mrCancel);
+      .addButton("Move", mrMove)
+      .addButton("Copy", mrCopy)
+      .addButton("Cancel", mrCancel)
 
-    DialogResult result = dlg.showModal();
+      .showModal();
 
     if (result == mrCancel) return;
 

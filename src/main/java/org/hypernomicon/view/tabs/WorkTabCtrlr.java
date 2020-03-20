@@ -1229,12 +1229,12 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (allSame.booleanValue() == false)
     {
-      PopupDialog dlg = new PopupDialog("Should the files be moved or copied from their present location?");
+      moveOrCopy = new PopupDialog("Should the files be moved or copied from their present location?")
 
-      dlg.addButton("Move", mrMove);
-      dlg.addButton("Copy", mrCopy);
+        .addButton("Move", mrMove)
+        .addButton("Copy", mrCopy)
 
-      moveOrCopy = dlg.showModal();
+        .showModal();
     }
 
     try

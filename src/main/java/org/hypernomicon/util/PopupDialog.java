@@ -50,11 +50,13 @@ public class PopupDialog
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addButton(String caption, DialogResult result)
+  public PopupDialog addButton(String caption, DialogResult result)
   {
     ButtonType bType = new ButtonType(caption);
     bTypeToResult.put(bType, result);
     dlg.getButtonTypes().add(bType);
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

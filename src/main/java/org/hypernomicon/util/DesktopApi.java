@@ -175,7 +175,7 @@ public class DesktopApi
 
     ProcessBuilder pb = new ProcessBuilder(command);
     Process proc;
-    int retVal = 0;
+    int exitValue = 0;
 
     try
     {
@@ -183,7 +183,7 @@ public class DesktopApi
 
       if (wait)
       {
-        retVal = proc.waitFor();
+        exitValue = proc.waitFor();
         assignSB(errorSB, IOUtils.toString(proc.getErrorStream(), StandardCharsets.UTF_8));
       }
     }
@@ -195,10 +195,10 @@ public class DesktopApi
       return false;
     }
 
-    if ((retVal != 0) && showErrMsg)
+    if ((exitValue != 0) && showErrMsg)
       messageDialog("An error occurred while trying to start application: " + errorSB.toString(), mtError);
 
-    return retVal == 0;
+    return exitValue == 0;
   }
 
 //---------------------------------------------------------------------------
