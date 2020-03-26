@@ -793,6 +793,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     setToolTip(lblSearchKey, "Regenerate search key");
 
     lblSearchKey.setOnMouseClicked(event -> lblSearchKeyClick());
+    
+    ui.setSearchKeyToolTip(tfSearchKey);
 
     lblWebsite.setOnMouseClicked(event -> openWebLink(tfWebsite.getText()));
 
@@ -954,6 +956,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     iV.tfName = new TextField(newName);
     iV.tab.setText(newName);
     iV.tfSearchKey = new TextField(newSearchKey);
+    
+    ui.setSearchKeyToolTip(iV.tfSearchKey);
 
     iV.tab.setOnCloseRequest(this::deleteInvestigation);
 

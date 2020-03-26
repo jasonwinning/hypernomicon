@@ -510,6 +510,7 @@ public class FolderTreeWatcher
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @SuppressWarnings("resource")
   public boolean createNewWatcherAndStart()
   {
     stop();

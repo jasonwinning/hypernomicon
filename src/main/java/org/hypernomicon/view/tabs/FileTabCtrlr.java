@@ -228,6 +228,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     btnShow  .setOnAction(event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.filePath()); });
 
     setToolTip(btnManage, "Update or rename file");
+    
+    ui.setSearchKeyToolTip(tfSearchKey);
   }
 
 //---------------------------------------------------------------------------

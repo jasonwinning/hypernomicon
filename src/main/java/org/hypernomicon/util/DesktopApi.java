@@ -21,6 +21,7 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.awt.Desktop;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -184,7 +185,11 @@ public class DesktopApi
       if (wait)
       {
         exitValue = proc.waitFor();
-        assignSB(errorSB, IOUtils.toString(proc.getErrorStream(), StandardCharsets.UTF_8));
+        
+        try (InputStream is = proc.getErrorStream())
+        {
+          assignSB(errorSB, IOUtils.toString(is, StandardCharsets.UTF_8));
+        }
       }
     }
     catch (IOException | InterruptedException e)

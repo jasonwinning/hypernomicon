@@ -1259,9 +1259,9 @@ public final class Util
 
     String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) + "/META-INF/MANIFEST.MF";
 
-    try
+    try (InputStream is = new URL(manifestPath).openStream())
     {
-      Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+      Manifest manifest = new Manifest(is);
       return manifest.getMainAttributes().getValue(key);
 
     } catch (IOException e) { noOp(); }

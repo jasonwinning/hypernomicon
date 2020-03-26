@@ -186,6 +186,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "WorldCat");
     setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Google Scholar");
+    
+    ui.setSearchKeyToolTip(tfSearchKey);
 
     htAuthors = new HyperTable(tvAuthors, 1, true, PREF_KEY_HT_WORK_AUTHORS);
 

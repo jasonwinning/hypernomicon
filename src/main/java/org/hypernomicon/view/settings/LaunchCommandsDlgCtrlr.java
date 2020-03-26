@@ -21,7 +21,6 @@ import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.util.DesktopApi;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.dialogs.HyperDlg;
-import org.hypernomicon.view.settings.SettingsDlgCtrlr;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;

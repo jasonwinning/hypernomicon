@@ -17,6 +17,7 @@
 
 package org.hypernomicon.view.dialogs;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
@@ -130,6 +131,8 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       alreadyChanging = false;
     });
 
+    ui.setSearchKeyToolTip(tfSearchKey);
+    
     btnCreate.setOnAction(event -> btnCreateClick());
     createNew = false;
   }

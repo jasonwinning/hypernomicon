@@ -20,6 +20,7 @@ package org.hypernomicon.util;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.function.Consumer;
@@ -67,7 +68,9 @@ public class JsonHttpClient
         if (jsonClient.jsonArray == null)
         {
           jsonClient.jsonArray = new JsonArray();
-          jsonClient.jsonArray.add(jsonClient.jsonObj);
+          
+          if (jsonClient.jsonObj != null)
+            jsonClient.jsonArray.add(jsonClient.jsonObj);
         }
         successHndlr.accept(jsonClient.jsonArray);
       }), failHndlr);
@@ -188,9 +191,9 @@ public class JsonHttpClient
 
     if (contentType.contains("json"))
     {
-      try
+      try (InputStream is = entity.getContent())
       {
-        Object obj = jsonParser.parse(new InputStreamReader(entity.getContent(), UTF_8));
+        Object obj = jsonParser.parse(new InputStreamReader(is, UTF_8));
 
         if (obj instanceof JSONObject)
         {

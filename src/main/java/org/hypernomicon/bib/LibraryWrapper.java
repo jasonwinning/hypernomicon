@@ -171,7 +171,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
         .append("<html><head>" + MainTextUtil.scriptContent + "<style>")
         .append("td.fieldName { vertical-align: text-top; text-align: right; padding-right:10px; }</style></head><body>")
-        .append("<table style=\"font-size:9pt; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,sans-serif; } line-height:10pt;\">");
+        .append("<table style=\"font-size:9pt; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,sans-serif; line-height:10pt;\">");
 
     List<String> fieldOrder = getHtmlFieldOrder();
 

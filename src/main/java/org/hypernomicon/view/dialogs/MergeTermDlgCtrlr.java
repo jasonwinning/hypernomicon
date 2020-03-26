@@ -17,6 +17,7 @@
 
 package org.hypernomicon.view.dialogs;
 
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
@@ -83,6 +84,10 @@ public class MergeTermDlgCtrlr extends HyperDlg
 
     tfName3.textProperty().addListener((ob, oldValue, newValue) -> rbName3.setSelected(true));
     tfKey3 .textProperty().addListener((ob, oldValue, newValue) -> rbKey3 .setSelected(true));
+    
+    ui.setSearchKeyToolTip(tfKey1);
+    ui.setSearchKeyToolTip(tfKey2);
+    ui.setSearchKeyToolTip(tfKey3);
   }
 
 //---------------------------------------------------------------------------

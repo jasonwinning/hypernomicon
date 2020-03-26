@@ -129,7 +129,7 @@ public class AboutDlgCtrlr extends HyperDlg
         nextVersionHtml = "You have the latest version.";
 
       updateHtml(tabPane.getSelectionModel().getSelectedItem());
-    }, e ->
+    }, () ->
     {
       nextVersionHtml = "Unable to determine latest version.";
 

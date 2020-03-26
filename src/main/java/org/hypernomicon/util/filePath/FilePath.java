@@ -25,10 +25,12 @@ import static org.hypernomicon.util.Util.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
@@ -299,13 +301,16 @@ public class FilePath implements Comparable<FilePath>
         throw new IOException(e);
       }
 
-      String errStr = IOUtils.toString(proc.getInputStream(), StandardCharsets.UTF_8);
-
-      if (errStr.length() > 0)
+      try (InputStream is = proc.getInputStream())
       {
-        if ((errStr.toLowerCase().contains("denied") || (errStr.toLowerCase().contains("access"))))
-          errStr = errStr + "\n\nIt may work to restart Hypernomicon and try again.";
-        throw new IOException(errStr);
+        String errStr = IOUtils.toString(is, StandardCharsets.UTF_8);
+  
+        if (errStr.length() > 0)
+        {
+          if (errStr.toLowerCase().contains("denied") || (errStr.toLowerCase().contains("access")))
+            errStr = errStr + "\n\nIt may work to restart Hypernomicon and try again.";
+          throw new IOException(errStr);
+        }
       }
     }
     else
@@ -338,13 +343,16 @@ public class FilePath implements Comparable<FilePath>
         throw new IOException(e);
       }
 
-      String errStr = IOUtils.toString(proc.getInputStream(), StandardCharsets.UTF_8);
-
-      if (errStr.length() > 0)
+      try (InputStream is = proc.getInputStream())
       {
-        if (errStr.toLowerCase().contains("denied"))
-          errStr = errStr + "\n\nIt may work to restart Hypernomicon and try again.";
-        throw new IOException(errStr);
+        String errStr = IOUtils.toString(is, StandardCharsets.UTF_8);
+  
+        if (errStr.length() > 0)
+        {
+          if (errStr.toLowerCase().contains("denied"))
+            errStr = errStr + "\n\nIt may work to restart Hypernomicon and try again.";
+          throw new IOException(errStr);
+        }
       }
     }
     else
@@ -412,9 +420,9 @@ public class FilePath implements Comparable<FilePath>
 
     try (RandomAccessFile raFile = new RandomAccessFile(toFile(), "rw"))
     {
-      try (FileChannel channel = raFile.getChannel())
+      try (FileChannel channel = raFile.getChannel(); FileLock lock = channel.tryLock())
       {
-        if (channel.tryLock() == null)
+        if (lock == null)
           return false;
 
         channel.close();

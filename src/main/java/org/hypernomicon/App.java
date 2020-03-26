@@ -30,6 +30,7 @@ import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.JsonHttpClient;
+import org.hypernomicon.util.Util;
 import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonObj;
@@ -63,6 +64,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.apache.tika.config.TikaConfig;
@@ -133,8 +135,7 @@ public final class App extends Application
   {
     app = this;
 
-    Configurator.initialize(new DefaultConfiguration());
-    Configurator.setRootLevel(Level.WARN);
+    try (LoggerContext lc = Configurator.initialize(new DefaultConfiguration())) { Configurator.setRootLevel(Level.WARN); }
 
     String rtArgs = getRuntimeMXBean().getInputArguments().toString();
     isDebugging = rtArgs.contains("-agentlib:jdwp") || rtArgs.contains("-Xrunjdwp");
@@ -257,7 +258,7 @@ public final class App extends Application
     {
       if (newVersion.compareTo(app.getVersion()) > 0)
         NewVersionDlgCtrlr.create().showModal();
-    }, e -> noOp());
+    }, Util::noOp);
 
     if (db.viewTestingInProgress && hdbExists)
       testUpdatingAllRecords();
@@ -266,13 +267,19 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void checkForNewVersion(AsyncHttpClient httpClient, Consumer<VersionNumber> successHndlr, Consumer<Exception> failHndlr)
+  public static void checkForNewVersion(AsyncHttpClient httpClient, Consumer<VersionNumber> successHndlr, Runnable failHndlr)
   {
     JsonHttpClient.getArrayAsync("https://api.github.com/repos/jasonwinning/hypernomicon/releases", httpClient, jsonArray ->
     {
       VersionNumber updateNum =  app.version;
       Pattern p = Pattern.compile("(\\A|\\D)(\\d(\\d|(\\.\\d))+)(\\z|\\D)");
 
+      if (jsonArray.getObjs().hasNext() == false)
+      {
+        failHndlr.run();
+        return;
+      }
+      
       for (JsonObj jsonObj : jsonArray.getObjs())
       {
         if (jsonObj.getBoolean("prerelease", false) == false)
@@ -289,7 +296,7 @@ public final class App extends Application
       }
 
       successHndlr.accept(updateNum);
-    }, failHndlr::accept);
+    }, e -> failHndlr.run());
   }
 
 //---------------------------------------------------------------------------

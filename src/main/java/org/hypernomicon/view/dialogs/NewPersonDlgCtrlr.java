@@ -131,6 +131,8 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
     setToolTip(lblSearchKey   , "Regenerate search key");
     setToolTip(lblDupSearchKey, "Regenerate search key");
+    
+    ui.setSearchKeyToolTip(tfSearchKey);
 
     lblSearchKey.setOnMouseClicked(event -> setSearchKey(new PersonName(tfFirstName.getText(), tfLastName.getText())));
 
