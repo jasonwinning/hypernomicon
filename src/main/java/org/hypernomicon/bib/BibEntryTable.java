@@ -67,8 +67,7 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
     rows = FXCollections.observableArrayList();
     keyToRow = new HashMap<>();
 
-    if (prefID.length() > 0)
-      HyperTable.registerTable(tv, prefID, bibManagerDlg);
+    HyperTable.registerTable(tv, prefID, bibManagerDlg);
 
     tv.setItems(rows);
     tv.setPlaceholder(new Text("There are no entries in the current view."));

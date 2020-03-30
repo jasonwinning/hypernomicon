@@ -33,7 +33,6 @@ import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
-import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
 
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
@@ -160,7 +159,7 @@ public class FileDownloadUtility
 
     ResponseHandler<Boolean> responseHndlr = response ->
     {
-      String contentType = "", disposition = "";
+      String contentType = "";
       MutableInt contentLength = new MutableInt(-1);
       FilePath saveFilePath;
 
@@ -179,19 +178,21 @@ public class FileDownloadUtility
 
       for (Header header : headers)
       {
-        switch (header.getName())
+        switch (HttpHeader.get(header))
         {
-          case "Content-Type" : contentType = header.getValue(); break;
-          case "Content-Length" : contentLength.setValue(parseInt(header.getValue(), -1)); break;
-          case "Content-Disposition" :
+          case Content_Type : contentType = header.getValue(); break;
+          case Content_Length : contentLength.setValue(parseInt(header.getValue(), -1)); break;
+          case Content_Disposition :
 
             if (fileName.length() == 0)
             {
-              disposition = header.getValue();
+              String disposition = header.getValue();
               int index = disposition.indexOf("filename=");
               if (index > 0)
                 assignSB(fileName, disposition.substring(index + 10, disposition.length() - 1));
             }
+            
+          default : break;
         }
       }
 
@@ -204,6 +205,9 @@ public class FileDownloadUtility
         if (origFileNameStr.indexOf('?') >= 0)
           origFileNameStr = origFileNameStr.substring(0, origFileNameStr.indexOf('?'));
 
+        if (origFileNameStr.indexOf('&') >= 0)
+          origFileNameStr = origFileNameStr.substring(0, origFileNameStr.indexOf('&'));
+        
         if (origFileNameStr.isEmpty())
         {
           if (assumeIsImage)
@@ -214,21 +218,16 @@ public class FileDownloadUtility
 
         String ext = FilenameUtils.getExtension(origFileNameStr);
 
-        if (ext.isEmpty())
+        if (ext.isEmpty() && (contentType.length() > 0))
         {
-          if (contentType.length() > 0)
+          try
           {
-            MimeType mimeType;
-            try
-            {
-              mimeType = tika.getMimeRepository().forName(contentType);
-              ext = mimeType.getExtension();
-            }
-            catch (MimeTypeException e) { noOp(); }
-
-            if (ext.length() > 0)
-              origFileNameStr = FilenameUtils.getBaseName(origFileNameStr) + FilenameUtils.EXTENSION_SEPARATOR_STR + ext;
+            ext = tika.getMimeRepository().forName(contentType).getExtension();
           }
+          catch (MimeTypeException e) { noOp(); }
+
+          if (ext.length() > 0)
+            origFileNameStr = FilenameUtils.getBaseName(origFileNameStr) + FilenameUtils.EXTENSION_SEPARATOR_STR + ext;
         }
 
         if (assumeIsImage && ext.isEmpty())

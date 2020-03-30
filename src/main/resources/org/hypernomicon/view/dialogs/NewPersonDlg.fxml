@@ -30,7 +30,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane maxHeight="175.0" maxWidth="1.7976931348623157E308" minHeight="175.0" minWidth="675.0" prefHeight="175.0" prefWidth="850.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.NewPersonDlgCtrlr">
+<AnchorPane maxHeight="175.0" maxWidth="1.7976931348623157E308" minHeight="175.0" minWidth="675.0" prefHeight="175.0" prefWidth="850.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.NewPersonDlgCtrlr">
    <children>
       <GridPane layoutX="188.0" layoutY="78.0" maxWidth="1.7976931348623157E308" prefHeight="163.0" prefWidth="850.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columnConstraints>
@@ -72,7 +72,7 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="1">
                <children>
-                  <TextField fx:id="tfFirstName" layoutX="83.0" layoutY="7.0" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="2.0" />
+                  <TextField fx:id="tfFirstName" layoutX="83.0" layoutY="7.0" prefHeight="22.0" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="2.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
@@ -85,7 +85,7 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="2">
                <children>
-                  <TextField fx:id="tfSearchKey" layoutX="83.0" layoutY="7.0" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="2.0" />
+                  <TextField fx:id="tfSearchKey" layoutX="83.0" layoutY="7.0" prefHeight="22.0" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="2.0" />
                </children>
             </AnchorPane>
             <AnchorPane maxHeight="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="3" GridPane.vgrow="ALWAYS">

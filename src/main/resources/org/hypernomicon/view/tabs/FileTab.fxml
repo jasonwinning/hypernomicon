@@ -70,9 +70,9 @@
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
                <children>
                   <Label text="Search Key:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="9.0" />
-                  <TextField fx:id="tfSearchKey" layoutX="140.0" layoutY="3.0" prefHeight="25.0" prefWidth="354.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="203.0" AnchorPane.topAnchor="5.0" />
+                  <TextField fx:id="tfSearchKey" layoutX="140.0" layoutY="3.0" prefHeight="22.0" prefWidth="354.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="203.0" AnchorPane.topAnchor="5.0" />
                   <CheckBox fx:id="checkAnnotated" layoutX="423.0" layoutY="8.0" mnemonicParsing="false" prefWidth="77.0" text="Annotated" AnchorPane.rightAnchor="123.0" AnchorPane.topAnchor="8.0" />
-                  <SplitMenuButton fx:id="btnShow" layoutX="332.0" layoutY="3.0" mnemonicParsing="false" prefWidth="119.0" text="Show in Folder" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+                  <SplitMenuButton fx:id="btnShow" layoutX="332.0" layoutY="3.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="119.0" text="Show in Folder" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">

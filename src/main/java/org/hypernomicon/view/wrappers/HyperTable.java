@@ -185,15 +185,11 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public static void saveColWidthsToPrefs()
   {
-    registry.forEach((prefID, tv) ->
+    registry.forEach((prefID, tv) -> nullSwitch(dialogs.get(prefID), dialog ->
     {
-      HyperDlg dialog = dialogs.get(prefID);
-
-      if ((dialog != null) && (dialog.shownAlready() == false))
-        return;
-
-      saveColWidthsForTable(tv, prefID, true);
-    });
+      if (dialog.shownAlready())
+        saveColWidthsForTable(tv, prefID, true);
+    }));
   }
 
 //---------------------------------------------------------------------------
@@ -201,17 +197,19 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public static <RowType> void saveColWidthsForTable(TableView<RowType> tv, String prefID, boolean rescale)
   {
-    for (int ndx = 0; ndx < tv.getColumns().size(); ndx++)
+    ObservableList<TableColumn<RowType, ?>> columns = tv.getColumns();
+    int numCols = columns.size();
+    
+    for (int ndx = 0; ndx < numCols; ndx++)
     {
-      TableColumn<RowType, ?> col = tv.getColumns().get(ndx);
-      double width = col.getWidth();
+      double width = columns.get(ndx).getWidth();
 
-      if (rescale)
-        width = width / displayScale;
-
-      if (width > 0)
+      if (width > 0.0)
       {
-        double oldWidth = appPrefs.getDouble(prefID + "ColWidth" + String.valueOf(ndx + 1), -1);
+        if (rescale)
+          width = width / displayScale;
+        
+        double oldWidth = appPrefs.getDouble(prefID + "ColWidth" + String.valueOf(ndx + 1), -1.0);
 
         if (Math.abs(width - oldWidth) >= 1.0)
           appPrefs.putDouble(prefID + "ColWidth" + String.valueOf(ndx + 1), width);
@@ -224,15 +222,16 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public static <RowType> void loadColWidthsForTable(TableView<RowType> tv, String prefID)
   {
-    int numCols = tv.getColumns().size();
-
+    ObservableList<TableColumn<RowType, ?>> columns = tv.getColumns();
+    int numCols = columns.size();
+   
     for (int ndx = 0; ndx < numCols; ndx++)
     {
-      double width = appPrefs.getDouble(prefID + "ColWidth" + String.valueOf(ndx + 1), -1);
-
-      if (width > 0)
-      {
-        TableColumn<RowType, ?> col = tv.getColumns().get(ndx);
+      double width = appPrefs.getDouble(prefID + "ColWidth" + String.valueOf(ndx + 1), -1.0);
+     
+      if (width > 0.0)
+      {        
+        TableColumn<RowType, ?> col = columns.get(ndx);
 
         if (col.isResizable())
           col.setPrefWidth(width);

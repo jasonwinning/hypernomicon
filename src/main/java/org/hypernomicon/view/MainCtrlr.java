@@ -38,6 +38,7 @@ import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibTexBibData;
 import org.hypernomicon.bib.data.EntryType;
+import org.hypernomicon.bib.data.GUIBibData;
 import org.hypernomicon.bib.data.RISBibData;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HyperDataset;
@@ -1260,7 +1261,7 @@ public final class MainCtrlr
 
   @FXML private void mnuNewDatabaseClick()
   {
-    if (SystemUtils.IS_OS_MAC)
+    if (SystemUtils.IS_OS_WINDOWS == false)
       messageDialog("Select an empty folder in which to create the new database.", mtInformation);
 
     DirectoryChooser dirChooser = new DirectoryChooser();
@@ -2827,7 +2828,7 @@ public final class MainCtrlr
         {
           BibData workBD = work.getBibData();
 
-          if ((bdToUse != null) && (bdToUse != BibData.NoneFoundBD))
+          if ((bdToUse != null) && (bdToUse != GUIBibData.NoneFoundBD))
           {
             try
             {
@@ -2891,7 +2892,7 @@ public final class MainCtrlr
 
     goToRecord(work, false);
 
-    if (bdToUse == BibData.NoneFoundBD)
+    if (bdToUse == GUIBibData.NoneFoundBD)
       bdToUse = work.getBibData();
 
     if (workHyperTab().showWorkDialog(null, filePathToUse, bdToUse, newEntryChecked, newEntryType))

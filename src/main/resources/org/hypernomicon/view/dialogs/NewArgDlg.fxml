@@ -41,7 +41,7 @@
       </Label>
       <Label layoutX="12.0" layoutY="151.0" text="Person:" AnchorPane.bottomAnchor="141.0" AnchorPane.leftAnchor="12.0">
       </Label>
-      <TextField fx:id="tfPosition" editable="false" layoutX="125.0" layoutY="9.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="9.0" />
+      <TextField fx:id="tfPosition" editable="false" layoutX="125.0" layoutY="9.0" prefHeight="22.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="9.0" />
       <WebView fx:id="view" layoutX="111.0" layoutY="34.0" prefHeight="217.0" prefWidth="1003.0" AnchorPane.bottomAnchor="417.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="34.0" />
       <GridPane layoutX="111.0" layoutY="248.0" prefHeight="281.0" prefWidth="1003.0" AnchorPane.bottomAnchor="136.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0">
         <columnConstraints>
@@ -72,7 +72,7 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                <children>
-                  <TextField fx:id="tfArgName1" layoutX="-453.0" layoutY="1.0" prefHeight="25.0" prefWidth="983.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                  <TextField fx:id="tfArgName1" layoutX="-453.0" layoutY="1.0" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
@@ -82,7 +82,7 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <children>
-                  <TextField fx:id="tfArgName2" layoutX="-458.0" layoutY="6.0" prefHeight="25.0" prefWidth="983.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                  <TextField fx:id="tfArgName2" layoutX="-458.0" layoutY="6.0" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
@@ -92,7 +92,7 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                <children>
-                  <TextField fx:id="tfArgName3" layoutX="-400.0" layoutY="4.0" prefHeight="25.0" prefWidth="983.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                  <TextField fx:id="tfArgName3" layoutX="-400.0" layoutY="4.0" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
@@ -102,7 +102,7 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
                <children>
-                  <TextField fx:id="tfArgName4" layoutX="-378.0" layoutY="6.0" prefHeight="25.0" prefWidth="983.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                  <TextField fx:id="tfArgName4" layoutX="-378.0" layoutY="6.0" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
@@ -112,7 +112,7 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
                <children>
-                  <TextField fx:id="tfArgName5" layoutX="-414.0" prefHeight="25.0" prefWidth="983.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                  <TextField fx:id="tfArgName5" layoutX="-414.0" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5">
@@ -122,7 +122,7 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
                <children>
-                  <TextField fx:id="tfArgName6" layoutX="-387.0" layoutY="6.0" prefHeight="25.0" prefWidth="983.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                  <TextField fx:id="tfArgName6" layoutX="-387.0" layoutY="6.0" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="6">
@@ -132,7 +132,7 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                <children>
-                  <TextField fx:id="tfArgName7" layoutX="-8.0" layoutY="4.0" prefHeight="25.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                  <TextField fx:id="tfArgName7" layoutX="-8.0" layoutY="4.0" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="7">
@@ -142,7 +142,7 @@
             </AnchorPane>
             <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="7">
                <children>
-                  <TextField fx:id="tfArgName8" prefHeight="25.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                  <TextField fx:id="tfArgName8" prefHeight="22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="8">
@@ -163,14 +163,14 @@
                      <children>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0">
                            <children>
-                              <ComboBox fx:id="cbPerson" layoutX="10.0" prefWidth="150.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                              <ComboBox fx:id="cbPerson" layoutX="10.0" prefHeight="22.0" prefWidth="150.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                            </children>
                         </AnchorPane>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                            <children>
                               <Label layoutY="4.0" text="Argues that:" AnchorPane.leftAnchor="6.0">
                   </Label>
-                              <ComboBox fx:id="cbPositionVerdict" layoutX="74.0" prefWidth="150.0" AnchorPane.leftAnchor="74.0" AnchorPane.rightAnchor="0.0" />
+                              <ComboBox fx:id="cbPositionVerdict" layoutX="74.0" prefHeight="22.0" prefWidth="150.0" AnchorPane.leftAnchor="74.0" AnchorPane.rightAnchor="0.0" />
                            </children>
                         </AnchorPane>
                      </children>

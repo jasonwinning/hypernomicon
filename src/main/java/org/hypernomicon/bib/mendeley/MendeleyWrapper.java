@@ -34,6 +34,7 @@ import java.net.UnknownHostException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -47,6 +48,7 @@ import java.util.stream.StreamSupport;
 import static java.nio.charset.StandardCharsets.*;
 
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
@@ -113,6 +115,27 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static enum MendeleyHeader
+  {
+    Mendeley_Count("Mendeley-Count"),
+    Link("Link"),
+    None("None");
+    
+    final private String name;
+    private static Map<String, MendeleyHeader> map = new HashMap<>();
+
+    private MendeleyHeader(String name) { this.name = name; }
+
+    @Override public String toString() { return name; }
+    
+    static { EnumSet.allOf(MendeleyHeader.class).forEach(header -> map.put(header.name.toLowerCase(), header)); }
+
+    public static MendeleyHeader get(Header header) { return map.getOrDefault(header.getName().toLowerCase(), None); }    
+  }
+ 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private JsonArray doHttpRequest(String url, HttpRequestType requestType, String jsonData, String mediaType, StringBuilder nextUrl) throws IOException, UnsupportedOperationException, ParseException, TerminateTaskException
   {
     JsonArray jsonArray = null;
@@ -165,17 +188,19 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
     nullSwitch(jsonClient.getHeaders(), headers -> headers.forEach(header ->
     {
-      switch (header.getName())
+      switch (MendeleyHeader.get(header))
       {
-        case "Mendeley-Count" : totalResults.setValue(parseInt(header.getValue(), -1)); break;
+        case Mendeley_Count : totalResults.setValue(parseInt(header.getValue(), -1)); break;
 
-        case "Link" :
+        case Link :
 
           String val = header.getValue();
           if (val.endsWith("rel=\"next\""))
             assignSB(nextUrl, val.split("<")[1].split(">")[0]);
 
           break;
+          
+        default : break;
       }
     }));
 
@@ -793,20 +818,20 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
   {
     return List.of(
 
-        "Type",
-        "Title",
-        "Title",
-        "Year",
-        "Author",
-        "Editor",
-        "Translator",
-        "Source",
-        "Edition",
-        "Volume",
-        "Issue",
-        "Pages",
-        "City",
-        "Publisher");
+      "Type",
+      "Title",
+      "Title",
+      "Year",
+      "Author",
+      "Editor",
+      "Translator",
+      "Source",
+      "Edition",
+      "Volume",
+      "Issue",
+      "Pages",
+      "City",
+      "Publisher");
   }
 
 //---------------------------------------------------------------------------

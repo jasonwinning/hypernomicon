@@ -29,7 +29,6 @@ import static java.nio.charset.StandardCharsets.*;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
@@ -183,13 +182,15 @@ public class JsonHttpClient
 
     for (Header header : headers)
     {
-      switch (header.getName())
+      switch (HttpHeader.get(header))
       {
-        case HttpHeaders.CONTENT_TYPE : contentType = header.getValue(); break;
+        case Content_Type : contentType = header.getValue(); break;
+        
+        default : break;
       }
     }
 
-    if (contentType.contains("json"))
+    if (contentType.toLowerCase().contains("json"))
     {
       try (InputStream is = entity.getContent())
       {

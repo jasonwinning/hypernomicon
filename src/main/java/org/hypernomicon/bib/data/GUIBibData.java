@@ -24,6 +24,8 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 
 public class GUIBibData extends BibDataStandalone
 {
+  public static final BibData NoneFoundBD = new GUIBibData();
+  
   private HDT_WorkType workType;
 
   public GUIBibData() { super(); }

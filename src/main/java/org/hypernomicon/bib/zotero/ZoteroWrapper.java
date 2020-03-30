@@ -23,6 +23,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.bib.zotero.ZoteroWrapper.ZoteroHeader.*;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -34,12 +35,15 @@ import java.net.UnknownHostException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.*;
 
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
@@ -197,6 +201,33 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static enum ZoteroHeader
+  {
+    Zotero_API_Version("Zotero-API-Version"),
+    Zotero_API_Key("Zotero-API-Key"),
+    Zotero_Write_Token("Zotero-Write-Token"),
+    If_Unmodified_Since_Version("If-Unmodified-Since-Version"),
+    Total_Results("Total-Results"),
+    Last_Modified_Version("Last-Modified-Version"),
+    Backoff("Backoff"),
+    Retry_After("Retry-After"),
+    None("None");
+    
+    final private String name;
+    private static Map<String, ZoteroHeader> map = new HashMap<>();
+
+    private ZoteroHeader(String name) { this.name = name; }
+
+    @Override public String toString() { return name; }
+    
+    static { EnumSet.allOf(ZoteroHeader.class).forEach(header -> map.put(header.name.toLowerCase(), header)); }
+
+    public static ZoteroHeader get(Header header) { return map.getOrDefault(header.getName().toLowerCase(), None); }    
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private JsonArray doHttpRequest(String url, HttpRequestType requestType, String postJsonData) throws IOException, UnsupportedOperationException, ParseException, TerminateTaskException
   {
     RequestBuilder rb;
@@ -222,7 +253,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     switch (requestType)
     {
       case post : rb = RequestBuilder.post()
-                                     .setHeader("Zotero-Write-Token", generateWriteToken())
+                                     .setHeader(Zotero_Write_Token.toString(), generateWriteToken())
                                      .setEntity(new StringEntity(postJsonData, UTF_8));
                   break;
 
@@ -235,10 +266,10 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     request = rb
       .setUri(url)
       .setHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-      .setHeader("Zotero-API-Version", "3")
-      .setHeader("Zotero-API-Key", apiKey)
-      .setHeader("Zotero-Write-Token", generateWriteToken())
-      .setHeader("If-Unmodified-Since-Version", String.valueOf(offlineLibVersion))
+      .setHeader(Zotero_API_Version.toString(), "3")
+      .setHeader(Zotero_API_Key.toString(), apiKey)
+      .setHeader(Zotero_Write_Token.toString(), generateWriteToken())
+      .setHeader(If_Unmodified_Since_Version.toString(), String.valueOf(offlineLibVersion))
       .build();
 
     JsonArray jsonArray = null;
@@ -266,12 +297,12 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     {
       int sec;
 
-      switch (header.getName())
+      switch (ZoteroHeader.get(header))
       {
-        case "Zotero-API-Version"    : assignSB(apiVersion, header.getValue()); break;
-        case "Total-Results"         : totalResults.setValue(parseInt(header.getValue(), -1)); break;
-        case "Last-Modified-Version" : onlineLibVersion = parseInt(header.getValue(), -1); break;
-        case "Backoff":
+        case Zotero_API_Version    : assignSB(apiVersion, header.getValue()); break;
+        case Total_Results         : totalResults.setValue(parseInt(header.getValue(), -1)); break;
+        case Last_Modified_Version : onlineLibVersion = parseInt(header.getValue(), -1); break;
+        case Backoff :
 
           sec = parseInt(header.getValue(), -1);
           if (sec > 0)
@@ -279,13 +310,15 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
           break;
 
-        case "Retry-After":
+        case Retry_After :
 
           sec = parseInt(header.getValue(), -1);
           if (sec > 0)
             retryTime = Instant.now().plusMillis(sec * 1000);
 
           break;
+          
+        default : break;
       }
     }));
 
@@ -906,18 +939,18 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
   {
     return List.of(
 
-        "Title",
-        "Item Type",
-        "Date",
-        "Creators",
-        "Publication Title",
-        "Book Title",
-        "Edition",
-        "Volume",
-        "Issue",
-        "Pages",
-        "Place",
-        "Publisher");
+      "Title",
+      "Item Type",
+      "Date",
+      "Creators",
+      "Publication Title",
+      "Book Title",
+      "Edition",
+      "Volume",
+      "Issue",
+      "Pages",
+      "Place",
+      "Publisher");
   }
 
 //---------------------------------------------------------------------------

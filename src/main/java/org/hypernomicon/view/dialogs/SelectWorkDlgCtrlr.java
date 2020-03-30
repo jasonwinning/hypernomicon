@@ -25,7 +25,7 @@ import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibDataRetriever;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
-
+import org.hypernomicon.bib.data.GUIBibData;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
@@ -234,7 +234,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
         if (bdToUse == null)
         {
-          bd = BibData.NoneFoundBD;
+          bd = GUIBibData.NoneFoundBD;
           return;
         }
 

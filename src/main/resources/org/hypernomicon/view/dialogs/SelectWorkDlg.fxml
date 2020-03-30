@@ -53,7 +53,7 @@
                      <children>
                         <Label layoutX="14.0" layoutY="7.0" text="File:" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="3.0" />
                         <TextField fx:id="tfFile" editable="false" layoutX="59.0" layoutY="2.0" prefHeight="25.0" prefWidth="622.0" AnchorPane.bottomAnchor="4.0" AnchorPane.leftAnchor="127.0" AnchorPane.rightAnchor="74.0" />
-                        <ToggleButton fx:id="btnPreview" layoutX="689.0" layoutY="1.0" mnemonicParsing="false" prefHeight="25.0" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="38.0">
+                        <ToggleButton fx:id="btnPreview" layoutX="689.0" layoutY="1.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="38.0">
                            <graphic>
                               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
@@ -62,7 +62,7 @@
                               </ImageView>
                            </graphic>
                         </ToggleButton>
-                        <Button fx:id="btnLaunch" layoutX="724.0" layoutY="1.0" mnemonicParsing="false" prefHeight="25.0" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="3.0">
+                        <Button fx:id="btnLaunch" layoutX="724.0" layoutY="1.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" AnchorPane.bottomAnchor="4.0" AnchorPane.rightAnchor="3.0">
                            <graphic>
                               <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
@@ -104,8 +104,8 @@
                               <HBox fx:id="hBox" alignment="CENTER" pickOnBounds="false" spacing="4.0">
                                  <children>
                                     <Button fx:id="btnOK" maxWidth="164.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="25.0" prefWidth="164.0" text="Use Existing Work Record" />
-                                    <Button fx:id="btnCreateNew" mnemonicParsing="false" text="Create New Record" />
-                                    <Button fx:id="btnCancel" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" />
+                                    <Button fx:id="btnCreateNew" mnemonicParsing="false" prefHeight="25.0" text="Create New Record" />
+                                    <Button fx:id="btnCancel" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="25.0" prefWidth="60.0" text="Cancel" />
                                  </children>
                               </HBox>
                            </center>

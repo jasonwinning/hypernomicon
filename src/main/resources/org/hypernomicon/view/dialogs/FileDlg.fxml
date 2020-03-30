@@ -56,8 +56,8 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                <children>
-                  <Button mnemonicParsing="false" onAction="#btnLaunchClick" text="Launch" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="29.0" />
-                  <Button fx:id="btnBrowseOld" maxWidth="26.0" minWidth="26.0" mnemonicParsing="false" prefWidth="26.0" text="..." AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                  <Button mnemonicParsing="false" onAction="#btnLaunchClick" prefHeight="22.0" text="Launch" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="29.0" />
+                  <Button fx:id="btnBrowseOld" maxWidth="26.0" minWidth="26.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="26.0" text="..." AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
@@ -72,7 +72,7 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                <children>
-                  <Button layoutX="23.0" mnemonicParsing="false" onAction="#btnUseFileClick" text="Use file name" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="2.0" />
+                  <Button layoutX="23.0" mnemonicParsing="false" onAction="#btnUseFileClick" prefHeight="22.0" text="Use file name" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
@@ -87,7 +87,7 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
                <children>
-                  <Button fx:id="btnUseRecord" layoutX="1.0" mnemonicParsing="false" onAction="#btnUseRecordClick" text="Use record name" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                  <Button fx:id="btnUseRecord" layoutX="1.0" mnemonicParsing="false" onAction="#btnUseRecordClick" prefHeight="22.0" text="Use record name" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5">
@@ -97,7 +97,7 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="6">
                <children>
-                  <ComboBox fx:id="cbType" layoutX="11.0" layoutY="1.0" prefWidth="150.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" />
+                  <ComboBox fx:id="cbType" layoutX="11.0" layoutY="1.0" prefHeight="22.0" prefWidth="150.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="3.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="8">
@@ -107,8 +107,8 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="8">
                <children>
-                  <Button layoutY="2.0" mnemonicParsing="false" onAction="#btnExploreClick" text="Explore" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="29.0" />
-                  <Button layoutX="66.0" layoutY="3.0" maxWidth="26.0" minWidth="26.0" mnemonicParsing="false" onAction="#btnBrowseNewClick" prefWidth="26.0" text="..." AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                  <Button layoutY="2.0" mnemonicParsing="false" onAction="#btnExploreClick" prefHeight="22.0" text="Explore" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="29.0" />
+                  <Button layoutX="66.0" layoutY="3.0" maxWidth="26.0" minWidth="26.0" mnemonicParsing="false" onAction="#btnBrowseNewClick" prefHeight="22.0" prefWidth="26.0" text="..." AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="9">
@@ -129,8 +129,8 @@
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="10">
                <children>
-                  <Button fx:id="btnOk" layoutX="16.0" layoutY="4.0" mnemonicParsing="false" onAction="#btnOkClick" text="OK" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="72.0" AnchorPane.topAnchor="0.0" />
-                  <Button fx:id="btnCancel" layoutX="76.0" layoutY="4.0" mnemonicParsing="false" onAction="#btnCancelClick" text="Cancel" AnchorPane.leftAnchor="72.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  <Button fx:id="btnOk" layoutX="16.0" layoutY="4.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="22.0" text="OK" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="72.0" AnchorPane.topAnchor="0.0" />
+                  <Button fx:id="btnCancel" layoutX="76.0" layoutY="4.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="22.0" text="Cancel" AnchorPane.leftAnchor="72.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="7">

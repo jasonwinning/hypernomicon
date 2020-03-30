@@ -46,21 +46,21 @@
             <AnchorPane>
                <children>
                   <Label layoutX="7.0" layoutY="7.0" text="Name:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
-                  <TextField fx:id="tfName" layoutX="55.0" layoutY="3.0" prefHeight="22.0" prefWidth="408.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                  <TextField fx:id="tfName" layoutX="55.0" layoutY="3.0" prefWidth="408.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                <children>
                   <Button fx:id="btnURL" layoutY="3.0" mnemonicParsing="false" text="URL:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="3.0" />
-                  <TextField fx:id="tfURL" layoutX="44.0" layoutY="3.0" prefHeight="22.0" prefWidth="402.0" AnchorPane.leftAnchor="44.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
+                  <TextField fx:id="tfURL" layoutX="44.0" layoutY="3.0" prefWidth="402.0" AnchorPane.leftAnchor="44.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
                <children>
                   <Label layoutX="1.0" layoutY="8.0" text="Type:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
-                  <ComboBox fx:id="cbType" layoutX="44.0" layoutY="3.0" prefHeight="22.0" prefWidth="148.0" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="3.0" />
+                  <ComboBox fx:id="cbType" layoutX="44.0" layoutY="3.0" prefWidth="148.0" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="3.0" />
                   <Button fx:id="btnParent" layoutX="204.0" layoutY="3.0" maxWidth="105.0" minWidth="105.0" mnemonicParsing="false" prefWidth="105.0" text="Parent Institution:" AnchorPane.leftAnchor="204.0" AnchorPane.topAnchor="3.0" />
-                  <ComboBox fx:id="cbParentInst" layoutX="311.0" layoutY="3.0" prefHeight="25.0" prefWidth="585.0" AnchorPane.leftAnchor="311.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
+                  <ComboBox fx:id="cbParentInst" layoutX="311.0" layoutY="3.0" prefWidth="585.0" AnchorPane.leftAnchor="311.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
@@ -78,20 +78,20 @@
                         <AnchorPane prefHeight="200.0" prefWidth="200.0">
                            <children>
                               <Label text="Country:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
-                              <ComboBox fx:id="cbCountry" prefHeight="25.0" prefWidth="228.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                              <ComboBox fx:id="cbCountry" prefWidth="228.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
                            </children>
                         </AnchorPane>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                            <children>
                               <Label text="State/Region:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
                               <Button fx:id="btnNewRegion" layoutX="78.0" layoutY="3.0" mnemonicParsing="false" text="New" AnchorPane.leftAnchor="78.0" AnchorPane.topAnchor="3.0" />
-                              <ComboBox fx:id="cbRegion" layoutX="118.0" prefHeight="25.0" prefWidth="155.0" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                              <ComboBox fx:id="cbRegion" layoutX="118.0" prefWidth="155.0" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
                            </children>
                         </AnchorPane>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
                            <children>
                               <Label text="City:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
-                              <TextField fx:id="tfCity" layoutX="30.0" prefHeight="25.0" prefWidth="243.0" AnchorPane.leftAnchor="30.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                              <TextField fx:id="tfCity" layoutX="30.0" prefWidth="243.0" AnchorPane.leftAnchor="30.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
                            </children>
                         </AnchorPane>
                      </children>
