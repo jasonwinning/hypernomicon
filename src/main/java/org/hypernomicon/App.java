@@ -213,7 +213,7 @@ public final class App extends Application
     String versionStr = manifestValue("Impl-Version");
 
     if (safeStr(versionStr).isEmpty())
-      versionStr = "1.17.3";
+      versionStr = "1.17.4";
 
     version = new VersionNumber(2, versionStr);
 
@@ -279,7 +279,7 @@ public final class App extends Application
         failHndlr.run();
         return;
       }
-      
+
       for (JsonObj jsonObj : jsonArray.getObjs())
       {
         if (jsonObj.getBoolean("prerelease", false) == false)
