@@ -304,7 +304,7 @@ public class FilePath implements Comparable<FilePath>
       try (InputStream is = proc.getInputStream())
       {
         String errStr = IOUtils.toString(is, StandardCharsets.UTF_8);
-  
+
         if (errStr.length() > 0)
         {
           if (errStr.toLowerCase().contains("denied") || (errStr.toLowerCase().contains("access")))
@@ -346,7 +346,7 @@ public class FilePath implements Comparable<FilePath>
       try (InputStream is = proc.getInputStream())
       {
         String errStr = IOUtils.toString(is, StandardCharsets.UTF_8);
-  
+
         if (errStr.length() > 0)
         {
           if (errStr.toLowerCase().contains("denied"))
@@ -424,8 +424,6 @@ public class FilePath implements Comparable<FilePath>
       {
         if (lock == null)
           return false;
-
-        channel.close();
       }
     }
     catch (FileNotFoundException e)

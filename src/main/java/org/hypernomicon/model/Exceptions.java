@@ -44,13 +44,13 @@ public class Exceptions
     public TerminateTaskException(String msg)
     {
       super(msg);
-      messageDialog(msg, mtError);
+      messageDialog(msg, mtError, true);
     }
 
     public TerminateTaskException(String msg, Throwable cause)
     {
       super(msg, cause);
-      messageDialog(msg, mtError);
+      messageDialog(msg, mtError, true);
     }
   }
 
