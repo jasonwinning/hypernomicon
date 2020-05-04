@@ -407,7 +407,7 @@ public final class Authors implements Iterable<Author>
 
   private static String getAuthorsStr(Collection<Author> authorCol, char delimiter, boolean amp, boolean firstInitials, boolean sort, boolean fullNameIfSingleton)
   {
-    if (authorCol.size() == 0)
+    if (authorCol.isEmpty())
       return "";
 
     List<Author> authors = new ArrayList<>(authorCol);

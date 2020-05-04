@@ -27,12 +27,12 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane maxHeight="279.0" minHeight="279.0" minWidth="450.0" prefHeight="279.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.NewDatabaseDlgCtrlr">
+<AnchorPane maxHeight="279.0" minHeight="279.0" minWidth="600.0" prefHeight="279.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.NewDatabaseDlgCtrlr">
    <children>
       <GridPane layoutX="10.0" layoutY="5.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="5.0">
          <columnConstraints>
-            <ColumnConstraints hgrow="NEVER" maxWidth="195.0" minWidth="195.0" prefWidth="195.0" />
-            <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" prefWidth="685.0" />
+            <ColumnConstraints hgrow="NEVER" maxWidth="231.0" minWidth="231.0" prefWidth="231.0" />
+            <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" prefWidth="649.0" />
          </columnConstraints>
          <rowConstraints>
             <RowConstraints maxHeight="239.0" minHeight="10.0" prefHeight="239.0" vgrow="NEVER" />

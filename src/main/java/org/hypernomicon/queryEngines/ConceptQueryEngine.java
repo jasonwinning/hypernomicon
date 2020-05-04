@@ -96,9 +96,9 @@ public class ConceptQueryEngine extends QueryEngine<HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int numOperands(int query)
+  @Override public boolean hasOperand(int query, int opNum, HyperTableCell prevOp)
   {
-    return 3;
+    return true;
   }
 
 //---------------------------------------------------------------------------

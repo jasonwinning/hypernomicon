@@ -157,7 +157,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
       {
         if (record.getType() == hdtPerson)
         {
-          HDT_Person person = HDT_Person.class.cast(record);
+          HDT_Person person = (HDT_Person)record;
           if (person.getFullName(true).toLowerCase().startsWith(typedLC))
           {
             match = true;

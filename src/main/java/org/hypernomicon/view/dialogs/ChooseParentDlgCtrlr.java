@@ -57,17 +57,15 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ChooseParentDlgCtrlr create(HDT_Record child, EnumSet<HDT_RecordType> types)
+  public static ChooseParentDlgCtrlr build(HDT_Record child, EnumSet<HDT_RecordType> types)
   {
-    ChooseParentDlgCtrlr cpd = HyperDlg.create("ChooseParentDlg.fxml", "Record Select", true);
-    cpd.init(child, types);
-    return cpd;
+    return ((ChooseParentDlgCtrlr) create("ChooseParentDlg.fxml", "Record Select", true)).init(child, types);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_Record child, EnumSet<HDT_RecordType> types)
+  private ChooseParentDlgCtrlr init(HDT_Record child, EnumSet<HDT_RecordType> types)
   {
     popupTree = new TreeWrapper(ttv, false, new ComboBox<TreeRow>(), true);
     this.types = types;
@@ -119,6 +117,8 @@ public class ChooseParentDlgCtrlr extends HyperDlg
       else
         tfPath.clear();
     });
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

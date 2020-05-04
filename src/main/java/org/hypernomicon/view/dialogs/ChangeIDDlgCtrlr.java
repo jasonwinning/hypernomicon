@@ -48,17 +48,15 @@ public class ChangeIDDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ChangeIDDlgCtrlr create()
+  public static ChangeIDDlgCtrlr build()
   {
-    ChangeIDDlgCtrlr cid = HyperDlg.create("ChangeIDDlg.fxml", "Change Record ID", true);
-    cid.init();
-    return cid;
+    return ((ChangeIDDlgCtrlr) create("ChangeIDDlg.fxml", "Change Record ID", true)).init();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init()
+  private ChangeIDDlgCtrlr init()
   {
     hcbType = new HyperCB(cbType, ctDropDownList, new RecordTypePopulator());
     hcbRecord = new HyperCB(cbRecord, ctDropDownList, new RecordByTypePopulator());
@@ -111,6 +109,8 @@ public class ChangeIDDlgCtrlr extends HyperDlg
 
       lblNotAvailable.setVisible(false);
     });
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

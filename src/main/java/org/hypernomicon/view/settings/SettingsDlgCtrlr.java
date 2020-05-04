@@ -70,7 +70,7 @@ public class SettingsDlgCtrlr extends HyperDlg
   @FXML private Label lblCurrentlyLinked, lblRedirect, lblStep2, lblStep2Instructions,
                       lblStep3, lblStep3Instructions, lblStep4, lblStep4Instructions;
   @FXML private Slider sliderFontSize;
-  @FXML private Tab tabLinkToExtBibMgr, tabDBSpecific, tabNaming, tabUnlinkFromExtBibMgr, tabWebButtons;
+  @FXML private Tab tabLinkToExtBibMgr, tabDBSpecific, tabFolders, tabNaming, tabUnlinkFromExtBibMgr, tabWebButtons;
   @FXML private TabPane tpMain, tpComputerSpecific, tpDBSpecific;
   @FXML private TextField tfImageEditor, tfPDFReader, tfVerificationCode;
 
@@ -96,26 +96,25 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static SettingsDlgCtrlr create()
+  public static SettingsDlgCtrlr build()
   {
-    return create(SettingsPage.CompGeneral);
+    return build(SettingsPage.CompGeneral);
   }
 
-  public static SettingsDlgCtrlr create(SettingsPage page)
+  public static SettingsDlgCtrlr build(SettingsPage page)
   {
-    SettingsDlgCtrlr odc = HyperDlg.createUsingFullPath("view/settings/SettingsDlg.fxml", appTitle + " Settings", true);
-    odc.init(page);
-    return odc;
+    return ((SettingsDlgCtrlr) createUsingFullPath("view/settings/SettingsDlg.fxml", appTitle + " Settings", true)).init(page);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(SettingsPage page)
+  private SettingsDlgCtrlr init(SettingsPage page)
   {
     noDB = (db == null) || (db.prefs == null) || (db.isLoaded() == false);
 
     webBtnSettingsCtrlr = initControl(tabWebButtons, "WebButtonSettings");
+    initControl(tabFolders, "FolderSettings");
     initControl(tabNaming, "WorkFileNamingSettings");
 
     btnZoteroAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltZotero));
@@ -186,8 +185,8 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     btnImgEditorAdvanced.setOnAction(event ->
     {
-      LaunchCommandsDlgCtrlr lcdc = LaunchCommandsDlgCtrlr.create
-          ("Modify Image Editor Command(s)", PREF_KEY_IMAGE_EDITOR, PREF_KEY_IMAGE_EDITOR_COMMANDS, PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE);
+      LaunchCommandsDlgCtrlr lcdc = LaunchCommandsDlgCtrlr.build
+        ("Modify Image Editor Command(s)", PREF_KEY_IMAGE_EDITOR, PREF_KEY_IMAGE_EDITOR_COMMANDS, PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE);
 
       if (lcdc.showModal())
         tfImageEditor.setText(appPrefs.get(PREF_KEY_IMAGE_EDITOR, ""));
@@ -195,8 +194,8 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     btnPdfViewerAdvanced.setOnAction(event ->
     {
-      LaunchCommandsDlgCtrlr lcdc = LaunchCommandsDlgCtrlr.create
-          ("Modify PDF Viewer Command(s)", PREF_KEY_PDF_READER, PREF_KEY_PDF_READER_COMMANDS, PREF_KEY_PDF_READER_COMMAND_TYPE);
+      LaunchCommandsDlgCtrlr lcdc = LaunchCommandsDlgCtrlr.build
+        ("Modify PDF Viewer Command(s)", PREF_KEY_PDF_READER, PREF_KEY_PDF_READER_COMMANDS, PREF_KEY_PDF_READER_COMMAND_TYPE);
 
       if (lcdc.showModal())
         tfPDFReader.setText(appPrefs.get(PREF_KEY_PDF_READER, ""));
@@ -222,8 +221,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     initAppCheckBox(chkLinuxWorkaround, PREF_KEY_LINUX_WORKAROUND, false);
 
-    tabDBSpecific.setDisable(noDB);
-    tabNaming.setDisable(noDB);
+    disableAllIff(noDB, tabDBSpecific, tabFolders, tabNaming);
 
     if (noDB == false)
       initDBCheckBox(chkUseSentenceCase, PREF_KEY_SENTENCE_CASE, false);
@@ -243,12 +241,14 @@ public class SettingsDlgCtrlr extends HyperDlg
           break;
       }
     };
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static interface SettingsControl { void init(boolean noDB); void save(); }
+  static interface SettingsControl { void init(Window owner, boolean noDB); void save(); }
 
   private SettingsControl initControl(Tab tab, String fxmlName)
   {
@@ -258,7 +258,7 @@ public class SettingsDlgCtrlr extends HyperDlg
       AnchorPane ap = loader.load();
       tab.setContent(ap);
       SettingsControl ctrlr = loader.getController();
-      ctrlr.init(noDB);
+      ctrlr.init(dialogStage, noDB);
       return ctrlr;
     }
     catch (IOException e)
@@ -381,7 +381,7 @@ public class SettingsDlgCtrlr extends HyperDlg
       return;
     }
 
-    SyncBibDlgCtrlr.create().sync();
+    SyncBibDlgCtrlr.build().sync();
 
     setUnlinkMessage();
     tabLinkToExtBibMgr.setContent(apUnlinkFromExtBibMgr);
@@ -420,7 +420,7 @@ public class SettingsDlgCtrlr extends HyperDlg
       return;
     }
 
-    SyncBibDlgCtrlr.create().sync();
+    SyncBibDlgCtrlr.build().sync();
 
     setUnlinkMessage();
     tabLinkToExtBibMgr.setContent(apUnlinkFromExtBibMgr);

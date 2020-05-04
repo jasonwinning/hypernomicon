@@ -82,7 +82,7 @@ public class JsonObj implements Cloneable
     if (obj instanceof String)
       return parseBoolean(getStr(key));
 
-    return obj instanceof Boolean ? Boolean.class.cast(obj).booleanValue() : def;
+    return obj instanceof Boolean ? ((Boolean)obj).booleanValue() : def;
   }
 
 //---------------------------------------------------------------------------
@@ -91,7 +91,7 @@ public class JsonObj implements Cloneable
   public String getStrSafe(String key)
   {
     Object obj = jObj.get(key);
-    return obj instanceof String ? String.class.cast(obj) : "";
+    return obj instanceof String ? (String)obj : "";
   }
 
 //---------------------------------------------------------------------------

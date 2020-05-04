@@ -127,6 +127,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public Stream<HyperTableRow> dataRowStream()                     { return StreamSupport.stream(new DataRowIterator().spliterator(), false); }
   public int getDataRowCount()                                     { return canAddRows ? Math.max(rows.size() - 1, 0) : rows.size(); }
   public void addRefreshHandler(Runnable hndlr)                    { refreshHandler = hndlr; }
+  public HyperTableRow selectRowByRecord(HDT_Record record)        { return nullSwitch(getRowByRecord(record), null, this::selectRow); }
 
   @SuppressWarnings("unused")
   public <HDT_T extends HDT_Record> void setDblClickHandler(Class<HDT_T> klass, Consumer<HDT_T> hndlr) { dblClickHandler = hndlr; }
@@ -199,7 +200,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   {
     ObservableList<TableColumn<RowType, ?>> columns = tv.getColumns();
     int numCols = columns.size();
-    
+
     for (int ndx = 0; ndx < numCols; ndx++)
     {
       double width = columns.get(ndx).getWidth();
@@ -208,7 +209,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
       {
         if (rescale)
           width = width / displayScale;
-        
+
         double oldWidth = appPrefs.getDouble(prefID + "ColWidth" + String.valueOf(ndx + 1), -1.0);
 
         if (Math.abs(width - oldWidth) >= 1.0)
@@ -224,13 +225,13 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   {
     ObservableList<TableColumn<RowType, ?>> columns = tv.getColumns();
     int numCols = columns.size();
-   
+
     for (int ndx = 0; ndx < numCols; ndx++)
     {
       double width = appPrefs.getDouble(prefID + "ColWidth" + String.valueOf(ndx + 1), -1.0);
-     
+
       if (width > 0.0)
-      {        
+      {
         TableColumn<RowType, ?> col = columns.get(ndx);
 
         if (col.isResizable())
@@ -257,12 +258,12 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final EnumSet<HyperCtrlType> editableCtrlTypes = EnumSet.of(ctCheckbox, ctDropDown, ctDropDownList, ctEdit);
+
   public HyperTable(TableView<HyperTableRow> tv, int mainCol, boolean canAddRows, String prefID)
   {
     this(tv, mainCol, canAddRows, prefID, null);
   }
-
-  private static final EnumSet<HyperCtrlType> editableCtrlTypes = EnumSet.of(ctCheckbox, ctDropDown, ctDropDownList, ctEdit);
 
   public HyperTable(TableView<HyperTableRow> tv, int mainCol, boolean canAddRows, String prefID, HyperDlg dialog)
   {
@@ -285,7 +286,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
     tv.setOnKeyPressed(event ->
     {
-      if ((event.getCode() != KeyCode.ENTER) || (cols.stream().map(HyperTableColumn::getCtrlType).anyMatch(editableCtrlTypes::contains)))
+      if ((event.getCode() != KeyCode.ENTER) || cols.stream().map(HyperTableColumn::getCtrlType).anyMatch(editableCtrlTypes::contains))
         return;
 
       doRowAction();
@@ -321,18 +322,19 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void selectRow(int ndx)
+  public HyperTableRow selectRow(int ndx)
   {
-    selectRow(rows.get(ndx));
+    return selectRow(rows.get(ndx));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void selectRow(HyperTableRow row)
+  public HyperTableRow selectRow(HyperTableRow row)
   {
     tv.getSelectionModel().select(row);
     scrollToSelection(tv, false);
+    return row;
   }
 
 //---------------------------------------------------------------------------
@@ -372,6 +374,15 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private HyperTableColumn addCol(HyperTableColumn col)
+  {
+    cols.add(col);
+    return col;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public HyperTableColumn addCol(HDT_RecordType objType, HyperCtrlType ctrlType)
   {
     if ((ctrlType == ctDropDown) || (ctrlType == ctDropDownList))
@@ -383,110 +394,39 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperTableColumn addColWithUpdateHandler(HDT_RecordType objType, HyperCtrlType ctrlType, CellUpdateHandler updateHandler)
-  {
-    return addColAltPopulatorWithUpdateHandler(objType, ctrlType, new StandardPopulator(objType), updateHandler);
-  }
+  public HyperTableColumn addColWithUpdateHandler(HDT_RecordType objType, HyperCtrlType ctrlType, CellUpdateHandler updateHandler) {
+    return addColAltPopulatorWithUpdateHandler(objType, ctrlType, new StandardPopulator(objType), updateHandler); }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+  public HyperTableColumn addColAltPopulator(HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator) {
+    return addCol(new HyperTableColumn(this, objType, ctrlType, populator, -1)); }
 
-  public HyperTableColumn addColAltPopulator(HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator)
-  {
-    HyperTableColumn col = new HyperTableColumn(this, objType, ctrlType, populator, -1);
-    cols.add(col);
+  public HyperTableColumn addColAltPopulatorWithUpdateHandler(HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, CellUpdateHandler updateHandler) {
+    return addCol(new HyperTableColumn(this, objType, ctrlType, populator, -1, updateHandler)); }
 
-    return col;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HyperTableColumn addColAltPopulatorWithUpdateHandler(HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, CellUpdateHandler updateHandler)
-  {
-    HyperTableColumn col = new HyperTableColumn(this, objType, ctrlType, populator, -1, updateHandler);
-    cols.add(col);
-
-    return col;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HyperTableColumn addColAltPopulatorWithActionHandler(HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction)
-  {
-    HyperTableColumn col = new HyperTableColumn(this, objType, ctrlType, populator, -1, onAction);
-    cols.add(col);
-
-    return col;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+  public HyperTableColumn addColAltPopulatorWithActionHandler(HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction) {
+    return addCol(new HyperTableColumn(this, objType, ctrlType, populator, -1, onAction)); }
 
   public HyperTableColumn addColAltPopulatorWithBothHandlers(HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator,
-                                                 EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler)
-  {
-    HyperTableColumn col = new HyperTableColumn(this, objType, ctrlType, populator, -1, onAction, updateHandler);
-    cols.add(col);
+                                                 EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler) {
+    return addCol(new HyperTableColumn(this, objType, ctrlType, populator, -1, onAction, updateHandler)); }
 
-    return col;
-  }
+  public HyperTableColumn addActionCol(HyperCtrlType ctrlType, int targetCol) {
+    return addCol(new HyperTableColumn(this, hdtNone, ctrlType, null, targetCol)); }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+  public HyperTableColumn addActionColWithButtonHandler(HyperCtrlType ctrlType, int targetCol, ButtonCellHandler handler) {
+    return addCol(new HyperTableColumn(this, hdtNone, ctrlType, null, targetCol, handler, null)); }
 
-  public HyperTableColumn addActionCol(HyperCtrlType ctrlType, int targetCol)
-  {
-    HyperTableColumn col = new HyperTableColumn(this, hdtNone, ctrlType, null, targetCol);
-    cols.add(col);
+  public HyperTableColumn addCustomActionCol(int targetCol, String btnCaption, ButtonCellHandler handler) {
+    return addCol(new HyperTableColumn(this, hdtNone, ctCustomBtn, null, targetCol, handler, btnCaption)); }
 
-    return col;
-  }
+  public HyperTableColumn addCheckboxCol() {
+    return addCol(new HyperTableColumn(this, hdtNone, ctCheckbox, null, -1)); }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+  public HyperTableColumn addCheckboxColWithUpdateHandler(CellUpdateHandler updateHandler) {
+    return addCol(new HyperTableColumn(this, hdtNone, ctCheckbox, null, -1, updateHandler)); }
 
-  public HyperTableColumn addActionColWithButtonHandler(HyperCtrlType ctrlType, int targetCol, ButtonCellHandler handler)
-  {
-    HyperTableColumn col = new HyperTableColumn(this, hdtNone, ctrlType, null, targetCol, handler, null);
-    cols.add(col);
-
-    return col;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HyperTableColumn addCustomActionCol(int targetCol, String btnCaption, ButtonCellHandler handler)
-  {
-    HyperTableColumn col = new HyperTableColumn(this, hdtNone, ctCustomBtn, null, targetCol, handler, btnCaption);
-    cols.add(col);
-
-    return col;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HyperTableColumn addCheckboxCol()
-  {
-    HyperTableColumn col = new HyperTableColumn(this, hdtNone, ctCheckbox, null, -1);
-    cols.add(col);
-
-    return col;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HyperTableColumn addCheckboxColWithUpdateHandler(CellUpdateHandler updateHandler)
-  {
-    HyperTableColumn col = new HyperTableColumn(this, hdtNone, ctCheckbox, null, -1, updateHandler);
-    cols.add(col);
-
-    return col;
-  }
+  public HyperTableColumn addIconCol() {
+    return addCol(new HyperTableColumn(this, hdtNone, ctIcon, null, -1));  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -509,17 +449,6 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     HyperTableColumn col = new HyperTableColumn(this, objType, ctEdit, null, -1);
     col.setCanEditIfEmpty(canEditIfEmpty);
     col.setNumeric(isNumeric);
-    cols.add(col);
-
-    return col;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HyperTableColumn addIconCol()
-  {
-    HyperTableColumn col = new HyperTableColumn(this, hdtNone, ctIcon, null, -1);
     cols.add(col);
 
     return col;
@@ -729,7 +658,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
         if (ui.windows.getOutermostModality() == Modality.NONE)
           ui.update();
 
-        ObjectOrderDlgCtrlr.create(this, rows).showModal();
+        ObjectOrderDlgCtrlr.build(this, rows).showModal();
 
         if (handler != null)
           handler.run();
@@ -830,7 +759,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
                 {
                   if (tag == Tag.tagInFileName)
                   {
-                    Author author = HDT_Work.class.cast(subj).getAuthors().getAuthor(new PersonName(group.getPrimaryStr()));
+                    Author author = ((HDT_Work)subj).getAuthors().getAuthor(new PersonName(group.getPrimaryStr()));
                     if (author != null)
                       val.ternary = author.getInFileName();
                   }

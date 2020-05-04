@@ -26,7 +26,7 @@ import com.google.common.collect.Lists;
 
 import static org.hypernomicon.util.Util.*;
 
-public class VersionNumber implements Comparable<VersionNumber>
+public class VersionNumber implements Magnitude<VersionNumber>
 {
   private final List<Integer> parts;
 

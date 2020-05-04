@@ -50,6 +50,9 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
 
   private static List<String> csvFile;
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
   {
     pop.addEntry(row, QUERY_LIKELY_EDITED_VOLS, "likely edited volumes");
@@ -187,17 +190,17 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int numOperands(int query)
+  @Override public boolean hasOperand(int query, int opNum, HyperTableCell prevOp)
   {
     switch (query)
     {
       case QUERY_LIKELY_EDITED_VOLS :
       case QUERY_4_OR_MORE_AUTHORS  :
       case QUERY_ANALYZE_METADATA   :
-        return 0;
+        return false;
     }
 
-    return 3;
+    return true;
   }
 
 //---------------------------------------------------------------------------

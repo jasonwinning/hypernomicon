@@ -24,7 +24,6 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.Const.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,10 +36,12 @@ import org.hypernomicon.util.filePath.FilePath;
 public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 {
   public final List<HDT_Folder> childFolders;
-  public final List<HDT_MiscFile> miscFiles;
-  public final List<HDT_WorkFile> workFiles;
   public final List<HDT_Note> notes;
 
+  private final List<HDT_MiscFile> miscFiles;
+  private final List<HDT_WorkFile> workFiles;
+  private final List<HDT_Person> picturePeople;
+  
   private final HyperPath path;
   private boolean checkedForExistence;
 
@@ -50,10 +51,11 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
     checkedForExistence = false;
 
-    childFolders = getSubjList(rtParentFolderOfFolder);
-    miscFiles    = getSubjList(rtFolderOfMiscFile    );
-    workFiles    = getSubjList(rtFolderOfWorkFile    );
-    notes        = getSubjList(rtFolderOfNote        );
+    childFolders  = getSubjList(rtParentFolderOfFolder );
+    miscFiles     = getSubjList(rtFolderOfMiscFile     );
+    workFiles     = getSubjList(rtFolderOfWorkFile     );
+    notes         = getSubjList(rtFolderOfNote         );
+    picturePeople = getSubjList(rtPictureFolderOfPerson);
 
     path = new HyperPath(getObjPointer(rtParentFolderOfFolder), this);
   }
@@ -61,6 +63,8 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public boolean isSpecial(boolean checkSubfolders) { return db.isSpecialFolder(getID(), checkSubfolders); }
+  
   @Override public HyperPath getPath() { return path; }
   @Override public String name()       { return path.getNameStr(); }
   @Override public String getCBText()  { return path.getNameStr(); }
@@ -75,7 +79,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     if (getID() == ROOT_FOLDER_ID)
       return falseWithErrorMessage("Unable to rename the folder: Root folder cannot be renamed.");
 
-    if (getID() == XML_FOLDER_ID)
+    if (this == db.getXmlFolder())
       return falseWithErrorMessage("Unable to rename the folder: XML folder cannot be renamed.");
 
     if (parentFolder() == null)
@@ -118,18 +122,6 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     setNameInternal(newName, true);
     path.assign(parentFolder(), new FilePath(newName));
 
-    switch (getID())
-    {
-      case BOOKS_FOLDER_ID     : db.prefs.put(PREF_KEY_BOOKS_PATH,      newName); break;
-      case MISC_FOLDER_ID      : db.prefs.put(PREF_KEY_MISC_FILES_PATH, newName); break;
-      case PAPERS_FOLDER_ID    : db.prefs.put(PREF_KEY_PAPERS_PATH,     newName); break;
-      case PICTURES_FOLDER_ID  : db.prefs.put(PREF_KEY_PICTURES_PATH,   newName); break;
-      case RESULTS_FOLDER_ID   : db.prefs.put(PREF_KEY_RESULTS_PATH,    newName); break;
-      case TOPICAL_FOLDER_ID   : db.prefs.put(PREF_KEY_TOPICAL_PATH,    newName); break;
-      case UNENTERED_FOLDER_ID : db.prefs.put(PREF_KEY_UNENTERED_PATH,  newName); break;
-      default :                                                                   break;
-    }
-
     folderTreeWatcher.createNewWatcherAndStart();
 
     return true;
@@ -144,14 +136,14 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
   {
     FilePath filePath = filePath();
 
-    if (isProtectedRecord(getID(), getType()))
-      return falseWithErrorMessage("The folder \"" + filePath + "\" cannot be deleted.");
+    if (db.isProtectedRecord(getID(), getType(), true))
+      return falseWithErrorMessage("The folder \"" + filePath + "\" is in use by the database and cannot be deleted.");
 
     if (parentFolder() == null)
       return falseWithErrorMessage("Unable to delete the folder \"" + filePath + "\": parent folder record is null.");
 
     if (filePath.exists() == false)
-      return falseWithErrorMessage("Unable to rename the folder \"" + filePath + "\": it does not exist.");
+      return falseWithErrorMessage("Unable to delete the folder \"" + filePath + "\": it does not exist.");
 
     boolean restartWatcher = folderTreeWatcher.stop();
 
@@ -208,7 +200,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
     if (getID() != ROOT_FOLDER_ID)
       if (filePath().exists() == false)
-        if ((getID() < FIRST_USER_FOLDER_ID) || (path.getRecordsString().length() > 0))
+        if (isSpecial(false) || (path.getRecordsString().length() > 0))
           messageDialog("The folder: \"" + filePath() + "\" is referred to by one or more database records but cannot be found." + System.lineSeparator() + System.lineSeparator() +
                         "Next time, only use the Hypernomicon File Manager to make changes to move, rename, or delete database folders.", mtWarning);
 
@@ -220,8 +212,8 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
   public boolean containsFilesThatAreInUse()
   {
-    if ((workFiles.size() > 0) || (miscFiles.size() > 0)) return true;
-
+    if ((workFiles.size() > 0) || (picturePeople.size() > 0) || (miscFiles.size() > 0) || isSpecial(true)) return true;
+    
     return childFolders.stream().anyMatch(childFolder -> childFolder.path.getRecordsString().length() > 0);
   }
 
@@ -230,8 +222,10 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 
   public boolean hasNoNonFolderRecordDependencies()
   {
-    if ( ! (notes.isEmpty() && workFiles.isEmpty() && miscFiles.isEmpty())) return false;
+    if ( ! (notes.isEmpty() && picturePeople.isEmpty() && workFiles.isEmpty() && miscFiles.isEmpty())) return false;
 
+    if (db.isProtectedRecord(getID(), getType(), false)) return false;
+    
     return childFolders.stream().allMatch(HDT_Folder::hasNoNonFolderRecordDependencies);
   }
 

@@ -32,8 +32,12 @@ import org.hypernomicon.model.records.HDT_MiscFile;
 public class FileQueryEngine extends QueryEngine<HDT_MiscFile>
 {
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
   {
+
   }
 
 //---------------------------------------------------------------------------
@@ -50,7 +54,7 @@ public class FileQueryEngine extends QueryEngine<HDT_MiscFile>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_MiscFile record, boolean firstCall, boolean lastCall)
+  @Override public boolean evaluate(HDT_MiscFile miscFile, boolean firstCall, boolean lastCall)
   {
     switch (curQuery)
     {
@@ -93,9 +97,9 @@ public class FileQueryEngine extends QueryEngine<HDT_MiscFile>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int numOperands(int query)
+  @Override public boolean hasOperand(int query, int opNum, HyperTableCell prevOp)
   {
-    return 3;
+    return true;
   }
 
 //---------------------------------------------------------------------------

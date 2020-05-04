@@ -32,7 +32,6 @@ import java.util.function.Consumer;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
-import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_RecordBase;
@@ -119,7 +118,6 @@ public class GoogleBibData extends BibDataStandalone
     if (publishedDate.length() > 0)
       setYear(publishedDate.substring(0, 4), ytPublishedDate);
 
-    BibAuthors authors = getAuthors();
     JsonArray.toStrList(jsonObj.getArray("authors")).forEach(authStr -> authors.add(new BibAuthor(AuthorType.author, new PersonName(authStr))));
 
     nullSwitch(jsonObj.getArray("industryIdentifiers"), iiArr -> iiArr.getObjs().forEach(iiObj ->
@@ -235,7 +233,7 @@ public class GoogleBibData extends BibDataStandalone
     {
       BibData bd = GoogleBibData.createFromJSON(jsonObj, title, finalIsbn);
 
-      if ((bd == null) && (isbnIt != null) && (isbnIt.hasNext()))
+      if ((bd == null) && (isbnIt != null) && isbnIt.hasNext())
       {
         doHttpRequest(httpClient, isbnIt, alreadyCheckedIDs, successHndlr, failHndlr);
         return;

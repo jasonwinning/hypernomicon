@@ -41,9 +41,9 @@ public class InternetCheckDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static InternetCheckDlgCtrlr create()
+  public static InternetCheckDlgCtrlr build()
   {
-    return HyperDlg.create("InternetCheckDlg.fxml", appTitle, true);
+    return create("InternetCheckDlg.fxml", appTitle, true);
   }
 
 //---------------------------------------------------------------------------

@@ -33,17 +33,15 @@ public class NewVersionDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewVersionDlgCtrlr create()
+  public static NewVersionDlgCtrlr build()
   {
-    NewVersionDlgCtrlr dlg = HyperDlg.create("NewVersionDlg.fxml", "A New Version Is Available", false);
-    dlg.init();
-    return dlg;
+    return ((NewVersionDlgCtrlr) create("NewVersionDlg.fxml", "A New Version Is Available", false)).init();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init()
+  private NewVersionDlgCtrlr init()
   {
     btnDownload.setOnAction(event ->
     {
@@ -51,6 +49,8 @@ public class NewVersionDlgCtrlr extends HyperDlg
 
       btnOkClick();
     });
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

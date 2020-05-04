@@ -30,6 +30,6 @@ public class HiddenSidesPane extends org.controlsfx.control.HiddenSidesPane
 {
   public HiddenSidesPane()                         { setSkin(new HiddenSidesPaneSkin(this)); }
 
-  public void hide()                               { HiddenSidesPaneSkin.class.cast(getSkin()).hide(); }
+  @Override public void hide()                     { HiddenSidesPaneSkin.class.cast(getSkin()).hide(); }
   public void show(Side side, boolean noInterrupt) { HiddenSidesPaneSkin.class.cast(getSkin()).show(side, noInterrupt); }
 }

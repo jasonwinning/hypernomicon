@@ -86,7 +86,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   @Override public boolean update()
   {
-    btnTree.setDisable(ui.getTree().getRowsForRecord(curMiscFile).size() == 0);
+    btnTree.setDisable(ui.getTree().getRowsForRecord(curMiscFile).isEmpty());
 
     tfName.setText(curMiscFile.name());
     tfSearchKey.setText(curMiscFile.getSearchKey());
@@ -228,7 +228,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     btnShow  .setOnAction(event -> { if (tfFileName.getText().length() > 0) highlightFileInExplorer(curMiscFile.filePath()); });
 
     setToolTip(btnManage, "Update or rename file");
-    
+
     ui.setSearchKeyToolTip(tfSearchKey);
   }
 
@@ -300,7 +300,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   public boolean showFileDialog(FilePath srcFilePath)
   {
-    fdc = FileDlgCtrlr.create("Miscellaneous file", curMiscFile, tfName.getText(), false);
+    fdc = FileDlgCtrlr.build("Miscellaneous file", curMiscFile, tfName.getText(), false);
 
     if (srcFilePath != null)
       fdc.setSrcFilePath(srcFilePath, true);

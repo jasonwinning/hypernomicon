@@ -49,9 +49,9 @@ public final class KeywordLinkList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final List<KeywordLink> keys = new ArrayList<>();
+  private final List<KeywordLink> keywordLinks = new ArrayList<>();
 
-  public List<KeywordLink> getLinks() { return Collections.unmodifiableList(keys); }
+  public List<KeywordLink> getLinks() { return Collections.unmodifiableList(keywordLinks); }
   public void generate(String text)   { generate(text, false, null); }
 
 //---------------------------------------------------------------------------
@@ -59,7 +59,7 @@ public final class KeywordLinkList
 
   public void generate(String text, boolean overrideSet, SearchKeys searchKeysToUse)
   {
-    keys.clear();
+    keywordLinks.clear();
 
     if (text.isEmpty()) return;
 
@@ -204,7 +204,7 @@ public final class KeywordLinkList
     int realNdx = posMap.get(ndx),
         realLen = (posMap.get(ndx + replaceLen - 1) - realNdx) + 1;
 
-    keys.add(new KeywordLink(realNdx, realLen, key));
+    keywordLinks.add(new KeywordLink(realNdx, realLen, key));
 
     return ndx + replaceLen;
   }

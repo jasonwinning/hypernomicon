@@ -292,9 +292,8 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
       if (write && (type == hdtFolder))
       {
-        if (isProtectedRecord(record.getID(), type) == false)
-          if (HDT_Folder.class.cast(record).hasNoNonFolderRecordDependencies())
-            write = false;
+        if (((HDT_Folder)record).hasNoNonFolderRecordDependencies())
+          write = false;
       }
 
       if (write)
@@ -307,9 +306,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
       if (db.task.isCancelled()) throw new TerminateTaskException();
     }
 
-    xml.append(System.lineSeparator())
-       .append(System.lineSeparator())
-       .append(System.lineSeparator());
+    xml.append(System.lineSeparator() + System.lineSeparator() + System.lineSeparator());
   }
 
 //---------------------------------------------------------------------------

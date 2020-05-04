@@ -226,6 +226,10 @@
                                   </AnchorPane>
                                 </content>
                               </Tab>
+                              <Tab fx:id="tabFolders" text="Default Folders">
+                                <content>
+                                </content>
+                              </Tab>
                               <Tab fx:id="tabNaming" text="Work File Naming">
                                 <content>
                                 </content>

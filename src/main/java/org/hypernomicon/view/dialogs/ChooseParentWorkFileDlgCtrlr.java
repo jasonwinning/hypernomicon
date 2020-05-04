@@ -44,17 +44,15 @@ public class ChooseParentWorkFileDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ChooseParentWorkFileDlgCtrlr create(HDT_Work work)
+  public static ChooseParentWorkFileDlgCtrlr build(HDT_Work work)
   {
-    ChooseParentWorkFileDlgCtrlr cpw = HyperDlg.create("ChooseParentWorkFileDlg.fxml", "Choose Work File", true);
-    cpw.init(work);
-    return cpw;
+    return ((ChooseParentWorkFileDlgCtrlr) create("ChooseParentWorkFileDlg.fxml", "Choose Work File", true)).init(work);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_Work work)
+  private ChooseParentWorkFileDlgCtrlr init(HDT_Work work)
   {
     htFiles = new HyperTable(tvFiles, 0, false, "");
     htFiles.addCol(hdtWorkFile, ctNone);
@@ -74,6 +72,8 @@ public class ChooseParentWorkFileDlgCtrlr extends HyperDlg
       row.setCellValue(0, workFile, pathStr);
       row.setCellValue(1, workFile, workFile.name());
     });
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

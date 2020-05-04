@@ -50,19 +50,17 @@ public class RecordSelectDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static RecordSelectDlgCtrlr create(Populator populator, List<HyperTableCell> list, String queryStr)
+  public static RecordSelectDlgCtrlr build(Populator populator, List<HyperTableCell> list, String queryStr)
   {
-    RecordSelectDlgCtrlr rsd = HyperDlg.create("RecordSelectDlg.fxml", "Choose a Record", true);
-    rsd.init(list, populator, queryStr);
-    return rsd;
+    return ((RecordSelectDlgCtrlr) create("RecordSelectDlg.fxml", "Choose a Record", true)).init(list, populator, queryStr);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(List<HyperTableCell> list, Populator populator, String queryStr)
+  private RecordSelectDlgCtrlr init(List<HyperTableCell> list, Populator populator, String queryStr)
   {
-    if (collEmpty(list)) return;
+    if (collEmpty(list)) return this;
     HDT_RecordType objType = HyperTableCell.getCellType(list.get(0));
 
     htFind = new HyperTable(tvFind, 1, false, ""); htFind.disableRefreshAfterCellUpdate = true;
@@ -99,6 +97,8 @@ public class RecordSelectDlgCtrlr extends HyperDlg
       Function<HyperTableCell, HDT_Record> function = cell -> cell.getRecord();
       omniFinder.setSourceAndStart(list.stream().map(function).iterator(), true);
     }
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -106,10 +106,7 @@ public class RecordSelectDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if (htFind.selectedRecord() == null)
-      return falseWithWarningMessage("Select a record.");
-
-    return true;
+    return htFind.selectedRecord() != null ? true : falseWithWarningMessage("Select a record.");
   }
 
 //---------------------------------------------------------------------------

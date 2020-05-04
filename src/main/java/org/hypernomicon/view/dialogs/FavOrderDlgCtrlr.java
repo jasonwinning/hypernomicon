@@ -41,17 +41,15 @@ public class FavOrderDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static FavOrderDlgCtrlr create()
+  public static FavOrderDlgCtrlr build()
   {
-    FavOrderDlgCtrlr fod = HyperDlg.create("FavOrderDlg.fxml", "Change Order of Favorites", true);
-    fod.init();
-    return fod;
+    return ((FavOrderDlgCtrlr) create("FavOrderDlg.fxml", "Change Order of Favorites", true)).init();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init()
+  private FavOrderDlgCtrlr init()
   {
     Callback<ListView<MenuItem>, ListCell<MenuItem>> factory = listView -> new ListCell<>()
     {
@@ -75,6 +73,8 @@ public class FavOrderDlgCtrlr extends HyperDlg
 
     btnQueryUp.setOnAction(event -> moveQuery(-1));
     btnQueryDown.setOnAction(event -> moveQuery(1));
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -82,8 +82,11 @@ public class FavOrderDlgCtrlr extends HyperDlg
 
   public void moveRecord(int diff)
   {
+    if (lvRecord.getSelectionModel().getSelectedIndex() < 0) return;
+
     int oldNdx = lvRecord.getSelectionModel().getSelectedIndex() + FIRST_FAV_MENU_ITEM_NDX,
         newNdx = oldNdx + diff;
+
     List<MenuItem> items = ui.mnuFavorites.getItems();
 
     if ((newNdx >= FIRST_FAV_MENU_ITEM_NDX) && (newNdx < items.size()))
@@ -103,6 +106,9 @@ public class FavOrderDlgCtrlr extends HyperDlg
   {
     int oldNdx = lvQuery.getSelectionModel().getSelectedIndex(),
         newNdx = oldNdx + diff;
+
+    if (oldNdx < 0) return;
+
     List<MenuItem> items = ui.mnuQueries.getItems();
 
     if ((newNdx >= 0) && (newNdx < items.size()))

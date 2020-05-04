@@ -19,18 +19,13 @@ package org.hypernomicon.queryEngines;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.tabs.QueryTabCtrlr.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
@@ -41,7 +36,6 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.querySources.AllQuerySource;
 import org.hypernomicon.querySources.FilteredQuerySource;
 import org.hypernomicon.querySources.QuerySource;
-import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -54,8 +48,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
   public static final int  QUERY_LINKING_TO_RECORD      = QUERY_FIRST_NDX + 4,
                            QUERY_MATCHING_RECORD        = QUERY_FIRST_NDX + 5,
                            QUERY_MATCHING_STRING        = QUERY_FIRST_NDX + 6;
-  private static final int QUERY_MENTIONED_BY           = QUERY_FIRST_NDX + 7,
-                           QUERY_DUPLICATE_FOLDERS      = QUERY_FIRST_NDX + 8;
+  private static final int QUERY_MENTIONED_BY           = QUERY_FIRST_NDX + 7;
 
   public static final KeywordLinkList linkList = new KeywordLinkList();
   private static final SearchKeys dummySearchKeys = new SearchKeys();
@@ -71,9 +64,6 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
     pop.addEntry(row, QUERY_MATCHING_RECORD, "with any text that would link to this record");
     pop.addEntry(row, QUERY_MATCHING_STRING, "with any text that would link to a record having this search key");
     pop.addEntry(row, QUERY_MENTIONED_BY, "that are mentioned by record");
-
-    if (app.debugging())
-      pop.addEntry(row, QUERY_DUPLICATE_FOLDERS, "that are duplicate folders");
   }
 
 //---------------------------------------------------------------------------
@@ -200,11 +190,6 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
         }
 
         return result;
-
-      case QUERY_DUPLICATE_FOLDERS :
-
-        return true;
-
     }
 
     return add;
@@ -270,7 +255,6 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
             HDT_Record specifiedRecord = HyperTableCell.getRecord(op2);
             if (HDT_Record.isEmpty(specifiedRecord)) return;
 
-            MutableBoolean choseNotToWait = new MutableBoolean();
             list.addAll(db.getMentionerSet(specifiedRecord, false, choseNotToWait));
 
             list.removeIf(specifiedRecord::equals);
@@ -311,35 +295,6 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
           }
         };
 
-      case QUERY_DUPLICATE_FOLDERS :
-        return new FilteredQuerySource(getQueryType(), query)
-        {
-          @Override protected void runFilter()
-          {
-            Map<FilePath, HDT_Folder> map = new HashMap<>();
-            Set<HDT_Folder> set = new HashSet<>();
-
-            db.folders.forEach(folder ->
-            {
-              FilePath filePath = folder.filePath();
-
-              if (map.containsKey(filePath))
-              {
-                if (set.contains(map.get(filePath)) == false)
-                {
-                  set.add(map.get(filePath));
-                  list.add(map.get(filePath));
-                }
-
-                set.add(folder);
-                list.add(folder);
-              }
-              else
-                map.put(filePath, folder);
-            });
-          }
-        };
-
       default :
         break;
     }
@@ -367,21 +322,18 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int numOperands(int query)
+  @Override public boolean hasOperand(int query, int opNum, HyperTableCell prevOp)
   {
     switch (query)
     {
-      case QUERY_DUPLICATE_FOLDERS :
-        return 0;
-
       case QUERY_RECORD_TYPE : case QUERY_ASSOCIATED_WITH_PHRASE : case QUERY_MATCHING_STRING :
-        return 1;
+        return opNum == 1;
 
       case QUERY_RECORD_EQUALS : case QUERY_LINKING_TO_RECORD : case QUERY_MATCHING_RECORD : case QUERY_MENTIONED_BY :
-        return 2;
+        return opNum < 3;
     }
 
-    return 3;
+    return true;
   }
 
 //---------------------------------------------------------------------------

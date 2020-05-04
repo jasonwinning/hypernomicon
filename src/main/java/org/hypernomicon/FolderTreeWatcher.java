@@ -47,7 +47,6 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.hypernomicon.HyperTask.HyperThread;
-import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.HyperDB.HDB_MessageType;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.PathInfo;
@@ -265,7 +264,7 @@ public class FolderTreeWatcher
               registerTree(newPathInfo.getFilePath());
             else if ((newPathInfo.getFileKind() == FileKind.fkFile) &&
                      appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
-                     (newPathInfo.getParentFolder().getID() == HyperDB.UNENTERED_FOLDER_ID) &&
+                     (newPathInfo.getParentFolder() == db.getUnenteredFolder()) &&
                      newPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf"))
               if (newPathInfo.getFilePath().size() > 0)
               {
@@ -287,7 +286,7 @@ public class FolderTreeWatcher
 
             if (hyperPath != null)
             {
-              if (hyperPath.getRecordsString().length() > 0)
+              if (hyperPath.isInUse())
               {
                 if (watcherEvent.isDirectory())
                   messageDialog("There has been a change to a folder that is in use by the database. This may or may not cause a data integrity problem. Changes to database folders should be made using the Hypernomicon File Manager instead.", mtWarning);
@@ -308,7 +307,7 @@ public class FolderTreeWatcher
                 HDT_Folder.deleteFolderRecordTree((HDT_Folder) hyperPath.getRecord());
             }
 
-            Platform.runLater(fileManagerDlg::refresh);
+            Platform.runLater(fileManagerDlg::pruneAndRefresh);
 
             break;
 
@@ -337,7 +336,7 @@ public class FolderTreeWatcher
             if (untrackedFile)
             {
               if (appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
-                  (newPathInfo.getParentFolder().getID() == HyperDB.UNENTERED_FOLDER_ID) &&
+                  (newPathInfo.getParentFolder() == db.getUnenteredFolder()) &&
                   (oldPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf") == false) &&
                   newPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf"))
               {

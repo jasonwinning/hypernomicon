@@ -26,6 +26,7 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
@@ -58,8 +59,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   private final TreeTableView<TreeRow> ttv;
   private final boolean hasTerms;
   private final TreeCB tcb;
-  private boolean searchingDown = true;
-  private boolean searchingNameOnly = false;
+  private boolean searchingDown = true, searchingNameOnly = false;
   private TreeRow draggingRow = null;
   public final TreeModel<TreeRow> debateTree, termTree, labelTree, noteTree;
 
@@ -76,9 +76,9 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     tcb = new TreeCB(comboBox, this);
 
     debateTree = new TreeModel<>(this, tcb);
-    noteTree = new TreeModel<>(this, tcb);
-    termTree = new TreeModel<>(this, tcb);
-    labelTree = new TreeModel<>(this, tcb);
+    noteTree   = new TreeModel<>(this, tcb);
+    termTree   = new TreeModel<>(this, tcb);
+    labelTree  = new TreeModel<>(this, tcb);
 
     clear();
 
@@ -147,8 +147,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   @Override public void expandMainBranches()
   {
     debateTree.expandMainBranch();
-    noteTree.expandMainBranch();
-    labelTree.expandMainBranch();
+    noteTree  .expandMainBranch();
+    labelTree .expandMainBranch();
   }
 
 //---------------------------------------------------------------------------
@@ -157,8 +157,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   public void removeRecord(HDT_Record record)
   {
     debateTree.removeRecord(record);
-    noteTree.removeRecord(record);
-    labelTree.removeRecord(record);
+    noteTree  .removeRecord(record);
+    labelTree .removeRecord(record);
 
     if (hasTerms)
       termTree.removeRecord(record);
@@ -178,7 +178,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     if (hasTerms)
       rows.addAll(termTree.getRowsForRecord(record));
 
-    return rows;
+    return Collections.unmodifiableList(rows);
   }
 
 //---------------------------------------------------------------------------
@@ -200,9 +200,9 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     ttv.setShowRoot(false);
 
     debateTree.clear();
-    noteTree.clear();
-    labelTree.clear();
-    termTree.clear();
+    noteTree  .clear();
+    labelTree .clear();
+    termTree  .clear();
   }
 
 //---------------------------------------------------------------------------
@@ -213,8 +213,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     super.reset();
 
     debateTree.reset(db.debates.getByID(1));
-    noteTree.reset(db.notes.getByID(1));
-    labelTree.reset(db.workLabels.getByID(1));
+    noteTree  .reset(db.notes.getByID(1));
+    labelTree .reset(db.workLabels.getByID(1));
 
     if (hasTerms)
       termTree.reset(db.glossaries.getByID(1));
@@ -275,7 +275,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       TreeRow row = item.getValue();
 
       if (row.getName().toLowerCase().contains(text) ||
-          ((searchingNameOnly == false) && (row.getDescString().toLowerCase().contains(text))))
+          ((searchingNameOnly == false) && row.getDescString().toLowerCase().contains(text)))
       {
         ui.treeHyperTab().textToHilite = text;
         selectRecord(row.getRecord(), getRowsForRecord(row.getRecord()).indexOf(row), true);
@@ -413,8 +413,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       return;
     }
 
-    ChangeParentDlgCtrlr cpdc = ChangeParentDlgCtrlr.create(draggingRow.treeItem.getParent().getValue().getRecord(),
-                                                            targetRow.getRecord(), draggingRow.getRecord(), db.relationIsMulti(newRelType));
+    ChangeParentDlgCtrlr cpdc = ChangeParentDlgCtrlr.build(draggingRow.treeItem.getParent().getValue().getRecord(),
+                                                           targetRow.getRecord(), draggingRow.getRecord(), db.relationIsMulti(newRelType));
 
     if (cpdc.showModal())
     {

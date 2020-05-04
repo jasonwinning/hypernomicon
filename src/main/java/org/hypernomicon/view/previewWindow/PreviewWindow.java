@@ -176,17 +176,15 @@ public class PreviewWindow extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static PreviewWindow create()
+  public static PreviewWindow build()
   {
-    PreviewWindow previewWindow = HyperDlg.createUsingFullPath("view/previewWindow/PreviewWindow.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
-    previewWindow.init();
-    return previewWindow;
+    return ((PreviewWindow) createUsingFullPath("view/previewWindow/PreviewWindow.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init()
+  private PreviewWindow init()
   {
     addWrapper(pvsPersonTab, apPerson , tabPerson , btnPerson );
     addWrapper(pvsWorkTab  , apWork   , tabWork   , btnWorks  );
@@ -439,6 +437,8 @@ public class PreviewWindow extends HyperDlg
     dialogStage.setOnHidden(event -> srcToWrapper.values().forEach(PreviewWrapper::prepareToShow));
 
     btnContents.setOnAction(event -> openContentsWindow());
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -594,7 +594,7 @@ public class PreviewWindow extends HyperDlg
         updateStartBtn(curWrapper().getWorkStartPageNum());
         updateEndBtn  (curWrapper().getWorkEndPageNum  ());
 
-        HDT_WorkFile workFile = (HDT_WorkFile) HyperPath.getFileFromFilePath(curWrapper().getFilePath());
+        HDT_WorkFile workFile = (HDT_WorkFile) HyperPath.getRecordFromFilePath(curWrapper().getFilePath());
 
         if (workFile.works.size() > 1)
         {
@@ -652,7 +652,7 @@ public class PreviewWindow extends HyperDlg
 
     lblPreviewPages.setText(pageNum + " / " + numPages);
 
-    record = HyperPath.getFileFromFilePath(curWrapper().getFilePath());
+    record = HyperPath.getRecordFromFilePath(curWrapper().getFilePath());
     HDT_WorkFile workFile = null;
 
     if (record != null)

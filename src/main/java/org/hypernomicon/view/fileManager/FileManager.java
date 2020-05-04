@@ -196,17 +196,15 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static FileManager create()
+  public static FileManager build()
   {
-    FileManager managerDlg = HyperDlg.createUsingFullPath("view/fileManager/FileManager.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
-    managerDlg.init();
-    return managerDlg;
+    return ((FileManager) createUsingFullPath("view/fileManager/FileManager.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init()
+  private FileManager init()
   {
     initContainers();
 
@@ -251,7 +249,7 @@ public class FileManager extends HyperDlg
 
     btnBack.setOnAction(event -> btnBackClick());
     btnForward.setOnAction(event -> btnForwardClick());
-    btnRefresh.setOnAction(event -> btnRefreshClick());
+    btnRefresh.setOnAction(event -> pruneAndRefresh());
     btnRename.setOnAction(event -> rename(null));
 
     btnMainWindow.setOnAction(event -> ui.windows.focusStage(app.getPrimaryStage()));
@@ -295,6 +293,8 @@ public class FileManager extends HyperDlg
     setToolTip(btnRefresh      , "Refresh");
     setToolTip(btnMainWindow   , "Return to main application window");
     setToolTip(btnPreviewWindow, "Show preview window");
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -565,7 +565,7 @@ public class FileManager extends HyperDlg
 
         if (copying == false)
         {
-          if (db.isProtectedFile(srcFilePath))
+          if (db.isProtectedFile(srcFilePath, true))
             throw new TerminateTaskException("Unable to move path \"" + srcFilePath + "\".");
         }
 
@@ -595,7 +595,7 @@ public class FileManager extends HyperDlg
         {
           if (destFilePath.isDirectory())
             throw new TerminateTaskException("A folder already exists at destination path \"" + destFilePath + "\".");
-          else if (db.isProtectedFile(destFilePath))
+          else if (db.isProtectedFile(destFilePath, true))
             throw new TerminateTaskException("Cannot overwrite destination path: \"" + destFilePath + "\".");
         }
       }
@@ -822,7 +822,7 @@ public class FileManager extends HyperDlg
 
             FilePath srcFilePath = entry.getKey();
 
-            if ((srcFilePath.isDirectory() == false) && (!srcFilePath.copyTo(entry.getValue(), false)))
+            if ((srcFilePath.isDirectory() == false) && !srcFilePath.copyTo(entry.getValue(), false))
               throw new TerminateTaskException();
           }
         }
@@ -903,7 +903,7 @@ public class FileManager extends HyperDlg
 
     Platform.runLater(() ->
     {
-      btnRefreshClick();
+      pruneAndRefresh();
       folderTreeWatcher.createNewWatcherAndStart();
 
       ui.update();
@@ -1095,7 +1095,7 @@ public class FileManager extends HyperDlg
       {
         setPath.filePath().delete(true);
         db.unmapFilePath(setPath.filePath());
-        if (setPath.getRecordType() != hdtNone)
+        if ((setPath.getRecordType() != hdtNone) && (setPath.getRecordType() != hdtPerson))
           db.deleteRecord(setPath.getRecord().getType(), setPath.getRecord().getID());
       }
       catch (IOException e)
@@ -1122,10 +1122,7 @@ public class FileManager extends HyperDlg
     FilePath filePath = hyperPath.filePath();
     boolean isDir = filePath.isDirectory();
 
-    if ((fileRecord != null) && (deleting == false) && (fileRecord.getType() == hdtPerson))
-      return falseWithErrorMessage("The file \"" + filePath + "\" cannot be moved: It is in use as a picture for person record ID " + fileRecord.getID() + ".");
-
-    if (db.isProtectedFile(filePath))
+    if (db.isProtectedFile(filePath, true))
       return falseWithErrorMessage((isDir ? "The folder \"" : "The file \"") + filePath + "\" cannot be " + opPast + ".");
 
     if (deleting == false) return true;
@@ -1143,7 +1140,7 @@ public class FileManager extends HyperDlg
   {
     if (parentFolder == null) return;
 
-    RenameDlgCtrlr dlg = RenameDlgCtrlr.create("Create Folder in: " + parentFolder.filePath(), ntFolder, "");
+    RenameDlgCtrlr dlg = RenameDlgCtrlr.build("Create Folder in: " + parentFolder.filePath(), ntFolder, "");
 
     if (dlg.showModal() == false) return;
 
@@ -1186,8 +1183,8 @@ public class FileManager extends HyperDlg
     boolean isDir = fileRow.isDirectory(), cantRename;
     String noun;
 
-    if (isDir) { noun = "Folder"; cantRename = isUnstoredRecord(fileRecord.getID(), hdtFolder); }
-    else       { noun = "File";   cantRename = db.isProtectedFile(fileRow.getFilePath()); }
+    if (isDir) { noun = "Folder"; cantRename = isUnstoredRecord(fileRecord.getID(), hdtFolder) || fileRow.getFilePath().equals(db.xmlPath()); }
+    else       { noun = "File";   cantRename = db.isProtectedFile(fileRow.getFilePath(), false); }
 
     if (cantRename)
     {
@@ -1195,7 +1192,7 @@ public class FileManager extends HyperDlg
       return;
     }
 
-    RenameDlgCtrlr dlg = RenameDlgCtrlr.create("Rename " + noun + ": " + fileRow.getFilePath(), ntFolder, fileRow.getFileName());
+    RenameDlgCtrlr dlg = RenameDlgCtrlr.build("Rename " + noun + ": " + fileRow.getFilePath(), ntFolder, fileRow.getFileName());
 
     if (dlg.showModal() == false) return;
 
@@ -1258,7 +1255,7 @@ public class FileManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void btnRefreshClick()
+  public void pruneAndRefresh()
   {
     boolean restartWatcher = folderTreeWatcher.stop();
 
@@ -1278,7 +1275,7 @@ public class FileManager extends HyperDlg
     needRefresh = false;
 
     if (folderTree.selectedRecord() == null)
-      folderTree.selectRecord(db.folders.getByID(ROOT_FOLDER_ID), -1, false);
+      folderTree.selectRecord(db.getRootFolder(), -1, false);
 
     treeView.refresh();
 
@@ -1328,22 +1325,21 @@ public class FileManager extends HyperDlg
   {
     folderTree.selectRecord(item.folder, -1, false);
 
-    if (item.fileName == null) return;
-
-    fileTable.selectByFileName(item.fileName);
+    if (item.fileName != null)
+      fileTable.selectByFileName(item.fileName);
 
     if (item.record != null)
     {
-      HyperTableRow row = findFirst(recordTable.getDataRows(), r -> r.getRecord() == item.record);
+      HyperTableRow row = recordTable.selectRowByRecord(item.record);
       if (row != null)
       {
-        recordTable.selectRow(row);
         recordTV.requestFocus();
         return;
       }
     }
 
-    fileTV.requestFocus();
+    if (item.fileName != null)
+      fileTV.requestFocus();
   }
 
 //---------------------------------------------------------------------------
@@ -1402,8 +1398,8 @@ public class FileManager extends HyperDlg
 
     if ((record != null) && EnumSet.of(hdtWork, hdtMiscFile, hdtWorkFile).contains(record.getType()) == false)
     {
-      if      (FilePath.isEmpty(fileTablePath) == false) record = HyperPath.getFileFromFilePath(fileTablePath);
-      else if (FilePath.isEmpty(filePath     ) == false) record = HyperPath.getFileFromFilePath(filePath);
+      if      (FilePath.isEmpty(fileTablePath) == false) record = HyperPath.getRecordFromFilePath(fileTablePath);
+      else if (FilePath.isEmpty(filePath     ) == false) record = HyperPath.getRecordFromFilePath(filePath);
     }
 
     if (record != null)
@@ -1430,13 +1426,13 @@ public class FileManager extends HyperDlg
 
           if (FilePath.isEmpty(fileTablePath) == false)
           {
-            HDT_RecordWithPath recordWP = HyperPath.getFileFromFilePath(fileTablePath);
+            HDT_RecordWithPath recordWP = HyperPath.getRecordFromFilePath(fileTablePath);
             if ((recordWP != null) && (recordWP.getType() == hdtWorkFile))
               workFile = (HDT_WorkFile) recordWP;
           }
 
           if ((workFile == null) && (FilePath.isEmpty(filePath) == false))
-            workFile = HDT_WorkFile.class.cast(HyperPath.getFileFromFilePath(filePath));
+            workFile = HDT_WorkFile.class.cast(HyperPath.getRecordFromFilePath(filePath));
 
           if (workFile != null)
           {

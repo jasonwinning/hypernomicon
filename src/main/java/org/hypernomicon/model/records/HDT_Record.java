@@ -103,7 +103,7 @@ public interface HDT_Record
 
   static boolean isEmptyThrowsException(HDT_Record record) throws HDB_InternalError
   {
-    if ((record == null) || (record.isExpired())) return true;
+    if ((record == null) || record.isExpired()) return true;
 
     if (record.getID() < 1)
       throw new HDB_InternalError(28883);

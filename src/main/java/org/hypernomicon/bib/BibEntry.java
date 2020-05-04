@@ -198,14 +198,14 @@ public abstract class BibEntry extends BibData implements BibEntity
 
       e1.getAuthors().getLists(authorList, editorList, translatorList);
 
-      authors1 = authorList.size() == 0 ? editorList : authorList;
+      authors1 = authorList.isEmpty() ? editorList : authorList;
 
       authorList = new ArrayList<>();
       editorList = new ArrayList<>();
 
       e2.getAuthors().getLists(authorList, editorList, translatorList);
 
-      authors2 = authorList.size() == 0 ? editorList : authorList;
+      authors2 = authorList.isEmpty() ? editorList : authorList;
 
       int cResult, numAuthors = Math.max(authors1.size(), authors2.size());
 

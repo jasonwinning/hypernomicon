@@ -67,17 +67,15 @@ public class RenameDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static RenameDlgCtrlr create(String title, NameType nameType, String oldName)
+  public static RenameDlgCtrlr build(String title, NameType nameType, String oldName)
   {
-    RenameDlgCtrlr rdc = HyperDlg.create("RenameDlg.fxml", title, true);
-    rdc.init(nameType, oldName);
-    return rdc;
+    return ((RenameDlgCtrlr) create("RenameDlg.fxml", title, true)).init(nameType, oldName);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(NameType nameType, String oldName)
+  private RenameDlgCtrlr init(NameType nameType, String oldName)
   {
     this.nameType = nameType;
     this.oldName = oldName;
@@ -127,6 +125,8 @@ public class RenameDlgCtrlr extends HyperDlg
     });
 
     onShown = () -> safeFocus(tfName);
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

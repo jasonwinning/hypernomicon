@@ -64,18 +64,18 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
   {
     if (record == null) return;
 
-    TreeItem<RowType> selItem = getSelectionModel().getSelectedItem();
-
-    if (selItem != null)
+    if (ndx < 0)
     {
-      if ((selItem.getValue().getRecord() == record) && (ndx == -1))
+      TreeItem<RowType> selItem = getSelectionModel().getSelectedItem();
+
+      if ((selItem != null) && (selItem.getValue().getRecord() == record))
       {
         focusOnTreeCtrl();
         return;
       }
-    }
 
-    if (ndx == -1) ndx = 0;
+      ndx = 0;
+    }
 
     List<RowType> list = getRowsForRecord(record);
     if (list.isEmpty()) return;

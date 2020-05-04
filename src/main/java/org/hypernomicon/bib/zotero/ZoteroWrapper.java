@@ -212,17 +212,17 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     Backoff("Backoff"),
     Retry_After("Retry-After"),
     None("None");
-    
+
     final private String name;
-    private static Map<String, ZoteroHeader> map = new HashMap<>();
+    private static Map<String, ZoteroHeader> headerMap = new HashMap<>();
 
     private ZoteroHeader(String name) { this.name = name; }
 
     @Override public String toString() { return name; }
-    
-    static { EnumSet.allOf(ZoteroHeader.class).forEach(header -> map.put(header.name.toLowerCase(), header)); }
 
-    public static ZoteroHeader get(Header header) { return map.getOrDefault(header.getName().toLowerCase(), None); }    
+    static { EnumSet.allOf(ZoteroHeader.class).forEach(header -> headerMap.put(header.name.toLowerCase(), header)); }
+
+    public static ZoteroHeader get(Header header) { return headerMap.getOrDefault(header.getName().toLowerCase(), None); }
   }
 
 //---------------------------------------------------------------------------
@@ -317,7 +317,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
             retryTime = Instant.now().plusMillis(sec * 1000);
 
           break;
-          
+
         default : break;
       }
     }));
@@ -409,7 +409,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
         uploadQueue.add(entry);
     });
 
-    if (uploadQueue.size() == 0) return false;
+    if (uploadQueue.isEmpty()) return false;
 
     int statusCode = HttpStatus.SC_OK;
 

@@ -240,8 +240,7 @@ public class HyperTableColumn
           {
             super.updateItem(item, empty);
 
-            if (empty) setText(null);
-            else       setText(HyperTableCell.getCellText(getItem()));
+            setText(empty ? null : HyperTableCell.getCellText(getItem()));
           }
         });
 

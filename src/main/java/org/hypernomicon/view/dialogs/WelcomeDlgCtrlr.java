@@ -38,11 +38,9 @@ public class WelcomeDlgCtrlr extends HyperDlg
   private boolean newClicked = false, openClicked = false;
   private FilePath openPath = null;
 
-  public static WelcomeDlgCtrlr create()
+  public static WelcomeDlgCtrlr build()
   {
-    WelcomeDlgCtrlr wdc = HyperDlg.create("WelcomeDlg.fxml", "Welcome - " + appTitle, false);
-    wdc.init();
-    return wdc;
+    return ((WelcomeDlgCtrlr) create("WelcomeDlg.fxml", "Welcome - " + appTitle, false)).init();
   }
 
   public boolean newClicked()   { return newClicked ; }
@@ -55,7 +53,7 @@ public class WelcomeDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init()
+  private WelcomeDlgCtrlr init()
   {
     btnNew.setOnAction(event ->
     {
@@ -98,6 +96,8 @@ public class WelcomeDlgCtrlr extends HyperDlg
         btnOkClick();
       });
     }
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

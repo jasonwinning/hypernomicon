@@ -67,6 +67,8 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 
   @SuppressWarnings("unchecked")
   @Override public HDT_RecordWithPath getRecord() { return hyperPath.getRecord(); }
+  @Override public int hashCode()                 { return hyperPath == null ? 0 : nullSwitch(hyperPath.getFileName(), 0, FilePath::hashCode); }
+
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -145,15 +147,6 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
     if ((obj instanceof FileRow) == false) return false;
 
     return compareTo((FileRow)obj) == 0;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public int hashCode()
-  {
-    return nullSwitch(hyperPath, 0, hyperPath ->
-           nullSwitch(hyperPath.getFileName(), 0, FilePath::hashCode));
   }
 
 //---------------------------------------------------------------------------

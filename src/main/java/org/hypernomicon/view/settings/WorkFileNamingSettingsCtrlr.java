@@ -38,6 +38,10 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.stage.Window;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 public class WorkFileNamingSettingsCtrlr implements SettingsControl
 {
@@ -51,9 +55,12 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
   private final Map<String, Integer> componentMap = new LinkedHashMap<>();
 
-  @Override public void save() { }
+  @Override public void save() { return; }
 
-  @Override public void init(boolean noDB)
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void init(Window owner, boolean noDB)
   {
     componentMap.put("Author last names", AUTHOR_FN_COMPONENT);
     componentMap.put("Year", YEAR_FN_COMPONENT);
@@ -64,48 +71,47 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
 
     lblExample.setOnMouseClicked(event -> refreshExample());
 
-    if (noDB == false)
-    {
-      initDBTextField(tfSepWithin1, PREF_KEY_FN_WITHIN_SEP_1);
-      initDBTextField(tfSepWithin2, PREF_KEY_FN_WITHIN_SEP_2);
-      initDBTextField(tfSepWithin3, PREF_KEY_FN_WITHIN_SEP_3);
-      initDBTextField(tfSepWithin4, PREF_KEY_FN_WITHIN_SEP_4);
-      initDBTextField(tfSepWithin5, PREF_KEY_FN_WITHIN_SEP_5);
+    if (noDB) return;
 
-      initDBTextField(tfSepBefore1, PREF_KEY_FN_BEFORE_SEP_1);
-      initDBTextField(tfSepBefore2, PREF_KEY_FN_BEFORE_SEP_2);
-      initDBTextField(tfSepBefore3, PREF_KEY_FN_BEFORE_SEP_3);
-      initDBTextField(tfSepBefore4, PREF_KEY_FN_BEFORE_SEP_4);
-      initDBTextField(tfSepBefore5, PREF_KEY_FN_BEFORE_SEP_5);
+    initDBTextField(tfSepWithin1, PREF_KEY_FN_WITHIN_SEP_1);
+    initDBTextField(tfSepWithin2, PREF_KEY_FN_WITHIN_SEP_2);
+    initDBTextField(tfSepWithin3, PREF_KEY_FN_WITHIN_SEP_3);
+    initDBTextField(tfSepWithin4, PREF_KEY_FN_WITHIN_SEP_4);
+    initDBTextField(tfSepWithin5, PREF_KEY_FN_WITHIN_SEP_5);
 
-      initDBTextField(tfSepAfter1, PREF_KEY_FN_AFTER_SEP_1);
-      initDBTextField(tfSepAfter2, PREF_KEY_FN_AFTER_SEP_2);
-      initDBTextField(tfSepAfter3, PREF_KEY_FN_AFTER_SEP_3);
-      initDBTextField(tfSepAfter4, PREF_KEY_FN_AFTER_SEP_4);
-      initDBTextField(tfSepAfter5, PREF_KEY_FN_AFTER_SEP_5);
+    initDBTextField(tfSepBefore1, PREF_KEY_FN_BEFORE_SEP_1);
+    initDBTextField(tfSepBefore2, PREF_KEY_FN_BEFORE_SEP_2);
+    initDBTextField(tfSepBefore3, PREF_KEY_FN_BEFORE_SEP_3);
+    initDBTextField(tfSepBefore4, PREF_KEY_FN_BEFORE_SEP_4);
+    initDBTextField(tfSepBefore5, PREF_KEY_FN_BEFORE_SEP_5);
 
-      initDBTextField(tfTest1, PREF_KEY_FN_TEST_1);
-      initDBTextField(tfTest2, PREF_KEY_FN_TEST_2);
-      initDBTextField(tfTest3, PREF_KEY_FN_TEST_3);
-      initDBTextField(tfTest4, PREF_KEY_FN_TEST_4);
-      initDBTextField(tfTest5, PREF_KEY_FN_TEST_5);
+    initDBTextField(tfSepAfter1, PREF_KEY_FN_AFTER_SEP_1);
+    initDBTextField(tfSepAfter2, PREF_KEY_FN_AFTER_SEP_2);
+    initDBTextField(tfSepAfter3, PREF_KEY_FN_AFTER_SEP_3);
+    initDBTextField(tfSepAfter4, PREF_KEY_FN_AFTER_SEP_4);
+    initDBTextField(tfSepAfter5, PREF_KEY_FN_AFTER_SEP_5);
 
-      initCheckBox(chkTreatEdAsAuthor, PREF_KEY_FN_TREAT_ED_AS_AUTHOR, true);
-      initCheckBox(chkAddInitial, PREF_KEY_FN_ADD_INITIAL, false);
-      initCheckBox(chkYearLetter, PREF_KEY_FN_YEAR_LETTER, false);
-      initCheckBox(chkPosix, PREF_KEY_FN_POSIX, false);
-      initCheckBox(chkLowercase, PREF_KEY_FN_LOWERCASE, false);
+    initDBTextField(tfTest1, PREF_KEY_FN_TEST_1);
+    initDBTextField(tfTest2, PREF_KEY_FN_TEST_2);
+    initDBTextField(tfTest3, PREF_KEY_FN_TEST_3);
+    initDBTextField(tfTest4, PREF_KEY_FN_TEST_4);
+    initDBTextField(tfTest5, PREF_KEY_FN_TEST_5);
 
-      initMaxChar(tfMaxChar, PREF_KEY_FN_MAX_CHAR);
+    initCheckBox(chkTreatEdAsAuthor, PREF_KEY_FN_TREAT_ED_AS_AUTHOR, true);
+    initCheckBox(chkAddInitial, PREF_KEY_FN_ADD_INITIAL, false);
+    initCheckBox(chkYearLetter, PREF_KEY_FN_YEAR_LETTER, false);
+    initCheckBox(chkPosix, PREF_KEY_FN_POSIX, false);
+    initCheckBox(chkLowercase, PREF_KEY_FN_LOWERCASE, false);
 
-      initComponentCB(cbComponent1, PREF_KEY_FN_COMPONENT_1, AUTHOR_FN_COMPONENT);
-      initComponentCB(cbComponent2, PREF_KEY_FN_COMPONENT_2, EDITOR_FN_COMPONENT);
-      initComponentCB(cbComponent3, PREF_KEY_FN_COMPONENT_3, TRANS_FN_COMPONENT);
-      initComponentCB(cbComponent4, PREF_KEY_FN_COMPONENT_4, YEAR_FN_COMPONENT);
-      initComponentCB(cbComponent5, PREF_KEY_FN_COMPONENT_5, TITLE_FN_COMPONENT);
+    initMaxChar(tfMaxChar, PREF_KEY_FN_MAX_CHAR);
 
-      refreshExample();
-    }
+    initComponentCB(cbComponent1, PREF_KEY_FN_COMPONENT_1, AUTHOR_FN_COMPONENT);
+    initComponentCB(cbComponent2, PREF_KEY_FN_COMPONENT_2, EDITOR_FN_COMPONENT);
+    initComponentCB(cbComponent3, PREF_KEY_FN_COMPONENT_3, TRANS_FN_COMPONENT);
+    initComponentCB(cbComponent4, PREF_KEY_FN_COMPONENT_4, YEAR_FN_COMPONENT);
+    initComponentCB(cbComponent5, PREF_KEY_FN_COMPONENT_5, TITLE_FN_COMPONENT);
+
+    refreshExample();
   }
 
 //---------------------------------------------------------------------------

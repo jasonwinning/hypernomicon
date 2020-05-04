@@ -136,11 +136,9 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static BibManager create()
+  public static BibManager build()
   {
-    BibManager bibManager = HyperDlg.createUsingFullPath("bib/BibManager.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
-    bibManager.init();
-    return bibManager;
+    return ((BibManager) createUsingFullPath("bib/BibManager.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
   }
 
 //---------------------------------------------------------------------------
@@ -220,7 +218,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init()
+  private BibManager init()
   {
     entryTable = new BibEntryTable(tableView, PREF_KEY_HT_BIB_ENTRIES);
     collTree = new CollectionTree(treeView);
@@ -325,7 +323,7 @@ public class BibManager extends HyperDlg
 
       HDT_Person person = findFirstHaving(row.getEntry().getAuthors(), bibAuthor -> HDT_Person.lookUpByName(bibAuthor.getName()));
 
-      SelectWorkDlgCtrlr dlg = SelectWorkDlgCtrlr.create(person, row.getEntry());
+      SelectWorkDlgCtrlr dlg = SelectWorkDlgCtrlr.build(person, row.getEntry());
 
       if (dlg.showModal())
         assignEntryToWork(dlg.getWork(), row.getEntry());
@@ -417,6 +415,8 @@ public class BibManager extends HyperDlg
   //---------------------------------------------------------------------------
 
     dialogStage.setOnHidden(event -> ui.windows.focusStage(app.getPrimaryStage()));
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -547,7 +547,7 @@ public class BibManager extends HyperDlg
 
     BibEntry entry = row.getEntry();
 
-    if (childTypes.contains(entry.getEntryType()) && (work.largerWork.isNotNull()))
+    if (childTypes.contains(entry.getEntryType()) && work.largerWork.isNotNull())
     {
       HDT_Work parentWork = work.largerWork.get();
       if (parentWork.getBibEntryKey().isBlank() == false)
@@ -650,7 +650,7 @@ public class BibManager extends HyperDlg
 
     try
     {
-      mwd = MergeWorksDlgCtrlr.create("Import Into Existing Work Record", work.getBibData(), entry, null, null, work, false, false, false);
+      mwd = MergeWorksDlgCtrlr.build("Import Into Existing Work Record", work.getBibData(), entry, null, null, work, false, false, false);
     }
     catch (IOException e)
     {

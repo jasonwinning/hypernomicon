@@ -178,6 +178,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case rtFolderOfMiscFile         : hasNestedItems = false; subjType = hdtMiscFile;      objType = hdtFolder;          break;
       case rtParentFolderOfFolder     : hasNestedItems = false; subjType = hdtFolder;        objType = hdtFolder;          break;
       case rtFolderOfNote             : hasNestedItems = false; subjType = hdtNote;          objType = hdtFolder;          break;
+      case rtPictureFolderOfPerson    : hasNestedItems = false; subjType = hdtPerson;        objType = hdtFolder;          break;
 
       default                         : hasNestedItems = false; subjType = hdtNone;          objType = hdtNone;
 
@@ -216,9 +217,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   {
     Set<RelationSet<? extends HDT_Record, ? extends HDT_Record>> relSets = orphanTypeToRelSets.get(orphan.getType());
 
-    if (relSets == null) return;
-
-    relSets.forEach(relSet-> relSet.addOrphan(orphan));
+    if (relSets != null)
+      relSets.forEach(relSet-> relSet.addOrphan(orphan));
   }
 
   @SuppressWarnings("unchecked")
@@ -270,19 +270,19 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
       switch (schema.getCategory())
       {
-        case hdcString :        if (NestedValue.isEmpty(HDI_OnlineString.class.cast(onlineItem).get()) == false)
+        case hdcString :        if (NestedValue.isEmpty(((HDI_OnlineString)onlineItem).get()) == false)
                                   offlineItem = new HDI_OfflineString(schema, recordState);
           break;
 
-        case hdcBoolean :       if (NestedValue.isEmpty(HDI_OnlineBoolean.class.cast(onlineItem).get()) == false)
+        case hdcBoolean :       if (NestedValue.isEmpty(((HDI_OnlineBoolean)onlineItem).get()) == false)
                                   offlineItem = new HDI_OfflineBoolean(schema, recordState);
           break;
 
-        case hdcTernary :       if (NestedValue.isEmpty(HDI_OnlineTernary.class.cast(onlineItem).get()) == false)
+        case hdcTernary :       if (NestedValue.isEmpty(((HDI_OnlineTernary)onlineItem).get()) == false)
                                   offlineItem = new HDI_OfflineTernary(schema, recordState);
           break;
 
-        case hdcNestedPointer : if (HDT_Record.isEmpty(HDI_OnlineNestedPointer.class.cast(onlineItem).get()) == false)
+        case hdcNestedPointer : if (HDT_Record.isEmpty(((HDI_OnlineNestedPointer)onlineItem).get()) == false)
                                   offlineItem = new HDI_OfflineNestedPointer(schema, recordState);
           break;
 
@@ -307,10 +307,10 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     switch (value.getCategory())
     {
-      case hdcBoolean       : isEmpty = NestedValue.isEmpty(HDI_OfflineBoolean      .class.cast(value).get     ()); break;
-      case hdcTernary       : isEmpty = NestedValue.isEmpty(HDI_OfflineTernary      .class.cast(value).get     ()); break;
-      case hdcString        : isEmpty = NestedValue.isEmpty(HDI_OfflineString       .class.cast(value).get     ()); break;
-      case hdcNestedPointer : isEmpty = NestedValue.isEmpty(HDI_OfflineNestedPointer.class.cast(value).getObjID()); break;
+      case hdcBoolean       : isEmpty = NestedValue.isEmpty(((HDI_OfflineBoolean      )value).get     ()); break;
+      case hdcTernary       : isEmpty = NestedValue.isEmpty(((HDI_OfflineTernary      )value).get     ()); break;
+      case hdcString        : isEmpty = NestedValue.isEmpty(((HDI_OfflineString       )value).get     ()); break;
+      case hdcNestedPointer : isEmpty = NestedValue.isEmpty(((HDI_OfflineNestedPointer)value).getObjID()); break;
       default               : return;
     }
 
@@ -570,6 +570,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       {
         if (subj.getID() == obj.getID())
           throw new RelationCycleException(subj, obj);
+
         cycleCheck(subj, (HDT_Subj) obj, obj);
       }
 
@@ -699,7 +700,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
           HDI_OnlineBase<? extends HDI_OfflineBase> item = targetIt.next().getValue();
 
           if (item.getCategory() == hdcNestedPointer)
-            if (HDT_Record.isEmptyThrowsException(HDI_OnlineNestedPointer.class.cast(item).get())) targetIt.remove();
+            if (HDT_Record.isEmptyThrowsException(((HDI_OnlineNestedPointer)item).get())) targetIt.remove();
         }
       }
     }
@@ -767,6 +768,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     rtPositionOfArgument      (25, tagArgument            , "Argument(s) concerning this position"),
     rtInvestigationOfWork     (26, tagWork                , "Work(s) in this investigation"),
     rtPersonOfInv             (27, tagInvestigation       , "Investigation(s) by this person"),
+    rtPictureFolderOfPerson   (28, tagPerson              , "Person(s) with pictures in this folder"),
     rtCountryOfRegion         (29, tagRegion              , "States/regions in this country"),
     rtRegionOfInst            (30, tagInstitution         , "Institution(s) in this state/region"),
     rtCountryOfInst           (31, tagInstitution         , "Institution(s) in this country"),

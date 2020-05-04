@@ -42,17 +42,15 @@ public class VerdictDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static VerdictDlgCtrlr create(String title, HDT_Record parent)
+  public static VerdictDlgCtrlr build(String title, HDT_Record parent)
   {
-    VerdictDlgCtrlr vdc = HyperDlg.create("VerdictDlg.fxml", title, false);
-    vdc.init(parent);
-    return vdc;
+    return ((VerdictDlgCtrlr) create("VerdictDlg.fxml", title, false)).init(parent);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_Record parent)
+  private VerdictDlgCtrlr init(HDT_Record parent)
   {
     lblParentName.setText(parent.getCBText());
 
@@ -72,6 +70,8 @@ public class VerdictDlgCtrlr extends HyperDlg
     }
 
     hcbVerdict.addBlankEntry();
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -79,9 +79,7 @@ public class VerdictDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if (hcbVerdict.selectedID() > 0) return true;
-
-    return falseWithErrorMessage("You must select a verdict.", cbVerdict);
+    return hcbVerdict.selectedID() > 0 ? true : falseWithErrorMessage("You must select a verdict.", cbVerdict);
   }
 
 //---------------------------------------------------------------------------

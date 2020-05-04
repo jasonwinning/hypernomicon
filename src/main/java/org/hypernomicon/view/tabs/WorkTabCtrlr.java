@@ -186,7 +186,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "WorldCat");
     setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Google Scholar");
-    
+
     ui.setSearchKeyToolTip(tfSearchKey);
 
     htAuthors = new HyperTable(tvAuthors, 1, true, PREF_KEY_HT_WORK_AUTHORS);
@@ -227,7 +227,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
           return;
         }
 
-        NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.create(true, text, author);
+        NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.build(true, text, author);
 
         if (npdc.showModal())
         {
@@ -354,7 +354,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       },
       row ->
       {
-        ChooseParentWorkFileDlgCtrlr ctrlr = ChooseParentWorkFileDlgCtrlr.create(curWork);
+        ChooseParentWorkFileDlgCtrlr ctrlr = ChooseParentWorkFileDlgCtrlr.build(curWork);
 
         if (ctrlr.showModal() == false) return;
 
@@ -700,7 +700,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   @Override public boolean update()
   {
-    btnTree.setDisable(ui.getTree().getRowsForRecord(curWork).size() == 0);
+    btnTree.setDisable(ui.getTree().getRowsForRecord(curWork).isEmpty());
 
     WorkTypeEnum workTypeEnumVal = curWork.getWorkTypeEnum();
 
@@ -964,7 +964,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       if (mentioner.getType() == hdtHub)
       {
-        StrongLink link = HDT_Hub.class.cast(mentioner).getLink();
+        StrongLink link = ((HDT_Hub)mentioner).getLink();
         if (link.getDebate  () != null) typeStr += (typeStr.isEmpty() ? "" : ", ") + db.getTypeName(hdtDebate);
         if (link.getPosition() != null) typeStr += (typeStr.isEmpty() ? "" : ", ") + db.getTypeName(hdtPosition);
         if (link.getNote    () != null) typeStr += (typeStr.isEmpty() ? "" : ", ") + db.getTypeName(hdtNote);
@@ -1085,7 +1085,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       arg -> ui.goToRecord(arg.positions.get(0), true));
 
     htArguments.addContextMenuItem("Debate Record...", HDT_Argument.class,
-      arg -> arg.positions.size() == 0 ? false : arg.positions.get(0).getDebate() != null,
+      arg -> arg.positions.isEmpty() ? false : arg.positions.get(0).getDebate() != null,
       arg -> ui.goToRecord(arg.positions.get(0).getDebate(), true));
   }
 
@@ -1117,7 +1117,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     if (ui.cantSaveRecord()) return;
 
-    if (curWork.workFiles.size() == 0)
+    if (curWork.workFiles.isEmpty())
     {
       messageDialog("There are no files to move.", mtWarning);
       return;
@@ -1208,15 +1208,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         return;
       }
 
-      HDT_RecordWithPath fileRecord = HyperPath.getFileFromFilePath(filePath);
+      HDT_RecordWithPath fileRecord = HyperPath.getRecordFromFilePath(filePath);
 
       if (fileRecord != null)
       {
-        if (fileRecord instanceof HDT_MiscFile)
-          messageDialog("The file: " + filePath + " is already in use as a miscellaneous file, record ID: " + fileRecord.getID(), mtError);
-        else
-          messageDialog("The file: " + filePath + " is already assigned to the work record with ID: " + HDT_WorkFile.class.cast(fileRecord).works.get(0).getID(), mtError);
-
+        messageDialog(HyperPath.alreadyInUseMessage(filePath, fileRecord), mtError);
         return;
       }
     }
@@ -1671,7 +1667,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (HDT_Work.isUnenteredSet(curWork))
     {
-      fdc = FileDlgCtrlr.create("Unentered Work File", workFile, curWork);
+      fdc = FileDlgCtrlr.build("Unentered Work File", workFile, curWork);
 
       fdc.setSrcFilePath(filePathToUse, true);
 
@@ -1683,9 +1679,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     else
     {
       if ((workFile == null) && (filePathToUse != null))
-        wdc = WorkDlgCtrlr.create(filePathToUse, bdToUse, newEntryChecked, newEntryType);
+        wdc = WorkDlgCtrlr.build(filePathToUse, bdToUse, newEntryChecked, newEntryType);
       else
-        wdc = WorkDlgCtrlr.create(workFile);
+        wdc = WorkDlgCtrlr.build(workFile);
 
       result = wdc.showModal();
       FolderTreeWatcher.alreadyImporting = false;
@@ -1726,9 +1722,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private void updateBibButtons()
   {
-    btnUseDOI.setDisable(getDoiFromBibTab().isEmpty());
-
-    btnUseISBN.setDisable(getIsbnsFromBibTab().size() == 0);
+    btnUseDOI .setDisable(getDoiFromBibTab  ().isEmpty());
+    btnUseISBN.setDisable(getIsbnsFromBibTab().isEmpty());
 
     tabPane.requestLayout();
   }
@@ -1906,7 +1901,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       try
       {
-        mwd = MergeWorksDlgCtrlr.create("Merge Bibliographic Data", workBD, pdfBD, queryBD, null, curWork, false, true, false);
+        mwd = MergeWorksDlgCtrlr.build("Merge Bibliographic Data", workBD, pdfBD, queryBD, null, curWork, false, true, false);
       }
       catch (IOException e)
       {
@@ -1943,8 +1938,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     try
     {
-      mwd = MergeWorksDlgCtrlr.create("Merge Bibliographic Data", workBibData,
-                                      pdfBD.get(), crossrefBD.get(), googleBD.get(), curWork, false, true, false);
+      mwd = MergeWorksDlgCtrlr.build("Merge Bibliographic Data", workBibData,
+                                     pdfBD.get(), crossrefBD.get(), googleBD.get(), curWork, false, true, false);
     }
     catch (IOException e)
     {
@@ -2015,6 +2010,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     btnWebSrch2.setText(ui.webButtonMap.get(PREF_KEY_WORK_SRCH + "2").getCaption());
     mnuGoogle  .setText("Search this DOI using " + ui.webButtonMap.get(PREF_KEY_DOI_SRCH).getCaption());
+
     isbnSrchMenuItemSchema.setCaption(ui.webButtonMap.get(PREF_KEY_ISBN_SRCH).getCaption());
 
     setToolTip(btnWebSrch2, TOOLTIP_PREFIX + btnWebSrch2.getText());
@@ -2025,16 +2021,23 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private EventHandler<ActionEvent> searchBtnEvent(String prefKey)
   {
-    return event ->
-    {
-      ui.webButtonMap.get(prefKey).first(WebButtonField.SingleName, getFirstAuthorSingleName())
-                                  .next (WebButtonField.Title, tfTitle.getText())
-                                  .next (WebButtonField.QueryTitle, tfTitle.getText())
-                                  .next (WebButtonField.NumericYear, tfYear.getText())
-                                  .next (WebButtonField.doi, tfDOI.getText())
-                                  .next (WebButtonField.ISBN, htISBN.dataRowStream().map(row -> row.getText(0)).findFirst().orElse(""))
-                                  .go();
-    };
+    return event -> ui.webButtonMap.get(prefKey).first(WebButtonField.SingleName, getFirstAuthorSingleName())
+                                                .next (WebButtonField.Title, tfTitle.getText())
+                                                .next (WebButtonField.QueryTitle, tfTitle.getText())
+                                                .next (WebButtonField.NumericYear, tfYear.getText())
+                                                .next (WebButtonField.doi, tfDOI.getText())
+                                                .next (WebButtonField.ISBN, htISBN.dataRowStream().map(row -> row.getText(0)).findFirst().orElse(""))
+                                                .go();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void showWorkFile(HDT_WorkFile workFile)
+  {
+    tabPane.getSelectionModel().select(tabWorkFiles);
+
+    htWorkFiles.selectRowByRecord(workFile);
   }
 
 //---------------------------------------------------------------------------

@@ -31,8 +31,13 @@ import org.hypernomicon.model.records.HDT_Argument;
 
 public class ArgumentQueryEngine extends QueryEngine<HDT_Argument>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
   {
+
   }
 
 //---------------------------------------------------------------------------
@@ -49,7 +54,7 @@ public class ArgumentQueryEngine extends QueryEngine<HDT_Argument>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Argument record, boolean firstCall, boolean lastCall)
+  @Override public boolean evaluate(HDT_Argument argument, boolean firstCall, boolean lastCall)
   {
     switch (curQuery)
     {
@@ -92,9 +97,9 @@ public class ArgumentQueryEngine extends QueryEngine<HDT_Argument>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int numOperands(int query)
+  @Override public boolean hasOperand(int query, int opNum, HyperTableCell prevOp)
   {
-    return 3;
+    return true;
   }
 
 //---------------------------------------------------------------------------

@@ -72,7 +72,7 @@ public class WebButtonTable extends WebButtonCtrl
     {
       try
       {
-        EditWebButtonsDlgCtrlr dlg = EditWebButtonsDlgCtrlr.create(getWebButton(row), prefKey);
+        EditWebButtonsDlgCtrlr dlg = EditWebButtonsDlgCtrlr.build(getWebButton(row), prefKey);
 
         if ((dlg.showModal() == false) || dlg.unchanged()) return;
 

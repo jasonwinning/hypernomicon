@@ -38,7 +38,6 @@ import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
-import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.BibAuthorsStandalone;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.filePath.FilePath;
@@ -285,7 +284,6 @@ public class PDFBibData extends BibDataStandalone
         {
           if (name.equals("creator"))
           {
-            BibAuthors authors = bd.getAuthors();
             authors.clear();
 
             elements.forEach(child -> authors.add(AuthorType.author, new PersonName(child.value)));
@@ -581,7 +579,7 @@ public class PDFBibData extends BibDataStandalone
 
     it = pdfFilePaths.iterator();
 
-    while ((isbns.size() == 0) && it.hasNext())
+    while (isbns.isEmpty() && it.hasNext())
       isbns = matchISBN(it.next().getNameOnly().toString());
 
     goodPdfBD.setMultiStr(bfISBNs, isbns);

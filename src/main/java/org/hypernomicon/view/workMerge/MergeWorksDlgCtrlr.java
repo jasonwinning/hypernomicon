@@ -94,29 +94,28 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static MergeWorksDlgCtrlr create(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
-                                          boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked, FilePath filePath) throws IOException
+  public static MergeWorksDlgCtrlr build(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
+                                         boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked, FilePath filePath) throws IOException
   {
-    MergeWorksDlgCtrlr mwd = HyperDlg.createUsingFullPath("view/workMerge/MergeWorksDlg.fxml", title, true);
-    mwd.init(bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChecked, filePath);
-    return mwd;
+    return ((MergeWorksDlgCtrlr) createUsingFullPath("view/workMerge/MergeWorksDlg.fxml", title, true))
+      .init(bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChecked, filePath);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static MergeWorksDlgCtrlr create(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
-                                          boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked) throws IOException
+  public static MergeWorksDlgCtrlr build(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
+                                         boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked) throws IOException
   {
-    return create(title, bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChecked,
-                  nullSwitch(destWork, null, HDT_Work::filePath));
+    return build(title, bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChecked,
+                 nullSwitch(destWork, null, HDT_Work::filePath));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
-                    boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked, FilePath filePath) throws IOException
+  private MergeWorksDlgCtrlr init(BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
+                                  boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked, FilePath filePath) throws IOException
   {
     apPreview = new AnchorPane();
     mdp = WorkDlgCtrlr.addPreview(stagePane, apMain, apPreview, btnPreview);
@@ -241,7 +240,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
         cnt++;
       }
 
-      if ((bd3 != null) && (bd3.fieldNotEmpty(bibFieldEnum)))
+      if ((bd3 != null) && bd3.fieldNotEmpty(bibFieldEnum))
       {
         if (singleBD != null)
         {
@@ -254,7 +253,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
         cnt++;
       }
 
-      if ((bd4 != null) && (bd4.fieldNotEmpty(bibFieldEnum)))
+      if ((bd4 != null) && bd4.fieldNotEmpty(bibFieldEnum))
       {
         if (singleBD != null)
         {
@@ -301,6 +300,8 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 
       onShown = () -> safeFocus(rbTitle1);
     }
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

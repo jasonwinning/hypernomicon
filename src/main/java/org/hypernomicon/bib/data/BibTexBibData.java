@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
-import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.items.PersonName;
 import org.jbibtex.BibTeXDatabase;
 import org.jbibtex.BibTeXEntry;
@@ -49,8 +48,6 @@ public class BibTexBibData extends BibDataStandalone
 
   private void addBibTexAuthor(String val, AuthorType authorType)
   {
-    BibAuthors authors = getAuthors();
-
     Arrays.stream(val.split("\n")).forEach(auth ->
     {
       if (auth.startsWith("and "))
@@ -99,7 +96,7 @@ public class BibTexBibData extends BibDataStandalone
         case "publisher" : setStr(bfPublisher, val); break;
         case "series"    :
 
-          if (getMultiStr(bfContainerTitle).size() == 0)
+          if (getMultiStr(bfContainerTitle).isEmpty())
             addStr(bfContainerTitle, val);
           break;
 
@@ -125,7 +122,7 @@ public class BibTexBibData extends BibDataStandalone
 
     BibTeXDatabase entries = parser.parse(new BufferedReader(new StringReader(String.join("\n", lines))));
 
-    if ((entries == null) || (entries.getEntries().size() == 0)) return null;
+    if ((entries == null) || entries.getEntries().isEmpty()) return null;
 
     BibTeXEntry entry = entries.getEntries().values().iterator().next();
 

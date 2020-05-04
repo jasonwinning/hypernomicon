@@ -126,17 +126,16 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static LaunchCommandsDlgCtrlr create(String title, String appPrefKey, String commandsPrefKey, String commandTypePrefKey)
+  static LaunchCommandsDlgCtrlr build(String title, String appPrefKey, String commandsPrefKey, String commandTypePrefKey)
   {
-    LaunchCommandsDlgCtrlr lcdc = HyperDlg.createUsingFullPath("view/settings/LaunchCommandsDlg.fxml", title, true);
-    lcdc.init(appPrefKey, commandsPrefKey, commandTypePrefKey);
-    return lcdc;
+    return ((LaunchCommandsDlgCtrlr) createUsingFullPath("view/settings/LaunchCommandsDlg.fxml", title, true))
+      .init(appPrefKey, commandsPrefKey, commandTypePrefKey);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(String appPrefKey, String commandsPrefKey, String commandTypePrefKey)
+  private LaunchCommandsDlgCtrlr init(String appPrefKey, String commandsPrefKey, String commandTypePrefKey)
   {
     this.appPrefKey = appPrefKey;
     this.commandsPrefKey = commandsPrefKey;
@@ -191,6 +190,8 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
       if (preset.isCompatible() && preset.commandsPrefKey.equals(commandsPrefKey))
         lvPresets.getItems().add(preset);
     });
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

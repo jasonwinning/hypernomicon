@@ -32,13 +32,13 @@ import static org.hypernomicon.util.Util.*;
 
 public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 {
-  final Button cellButton;
+  final Button btn;
   final HyperTable ht;
   final int colNdxOfTarget;
   final HyperCtrlType ctrlType;
   final private HyperTableColumn col;
   final private ButtonCellHandler handler;
-  final private String btnCaption;
+  final private String caption;
 
 //---------------------------------------------------------------------------
 
@@ -51,16 +51,16 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ButtonCell(HyperCtrlType ctrlType, HyperTable newHT, HyperTableColumn col, int colNdxOfTarget, ButtonCellHandler handler, String btnCaption)
+  ButtonCell(HyperCtrlType ctrlType, HyperTable newHT, HyperTableColumn col, int colNdxOfTarget, ButtonCellHandler handler, String caption)
   {
     ht = newHT;
     this.colNdxOfTarget = colNdxOfTarget;
     this.ctrlType = ctrlType;
     this.col = col;
     this.handler = handler;
-    this.btnCaption = safeStr(btnCaption);
+    this.caption = safeStr(caption);
 
-    cellButton = HyperTableColumn.makeButton(this);
+    btn = HyperTableColumn.makeButton(this);
 
     switch (ctrlType)
     {
@@ -80,7 +80,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
   private void setOnAction(ButtonCellHandler defHandler)
   {
-    cellButton.setOnAction(event ->
+    btn.setOnAction(event ->
     {
       HyperTableRow row = HyperTableRow.class.cast(getTableRow().getItem());
 
@@ -100,24 +100,20 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
     {
       case baBrowse:
 
-        if (btnCaption.length() > 0)
-          cellButton.setText(btnCaption);
-        else
-          cellButton.setText("...");
-
-        cellButton.setGraphic(null);
+        btn.setText(caption.length() > 0 ? caption : "...");
+        btn.setGraphic(null);
         setOnAction(ht::browseClick);
 
         break;
 
       case baEdit:
 
-        cellButton.setText("");
+        btn.setText("");
 
         ImageView iv = getImageViewForRelativePath("resources/images/form-pencil.png");
         iv.setFitWidth(16);
         iv.setFitHeight(16);
-        cellButton.setGraphic(iv);
+        btn.setGraphic(iv);
 
         setOnAction(null);
 
@@ -125,53 +121,39 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
       case baGo:
 
-        if (btnCaption.length() > 0)
-          cellButton.setText(btnCaption);
-        else
-          cellButton.setText("Go:");
-
-        cellButton.setGraphic(null);
-
+        btn.setText(caption.length() > 0 ? caption : "Go:");
+        btn.setGraphic(null);
         setOnAction((row, colNdx) -> ui.goToRecord(row.getRecord(colNdx), true));
 
         break;
 
       case baWeb:
 
-        if (btnCaption.length() > 0)
-          cellButton.setText(btnCaption);
-        else
-          cellButton.setText("URL:");
-
-        cellButton.setGraphic(null);
+        btn.setText(caption.length() > 0 ? caption : "URL:");
+        btn.setGraphic(null);
         setOnAction((row, colNdx) -> openWebLink(row.getText(colNdx)));
 
         break;
 
       case baNew:
 
-        if (btnCaption.length() > 0)
-          cellButton.setText(btnCaption);
-        else
-          cellButton.setText("New");
-
-        cellButton.setGraphic(null);
-
+        btn.setText(caption.length() > 0 ? caption : "New");
+        btn.setGraphic(null);
         setOnAction((row, colNdx) -> ui.activeTab().newClick(ht.getTypeByCol(colNdx), row));
 
         break;
 
       case baCustom :
 
-        cellButton.setText(btnCaption);
-        cellButton.setGraphic(null);
+        btn.setText(caption);
+        btn.setGraphic(null);
         setOnAction(null);            // There is no default recordHandler
         break;
 
       default: break;
     }
 
-    setToolTip(cellButton, col.tooltips.get(newAction));
+    setToolTip(btn, col.tooltips.get(newAction));
   }
 
 //---------------------------------------------------------------------------
@@ -183,8 +165,8 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
     if (empty) return;
 
-    setGraphic(cellButton);
-    cellButton.setDisable(false);
+    setGraphic(btn);
+    btn.setDisable(false);
 
     if (colNdxOfTarget < 0) return;
 
@@ -199,7 +181,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
     else if (ctrlType != ctBrowseBtn)
     {
       if ((ctrlType != ctGoNewBtn) && (ctrlType != ctEditNewBtn))
-        cellButton.setDisable(true);
+        btn.setDisable(true);
       else
         setAction(ButtonAction.baNew);
     }

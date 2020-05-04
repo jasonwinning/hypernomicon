@@ -40,20 +40,20 @@ public class ObjectOrderDlgCtrlr extends HyperDlg
 
   private List<HyperTableRow> rows;
 
+  @Override protected boolean isValid() { return true; }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ObjectOrderDlgCtrlr create(HyperTable ht, List<HyperTableRow> rows)
+  public static ObjectOrderDlgCtrlr build(HyperTable ht, List<HyperTableRow> rows)
   {
-    ObjectOrderDlgCtrlr ood = HyperDlg.create("ObjectOrderDlg.fxml", "Change Order of Rows", true);
-    ood.init(ht, rows);
-    return ood;
+    return ((ObjectOrderDlgCtrlr) create("ObjectOrderDlg.fxml", "Change Order of Rows", true)).init(ht, rows);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HyperTable ht, List<HyperTableRow> rows)
+  private ObjectOrderDlgCtrlr init(HyperTable ht, List<HyperTableRow> rows)
   {
     List<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
 
@@ -90,6 +90,8 @@ public class ObjectOrderDlgCtrlr extends HyperDlg
     btnMoveDown.setOnAction(event -> moveDown());
 
     tv.getSelectionModel().clearAndSelect(0);
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -124,11 +126,4 @@ public class ObjectOrderDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected boolean isValid()
-  {
-    return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 }

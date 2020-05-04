@@ -43,21 +43,21 @@ public class NewRegionDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewRegionDlgCtrlr create(HDT_Country country)
+  public static NewRegionDlgCtrlr build(HDT_Country country)
   {
-    NewRegionDlgCtrlr dlg = HyperDlg.create("NewRegionDlg.fxml", "New State/Region", true);
-    dlg.init(country);
-    return dlg;
+    return ((NewRegionDlgCtrlr) create("NewRegionDlg.fxml", "New State/Region", true)).init(country);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_Country country)
+  private NewRegionDlgCtrlr init(HDT_Country country)
   {
     lblCountry.setText("Country: " + country.name());
 
     this.country = country;
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

@@ -26,7 +26,9 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.HyperPath;
+import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_Person;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.DesktopApi;
 import org.hypernomicon.util.FileDownloadUtility;
@@ -39,6 +41,7 @@ import org.hypernomicon.view.tabs.PersonTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -48,6 +51,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
@@ -72,33 +76,29 @@ public class PictureDlgCtrlr extends HyperDlg
   private FileDownloadUtility.Buffer imageBuffer;
   private String bufferFileName = "";
 
-  @FXML private RadioButton rbNone, rbFile, rbWeb, rbCurrent;
-  @FXML private TextField tfCurrent, tfFile, tfWeb;
-  @FXML private Button btnBrowse, btnPaste;
-  @FXML private TextField tfName;
-  @FXML private Button btnRefresh, btnDelete, btnShow, btnEdit, btnWebSrch;
   @FXML private AnchorPane apPicture;
+  @FXML private Button btnBrowse, btnPaste, btnRefresh, btnDelete, btnShow, btnEdit, btnWebSrch, btnStop;
+  @FXML private CheckBox chkMove;
   @FXML private ImageView ivPicture;
   @FXML private Label lblChangeName;
   @FXML private ProgressBar progressBar;
-  @FXML private Button btnStop;
+  @FXML private RadioButton rbNone, rbFile, rbWeb, rbCurrent;
+  @FXML private TextField tfCurrent, tfFile, tfWeb, tfName;
 
   private PersonTabCtrlr personHyperTab;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static PictureDlgCtrlr create(Rectangle2D viewPort)
+  public static PictureDlgCtrlr build(Rectangle2D viewPort)
   {
-    PictureDlgCtrlr pdc = HyperDlg.create("PictureDlg.fxml", "Edit Picture", true);
-    pdc.init(viewPort);
-    return pdc;
+    return ((PictureDlgCtrlr) create("PictureDlg.fxml", "Edit Picture", true)).init(viewPort);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(Rectangle2D viewPort)
+  private PictureDlgCtrlr init(Rectangle2D viewPort)
   {
     this.personHyperTab = ui.personHyperTab();
 
@@ -258,6 +258,8 @@ public class PictureDlgCtrlr extends HyperDlg
     }
 
     changed = false;
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -267,7 +269,7 @@ public class PictureDlgCtrlr extends HyperDlg
   {
     String ext = "";
 
-    FilePath filePath = db.picturesPath(tfName.getText());
+    FilePath filePath = getDestFilePath(tfName.getText());
     ext = filePath.getExtensionOnly();
     if (ext.isEmpty()) ext = "jpg";
 
@@ -309,7 +311,7 @@ public class PictureDlgCtrlr extends HyperDlg
   {
     if (FilePath.isFilenameValid(fileName) == false) return true;
 
-    FilePath filePath = db.picturesPath(fileName);
+    FilePath filePath = getDestFilePath(fileName);
     if (filePath.equals(personHyperTab.curPicture)) return false;
 
     return filePath.exists();
@@ -516,7 +518,7 @@ public class PictureDlgCtrlr extends HyperDlg
       if (FilePath.isEmpty(personHyperTab.curPicture) || tfName.getText().isEmpty()) return;
 
       src = personHyperTab.curPicture;
-      dest = db.picturesPath(tfName.getText());
+      dest = getDestFilePath(tfName.getText());
 
       if (src.equals(dest) == false)
       {
@@ -533,7 +535,7 @@ public class PictureDlgCtrlr extends HyperDlg
       {
         if (tfFile.getText().isEmpty()) return;
         src = new FilePath(tfFile.getText());
-        dest = db.picturesPath(tfName.getText());
+        dest = getDestFilePath(tfName.getText());
         sameFile = src.equals(dest);
       }
       else
@@ -555,7 +557,7 @@ public class PictureDlgCtrlr extends HyperDlg
       return;
 
     String execPath = appPrefs.get(PREF_KEY_IMAGE_EDITOR, "");
-    FilePath picturePath = db.picturesPath(tfName.getText());
+    FilePath picturePath = getDestFilePath(tfName.getText());
 
     if (execPath.isEmpty())
       DesktopApi.edit(picturePath);
@@ -573,6 +575,7 @@ public class PictureDlgCtrlr extends HyperDlg
     ivPicture.setImage(null);
     picture = null;
     tfName.setText("");
+    chkMove.setDisable(true);
   }
 
 //---------------------------------------------------------------------------
@@ -583,6 +586,9 @@ public class PictureDlgCtrlr extends HyperDlg
     String url = tfWeb.getText();
 
     removeCrop();
+
+    chkMove.setDisable(true);
+    chkMove.setSelected(true);
 
     if (url.isEmpty())
     {
@@ -686,15 +692,32 @@ public class PictureDlgCtrlr extends HyperDlg
       return;
     }
 
-    picture = new Image(path.toURI().toString());
-    if (!picture.isError())
-      ivPicture.setImage(picture);
+    if (db.getRootPath().isSubpath(path) == false)
+    {
+      chkMove.setDisable(true);
+      chkMove.setSelected(true);
+    }
+    else if (path.getDirOnly().equals(db.picturesPath()))
+    {
+      chkMove.setDisable(true);
+      chkMove.setSelected(false);
+    }
     else
+    {
+      chkMove.setDisable(false);
+      chkMove.setSelected(false);
+    }
+
+    picture = new Image(path.toURI().toString());
+    if (picture.isError())
     {
       messageDialog("An error occurred while trying to display the picture: " + picture.getException().getMessage(), mtError);
       ivPicture.setImage(null);
       picture = null;
+      return;
     }
+
+    ivPicture.setImage(picture);
   }
 
 //---------------------------------------------------------------------------
@@ -706,11 +729,27 @@ public class PictureDlgCtrlr extends HyperDlg
 
     picture = new Image(personHyperTab.curPicture.toURI().toString());
 
+    if (db.getRootPath().isSubpath(personHyperTab.curPicture) == false)
+    {
+      chkMove.setDisable(true);
+      chkMove.setSelected(true);
+    }
+    else if (personHyperTab.curPicture.getDirOnly().equals(db.picturesPath()))
+    {
+      chkMove.setDisable(true);
+      chkMove.setSelected(false);
+    }
+    else
+    {
+      chkMove.setDisable(false);
+      chkMove.setSelected(false);
+    }
+
     if (!picture.isError())
     {
       ivPicture.setImage(picture);
 
-      tfCurrent.setText(personHyperTab.curPicture.getNameOnly().toString());
+      tfCurrent.setText(db.getRootPath().relativize(personHyperTab.curPicture).toString());
       tfName.setText(personHyperTab.curPicture.getNameOnly().toString());
     }
     else
@@ -721,7 +760,6 @@ public class PictureDlgCtrlr extends HyperDlg
       rbNone.setSelected(true);
       rbCurrent.setDisable(true);
     }
-
   }
 
 //---------------------------------------------------------------------------
@@ -740,6 +778,14 @@ public class PictureDlgCtrlr extends HyperDlg
 
     if (FilePath.isEmpty(filePath)) return;
 
+    HDT_RecordWithPath existingRecord = HyperPath.getRecordFromFilePath(filePath);
+
+    if ((existingRecord != null) && (existingRecord != personHyperTab.activeRecord()))
+    {
+      messageDialog(HyperPath.alreadyInUseMessage(filePath, existingRecord), mtInformation);
+      return;
+    }
+
     tfFile.setText(filePath.toString());
 
     if (rbFile.isSelected())
@@ -751,19 +797,31 @@ public class PictureDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private FilePath getDestFilePath(String fileName)
+  {
+    fileName = new FilePath(fileName).getNameOnly().toString();
+
+    if (rbCurrent.isSelected())
+    {
+      if (chkMove.isSelected() == false)
+        return personHyperTab.curPicture.getDirOnly().resolve(new FilePath(fileName));
+    }
+
+    else if (rbFile.isSelected())
+    {
+      FilePath filePath = new FilePath(tfFile.getText());
+      if (db.getRootPath().isSubpath(filePath) && (chkMove.isSelected() == false))
+        return filePath.getDirOnly().resolve(new FilePath(fileName));
+    }
+
+    return db.picturesPath(fileName);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override protected boolean isValid()
   {
-    FilePath curFile = personHyperTab.curPicture,
-             newFileOrig = null,
-             newFileNew = db.picturesPath(tfName.getText());
-
-    String curFileName = "",
-           newFileOldName,
-           newFileNewName = tfName.getText();
-
-    if (FilePath.isEmpty(personHyperTab.curPicture) == false)
-      curFileName = personHyperTab.curPicture.getNameOnly().toString();
-
     if (rbNone.isSelected())
     {
       personHyperTab.curPicture = null;
@@ -771,28 +829,48 @@ public class PictureDlgCtrlr extends HyperDlg
       return true;
     }
 
+    final FilePath curFile = personHyperTab.curPicture;
+    final String curFileName = FilePath.isEmpty(curFile) ? "" : curFile.getNameOnly().toString();
+
+    FilePath newFileSrc = null,
+             newFileDest = getDestFilePath(tfName.getText());
+
+    String newFileSrcName = "",
+           newFileDestName = tfName.getText();
+
   //---------------------------------------------------------------------------
   // Perform checks before deleting previous image
   //---------------------------------------------------------------------------
 
-    if (newFileNewName.isEmpty())
+    if (newFileDestName.isBlank())
       return falseWithErrorMessage("Name cannot be blank.", tfName);
+
+    Set<HyperPath> set;
 
     if (rbWeb.isSelected())
     {
-      newFileOldName = "";
-
-      if (tfWeb.getText().isEmpty())
+      if (tfWeb.getText().isBlank())
         return falseWithErrorMessage("Please enter a web address.", tfWeb);
 
-      if (newFileNew.exists())
+      set = HyperPath.getHyperPathSetForFilePath(newFileDest);
+
+      if (set.size() > 0)
+      {
+        for (HyperPath hyperPath : set)
+        {
+          if (hyperPath.getRecord() != personHyperTab.activeRecord())
+            return falseWithErrorMessage("Destination file is already in use.");
+        }
+      }
+
+      if (newFileDest.exists())
       {
         if (confirmDialog("A file with that name already exists. Okay to overwrite?") == false)
           return false;
 
         try
         {
-          newFileNew.delete(false);
+          newFileDest.delete(false);
         }
         catch (IOException e)
         {
@@ -802,21 +880,21 @@ public class PictureDlgCtrlr extends HyperDlg
     }
     else if (rbCurrent.isSelected())
     {
-      newFileOldName = curFileName;
-      newFileOrig = curFile;
+      newFileSrc = curFile;
+      newFileSrcName = curFileName;
     }
     else // (rbFile.isSelected())
     {
-      newFileOrig = new FilePath(tfFile.getText());
-      newFileOldName = newFileOrig.getNameOnly().toString();
+      newFileSrc = new FilePath(tfFile.getText());
+      newFileSrcName = newFileSrc.getNameOnly().toString();
 
-      if (FilePath.isEmpty(newFileOrig) || newFileOldName.isEmpty())
+      if (FilePath.isEmpty(newFileSrc) || newFileSrcName.isBlank())
         return falseWithErrorMessage("Please specify a file from the local file system.", tfFile);
 
-      if (newFileOrig.exists() == false)
+      if (newFileSrc.exists() == false)
         return falseWithErrorMessage("Please select an existing file.", tfFile);
 
-      if ((FilePath.isEmpty(curFile) == false) && curFile.equals(newFileOrig))
+      if (newFileSrc.equals(curFile))
         return falseWithErrorMessage("Previous file and new file are the same.", tfFile);
     }
 
@@ -829,16 +907,16 @@ public class PictureDlgCtrlr extends HyperDlg
       try
       {
         if (bufferOutOfDate == false)
-          imageBuffer.saveToFile(newFileNew);
+          imageBuffer.saveToFile(newFileDest);
         else
         {
           progressBar.setVisible(true);
           btnStop.setVisible(true);
 
-          FileDownloadUtility.downloadToFile(tfWeb.getText(), db.picturesPath(), newFileNewName,
+          FileDownloadUtility.downloadToFile(tfWeb.getText(), db.picturesPath(), newFileDestName,
                                              new StringBuilder(), true, httpClient, buffer ->
           {
-            personHyperTab.curPicture = newFileNew;
+            personHyperTab.curPicture = newFileDest;
             noRemoveCrop = true;
             rbCurrent.setSelected(true);
 
@@ -855,59 +933,86 @@ public class PictureDlgCtrlr extends HyperDlg
         return falseWithErrorMessage("An error occurred while saving the file: " + ex.getMessage());
       }
     }
-    else if (rbFile.isSelected())
+    else
     {
-      if (newFileOrig.equals(newFileNew) == false)
+      HDT_RecordWithPath existingRecord = HyperPath.getRecordFromFilePath(newFileDest);
+
+      if ((existingRecord != null) && (existingRecord != personHyperTab.activeRecord()))
+        return falseWithErrorMessage(HyperPath.alreadyInUseMessage(newFileDest, existingRecord));
+
+      if (newFileSrc.equals(newFileDest) == false)
       {
-        DialogResult result = new PopupDialog("Should the file be moved or copied from its present location?")
+        if (newFileDest.exists())
+          return falseWithErrorMessage("Unable to move/rename file: A file with that name already exists.");
 
-          .addButton("Move", mrMove)
-          .addButton("Copy", mrCopy)
+        if (newFileSrc.exists() == false)
+          return falseWithErrorMessage("Source file does not exist.");
 
-          .showModal();
+        if (newFileSrc.isDirectory())
+          return falseWithErrorMessage("Source file cannot be a directory.");
 
-        if (result == mrMove)
+        set = HyperPath.getHyperPathSetForFilePath(newFileSrc);
+
+        if (set.isEmpty())
         {
-          try
+          DialogResult result = mrMove;
+
+          if (chkMove.isDisabled())
           {
-            newFileOrig.moveTo(newFileNew, true);
-          }
-          catch (IOException e)
-          {
-            return falseWithErrorMessage("An error occurred while moving the file: " + e.getMessage());
+            result = new PopupDialog("Should the file be moved or copied from its present location?")
+
+            .addButton("Move", mrMove)
+            .addButton("Copy", mrCopy)
+
+            .showModal();
           }
 
-          db.unmapFilePath(newFileOrig);
+          if (result == mrMove)
+          {
+            try
+            {
+              newFileSrc.moveTo(newFileDest, true);
+            }
+            catch (IOException e)
+            {
+              return falseWithErrorMessage("An error occurred while moving the file: " + e.getMessage());
+            }
+
+            db.unmapFilePath(newFileSrc);
+          }
+          else
+          {
+            try
+            {
+              newFileSrc.copyTo(newFileDest, true);
+            }
+            catch (IOException e)
+            {
+              return falseWithErrorMessage("An error occurred while copying the file: " + e.getMessage());
+            }
+          }
         }
         else
         {
-          try
+          HDT_Folder destFolder = HyperPath.getFolderFromFilePath(newFileDest.getDirOnly(), true);
+
+          for (HyperPath hyperPath : set)
           {
-            newFileOrig.copyTo(newFileNew, true);
-          }
-          catch (IOException e)
-          {
-            return falseWithErrorMessage("An error occurred while copying the file: " + e.getMessage());
+            try
+            {
+              if (!hyperPath.moveToFolder(destFolder.getID(), false, true, newFileDestName))
+                return falseWithErrorMessage("Unable to move the file.");
+            }
+            catch (IOException e)
+            {
+              return falseWithErrorMessage("An error occurred while moving the file: " + e.getMessage());
+            }
           }
         }
       }
     }
-    else if (curFile.equals(newFileNew) == false) // (rbCurrent.isSelected())
-    {
-      if (newFileNew.exists())
-        return falseWithErrorMessage("Unable to rename file: A file with that name already exists.");
 
-      try
-      {
-        HyperPath.renameFile(curFile, newFileNewName);
-      }
-      catch (SecurityException | IOException e)
-      {
-        return falseWithErrorMessage("An error occurred while renaming the file: " + e.getMessage());
-      }
-    }
-
-    personHyperTab.curPicture = newFileNew;
+    personHyperTab.curPicture = newFileDest;
     noRemoveCrop = true;
     rbCurrent.setSelected(true);
 

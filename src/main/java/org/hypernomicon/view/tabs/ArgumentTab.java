@@ -98,7 +98,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       if (work.authorRecords.size() > 0)
         row.setCellValue(1, work.authorRecords.get(0), work.getLongAuthorsStr(true));
       else
-        row.setCellValue(1, work, work.getLongAuthorsStr(true));
+        row.setCellValue(1, -1, work.getLongAuthorsStr(true), hdtPerson);
 
       row.setCellValue(2, work, work.getCBText());
       row.setCellValue(3, work, work.getYear(), HyperCellSortMethod.hsmNumeric);
@@ -116,7 +116,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
         if (work.authorRecords.size() > 0)
           row.setCellValue(1, work.authorRecords.get(0), work.getLongAuthorsStr(true));
         else
-          row.setCellValue(1, work, work.getLongAuthorsStr(true));
+          row.setCellValue(1, counterArg, work.getLongAuthorsStr(true));
       }
 
       nullSwitch(counterArg.getArgVerdict(curArgument), verdict -> row.setCellValue(2, counterArg, verdict.listName()));
@@ -365,7 +365,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       case hdtWork :
 
         HDT_Work work = db.createNewBlankRecord(hdtWork);
-        nullSwitch(db.persons.getByID(row.getID(1)), author -> work.getAuthors().add(author));
+        nullSwitch(db.persons.getByID(row.getID(1)), work.getAuthors()::add);
         curArgument.works.add(work);
         ui.goToRecord(work, false);
         break;

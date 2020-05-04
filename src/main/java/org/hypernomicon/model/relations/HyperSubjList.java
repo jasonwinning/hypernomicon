@@ -69,7 +69,7 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
   @Override public boolean contains(Object o)
   {
     if (o instanceof HDT_Record)
-      if (HDT_Record.class.cast(o).getType() == relSet.getSubjType())
+      if (((HDT_Record)o).getType() == relSet.getSubjType())
         return relSet.alreadyHasAsObject((HDT_SubjType)o, obj);
 
     return false;
@@ -121,7 +121,7 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
       if ((o instanceof HDT_Record) == false)
         return false;
 
-      if (HDT_Record.class.cast(o).getType() != relSet.getSubjType())
+      if (((HDT_Record)o).getType() != relSet.getSubjType())
         return false;
 
       HDT_SubjType subj = (HDT_SubjType)o;
@@ -140,7 +140,7 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
   {
     if ((o instanceof HDT_Record) == false) return -1;
 
-    if (HDT_Record.class.cast(o).getType() != relSet.getSubjType()) return -1;
+    if (((HDT_Record)o).getType() != relSet.getSubjType()) return -1;
 
     return relSet.getSubjectNdx(obj, (HDT_SubjType)o);
   }
@@ -152,7 +152,7 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
   {
     if ((o instanceof List) == false) return false;
 
-    List<?> list = List.class.cast(o);
+    List<?> list = (List<?>)o;
 
     if (list.size() != size()) return false;
 

@@ -38,19 +38,17 @@ public class ValueSelectDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ValueSelectDlgCtrlr create(List<HyperTableCell> list)
+  public static ValueSelectDlgCtrlr build(List<HyperTableCell> list)
   {
-    ValueSelectDlgCtrlr vsd = HyperDlg.create("ValueSelectDlg.fxml", "Choose a Value", true);
-    vsd.init(list);
-    return vsd;
+    return ((ValueSelectDlgCtrlr) create("ValueSelectDlg.fxml", "Choose a Value", true)).init(list);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(List<HyperTableCell> list)
+  private ValueSelectDlgCtrlr init(List<HyperTableCell> list)
   {
-    if (collEmpty(list)) return;
+    if (collEmpty(list)) return this;
     HDT_RecordType objType = HyperTableCell.getCellType(list.get(0));
 
     listView.setItems(FXCollections.observableArrayList(list));
@@ -68,6 +66,8 @@ public class ValueSelectDlgCtrlr extends HyperDlg
       if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2))
         btnOkClick();
     });
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -75,10 +75,7 @@ public class ValueSelectDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if (listView.getSelectionModel().getSelectedItem() == null)
-      return falseWithWarningMessage("Select a record.", listView);
-
-    return true;
+    return listView.getSelectionModel().getSelectedItem() != null ? true : falseWithWarningMessage("Select a record.", listView);
   }
 
 //---------------------------------------------------------------------------

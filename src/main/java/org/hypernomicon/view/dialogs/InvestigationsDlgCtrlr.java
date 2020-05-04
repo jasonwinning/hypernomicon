@@ -67,17 +67,15 @@ public class InvestigationsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static InvestigationsDlgCtrlr create(HDT_Work work, HDT_Person curPerson)
+  public static InvestigationsDlgCtrlr build(HDT_Work work, HDT_Person curPerson)
   {
-    InvestigationsDlgCtrlr idc = HyperDlg.create("InvestigationsDlg.fxml", "Assign Investigations - " + work.name(), true);
-    idc.init(work, curPerson);
-    return idc;
+    return ((InvestigationsDlgCtrlr) create("InvestigationsDlg.fxml", "Assign Investigations - " + work.name(), true)).init(work, curPerson);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_Work work, HDT_Person curPerson)
+  private InvestigationsDlgCtrlr init(HDT_Work work, HDT_Person curPerson)
   {
     final ObservableList<InvestigationSetting> data = FXCollections.observableArrayList();
 
@@ -89,6 +87,8 @@ public class InvestigationsDlgCtrlr extends HyperDlg
     tfNew.textProperty().addListener((ob, ov, nv) -> chkNew.setSelected(nv.trim().length() > 0));
 
     onShown = tfNew::requestFocus;
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

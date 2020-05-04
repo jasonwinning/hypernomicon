@@ -80,7 +80,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
     field = getObjPointer(rtFieldOfPerson);
     subfield = getObjPointer(rtSubfieldOfPerson);
 
-    picture = new HyperPath(null, this);
+    picture = new HyperPath(getObjPointer(rtPictureFolderOfPerson), this);
   }
 
 //---------------------------------------------------------------------------
@@ -209,9 +209,9 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 
     if (searchKeySB.toString().isEmpty())
       return person;
-    
+
     String sortKey = removeAllParentheticals(name.toEngChar().getSortKey());
-    
+
     return findFirst(db.persons, p -> removeAllParentheticals(p.getSortKey()).equalsIgnoreCase(sortKey));
   }
 

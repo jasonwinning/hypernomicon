@@ -72,7 +72,7 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 
   public String getDescString()
   {
-    return (record != null) && record.hasDesc() ? HDT_RecordWithDescription.class.cast(record).getDesc().getPlainForDisplay() : "";
+    return (record != null) && record.hasDesc() ? ((HDT_RecordWithDescription)record).getDesc().getPlainForDisplay() : "";
   }
 
   @Override public String toString()        { return getCBText(); }

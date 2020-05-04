@@ -40,7 +40,6 @@ import org.hypernomicon.view.dialogs.ValueSelectDlgCtrlr;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 import org.hypernomicon.view.populators.VariablePopulator;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 
 import static org.hypernomicon.App.*;
@@ -236,7 +235,7 @@ public class HyperCB implements CommitableWrapper
   private void endEditModeIfInTable()
   {
     if (isInTable())
-      ComboBoxCell.class.cast(cb.getParent()).commit();
+      ((ComboBoxCell)(cb.getParent())).commit();
   }
 
 //---------------------------------------------------------------------------
@@ -377,7 +376,7 @@ public class HyperCB implements CommitableWrapper
         {
           if (populator.getValueType() == CellValueType.cvtRecord)
           {
-            RecordSelectDlgCtrlr ctrlr = RecordSelectDlgCtrlr.create(populator, cells, convertToEnglishChars(cb.getEditor().getText()).trim());
+            RecordSelectDlgCtrlr ctrlr = RecordSelectDlgCtrlr.build(populator, cells, convertToEnglishChars(cb.getEditor().getText()).trim());
 
             if (ctrlr.showModal())
             {
@@ -392,7 +391,7 @@ public class HyperCB implements CommitableWrapper
           }
           else
           {
-            ValueSelectDlgCtrlr ctrlr = ValueSelectDlgCtrlr.create(cells);
+            ValueSelectDlgCtrlr ctrlr = ValueSelectDlgCtrlr.build(cells);
 
             if (ctrlr.showModal())
             {
@@ -436,7 +435,7 @@ public class HyperCB implements CommitableWrapper
               }
           }
 
-          NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.create(table == null, cb.getEditor().getText(), null);
+          NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.build(table == null, cb.getEditor().getText(), null);
 
           if (npdc.showModal())
           {

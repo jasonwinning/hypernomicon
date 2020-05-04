@@ -37,21 +37,21 @@ public class NewQueryFavDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewQueryFavDlgCtrlr create(String newName)
+  public static NewQueryFavDlgCtrlr build(String newName)
   {
-    NewQueryFavDlgCtrlr nqf = HyperDlg.create("NewQueryFavDlg.fxml", "Add Query Favorite", true);
-    nqf.init(newName);
-    return nqf;
+    return ((NewQueryFavDlgCtrlr) create("NewQueryFavDlg.fxml", "Add Query Favorite", true)).init(newName);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(String newName)
+  private NewQueryFavDlgCtrlr init(String newName)
   {
     tfName.setText(newName);
 
     onShown = () -> safeFocus(tfName);
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -59,9 +59,7 @@ public class NewQueryFavDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if (tfName.getText().length() > 0) return true;
-
-    return falseWithErrorMessage("Name cannot be zero-length.", tfName);
+    return tfName.getText().length() > 0 ? true : falseWithErrorMessage("Name cannot be zero-length.", tfName);
   }
 
 //---------------------------------------------------------------------------

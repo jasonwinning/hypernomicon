@@ -44,9 +44,9 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
   final private BidiOneToManyRecordMap parentToChildren;
   final private MappingFromRecordToRows recordToRows;
   final private AbstractTreeWrapper<RowType> treeWrapper;
-  private RowType rootRow;
   final private Map<HDT_RecordType, Set<HDT_RecordType>> parentChildRelations;
 
+  private RowType rootRow;
   public boolean pruningOperationInProgress = false;
 
   public void expandMainBranch() { rootRow.treeItem.setExpanded(true); }
@@ -72,8 +72,8 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
     {
       HDT_Record record = row.getRecord();
 
-      if (recordToRows.containsKey(record) == false)
-        if (tcb != null) tcb.add(record);
+      if ((tcb != null) && (recordToRows.containsKey(record) == false))
+        tcb.add(record);
 
       recordToRows.put(record, row);
     }
@@ -85,9 +85,8 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
     {
       HDT_Record record = row.getRecord();
 
-      if (recordToRows.remove(record, row) == false) return;
-
-      if (tcb != null) tcb.checkIfShouldBeRemoved(record);
+      if (recordToRows.remove(record, row) && (tcb != null))
+        tcb.checkIfShouldBeRemoved(record);
     }
   }
 

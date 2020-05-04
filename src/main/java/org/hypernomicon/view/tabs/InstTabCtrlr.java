@@ -125,7 +125,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       instList.sort((inst1, inst2) -> inst1.name().compareTo(inst2.name()));
 
       String instStr = instList.stream().map(HDT_Institution::name).reduce((name1, name2) -> name1 + ", " + name2).orElse("");
-      int instID = instList.size() == 0 ? -1 : instList.get(0).getID();
+      int instID = instList.isEmpty() ? -1 : instList.get(0).getID();
 
       row.setCellValue(3, instID, instStr, hdtInstitution);
     });
@@ -244,7 +244,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
         return;
       }
 
-      NewRegionDlgCtrlr nrdc = NewRegionDlgCtrlr.create(country);
+      NewRegionDlgCtrlr nrdc = NewRegionDlgCtrlr.build(country);
       if (nrdc.showModal() == false) return;
 
       hcbRegion.populate(true);
@@ -336,9 +336,9 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
         subInst.instType.setID(row.getID(1));
         subInst.setURL(row.getText(3));
 
-        if ((subInst.name()  .isEmpty()) &&
-            (subInst.getURL().isEmpty()) &&
-            (subInst.persons .isEmpty()))
+        if (subInst.name()  .isEmpty() &&
+            subInst.getURL().isEmpty() &&
+            subInst.persons .isEmpty())
           db.deleteRecord(hdtInstitution, subInstID);
       }
     });

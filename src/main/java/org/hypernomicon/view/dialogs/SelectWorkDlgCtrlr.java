@@ -95,25 +95,21 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static SelectWorkDlgCtrlr create(HDT_Person authorToUse, FilePath filePathToUse)
+  public static SelectWorkDlgCtrlr build(HDT_Person authorToUse, FilePath filePathToUse)
   {
-    SelectWorkDlgCtrlr swd = HyperDlg.create("SelectWorkDlg.fxml", "Select a Work Record", true);
-    swd.init(authorToUse, true, filePathToUse, true, null, false);
-    return swd;
+    return ((SelectWorkDlgCtrlr) create("SelectWorkDlg.fxml", "Select a Work Record", true)).init(authorToUse, true, filePathToUse, true, null, false);
   }
 
-  public static SelectWorkDlgCtrlr create(HDT_Person authorToUse, BibEntry bibEntryToUse)
+  public static SelectWorkDlgCtrlr build(HDT_Person authorToUse, BibEntry bibEntryToUse)
   {
-    SelectWorkDlgCtrlr swd = HyperDlg.create("SelectWorkDlg.fxml", "Select a Work Record", true);
-    swd.init(authorToUse, false, null, false, bibEntryToUse, true);
-    return swd;
+    return ((SelectWorkDlgCtrlr) create("SelectWorkDlg.fxml", "Select a Work Record", true)).init(authorToUse, false, null, false, bibEntryToUse, true);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_Person authorToUse, boolean enableCreateNew, FilePath filePathToUse, boolean filePathIsConstant,
-                                                                     BibEntry bibEntryToUse, boolean bibEntryIsConstant)
+  private SelectWorkDlgCtrlr init(HDT_Person authorToUse, boolean enableCreateNew, FilePath filePathToUse, boolean filePathIsConstant,
+                                                                                   BibEntry bibEntryToUse, boolean bibEntryIsConstant)
   {
     filePath = filePathToUse;
     author = authorToUse;
@@ -132,7 +128,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     }
 
     apPreview = new AnchorPane();
-    addPreview(stagePane, apMain, apPreview, btnPreview);
+    addPreview();
 
     hcbAuthor = new HyperCB(cbAuthor, ctDropDownList, new StandardPopulator(hdtPerson));
     hcbAuthor.dontCreateNewRecord = true;
@@ -347,6 +343,8 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     }
 
     updateFields();
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -394,7 +392,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addPreview(AnchorPane stagePane, AnchorPane apMain, AnchorPane apPreview, ToggleButton btnPreview)
+  private void addPreview()
   {
     setAnchors(apPreview, apMain.getPrefHeight(), 0.0, 0.0, 0.0);
     setAnchors(apMain, 0.0, null, 0.0, 0.0);

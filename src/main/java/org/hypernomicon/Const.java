@@ -17,7 +17,11 @@
 
 package org.hypernomicon;
 
+import java.util.Map;
+
 import org.hypernomicon.util.VersionNumber;
+
+import com.google.common.collect.ImmutableMap;
 
 import javafx.scene.input.DataFormat;
 
@@ -28,11 +32,6 @@ public final class Const
   public static final double
 
     DEFAULT_FONT_SIZE = 11.0;
-
-  public static final VersionNumber
-
-    RECORDS_XML_VERSION = new VersionNumber(2, 1),   // 1.0
-    HDB_SETTINGS_VERSION = new VersionNumber(2, 1);  // 1.0
 
   public static final int
 
@@ -64,13 +63,16 @@ public final class Const
     PREF_KEY_PDF_READER_COMMANDS = "pdfReaderCommands",
     PREF_KEY_PDF_READER_COMMAND_TYPE = "pdfReaderCommandType",
     PREF_KEY_DO_INTERNET_CHECK = "doInternetCheck",
-    PREF_KEY_PICTURES_PATH = "picturesPath",
-    PREF_KEY_BOOKS_PATH = "booksPath",
-    PREF_KEY_PAPERS_PATH = "papersPath",
-    PREF_KEY_RESULTS_PATH = "resultsPath",
-    PREF_KEY_UNENTERED_PATH = "unenteredPath",
-    PREF_KEY_MISC_FILES_PATH = "suppFilesPath",
-    PREF_KEY_TOPICAL_PATH = "topicsPath",
+
+    PREF_KEY_XML_FOLDER_ID = "xmlFolderID",
+    PREF_KEY_PICTURES_FOLDER_ID = "picturesFolderID",
+    PREF_KEY_BOOKS_FOLDER_ID = "booksFolderID",
+    PREF_KEY_PAPERS_FOLDER_ID = "papersFolderID",
+    PREF_KEY_RESULTS_FOLDER_ID = "resultsFolderID",
+    PREF_KEY_UNENTERED_FOLDER_ID = "unenteredFolderID",
+    PREF_KEY_MISC_FILES_FOLDER_ID = "miscFilesFolderID",
+    PREF_KEY_TOPICAL_FOLDER_ID = "topicalFolderID",
+
     PREF_KEY_RECORD_TYPE = "typeID",
     PREF_KEY_DISPLAY_RECORD_TYPE = "displayTypeID",
     PREF_KEY_PERSON_ID = "personID",
@@ -255,4 +257,32 @@ public final class Const
     PREF_KEY_INST_MAP_SRCH = "instMapSrch",
     PREF_KEY_DOI_SRCH = "doiSrch",
     PREF_KEY_ISBN_SRCH = "isbnSrch";
+
+  public static final VersionNumber dbVersion = new VersionNumber(2, 1, 18);
+
+  // This is the minimum version that the application version is able to load
+  public static final Map<VersionNumber, VersionNumber> appVersionToMinRecordsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
+
+    .put(new VersionNumber(2, 1), new VersionNumber(2, 1))
+    .build();
+
+  // This is the minimum version that the application version is able to load
+  public static final Map<VersionNumber, VersionNumber> appVersionToMinSettingsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
+
+    .put(new VersionNumber(2, 1), new VersionNumber(2, 1))
+    .build();
+
+  // This is the version that the application version will actually save to
+  public static final Map<VersionNumber, VersionNumber> appVersionToMaxRecordsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
+
+    .put(new VersionNumber(2, 1, 17, 5), new VersionNumber(2, 1))
+    .put(dbVersion, new VersionNumber(2, 1, 1))
+    .build();
+
+  // This is the version that the application version will actually save to
+  public static final Map<VersionNumber, VersionNumber> appVersionToMaxSettingsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
+
+    .put(new VersionNumber(2, 1, 17, 5), new VersionNumber(2, 1))
+    .put(dbVersion, new VersionNumber(2, 1, 1))
+    .build();
 }

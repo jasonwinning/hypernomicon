@@ -270,7 +270,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
   private void newArgumentClick()
   {
-    NewArgDlgCtrlr newArgDialog = NewArgDlgCtrlr.create(curPosition);
+    NewArgDlgCtrlr newArgDialog = NewArgDlgCtrlr.build(curPosition);
 
     if (newArgDialog.showModal())
       ui.goToRecord(newArgDialog.getArgument(), false);

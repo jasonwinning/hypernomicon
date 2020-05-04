@@ -86,7 +86,7 @@ public final class WindowStack
     private ChooserWrapper(Object chooser)  { this.chooser = chooser; }
 
     @Override public Modality getModality() { return Modality.APPLICATION_MODAL; }
-    @Override public boolean isStage()      { return true; }
+    @Override public boolean isStage()      { return false; }
     @Override public Object getWrappedObj() { return chooser; }
   }
 

@@ -34,7 +34,6 @@ import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import java.io.IOException;
-import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -73,65 +72,20 @@ public class FileDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setRB_CurrentLocationOnly()
+  public static FileDlgCtrlr build(String title, HDT_MiscFile curFileRecord, String recordName, boolean canBrowseToExistingMiscFileRecord)
   {
-    rbCopy.setDisable(true);
-    rbMove.setDisable(true);
-    rbNeither.setDisable(false);
+    return ((FileDlgCtrlr) create("FileDlg.fxml", title, true)).init(hdtMiscFile, curFileRecord, null, recordName, canBrowseToExistingMiscFileRecord);
+  }
 
-    rbNeither.setSelected(true);
+  public static FileDlgCtrlr build(String title, HDT_WorkFile curFileRecord, HDT_Work curWork)
+  {
+    return ((FileDlgCtrlr) create("FileDlg.fxml", title, true)).init(hdtWorkFile, curFileRecord, curWork, "", false);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setRB_OtherLocationsOK()
-  {
-    rbCopy.setDisable(false);
-    rbMove.setDisable(copyOnly);
-    rbNeither.setDisable(false);
-
-    if (rbMove.isSelected() && copyOnly)
-      rbCopy.setSelected(true);
-
-    if ((copyOnly == false) && rbNeither.isSelected())
-      rbMove.setSelected(true);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void setRB_CopyOnly()
-  {
-    rbCopy.setDisable(false);
-    rbMove.setDisable(true);
-    rbNeither.setDisable(true);
-
-    rbCopy.setSelected(true);
-    copyOnly = true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static FileDlgCtrlr create(String title, HDT_MiscFile curFileRecord, String recordName, boolean canBrowseToExistingMiscFileRecord)
-  {
-    FileDlgCtrlr fdc = HyperDlg.create("FileDlg.fxml", title, true);
-    fdc.init(hdtMiscFile, curFileRecord, null, recordName, canBrowseToExistingMiscFileRecord);
-    return fdc;
-  }
-
-  public static FileDlgCtrlr create(String title, HDT_WorkFile curFileRecord, HDT_Work curWork)
-  {
-    FileDlgCtrlr fdc = HyperDlg.create("FileDlg.fxml", title, true);
-    fdc.init(hdtWorkFile, curFileRecord, curWork, "", false);
-    return fdc;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void init(HDT_RecordType recordType, HDT_RecordWithPath curFileRecord, HDT_Work curWork, String recordName, boolean canBrowseToExistingMiscFileRecord)
+  private FileDlgCtrlr init(HDT_RecordType recordType, HDT_RecordWithPath curFileRecord, HDT_Work curWork, String recordName, boolean canBrowseToExistingMiscFileRecord)
   {
     this.canBrowseToExistingMiscFileRecord = canBrowseToExistingMiscFileRecord;
     this.curWork = curWork;
@@ -160,6 +114,8 @@ public class FileDlgCtrlr extends HyperDlg
       if (FilePath.isEmpty(srcFilePath))
         btnBrowseOldClick(true);
     };
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -237,6 +193,47 @@ public class FileDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void setRB_CurrentLocationOnly()
+  {
+    rbCopy.setDisable(true);
+    rbMove.setDisable(true);
+    rbNeither.setDisable(false);
+
+    rbNeither.setSelected(true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void setRB_OtherLocationsOK()
+  {
+    rbCopy.setDisable(false);
+    rbMove.setDisable(copyOnly);
+    rbNeither.setDisable(false);
+
+    if (rbMove.isSelected() && copyOnly)
+      rbCopy.setSelected(true);
+
+    if ((copyOnly == false) && rbNeither.isSelected())
+      rbMove.setSelected(true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void setRB_CopyOnly()
+  {
+    rbCopy.setDisable(false);
+    rbMove.setDisable(true);
+    rbNeither.setDisable(true);
+
+    rbCopy.setSelected(true);
+    copyOnly = true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @FXML private void btnLaunchClick()
   {
     launchFile(srcFilePath);
@@ -249,7 +246,7 @@ public class FileDlgCtrlr extends HyperDlg
   {
     if (FilePath.isEmpty(newSrc)) return;
 
-    if (db.isProtectedFile(newSrc))
+    if (db.isProtectedFile(newSrc, false))
     {
       messageDialog("That file cannot be assigned to a record.", mtError);
       return;
@@ -260,7 +257,7 @@ public class FileDlgCtrlr extends HyperDlg
 
     // See if the chosen file is currently assigned to a file record
 
-    HDT_RecordWithPath existingRecord = getRecordFromFilePath(newSrc);
+    HDT_RecordWithPath existingRecord = HyperPath.getRecordFromFilePath(newSrc);
 
     if (existingRecord != null)
     {
@@ -270,29 +267,14 @@ public class FileDlgCtrlr extends HyperDlg
       }
       else
       {
-        if (existingRecord.getType() == hdtMiscFile)
+        if ((existingRecord.getType() == hdtMiscFile) && initial && canBrowseToExistingMiscFileRecord)
         {
-          if (initial && canBrowseToExistingMiscFileRecord)
-          {
-            setFileRecord(existingRecord);
-            Platform.runLater(this::btnOkClick);
-            return;
-          }
-          else
-            messageDialog("That file is already in use as a miscellaneous file, record ID: " + existingRecord.getID(), mtInformation);
+          setFileRecord(existingRecord);
+          Platform.runLater(this::btnOkClick);
+          return;
         }
-        else if (existingRecord.getType() == hdtWorkFile)
-        {
-          HDT_WorkFile workFile = HDT_WorkFile.class.cast(existingRecord);
-          if (workFile.works.size() > 0)
-            messageDialog("That file is already in use as a work file, work record ID: " + workFile.works.get(0).getID(), mtInformation);
-          else
-            messageDialog("That file is already in use as a work file, ID: " + workFile.getID(), mtInformation);
-        }
-        else if (existingRecord.getType() == hdtPerson)
-          messageDialog("That file is already in use as a picture, person record ID: " + existingRecord.getID(), mtInformation);
         else
-          messageDialog("That file is already in use, record ID: " + existingRecord.getID(), mtInformation);
+          messageDialog(HyperPath.alreadyInUseMessage(newSrc, existingRecord), mtInformation);
 
         // disable moving, only enable copying
         setRB_CopyOnly();
@@ -346,30 +328,6 @@ public class FileDlgCtrlr extends HyperDlg
     fileChooser.setInitialDirectory(db.unenteredPath().toFile());
 
     setSrcFilePath(ui.windows.showOpenDialog(fileChooser, getStage()), initial);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private HDT_RecordWithPath getRecordFromFilePath(FilePath filePath)
-  {
-    HDT_RecordWithPath record, firstRecord = null;
-    Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(filePath);
-
-    if (collEmpty(set)) return null;
-
-    for (HyperPath setPath : set)
-    {
-      record = setPath.getRecord();
-      if (record != null)
-      {
-        if (record.getType() == hdtPerson) return record;
-        if ((record.getType() != hdtFolder) && (record.getType() != recordType)) return record;
-        if (firstRecord == null) firstRecord = record;
-      }
-    }
-
-    return firstRecord;
   }
 
 //---------------------------------------------------------------------------
@@ -462,7 +420,7 @@ public class FileDlgCtrlr extends HyperDlg
     else
       destFilePath = new FilePath(tfNewPath.getText()).resolve(fileName);
 
-    HDT_RecordWithPath existingRecord = getRecordFromFilePath(destFilePath);
+    HDT_RecordWithPath existingRecord = HyperPath.getRecordFromFilePath(destFilePath);
 
     if (existingRecord != null)
     {
@@ -472,20 +430,7 @@ public class FileDlgCtrlr extends HyperDlg
       }
       else
       {
-        if (existingRecord.getType() == hdtMiscFile)
-          return falseWithErrorMessage("Destination file name is already in use as a miscellaneous file, record ID: " + existingRecord.getID());
-        else if (existingRecord.getType() == hdtWorkFile)
-        {
-          HDT_WorkFile workFile = HDT_WorkFile.class.cast(existingRecord);
-          if (workFile.works.size() > 0)
-            return falseWithErrorMessage("Destination file name is already in use as a work file, work record ID: " + workFile.works.get(0).getID());
-          else
-            return falseWithErrorMessage("Destination file name is already in use as a work file, ID: " + workFile.getID());
-        }
-        else if (existingRecord.getType() == hdtPerson)
-          return falseWithErrorMessage("Destination file name is already in use as a picture, person record ID: " + existingRecord.getID());
-        else
-          return falseWithErrorMessage("Destination file name is already in use, record ID: " + existingRecord.getID());
+        return falseWithErrorMessage(HyperPath.alreadyInUseMessage(destFilePath, existingRecord));
       }
     }
 

@@ -342,7 +342,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
   {
     if (ui.cantSaveRecord()) return;
 
-    SelectConceptDlgCtrlr frmSelectConcept = SelectConceptDlgCtrlr.create(null);
+    SelectConceptDlgCtrlr frmSelectConcept = SelectConceptDlgCtrlr.build(null);
 
     if (frmSelectConcept.showModal() == false) return;
 

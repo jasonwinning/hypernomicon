@@ -52,6 +52,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -151,6 +152,7 @@ public final class HyperDB
   private DialogResult deleteFileAnswer;
   HyperTask task;
   long totalTaskCount, curTaskCount;
+  private boolean alreadyShowedUpgradeMsg;
   private FilePath rootFilePath, hdbFilePath;
   private Instant dbCreationDate;
 
@@ -272,42 +274,56 @@ public final class HyperDB
   public <HDT_SubjType extends HDT_Record> void resolvePointersByRelation(RelationType relType, HDT_SubjType subj) throws HDB_InternalError
   { getRelSet(relType).resolvePointers(subj); }
 
+  private HDT_Folder xmlFolder, booksFolder, papersFolder, miscFilesFolder, picturesFolder, resultsFolder, unenteredFolder, topicalFolder;
+
+  public HDT_Folder getRootFolder     () { return folders.getByID(ROOT_FOLDER_ID); }
+  public HDT_Folder getXmlFolder      () { return xmlFolder      ; }
+  public HDT_Folder getBooksFolder    () { return booksFolder    ; }
+  public HDT_Folder getPapersFolder   () { return papersFolder   ; }
+  public HDT_Folder getMiscFilesFolder() { return miscFilesFolder; }
+  public HDT_Folder getPicturesFolder () { return picturesFolder ; }
+  public HDT_Folder getResultsFolder  () { return resultsFolder  ; }
+  public HDT_Folder getUnenteredFolder() { return unenteredFolder; }
+  public HDT_Folder getTopicalFolder  () { return topicalFolder  ; }
+
+  public HDT_Folder getSpecialFolder(String prefKey)
+  {
+    switch (prefKey)
+    {
+      case PREF_KEY_PICTURES_FOLDER_ID   : return picturesFolder;
+      case PREF_KEY_BOOKS_FOLDER_ID      : return booksFolder;
+      case PREF_KEY_PAPERS_FOLDER_ID     : return papersFolder;
+      case PREF_KEY_RESULTS_FOLDER_ID    : return resultsFolder;
+      case PREF_KEY_UNENTERED_FOLDER_ID  : return unenteredFolder;
+      case PREF_KEY_MISC_FILES_FOLDER_ID : return miscFilesFolder;
+      case PREF_KEY_TOPICAL_FOLDER_ID    : return topicalFolder;
+      case PREF_KEY_XML_FOLDER_ID        : return xmlFolder;
+
+      default                            : return null;
+    }
+  }
+
   public FilePath getRootPath  () { return rootFilePath; }
   public FilePath xmlPath      () { return rootFilePath.resolve(DEFAULT_XML_PATH); }
-  public FilePath booksPath    () { return getPrefPath(PREF_KEY_BOOKS_PATH     , ""); }
-  public FilePath papersPath   () { return getPrefPath(PREF_KEY_PAPERS_PATH    , ""); }
-  public FilePath miscFilesPath() { return getPrefPath(PREF_KEY_MISC_FILES_PATH, ""); }
-  public FilePath picturesPath () { return getPrefPath(PREF_KEY_PICTURES_PATH  , ""); }
-  public FilePath resultsPath  () { return getPrefPath(PREF_KEY_RESULTS_PATH   , ""); }
-  public FilePath unenteredPath() { return getPrefPath(PREF_KEY_UNENTERED_PATH , ""); }
-  public FilePath topicalPath  () { return getPrefPath(PREF_KEY_TOPICAL_PATH   , ""); }
+
+  public FilePath booksPath    () { return booksFolder    .filePath(); }
+  public FilePath papersPath   () { return papersFolder   .filePath(); }
+  public FilePath miscFilesPath() { return miscFilesFolder.filePath(); }
+  public FilePath picturesPath () { return picturesFolder .filePath(); }
+  public FilePath resultsPath  () { return resultsFolder  .filePath(); }
+  public FilePath unenteredPath() { return unenteredFolder.filePath(); }
+  public FilePath topicalPath  () { return topicalFolder  .filePath(); }
 
   public FilePath getRootPath  (String fileNameStr) { return rootFilePath.resolve(fileNameStr); }
   public FilePath xmlPath      (String fileNameStr) { return rootFilePath.resolve(DEFAULT_XML_PATH).resolve(fileNameStr); }
-  public FilePath booksPath    (String fileNameStr) { return getPrefPath(PREF_KEY_BOOKS_PATH     , fileNameStr); }
-  public FilePath papersPath   (String fileNameStr) { return getPrefPath(PREF_KEY_PAPERS_PATH    , fileNameStr); }
-  public FilePath miscFilesPath(String fileNameStr) { return getPrefPath(PREF_KEY_MISC_FILES_PATH, fileNameStr); }
-  public FilePath picturesPath (String fileNameStr) { return getPrefPath(PREF_KEY_PICTURES_PATH  , fileNameStr); }
-  public FilePath resultsPath  (String fileNameStr) { return getPrefPath(PREF_KEY_RESULTS_PATH   , fileNameStr); }
-  public FilePath unenteredPath(String fileNameStr) { return getPrefPath(PREF_KEY_UNENTERED_PATH , fileNameStr); }
-  public FilePath topicalPath  (String fileNameStr) { return getPrefPath(PREF_KEY_TOPICAL_PATH   , fileNameStr); }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private FilePath getPrefPath(String prefKey, String fileNameStr)
-  {
-    String pathStr = appPrefs.get(PREF_KEY_SOURCE_PATH, "");
-    if (pathStr.isEmpty()) return null;
-    FilePath sourcePath = new FilePath(pathStr);
-
-    String relPath = prefs.get(prefKey, "");
-    if (relPath.isEmpty()) return null;
-
-    if (fileNameStr.isEmpty()) return sourcePath.resolve(relPath);
-
-    return sourcePath.resolve(relPath).resolve(fileNameStr);
-  }
+  public FilePath booksPath    (String fileNameStr) { return booksFolder    .filePath().resolve(fileNameStr); }
+  public FilePath papersPath   (String fileNameStr) { return papersFolder   .filePath().resolve(fileNameStr); }
+  public FilePath miscFilesPath(String fileNameStr) { return miscFilesFolder.filePath().resolve(fileNameStr); }
+  public FilePath picturesPath (String fileNameStr) { return picturesFolder .filePath().resolve(fileNameStr); }
+  public FilePath resultsPath  (String fileNameStr) { return resultsFolder  .filePath().resolve(fileNameStr); }
+  public FilePath unenteredPath(String fileNameStr) { return unenteredFolder.filePath().resolve(fileNameStr); }
+  public FilePath topicalPath  (String fileNameStr) { return topicalFolder  .filePath().resolve(fileNameStr); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -411,12 +427,10 @@ public final class HyperDB
   {
     StringBuilder xml = xmlList.get(xmlList.size() - 1);
 
-    String recordsXmlVersion = RECORDS_XML_VERSION.toString();
-
     if (xml.length() == 0)
     {
       xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + System.lineSeparator() + System.lineSeparator())
-         .append("<records version=\"" + recordsXmlVersion + "\" xmlns=\"org.hypernomicon\"")
+         .append("<records version=\"" + getVersionNumberSavingAs(appVersionToMaxRecordsXMLVersion) + "\" xmlns=\"org.hypernomicon\"")
 
       //   .append(" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"org.hypernomicon http://hypernomicon.org/records.xsd\"")
 
@@ -510,8 +524,7 @@ public final class HyperDB
     {
       favorites.saveToPrefNode();
 
-      if (prefs.get(PREF_KEY_SETTINGS_VERSION, "").isEmpty())
-        prefs.put(PREF_KEY_SETTINGS_VERSION, HDB_SETTINGS_VERSION.toString());
+      prefs.put(PREF_KEY_SETTINGS_VERSION, getVersionNumberSavingAs(appVersionToMaxSettingsXMLVersion).toString());
 
       prefs.put(PREF_KEY_DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
 
@@ -524,6 +537,27 @@ public final class HyperDB
     }
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private VersionNumber getVersionNumberSavingAs(Map<VersionNumber, VersionNumber> appVersionToMaxVersion)
+  {
+    VersionNumber versionNumber = new VersionNumber(2, 0);
+
+    for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
+    {
+      if (entry.getKey().isLessThanOrEqualTo(app.getVersion()))
+      {
+        VersionNumber maxVersion = entry.getValue();
+
+        if (maxVersion.isGreaterThan(versionNumber))
+          versionNumber = maxVersion;
+      }
+    }
+
+    return versionNumber;
   }
 
 //---------------------------------------------------------------------------
@@ -566,6 +600,8 @@ public final class HyperDB
 
       xmlFileList.add(filePath);
     }
+
+    alreadyShowedUpgradeMsg = false;
 
     task = new HyperTask("LoadDatabase") { @Override protected Boolean call() throws Exception
     {
@@ -612,9 +648,6 @@ public final class HyperDB
       return false;
     }
 
-    try { resolvePointers(); }
-    catch (HDB_InternalError e) { return falseWithErrorMessage(e.getMessage()); }
-
     dbCreationDate = APP_GENESIS_INSTANT;
 
     try
@@ -628,15 +661,70 @@ public final class HyperDB
         Preferences.importPreferences(is);
         favorites.loadFromPrefNode();
 
-        if ((db.picturesPath () == null) ||
-            (db.booksPath    () == null) ||
-            (db.papersPath   () == null) ||
-            (db.resultsPath  () == null) ||
-            (db.unenteredPath() == null) ||
-            (db.miscFilesPath() == null) ||
-            (db.topicalPath  () == null))
+        String versionStr = prefs.get(PREF_KEY_SETTINGS_VERSION, "");
+        if (versionStr.isBlank())
+          throw new HyperDataException("XML settings data version number not found.");
+
+        checkVersion(new VersionNumber(2, versionStr), "the Settings XML file", appVersionToMinSettingsXMLVersion, appVersionToMaxSettingsXMLVersion);
+
+        boolean writeFolderIDs = false;
+
+        if (prefs.getInt(PREF_KEY_XML_FOLDER_ID, -1) == -1) // Backwards compatibility with settings version 1.0
+        {
+          papersFolder    = folders.getByID(2);
+          booksFolder     = folders.getByID(3);
+          miscFilesFolder = folders.getByID(4);
+          picturesFolder  = folders.getByID(5);
+          topicalFolder   = folders.getByID(6);
+          unenteredFolder = folders.getByID(7);
+          resultsFolder   = folders.getByID(8);
+          xmlFolder       = HyperPath.getFolderFromFilePath(getRootPath(DEFAULT_XML_PATH), true);
+
+          writeFolderIDs = true;
+        }
+        else
+        {
+          xmlFolder       = folders.getByID(prefs.getInt(PREF_KEY_XML_FOLDER_ID       , -1));
+          picturesFolder  = folders.getByID(prefs.getInt(PREF_KEY_PICTURES_FOLDER_ID  , -1));
+          booksFolder     = folders.getByID(prefs.getInt(PREF_KEY_BOOKS_FOLDER_ID     , -1));
+          papersFolder    = folders.getByID(prefs.getInt(PREF_KEY_PAPERS_FOLDER_ID    , -1));
+          resultsFolder   = folders.getByID(prefs.getInt(PREF_KEY_RESULTS_FOLDER_ID   , -1));
+          unenteredFolder = folders.getByID(prefs.getInt(PREF_KEY_UNENTERED_FOLDER_ID , -1));
+          miscFilesFolder = folders.getByID(prefs.getInt(PREF_KEY_MISC_FILES_FOLDER_ID, -1));
+          topicalFolder   = folders.getByID(prefs.getInt(PREF_KEY_TOPICAL_FOLDER_ID   , -1));
+        }
+
+        if (HDT_Record.isEmpty(picturesFolder ) ||
+            HDT_Record.isEmpty(booksFolder    ) ||
+            HDT_Record.isEmpty(papersFolder   ) ||
+            HDT_Record.isEmpty(resultsFolder  ) ||
+            HDT_Record.isEmpty(unenteredFolder) ||
+            HDT_Record.isEmpty(miscFilesFolder) ||
+            HDT_Record.isEmpty(xmlFolder      ) ||
+            HDT_Record.isEmpty(topicalFolder  ))
         {
           throw new HyperDataException("Unable to load information about paths from database settings file");
+        }
+
+        if (writeFolderIDs) // Backwards compatibility with settings version 1.0
+        {
+          prefs.putInt(PREF_KEY_XML_FOLDER_ID       , xmlFolder      .getID());
+          prefs.putInt(PREF_KEY_PICTURES_FOLDER_ID  , picturesFolder .getID()); prefs.remove("picturesPath");
+          prefs.putInt(PREF_KEY_BOOKS_FOLDER_ID     , booksFolder    .getID()); prefs.remove("booksPath");
+          prefs.putInt(PREF_KEY_PAPERS_FOLDER_ID    , papersFolder   .getID()); prefs.remove("papersPath");
+          prefs.putInt(PREF_KEY_RESULTS_FOLDER_ID   , resultsFolder  .getID()); prefs.remove("resultsPath");
+          prefs.putInt(PREF_KEY_UNENTERED_FOLDER_ID , unenteredFolder.getID()); prefs.remove("unenteredPath"); prefs.remove("unenteredPat");
+          prefs.putInt(PREF_KEY_MISC_FILES_FOLDER_ID, miscFilesFolder.getID()); prefs.remove("suppFilesPath");
+          prefs.putInt(PREF_KEY_TOPICAL_FOLDER_ID   , topicalFolder  .getID()); prefs.remove("topicsPath");
+        }
+
+        try { resolvePointers(); }
+        catch (HDB_InternalError e)
+        {
+          messageDialog(e.getMessage(), mtError);
+
+          close(null);
+          return false;
         }
 
         String dbCreationDateStr = prefs.get(PREF_KEY_DB_CREATION_DATE, "");
@@ -688,7 +776,7 @@ public final class HyperDB
 
     HDT_RecordBase.setRootRecordDates();
 
-    folders.getByID(ROOT_FOLDER_ID).checkExists();
+    getRootFolder().checkExists();
 
     loaded = true;
     rebuildMentions();
@@ -802,14 +890,35 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean isProtectedRecord(int id, HDT_RecordType type)
+  public boolean isProtectedRecord(int id, HDT_RecordType type, boolean checkSubfolders)
   {
     if (isUnstoredRecord(id, type)) return true;
 
     if (type == hdtFolder)
-      return id < FIRST_USER_FOLDER_ID;
+      return isSpecialFolder(id, checkSubfolders);
 
     return false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean isSpecialFolder(int id, boolean checkSubfolders)
+  {
+    if (id < 1) return false;
+
+    if ((id == ROOT_FOLDER_ID         ) ||
+        (id == xmlFolder      .getID()) ||
+        (id == booksFolder    .getID()) ||
+        (id == papersFolder   .getID()) ||
+        (id == miscFilesFolder.getID()) ||
+        (id == picturesFolder .getID()) ||
+        (id == resultsFolder  .getID()) ||
+        (id == unenteredFolder.getID()) ||
+        (id == topicalFolder  .getID()))
+      return true;
+
+    return checkSubfolders ? folders.getByID(id).childFolders.stream().anyMatch(folder -> folder.isSpecial(true)) : false;
   }
 
 //---------------------------------------------------------------------------
@@ -834,7 +943,7 @@ public final class HyperDB
     if (deletionInProgress == false)
       startMentionsRebuildAfterDelete = false;
 
-    if (isProtectedRecord(id, type))
+    if (isProtectedRecord(id, type, true))
     {
       messageDialog("Unable to delete record.", mtError);
       return;
@@ -964,7 +1073,7 @@ public final class HyperDB
       filenameMap.put(rootFilePath.getNameOnly().toString(), set);
     }
 
-    set.add(folders.getByID(ROOT_FOLDER_ID).getPath());
+    set.add(getRootFolder().getPath());
   }
 
 //---------------------------------------------------------------------------
@@ -1130,6 +1239,60 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void checkVersion(VersionNumber versionNumber, String dataName,
+                            Map<VersionNumber, VersionNumber> appVersionToMinVersion,
+                            Map<VersionNumber, VersionNumber> appVersionToMaxVersion) throws HyperDataException
+  {
+    VersionNumber newestTooOldAppVersion = new VersionNumber(2, 0),
+                  oldestTooNewAppVersion = new VersionNumber(2, Integer.MAX_VALUE);
+
+    for (Entry<VersionNumber, VersionNumber> entry : appVersionToMinVersion.entrySet())
+    {
+      if (entry.getValue().isGreaterThan(versionNumber))        // Too new
+        if (entry.getKey().isLessThan(oldestTooNewAppVersion))  // Older than other too new ones
+          oldestTooNewAppVersion = entry.getKey();
+    }
+
+    if (oldestTooNewAppVersion.isLessThanOrEqualTo(app.getVersion()))
+      throw new HyperDataException("A version of " + appTitle + " older than v" + oldestTooNewAppVersion + " is required to load " + dataName);
+
+    for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
+    {
+      if (entry.getValue().isLessThan(versionNumber))              // Too old
+        if (entry.getKey().isGreaterThan(newestTooOldAppVersion))  // Newer than other too old ones
+          newestTooOldAppVersion = entry.getKey();
+    }
+
+    if (newestTooOldAppVersion.isGreaterThanOrEqualTo(app.getVersion()))
+      throw new HyperDataException("A version of " + appTitle + " newer than v" + newestTooOldAppVersion + " is required to load " + dataName);
+
+    VersionNumber savingAs = getVersionNumberSavingAs(appVersionToMaxVersion);
+
+    if (versionNumber.isLessThan(savingAs))
+    {
+      if (appVersionToMinVersion == appVersionToMinRecordsXMLVersion)
+      {
+        if (alreadyShowedUpgradeMsg) return;
+        alreadyShowedUpgradeMsg = true;
+      }
+
+      newestTooOldAppVersion = new VersionNumber(2, 0);
+
+      for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
+      {
+        if (entry.getValue().isLessThan(savingAs))                   // Too old
+          if (entry.getKey().isGreaterThan(newestTooOldAppVersion))  // Newer than other too old ones
+            newestTooOldAppVersion = entry.getKey();
+      }
+
+      messageDialog("When you save changes, " + dataName + " will be upgraded and will no longer be compatible with " + appTitle +
+                    " v" + newestTooOldAppVersion + " or older.", mtWarning, true);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void loadFromXML(FilePath filePath) throws HyperDataException, TerminateTaskException
   {
     try (InputStream in = new FileInputStream(filePath.toFile()))
@@ -1140,8 +1303,8 @@ public final class HyperDB
 
       if (versionNumber == null)
         throw new HyperDataException("XML record data version number not found.");
-      else if (versionNumber.equals(RECORDS_XML_VERSION) == false)
-        throw new HyperDataException("The XML record data is not compatible with this version of " + appTitle + ".");
+
+      checkVersion(versionNumber, "this XML record data", appVersionToMinRecordsXMLVersion, appVersionToMaxRecordsXMLVersion);
 
       HDT_RecordState xmlRecord = getNextRecordFromXML(eventReader);
 
@@ -1507,7 +1670,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean newDB(FilePath newPath, Set<HDT_RecordType> datasetsToKeep, Map<String, String> folders) throws HDB_InternalError
+  public boolean newDB(FilePath newPath, Set<HDT_RecordType> datasetsToKeep, Map<String, String> folderMap) throws HDB_InternalError
   {
     if (loaded == false) return false;
 
@@ -1523,55 +1686,20 @@ public final class HyperDB
     rootFilePath = newPath;
     hdbFilePath = rootFilePath.resolve(appPrefs.get(PREF_KEY_SOURCE_FILENAME, HDB_DEFAULT_FILENAME));
 
-    folders.forEach(prefs::put);
-
     addRootFolder();
 
     HDT_RecordBase.setRootRecordDates();
 
     try
     {
-      HDT_RecordState recordState;
-
-      recordState = new HDT_RecordState(hdtFolder, PAPERS_FOLDER_ID, "", "", "", "");
-      HDI_OfflinePath.class.cast(recordState.items.get(tagFileName)).setFileName(folders.get(PREF_KEY_PAPERS_PATH));
-      HDI_OfflinePath.class.cast(recordState.items.get(tagParentFolder)).setFolderID(ROOT_FOLDER_ID);
-      createNewRecordFromState(recordState, true);
-
-      recordState = new HDT_RecordState(hdtFolder, BOOKS_FOLDER_ID, "", "", "", "");
-      HDI_OfflinePath.class.cast(recordState.items.get(tagFileName)).setFileName(folders.get(PREF_KEY_BOOKS_PATH));
-      HDI_OfflinePath.class.cast(recordState.items.get(tagParentFolder)).setFolderID(ROOT_FOLDER_ID);
-      createNewRecordFromState(recordState, true);
-
-      recordState = new HDT_RecordState(hdtFolder, MISC_FOLDER_ID, "", "", "", "");
-      HDI_OfflinePath.class.cast(recordState.items.get(tagFileName)).setFileName(folders.get(PREF_KEY_MISC_FILES_PATH));
-      HDI_OfflinePath.class.cast(recordState.items.get(tagParentFolder)).setFolderID(ROOT_FOLDER_ID);
-      createNewRecordFromState(recordState, true);
-
-      recordState = new HDT_RecordState(hdtFolder, PICTURES_FOLDER_ID, "", "", "", "");
-      HDI_OfflinePath.class.cast(recordState.items.get(tagFileName)).setFileName(folders.get(PREF_KEY_PICTURES_PATH));
-      HDI_OfflinePath.class.cast(recordState.items.get(tagParentFolder)).setFolderID(ROOT_FOLDER_ID);
-      createNewRecordFromState(recordState, true);
-
-      recordState = new HDT_RecordState(hdtFolder, TOPICAL_FOLDER_ID, "", "", "", "");
-      HDI_OfflinePath.class.cast(recordState.items.get(tagFileName)).setFileName(folders.get(PREF_KEY_TOPICAL_PATH));
-      HDI_OfflinePath.class.cast(recordState.items.get(tagParentFolder)).setFolderID(ROOT_FOLDER_ID);
-      createNewRecordFromState(recordState, true);
-
-      recordState = new HDT_RecordState(hdtFolder, UNENTERED_FOLDER_ID, "", "", "", "");
-      HDI_OfflinePath.class.cast(recordState.items.get(tagFileName)).setFileName(folders.get(PREF_KEY_UNENTERED_PATH));
-      HDI_OfflinePath.class.cast(recordState.items.get(tagParentFolder)).setFolderID(ROOT_FOLDER_ID);
-      createNewRecordFromState(recordState, true);
-
-      recordState = new HDT_RecordState(hdtFolder, RESULTS_FOLDER_ID, "", "", "", "");
-      HDI_OfflinePath.class.cast(recordState.items.get(tagFileName)).setFileName(folders.get(PREF_KEY_RESULTS_PATH));
-      HDI_OfflinePath.class.cast(recordState.items.get(tagParentFolder)).setFolderID(ROOT_FOLDER_ID);
-      createNewRecordFromState(recordState, true);
-
-      recordState = new HDT_RecordState(hdtFolder, XML_FOLDER_ID, "", "", "", "");
-      HDI_OfflinePath.class.cast(recordState.items.get(tagFileName)).setFileName(DEFAULT_XML_PATH);
-      HDI_OfflinePath.class.cast(recordState.items.get(tagParentFolder)).setFolderID(ROOT_FOLDER_ID);
-      createNewRecordFromState(recordState, true);
+      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID    , DEFAULT_XML_PATH, PREF_KEY_XML_FOLDER_ID       );
+      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 1, folderMap       , PREF_KEY_PAPERS_FOLDER_ID    );
+      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 2, folderMap       , PREF_KEY_BOOKS_FOLDER_ID     );
+      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 3, folderMap       , PREF_KEY_MISC_FILES_FOLDER_ID);
+      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 4, folderMap       , PREF_KEY_PICTURES_FOLDER_ID  );
+      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 5, folderMap       , PREF_KEY_TOPICAL_FOLDER_ID   );
+      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 6, folderMap       , PREF_KEY_UNENTERED_FOLDER_ID );
+      createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 7, folderMap       , PREF_KEY_RESULTS_FOLDER_ID   );
     }
     catch(RelationCycleException | DuplicateRecordException | HDB_InternalError | SearchKeyException | HubChangedException e)
     {
@@ -1584,6 +1712,23 @@ public final class HyperDB
     loaded = true;
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void createSpecialFolderRecord(int id, Map<String, String> folderMap, String prefKey) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException
+  {
+    createSpecialFolderRecord(id, folderMap.get(prefKey), prefKey);
+  }
+
+  private void createSpecialFolderRecord(int id, String name, String prefKey) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException
+  {
+    HDT_RecordState recordState = new HDT_RecordState(hdtFolder, id, "", "", "", "");
+    HDI_OfflinePath.class.cast(recordState.items.get(tagFileName)).setFileName(name);
+    HDI_OfflinePath.class.cast(recordState.items.get(tagParentFolder)).setFolderID(ROOT_FOLDER_ID);
+    createNewRecordFromState(recordState, true);
+    prefs.putInt(prefKey, recordState.id);
   }
 
 //---------------------------------------------------------------------------
@@ -1767,6 +1912,7 @@ public final class HyperDB
                          addTag("parent_glossary"   , tagParentGlossary , "Parent Glossary");
                          addTag("parent_note"       , tagParentNote     , "Parent Note");
                          addTag("parent_folder"     , tagParentFolder   , "Parent Folder");
+                         addTag("picture_folder"    , tagPictureFolder  , "Picture Folder");
                          addTag("linked_record"     , tagLinkedRecord   , "Linked Record");
                          addTag("display_item"      , tagDisplayRecord  , "Relevant Records");
                          addTag("key_work"          , tagKeyWork        , "Key Works");
@@ -1799,6 +1945,7 @@ public final class HyperDB
       tagToObjType.put(tagCounterargument, hdtArgument   );
       tagToObjType.put(tagParentFolder   , hdtFolder     );
       tagToObjType.put(tagParentInst     , hdtInstitution);
+      tagToObjType.put(tagPictureFolder  , hdtFolder     );
 
   /*****************************************************************************
   * ************************************************************************** *
@@ -1861,7 +2008,7 @@ public final class HyperDB
       addPointerSingle(hdtPerson, rtSubfieldOfPerson, tagSubfield);
       addStringItem(hdtPerson, tagWebURL);
       addStringItem(hdtPerson, tagORCID);
-      addPathItem(hdtPerson, rtNone, tagPicture);
+      addPathItem(hdtPerson, rtPictureFolderOfPerson, tagPictureFolder, tagPicture);
       addStringItem(hdtPerson, tagPictureCrop);
       addConnectorItem(hdtPerson, tagWhyFamous, tagDisplayRecord, tagKeyWork);
 
@@ -1990,18 +2137,9 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final int
+  private static final int DEFAULT_XML_FOLDER_ID = 2; // 2 is the default for new databases. Old ones may have 9 as the XML folder ID.
 
-    ROOT_FOLDER_ID = 1,
-    PAPERS_FOLDER_ID = 2,
-    BOOKS_FOLDER_ID = 3,
-    MISC_FOLDER_ID = 4,
-    PICTURES_FOLDER_ID = 5,
-    TOPICAL_FOLDER_ID = 6,
-    UNENTERED_FOLDER_ID = 7,
-    RESULTS_FOLDER_ID = 8,
-    XML_FOLDER_ID = 9,
-    FIRST_USER_FOLDER_ID = 10;
+  public static final int ROOT_FOLDER_ID = 1;
 
   public static final String
 
@@ -2016,10 +2154,13 @@ public final class HyperDB
     DEFAULT_MISC_FILES_PATH = "Misc",
     DEFAULT_RESULTS_PATH = "Search results",
     DEFAULT_TOPICAL_PATH = "Topical",
+    SETTINGS_FILE_NAME = "Settings.xml";
+
+  private static final String
+
     LOCK_FILE_NAME = "dblock.dat",
     REQUEST_MSG_FILE_NAME = "request_message.dat",
     RESPONSE_MSG_FILE_NAME = "response_message.dat",
-    SETTINGS_FILE_NAME = "Settings.xml",
     OTHER_FILE_NAME = "Other.xml",
     PERSON_FILE_NAME = "People.xml",
     INSTITUTION_FILE_NAME = "Institutions.xml",
@@ -2044,7 +2185,8 @@ public final class HyperDB
     tagMiscBib,        tagAuthor,       tagInFileName,   tagEditor,          tagTranslator,      tagAnnotated,      tagStartPageNum, tagEndPageNum,
     tagBibEntryKey,    tagComments,     tagLargerDebate, tagListName,        tagCounterargument, tagDefinition,     tagText,         tagActive,
     tagLargerPosition, tagParentNote,   tagFolder,       tagLargerWork,      tagParentLabel,     tagParentGlossary, tagParentGroup,  tagParentFolder,
-    tagCreationDate,   tagModifiedDate, tagViewDate,     tagDisplayRecord,   tagKeyWork,         tagLinkedRecord,   tagParentInst,   tagHub;
+    tagCreationDate,   tagModifiedDate, tagViewDate,     tagDisplayRecord,   tagKeyWork,         tagLinkedRecord,   tagParentInst,   tagHub,
+    tagPictureFolder;
 
     static EnumHashBiMap<Tag, Integer> tagToNum = EnumHashBiMap.create(Tag.class);
 
@@ -2063,19 +2205,19 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean isProtectedFile(FilePath filePath)
+  public boolean isProtectedFile(FilePath filePath, boolean checkSubfolders)
   {
     if (filePath.equals(rootFilePath)) return true;
+
+    HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, false);
+
+    if ((folder != null) && folder.filePath().equals(filePath) && isProtectedRecord(folder.getID(), folder.getType(), checkSubfolders))
+      return true;
 
     FilePath xmlPath = xmlPath();
 
     if ((filePath.getParent().equals(rootFilePath) == false) &&
         (filePath.getParent().equals(xmlPath     ) == false))   return false;
-
-    HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, false);
-
-    if ((folder != null) && folder.filePath().equals(filePath) && isProtectedRecord(folder.getID(), folder.getType()))
-      return true;
 
     if (filePath.equals(hdbFilePath) ||
         filePath.equals(getRequestMessageFilePath()) ||
@@ -2247,9 +2389,30 @@ public final class HyperDB
     switch (workTypeEnum)
     {
       case wtBook    :
-      case wtChapter : return folders.getByID(BOOKS_FOLDER_ID);
-      case wtPaper   : return folders.getByID(PAPERS_FOLDER_ID);
-      default        : return folders.getByID(MISC_FOLDER_ID);
+      case wtChapter : return booksFolder;
+      case wtPaper   : return papersFolder;
+      default        : return miscFilesFolder;
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void setSpecialFolder(String prefKey, HDT_Folder folder)
+  {
+    prefs.putInt(prefKey, folder.getID());
+
+    switch (prefKey)
+    {
+      case PREF_KEY_PICTURES_FOLDER_ID   : picturesFolder  = folder; break;
+      case PREF_KEY_BOOKS_FOLDER_ID      : booksFolder     = folder; break;
+      case PREF_KEY_PAPERS_FOLDER_ID     : papersFolder    = folder; break;
+      case PREF_KEY_RESULTS_FOLDER_ID    : resultsFolder   = folder; break;
+      case PREF_KEY_UNENTERED_FOLDER_ID  : unenteredFolder = folder; break;
+      case PREF_KEY_MISC_FILES_FOLDER_ID : miscFilesFolder = folder; break;
+      case PREF_KEY_TOPICAL_FOLDER_ID    : topicalFolder   = folder; break;
+
+      default                            : messageDialog("Internal error #59294", mtError); break;
     }
   }
 

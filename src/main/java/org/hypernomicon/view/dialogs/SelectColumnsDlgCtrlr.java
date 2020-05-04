@@ -59,17 +59,15 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static SelectColumnsDlgCtrlr create()
+  public static SelectColumnsDlgCtrlr build()
   {
-    SelectColumnsDlgCtrlr scd = HyperDlg.create("SelectColumnsDlg.fxml", "Select Columns", true);
-    scd.init();
-    return scd;
+    return ((SelectColumnsDlgCtrlr) create("SelectColumnsDlg.fxml", "Select Columns", true)).init();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init()
+  private SelectColumnsDlgCtrlr init()
   {
     double typeLeft = chkFirstType.getLayoutX(),
            fieldLeft = chkFirstField.getLayoutX(),
@@ -87,7 +85,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 
     for (ColumnGroup group : colGroups)
     {
-      if (group.items.size() == 0) continue;
+      if (group.items.isEmpty()) continue;
 
       posY += typeMargin;
       TypeCheckBox chkType = new TypeCheckBox(group.caption);
@@ -108,7 +106,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 
           colGroups.forEach(grp ->
           {
-            if (grp.items.size() == 0) return;
+            if (grp.items.isEmpty()) return;
 
             TypeCheckBox tcb = grp.checkBox;
             tcb.setSelected(true);
@@ -133,7 +131,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 
           colGroups.forEach(grp ->
           {
-            if (grp.items.size() == 0) return;
+            if (grp.items.isEmpty()) return;
 
             TypeCheckBox tcb = grp.checkBox;
             tcb.setSelected(false);
@@ -208,6 +206,8 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
         }
       }
     }
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

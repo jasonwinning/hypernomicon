@@ -238,7 +238,7 @@ public class RecordByTypePopulator extends Populator
 
   private HyperTableCell getCell(HDT_Record record)
   {
-    if ((filter != null) && (filter.test(record.getID()) == false))
+    if ((record == null) || ((filter != null) && (filter.test(record.getID()) == false)))
       return null;
 
     if (nameOnly)

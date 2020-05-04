@@ -49,7 +49,7 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
   public String get()
   {
     if ((record.getType() == hdtConcept) && (mainTag == record.getNameTag()))
-      return HDT_Concept.class.cast(record).term.get().name();
+      return ((HDT_Concept)record).term.get().name();
 
     return strValue;
   }

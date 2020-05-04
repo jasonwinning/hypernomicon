@@ -21,8 +21,8 @@ import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.relations.RelationSet.RelationType.rtNone;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
@@ -56,14 +56,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
   private void initPath()
   {
     hyperPath = HDT_RecordWithPath.class.cast(record).getPath();
-
-    if ((hyperPath == null) || (record.getType() != hdtPerson))
-      return;
-
-    HDT_Folder folder = db.folders.getByID(PICTURES_FOLDER_ID);
-    FilePath fileName = hyperPath.getFileName();
-    hyperPath.assignInternal(folder, fileName); // It is okay if the hyperPath.fileName is null. Then this line just assigns the hyperPath to
-  }                                             // point to the pictures folder. That is necessary when the database is first being brought "online".
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -72,7 +65,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
   {
     switch (tag)
     {
-      case tagParentFolder : case tagFolder :
+      case tagParentFolder : case tagFolder : case tagPictureFolder :
 
         HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
         objList.clear();
@@ -105,8 +98,19 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 
   @Override public void resolvePointers() throws HDB_InternalError
   {
-    if (relType != rtNone)
-      db.resolvePointersByRelation(relType, record);
+    if (relType == rtNone) return;
+
+    db.resolvePointersByRelation(relType, record);
+
+    // The remainder of this method is for backwards compatibility with records XML version 1.0
+
+    if ((relType != RelationType.rtPictureFolderOfPerson) || hyperPath.isEmpty() || (hyperPath.parentFolder() != null)) return;
+
+    // This has to be done after bringing records online because special folder IDs are loaded from the Settings file afterward
+
+    HDI_OfflinePath offlinePath = new HDI_OfflinePath(schema, record.getRecordStateBackup());
+    offlinePath.folderID = db.getPicturesFolder().getID();
+    try { setFromOfflineValue(offlinePath, Tag.tagPictureFolder); } catch (RelationCycleException e) { noOp(); }
   }
 
 //---------------------------------------------------------------------------
@@ -130,17 +134,26 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
       case tagFolder :
 
         if (hyperPath.filePath().isDirectory())
-          return hyperPath.getNameStr();
+        {
+          if (hyperPath.getRecord() == db.getRootFolder())
+            return HyperPath.ROOT_PATH_STR;
+
+          return db.getRootPath().relativize(hyperPath.filePath()).toString();
+        }
 
         // now it should fall through to tagParentFolder case
 
-      case tagParentFolder :
+      case tagParentFolder : case tagPictureFolder :
+
         if (hyperPath.parentFolder() == null)
           return "";
+        else if (hyperPath.parentFolder().getID() == ROOT_FOLDER_ID)
+          return HyperPath.ROOT_PATH_STR;
 
-        return hyperPath.parentFolder().getPath().getNameStr();
+        return db.getRootPath().relativize(hyperPath.parentFolder().filePath()).toString();
 
       default :
+
         return hyperPath.getNameStr();
     }
   }

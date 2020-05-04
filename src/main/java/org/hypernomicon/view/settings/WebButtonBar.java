@@ -80,7 +80,7 @@ public class WebButtonBar extends WebButtonCtrl
     {
       try
       {
-        EditWebButtonsDlgCtrlr dlg = EditWebButtonsDlgCtrlr.create(getWebButton(), prefKey);
+        EditWebButtonsDlgCtrlr dlg = EditWebButtonsDlgCtrlr.build(getWebButton(), prefKey);
 
         if ((dlg.showModal() == false) || dlg.unchanged()) return;
 

@@ -215,7 +215,7 @@ public class PreviewWrapper
     if (curPrevFile.record != null)
       ui.goToRecord(curPrevFile.record, true);
     else if (curPrevFile.filePath != null)
-      ui.goToRecord(HyperPath.getFileFromFilePath(curPrevFile.filePath), true);
+      ui.goToRecord(HyperPath.getRecordFromFilePath(curPrevFile.filePath), true);
   }
 
 //---------------------------------------------------------------------------
@@ -345,9 +345,9 @@ public class PreviewWrapper
 
     PreviewFile prevFile = fileList.get(fileNdx);
 
-    int pageNum = prevFile.navNdx < 0 ? 1 : prevFile.navList.get(prevFile.navNdx);
+    int newPageNum = prevFile.navNdx < 0 ? 1 : prevFile.navList.get(prevFile.navNdx);
 
-    setPreview(prevFile.filePath, pageNum, prevFile.record, false, prevFile);
+    setPreview(prevFile.filePath, newPageNum, prevFile.record, false, prevFile);
   }
 
 //---------------------------------------------------------------------------
@@ -547,7 +547,7 @@ public class PreviewWrapper
         Result<String> result = converter.convertToHtml(filePath.toFile());
         String html = result.getValue(); // The generated HTML
 
-        result.getWarnings().forEach(msg -> System.out.println(msg));
+        result.getWarnings().forEach(System.out::println);
 
         jsWrapper.loadHtml(html.isBlank() ? errHtml : html);
       }
@@ -653,7 +653,7 @@ public class PreviewWrapper
       workEndPageNum = pageNum;
 
     HDT_Work work = (HDT_Work) curPrevFile.record;
-    HDT_WorkFile workFile = (HDT_WorkFile) HyperPath.getFileFromFilePath(curPrevFile.filePath);
+    HDT_WorkFile workFile = (HDT_WorkFile) HyperPath.getRecordFromFilePath(curPrevFile.filePath);
 
     if (isStart)
       work.setStartPageNum(workFile, pageNum);

@@ -164,7 +164,7 @@ class TreeCB
   {
     clearSelection();
 
-    nullSwitch(recordToRow.get(record), row -> cb.getSelectionModel().select(row));
+    nullSwitch(recordToRow.get(record), cb.getSelectionModel()::select);
   }
 
 //---------------------------------------------------------------------------

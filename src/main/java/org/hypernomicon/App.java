@@ -212,10 +212,15 @@ public final class App extends Application
 
     String versionStr = manifestValue("Impl-Version");
 
-    if (safeStr(versionStr).isEmpty())
-      versionStr = "1.17.5";
+    if (safeStr(versionStr).isEmpty() == false)
+      if (new VersionNumber(2, versionStr).equals(dbVersion) == false)
+      {
+        messageDialog("Internal error #69698", mtError);
+        ui.shutDown(false, false, false);
+        return;
+      }
 
-    version = new VersionNumber(2, versionStr);
+    version = dbVersion;
 
     boolean hdbExists = false;
     String srcName = appPrefs.get(PREF_KEY_SOURCE_FILENAME, "");
@@ -257,11 +262,11 @@ public final class App extends Application
     if (appPrefs.getBoolean(PREF_KEY_CHECK_FOR_NEW_VERSION, true)) checkForNewVersion(new AsyncHttpClient(), newVersion ->
     {
       if (newVersion.compareTo(app.getVersion()) > 0)
-        NewVersionDlgCtrlr.create().showModal();
+        NewVersionDlgCtrlr.build().showModal();
     }, Util::noOp);
 
     if (db.viewTestingInProgress && hdbExists)
-      testUpdatingAllRecords();
+      testUpdatingAllRecords(1);
   }
 
 //---------------------------------------------------------------------------
@@ -302,7 +307,7 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void testUpdatingAllRecords()
+  private void testUpdatingAllRecords(int passes)
   {
     List<HDT_RecordType> types = List.of(hdtPerson,   hdtInstitution, hdtInvestigation, hdtDebate,   hdtPosition,
                                          hdtArgument, hdtWork,        hdtTerm,          hdtMiscFile, hdtNote);
@@ -310,7 +315,10 @@ public final class App extends Application
     total = 0; ctr = 0; lastPercent = 0;
     types.forEach(type -> total += db.records(type).size());
 
-    types.forEach(this::testUpdatingRecords);
+    total *= passes;
+
+    for (int pass = 1; pass <= passes; pass++)
+      types.forEach(this::testUpdatingRecords);
   }
 
 //---------------------------------------------------------------------------
@@ -463,7 +471,7 @@ public final class App extends Application
 
     forEachHyperTab(HyperTab::setDividerPositions);
 
-    bibManagerDlg = BibManager.create();
+    bibManagerDlg = BibManager.build();
 
     bibManagerDlg.getStage().setX(appPrefs.getDouble(PREF_KEY_BM_WINDOW_X, bibManagerDlg.getStage().getX()));
     bibManagerDlg.getStage().setY(appPrefs.getDouble(PREF_KEY_BM_WINDOW_Y, bibManagerDlg.getStage().getY()));
@@ -484,7 +492,7 @@ public final class App extends Application
         ui.update();
     });
 
-    fileManagerDlg = FileManager.create();
+    fileManagerDlg = FileManager.build();
 
     fileManagerDlg.getStage().setX(appPrefs.getDouble(PREF_KEY_FM_WINDOW_X, fileManagerDlg.getStage().getX()));
     fileManagerDlg.getStage().setY(appPrefs.getDouble(PREF_KEY_FM_WINDOW_Y, fileManagerDlg.getStage().getY()));
@@ -492,7 +500,7 @@ public final class App extends Application
     fileManagerDlg.setInitHeight(PREF_KEY_FM_WINDOW_HEIGHT);
     fileManagerDlg.setInitWidth(PREF_KEY_FM_WINDOW_WIDTH);
 
-    previewWindow = PreviewWindow.create();
+    previewWindow = PreviewWindow.build();
 
     previewWindow.getStage().setX(appPrefs.getDouble(PREF_KEY_PREV_WINDOW_X, previewWindow.getStage().getX()));
     previewWindow.getStage().setY(appPrefs.getDouble(PREF_KEY_PREV_WINDOW_Y, previewWindow.getStage().getY()));
@@ -500,7 +508,7 @@ public final class App extends Application
     previewWindow.setInitWidth(PREF_KEY_PREV_WINDOW_WIDTH);
     previewWindow.setInitHeight(PREF_KEY_PREV_WINDOW_HEIGHT);
 
-    contentsWindow = ContentsWindow.create();
+    contentsWindow = ContentsWindow.build();
 
     contentsWindow.getStage().setX(appPrefs.getDouble(PREF_KEY_CONTENTS_WINDOW_X, contentsWindow.getStage().getX()));
     contentsWindow.getStage().setY(appPrefs.getDouble(PREF_KEY_CONTENTS_WINDOW_Y, contentsWindow.getStage().getY()));

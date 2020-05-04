@@ -229,7 +229,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
     if (getLast().isEmpty())
       return getFirst();
 
-    if (initialList.size() == 0)
+    if (initialList.isEmpty())
       return getLast();
 
     String bibName = getLast() + ", ";

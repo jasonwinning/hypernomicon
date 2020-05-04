@@ -549,7 +549,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   {
     if (!saveSearchKey(curPerson, tfSearchKey)) return false;
 
-    curPerson.getPath().assign(db.folders.getByID(PICTURES_FOLDER_ID), FilePath.isEmpty(curPicture) ? new FilePath("") : curPicture.getNameOnly());
+    if (FilePath.isEmpty(curPicture))
+      curPerson.getPath().clear();
+    else
+      curPerson.getPath().assign(HyperPath.getFolderFromFilePath(curPicture.getDirOnly(), true), curPicture.getNameOnly());
 
     curPerson.setViewPort(viewPort);
 
@@ -656,7 +659,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     if (matchedAuthors.size() > 0)
     {
-      NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.create(personName, tfSearchKey.getText(), true, curPerson, null, matchedAuthors);
+      NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.build(personName, tfSearchKey.getText(), true, curPerson, null, matchedAuthors);
 
       if (npdc.showModal() == false) return false;
     }
@@ -793,7 +796,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     setToolTip(lblSearchKey, "Regenerate search key");
 
     lblSearchKey.setOnMouseClicked(event -> lblSearchKeyClick());
-    
+
     ui.setSearchKeyToolTip(tfSearchKey);
 
     lblWebsite.setOnMouseClicked(event -> openWebLink(tfWebsite.getText()));
@@ -808,7 +811,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     ivPerson.setOnMouseClicked(event ->
     {
-      PictureDlgCtrlr ctrlr = PictureDlgCtrlr.create(viewPort);
+      PictureDlgCtrlr ctrlr = PictureDlgCtrlr.build(viewPort);
 
       if (ctrlr.showModal())
         viewPort = ctrlr.getViewPort();
@@ -878,9 +881,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     if (row.getRecordType() != hdtWork) return;
 
     HDT_Work work = row.getRecord();
-    HDT_Person curPerson = (HDT_Person) ui.activeRecord();
 
-    InvestigationsDlgCtrlr dlg = InvestigationsDlgCtrlr.create(work, curPerson);
+    InvestigationsDlgCtrlr dlg = InvestigationsDlgCtrlr.build(work, curPerson);
 
     if (dlg.showModal() == false)
       return;
@@ -956,7 +958,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     iV.tfName = new TextField(newName);
     iV.tab.setText(newName);
     iV.tfSearchKey = new TextField(newSearchKey);
-    
+
     ui.setSearchKeyToolTip(iV.tfSearchKey);
 
     iV.tab.setOnCloseRequest(this::deleteInvestigation);
@@ -1059,7 +1061,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     if ((newName.length() > 0) && (colNdx == 1))
       oldParent = null;
 
-    NewInstDlgCtrlr newInstDialog = NewInstDlgCtrlr.create(oldParent, newName, colNdx == 1);
+    NewInstDlgCtrlr newInstDialog = NewInstDlgCtrlr.build(oldParent, newName, colNdx == 1);
 
     if (newInstDialog.showModal())
     {

@@ -56,17 +56,15 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static SelectConceptDlgCtrlr create(HDT_Concept oldConcept)
+  public static SelectConceptDlgCtrlr build(HDT_Concept oldConcept)
   {
-    SelectConceptDlgCtrlr scd = HyperDlg.create("SelectConceptDlg.fxml", "Term Select", true);
-    scd.init(oldConcept);
-    return scd;
+    return ((SelectConceptDlgCtrlr) create("SelectConceptDlg.fxml", "Term Select", true)).init(oldConcept);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_Concept oldConcept)
+  private SelectConceptDlgCtrlr init(HDT_Concept oldConcept)
   {
     hcbTerm = new HyperCB(cbTerm, ctDropDownList, new StandardPopulator(hdtTerm));
 
@@ -123,7 +121,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
         }
 
         if (selectedGlossary == false)
-          cbGlossary.getSelectionModel().select(glossaryCells.size() == 0 ? null : glossaryCells.get(0));
+          cbGlossary.getSelectionModel().select(glossaryCells.isEmpty() ? null : glossaryCells.get(0));
       }
       else
         cbGlossary.getSelectionModel().select(null);
@@ -132,9 +130,11 @@ public class SelectConceptDlgCtrlr extends HyperDlg
     });
 
     ui.setSearchKeyToolTip(tfSearchKey);
-    
+
     btnCreate.setOnAction(event -> btnCreateClick());
     createNew = false;
+
+    return this;
   }
 
   public HDT_Term     getTerm()      { return term; }

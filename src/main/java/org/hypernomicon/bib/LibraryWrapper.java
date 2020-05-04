@@ -241,7 +241,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
   {
     list.removeIf(str -> str == null);
 
-    if (list.size() == 0) return "";
+    if (list.isEmpty()) return "";
 
     StringBuilder html = new StringBuilder("<tr><td class=\"fieldName\">" + fieldName + "</td><td>");
 
@@ -270,8 +270,8 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
       try
       {
-        mwd = MergeWorksDlgCtrlr.create("Merge Remote Changes with Local Changes", entry, BibEntry.create(type(), this, jObj, true),
-                                        null, null, entry.getWork(), false, false, false);
+        mwd = MergeWorksDlgCtrlr.build("Merge Remote Changes with Local Changes", entry, BibEntry.create(type(), this, jObj, true),
+                                       null, null, entry.getWork(), false, false, false);
       }
       catch (IOException e)
       {

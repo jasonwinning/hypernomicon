@@ -62,10 +62,7 @@ public class AsyncHttpClient
       }
       catch (IOException e)
       {
-        if (cancelledByUser)
-          runInFXThread(() -> failHndlr.accept(new TerminateTaskException()));
-        else
-          runInFXThread(() -> failHndlr.accept(e));
+        runInFXThread(() -> failHndlr.accept(cancelledByUser ? new TerminateTaskException() : e));
       }
 
       stopped = true;

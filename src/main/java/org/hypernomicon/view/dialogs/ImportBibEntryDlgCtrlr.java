@@ -67,17 +67,15 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ImportBibEntryDlgCtrlr create(List<String> lines, FilePath filePath)
+  public static ImportBibEntryDlgCtrlr build(List<String> lines, FilePath filePath)
   {
-    ImportBibEntryDlgCtrlr dlg = HyperDlg.create("ImportBibEntryDlg.fxml", "Import Bibliography File", true);
-    dlg.init(lines, filePath);
-    return dlg;
+    return ((ImportBibEntryDlgCtrlr) create("ImportBibEntryDlg.fxml", "Import Bibliography File", true)).init(lines, filePath);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(List<String> lines, FilePath filePath)
+  private ImportBibEntryDlgCtrlr init(List<String> lines, FilePath filePath)
   {
     if (db.bibLibraryIsLinked() == false)
     {
@@ -108,6 +106,8 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
     }
     else
       loadEntry(lines);
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -167,10 +167,7 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if ((createNewWork == false) && (hcbWork.selectedID() < 1))
-      return falseWithErrorMessage("You must select a work record.", cbWork);
-
-    return true;
+    return (createNewWork == false) && (hcbWork.selectedID() < 1) ? falseWithErrorMessage("You must select a work record.", cbWork) : true;
   }
 
 //---------------------------------------------------------------------------

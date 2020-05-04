@@ -34,20 +34,22 @@ public class ChangeParentDlgCtrlr extends HyperDlg
 
   private TransferMode transferMode = null;
 
+  public TransferMode getTransferMode() { return transferMode; }
+
+  @Override protected boolean isValid() { return true; }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ChangeParentDlgCtrlr create(HDT_Record oldParent, HDT_Record newParent, HDT_Record child, boolean copyIsOK)
+  public static ChangeParentDlgCtrlr build(HDT_Record oldParent, HDT_Record newParent, HDT_Record child, boolean copyIsOK)
   {
-    ChangeParentDlgCtrlr cpd = HyperDlg.create("ChangeParentDlg.fxml", "Copy or Move Record to Destination", true);
-    cpd.init(oldParent, newParent, child, copyIsOK);
-    return cpd;
+    return ((ChangeParentDlgCtrlr) create("ChangeParentDlg.fxml", "Copy or Move Record to Destination", true)).init(oldParent, newParent, child, copyIsOK);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_Record oldParent, HDT_Record newParent, HDT_Record child, boolean copyIsOK)
+  private ChangeParentDlgCtrlr init(HDT_Record oldParent, HDT_Record newParent, HDT_Record child, boolean copyIsOK)
   {
     label1.setText("The " + db.getTypeName(child.getType()) + " record:");
     label2.setText("will be attached under the " + db.getTypeName(newParent.getType()) + " record:");
@@ -64,9 +66,9 @@ public class ChangeParentDlgCtrlr extends HyperDlg
     btnCopy.setDisable(copyIsOK == false);
 
     transferMode = null;
-  }
 
-  public TransferMode getTransferMode() { return transferMode; }
+    return this;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -84,14 +86,6 @@ public class ChangeParentDlgCtrlr extends HyperDlg
   {
     transferMode = TransferMode.COPY;
     btnOkClick();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected boolean isValid()
-  {
-    return true;
   }
 
 //---------------------------------------------------------------------------

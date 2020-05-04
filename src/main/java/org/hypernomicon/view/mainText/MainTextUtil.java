@@ -331,12 +331,7 @@ public class MainTextUtil
           {
             linkTextLen = link.length;              // 3. Get end offset into newStr for the part that will be converted to a link
             displayText = safeSubstring(newStr, 0, linkTextLen);
-            String style;
-
-            if (link.key.record.equals(recordToHilite))
-              style = "background-color: pink;";
-            else
-              style = "";
+            String style = link.key.record.equals(recordToHilite) ? "background-color: pink;" : "";
 
             textNode.before(getKeywordLink(displayText, link, style));  // 4. Insert anchor
           }

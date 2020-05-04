@@ -507,7 +507,7 @@ public class MainTextCtrlr
 
   private void btnPictureClick()
   {
-    InsertMiscFileDlgCtrlr imfd = InsertMiscFileDlgCtrlr.create();
+    InsertMiscFileDlgCtrlr imfd = InsertMiscFileDlgCtrlr.build();
 
     if (imfd.showModal() == false) return;
 
@@ -517,7 +517,7 @@ public class MainTextCtrlr
     {
       miscFile = db.createNewBlankRecord(hdtMiscFile);
 
-      FileDlgCtrlr fdc = FileDlgCtrlr.create("Image File Record", miscFile, "", true);
+      FileDlgCtrlr fdc = FileDlgCtrlr.build("Image File Record", miscFile, "", true);
 
       if (fdc.showModal() == false)
       {
@@ -553,7 +553,7 @@ public class MainTextCtrlr
 
     String selText = (String) engine.executeScript("window.getSelection().rangeCount < 1 ? \"\" : window.getSelection().getRangeAt(0).toString()");
 
-    NewLinkDlgCtrlr dlg = NewLinkDlgCtrlr.create(convertToSingleLine(selText));
+    NewLinkDlgCtrlr dlg = NewLinkDlgCtrlr.build(convertToSingleLine(selText));
 
     if (dlg.showModal() == false) return;
 
@@ -678,7 +678,7 @@ public class MainTextCtrlr
 
     clearDisplayItems();
 
-    if ((keyWorks != null) && (MainText.typeHasKeyWorks(record.getType())))
+    if ((keyWorks != null) && MainText.typeHasKeyWorks(record.getType()))
     {
       if (borderPane.getTop() == null)
         borderPane.setTop(tpKeyWorks);
@@ -694,7 +694,7 @@ public class MainTextCtrlr
 
         linkMap.put(searchKey, keyWork.getEditorText());
 
-        addToSortedList(searchKeys, searchKey, (s1, s2) -> s1.compareToIgnoreCase(s2));
+        addToSortedList(searchKeys, searchKey, String::compareToIgnoreCase);
       });
 
       keyWorksText = searchKeys.stream().map(linkMap::get).reduce((s1, s2) -> s1 + ", " + s2).orElse("");

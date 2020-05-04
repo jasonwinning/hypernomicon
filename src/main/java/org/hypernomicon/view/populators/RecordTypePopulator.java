@@ -59,7 +59,7 @@ public class RecordTypePopulator extends Populator
     if (types == null)
       types = EnumSet.noneOf(HDT_RecordType.class);
 
-    if (types.size() == 0)
+    if (types.isEmpty())
     {
       for (HDT_RecordType type : HDT_RecordType.values())
         if ((type != hdtNone) && (type != hdtAuxiliary))

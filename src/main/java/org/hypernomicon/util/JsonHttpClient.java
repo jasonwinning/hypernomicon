@@ -45,11 +45,10 @@ public class JsonHttpClient
 {
   private List<Header> headers;
   private int statusCode;
-  private String reasonPhrase = "";
+  private String reasonPhrase = "", lastUrl = "";
   private JsonArray jsonArray = null;
   private JsonObj jsonObj = null;
   private Exception lastException = null;
-  private String lastUrl = "";
 
   public int getStatusCode()       { return statusCode; }
   public List<Header> getHeaders() { return headers; }
@@ -67,7 +66,7 @@ public class JsonHttpClient
         if (jsonClient.jsonArray == null)
         {
           jsonClient.jsonArray = new JsonArray();
-          
+
           if (jsonClient.jsonObj != null)
             jsonClient.jsonArray.add(jsonClient.jsonObj);
         }
@@ -185,7 +184,7 @@ public class JsonHttpClient
       switch (HttpHeader.get(header))
       {
         case Content_Type : contentType = header.getValue(); break;
-        
+
         default : break;
       }
     }

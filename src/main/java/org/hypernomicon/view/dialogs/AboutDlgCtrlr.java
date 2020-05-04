@@ -50,17 +50,15 @@ public class AboutDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static AboutDlgCtrlr create()
+  public static AboutDlgCtrlr build()
   {
-    AboutDlgCtrlr adc = HyperDlg.create("AboutDlg.fxml", "About " + appTitle, false);
-    adc.init();
-    return adc;
+    return ((AboutDlgCtrlr) create("AboutDlg.fxml", "About " + appTitle, false)).init();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init()
+  private AboutDlgCtrlr init()
   {
     buildDate = manifestValue("Build-Time");
 
@@ -135,6 +133,8 @@ public class AboutDlgCtrlr extends HyperDlg
 
       updateHtml(tabPane.getSelectionModel().getSelectedItem());
     });
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

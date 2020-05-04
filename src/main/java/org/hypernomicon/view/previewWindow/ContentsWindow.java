@@ -57,17 +57,15 @@ public class ContentsWindow extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ContentsWindow create()
+  public static ContentsWindow build()
   {
-    ContentsWindow contentsWindow = HyperDlg.createUsingFullPath("view/previewWindow/ContentsWindow.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE);
-    contentsWindow.init();
-    return contentsWindow;
+    return ((ContentsWindow) createUsingFullPath("view/previewWindow/ContentsWindow.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init()
+  private ContentsWindow init()
   {
     htContents = new HyperTable(tvContents, 2, false, PREF_KEY_HT_CONTENTS_DLG, this);
 
@@ -151,6 +149,8 @@ public class ContentsWindow extends HyperDlg
     htContents.setTooltip(8, ButtonAction.baCustom, "Jump to end page in preview window");
     htContents.setTooltip(6, ButtonAction.baCustom, "Assign page currently visible in preview window as start page");
     htContents.setTooltip(9, ButtonAction.baCustom, "Assign page currently visible in preview window as end page");
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

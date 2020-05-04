@@ -195,7 +195,7 @@ public class TreeSelector
   {
     HDT_RecordWithConnector record1 = (HDT_RecordWithConnector) base;
 
-    if ((record2.getType() == record1.getType()))
+    if (record2.getType() == record1.getType())
       return falseWithErrMsgCond(showErrMsg, "You cannot connect records of the same type.");
 
     if (record2.isLinked())

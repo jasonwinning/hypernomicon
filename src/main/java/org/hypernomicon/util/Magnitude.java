@@ -15,43 +15,18 @@
  *
  */
 
-package org.hypernomicon.view.wrappers;
+package org.hypernomicon.util;
 
-import javafx.scene.Node;
-import javafx.scene.control.ComboBox;
-
-import static org.hypernomicon.util.Util.*;
-
-@FunctionalInterface public interface CommitableWrapper
+public interface Magnitude<T extends Comparable<? super T>> extends Comparable<T>
 {
-  void commit();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void commitWrapper(Node node)
-  {
-    if (node == null) return;
-
-    if (node instanceof CommitableWrapper)
-    {
-      ((CommitableWrapper)node).commit();
-      return;
-    }
-
-    if (node instanceof ComboBox)
-    {
-      HyperCB hcb = HyperCB.cbRegistry.get(node);
-
-      if (hcb != null)
-      {
-        hcb.commit();
-        return;
-      }
-    }
-
-    nullSwitch(node.getParent(), CommitableWrapper::commitWrapper);
-  }
+  public default boolean isLessThan            (T o) { return this.compareTo(o) <  0; }
+  public default boolean isLessThanOrEqualTo   (T o) { return this.compareTo(o) <= 0; }
+  public default boolean isGreaterThan         (T o) { return this.compareTo(o) >  0; }
+  public default boolean isGreaterThanOrEqualTo(T o) { return this.compareTo(o) >= 0; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

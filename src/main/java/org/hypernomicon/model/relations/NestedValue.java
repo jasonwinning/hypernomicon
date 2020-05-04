@@ -46,10 +46,10 @@ public class NestedValue
 
     switch (hdc)
     {
-      case hdcString        : str     = HDI_OnlineString       .class.cast(item).get(); break;
-      case hdcBoolean       : bool    = HDI_OnlineBoolean      .class.cast(item).get(); break;
-      case hdcTernary       : ternary = HDI_OnlineTernary      .class.cast(item).get(); break;
-      case hdcNestedPointer : target  = HDI_OnlineNestedPointer.class.cast(item).get(); break;
+      case hdcString        : str     = ((HDI_OnlineString       )item).get(); break;
+      case hdcBoolean       : bool    = ((HDI_OnlineBoolean      )item).get(); break;
+      case hdcTernary       : ternary = ((HDI_OnlineTernary      )item).get(); break;
+      case hdcNestedPointer : target  = ((HDI_OnlineNestedPointer)item).get(); break;
       default               : break;
     }
   }

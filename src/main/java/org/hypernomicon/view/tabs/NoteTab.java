@@ -130,7 +130,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     tabMentioners.setText(mentionersTabTitle + " (" + mentioners.size() + ")");
 
-    if ((curNote.subNotes.size() == 0) && (htMentioners.getDataRowCount() > 0))
+    if (curNote.subNotes.isEmpty() && (htMentioners.getDataRowCount() > 0))
       tabPane.getSelectionModel().select(tabMentioners);
 
     if ((curNote.subNotes.size() > 0) && (htMentioners.getDataRowCount() == 0))
@@ -308,11 +308,11 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     boolean noOtherNotes = folder.notes.isEmpty();
 
-    curNote.folder.set(folder.getID() == TOPICAL_FOLDER_ID ? null : folder);
+    curNote.folder.set(folder == db.getTopicalFolder() ? null : folder);
 
     ui.update();
 
-    if (noOtherNotes && (folder.getID() != TOPICAL_FOLDER_ID) && ctrlr.nameCtrl().getText().isBlank())
+    if (noOtherNotes && (folder != db.getTopicalFolder()) && ctrlr.nameCtrl().getText().isBlank())
       ctrlr.nameCtrl().setText(folder.getPath().getNameStr());
   }
 

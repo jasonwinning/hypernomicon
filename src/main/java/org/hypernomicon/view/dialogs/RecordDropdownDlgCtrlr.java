@@ -46,9 +46,9 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <HDT_T2 extends HDT_Record> RecordDropdownDlgCtrlr<HDT_T2> create(HDT_RecordType recordType)
+  public static <HDT_T2 extends HDT_Record> RecordDropdownDlgCtrlr<HDT_T2> build(HDT_RecordType recordType)
   {
-    RecordDropdownDlgCtrlr<HDT_T2> rdd = HyperDlg.create("RecordDropdownDlg.fxml", "Select a Term Record to Merge With", true);
+    RecordDropdownDlgCtrlr<HDT_T2> rdd = create("RecordDropdownDlg.fxml", "Select a Term Record to Merge With", true);
     rdd.init(recordType);
     return rdd;
   }
@@ -67,9 +67,7 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if (hcbRecord.selectedID() >= 1) return true;
-
-    return falseWithInfoMessage("Select a " + typeName + " record.", cbRecord);
+    return hcbRecord.selectedID() >= 1 ? true : falseWithInfoMessage("Select a " + typeName + " record.", cbRecord);
   }
 
 //---------------------------------------------------------------------------

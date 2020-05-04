@@ -43,17 +43,15 @@ public class NewLinkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewLinkDlgCtrlr create(String selText)
+  public static NewLinkDlgCtrlr build(String selText)
   {
-    NewLinkDlgCtrlr nld = HyperDlg.create("NewLinkDlg.fxml", "Insert Link", true);
-    nld.init(selText);
-    return nld;
+    return ((NewLinkDlgCtrlr) create("NewLinkDlg.fxml", "Insert Link", true)).init(selText);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(String selText)
+  private NewLinkDlgCtrlr init(String selText)
   {
     String clipText = getClipboardText(true).trim();
     selText = selText.trim();
@@ -62,13 +60,15 @@ public class NewLinkDlgCtrlr extends HyperDlg
     {
       tfURL.setText(selText);
       tfDisplayText.setText(clipText.length() > 0 ? clipText : selText);
-      return;
+      return this;
     }
 
     if (isStringUrl(clipText))
       tfURL.setText(clipText);
 
     tfDisplayText.setText(selText.length() > 0 ? selText : clipText);
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

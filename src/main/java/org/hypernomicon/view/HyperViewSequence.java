@@ -146,7 +146,6 @@ public class HyperViewSequence
       return;
     }
 
-    saveViewToSequence(true);
     update();
   }
 
@@ -205,7 +204,7 @@ public class HyperViewSequence
     {
       if (activeRecord.getType() == hdtPerson)
       {
-        if (HDT_Person.class.cast(activeRecord).getLastName().length() > 0)
+        if (((HDT_Person)activeRecord).getLastName().length() > 0)
           ui.omniFocus();
       }
       else if (activeRecord.name().length() > 0)
@@ -230,9 +229,9 @@ public class HyperViewSequence
     db.getInitialNavList().forEach(record ->
     {
       if (record.getType() == hdtInvestigation)
-        record = HDT_Investigation.class.cast(record).person.get();
+        record = ((HDT_Investigation)record).person.get();
       else if (record.getType() == hdtTerm)
-        record = HDT_Term.class.cast(record).concepts.get(0);
+        record = ((HDT_Term)record).concepts.get(0);
 
       if (record == null) return;
 

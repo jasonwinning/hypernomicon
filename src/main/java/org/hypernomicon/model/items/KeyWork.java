@@ -153,10 +153,8 @@ public class KeyWork implements Comparable<KeyWork>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private String makeSearchKey()
+  private void makeSearchKey()
   {
-    String searchKey;
-
     if (record.getType() == hdtWork)
     {
       HDT_Work work = (HDT_Work) record.getRecord();
@@ -185,8 +183,6 @@ public class KeyWork implements Comparable<KeyWork>
     }
     else
       searchKey = HDT_MiscFile.class.cast(record.getRecord()).name();
-
-    return searchKey;
   }
 
   //---------------------------------------------------------------------------
@@ -213,7 +209,7 @@ public class KeyWork implements Comparable<KeyWork>
     searchKeyInitialized = true;
 
     if (searchKey.isEmpty())
-      searchKey = makeSearchKey(); // Try using the author and year and see if that is a keyword match
+      makeSearchKey(); // Try using the author and year and see if that is a keyword match
 
     if (searchKey.length() > 0)
     {
@@ -234,7 +230,7 @@ public class KeyWork implements Comparable<KeyWork>
     if (activeKeyWord.isEmpty())
     {
       if (searchKey.isEmpty())
-        searchKey = makeSearchKey(); // Use the author and year; the only reason why it wasn't a keyword match is because there are no active keywords
+        makeSearchKey(); // Use the author and year; the only reason why it wasn't a keyword match is because there are no active keywords
 
       return false;
     }

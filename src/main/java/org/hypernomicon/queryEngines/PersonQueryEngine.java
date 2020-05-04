@@ -30,6 +30,10 @@ import static org.hypernomicon.view.tabs.QueryTabCtrlr.*;
 
 public class PersonQueryEngine extends QueryEngine<HDT_Person>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
   {
 
@@ -49,10 +53,11 @@ public class PersonQueryEngine extends QueryEngine<HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Person record, boolean firstCall, boolean lastCall)
+  @Override public boolean evaluate(HDT_Person person, boolean firstCall, boolean lastCall)
   {
     switch (curQuery)
     {
+
     }
 
     return false;
@@ -91,9 +96,9 @@ public class PersonQueryEngine extends QueryEngine<HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int numOperands(int query)
+  @Override public boolean hasOperand(int query, int opNum, HyperTableCell prevOp)
   {
-    return 3;
+    return true;
   }
 
 //---------------------------------------------------------------------------

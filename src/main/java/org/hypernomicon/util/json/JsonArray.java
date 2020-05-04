@@ -50,7 +50,7 @@ public class JsonArray implements Cloneable
   public JsonArray getArray(int ndx)      { return new JsonArray((JSONArray) jArr.get(ndx)); }
   public int size()                       { return jArr.size(); }
   public JsonNodeType getType(int ndx)    { return JsonObj.determineType(jArr.get(ndx)); }
-  public String getLongAsStrSafe(int ndx) { return nullSwitch(jArr.get(ndx), "", obj -> String.valueOf(Long.class.cast(obj).longValue())); }
+  public String getLongAsStrSafe(int ndx) { return nullSwitch(jArr.get(ndx), "", obj -> String.valueOf(((Long)obj).longValue())); }
   public JsonObjIterator getObjs()        { return new JsonObjIterator(); }
   public JsonStrIterator getStrs()        { return new JsonStrIterator(); }
 
@@ -149,11 +149,7 @@ public class JsonArray implements Cloneable
 
   @Override public final JsonArray clone()
   {
-    JsonArray otherArr = null;
-
-    try { otherArr = new JsonArray((JSONArray)jsonParser.parse(jArr.toJSONString())); } catch (ParseException e) { noOp(); }
-
-    return otherArr;
+    try { return new JsonArray((JSONArray)jsonParser.parse(jArr.toJSONString())); } catch (ParseException e) { return null; }
   }
 
 //---------------------------------------------------------------------------
@@ -162,7 +158,7 @@ public class JsonArray implements Cloneable
   public String getStr(int ndx)
   {
     Object obj = jArr.get(ndx);
-    return obj instanceof String ? String.class.cast(obj) : "";
+    return obj instanceof String ? (String)obj : "";
   }
 
 //---------------------------------------------------------------------------

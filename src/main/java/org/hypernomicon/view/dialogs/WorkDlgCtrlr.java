@@ -152,18 +152,128 @@ public class WorkDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  public static WorkDlgCtrlr create(FilePath filePathToUse, BibData bdToUse, boolean newEntryChecked, EntryType newEntryType)
+  public static WorkDlgCtrlr build(FilePath filePathToUse, BibData bdToUse, boolean newEntryChecked, EntryType newEntryType)
   {
-    WorkDlgCtrlr wdc = HyperDlg.create("WorkDlg.fxml", "Import New Work File", true);
-    wdc.init(null, filePathToUse, bdToUse, newEntryChecked, newEntryType);
-    return wdc;
+    return ((WorkDlgCtrlr) create("WorkDlg.fxml", "Import New Work File", true)).init(null, filePathToUse, bdToUse, newEntryChecked, newEntryType);
   }
 
-  public static WorkDlgCtrlr create(HDT_WorkFile workFileToUse)
+  public static WorkDlgCtrlr build(HDT_WorkFile workFileToUse)
   {
-    WorkDlgCtrlr wdc = HyperDlg.create("WorkDlg.fxml", "Work File", true);
-    wdc.init(workFileToUse, null, null, false, EntryType.etUnentered);
-    return wdc;
+    return ((WorkDlgCtrlr) create("WorkDlg.fxml", "Work File", true)).init(workFileToUse, null, null, false, EntryType.etUnentered);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private WorkDlgCtrlr init(HDT_WorkFile workFileToUse, FilePath filePathToUse, BibData bdToUse, boolean newEntryChecked, EntryType newEntryType)
+  {
+    apPreview = new AnchorPane();
+    mdp = addPreview(stagePane, apMain, apPreview, btnPreview);
+
+    mdp.showDetailNodeProperty().addListener((ob, ov, nv) ->
+    {
+      if (Boolean.TRUE.equals(nv) == false) return;
+
+      if ((previewInitialized == false) && (jxBrowserDisabled == false))
+        accommodatePreview(dialogStage, apMain, mdp);
+
+      updatePreview();
+    });
+
+    initControls();
+
+    onShown = () ->
+    {
+      disableCache(taMisc);
+
+      if (oldWorkFile == null)
+      {
+        if (filePathToUse == null)
+          btnSrcBrowseClick();
+        else
+          useChosenFile(filePathToUse, bdToUse);
+      }
+
+      if (newEntryType != EntryType.etUnentered)
+        cbEntryType.getSelectionModel().select(newEntryType);
+    };
+
+    curWork = ui.workHyperTab().activeRecord();
+    curBD = new GUIBibData(curWork.getBibData());
+
+    chkCreateBibEntry.setSelected(newEntryChecked);
+
+    if ((db.bibLibraryIsLinked() == false) || (curWork.getBibEntryKey().length() > 0))
+      setAllVisible(false, chkCreateBibEntry, cbEntryType);
+
+    if (workFileToUse == null)
+    {
+      switch (db.prefs.get(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_MOVE))
+      {
+        case PREF_KEY_IMPORT_ACTION_MOVE : rbMove   .setSelected(true); break;
+        case PREF_KEY_IMPORT_ACTION_COPY : rbCopy   .setSelected(true); break;
+        case PREF_KEY_IMPORT_ACTION_NONE : rbCurrent.setSelected(true); break;
+      }
+    }
+    else
+    {
+      oldWorkFile = workFileToUse;
+      origFilePath = oldWorkFile.filePath();
+      newWorkFile = oldWorkFile;
+
+      rbCurrent.setSelected(true);
+      rbCopy.setDisable(true);
+    }
+
+    ui.workHyperTab().getBibDataFromGUI(curBD);
+    populateFieldsFromBibData(curBD, false);
+
+    htAuthors.clear();
+    htAuthors.getPopulator(0).populate(null, false);
+
+    boolean atLeastOneInFilename = false;
+
+    for (HyperTableRow origRow : ui.workHyperTab().htAuthors.getDataRows())
+    {
+      int authID = origRow.getID(1);
+      String authName = origRow.getText(1);
+      Ternary isInFileName = Ternary.Unset;
+
+      if (authID > 0)
+        isInFileName = curWork.personIsInFileName(origRow.getRecord());
+      else
+      {
+        htAuthors.getPopulator(0).addEntry(null, -1, authName);
+        Author auth = curWork.getAuthors().getAuthor(new PersonName(authName));
+        if (auth != null)
+          isInFileName = auth.getInFileName();
+      }
+
+      HyperTableRow newRow = htAuthors.newDataRow();
+      newRow.setCellValue(0, authID, authName, hdtPerson);
+      newRow.setCheckboxValue(1, authID > 0);
+
+      boolean boolVal;
+
+      switch (isInFileName)
+      {
+        case True  : boolVal = true; break;
+        case False : boolVal = false; break;
+        default    : boolVal = !atLeastOneInFilename; atLeastOneInFilename = true; break;
+      }
+
+      newRow.setCheckboxValue(2, boolVal);
+      newRow.setCheckboxValue(3, origRow.getCheckboxValue(2));
+      newRow.setCheckboxValue(4, origRow.getCheckboxValue(3));
+    }
+
+    if (oldWorkFile != null)
+    {
+      updatePreview();
+      tfOrigFile.setText(origFilePath.toString());
+    }
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -431,7 +541,7 @@ public class WorkDlgCtrlr extends HyperDlg
           author = new Author(work, new PersonName(text), false, false, Ternary.Unset);
       }
 
-      NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.create(true, text, author);
+      NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.build(true, text, author);
 
       if (npdc.showModal())
       {
@@ -441,118 +551,6 @@ public class WorkDlgCtrlr extends HyperDlg
       else
         Platform.runLater(() -> row.setCheckboxValue(1, false));
     };
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void init(HDT_WorkFile workFileToUse, FilePath filePathToUse, BibData bdToUse, boolean newEntryChecked, EntryType newEntryType)
-  {
-    apPreview = new AnchorPane();
-    mdp = addPreview(stagePane, apMain, apPreview, btnPreview);
-
-    mdp.showDetailNodeProperty().addListener((ob, ov, nv) ->
-    {
-      if (Boolean.TRUE.equals(nv) == false) return;
-
-      if ((previewInitialized == false) && (jxBrowserDisabled == false))
-        accommodatePreview(dialogStage, apMain, mdp);
-
-      updatePreview();
-    });
-
-    initControls();
-
-    onShown = () ->
-    {
-      disableCache(taMisc);
-
-      if (oldWorkFile == null)
-      {
-        if (filePathToUse == null)
-          btnSrcBrowseClick();
-        else
-          useChosenFile(filePathToUse, bdToUse);
-      }
-
-      if (newEntryType != EntryType.etUnentered)
-        cbEntryType.getSelectionModel().select(newEntryType);
-    };
-
-    curWork = ui.workHyperTab().activeRecord();
-    curBD = new GUIBibData(curWork.getBibData());
-
-    chkCreateBibEntry.setSelected(newEntryChecked);
-
-    if ((db.bibLibraryIsLinked() == false) || (curWork.getBibEntryKey().length() > 0))
-      setAllVisible(false, chkCreateBibEntry, cbEntryType);
-
-    if (workFileToUse == null)
-    {
-      switch (db.prefs.get(PREF_KEY_IMPORT_ACTION_DEFAULT, PREF_KEY_IMPORT_ACTION_MOVE))
-      {
-        case PREF_KEY_IMPORT_ACTION_MOVE : rbMove   .setSelected(true); break;
-        case PREF_KEY_IMPORT_ACTION_COPY : rbCopy   .setSelected(true); break;
-        case PREF_KEY_IMPORT_ACTION_NONE : rbCurrent.setSelected(true); break;
-      }
-    }
-    else
-    {
-      oldWorkFile = workFileToUse;
-      origFilePath = oldWorkFile.filePath();
-      newWorkFile = oldWorkFile;
-
-      rbCurrent.setSelected(true);
-      rbCopy.setDisable(true);
-    }
-
-    ui.workHyperTab().getBibDataFromGUI(curBD);
-    populateFieldsFromBibData(curBD, false);
-
-    htAuthors.clear();
-    htAuthors.getPopulator(0).populate(null, false);
-
-    boolean atLeastOneInFilename = false;
-
-    for (HyperTableRow origRow : ui.workHyperTab().htAuthors.getDataRows())
-    {
-      int authID = origRow.getID(1);
-      String authName = origRow.getText(1);
-      Ternary isInFileName = Ternary.Unset;
-
-      if (authID > 0)
-        isInFileName = curWork.personIsInFileName(origRow.getRecord());
-      else
-      {
-        htAuthors.getPopulator(0).addEntry(null, -1, authName);
-        Author auth = curWork.getAuthors().getAuthor(new PersonName(authName));
-        if (auth != null)
-          isInFileName = auth.getInFileName();
-      }
-
-      HyperTableRow newRow = htAuthors.newDataRow();
-      newRow.setCellValue(0, authID, authName, hdtPerson);
-      newRow.setCheckboxValue(1, authID > 0);
-
-      boolean boolVal;
-
-      switch (isInFileName)
-      {
-        case True  : boolVal = true; break;
-        case False : boolVal = false; break;
-        default    : boolVal = !atLeastOneInFilename; atLeastOneInFilename = true; break;
-      }
-
-      newRow.setCheckboxValue(2, boolVal);
-      newRow.setCheckboxValue(3, origRow.getCheckboxValue(2));
-      newRow.setCheckboxValue(4, origRow.getCheckboxValue(3));
-    }
-
-    if (oldWorkFile != null)
-    {
-      updatePreview();
-      tfOrigFile.setText(origFilePath.toString());
-    }
   }
 
 //---------------------------------------------------------------------------
@@ -687,7 +685,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     dirChooser.setTitle("Select Destination Folder");
 
-    FilePath filePath = ui.windows.showDirDialog(dirChooser, app.getPrimaryStage());
+    FilePath filePath = ui.windows.showDirDialog(dirChooser, dialogStage);
 
     if (FilePath.isEmpty(filePath)) return;
 
@@ -727,7 +725,7 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     if (FilePath.isEmpty(chosenFile)) return;
 
-    if (db.isProtectedFile(chosenFile))
+    if (db.isProtectedFile(chosenFile, false))
     {
       messageDialog("That file cannot be assigned to a work record.", mtError);
       return;
@@ -735,13 +733,13 @@ public class WorkDlgCtrlr extends HyperDlg
 
     // See if the chosen file is currently assigned to a file record
 
-    HDT_RecordWithPath file = HyperPath.getFileFromFilePath(chosenFile);
+    HDT_RecordWithPath file = HyperPath.getRecordFromFilePath(chosenFile);
 
     if (file != null)
     {
-      if (file instanceof HDT_MiscFile)
+      if ((file instanceof HDT_MiscFile) || (file instanceof HDT_Person))
       {
-        messageDialog("That file is already in use as a miscellaneous file, record ID: " + file.getID(), mtError);
+        messageDialog(HyperPath.alreadyInUseMessage(chosenFile, file), mtError);
         return;
       }
 
@@ -756,7 +754,12 @@ public class WorkDlgCtrlr extends HyperDlg
 
     rbCurrent.setDisable(db.getRootPath().isSubpath(chosenFile) == false);
 
-    if (rbCurrent.isSelected())
+    if ((newWorkFile != null) && (newWorkFile != oldWorkFile))
+    {
+      rbCurrent.setSelected(true);
+      chkKeepFilenameUnchanged.setSelected(true);
+    }
+    else if (rbCurrent.isSelected())
     {
       if (rbCurrent.isDisabled() || db.unenteredPath().isSubpath(chosenFile))
         rbMove.setSelected(true);
@@ -928,8 +931,8 @@ public class WorkDlgCtrlr extends HyperDlg
 
     try
     {
-      MergeWorksDlgCtrlr mwd = MergeWorksDlgCtrlr.create("Merge Information From PDF File", curBD,
-          bd1, bd2, null, curWork, false, curWork.getBibEntryKey().isBlank(), false, origFilePath);
+      MergeWorksDlgCtrlr mwd = MergeWorksDlgCtrlr.build("Merge Information From PDF File", curBD,
+        bd1, bd2, null, curWork, false, curWork.getBibEntryKey().isBlank(), false, origFilePath);
 
       if (mwd.showModal())
       {
@@ -1122,7 +1125,7 @@ public class WorkDlgCtrlr extends HyperDlg
     if (chkCreateBibEntry.isSelected()) return;
 
     EnumSet<BibFieldEnum> extFields = bd.fieldsWithExternalData();
-    if (extFields.size() == 0) return;
+    if (extFields.isEmpty()) return;
 
     String msg = "The current work record is not associated with a " +
                  db.getBibLibrary().type().getUserFriendlyName() + " entry. Create one now?\n" +
@@ -1196,12 +1199,12 @@ public class WorkDlgCtrlr extends HyperDlg
         newFilePath = destFolder.get().filePath().resolve(tfNewFile.getText());
     }
 
-    HDT_RecordWithPath existingFile = HyperPath.getFileFromFilePath(newFilePath);
+    HDT_RecordWithPath existingFile = HyperPath.getRecordFromFilePath(newFilePath);
 
     if (existingFile != null)
     {
-      if (existingFile instanceof HDT_MiscFile)
-        return falseWithErrorMessage("New file name is already in use as a miscellaneous file, record ID: " + existingFile.getID());
+      if ((existingFile instanceof HDT_MiscFile) || (existingFile instanceof HDT_Person))
+        return falseWithErrorMessage(HyperPath.alreadyInUseMessage(newFilePath, existingFile));
 
       HDT_WorkFile existingWorkFile = (HDT_WorkFile)existingFile;
 
@@ -1217,12 +1220,12 @@ public class WorkDlgCtrlr extends HyperDlg
         if (oldWorkFileID == existingWorkFile.getID())
           newWorkFile = existingWorkFile;
         else
-          return falseWithErrorMessage("New file name is already in use as a work file, work record ID: " + existingWorkFile.works.get(0).getID());
+          return falseWithErrorMessage(HyperPath.alreadyInUseMessage(newFilePath, existingWorkFile));
       }
       else
       {
         if (newWorkFile.getID() != existingFile.getID())
-          return falseWithErrorMessage("Another work file already has that file name, record ID: " + existingFile.getID());
+          return falseWithErrorMessage(HyperPath.alreadyInUseMessage(newFilePath, existingFile));
       }
     }
     else

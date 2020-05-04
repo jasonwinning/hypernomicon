@@ -292,7 +292,7 @@ public class PDFJSWrapper
     {
       disposing = true;
 
-      browser.addDisposeListener(event -> { disposing = false; });
+      browser.addDisposeListener(event -> disposing = false);
     }
 
     Runnable runnable = () ->

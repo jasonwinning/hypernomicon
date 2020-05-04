@@ -111,6 +111,7 @@ import javafx.scene.control.DialogPane;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TitledPane;
@@ -270,16 +271,6 @@ public final class Util
   {
     try { return Long.parseLong(value); }
     catch (NumberFormatException nfe) { return def; }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static enum MessageDialogType
-  {
-    mtWarning,
-    mtError,
-    mtInformation
   }
 
 //---------------------------------------------------------------------------
@@ -561,6 +552,8 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static enum MessageDialogType { mtWarning, mtError, mtInformation }
+
   public static void messageDialog(String msg, MessageDialogType mt)
   {
     messageDialog(msg, mt, false);
@@ -616,7 +609,7 @@ public final class Util
 
   public static void showStackTrace(Throwable e)
   {
-    LockedDlgCtrlr.create("Error", e).showModal();
+    LockedDlgCtrlr.build("Error", e).showModal();
   }
 
 //---------------------------------------------------------------------------
@@ -847,7 +840,7 @@ public final class Util
     {
       if (node instanceof Region)
       {
-        Region region = Region.class.cast(node);
+        Region region = (Region)node;
 
         scalePropertiesForDPI(region.prefHeightProperty(), region.prefWidthProperty(),
                               region.maxHeightProperty() , region.maxWidthProperty(),
@@ -882,20 +875,20 @@ public final class Util
 
     if (node instanceof GridPane)
     {
-      GridPane gridPane = GridPane.class.cast(node);
+      GridPane gridPane = (GridPane)node;
 
       gridPane.getColumnConstraints().forEach(cc -> scalePropertiesForDPI(cc.maxWidthProperty(), cc.minWidthProperty(), cc.prefWidthProperty()));
       gridPane.getRowConstraints().forEach(rc -> scalePropertiesForDPI(rc.maxHeightProperty(), rc.minHeightProperty(), rc.prefHeightProperty()));
     }
 
     if (node instanceof ToolBar)
-      ToolBar.class.cast(node).getItems().forEach(Util::scaleNodeForDPI);
+      ((ToolBar)node).getItems().forEach(Util::scaleNodeForDPI);
     else if (node instanceof TitledPane)
-      scaleNodeForDPI(TitledPane.class.cast(node).getContent());
+      scaleNodeForDPI(((TitledPane)node).getContent());
     else if (node instanceof TabPane)
-      TabPane.class.cast(node).getTabs().forEach(tab -> scaleNodeForDPI(tab.getContent()));
+      ((TabPane)node).getTabs().forEach(tab -> scaleNodeForDPI(tab.getContent()));
     else if (node instanceof Parent)
-      Parent.class.cast(node).getChildrenUnmodifiable().forEach(Util::scaleNodeForDPI);
+      ((Parent)node).getChildrenUnmodifiable().forEach(Util::scaleNodeForDPI);
   }
 
 //---------------------------------------------------------------------------
@@ -1081,7 +1074,7 @@ public final class Util
 
   public static boolean checkInternetConnection()
   {
-    return InternetCheckDlgCtrlr.create().checkInternet("https://www.google.com/");
+    return InternetCheckDlgCtrlr.build().checkInternet("https://www.google.com/");
   }
 
 //---------------------------------------------------------------------------
@@ -1282,7 +1275,7 @@ public final class Util
     if (parent == null) return;
 
     List<Node> rootChildren = parent.getChildrenUnmodifiable();
-    if (rootChildren.size() == 0) return;
+    if (rootChildren.isEmpty()) return;
 
     Node bridge = rootChildren.get(0).lookup(".context-menu");
     if (bridge == null) return;
@@ -1297,7 +1290,7 @@ public final class Util
       Node contextMenuContent = ((Parent)bridge).getChildrenUnmodifiable().get(0);
       Constructor<?> ctor = menuItemContainerClass.getDeclaredConstructor(contextMenuContentClass, MenuItem.class);
 
-      List<Node> list = VBox.class.cast(contextMenuContentClass.getMethod("getItemsContainer").invoke(contextMenuContent)).getChildren();
+      List<Node> list = ((VBox)(contextMenuContentClass.getMethod("getItemsContainer").invoke(contextMenuContent))).getChildren();
 
       list.clear();
       for (MenuItem item : items)
@@ -1469,6 +1462,10 @@ public final class Util
         strBuilder.append(line);
       }
     }
+    catch (NullPointerException npe)
+    {
+      throw new IOException(npe);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -1623,7 +1620,7 @@ public final class Util
     node.setCache(false);
 
     if (node instanceof Parent)
-      Parent.class.cast(node).getChildrenUnmodifiable().forEach(Util::disableCache);
+      ((Parent)node).getChildrenUnmodifiable().forEach(Util::disableCache);
   }
 
 //---------------------------------------------------------------------------
@@ -1834,8 +1831,9 @@ public final class Util
   {
     List.of(targets).forEach(target ->
     {
-      if      (target instanceof Node    ) Node    .class.cast(target).setDisable(disable);
-      else if (target instanceof MenuItem) MenuItem.class.cast(target).setDisable(disable);
+      if      (target instanceof Node    ) ((Node    )target).setDisable(disable);
+      else if (target instanceof Tab     ) ((Tab     )target).setDisable(disable);
+      else if (target instanceof MenuItem) ((MenuItem)target).setDisable(disable);
     });
   }
 
@@ -1846,8 +1844,8 @@ public final class Util
   {
     List.of(targets).forEach(target ->
     {
-      if      (target instanceof Node    ) Node    .class.cast(target).setVisible(visible);
-      else if (target instanceof MenuItem) MenuItem.class.cast(target).setVisible(visible);
+      if      (target instanceof Node    ) ((Node    )target).setVisible(visible);
+      else if (target instanceof MenuItem) ((MenuItem)target).setVisible(visible);
     });
   }
 

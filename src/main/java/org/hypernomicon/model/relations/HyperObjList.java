@@ -76,7 +76,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     lastException = null;
 
     if (o instanceof HDT_Record)
-      if (HDT_Record.class.cast(o).getType() == relSet.getObjType())
+      if (((HDT_Record)o).getType() == relSet.getObjType())
         return relSet.alreadyHasAsObject(subj, (HDT_ObjType) o);
 
     return false;
@@ -193,7 +193,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
     if ((o instanceof HDT_Record) == false)
       return false;
 
-    if (HDT_Record.class.cast(o).getType() != relSet.getObjType())
+    if (((HDT_Record)o).getType() != relSet.getObjType())
       return false;
 
     HDT_ObjType obj = (HDT_ObjType)o;
@@ -223,7 +223,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
       if ((o instanceof HDT_Record) == false)
         return false;
 
-      if (HDT_Record.class.cast(o).getType() != relSet.getObjType())
+      if (((HDT_Record)o).getType() != relSet.getObjType())
         return false;
 
       HDT_ObjType obj = (HDT_ObjType)o;
@@ -438,7 +438,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
     if ((o instanceof HDT_Record) == false) return -1;
 
-    if (HDT_Record.class.cast(o).getType() != relSet.getObjType()) return -1;
+    if (((HDT_Record)o).getType() != relSet.getObjType()) return -1;
 
     return relSet.getObjectNdx(subj, (HDT_ObjType)o);
   }
@@ -453,7 +453,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
 
     if ((o instanceof HDT_Record) == false) return -1;
 
-    if (HDT_Record.class.cast(o).getType() != relSet.getObjType()) return -1;
+    if (((HDT_Record)o).getType() != relSet.getObjType()) return -1;
 
     return relSet.getObjectNdx(subj, (HDT_ObjType)o);
   }
@@ -523,7 +523,7 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
   {
     if ((o instanceof List) == false) return false;
 
-    List<?> list = List.class.cast(o);
+    List<?> list = (List<?>)o;
 
     if (list.size() != size()) return false;
 

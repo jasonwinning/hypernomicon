@@ -178,9 +178,10 @@ public final class MainCtrlr
 
   @FXML private void mnuExitClick()           { shutDown(true, true, true); }
   @FXML private void mnuExitNoSaveClick()     { if (confirmDialog("Abandon changes and quit?")) shutDown(false, true, false); }
-  @FXML private void mnuAboutClick()          { AboutDlgCtrlr.create().showModal(); }
-  @FXML private void mnuChangeFavOrderClick() { FavOrderDlgCtrlr.create().showModal(); }
-  @FXML private void mnuSettingsClick()       { if (!cantSaveRecord()) SettingsDlgCtrlr.create().showModal(); }
+  @FXML private void mnuOpenClick()           { openDB(null); }
+  @FXML private void mnuAboutClick()          { AboutDlgCtrlr.build().showModal(); }
+  @FXML private void mnuChangeFavOrderClick() { FavOrderDlgCtrlr.build().showModal(); }
+  @FXML private void mnuSettingsClick()       { if (!cantSaveRecord()) SettingsDlgCtrlr.build().showModal(); }
   @FXML private void mnuFindMentionsClick()   { if (!cantSaveRecord()) searchForMentions(activeRecord(), false); }
 
   public PersonTabCtrlr personHyperTab  () { return getHyperTab(personTabEnum  ); }
@@ -1059,10 +1060,10 @@ public final class MainCtrlr
 
     forEachHyperTab(hyperTab -> hyperTab.enable(enabled));
 
-    enableAllIff(enabled, mnuCloseDatabase, mnuImportWork,      mnuImportFile,     mnuExitNoSave,       mnuChangeID,          mnuNewField, mnuNewCountry,
-                          mnuNewRank,       mnuNewPersonStatus, mnuSaveReloadAll,  mnuRevertToDiskCopy, mnuAddToQueryResults, btnFileMgr,  btnBibMgr,
-                          btnPreviewWindow, btnMentions,        btnAdvancedSearch, btnSaveAll);
-
+    enableAllIff(enabled, mnuCloseDatabase,    mnuImportWork,        mnuImportFile,         mnuExitNoSave, mnuChangeID,        mnuNewField,
+                          mnuNewCountry,       mnuImportBibFile,     mnuImportBibClipboard, mnuNewRank,    mnuNewPersonStatus, mnuSaveReloadAll,
+                          mnuRevertToDiskCopy, mnuAddToQueryResults, btnFileMgr,            btnBibMgr,     btnPreviewWindow,   btnMentions,
+                          btnAdvancedSearch,   btnSaveAll);
     if (disabled)
       getTree().clear();
 
@@ -1206,14 +1207,6 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void mnuOpenClick()
-  {
-    openDB(null);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public void openDB(FilePath filePath)
   {
     if (filePath == null)
@@ -1302,7 +1295,7 @@ public final class MainCtrlr
       if (result == mrYes)
         saveAllToDisk(false, false, false);
 
-      NewDatabaseDlgCtrlr dlg = NewDatabaseDlgCtrlr.create(rootPath.toString());
+      NewDatabaseDlgCtrlr dlg = NewDatabaseDlgCtrlr.build(rootPath.toString());
 
       if (dlg.showModal() == false)
         return;
@@ -1571,7 +1564,7 @@ public final class MainCtrlr
 
     if (cantSaveRecord()) return;
 
-    ChangeIDDlgCtrlr ctrlr = ChangeIDDlgCtrlr.create();
+    ChangeIDDlgCtrlr ctrlr = ChangeIDDlgCtrlr.build();
 
     if (ctrlr.showModal())
     {
@@ -1605,7 +1598,7 @@ public final class MainCtrlr
 
     if (cantSaveRecord()) return;
 
-    NewCategoryDlgCtrlr ctrlr = NewCategoryDlgCtrlr.create(type);
+    NewCategoryDlgCtrlr ctrlr = NewCategoryDlgCtrlr.build(type);
 
     if (ctrlr.showModal() == false) return;
 
@@ -1786,34 +1779,23 @@ public final class MainCtrlr
 
   private void searchForMentions(HDT_Record record, boolean descOnly)
   {
-    boolean noneFound = false, backClick = activeTabEnum() != queryTabEnum;
-
     if (record == null) return;
 
     HDT_RecordType type = record.getType();
-    int id = record.getID();
+    boolean backClick = activeTabEnum() != queryTabEnum;
 
     lblStatus.setText("");
 
-    if (!showSearch(true, qtAllRecords, descOnly ? QUERY_LINKING_TO_RECORD : QUERY_MATCHING_RECORD, null,
-                    new HyperTableCell(-1, "", type), new HyperTableCell(id, "", type), "Mentions: " + record.listName()))
+    if (showSearch(true, qtAllRecords, descOnly ? QUERY_LINKING_TO_RECORD : QUERY_MATCHING_RECORD, null,
+                   new HyperTableCell(-1, "", type), new HyperTableCell(record, ""), "Mentions: " + record.listName()))
     {
-      discardLastQuery(backClick);
-      return;
-    }
+      if ((curQV.resultsBackingList.size() > 0) && (curQV.resultsBackingList.equals(List.of(record)) == false))
+        return;
 
-    if (curQV.resultsBackingList.size() == 1)
-    {
-      if (curQV.resultsBackingList.get(0).getRecord() == record)
-        noneFound = true;
+      lblStatus.setText("No mentioners: " + db.getTypeName(type).toLowerCase() + " \"" + abbreviate(record.listName()) + "\"");
     }
-    else if (curQV.resultsBackingList.size() == 0)
-      noneFound = true;
-
-    if (!noneFound) return;
 
     discardLastQuery(backClick);
-    lblStatus.setText("No mentioners: " + db.getTypeName(type).toLowerCase() + " \"" + abbreviate(record.listName()) + "\"");
   }
 
 //---------------------------------------------------------------------------
@@ -2002,7 +1984,7 @@ public final class MainCtrlr
       db.prefs.putBoolean(PREF_KEY_NOTIFY_USER_NOT_LINKED, false);
 
     if (result == mrYes)
-      SettingsDlgCtrlr.create(SettingsPage.BibMgr).showModal();
+      SettingsDlgCtrlr.build(SettingsPage.BibMgr).showModal();
   }
 
 //---------------------------------------------------------------------------
@@ -2052,7 +2034,7 @@ public final class MainCtrlr
     String otherCompName = db.getLockOwner();
     if (otherCompName != null)
     {
-      if (LockedDlgCtrlr.create(otherCompName).showModal() == false)
+      if (LockedDlgCtrlr.build(otherCompName).showModal() == false)
         return false;
 
       if (db.getLockOwner() != null)
@@ -2212,6 +2194,7 @@ public final class MainCtrlr
 
     treeSelector.reset();
     HDT_Investigation inv = null;
+    HDT_WorkFile workFile = null;
 
     switch (record.getType())
     {
@@ -2241,7 +2224,7 @@ public final class MainCtrlr
 
       case hdtFolder :
 
-        goToFileInManager(HDT_Folder.class.cast(record).filePath());
+        goToFileInManager(((HDT_Folder)record).filePath());
         return;
 
       case hdtInvestigation :
@@ -2252,14 +2235,20 @@ public final class MainCtrlr
 
       case hdtWorkFile :
 
-        HDT_WorkFile workFile = (HDT_WorkFile)record;
+        workFile = (HDT_WorkFile)record;
         if (workFile.works.size() > 0)
           record = workFile.works.get(0);
+        else
+        {
+          goToFileInManager(workFile.filePath());
+          return;
+        }
+
         break;
 
       case hdtTerm :
 
-        record = HDT_Term.class.cast(record).concepts.get(0);
+        record = ((HDT_Term)record).concepts.get(0);
         break;
 
       default : break;
@@ -2277,6 +2266,8 @@ public final class MainCtrlr
 
     if (inv != null)
       personHyperTab().showInvestigation(inv.getID());
+    else if (workFile != null)
+      workHyperTab().showWorkFile(workFile);
   }
 
 //---------------------------------------------------------------------------
@@ -2326,7 +2317,7 @@ public final class MainCtrlr
         record = db.records(activeType()).getByKeyNdx(ndx);
 
         if (tabEnum == termTabEnum)
-          viewSequence.updateCurrentView(new HyperView<>(termTabEnum, HDT_Term.class.cast(record).concepts.get(0)));
+          viewSequence.updateCurrentView(new HyperView<>(termTabEnum, ((HDT_Term)record).concepts.get(0)));
         else
           viewSequence.updateCurrentView(new HyperView<>(tabEnum, record));
       }
@@ -2353,8 +2344,7 @@ public final class MainCtrlr
 
   private TabEnum selectorTabEnum()
   {
-    Tab tab = selectorTabPane.getSelectionModel().getSelectedItem();
-    return selectorTabs.inverse().get(tab);
+    return selectorTabs.inverse().get(selectorTabPane.getSelectionModel().getSelectedItem());
   }
 
 //---------------------------------------------------------------------------
@@ -2364,10 +2354,7 @@ public final class MainCtrlr
   {
     TabEnum tabEnum = selectorTabEnum();
 
-    if ((tabEnum == listTabEnum) || (tabEnum == omniTabEnum))
-      return activeType();
-
-    return getRecordTypeByTabEnum(tabEnum);
+    return (tabEnum == listTabEnum) || (tabEnum == omniTabEnum) ? activeType() : getRecordTypeByTabEnum(tabEnum);
   }
 
 //---------------------------------------------------------------------------
@@ -2663,7 +2650,7 @@ public final class MainCtrlr
     else if (record1.getMainText().getHtml().equals(record2.getMainText().getHtml()))    desc = record1.getMainText().getHtml();
     else
     {
-      MergeSpokeDlgCtrlr frmMerge = MergeSpokeDlgCtrlr.create(record1, record2);
+      MergeSpokeDlgCtrlr frmMerge = MergeSpokeDlgCtrlr.build(record1, record2);
 
       if (frmMerge.showModal() == false)
         return;
@@ -2779,7 +2766,7 @@ public final class MainCtrlr
 
     if (promptForExistingRecord)
     {
-      SelectWorkDlgCtrlr swdc = SelectWorkDlgCtrlr.create(person, filePathToUse);
+      SelectWorkDlgCtrlr swdc = SelectWorkDlgCtrlr.build(person, filePathToUse);
       if (swdc.showModal() == false) return false;
 
       work = swdc.getWork();
@@ -2802,8 +2789,8 @@ public final class MainCtrlr
 
             try
             {
-              mwd = MergeWorksDlgCtrlr.create("Merge Fields", work.getBibData(), bibEntry, bdToUse, null, work, false, false, false,
-                                              nullSwitch(filePathToUse, work.filePath()));
+              mwd = MergeWorksDlgCtrlr.build("Merge Fields", work.getBibData(), bibEntry, bdToUse, null, work, false, false, false,
+                                             nullSwitch(filePathToUse, work.filePath()));
             }
             catch (IOException e)
             {
@@ -2832,8 +2819,8 @@ public final class MainCtrlr
           {
             try
             {
-              mwd = MergeWorksDlgCtrlr.create("Merge Fields", workBD, bdToUse, null, null, work, false, true, false,
-                                              nullSwitch(filePathToUse, work.filePath()));
+              mwd = MergeWorksDlgCtrlr.build("Merge Fields", workBD, bdToUse, null, null, work, false, true, false,
+                                             nullSwitch(filePathToUse, work.filePath()));
             }
             catch (IOException e)
             {
@@ -2953,7 +2940,7 @@ public final class MainCtrlr
   {
     if (cantSaveRecord()) return;
 
-    ImportBibEntryDlgCtrlr ibed = ImportBibEntryDlgCtrlr.create(lines, filePath);
+    ImportBibEntryDlgCtrlr ibed = ImportBibEntryDlgCtrlr.build(lines, filePath);
 
     if (ibed.getFailedToLoad() || !ibed.showModal()) return;
 
@@ -3002,8 +2989,8 @@ public final class MainCtrlr
 
     try
     {
-      mwd = MergeWorksDlgCtrlr.create("Import Into " + (creatingNewWork ? "New" : "Existing") + " Work Record",
-                                      workBibData, bd, null, null, work, creatingNewWork, showNewEntry, newEntryChecked);
+      mwd = MergeWorksDlgCtrlr.build("Import Into " + (creatingNewWork ? "New" : "Existing") + " Work Record",
+                                     workBibData, bd, null, null, work, creatingNewWork, showNewEntry, newEntryChecked);
     }
     catch (IOException e)
     {
@@ -3039,7 +3026,7 @@ public final class MainCtrlr
 
   @FXML private void showWelcomeWindow()
   {
-    WelcomeDlgCtrlr wdc = WelcomeDlgCtrlr.create();
+    WelcomeDlgCtrlr wdc = WelcomeDlgCtrlr.build();
     if (wdc.showModal() == false) return;
 
     if (wdc.newClicked())
@@ -3059,33 +3046,33 @@ public final class MainCtrlr
     lastImportTime = Instant.now().toEpochMilli();
     lastImportFilePath = filePath;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private static WebTooltip searchKeyToolTip = null;
-  
+
   public void setSearchKeyToolTip(TextField tf)
   {
     if (searchKeyToolTip == null) searchKeyToolTip = new WebTooltip(
-          
-      "Multiple search keys should be separated by semicolon (<code>;</code>) character.<br>" + 
-      "<br>" + 
-      "Example:<blockquote>" + 
-      "<table><tr><td>Search keys:</td><td><code>Parfit; Derek Parfit</code></td></tr>" + 
-      "<tr><td>Description text:</td><td>This conclusion was rejected by <a href=\"\">Derek Parfit</a>. Instead, <a href=\"\">Parfit</a> argues that&hellip;</td></tr></table></blockquote>" + 
-      "Use up-caret (<code>^</code>) character to indicate that search key should match beginning of word.<br>" + 
-      "Use dollar sign (<code>$</code>) character to indicate that search key should match end of word.<br><br>" + 
-      "Example:" + 
-      "<blockquote>" + 
-      "<table><tr><td>Search keys:</td><td><code>^thing; object$; objects$; individual</code></td></tr>" + 
+
+      "Multiple search keys should be separated by semicolon (<code>;</code>) character.<br>" +
+      "<br>" +
+      "Example:<blockquote>" +
+      "<table><tr><td>Search keys:</td><td><code>Parfit; Derek Parfit</code></td></tr>" +
+      "<tr><td>Description text:</td><td>This conclusion was rejected by <a href=\"\">Derek Parfit</a>. Instead, <a href=\"\">Parfit</a> argues that&hellip;</td></tr></table></blockquote>" +
+      "Use up-caret (<code>^</code>) character to indicate that search key should match beginning of word.<br>" +
+      "Use dollar sign (<code>$</code>) character to indicate that search key should match end of word.<br><br>" +
+      "Example:" +
+      "<blockquote>" +
+      "<table><tr><td>Search keys:</td><td><code>^thing; object$; objects$; individual</code></td></tr>" +
       "<tr><td>Description text:</td><td>Anything that is an instance of an ontological category is an entity, but objectively<br>" +
-      "speaking, only instances of certain categories count as <a href=\"\">things</a>, <a href=\"\">objects</a>, or <a href=\"\">individuals</a>.</td></tr></table>" + 
-      "</blockquote>" + 
+      "speaking, only instances of certain categories count as <a href=\"\">things</a>, <a href=\"\">objects</a>, or <a href=\"\">individuals</a>.</td></tr></table>" +
+      "</blockquote>" +
       "Notice that the <code>^</code> at the beginning of the <code>thing</code> search key prevents the word &lsquo;Anything&rsquo; from being matched. Similarly,<br>"+
-      "the <code>$</code> at the end of the <code>object</code> search key prevents the word &lsquo;objectively&rsquo; from being matched."); 
-          
-    tf.setTooltip(searchKeyToolTip);    
+      "the <code>$</code> at the end of the <code>object</code> search key prevents the word &lsquo;objectively&rsquo; from being matched.");
+
+    tf.setTooltip(searchKeyToolTip);
   }
 
 //---------------------------------------------------------------------------

@@ -32,8 +32,12 @@ import org.hypernomicon.model.records.HDT_Investigation;
 public class InvestigationQueryEngine extends QueryEngine<HDT_Investigation>
 {
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
   {
+
   }
 
 //---------------------------------------------------------------------------
@@ -50,7 +54,7 @@ public class InvestigationQueryEngine extends QueryEngine<HDT_Investigation>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Investigation record, boolean firstCall, boolean lastCall)
+  @Override public boolean evaluate(HDT_Investigation investigation, boolean firstCall, boolean lastCall)
   {
     switch (curQuery)
     {
@@ -93,9 +97,9 @@ public class InvestigationQueryEngine extends QueryEngine<HDT_Investigation>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int numOperands(int query)
+  @Override public boolean hasOperand(int query, int opNum, HyperTableCell prevOp)
   {
-    return 3;
+    return true;
   }
 
 //---------------------------------------------------------------------------

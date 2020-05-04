@@ -49,6 +49,8 @@ public class LockedDlgCtrlr extends HyperDlg
   @FXML private Label lblSeconds;
   @FXML private TextArea taOutput;
 
+  @Override protected boolean isValid() { return true; }
+
 //---------------------------------------------------------------------------
 
   private class MessageSenderThread extends HyperThread
@@ -179,14 +181,6 @@ public class LockedDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected boolean isValid()
-  {
-    return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private void sendMessage(HDB_MessageType newMsgType, String output)
   {
     taOutput.appendText(output + System.lineSeparator());
@@ -205,27 +199,23 @@ public class LockedDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static LockedDlgCtrlr create(String otherCompName)
+  public static LockedDlgCtrlr build(String otherCompName)
   {
-    LockedDlgCtrlr ldc = HyperDlg.create("LockedDlg.fxml", "Database is Currently Locked", true);
-    ldc.init(otherCompName);
-    return ldc;
+    return ((LockedDlgCtrlr) create("LockedDlg.fxml", "Database is Currently Locked", true)).init(otherCompName);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static LockedDlgCtrlr create(String title, Throwable e)
+  public static LockedDlgCtrlr build(String title, Throwable e)
   {
-    LockedDlgCtrlr ldc = HyperDlg.create("LockedDlg.fxml", title, true);
-    ldc.init(e);
-    return ldc;
+    return ((LockedDlgCtrlr) create("LockedDlg.fxml", title, true)).init(e);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(Throwable e)
+  private LockedDlgCtrlr init(Throwable e)
   {
     String stacktrace = ExceptionUtils.getStackTrace(e);
 
@@ -235,12 +225,14 @@ public class LockedDlgCtrlr extends HyperDlg
     btnTryTerminate.setOnAction(event -> copyToClipboard(stacktrace));
 
     setAllVisible(false, btnTryComm, btnOverride, btnStop, lblSeconds);
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(String otherCompName)
+  private LockedDlgCtrlr init(String otherCompName)
   {
     this.otherCompName = otherCompName;
     taOutput.appendText("Database locked by computer " + otherCompName + System.lineSeparator());
@@ -249,6 +241,8 @@ public class LockedDlgCtrlr extends HyperDlg
 
     db.getRequestMessageFilePath().deletePromptOnFail(true);
     db.getResponseMessageFilePath().deletePromptOnFail(true);
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

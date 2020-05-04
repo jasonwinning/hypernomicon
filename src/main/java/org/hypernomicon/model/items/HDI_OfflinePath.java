@@ -51,10 +51,14 @@ public class HDI_OfflinePath extends HDI_OfflineBase
 
   @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
   {
-    if ((tag == Tag.tagParentFolder) || (tag == Tag.tagFolder))
-      folderID = objID;
-    else
-      fileName = nodeText;
+    switch (tag)
+    {
+      case tagParentFolder : case tagFolder : case tagPictureFolder :
+        folderID = objID; break;
+
+      default :
+        fileName = nodeText; break;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -66,7 +70,7 @@ public class HDI_OfflinePath extends HDI_OfflineBase
 
     switch (tag)
     {
-      case tagFolder : case tagParentFolder :
+      case tagFolder : case tagParentFolder : case tagPictureFolder :
 
         HDT_Folder folder = db.folders.getByID(folderID);
         if (folder != null)

@@ -90,7 +90,7 @@ public abstract class HyperTask extends Task<Boolean>
 
   public static boolean performTaskWithProgressDialog(HyperTask task)
   {
-    ProgressDlgCtrlr.create().performTask(task);
+    ProgressDlgCtrlr.build().performTask(task);
 
     if ((task.getState() == State.FAILED) || (task.getState() == State.CANCELLED))
     {

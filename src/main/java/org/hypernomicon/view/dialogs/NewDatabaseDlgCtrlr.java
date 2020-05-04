@@ -66,9 +66,6 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    boolean success;
-    FilePath filePath = new FilePath(newPath);
-
     FilePathSet set = new FilePathSet();
 
     if (! (addNameToSet(set, tfPictures    .getText()) &&
@@ -82,6 +79,9 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
 
     if (set.size() < 7)
       return falseWithErrorMessage("Enter a unique name for each folder.");
+
+    FilePath filePath = new FilePath(newPath);
+    boolean success = false;
 
     try
     {
@@ -130,17 +130,15 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewDatabaseDlgCtrlr create(String newPath)
+  public static NewDatabaseDlgCtrlr build(String newPath)
   {
-    NewDatabaseDlgCtrlr ndd = HyperDlg.create("NewDatabaseDlg.fxml", "Customize How Database Will Be Created", true);
-    ndd.init(newPath);
-    return ndd;
+    return ((NewDatabaseDlgCtrlr) create("NewDatabaseDlg.fxml", "Customize How Database Will Be Created", true)).init(newPath);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(String newPath)
+  private NewDatabaseDlgCtrlr init(String newPath)
   {
     tfPictures    .setText(DEFAULT_PICTURES_PATH);
     tfBooks       .setText(DEFAULT_BOOKS_PATH);
@@ -163,6 +161,8 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
       if (Boolean.TRUE.equals(nv))
         chkCountries.setSelected(true);
     });
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -170,17 +170,17 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
 
   public Map<String, String> getFolders()
   {
-    Map<String, String> folders = new HashMap<>();
+    Map<String, String> folderMap = new HashMap<>();
 
-    folders.put(PREF_KEY_PICTURES_PATH  , ultraTrim(tfPictures    .getText()));
-    folders.put(PREF_KEY_BOOKS_PATH     , ultraTrim(tfBooks       .getText()));
-    folders.put(PREF_KEY_PAPERS_PATH    , ultraTrim(tfPapers      .getText()));
-    folders.put(PREF_KEY_UNENTERED_PATH , ultraTrim(tfUnentered   .getText()));
-    folders.put(PREF_KEY_MISC_FILES_PATH, ultraTrim(tfMiscFiles   .getText()));
-    folders.put(PREF_KEY_RESULTS_PATH   , ultraTrim(tfResults     .getText()));
-    folders.put(PREF_KEY_TOPICAL_PATH   , ultraTrim(tfTopicFolders.getText()));
+    folderMap.put(PREF_KEY_PICTURES_FOLDER_ID  , ultraTrim(tfPictures    .getText()));
+    folderMap.put(PREF_KEY_BOOKS_FOLDER_ID     , ultraTrim(tfBooks       .getText()));
+    folderMap.put(PREF_KEY_PAPERS_FOLDER_ID    , ultraTrim(tfPapers      .getText()));
+    folderMap.put(PREF_KEY_UNENTERED_FOLDER_ID , ultraTrim(tfUnentered   .getText()));
+    folderMap.put(PREF_KEY_MISC_FILES_FOLDER_ID, ultraTrim(tfMiscFiles   .getText()));
+    folderMap.put(PREF_KEY_RESULTS_FOLDER_ID   , ultraTrim(tfResults     .getText()));
+    folderMap.put(PREF_KEY_TOPICAL_FOLDER_ID   , ultraTrim(tfTopicFolders.getText()));
 
-    return folders;
+    return folderMap;
   }
 
 //---------------------------------------------------------------------------

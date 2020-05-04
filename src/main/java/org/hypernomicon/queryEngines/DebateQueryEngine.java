@@ -32,8 +32,12 @@ import org.hypernomicon.model.records.HDT_Debate;
 public class DebateQueryEngine extends QueryEngine<HDT_Debate>
 {
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
   {
+
   }
 
 //---------------------------------------------------------------------------
@@ -50,7 +54,7 @@ public class DebateQueryEngine extends QueryEngine<HDT_Debate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Debate record, boolean firstCall, boolean lastCall)
+  @Override public boolean evaluate(HDT_Debate debate, boolean firstCall, boolean lastCall)
   {
     switch (curQuery)
     {
@@ -93,9 +97,9 @@ public class DebateQueryEngine extends QueryEngine<HDT_Debate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int numOperands(int query)
+  @Override public boolean hasOperand(int query, int opNum, HyperTableCell prevOp)
   {
-    return 3;
+    return true;
   }
 
 //---------------------------------------------------------------------------

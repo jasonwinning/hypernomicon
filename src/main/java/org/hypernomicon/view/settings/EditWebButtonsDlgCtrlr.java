@@ -51,17 +51,16 @@ public class EditWebButtonsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static EditWebButtonsDlgCtrlr create(WebButton webBtn, String prefKey) throws IOException
+  static EditWebButtonsDlgCtrlr build(WebButton webBtn, String prefKey) throws IOException
   {
-    EditWebButtonsDlgCtrlr dlg = HyperDlg.createUsingFullPath("view/settings/EditWebButtonsDlg.fxml", "Edit Web Button", true);
-    dlg.init(webBtn, prefKey);
-    return dlg;
+    return ((EditWebButtonsDlgCtrlr) createUsingFullPath("view/settings/EditWebButtonsDlg.fxml", "Edit Web Button", true))
+      .init(webBtn, prefKey);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(WebButton webBtn, String prefKey) throws IOException
+  private EditWebButtonsDlgCtrlr init(WebButton webBtn, String prefKey) throws IOException
   {
     this.prefKey = prefKey;
 
@@ -85,6 +84,8 @@ public class EditWebButtonsDlgCtrlr extends HyperDlg
         showStackTrace(e);
       }
     });
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

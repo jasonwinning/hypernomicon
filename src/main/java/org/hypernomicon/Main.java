@@ -17,9 +17,7 @@
 
 package org.hypernomicon;
 
-import javafx.application.Application;
-
 public class Main
 {
-  public static void main(String[] args) { Application.launch(App.class, args); }
+  public static void main(String[] args) { javafx.application.Application.launch(App.class, args); }
 }

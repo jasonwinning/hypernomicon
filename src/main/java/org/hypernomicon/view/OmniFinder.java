@@ -252,7 +252,7 @@ public class OmniFinder
       if (input.getType() != hdtHub)
         return input;
 
-      StrongLink link = HDT_Hub.class.cast(input).getLink();
+      StrongLink link = ((HDT_Hub)input).getLink();
 
       if (link.getDebate  () != null) return link.getDebate  ();
       if (link.getPosition() != null) return link.getPosition();
@@ -263,7 +263,7 @@ public class OmniFinder
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    private boolean authorMatch(Author author, HDT_Person person, String queryLC, TierEnum tier)
+    private boolean authorMatch(Author author, HDT_Person person, TierEnum tier)
     {
       String listName, fullName = "";
 
@@ -341,20 +341,20 @@ public class OmniFinder
 
           if (record.getType() == hdtWork)
           {
-            for (Author author : HDT_Work.class.cast(record).getAuthors())
-              if (authorMatch(author, null, queryLC, curTier)) return true;
+            for (Author author : ((HDT_Work)record).getAuthors())
+              if (authorMatch(author, null, curTier)) return true;
           }
           else if (record.getType() == hdtMiscFile)
           {
-            for (HDT_Person author : HDT_MiscFile.class.cast(record).authors)
-              if (authorMatch(null, author, queryLC, curTier)) return true;
+            for (HDT_Person author : ((HDT_MiscFile)record).authors)
+              if (authorMatch(null, author, curTier)) return true;
           }
           return false;
 
         case tierExactName:
 
           if (record.getType() == hdtPerson)
-            return authorMatch(null, HDT_Person.class.cast(record), queryLC, tierAuthorExact);
+            return authorMatch(null, (HDT_Person)record, tierAuthorExact);
 
           return record.getNameEngChar().toLowerCase().equals(queryLC);
 
@@ -375,14 +375,14 @@ public class OmniFinder
         case tierNameContains:
 
           if (record.getType() == hdtPerson)
-            return authorMatch(null, HDT_Person.class.cast(record), queryLC, tierAuthorContains);
+            return authorMatch(null, (HDT_Person)record, tierAuthorContains);
 
           return record.getNameEngChar().toLowerCase().contains(queryLC);
 
         case tierNameStartExact:
 
           if (record.getType() == hdtPerson)
-            return authorMatch(null, HDT_Person.class.cast(record), queryLC, tierAuthorStartExact);
+            return authorMatch(null, (HDT_Person)record, tierAuthorStartExact);
 
           return record.getNameEngChar().toLowerCase().startsWith(queryLC);
 

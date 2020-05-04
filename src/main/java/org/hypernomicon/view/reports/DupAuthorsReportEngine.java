@@ -168,7 +168,7 @@ public class DupAuthorsReportEngine extends ReportEngine
         return;
       }
 
-      NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.create(author1.getName(), null, false, author1.getPerson(), author1, Lists.newArrayList(author2));
+      NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.build(author1.getName(), null, false, author1.getPerson(), author1, Lists.newArrayList(author2));
 
       if (npdc.showModal() == false) return;
 

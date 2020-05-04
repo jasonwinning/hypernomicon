@@ -84,7 +84,7 @@
                </cursor></Label>
             <TextField fx:id="tfSearchKey" layoutX="66.0" layoutY="3.0" prefHeight="22.0" prefWidth="238.0" AnchorPane.leftAnchor="66.0" AnchorPane.rightAnchor="200.0" AnchorPane.topAnchor="5.0" />
             <Button fx:id="btnWebSrch1" layoutX="304.0" layoutY="5.0" maxWidth="108.0" minWidth="61.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="108.0" text="WorldCat" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="5.0" />
-            <SplitMenuButton fx:id="smbWebSrch1" alignment="CENTER" layoutX="304.0" layoutY="5.0" maxWidth="108.0" minWidth="61.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="108.0" text="WorldCat" visible="false" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="5.0" />
+            <SplitMenuButton fx:id="smbWebSrch1" alignment="CENTER" layoutX="304.0" layoutY="5.0" maxWidth="108.0" minWidth="61.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="108.0" text="WorldCat" visible="false" AnchorPane.rightAnchor="90.0" AnchorPane.topAnchor="5.0" />
             <Button fx:id="btnWebSrch2" maxWidth="86.0" minWidth="86.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="86.0" text="PhilPapers" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
          </children>
       </AnchorPane>

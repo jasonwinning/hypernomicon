@@ -21,18 +21,19 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Folder;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.util.filePath.FilePath;
 
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import org.hypernomicon.view.wrappers.AbstractTreeWrapper;
 import org.hypernomicon.view.wrappers.TreeModel;
+
+import com.google.common.collect.ImmutableList;
+
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -57,7 +58,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
   @Override public void focusOnTreeCtrl()                                { safeFocus(tv); }
   @Override public void scrollToNdx(int ndx)                             { tv.scrollTo(ndx); }
   @Override public TreeItem<FileRow> getTreeItem(FileRow treeRow)        { return treeRow.getTreeItem(); }
-  @Override public List<FileRow> getRowsForRecord(HDT_Record record)     { return new ArrayList<>(treeModel.getRowsForRecord(record)); }
+  @Override public List<FileRow> getRowsForRecord(HDT_Record record)     { return ImmutableList.copyOf(treeModel.getRowsForRecord(record)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -134,7 +135,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
   {
     super.reset();
 
-    treeModel.reset(db.folders.getByID(ROOT_FOLDER_ID));
+    treeModel.reset(db.getRootFolder());
   }
 
 //---------------------------------------------------------------------------
@@ -143,9 +144,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
   @Override public FileRow newRow(HDT_Record record, TreeModel<FileRow> treeModel)
   {
     if (record.getType() == hdtFolder)
-    {
-      return new FileRow(HDT_Folder.class.cast(record).getPath(), treeModel);
-    }
+      return new FileRow(((HDT_Folder)record).getPath(), treeModel);
 
     messageDialog("Internal error #18726", mtError);
     return null;
@@ -174,16 +173,16 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
       if (fileRow != null)
       {
         HyperPath hyperPath = fileRow.getHyperPath();
-        if (hyperPath.getRecordsString().isEmpty())
+        if (hyperPath.isInUse() == false)
         {
-          HDT_RecordWithPath folder = hyperPath.getRecord();
+          HDT_Folder folder = (HDT_Folder) hyperPath.getRecord();
           if (folder == null) return true;
 
           FilePath filePath = folder.filePath();
 
           if (FilePath.isEmpty(filePath) || (filePath.exists() == false))
           {
-            HDT_Folder.deleteFolderRecordTree((HDT_Folder) folder);
+            HDT_Folder.deleteFolderRecordTree(folder);
             return true;
           }
         }
@@ -220,13 +219,13 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
   {
     scroll(dragEvent);
 
-    if (fileTable.draggingRows == null) return false;
-    if (targetRow.isDirectory() == false) return false;
+    if ((fileTable.draggingRows == null) || (targetRow.isDirectory() == false)) return false;
+
     if (fileTable.draggingRows.size() == 1)
     {
       FilePath srcPath = fileTable.draggingRows.get(0).row.getFilePath();
-      if (srcPath.equals(targetRow.getFilePath())) return false;
-      if (srcPath.getDirOnly().equals(targetRow.getFilePath())) return false;
+      if (srcPath.equals(targetRow.getFilePath()) || srcPath.getDirOnly().equals(targetRow.getFilePath()))
+        return false;
     }
 
     expand(treeItem);

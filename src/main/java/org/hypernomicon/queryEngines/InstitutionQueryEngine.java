@@ -31,6 +31,10 @@ import org.hypernomicon.model.records.HDT_Institution;
 
 public class InstitutionQueryEngine extends QueryEngine<HDT_Institution>
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
   {
 
@@ -93,9 +97,9 @@ public class InstitutionQueryEngine extends QueryEngine<HDT_Institution>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int numOperands(int query)
+  @Override public boolean hasOperand(int query, int opNum, HyperTableCell prevOp)
   {
-    return 3;
+    return true;
   }
 
 //---------------------------------------------------------------------------

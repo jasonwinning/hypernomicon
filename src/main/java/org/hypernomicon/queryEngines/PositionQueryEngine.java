@@ -32,8 +32,12 @@ import org.hypernomicon.model.records.HDT_Position;
 public class PositionQueryEngine extends QueryEngine<HDT_Position>
 {
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
   {
+
   }
 
 //---------------------------------------------------------------------------
@@ -50,7 +54,7 @@ public class PositionQueryEngine extends QueryEngine<HDT_Position>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Position record, boolean firstCall, boolean lastCall)
+  @Override public boolean evaluate(HDT_Position position, boolean firstCall, boolean lastCall)
   {
     switch (curQuery)
     {
@@ -93,9 +97,9 @@ public class PositionQueryEngine extends QueryEngine<HDT_Position>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int numOperands(int query)
+  @Override public boolean hasOperand(int query, int opNum, HyperTableCell prevOp)
   {
-    return 3;
+    return true;
   }
 
 //---------------------------------------------------------------------------

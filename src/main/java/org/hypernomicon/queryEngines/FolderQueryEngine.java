@@ -17,27 +17,46 @@
 
 package org.hypernomicon.queryEngines;
 
+import static org.hypernomicon.App.app;
+import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.view.tabs.QueryTabCtrlr.QUERY_FIRST_NDX;
+import static org.hypernomicon.view.tabs.QueryTabCtrlr.curQuery;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.querySources.DatasetQuerySource;
+import org.hypernomicon.querySources.FilteredQuerySource;
 import org.hypernomicon.querySources.QuerySource;
+import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.populators.QueryPopulator;
 import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.view.tabs.QueryTabCtrlr.*;
-
-import org.hypernomicon.model.records.HDT_Note;
-
-public class NoteQueryEngine extends QueryEngine<HDT_Note>
+public class FolderQueryEngine extends QueryEngine<HDT_Folder>
 {
+  private static final int QUERY_DUPLICATE_FOLDERS = QUERY_FIRST_NDX + 1;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public QueryType getQueryType()
+  {
+    return QueryType.qtFolders;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
   {
-
+    if (app.debugging())
+      pop.addEntry(row, QUERY_DUPLICATE_FOLDERS, "that are duplicate folders");
   }
 
 //---------------------------------------------------------------------------
@@ -54,22 +73,16 @@ public class NoteQueryEngine extends QueryEngine<HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean evaluate(HDT_Note note, boolean firstCall, boolean lastCall)
+  @Override public boolean evaluate(HDT_Folder folder, boolean firstCall, boolean lastCall)
   {
     switch (curQuery)
     {
+      case QUERY_DUPLICATE_FOLDERS :
 
+        return true;
     }
 
     return false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public QueryType getQueryType()
-  {
-    return QueryType.qtNotes;
   }
 
 //---------------------------------------------------------------------------
@@ -79,11 +92,40 @@ public class NoteQueryEngine extends QueryEngine<HDT_Note>
   {
     switch (query)
     {
+      case QUERY_DUPLICATE_FOLDERS :
+        return new FilteredQuerySource(getQueryType(), query)
+        {
+          @Override protected void runFilter()
+          {
+            Map<FilePath, HDT_Folder> map = new HashMap<>();
+            Set<HDT_Folder> set = new HashSet<>();
+
+            db.folders.forEach(folder ->
+            {
+              FilePath filePath = folder.filePath();
+
+              if (map.containsKey(filePath))
+              {
+                if (set.contains(map.get(filePath)) == false)
+                {
+                  set.add(map.get(filePath));
+                  list.add(map.get(filePath));
+                }
+
+                set.add(folder);
+                list.add(folder);
+              }
+              else
+                map.put(filePath, folder);
+            });
+          }
+        };
+
       default :
         break;
     }
 
-    return new DatasetQuerySource(hdtNote);
+    return new DatasetQuerySource(hdtFolder);
   }
 
 //---------------------------------------------------------------------------
@@ -99,6 +141,12 @@ public class NoteQueryEngine extends QueryEngine<HDT_Note>
 
   @Override public boolean hasOperand(int query, int opNum, HyperTableCell prevOp)
   {
+    switch (query)
+    {
+      case QUERY_DUPLICATE_FOLDERS :
+        return false;
+    }
+
     return true;
   }
 

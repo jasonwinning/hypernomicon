@@ -43,11 +43,9 @@ public class ProgressDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ProgressDlgCtrlr create()
+  public static ProgressDlgCtrlr build()
   {
-    ProgressDlgCtrlr pdc = HyperDlg.create("ProgressDlg.fxml", appTitle, true);
-    pdc.init();
-    return pdc;
+    return ((ProgressDlgCtrlr) create("ProgressDlg.fxml", appTitle, true)).init();
   }
 
 //---------------------------------------------------------------------------
@@ -58,7 +56,7 @@ public class ProgressDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init()
+  private ProgressDlgCtrlr init()
   {
     lblTask.setText("");
     lblPercent.setText("Progress: 0 %");
@@ -71,6 +69,8 @@ public class ProgressDlgCtrlr extends HyperDlg
       lblTask.textProperty().unbind();
       progressBar.progressProperty().unbind();
     });
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

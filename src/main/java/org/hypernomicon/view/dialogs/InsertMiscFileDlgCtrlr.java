@@ -45,17 +45,15 @@ public class InsertMiscFileDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static InsertMiscFileDlgCtrlr create()
+  public static InsertMiscFileDlgCtrlr build()
   {
-    InsertMiscFileDlgCtrlr imfd = HyperDlg.create("InsertMiscFileDlg.fxml", "Insert Misc. File", true);
-    imfd.init();
-    return imfd;
+    return ((InsertMiscFileDlgCtrlr) create("InsertMiscFileDlg.fxml", "Insert Misc. File", true)).init();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init()
+  private InsertMiscFileDlgCtrlr init()
   {
     hcbExisting = new HyperCB(cbExisting, ctDropDownList, new StandardPopulator(hdtMiscFile));
 
@@ -73,6 +71,8 @@ public class InsertMiscFileDlgCtrlr extends HyperDlg
     });
 
     btnNew.setOnAction(event -> btnOkClick());
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

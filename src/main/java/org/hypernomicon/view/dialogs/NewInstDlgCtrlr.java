@@ -28,7 +28,6 @@ import org.hypernomicon.model.records.HDT_Institution;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_InstitutionType;
 
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
@@ -50,17 +49,15 @@ public class NewInstDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewInstDlgCtrlr create(HDT_Institution parent, String newName, boolean isParent)
+  public static NewInstDlgCtrlr build(HDT_Institution parent, String newName, boolean isParent)
   {
-    NewInstDlgCtrlr ndc = HyperDlg.create("NewInstDlg.fxml", "New Institution or Institutional Division", true);
-    ndc.init(parent, newName, isParent);
-    return ndc;
+    return ((NewInstDlgCtrlr) create("NewInstDlg.fxml", "New Institution or Institutional Division", true)).init(parent, newName, isParent);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_Institution parent, String newName, boolean isParent)
+  private NewInstDlgCtrlr init(HDT_Institution parent, String newName, boolean isParent)
   {
     Predicate<Integer> popFilter = id -> db.institutions.getByID(id).subInstitutions.size() > 0;
 
@@ -87,6 +84,8 @@ public class NewInstDlgCtrlr extends HyperDlg
     }
 
     hcbType.selectID(HDT_InstitutionType.DEPARTMENT_INST_TYPE_ID);
+
+    return this;
   }
 
 //---------------------------------------------------------------------------
@@ -94,11 +93,7 @@ public class NewInstDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    if (hcbType.selectedID() >= 1) return true;
-
-    messageDialog("You must select a type.", mtError);
-    cbType.requestFocus();
-    return false;
+    return hcbType.selectedID() >= 1 ? true : falseWithErrorMessage("You must select a type.", cbType);
   }
 
 //---------------------------------------------------------------------------

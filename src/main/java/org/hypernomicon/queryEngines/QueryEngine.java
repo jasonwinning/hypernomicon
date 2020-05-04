@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.queryEngines.QueryEngine.QueryType;
 import org.hypernomicon.querySources.QuerySource;
 import org.hypernomicon.view.populators.QueryPopulator;
 import org.hypernomicon.view.populators.VariablePopulator;
@@ -52,7 +53,9 @@ public abstract class QueryEngine<HDT_T extends HDT_Record>
     qtNotes         (9,  "Note records"          , hdtNote         ),
     qtFiles         (10, "Misc. file records"    , hdtMiscFile     ),
     qtConcepts      (11, "Concept records"       , hdtConcept      ),
+    qtFolders       (13, "Folders"               , hdtFolder       ),
     qtReport        (12, "Report"                , hdtNone         );
+
 
     //---------------------------------------------------------------------------
 
@@ -126,7 +129,7 @@ public abstract class QueryEngine<HDT_T extends HDT_Record>
 
   public abstract boolean needsMentionsIndex(int query);
 
-  public abstract int numOperands(int query);
+  public abstract boolean hasOperand(int query, int opNum, HyperTableCell prevOp);
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

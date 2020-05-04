@@ -29,7 +29,7 @@ import org.hypernomicon.model.records.HDT_Work;
 
 //---------------------------------------------------------------------------
 
-public final class HyperTableCell implements Comparable <HyperTableCell>, Cloneable
+public final class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
 {
   public static enum HyperCellSortMethod
   {

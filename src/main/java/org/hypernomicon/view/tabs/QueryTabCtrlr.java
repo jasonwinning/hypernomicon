@@ -134,7 +134,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     private HDT_Record curResult = null;
 
     private boolean programmaticFavNameChange = false,
-                    programmaticFieldChange = false,
+                    disableAutoShowDropdownList = false,
+                    clearingOperand = false,
                     inRecordMode = true;
 
     private void setRecord(HDT_Record record)         { curResult = record; }
@@ -188,8 +189,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         int query = row.getID(1);
         QueryType qt = QueryType.codeToVal(HyperTableCell.getCellID(cellVal));
 
-        boolean tempPFC = programmaticFieldChange;
-        programmaticFieldChange = true;
+        boolean tempDASD = disableAutoShowDropdownList;
+        disableAutoShowDropdownList = true;
 
         if ((qt == QueryType.qtReport) ||
             ((query != QUERY_ANY_FIELD_CONTAINS) &&
@@ -199,25 +200,25 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
         ((QueryPopulator)nextPopulator).setQueryType(row, qt, this);
 
-        programmaticFieldChange = tempPFC;
+        disableAutoShowDropdownList = tempDASD;
 
-        if (programmaticFieldChange == false)
+        if (disableAutoShowDropdownList == false)
           htFields.edit(row, 1);
       });
 
       htFields.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, new QueryPopulator(), (row, cellVal, nextColNdx, nextPopulator) ->
       {
-        boolean tempPFC = programmaticFieldChange;
-        programmaticFieldChange = true;
+        boolean tempDASD = disableAutoShowDropdownList;
+        disableAutoShowDropdownList = true;
 
         if (queryChange(cellVal.getID(), row))
           row.setCellValue(nextColNdx, new HyperTableCell(-1, "", nextPopulator.getRecordType(row)));
 
-        programmaticFieldChange = tempPFC;
+        disableAutoShowDropdownList = tempDASD;
 
-        if (programmaticFieldChange) return;
+        if (disableAutoShowDropdownList) return;
 
-        if (numOperands(row.getID(1), getQueryType(row)) >= 1)
+        if (queryHasOperand(row.getID(1), getQueryType(row), 1))
           htFields.edit(row, 2);
       });
 
@@ -225,41 +226,41 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       {
         if (op1Change(cellVal, row))
         {
-          boolean tempPFC = programmaticFieldChange;
-          programmaticFieldChange = true;
+          boolean tempDASD = disableAutoShowDropdownList;
+          disableAutoShowDropdownList = true;
 
           row.setCellValue(nextColNdx, new HyperTableCell(-1, "", nextPopulator.getRecordType(row)));
           Populator pop = VariablePopulator.class.cast(nextPopulator).getPopulator(row);
 
+          disableAutoShowDropdownList = tempDASD;
+
           if ((HyperTableCell.getCellID(cellVal) >= 0) && (pop.getValueType() == cvtOperand))
           {
             row.setCellValue(nextColNdx, pop.getChoiceByID(null, EQUAL_TO_OPERAND_ID));
-            if ((tempPFC == false) && numOperands(row.getID(1), getQueryType(row)) >= 3)
+            if ((tempDASD == false) && queryHasOperand(row.getID(1), getQueryType(row), 3, cellVal))
               htFields.edit(row, 4);
           }
           else
           {
-            if ((tempPFC == false) && numOperands(row.getID(1), getQueryType(row)) >= 2)
+            if ((tempDASD == false) && queryHasOperand(row.getID(1), getQueryType(row), 2, cellVal))
               htFields.edit(row, 3);
           }
-
-          programmaticFieldChange = tempPFC;
         }
       });
 
       htFields.addColAltPopulatorWithBothHandlers(hdtNone, ctDropDown, new VariablePopulator(), onAction, (row, cellVal, nextColNdx, nextPopulator) ->
       {
-        boolean tempPFC = programmaticFieldChange;
-        programmaticFieldChange = true;
+        boolean tempDASD = disableAutoShowDropdownList;
+        disableAutoShowDropdownList = true;
 
         if (op2Change(cellVal, row))
           row.setCellValue(nextColNdx, new HyperTableCell(-1, "", nextPopulator.getRecordType(row)));
 
-        programmaticFieldChange = tempPFC;
+        disableAutoShowDropdownList = tempDASD;
 
-        if (programmaticFieldChange) return;
+        if (disableAutoShowDropdownList) return;
 
-        if (numOperands(row.getID(1), getQueryType(row)) >= 3)
+        if (queryHasOperand(row.getID(1), getQueryType(row), 3, cellVal))
           htFields.edit(row, 4);
       });
 
@@ -405,7 +406,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       if (type != null)
       {
-        programmaticFieldChange = true;
+        disableAutoShowDropdownList = true;
 
         htFields.clear();
         HyperTableRow row = htFields.newDataRow();
@@ -437,7 +438,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           }
         }
 
-        programmaticFieldChange = false;
+        disableAutoShowDropdownList = false;
 
         htFields.selectRow(0);
       }
@@ -457,7 +458,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       if (fav == null)
       {
-        NewQueryFavDlgCtrlr ctrlr = NewQueryFavDlgCtrlr.create(tfName.getText());
+        NewQueryFavDlgCtrlr ctrlr = NewQueryFavDlgCtrlr.build(tfName.getText());
 
         if (ctrlr.showModal() == false) return;
 
@@ -509,7 +510,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       if (db.isLoaded() == false) return;
 
-      programmaticFieldChange = true;
+      disableAutoShowDropdownList = true;
 
       htFields.clear();
 
@@ -522,7 +523,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       refreshView();
       htFields.selectRow(0);
 
-      programmaticFieldChange = false;
+      disableAutoShowDropdownList = false;
     }
 
   //---------------------------------------------------------------------------
@@ -925,25 +926,39 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    private int numOperands(int query, QueryType queryType)
+    private boolean queryHasOperand(int query, QueryType queryType, int opNum)
+    {
+      return queryHasOperand(query, queryType, opNum, null);
+    }
+
+    private boolean queryHasOperand(int query, QueryType queryType, int opNum, HyperTableCell prevOp)
     {
       if (queryType == qtReport)
-        return 0;
+        return false;
 
       switch (query)
       {
         case QUERY_WHERE_FIELD : case QUERY_WHERE_RELATIVE :
-          return 3;
+          if (opNum < 3)
+            return true;
+
+          switch (prevOp.getID())
+          {
+            case IS_EMPTY_OPERAND_ID : case IS_NOT_EMPTY_OPERAND_ID :
+              return false;
+
+            default :
+              return true;
+          }
 
         case QUERY_WITH_NAME_CONTAINING : case QUERY_ANY_FIELD_CONTAINS :
-          return 1;
+          return opNum == 1;
 
         case QUERY_LIST_ALL :
-          return 0;
-
-        default :
-          return typeToEngine.get(queryType).numOperands(query);
+          return false;
       }
+
+      return typeToEngine.get(queryType).hasOperand(query, opNum, prevOp);
     }
 
   //---------------------------------------------------------------------------
@@ -1057,7 +1072,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       if (queryType != qtReport)
       {
-        clearOperands(row, numOperands(query, queryType) + 1);
+        clearOperands(row, 1);
         typeToEngine.get(queryType).queryChange(query, row, vp1, vp2, vp3);
       }
 
@@ -1070,7 +1085,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     //returns true if subsequent cells need to be updated
     private boolean op1Change(HyperTableCell op1, HyperTableRow row)
     {
-      if (db.isLoaded() == false) return false;
+      if (clearingOperand || (db.isLoaded() == false)) return false;
 
       VariablePopulator vp1 = htFields.getPopulator(2), vp2 = htFields.getPopulator(3), vp3 = htFields.getPopulator(4);
 
@@ -1106,7 +1121,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     // returns true if subsequent cells need to be updated
     private boolean op2Change(HyperTableCell op2, HyperTableRow row)
     {
-      if (db.isLoaded() == false) return false;
+      if (clearingOperand || (db.isLoaded() == false)) return false;
 
       VariablePopulator vp1 = htFields.getPopulator(2), vp2 = htFields.getPopulator(3), vp3 = htFields.getPopulator(4);
 
@@ -1226,10 +1241,15 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     private void clearOperand(HyperTableRow row, int opNum)
     {
+      boolean tempCO = clearingOperand;
+      clearingOperand = true;
+
       VariablePopulator vp = htFields.getPopulator(opNum + 1);
       vp.setPopulator(row, null);
       vp.setRestricted(row, true);
       row.setCellValue(opNum + 1, -1, "", hdtNone);
+
+      clearingOperand = tempCO;
     }
 
   //---------------------------------------------------------------------------
@@ -1237,7 +1257,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     private void resetFields()
     {
-      programmaticFieldChange = true;
+      disableAutoShowDropdownList = true;
 
       htFields.clear();
 
@@ -1246,7 +1266,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       htFields.selectID(1, row, QUERY_ANY_FIELD_CONTAINS);
       htFields.selectRow(row);
 
-      programmaticFieldChange = false;
+      disableAutoShowDropdownList = false;
     }
 
     //---------------------------------------------------------------------------
@@ -1390,7 +1410,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     List.of(new PersonQueryEngine       (), new PositionQueryEngine(), new ConceptQueryEngine (), new WorkQueryEngine(),
             new NoteQueryEngine         (), new DebateQueryEngine  (), new ArgumentQueryEngine(), new InstitutionQueryEngine(),
-            new InvestigationQueryEngine(), new FileQueryEngine    (), new AllQueryEngine     ())
+            new InvestigationQueryEngine(), new FileQueryEngine    (), new AllQueryEngine     (), new FolderQueryEngine())
 
       .forEach(engine -> typeToEngine.put(engine.getQueryType(), engine));
 
@@ -1845,9 +1865,23 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     if (db.isLoaded() == false) return;
 
+    HDT_Folder resultsFolder = db.getResultsFolder();
+
+    if ((resultsFolder.getPath().getRecordsString().length() > 0) ||
+        resultsFolder.childFolders.stream().anyMatch(childFolder -> childFolder.isSpecial(true)))
+    {
+      messageDialog("One or more file(s)/folder(s) in the search results folder are in use by the database.", mtError);
+      return;
+    }
+
     boolean startWatcher = folderTreeWatcher.stop();
 
-    try { FileUtils.cleanDirectory(db.resultsPath().toFile()); }
+    try
+    {
+      FileUtils.cleanDirectory(db.resultsPath().toFile());
+
+      fileManagerDlg.pruneAndRefresh();
+    }
     catch (IOException e) { messageDialog("One or more files were not deleted. Reason: " + e.getMessage(), mtError); }
 
     if (startWatcher)

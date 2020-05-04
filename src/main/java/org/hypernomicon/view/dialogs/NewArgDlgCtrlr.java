@@ -57,26 +57,22 @@ public class NewArgDlgCtrlr extends HyperDlg
   private HDT_Position position;
   private HDT_Argument argument;
   private HyperCB hcbPerson, hcbPositionVerdict, hcbWork;
-  private boolean revising = false;
+  private boolean revising = false, changingWorkProgrammatically = false;
 
   public HDT_Argument getArgument() { return argument; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewArgDlgCtrlr create(HDT_Position curPosition)
+  public static NewArgDlgCtrlr build(HDT_Position curPosition)
   {
-    NewArgDlgCtrlr nad = HyperDlg.create("NewArgDlg.fxml", "New Argument", true);
-    nad.init(curPosition);
-    return nad;
+    return ((NewArgDlgCtrlr) create("NewArgDlg.fxml", "New Argument", true)).init(curPosition);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean changingWorkProgrammatically = false;
-
-  private void init(HDT_Position position)
+  private NewArgDlgCtrlr init(HDT_Position position)
   {
     this.position = position;
 
@@ -151,6 +147,8 @@ public class NewArgDlgCtrlr extends HyperDlg
     });
 
     chkIncludeAuth.setSelected(true);
+
+    return this;
   }
 
 //---------------------------------------------------------------------------

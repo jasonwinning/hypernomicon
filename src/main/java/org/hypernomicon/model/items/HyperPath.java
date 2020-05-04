@@ -37,6 +37,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_RecordState;
 import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.util.filePath.FilePath;
@@ -111,10 +112,12 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  static final String ROOT_PATH_STR = "<Root>";
+
   public String getNameStr()
   {
     if ((record != null) && (record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID))
-      return "Root";
+      return ROOT_PATH_STR;
 
     return fileName == null ? "" : fileName.getNameOnly().toString();
   }
@@ -133,13 +136,22 @@ public class HyperPath
     else
       folder = null;
 
-    fileName = null;
+    assignNameInternal(null);
 
+    if (deleteFile)
+      notifyIfNoLongerInUse(filePath);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void notifyIfNoLongerInUse(FilePath filePath)
+  {
     if (FilePath.isEmpty(filePath)   ||
         (filePath.exists() == false) ||
         (filePath.isFile() == false))   return;
 
-    if (deleteFile && getHyperPathSetForFilePath(filePath).isEmpty())
+    if (getHyperPathSetForFilePath(filePath).isEmpty())
       db.fileNoLongerInUse(filePath);
   }
 
@@ -169,7 +181,7 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HDT_Folder getFolderFromFilePath(FilePath dirFilePath, boolean doCreate)
+  public static HDT_Folder getFolderFromFilePath(FilePath dirFilePath, boolean doCreateRecord)
   {
     dirFilePath = dirFilePath.getDirOnly();
 
@@ -183,9 +195,9 @@ public class HyperPath
 
     if (dirFilePath.exists() == false) return null;
 
-    HDT_Folder parentRecord = getFolderFromFilePath(dirFilePath.getParent(), doCreate);
+    HDT_Folder parentRecord = getFolderFromFilePath(dirFilePath.getParent(), doCreateRecord);
 
-    if ((parentRecord == null) || (doCreate == false)) return null;
+    if ((parentRecord == null) || (doCreateRecord == false)) return null;
 
     HDT_RecordState recordState = new HDT_RecordState(hdtFolder, -1, "", "", "", "");
 
@@ -249,10 +261,39 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HDT_RecordWithPath getFileFromFilePath(FilePath filePath)
+  public static HDT_RecordWithPath getRecordFromFilePath(FilePath filePath)
   {
     return findFirstHaving(getHyperPathSetForFilePath(filePath), HyperPath::getRecord, record ->
-      (record.getType() == hdtMiscFile) || (record.getType() == hdtWorkFile));
+      (record.getType() == hdtMiscFile) || (record.getType() == hdtWorkFile) || (record.getType() == hdtPerson));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String alreadyInUseMessage(FilePath filePath, HDT_RecordWithPath existingRecord)
+  {
+    switch (existingRecord.getType())
+    {
+      case hdtMiscFile :
+
+        return "The file: " + filePath + " is already in use as a miscellaneous file, record ID: " + existingRecord.getID();
+
+      case hdtWorkFile :
+
+        HDT_WorkFile workFile = HDT_WorkFile.class.cast(existingRecord);
+        if (workFile.works.size() > 0)
+          return "The file: " + filePath + " is already in use as a work file, work record ID: " + workFile.works.get(0).getID();
+        else
+          return "The file: " + filePath + " is already in use as a work file, ID: " + workFile.getID();
+
+      case hdtPerson :
+
+        return "The file: " + filePath + " is already in use as a picture, person record ID: " + existingRecord.getID();
+
+      default :
+
+        return "The file: " + filePath + " is already in use. Record type: " + db.getTypeName(existingRecord.getType()) + " ID: " + existingRecord.getID();
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -268,9 +309,6 @@ public class HyperPath
 
     if (srcFilePath.isDirectory())
       return falseWithErrorMessage("Internal error #77393");
-
-    if (getRecordType() == hdtPerson)
-      newFolder = parentFolder();
 
     Set<HyperPath> set = HyperPath.getHyperPathSetForFilePath(srcFilePath);
 
@@ -295,11 +333,14 @@ public class HyperPath
     if (FilePath.isEmpty(fileName) && FilePath.isEmpty(nameOnly)) return;
 
     if ((FilePath.isEmpty(fileName) == false) && (FilePath.isEmpty(nameOnly) == false))
-      if ((parentFolder() == parentFolder) && (fileName.getNameOnly().equals(nameOnly.getNameOnly()))) return;
+      if ((parentFolder() == parentFolder) && fileName.getNameOnly().equals(nameOnly.getNameOnly())) return;
 
-    clear();
+    FilePath filePath = filePath();
+
     assignInternal(parentFolder, nameOnly);
     if (record != null) record.modifyNow();
+
+    notifyIfNoLongerInUse(filePath);
   }
 
 //---------------------------------------------------------------------------
@@ -309,7 +350,7 @@ public class HyperPath
   {
     if (folderPtr == null)
     {
-      if ((record != null) && (record.getType() != hdtPerson))
+      if (record != null)
         messageDialog("Internal error #83902", mtError);
 
       folder = parentFolder;
@@ -368,7 +409,7 @@ public class HyperPath
 
     StringBuilder val = new StringBuilder();
 
-    if (parentFolder() == db.folders.getByID(PICTURES_FOLDER_ID))
+    if (getRecordType() == hdtPerson)
     {
       HyperPath.getHyperPathSetForFilePath(filePath()).forEach(hyperPath ->
       {
@@ -392,12 +433,21 @@ public class HyperPath
 
     if ((val.length() == 0) && (getRecordType() == hdtFolder))
     {
-      for (HDT_Folder subFolder : HDT_Folder.class.cast(getRecord()).childFolders)
-        if (subFolder.getPath().getRecordsString().length() > 0)
-          return "(Subfolders have associated records)";
+      if (HDT_Folder.class.cast(getRecord()).childFolders.stream().anyMatch(subFolder -> subFolder.getPath().getRecordsString().length() > 0))
+        return "(Subfolders have associated records)";
     }
 
     return val.toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean isInUse()
+  {
+    if (getRecordsString().isEmpty() == false) return true;
+
+    return getRecordType() != hdtFolder ? false : db.isSpecialFolder(getRecord().getID(), true);
   }
 
 //---------------------------------------------------------------------------

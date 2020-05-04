@@ -64,7 +64,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 
   private final HyperDataset<? extends HDT_Record> dataset;
-  protected final Tag nameTag;
+  private final Tag nameTag;
   private final NameItem name;
   private final Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items;
   private final boolean dummyFlag;
@@ -77,9 +77,9 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   private boolean online = false, expired = false;
 
-  @Override public final Instant getModifiedDate()      { return getType().getDisregardDates() ? null : modifiedDate; }
-  @Override public final Instant getViewDate()          { return getType().getDisregardDates() ? null : viewDate; }
-  @Override public final Instant getCreationDate()      { return getType().getDisregardDates() ? null : creationDate; }
+  @Override public final Instant getModifiedDate()      { return type.getDisregardDates() ? null : modifiedDate; }
+  @Override public final Instant getViewDate()          { return type.getDisregardDates() ? null : viewDate; }
+  @Override public final Instant getCreationDate()      { return type.getDisregardDates() ? null : creationDate; }
   @Override public final Tag getNameTag()               { return nameTag; }
   @Override public final boolean isDummy()              { return dummyFlag; }
   @Override public final boolean hasMainText()          { return this instanceof HDT_RecordWithConnector; }
@@ -90,7 +90,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final String getSortKey()            { return dataset.getKeyByID(id); }
   @Override public final boolean isExpired()            { return expired; }
   @Override public final Set<Tag> getAllTags()          { return items.keySet().isEmpty() ? EnumSet.noneOf(Tag.class) : EnumSet.copyOf(items.keySet()); }
-  @Override public final boolean getTagBoolean(Tag tag) { return HDI_OnlineBoolean.class.cast(items.get(tag)).get(); }
+  @Override public final boolean getTagBoolean(Tag tag) { return ((HDI_OnlineBoolean)(items.get(tag))).get(); }
   @Override public final boolean hasStoredState()       { return xmlState.stored; }
   @Override public final void updateSortKey()           { dataset.updateSortKey(makeSortKey(), id); }
   @Override public final HDI_Schema getSchema(Tag tag)  { return nullSwitch(items.get(tag), null, HDI_Base::getSchema); }
@@ -153,10 +153,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected void setNameInternal(String str, boolean update)
   {
-    String curName = name.get();
-
-    curName = update ? updateString(curName, str) : safeStr(str);
-    name.set(curName);
+    name.set(update ? updateString(name.get(), str) : safeStr(str));
     updateSortKey();
   }
 
@@ -165,12 +162,12 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   private final void initItems()
   {
-    Collection<HDI_Schema> schemas = db.getSchemasByRecordType(getType());
+    Collection<HDI_Schema> schemas = db.getSchemasByRecordType(type);
     if (schemas == null) return;
 
     for (HDI_Schema schema : schemas)
     {
-      HDI_OnlineBase<? extends HDI_OfflineBase> item;
+      HDI_OnlineBase<? extends HDI_OfflineBase> item = null;
 
       switch (schema.getCategory())
       {
@@ -190,11 +187,9 @@ public abstract class HDT_RecordBase implements HDT_Record
         case hdcNestedPointer :
           messageDialog("Internal error #78933", mtError); // Nested items are only created in RelationSet.getNestedItem
           return;
-
-        default : item = null;
       }
 
-      schema.getTags().forEach(tag -> items.put(tag, item));
+      for (Tag tag : schema.getTags()) items.put(tag, item);
     }
   }
 
@@ -230,10 +225,10 @@ public abstract class HDT_RecordBase implements HDT_Record
     if (db.runningConversion == false)
     {
       modifiedDate = Instant.now();
-      //System.out.println("Modified: " + db.getTypeName(getType()) + " " + getID() + " " + dateTimeToUserReadableStr(modifiedDate));
+      //System.out.println("Modified: " + db.getTypeName(type) + " " + id + " " + dateTimeToUserReadableStr(modifiedDate));
     }
 
-    if (online && (getType() != hdtFolder))
+    if (online && (type != hdtFolder))
       db.updateMentioner(this);
   }
 
@@ -242,10 +237,8 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   @Override public final boolean changeID(int newID)
   {
-    HDT_RecordType type = getType();
-
     if ((type == hdtNone) ||
-        isProtectedRecord(id, type) ||
+        db.isProtectedRecord(id, type, false) ||
         db.idAvailable(type, newID) == false)
       return false;
 
@@ -278,13 +271,13 @@ public abstract class HDT_RecordBase implements HDT_Record
       if (uRecord.getHub() != null)
         curHubID = uRecord.getHub().getID();
 
-      if (curHubID != HDI_OfflineConnector.class.cast(backupState.items.get(tagHub)).getHubID())
+      if (curHubID != ((HDI_OfflineConnector)(backupState.items.get(tagHub))).getHubID())
         throw new HubChangedException(curHubID >= 1);
     }
 
     online = true;
 
-    if (getType().getDisregardDates() == false)
+    if (type.getDisregardDates() == false)
     {
       creationDate = backupState.creationDate;
       modifiedDate = backupState.modifiedDate;
@@ -309,11 +302,11 @@ public abstract class HDT_RecordBase implements HDT_Record
       HDI_OfflineBase backupValue = backupEntry.getValue();
 
       if (tag == tagFirstName)
-        HDT_Person.class.cast(this).setFirstNameInternal(HDI_OfflinePersonName.class.cast(backupValue).getFirstName(), false);
+        ((HDT_Person)this).setFirstNameInternal(((HDI_OfflinePersonName)backupValue).getFirstName(), false);
       else if (tag == tagLastName)
-        HDT_Person.class.cast(this).setLastNameInternal(HDI_OfflinePersonName.class.cast(backupValue).getLastName(), false);
+        ((HDT_Person)this).setLastNameInternal(((HDI_OfflinePersonName)backupValue).getLastName(), false);
       else if (tag == nameTag)
-        setNameInternal(HDI_OfflineString.class.cast(backupValue).get(), false);
+        setNameInternal(((HDI_OfflineString)backupValue).get(), false);
       else
         liveValue.setFromOfflineValue(backupValue, tag);
     }
@@ -342,12 +335,11 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override @SuppressWarnings({ "unchecked" })
   public final HDT_RecordState getRecordStateBackup()
   {
-    HDT_RecordType type = getType();
     String searchKey = type == hdtWorkLabel ? "" : getSearchKey();
     HDT_RecordState newState = new HDT_RecordState(type, id, getSortKeyAttr(), name(), searchKey, "");
     newState.stored = false;
 
-    if (getType().getDisregardDates() == false)
+    if (type.getDisregardDates() == false)
     {
       newState.creationDate = getCreationDate();
       newState.modifiedDate = getModifiedDate();
@@ -373,7 +365,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected final String updateString(String dest, String val)
+  private final String updateString(String dest, String val)
   {
     val = safeStr(val);
     if (dest.replace("\r", "").equalsIgnoreCase(val.replace("\r", "")) == false)
@@ -387,7 +379,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final void updateBibEntryKey(String val) // No need to change modified date for record
   {
-    HDI_OnlineBibEntryKey.class.cast(items.get(tagBibEntryKey)).set(val);
+    ((HDI_OnlineBibEntryKey)(items.get(tagBibEntryKey))).set(val);
   }
 
 //---------------------------------------------------------------------------
@@ -398,7 +390,7 @@ public abstract class HDT_RecordBase implements HDT_Record
     if (tag == nameTag)
       setNameInternal(val, true);
     else
-      HDI_OnlineString.class.cast(items.get(tag)).set(updateString(getTagString(tag), val));
+      ((HDI_OnlineString)(items.get(tag))).set(updateString(getTagString(tag), val));
   }
 
 //---------------------------------------------------------------------------
@@ -406,7 +398,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final String getBibEntryKeyString()
   {
-    return HDI_OnlineBibEntryKey.class.cast(items.get(tagBibEntryKey)).get();
+    return ((HDI_OnlineBibEntryKey)(items.get(tagBibEntryKey))).get();
   }
 
 //---------------------------------------------------------------------------
@@ -414,7 +406,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final String getTagString(Tag tag)
   {
-    return tag == nameTag ? name.get() : HDI_OnlineString.class.cast(items.get(tag)).get();
+    return tag == nameTag ? name.get() : ((HDI_OnlineString)(items.get(tag))).get();
   }
 
 //---------------------------------------------------------------------------
@@ -422,7 +414,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final void updateTagBoolean(Tag tag, boolean val)
   {
-    HDI_OnlineBoolean item = HDI_OnlineBoolean.class.cast(items.get(tag));
+    HDI_OnlineBoolean item = (HDI_OnlineBoolean)(items.get(tag));
 
     if (item.get() == val) return;
 
@@ -485,7 +477,6 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final String makeSortKey()
   {
     String sortKey;
-    HDT_RecordType type = getType();
 
     try
     {
@@ -510,12 +501,12 @@ public abstract class HDT_RecordBase implements HDT_Record
 
         case hdtConcept :
 
-          sortKey = HDT_Concept.class.cast(this).term.get().name();
+          sortKey = ((HDT_Concept)this).term.get().name();
           break;
 
         case hdtFolder : case hdtWorkFile :
 
-          sortKey = HDT_RecordWithPath.class.cast(this).getPath().getNameStr();
+          sortKey = ((HDT_RecordWithPath)this).getPath().getNameStr();
           break;
 
         default :

@@ -188,10 +188,10 @@ public class FilePath implements Comparable<FilePath>
 
     if (other == null) return false;
 
-    if      (other instanceof FilePath) otherFilePath = FilePath.class.cast(other);
-    else if (other instanceof String)   otherFilePath = new FilePath(String.class.cast(other));
-    else if (other instanceof File)     otherFilePath = new FilePath(File.class.cast(other));
-    else if (other instanceof Path)     otherFilePath = new FilePath(Path.class.cast(other));
+    if      (other instanceof FilePath) otherFilePath = (FilePath)other;
+    else if (other instanceof String)   otherFilePath = new FilePath((String)other);
+    else if (other instanceof File)     otherFilePath = new FilePath((File)other);
+    else if (other instanceof Path)     otherFilePath = new FilePath((Path)other);
     else return false;
 
     return innerVal.equals(otherFilePath.innerVal);
@@ -307,7 +307,7 @@ public class FilePath implements Comparable<FilePath>
 
         if (errStr.length() > 0)
         {
-          if (errStr.toLowerCase().contains("denied") || (errStr.toLowerCase().contains("access")))
+          if (errStr.toLowerCase().contains("denied") || errStr.toLowerCase().contains("access"))
             errStr = errStr + "\n\nIt may work to restart Hypernomicon and try again.";
           throw new IOException(errStr);
         }
