@@ -20,6 +20,7 @@ package org.hypernomicon.view.tabs;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.MediaUtil.*;
 
 import java.io.IOException;
 import java.util.ArrayList;

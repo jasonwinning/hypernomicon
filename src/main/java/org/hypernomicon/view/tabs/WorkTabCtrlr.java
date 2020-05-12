@@ -17,7 +17,6 @@
 
 package org.hypernomicon.view.tabs;
 
-import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibDataRetriever;
@@ -64,6 +63,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
@@ -737,7 +737,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     if (curWork.workType.isNotNull())
     {
       hcbType.addAndSelectEntry(curWork.workType, HDT_Record::name);
-      ui.tabWorks.setGraphic(getImageViewForRelativePath(ui.getGraphicRelativePath(curWork)));
+      ui.tabWorks.setGraphic(imgViewForRecord(curWork));
     }
 
   // Populate authors and investigations
@@ -883,7 +883,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (curWork.getBibEntryKey().length() > 0)
     {
-      ImageView iv = getImageViewForRelativePath("resources/images/card-catalog.png");
+      ImageView iv = imgViewFromRelPath("resources/images/card-catalog.png");
       iv.setFitWidth(16);
       iv.setFitHeight(16);
       btnBibManager.setGraphic(iv);
@@ -1425,11 +1425,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     changeToNormalMode();
 
-    ui.tabWorks.setGraphic(getImageViewForRecordType(hdtWork));
+    ui.tabWorks.setGraphic(imgViewForRecordType(hdtWork));
 
     if (db.bibLibraryIsLinked())
     {
-      ImageView iv = getImageViewForRelativePath("resources/images/card-catalog_tr.png");
+      ImageView iv = imgViewFromRelPath("resources/images/card-catalog_tr.png");
       iv.setFitWidth(16);
       iv.setFitHeight(16);
 
@@ -1684,7 +1684,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         wdc = WorkDlgCtrlr.build(workFile);
 
       result = wdc.showModal();
-      FolderTreeWatcher.alreadyImporting = false;
 
       if (result == false)
       {

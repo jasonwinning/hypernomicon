@@ -46,8 +46,7 @@ class CheckboxCell extends TableCell<HyperTableRow, Boolean>
 
       HyperTableCell cell = Boolean.TRUE.equals(newValue) ? HyperTableCell.trueCheckboxCell : HyperTableCell.falseCheckboxCell;
 
-      int colNdx = getTableView().getColumns().indexOf(getTableColumn());
-      row.setCellValue(colNdx, cell);
+      row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), cell);
     });
   }
 

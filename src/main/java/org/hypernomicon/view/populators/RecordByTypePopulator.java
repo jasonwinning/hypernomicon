@@ -48,11 +48,9 @@ public class RecordByTypePopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public RecordByTypePopulator()                          { this(null, false); }
-  public RecordByTypePopulator(boolean nameOnly)          { this(null, nameOnly); }
-  public RecordByTypePopulator(Predicate<Integer> filter) { this(filter, false); }
+  public RecordByTypePopulator() { this(null, false); }
 
-  public RecordByTypePopulator(Predicate<Integer> filter, boolean nameOnly)
+  RecordByTypePopulator(Predicate<Integer> filter, boolean nameOnly)
   {
     this.filter = filter;
     this.nameOnly = nameOnly;

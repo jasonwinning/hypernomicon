@@ -302,7 +302,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   {
     fdc = FileDlgCtrlr.build("Miscellaneous file", curMiscFile, tfName.getText(), false);
 
-    if (srcFilePath != null)
+    if (FilePath.isEmpty(srcFilePath) == false)
       fdc.setSrcFilePath(srcFilePath, true);
 
     boolean result = fdc.showModal();

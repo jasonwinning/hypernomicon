@@ -81,12 +81,12 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     HyperTableCell cell = getItem();
 
     cB.setValue(cell);
+    setGraphic(cB);
+
     if (cell != null)
       cB.getSelectionModel().select(cell);
 
-    setGraphic(cB);
-
-    if (safeStr(cell.getText()).isBlank() || (cell.getID() > 0))
+    if (HyperTableCell.getCellText(cell).isBlank() || (cell.getID() > 0))
       cB.show();
 
     runDelayedInFXThread(6, 50, () ->
@@ -107,13 +107,11 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     setGraphic(null);
 
     HyperTableRow row = getTableRow().getItem();
-    int colNdx = getTableView().getColumns().indexOf(getTableColumn());
 
-    if (hCB.somethingWasTyped)
-      if (hCB.typedMatch != null)
-        newValue = hCB.typedMatch;
+    if (hCB.somethingWasTyped && (hCB.typedMatch != null))
+      newValue = hCB.typedMatch;
 
-    row.setCellValue(colNdx, newValue);
+    row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), newValue);
   }
 
 //---------------------------------------------------------------------------

@@ -24,6 +24,7 @@ import static org.hypernomicon.model.KeywordLinkList.charIsPartOfWebLink;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 
 import java.util.ArrayList;
@@ -393,7 +394,7 @@ public class MainTextUtil
 
     if (record.getType() == hdtMiscFile)
       return getGoToRecordAnchor(record, style, text) + "&nbsp;" +
-        "<a hypncon=\"true\" href=\"\" title=\"Jump to this record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(record) + "); return false;\">" + "<img border=0 width=16 height=16 src=\"" + getImageDataURI("resources/images/view-form.png") + "\"></img></a>";
+        "<a hypncon=\"true\" href=\"\" title=\"Jump to this record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(record) + "); return false;\">" + "<img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/view-form.png") + "\"></img></a>";
 
     return getGoToRecordAnchor(record, style, text);
   }
@@ -596,7 +597,7 @@ public class MainTextUtil
       firstOne.setFalse();
 
       innerHtml.append("<a hypncon=\"true\" href=\"\" title=\"Show in Preview Window\" onclick=\"javascript:openPreview(" + getOpenRecordParms(key.getRecord()) + "); return false;\">")
-               .append("<img border=0 width=16 height=16 src=\"" + getImageDataURI(ui.getGraphicRelativePath(key.getRecord())) + "\"></img></a>");
+               .append("<img border=0 width=16 height=16 src=\"" + imgDataURIbyRecord(key.getRecord()) + "\"></img></a>");
       String authorBibStr;
 
       switch (key.getRecord().getType())
@@ -625,7 +626,7 @@ public class MainTextUtil
             innerHtml.append("&nbsp;<span hypncon-no-links=true>" + authorBibStr + "</span>");
 
           innerHtml.append("&nbsp;" + getGoToRecordAnchor(miscFile, "", miscFile.name()) + "&nbsp;")
-                   .append("<a hypncon=\"true\" href=\"\" title=\"Jump to this record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(miscFile) + "); return false;\">" + "<img border=0 width=16 height=16 src=\"" + getImageDataURI("resources/images/view-form.png") + "\"></img></a>");
+                   .append("<a hypncon=\"true\" href=\"\" title=\"Jump to this record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(miscFile) + "); return false;\">" + "<img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/view-form.png") + "\"></img></a>");
 
           break;
 
@@ -650,7 +651,7 @@ public class MainTextUtil
   private static void appendImgTagsForLabel(HDT_WorkLabel label, StringBuilder innerHtml, boolean addSpace)
   {
     innerHtml.append("<span style=\"display:inline-block; font-size:12pt; width:16px; height:16px; padding:0px; border:0px; margin:0px;\">")
-             .append(getGoToRecordAnchor(label, " style=\"width:16px; height:16px; padding:0px; border:0px; margin:0px; background-repeat: no-repeat; background-image:url('" + getImageDataURI(ui.getGraphicRelativePathByType(hdtWorkLabel)) + "'); text-decoration: none;\"",
+             .append(getGoToRecordAnchor(label, " style=\"width:16px; height:16px; padding:0px; border:0px; margin:0px; background-repeat: no-repeat; background-image:url('" + imgDataURIbyRecordType(hdtWorkLabel) + "'); text-decoration: none;\"",
                                          "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"))
              .append("</span>");
 
@@ -662,7 +663,7 @@ public class MainTextUtil
       if (spoke.getType() == hdtWorkLabel) return;
 
       innerHtml.append("<span style=\"display:inline-block; font-size:12pt; width:16px; height:16px; padding:0px; border:0px; margin:0px;\">")
-               .append(getGoToRecordAnchor(spoke.getSpoke(), " style=\"width:16px; height:16px; padding:0px; border:0px; margin:0px; background-repeat: no-repeat;background-image:url('" + getImageDataURI(ui.getGraphicRelativePathByType(spoke.getType())) + "'); text-decoration: none;\"",
+               .append(getGoToRecordAnchor(spoke.getSpoke(), " style=\"width:16px; height:16px; padding:0px; border:0px; margin:0px; background-repeat: no-repeat;background-image:url('" + imgDataURIbyRecordType(spoke.getType()) + "'); text-decoration: none;\"",
                                            "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"))
                .append("</span>");
 

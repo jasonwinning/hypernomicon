@@ -20,6 +20,7 @@ package org.hypernomicon.view.fileManager;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.MediaUtil.*;
 
 import java.util.List;
 
@@ -81,7 +82,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
     {
       TreeCell<FileRow> row = new TreeCell<>();
 
-      ImageView openImage = getImageViewForRecordType(hdtFolder);
+      ImageView openImage = imgViewForRecordType(hdtFolder);
 
       row.itemProperty().addListener((ob, oldValue, newValue) ->
       {

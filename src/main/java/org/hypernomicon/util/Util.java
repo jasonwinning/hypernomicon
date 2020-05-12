@@ -19,7 +19,6 @@ package org.hypernomicon.util;
 
 import org.hypernomicon.App;
 import org.hypernomicon.HyperTask.HyperThread;
-import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
@@ -33,9 +32,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
-import static javax.xml.bind.DatatypeConverter.printBase64Binary;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -53,7 +50,6 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
-import java.nio.charset.Charset;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -101,7 +97,6 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.image.ImageView;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Alert;
@@ -135,16 +130,12 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import com.google.common.escape.Escaper;
 import com.google.common.html.HtmlEscapers;
-import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.Transliterator;
 
 import javafx.scene.control.skin.ComboBoxListViewSkin;
@@ -753,26 +744,6 @@ public final class Util
     }
 
     return lowestPos;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String getImageDataURI(String relativePath)
-  {
-    try (BufferedInputStream stream = new BufferedInputStream(App.class.getResourceAsStream(relativePath));)
-    {
-      byte[] array = new byte[stream.available()];
-
-      stream.read(array);
-
-      return "data:image/png;base64," + printBase64Binary(array);
-    }
-    catch (Exception e)
-    {
-      messageDialog("Error: " + e.getMessage(), mtError);
-      return "";
-    }
   }
 
 //---------------------------------------------------------------------------
@@ -1468,115 +1439,6 @@ public final class Util
     }
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static MediaType getMediaType(FilePath filePath)
-  {
-    if (filePath == null) return MediaType.OCTET_STREAM;
-
-    Metadata metadata = new Metadata();
-    metadata.set(Metadata.RESOURCE_NAME_KEY, filePath.toString());
-
-    try (TikaInputStream stream = TikaInputStream.get(filePath.toPath()))
-    {
-      return tika.getDetector().detect(stream, metadata);
-    }
-    catch (IOException e)
-    {
-      return MediaType.OCTET_STREAM;
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static ImageView getImageViewForRelativePath(String relPath)
-  {
-    return relPath.length() > 0 ? new ImageView(App.class.getResource(relPath).toString()) : null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static ImageView getImageViewForRecordType(HDT_RecordType type)
-  {
-    return getImageViewForRelativePath(ui.getGraphicRelativePathByType(type));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String getImageRelPathForFilePath(FilePath filePath, MediaType mimetype)
-  {
-    if (filePath.isDirectory())
-      return getImageRelPathForFilePath(filePath, null, true);
-
-    return getImageRelPathForFilePath(filePath, mimetype, false);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String getImageRelPathForFilePath(FilePath filePath, MediaType mimetype, boolean isDir)
-  {
-    if (isDir)
-      return "resources/images/folder.png";
-
-    if (mimetype == null)
-      mimetype = getMediaType(filePath);
-
-    String imageName = "", typeStr = mimetype.toString();
-
-    if (mimetype == MediaType.APPLICATION_XML)
-      imageName = "document-code";
-    else if (mimetype == MediaType.APPLICATION_ZIP)
-      imageName = "vise-drawer";
-    else if (typeStr.contains("pdf") || typeStr.contains("postscript") || typeStr.contains("framemaker"))
-      imageName = "document-pdf";
-    else if (typeStr.contains("djv") || typeStr.contains("book") || typeStr.contains("epub"))
-      imageName = "book";
-    else if (mimetype.getType().equals("image"))
-      imageName = "image";
-    else if (typeStr.contains("plain"))
-      imageName = "document-text";
-    else if (typeStr.contains("htm"))
-      imageName = "text-html";
-    else if (typeStr.contains("json"))
-      imageName = "json";
-    else if (typeStr.endsWith("tex"))
-      imageName = "document-tex";
-    else if (typeStr.contains("word") || typeStr.contains("rtf") || typeStr.contains("publisher") || typeStr.contains("mswrite") || typeStr.contains("writer") || typeStr.contains("msword") || typeStr.contains("xps"))
-      imageName = "paper";
-    else if (typeStr.contains("excel") || typeStr.contains("spread") || typeStr.contains("calc"))
-      imageName = "table-sheet";
-    else if (typeStr.contains("power") || typeStr.contains("presen") || typeStr.contains("impress"))
-      imageName = "from_current_slide";
-    else if (typeStr.contains("archi") || typeStr.contains("packa") || typeStr.contains("install") || typeStr.contains("diskimage"))
-      imageName = "vise-drawer";
-    else if (typeStr.contains("compress") || typeStr.contains("stuffit") || typeStr.contains("x-tar") || typeStr.contains("zip") || typeStr.contains("x-gtar") || typeStr.contains("lzma") || typeStr.contains("lzop") || typeStr.contains("x-xz"))
-      imageName = "vise-drawer";
-    else if (typeStr.contains("note"))
-      imageName = "notebook-pencil";
-    else if (typeStr.contains("chart") || typeStr.contains("ivio"))
-      imageName = "chart";
-    else if (typeStr.contains("kontour") || typeStr.contains("msmetafile") || typeStr.contains("emf") || typeStr.contains("wmf") || typeStr.contains("cgm") || typeStr.contains("dwg") || typeStr.contains("cmx") || typeStr.endsWith("eps") || typeStr.contains("freehand") || typeStr.contains("corel") || typeStr.contains("cdr") || typeStr.contains("draw") || typeStr.contains("karbon") || typeStr.contains("vector") || typeStr.contains("illustr"))
-      imageName = "page_white_vector";
-    else if (typeStr.contains("formul") || typeStr.contains("math"))
-      imageName = "edit_mathematics";
-    else if (typeStr.contains("graphic") || typeStr.contains("image"))
-      imageName = "image";
-    else if (mimetype.getType().equals("audio"))
-      imageName = "sound_wave";
-    else if (mimetype.getType().equals("video") || typeStr.contains("flash") || typeStr.contains("mp4"))
-      imageName = "recording";
-    else if (typeStr.contains("text") || typeStr.contains("docu"))
-      imageName = "document-text";
-    else
-      imageName = "document";
-
-    return "resources/images/" + imageName + ".png";
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -2016,37 +1878,6 @@ public final class Util
       if ((sum1 > 0) && (sum2 > 0) && ((sum1 % 11) == 0) && ((sum2 % 11) == 0) && (list.contains(found) == false))
         list.add(found);
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static Charset detectCharset(byte[] byteData)
-  {
-    CharsetDetector detector = new CharsetDetector();
-
-    detector.setText(byteData);
-
-    return Charset.forName(detector.detect().getName());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static Charset detectCharset(InputStream streamData)
-  {
-    CharsetDetector detector = new CharsetDetector();
-
-    try
-    {
-      detector.setText(streamData);
-    }
-    catch (IOException e)
-    {
-      return null;
-    }
-
-    return Charset.forName(detector.detect().getName());
   }
 
 //---------------------------------------------------------------------------

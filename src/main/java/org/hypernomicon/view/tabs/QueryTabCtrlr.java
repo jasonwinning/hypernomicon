@@ -338,8 +338,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
             HDT_MiscFile miscFile = (HDT_MiscFile) curResult;
             previewWindow.setPreview(pvsQueryTab, miscFile.filePath(), -1, -1, miscFile);
           }
-          else if (curResult.getType() == hdtWorkFile)
-            previewWindow.setPreview(pvsQueryTab, HDT_RecordWithPath.class.cast(curResult).filePath(), 1, -1, null);
+          else if ((curResult.getType() == hdtWorkFile) || (curResult.getType() == hdtPerson))
+            previewWindow.setPreview(pvsQueryTab, HDT_RecordWithPath.class.cast(curResult).filePath(), 1, -1, curResult);
           else
             previewWindow.setPreview(pvsQueryTab, null, -1, -1, null);
         }

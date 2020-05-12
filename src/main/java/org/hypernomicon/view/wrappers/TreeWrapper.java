@@ -91,6 +91,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
         {
           if (selectingFromCB == false)
             tcb.select(row.getRecord());
+
           return;
         }
       }

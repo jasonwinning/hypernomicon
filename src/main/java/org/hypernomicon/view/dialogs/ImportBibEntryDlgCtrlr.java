@@ -99,7 +99,7 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
 
     if (lines == null)
     {
-      if (filePath == null)
+      if (FilePath.isEmpty(filePath))
         btnBrowseClick();
       else
         loadEntry(filePath);

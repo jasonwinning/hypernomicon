@@ -79,14 +79,16 @@ public final class KeywordLinkList
 
     while (ndx < text.length())
     {
-      if (safeSubstring(text, ndx, ndx + 4).toLowerCase().equals("http"))
+      String fourChars = safeSubstring(text, ndx, ndx + 4).toLowerCase();
+
+      if (fourChars.equals("http"))
       {
         for (; (ndx < text.length()) && charIsPartOfWebLink(text, ndx); ndx++);
         continue;
       }
-      else if (safeSubstring(text, ndx, ndx + 4).toLowerCase().equals("href")) // don't convert anything in an anchor tag to a link
+      else if (fourChars.equals("href")) // don't convert anything in an anchor tag to a link
       {
-        for (; (ndx < text.length()) && text.charAt(ndx) != '>'; ndx++);
+        for (; (ndx < text.length()) && (text.charAt(ndx) != '>'); ndx++);
         continue;
       }
 
@@ -97,7 +99,7 @@ public final class KeywordLinkList
         prefix = prefix.replace(".", ". ");
         while (prefix.contains("  "))
           prefix = prefix.replaceAll("  ", " ");
-        
+
         prefix = safeSubstring(prefix, 0, 3);
       }
 
@@ -116,7 +118,7 @@ public final class KeywordLinkList
         {
           matchLen = focusStr.length();
           focusStr = focusStr.replace(".", ". ");
-          
+
           while (focusStr.contains("  "))
             focusStr = focusStr.replaceAll("  ", " ");
 

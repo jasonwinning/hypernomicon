@@ -23,6 +23,7 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
@@ -176,7 +177,7 @@ public class BibManager extends HyperDlg
       btnStop.setDisable(true);
       seqT.stop();
 
-      ImageView iv1 = getImageViewForRelativePath("resources/images/refresh.png");
+      ImageView iv1 = imgViewFromRelPath("resources/images/refresh.png");
       iv1.setFitWidth(16);
       iv1.setFitHeight(16);
       btnSync.setGraphic(iv1);

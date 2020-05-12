@@ -21,6 +21,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
@@ -312,18 +313,18 @@ public class MainTextCtrlr
     MenuItem menuItem2 = new MenuItem("Paste plain text without line breaks");
     menuItem2.setOnAction(getPlainTextAction(true));
 
-    MenuButton btnPaste = new MenuButton("", getImageViewForRelativePath("resources/images/page_paste.png"), menuItem0, menuItem1, menuItem2);
+    MenuButton btnPaste = new MenuButton("", imgViewFromRelPath("resources/images/page_paste.png"), menuItem0, menuItem1, menuItem2);
     setToolTip(btnPaste, "Paste");
 
-    Button btnLink = new Button("", getImageViewForRelativePath("resources/images/world_link.png"));
+    Button btnLink = new Button("", imgViewFromRelPath("resources/images/world_link.png"));
     setToolTip(btnLink, "Insert web link");
     btnLink.setOnAction(event -> btnLinkClick());
 
-    Button btnPicture = new Button("", getImageViewForRelativePath("resources/images/picture_add.png"));
+    Button btnPicture = new Button("", imgViewFromRelPath("resources/images/picture_add.png"));
     setToolTip(btnPicture, "Insert picture");
     btnPicture.setOnAction(event -> btnPictureClick());
 
-    Button btnClear = new Button("", getImageViewForRelativePath("resources/images/broom.png"));
+    Button btnClear = new Button("", imgViewFromRelPath("resources/images/broom.png"));
     setToolTip(btnClear, "Clear");
     btnClear.setOnAction(event ->
     {
@@ -331,7 +332,7 @@ public class MainTextCtrlr
       safeFocus(he);
     });
 
-    Button btnEditLayout = new Button("", getImageViewForRelativePath("resources/images/document_insert.png"));
+    Button btnEditLayout = new Button("", imgViewFromRelPath("resources/images/document_insert.png"));
     setToolTip(btnEditLayout, "Edit layout");
     btnEditLayout.setOnAction(event ->
     {

@@ -70,11 +70,11 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
     StrongLink link = hub.getLink();
     HDT_Record record;
 
-    record = link.getDebate();   if (record != null) val.debateID   = record.getID();
+    record = link.getDebate  (); if (record != null) val.debateID   = record.getID();
     record = link.getPosition(); if (record != null) val.positionID = record.getID();
-    record = link.getNote();     if (record != null) val.noteID     = record.getID();
-    record = link.getLabel();    if (record != null) val.labelID    = record.getID();
-    record = link.getConcept();  if (record != null) val.conceptID  = record.getID();
+    record = link.getNote    (); if (record != null) val.noteID     = record.getID();
+    record = link.getLabel   (); if (record != null) val.labelID    = record.getID();
+    record = link.getConcept (); if (record != null) val.conceptID  = record.getID();
   }
 
 //---------------------------------------------------------------------------

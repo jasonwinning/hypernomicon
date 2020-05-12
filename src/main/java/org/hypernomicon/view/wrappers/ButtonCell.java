@@ -27,6 +27,7 @@ import javafx.scene.image.ImageView;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.MediaUtil.*;
 
 //---------------------------------------------------------------------------
 
@@ -110,7 +111,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
         btn.setText("");
 
-        ImageView iv = getImageViewForRelativePath("resources/images/form-pencil.png");
+        ImageView iv = imgViewFromRelPath("resources/images/form-pencil.png");
         iv.setFitWidth(16);
         iv.setFitHeight(16);
         btn.setGraphic(iv);

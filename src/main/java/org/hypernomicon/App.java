@@ -30,6 +30,7 @@ import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.JsonHttpClient;
+import org.hypernomicon.util.MediaUtil;
 import org.hypernomicon.util.Util;
 import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.filePath.FilePath;
@@ -67,8 +68,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.DefaultConfiguration;
-import org.apache.tika.config.TikaConfig;
-import org.apache.tika.exception.TikaException;
 
 import com.teamdev.jxbrowser.chromium.BrowserPreferences;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
@@ -117,7 +116,6 @@ public final class App extends Application
   public static Preferences appPrefs;
   public static PreviewWindow previewWindow = null;
   public static QueryView curQV;
-  public static TikaConfig tika;
   public static boolean jxBrowserInitialized = false,
                         jxBrowserDisabled    = false;
   public static double displayScale;
@@ -161,12 +159,12 @@ public final class App extends Application
 
     try
     {
-      tika = new TikaConfig();
+      MediaUtil.init();
 
       appPrefs = Preferences.userNodeForPackage(App.class);
       db.init(appPrefs, folderTreeWatcher);
     }
-    catch (SecurityException | HDB_InternalError | TikaException | IOException e)
+    catch (SecurityException | HDB_InternalError e)
     {
       appPrefs = null;
       messageDialog("Initialization error: " + e.getMessage(), mtError, true);

@@ -17,10 +17,9 @@
 
 package org.hypernomicon.view.wrappers;
 
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.MediaUtil.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
@@ -76,7 +75,7 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
   }
 
   @Override public String toString()        { return getCBText(); }
-  @Override public ImageView getGraphic()   { return graphic != null ? graphic : getImageViewForRelativePath(ui.getGraphicRelativePath(record)); }
+  @Override public ImageView getGraphic()   { return graphic != null ? graphic : imgViewForRecord(record); }
   @Override public int compareTo(TreeRow o) { return record.getSortKey().compareTo(o.record.getSortKey()); }
 
   @SuppressWarnings("unchecked")

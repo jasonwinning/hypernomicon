@@ -48,6 +48,7 @@ import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.MediaUtil.*;
 
 import javafx.concurrent.Worker;
 import javafx.event.Event;
@@ -547,9 +548,9 @@ public final class MainTextWrapper
               innerHtml.append("<br>");
 
             innerHtml.append(detailsTag(KEYWORKS_DIVIT_ID, viewInfo, true) + "<summary><b>Key Works</b>&nbsp;")
-                     .append("<a hypncon=\"true\" href=\"\" title=\"Turn key work details on/off\" onclick=\"javascript:callToJava(" + String.valueOf(JS_EVENT_DETAILED_KEY_WORKS) + "); return false;\"><img border=0 width=16 height=16 src=\"" + getImageDataURI("resources/images/key-work-details.png") + "\"></img></a>")
-                     .append("<span style=\"display: " + (sortByName ? "inline" : "none") + ";\" class=\"" + ALPHA_SORTED_OUTER_CLASS + "\"><a hypncon=\"true\" title=\"Sort by year\" href=\"\" onclick=\"javascript:switchTo19(); return false;\"><img border=0 width=16 height=16 src=\"" + getImageDataURI("resources/images/sort_19.png") + "\"></img></a></span>")
-                     .append("<span style=\"display: " + (sortByName ? "none" : "inline") + ";\" class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\"><a hypncon=\"true\" title=\"Sort alphabetically\" href=\"\" onclick=\"javascript:switchToAZ(); return false;\"><img border=0 width=16 height=16 src=\"" + getImageDataURI("resources/images/sort_az.png") + "\"></img></a></span>")
+                     .append("<a hypncon=\"true\" href=\"\" title=\"Turn key work details on/off\" onclick=\"javascript:callToJava(" + String.valueOf(JS_EVENT_DETAILED_KEY_WORKS) + "); return false;\"><img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/key-work-details.png") + "\"></img></a>")
+                     .append("<span style=\"display: " + (sortByName ? "inline" : "none") + ";\" class=\"" + ALPHA_SORTED_OUTER_CLASS + "\"><a hypncon=\"true\" title=\"Sort by year\" href=\"\" onclick=\"javascript:switchTo19(); return false;\"><img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/sort_19.png") + "\"></img></a></span>")
+                     .append("<span style=\"display: " + (sortByName ? "none" : "inline") + ";\" class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\"><a hypncon=\"true\" title=\"Sort alphabetically\" href=\"\" onclick=\"javascript:switchToAZ(); return false;\"><img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/sort_az.png") + "\"></img></a></span>")
                      .append("</summary><br><div class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\" style=\"margin-left: 3.5em; display: " + (sortByName ? "none" : "block") + ";\">");
             appendKeyWorkSpanAndBody(curRecord, innerHtml, false, tagNdx, true, viewInfo);
 

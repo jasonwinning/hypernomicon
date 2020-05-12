@@ -20,6 +20,7 @@ package org.hypernomicon.view.previewWindow;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 
@@ -143,10 +144,7 @@ public class PreviewWindow extends HyperDlg
 
   private void updateStartBtn(int newVal)
   {
-    if (newVal < 0)
-      btnStartPage.setText("Start p. " + TEXT_TO_SHOW_IF_NONE);
-    else
-      btnStartPage.setText("Start p. " + String.valueOf(newVal));
+    btnStartPage.setText("Start p. " + (newVal < 0 ? TEXT_TO_SHOW_IF_NONE : String.valueOf(newVal)));
   }
 
 //---------------------------------------------------------------------------
@@ -154,10 +152,7 @@ public class PreviewWindow extends HyperDlg
 
   private void updateEndBtn(int newVal)
   {
-    if (newVal < 0)
-      btnEndPage.setText("End p. " + TEXT_TO_SHOW_IF_NONE);
-    else
-      btnEndPage.setText("End p. " + String.valueOf(newVal));
+    btnEndPage.setText("End p. " + (newVal < 0 ? TEXT_TO_SHOW_IF_NONE : String.valueOf(newVal)));
   }
 
 //---------------------------------------------------------------------------
@@ -227,10 +222,10 @@ public class PreviewWindow extends HyperDlg
     btnLock.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (Boolean.TRUE.equals(newValue))
-        btnLock.setGraphic(getImageViewForRelativePath("resources/images/lock.png"));
+        btnLock.setGraphic(imgViewFromRelPath("resources/images/lock.png"));
       else
       {
-        btnLock.setGraphic(getImageViewForRelativePath("resources/images/lock_open.png"));
+        btnLock.setGraphic(imgViewFromRelPath("resources/images/lock_open.png"));
         srcToSetting.forEach((src, setting) -> setPreview(src, setting.filePath, setting.startPageNum, setting.endPageNum, setting.record));
         srcToSetting.clear();
       }
@@ -386,12 +381,7 @@ public class PreviewWindow extends HyperDlg
       if (Boolean.TRUE.equals(newValue))
         tfPreviewPage.setText("");
       else
-      {
-        if (pageNum == -1)
-          tfPreviewPage.setText("");
-        else
-          tfPreviewPage.setText(curWrapper().getLabelByPage(pageNum));
-      }
+        tfPreviewPage.setText(pageNum == -1 ? "" : curWrapper().getLabelByPage(pageNum));
     });
 
     tfPreviewPage.setOnAction(event -> curWrapper().updatePage(curWrapper().getPageByLabel(tfPreviewPage.getText())));
@@ -450,7 +440,8 @@ public class PreviewWindow extends HyperDlg
 
     boolean previewAlreadySet = false;
 
-    if ((record != null) && ((record.getType() != hdtWork) && (record.getType() != hdtMiscFile)))
+    if ((record != null) && (record.getType () != hdtWork    ) && (record.getType() != hdtMiscFile) &&
+                            (record.getType () != hdtWorkFile) && (record.getType() != hdtPerson  ))
       record = null;
 
     if (btnLock.isSelected() && (curSource() == src) && (curWrapper().getFilePathShowing() != null))
@@ -574,13 +565,21 @@ public class PreviewWindow extends HyperDlg
     if (record == null)
     {
       paneType.getChildren().clear();
-      lblRecord.setText("(None)");
+      lblRecord.setText("(No associated record)");
       setToolTip(lblRecord, "");
       resetNavBtns();
     }
     else
     {
-      ImageView iv = getImageViewForRecordType(record.getType());
+      if (record.getType() == hdtWorkFile)
+      {
+        HDT_WorkFile workFile = (HDT_WorkFile)record;
+        if (workFile.works.size() > 0)
+          record = workFile.works.get(0);
+      }
+
+      ImageView iv = imgViewForRecord(record);
+
       paneType.getChildren().setAll(iv);
 
       if (record.getType() == hdtWork)
@@ -594,26 +593,30 @@ public class PreviewWindow extends HyperDlg
         updateStartBtn(curWrapper().getWorkStartPageNum());
         updateEndBtn  (curWrapper().getWorkEndPageNum  ());
 
-        HDT_WorkFile workFile = (HDT_WorkFile) HyperPath.getRecordFromFilePath(curWrapper().getFilePath());
+        btnContents.setDisable(true);
+        btnContents.setText("No other records...");
 
-        if (workFile.works.size() > 1)
+        HDT_RecordWithPath showingFile = HyperPath.getRecordFromFilePath(curWrapper().getFilePath());
+        if (showingFile.getType() == hdtWorkFile)
         {
-          btnContents.setDisable(false);
-          if (workFile.works.size() == 2)
-            btnContents.setText("1 other record...");
-          else
-            btnContents.setText((workFile.works.size() - 1) + " other records...");
-        }
-        else
-        {
-          btnContents.setDisable(true);
-          btnContents.setText("No other records...");
+          HDT_WorkFile workFile = (HDT_WorkFile) showingFile;
+
+          if (workFile.works.size() > 1)
+          {
+            btnContents.setDisable(false);
+            if (workFile.works.size() == 2)
+              btnContents.setText("1 other record...");
+            else
+              btnContents.setText((workFile.works.size() - 1) + " other records...");
+          }
         }
       }
       else
       {
-        lblRecord.setText(record.listName());
-        setToolTip(lblRecord, record.listName());
+        String label = record.listName();
+
+        lblRecord.setText(label);
+        setToolTip(lblRecord, label);
         resetNavBtns();
       }
     }
@@ -655,9 +658,8 @@ public class PreviewWindow extends HyperDlg
     record = HyperPath.getRecordFromFilePath(curWrapper().getFilePath());
     HDT_WorkFile workFile = null;
 
-    if (record != null)
-      if (record.getType() == hdtWorkFile)
-        workFile = (HDT_WorkFile) record;
+    if ((record != null) && (record.getType() == hdtWorkFile))
+      workFile = (HDT_WorkFile) record;
 
     contentsWindow.update(workFile, pageNum, true);
 

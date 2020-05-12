@@ -22,6 +22,7 @@ import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.MediaUtil.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -159,36 +160,34 @@ public class PDFBibData extends BibDataStandalone
 
       PathParts parts = new PathParts(subPath);
 
-      if (subPath.contains(":"))
+      if (subPath.contains(":") == false)
       {
-        Map<String, XMPNode> nameToChild;
-
-        if (prefixToNameToChild.containsKey(parts.prefix) == false)
-        {
-          nameToChild = new LinkedHashMap<>();
-          prefixToNameToChild.put(parts.prefix, nameToChild);
-        }
+        if (elements.size() > parts.arrayNdx)
+          elements.get(parts.arrayNdx).addDescendant(targetInfo);
         else
-          nameToChild = prefixToNameToChild.get(parts.prefix);
+          elements.add(new XMPNode(xmpMeta, this, targetInfo));
 
-        if (nameToChild.containsKey(parts.name))
-        {
-          nameToChild.get(parts.name).addDescendant(targetInfo);
-          return;
-        }
-
-        XMPNode child = new XMPNode(xmpMeta, this, targetInfo);
-        nameToChild.put(parts.name, child);
         return;
       }
 
-      if (elements.size() > parts.arrayNdx)
+      Map<String, XMPNode> nameToChild;
+
+      if (prefixToNameToChild.containsKey(parts.prefix) == false)
       {
-        elements.get(parts.arrayNdx).addDescendant(targetInfo);
+        nameToChild = new LinkedHashMap<>();
+        prefixToNameToChild.put(parts.prefix, nameToChild);
+      }
+      else
+        nameToChild = prefixToNameToChild.get(parts.prefix);
+
+      if (nameToChild.containsKey(parts.name))
+      {
+        nameToChild.get(parts.name).addDescendant(targetInfo);
         return;
       }
 
-      elements.add(new XMPNode(xmpMeta, this, targetInfo));
+      XMPNode child = new XMPNode(xmpMeta, this, targetInfo);
+      nameToChild.put(parts.name, child);
     }
 
   //---------------------------------------------------------------------------
@@ -206,12 +205,10 @@ public class PDFBibData extends BibDataStandalone
         line = line + escape(value) + "," + getCsvPath();
       }
 
-      line = convertToSingleLine(line);
-      line = line.replace("\"", "");
+      line = convertToSingleLine(line).replace("\"", "");
 
-      if (line.length() > 0)
-        if (csvFile.contains(line) == false)
-          csvFile.add(line);
+      if ((line.length() > 0) && (csvFile.contains(line) == false))
+        csvFile.add(line);
 
       prefixToNameToChild.values().forEach(nameToChild ->
         nameToChild.values().forEach(child ->
@@ -230,18 +227,10 @@ public class PDFBibData extends BibDataStandalone
 
     private String getCsvPath()
     {
-      String line = "";
-
-      if (parent != null)
-        line = parent.getCsvPath();
+      String line = parent == null ? "" : parent.getCsvPath();
 
       if (safeStr(name).length() > 0)
-      {
-        if (line.length() > 0)
-          line = line + "," + escape(prefix) + "," + escape(name);
-        else
-          line = escape(prefix) + "," + escape(name);
-      }
+        line = (safeStr(name).isEmpty() ? "" : (line + ",")) + escape(prefix) + "," + escape(name);
 
       return line;
     }
@@ -451,16 +440,15 @@ public class PDFBibData extends BibDataStandalone
 
   private void setDocInfo(PDDocumentInformation docInfo)
   {
-    this.docInfo = docInfo;
-    if (docInfo == null) return;
+    if ((this.docInfo = docInfo) == null) return;
 
-    extractDOIandISBNs(docInfo.getAuthor());
-    extractDOIandISBNs(docInfo.getCreator());
+    extractDOIandISBNs(docInfo.getAuthor  ());
+    extractDOIandISBNs(docInfo.getCreator ());
     extractDOIandISBNs(docInfo.getKeywords());
     extractDOIandISBNs(docInfo.getProducer());
-    extractDOIandISBNs(docInfo.getSubject());
-    extractDOIandISBNs(docInfo.getTitle());
-    extractDOIandISBNs(docInfo.getTrapped());
+    extractDOIandISBNs(docInfo.getSubject ());
+    extractDOIandISBNs(docInfo.getTitle   ());
+    extractDOIandISBNs(docInfo.getTrapped ());
 
     docInfo.getMetadataKeys().stream().filter(key -> key.toLowerCase().contains("journaldoi") == false)
                                       .forEach(key -> extractDOIandISBNs(docInfo.getCustomMetadataValue(key)));

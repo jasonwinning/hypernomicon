@@ -601,10 +601,10 @@ public class WorkDlgCtrlr extends HyperDlg
 
     previewInitialized = true;
 
-    if ((origFilePath == null) && (previewFilePath != null))
+    if (FilePath.isEmpty(origFilePath) && (FilePath.isEmpty(previewFilePath) == false))
       jsWrapper.close();
 
-    if ((origFilePath == null) || origFilePath.equals(previewFilePath))
+    if (FilePath.isEmpty(origFilePath) || origFilePath.equals(previewFilePath))
       return;
 
     previewFilePath = origFilePath;

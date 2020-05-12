@@ -22,6 +22,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.MediaUtil.*;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -186,7 +187,10 @@ public class HyperTableColumn
 
             if (empty || (cell == null) || (getTableRow().getItem() == null)) { setGraphic(null); setTooltip(null); return; }
 
+            HDT_Record record = HyperTableCell.getRecord(cell);
             HDT_RecordType type = HyperTableCell.getCellType(cell);
+
+            setGraphic(record == null ? imgViewForRecordType(type) : imgViewForRecord(record));
 
             if (type == hdtWork)
             {
@@ -194,13 +198,11 @@ public class HyperTableColumn
 
               if (work.workType.isNotNull())
               {
-                setGraphic(getImageViewForRelativePath(ui.getGraphicRelativePath(work)));
                 setToolTip(this, work.workType.get().getCBText());
                 return;
               }
             }
 
-            setGraphic(getImageViewForRecordType(type));
             setToolTip(this, db.getTypeName(type));
           }
         });

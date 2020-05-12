@@ -24,6 +24,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.mime.MediaType;
 
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.MediaUtil.*;
 
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Folder;
@@ -69,7 +70,6 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
   @Override public HDT_RecordWithPath getRecord() { return hyperPath.getRecord(); }
   @Override public int hashCode()                 { return hyperPath == null ? 0 : nullSwitch(hyperPath.getFileName(), 0, FilePath::hashCode); }
 
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -85,13 +85,19 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 
   FileCellValue<Long> getSizeCellValue()
   {
-    long size;
+    long size = 0;
+    FilePath filePath = hyperPath.filePath();
 
-    try                   { size = hyperPath.filePath() == null ? 0 : hyperPath.filePath().size(); }
-    catch (IOException e) { return new FileCellValue<>("", Long.valueOf(-1)); }
+    if (FilePath.isEmpty(filePath) == false)
+    {
+      if (filePath.isDirectory()) return new FileCellValue<>("", Long.valueOf(0));
 
-    if (size >= 1000)
-      return new FileCellValue<>(numberFormat.format(size / 1000) + " KB", Long.valueOf(size));
+      try                   { size = filePath.size(); }
+      catch (IOException e) { return new FileCellValue<>("", Long.valueOf(-1)); }
+
+      if (size >= 1000)
+        return new FileCellValue<>(numberFormat.format(size / 1000) + " KB", Long.valueOf(size));
+    }
 
     return new FileCellValue<>(String.valueOf(size) + " bytes", Long.valueOf(size));
   }
@@ -123,7 +129,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
     if (!isDir)
       determineType();
 
-    return graphic = getImageViewForRelativePath(getImageRelPathForFilePath(hyperPath.filePath(), mimetype, isDir));
+    return graphic = imgViewFromFilePath(hyperPath.filePath(), mimetype, isDir);
   }
 
 //---------------------------------------------------------------------------

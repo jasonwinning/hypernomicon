@@ -33,14 +33,13 @@ import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
-import org.apache.tika.mime.MimeTypeException;
 
 import org.hypernomicon.bib.zotero.ZoteroWrapper;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.util.filePath.FilePath;
 
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.App.*;
+import static org.hypernomicon.util.MediaUtil.*;
 
 public class FileDownloadUtility
 {
@@ -191,7 +190,7 @@ public class FileDownloadUtility
               if (index > 0)
                 assignSB(fileName, disposition.substring(index + 10, disposition.length() - 1));
             }
-            
+
           default : break;
         }
       }
@@ -207,7 +206,7 @@ public class FileDownloadUtility
 
         if (origFileNameStr.indexOf('&') >= 0)
           origFileNameStr = origFileNameStr.substring(0, origFileNameStr.indexOf('&'));
-        
+
         if (origFileNameStr.isEmpty())
         {
           if (assumeIsImage)
@@ -220,11 +219,7 @@ public class FileDownloadUtility
 
         if (ext.isEmpty() && (contentType.length() > 0))
         {
-          try
-          {
-            ext = tika.getMimeRepository().forName(contentType).getExtension();
-          }
-          catch (MimeTypeException e) { noOp(); }
+          ext = getContentTypeExtension(contentType);
 
           if (ext.length() > 0)
             origFileNameStr = FilenameUtils.getBaseName(origFileNameStr) + FilenameUtils.EXTENSION_SEPARATOR_STR + ext;

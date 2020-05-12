@@ -448,10 +448,10 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
     previewInitialized = true;
 
-    if ((filePath == null) && (previewFilePath != null))
+    if (FilePath.isEmpty(filePath) && (FilePath.isEmpty(previewFilePath) == false))
       jsWrapper.close();
 
-    if ((filePath == null) || filePath.equals(previewFilePath))
+    if (FilePath.isEmpty(filePath) || filePath.equals(previewFilePath))
       return;
 
     previewFilePath = filePath;

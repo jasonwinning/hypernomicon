@@ -189,13 +189,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
           nullSwitch(row.getItem(), rowItem -> ui.goToRecord(rowItem.getRecord(), false));
       });
 
-      row.itemProperty().addListener((ob, oldValue, newValue) ->
-      {
-        if (newValue == null)
-          row.setContextMenu(null);
-        else
-          row.setContextMenu(createContextMenu(newValue));
-      });
+      row.itemProperty().addListener((ob, oldValue, newValue) -> row.setContextMenu(newValue == null ? null : createContextMenu(newValue)));
 
       return row;
     });
@@ -204,7 +198,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
     addContextMenuItem("Remove from query results", HDT_Record.class, record ->
     {
-      new ArrayList<>(tv.getSelectionModel().getSelectedItems()).forEach(row -> tv.getItems().remove(row));
+      new ArrayList<>(tv.getSelectionModel().getSelectedItems()).forEach(tv.getItems()::remove);
     });
   }
 

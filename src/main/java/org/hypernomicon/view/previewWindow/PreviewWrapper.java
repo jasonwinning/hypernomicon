@@ -20,6 +20,7 @@ package org.hypernomicon.view.previewWindow;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.io.IOException;
@@ -214,7 +215,7 @@ public class PreviewWrapper
 
     if (curPrevFile.record != null)
       ui.goToRecord(curPrevFile.record, true);
-    else if (curPrevFile.filePath != null)
+    else if (FilePath.isEmpty(curPrevFile.filePath) == false)
       ui.goToRecord(HyperPath.getRecordFromFilePath(curPrevFile.filePath), true);
   }
 
@@ -404,7 +405,8 @@ public class PreviewWrapper
   {
     boolean fileChanged = true;
 
-    if ((record != null) && (record.getType() != hdtWork) && (record.getType() != hdtMiscFile))
+    if ((record != null) && (record.getType () != hdtWork    ) && (record.getType() != hdtMiscFile) &&
+                            (record.getType () != hdtWorkFile) && (record.getType() != hdtPerson  ))
       record = null;
 
     if ((getRecord() == record) && (FilePath.isEmpty(getFilePath()) == false) && curPrevFile.filePath.equals(filePath))
@@ -433,7 +435,7 @@ public class PreviewWrapper
 
     this.pageNum = pageNum;
 
-    if (filePath == null)
+    if (FilePath.isEmpty(filePath))
       clearPreview();
     else if ((window.curSource() == src) && window.getStage().isShowing())
       refreshPreview(false, incrementNav);
@@ -467,7 +469,7 @@ public class PreviewWrapper
 
   private void finishRefresh(boolean forceReload, boolean incrementNav)
   {
-    if ((pageNum <= 0) || (getFilePath() == null) || (initialized == false) || (curPrevFile.filePath.equals(filePathShowing) && viewerErrOccurred))
+    if ((pageNum <= 0) || FilePath.isEmpty(getFilePath()) || (initialized == false) || (curPrevFile.filePath.equals(filePathShowing) && viewerErrOccurred))
     {
       clearPreview();
       return;
@@ -622,7 +624,7 @@ public class PreviewWrapper
 
   void updatePage(int newPageNum)
   {
-    if ((newPageNum < 1) || (pageNum < 1) || (curPrevFile == null) || (curPrevFile.filePath == null) || (newPageNum > numPages))
+    if ((newPageNum < 1) || (pageNum < 1) || FilePath.isEmpty(getFilePath()) || (newPageNum > numPages))
       return;
 
     setPreview(curPrevFile.filePath, newPageNum, curPrevFile.record);

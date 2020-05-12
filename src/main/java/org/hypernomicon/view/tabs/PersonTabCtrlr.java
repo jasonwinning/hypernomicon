@@ -345,7 +345,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
           return;
         }
 
-      previewWindow.setPreview(pvsPersonTab, null, -1, -1, null);
+      previewWindow.setPreview(pvsPersonTab, curPerson.filePath(), -1, -1, curPerson);
       return;
     }
 

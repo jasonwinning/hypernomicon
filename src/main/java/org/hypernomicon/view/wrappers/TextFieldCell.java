@@ -54,10 +54,11 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
 
   @Override public void startEdit()
   {
-    if (isEmpty()) return;
+    if (isEmpty())
+      return;
 
-    if (canEditIfEmpty.isFalse())
-      if (table.getDataRowCount() <= getTableRow().getIndex()) return;
+    if (canEditIfEmpty.isFalse() && (table.getDataRowCount() <= getTableRow().getIndex()))
+      return;
 
     super.startEdit();
     createTextField();

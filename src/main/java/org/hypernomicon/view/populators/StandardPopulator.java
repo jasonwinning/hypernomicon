@@ -36,18 +36,13 @@ public class StandardPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public StandardPopulator(HDT_RecordType objType)                            { this(objType, null  , false); }
-  public StandardPopulator(HDT_RecordType objType, boolean nameOnly)          { this(objType, null  , nameOnly); }
-  public StandardPopulator(HDT_RecordType objType, Predicate<Integer> filter) { this(objType, filter, false); }
+  public StandardPopulator(HDT_RecordType objType) { this(objType, null, false); }
 
   public StandardPopulator(HDT_RecordType objType, Predicate<Integer> filter, boolean nameOnly)
   {
     this.objType = objType;
 
-    if (filter == null)
-      rtp = new RecordByTypePopulator(nameOnly);
-    else
-      rtp = new RecordByTypePopulator(filter, nameOnly);
+    rtp = new RecordByTypePopulator(filter, nameOnly);
 
     rtp.setRecordType(dummyRow, objType);
   }

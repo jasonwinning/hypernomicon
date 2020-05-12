@@ -26,6 +26,7 @@ import static org.hypernomicon.queryEngines.AllQueryEngine.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.queryEngines.QueryEngine.QueryType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
@@ -46,7 +47,6 @@ import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.queryEngines.QueryEngine.QueryType;
 import org.hypernomicon.util.PopupDialog;
@@ -374,23 +374,23 @@ public final class MainCtrlr
 
     ttDates.setAutoHide(true);
 
-    tabTree        .setGraphic(getImageViewForRelativePath("resources/images/treeview-small.png"));
-    tabQueries     .setGraphic(getImageViewForRelativePath("resources/images/glasses-db.png"));
-    tabOmniSelector.setGraphic(getImageViewForRelativePath("resources/images/globe.png"));
-    tabViewSelector.setGraphic(getImageViewForRelativePath("resources/images/details.png"));
+    tabTree        .setGraphic(imgViewFromRelPath("resources/images/treeview-small.png"));
+    tabQueries     .setGraphic(imgViewFromRelPath("resources/images/glasses-db.png"));
+    tabOmniSelector.setGraphic(imgViewFromRelPath("resources/images/globe.png"));
+    tabViewSelector.setGraphic(imgViewFromRelPath("resources/images/details.png"));
 
     favorites = new HyperFavorites(mnuFavorites, mnuQueries);
 
     forEachHyperTab(hyperTab ->
     {
       TabEnum hyperTabEnum = hyperTab.getTabEnum();
-      String path = getGraphicRelativePathByType(getRecordTypeByTabEnum(hyperTabEnum));
+      HDT_RecordType recordType = getRecordTypeByTabEnum(hyperTabEnum);
 
-      nullSwitch(getImageViewForRelativePath(path), graphic ->
+      nullSwitch(imgViewForRecordType(recordType), graphic ->
       {
         hyperTab.getTab().setGraphic(graphic);
 
-        nullSwitch(selectorTabs.get(hyperTabEnum), selectorTab -> selectorTab.setGraphic(getImageViewForRelativePath(path)));
+        nullSwitch(selectorTabs.get(hyperTabEnum), selectorTab -> selectorTab.setGraphic(imgViewForRecordType(recordType)));
       });
     });
 
@@ -806,67 +806,6 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getGraphicRelativePath(HDT_Record record)
-  {
-    switch (record.getType())
-    {
-      case hdtWork :
-
-        WorkTypeEnum workType = HDT_Work.class.cast(record).getWorkTypeEnum();
-
-        switch (workType)
-        {
-          case wtBook         : return "resources/images/book.png";
-          case wtChapter      : return "resources/images/chapter.png";
-          case wtNone         : return "resources/images/unknown.png";
-          case wtPaper        : return "resources/images/paper.png";
-          case wtRecording    : return "resources/images/recording.png";
-          case wtWebPage      : return "resources/images/text-html.png";
-          case wtUnenteredSet : return "resources/images/inbox-document-text.png";
-          default             : return "resources/images/unknown.png";
-        }
-
-      case hdtMiscFile :
-
-        HDT_MiscFile miscFile = (HDT_MiscFile) record;
-
-        if (miscFile.pathNotEmpty())
-          return getImageRelPathForFilePath(miscFile.filePath(), null);
-
-      default :
-
-        return getGraphicRelativePathByType(record.getType());
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public String getGraphicRelativePathByType(HDT_RecordType type)
-  {
-    switch (type)
-    {
-      case hdtWorkLabel     : return "resources/images/tag.png";
-      case hdtMiscFile      : return "resources/images/file.png";
-      case hdtConcept       : return "resources/images/term.png";
-      case hdtGlossary      : return "resources/images/bookshelf.png";
-      case hdtTerm          : return "resources/images/term.png";
-      case hdtNote          : return "resources/images/notebook-pencil.png";
-      case hdtWork          : return "resources/images/paper.png";
-      case hdtPerson        : return "resources/images/people.png";
-      case hdtInstitution   : return "resources/images/building-hedge.png";
-      case hdtDebate        : return "resources/images/debate.png";
-      case hdtPosition      : return "resources/images/position.png";
-      case hdtArgument      : return "resources/images/argument.png";
-      case hdtInvestigation : return "resources/images/documents-stack.png";
-      case hdtFolder        : return "resources/images/folder.png";
-      default               : return "";
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private void mnuFindWithinNameClick()
   {
     HDT_RecordType type = selectorType();
@@ -1209,7 +1148,7 @@ public final class MainCtrlr
 
   public void openDB(FilePath filePath)
   {
-    if (filePath == null)
+    if (FilePath.isEmpty(filePath))
     {
       FileChooser fileChooser = new FileChooser();
 
@@ -2947,7 +2886,7 @@ public final class MainCtrlr
     lines = ibed.getLines();
     filePath = ibed.getFilePath();
 
-    String pathStr = filePath == null ? "" : (" " + filePath.toString());
+    String pathStr = FilePath.isEmpty(filePath) ? "" : (" " + filePath.toString());
 
     BibData bd = null;
     Exception ex = null;
@@ -3017,7 +2956,7 @@ public final class MainCtrlr
     goToRecord(work, false);
     update();
 
-    if ((filePath != null) && ibed.getDeleteFile())
+    if ((FilePath.isEmpty(filePath) == false) && ibed.getDeleteFile())
       filePath.deletePromptOnFail(true);
   }
 

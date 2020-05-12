@@ -34,6 +34,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
@@ -237,6 +238,42 @@ public class FolderTreeWatcher
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
+    private void doImport(FilePath filePath)
+    {
+      if (alreadyImporting || (ui.windows.getOutermostModality() != Modality.NONE)) return;
+
+      Platform.runLater(() ->
+      {
+        ui.importWorkFile(null, filePath, true);
+        downloading.remove(filePath);
+        alreadyImporting = false;
+      });
+
+      alreadyImporting = true;
+    }
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
+    private String deletedMsg(FilePath filePath)
+    {
+      return "A file that is in use by the database, \"" + filePath.getNameOnly() +
+             "\", has been deleted or moved from outside the program. This may or may not cause a data integrity problem. " +
+             "Changes to database files should be made using the Hypernomicon File Manager instead.";
+    }
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
+    private String changedFolderMsg()
+    {
+      return "There has been a change to a folder that is in use by the database. " +
+             "This may or may not cause a data integrity problem. Changes to database folders should be made using the Hypernomicon File Manager instead.";
+    }
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
     private void processEventList(List<WatcherEvent> eventList) throws IOException
     {
       if (app.debugging())
@@ -246,35 +283,42 @@ public class FolderTreeWatcher
         System.out.println("---------------------------");
       }
 
-      boolean dontImport = false;
-
       for (WatcherEvent watcherEvent : eventList)
       {
         PathInfo oldPathInfo = watcherEvent.oldPathInfo,
                  newPathInfo = watcherEvent.newPathInfo;
-
-        if (ui.windows.getOutermostModality() != Modality.NONE)
-          dontImport = true;
+        FilePath newPath = nullSwitch(newPathInfo.getFilePath(), (FilePath)null);
 
         switch (watcherEvent.kind)
         {
           case wekCreate:
 
             if (watcherEvent.isDirectory())
-              registerTree(newPathInfo.getFilePath());
-            else if ((newPathInfo.getFileKind() == FileKind.fkFile) &&
+              registerTree(newPath);
+            else if (((newPathInfo.getFileKind() == FileKind.fkFile) || (newPathInfo.getFileKind() == FileKind.fkUnknown)) &&
                      appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
                      (newPathInfo.getParentFolder() == db.getUnenteredFolder()) &&
-                     newPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf"))
-              if (newPathInfo.getFilePath().size() > 0)
-              {
-                if ((alreadyImporting == false) && (dontImport == false))
-                  Platform.runLater(() -> ui.importWorkFile(null, newPathInfo.getFilePath(), true));
+                     newPath.getExtensionOnly().equalsIgnoreCase("pdf"))
+            {
+              downloading.add(newPath);
 
-                alreadyImporting = true;
-              }
-              else
-                downloading.add(newPathInfo.getFilePath());
+              runOutsideFXThread(() -> { for (int ndx = 0; ndx <= 10; ndx++)
+              {
+                long size = 0;
+
+                try { size = newPath.size(); }
+                catch (NoSuchFileException e) { noOp(); }
+                catch (IOException e)         { return; }
+
+                if (size > 0)
+                {
+                  doImport(newPath);
+                  return;
+                }
+
+                sleepForMillis(500); // Sometimes the file is created empty and immediately filled with data
+              }});
+            }
 
             Platform.runLater(fileManagerDlg::refresh);
 
@@ -289,7 +333,7 @@ public class FolderTreeWatcher
               if (hyperPath.isInUse())
               {
                 if (watcherEvent.isDirectory())
-                  messageDialog("There has been a change to a folder that is in use by the database. This may or may not cause a data integrity problem. Changes to database folders should be made using the Hypernomicon File Manager instead.", mtWarning);
+                  messageDialog(changedFolderMsg(), mtWarning);
                 else
                 {
                   FilePath oldPath = oldPathInfo.getFilePath();
@@ -299,7 +343,7 @@ public class FolderTreeWatcher
                     sleepForMillis(2000);
 
                     if (oldPath.exists() == false)
-                      messageDialog("A file that is in use by the database, \"" + oldPath.getNameOnly() + "\", has been deleted or moved from outside the program. This may or may not cause a data integrity problem. Changes to database files should be made using the Hypernomicon File Manager instead.", mtWarning);
+                      messageDialog(deletedMsg(oldPath), mtWarning);
                   });
                 }
               }
@@ -313,15 +357,9 @@ public class FolderTreeWatcher
 
           case wekModify:
 
-            if ((newPathInfo.getFileKind() == FileKind.fkFile) &&
-                appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
-                downloading.contains(newPathInfo.getFilePath()))
+            if (appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) && downloading.contains(newPath))
             {
-              if ((alreadyImporting == false) && (dontImport == false))
-                Platform.runLater(() -> ui.importWorkFile(null, newPathInfo.getFilePath(), true));
-
-              alreadyImporting = true;
-              downloading.remove(newPathInfo.getFilePath());
+              doImport(newPath);
             }
 
             break;
@@ -329,8 +367,7 @@ public class FolderTreeWatcher
           case wekRename:
 
             hyperPath = oldPathInfo.getHyperPath();
-
-            boolean untrackedFile = (newPathInfo.getFileKind() == FileKind.fkFile) &&
+            boolean untrackedFile = ((newPathInfo.getFileKind() == FileKind.fkFile) || (newPathInfo.getFileKind() == FileKind.fkUnknown)) &&
                                     ((hyperPath == null) || hyperPath.getRecordsString().isBlank());
 
             if (untrackedFile)
@@ -338,76 +375,68 @@ public class FolderTreeWatcher
               if (appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true) &&
                   (newPathInfo.getParentFolder() == db.getUnenteredFolder()) &&
                   (oldPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf") == false) &&
-                  newPathInfo.getFilePath().getExtensionOnly().equalsIgnoreCase("pdf"))
+                  newPath.getExtensionOnly().equalsIgnoreCase("pdf"))
               {
-                if ((alreadyImporting == false) && (dontImport == false))
-                  Platform.runLater(() -> ui.importWorkFile(null, newPathInfo.getFilePath(), true));
-
-                alreadyImporting = true;
+                doImport(newPath);
               }
             }
-            else if (hyperPath != null)
+            else if ((hyperPath != null) && (hyperPath.getRecordsString().length() > 0))
             {
-              if (hyperPath.getRecordsString().length() > 0)
+              if (watcherEvent.isDirectory())
+                messageDialog(changedFolderMsg(), mtWarning);
+              else
               {
-                if (watcherEvent.isDirectory())
-                  messageDialog("There has been a change to a folder that is in use by the database. This may or may not cause a data integrity problem. Changes to database folders should be made using the Hypernomicon File Manager instead.", mtWarning);
-                else
+                Platform.runLater(() ->
                 {
-                  FilePath newPath = newPathInfo.getFilePath();
-                  final HyperPath hyperPath2 = hyperPath;
+                  sleepForMillis(2000);
 
-                  Platform.runLater(() ->
+                  if ((newPath.exists() == false) || oldPathInfo.getFilePath().equals(newPath)) return;
+
+                  if (!confirmDialog("A file that is in use by the database has been renamed from outside the program." + System.lineSeparator() +
+                                     "This may or may not cause a data integrity problem." + System.lineSeparator() +
+                                     "Should the record be reassigned to \"" + newPath.getNameOnly() + "\"?"))
+                    return;
+
+                  if (newPath.exists() == false)
                   {
-                    sleepForMillis(2000);
+                    messageDialog("The file \"" + newPath.getNameOnly() + "\" no longer exists. Record was not changed.", mtWarning);
+                    return;
+                  }
 
-                    if ((newPath.exists() == false) || oldPathInfo.getFilePath().equals(newPath)) return;
+                  hyperPath.assign(hyperPath.parentFolder(), newPath.getNameOnly());
 
-                    if (confirmDialog("A file that is in use by the database has been renamed from outside the program." + System.lineSeparator() +
-                                      "This may or may not cause a data integrity problem." + System.lineSeparator() +
-                                      "Should the record be reassigned to \"" + newPath.getNameOnly() + "\"?"))
+                  HDT_RecordWithPath record = hyperPath.getRecord();
+
+                  if (record == null)
+                    return;
+
+                  if ((record.getType() == hdtWorkFile) && (ui.activeTabEnum() == workTabEnum))
+                  {
+                    HDT_WorkFile workFile = (HDT_WorkFile) record;
+
+                    if (workFile.works.contains(ui.activeRecord()))
                     {
-                      if (newPath.exists())
-                      {
-                        hyperPath2.assign(hyperPath2.parentFolder(), newPath.getNameOnly());
+                      if      (ui.workHyperTab().wdc != null) ui.workHyperTab().wdc.btnCancel.fire();
+                      else if (ui.workHyperTab().fdc != null) ui.workHyperTab().fdc.btnCancel.fire();
 
-                        HDT_RecordWithPath record = hyperPath2.getRecord();
-
-                        if (record != null)
-                        {
-                          if ((record.getType() == hdtWorkFile) && (ui.activeTabEnum() == workTabEnum))
-                          {
-                            HDT_WorkFile workFile = (HDT_WorkFile) record;
-
-                            if (workFile.works.contains(ui.activeRecord()))
-                            {
-                              if      (ui.workHyperTab().wdc != null) ui.workHyperTab().wdc.btnCancel.fire();
-                              else if (ui.workHyperTab().fdc != null) ui.workHyperTab().fdc.btnCancel.fire();
-
-                              ui.workHyperTab().refreshFiles();
-                            }
-                          }
-                          else if ((record.getType() == hdtMiscFile) && (ui.activeTabEnum() == fileTabEnum))
-                          {
-                            if (ui.fileHyperTab().fdc != null)
-                              ui.fileHyperTab().fdc.btnCancel.fire();
-
-                            ui.fileHyperTab().refreshFile();
-                          }
-                        }
-                      }
-                      else
-                        messageDialog("The file \"" + newPath.getNameOnly() + "\" no longer exists. Record was not changed.", mtError);
+                      ui.workHyperTab().refreshFiles();
                     }
-                  });
-                }
+                  }
+                  else if ((record.getType() == hdtMiscFile) && (ui.activeTabEnum() == fileTabEnum))
+                  {
+                    if (ui.fileHyperTab().fdc != null)
+                      ui.fileHyperTab().fdc.btnCancel.fire();
+
+                    ui.fileHyperTab().refreshFile();
+                  }
+                });
               }
             }
 
             if ((hyperPath != null) && watcherEvent.isDirectory())
             {
-              hyperPath.assign(hyperPath.parentFolder(), newPathInfo.getFilePath().getNameOnly());
-              registerTree(newPathInfo.getFilePath());
+              hyperPath.assign(hyperPath.parentFolder(), newPath.getNameOnly());
+              registerTree(newPath);
             }
 
             Platform.runLater(fileManagerDlg::refresh);
@@ -496,7 +525,7 @@ public class FolderTreeWatcher
   private final FilePathSet downloading = new FilePathSet();
   private final Map<WatchKey, HDT_Folder> watchKeyToDir = new HashMap<>();
   public static final int FOLDER_TREE_WATCHER_POLL_TIME_MS = 100;
-  public static boolean alreadyImporting = false;
+  private static boolean alreadyImporting = false;
   private boolean stopRequested = false,
                   stopped = true,
                   disabled = false;
