@@ -105,7 +105,7 @@ public class NestedValue
 
   public static boolean isEmpty(String str)        { return safeStr(str).isEmpty(); }
   public static boolean isEmpty(boolean bool)      { return !bool; }
-  public static boolean isEmpty(Ternary ternary)   { return ternary == Ternary.Unset; }
+  public static boolean isEmpty(Ternary ternary)   { return ternary.isUnset(); }
   public static boolean isEmpty(int id)            { return id < 1; }
   public static boolean isEmpty(HDT_Record target) { return HDT_Record.isEmpty(target); }
 

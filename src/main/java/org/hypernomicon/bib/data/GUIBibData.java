@@ -17,15 +17,12 @@
 
 package org.hypernomicon.bib.data;
 
-import java.util.EnumSet;
-
-import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 
 public class GUIBibData extends BibDataStandalone
 {
   public static final BibData NoneFoundBD = new GUIBibData();
-  
+
   private HDT_WorkType workType;
 
   public GUIBibData() { super(); }
@@ -34,16 +31,7 @@ public class GUIBibData extends BibDataStandalone
   {
     super();
 
-    EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum -> { switch (bibFieldEnum.getType())
-    {
-      case bftString      : setStr(bibFieldEnum, bd.getStr(bibFieldEnum)); break;
-      case bftMultiString : setMultiStr(bibFieldEnum, bd.getMultiStr(bibFieldEnum)); break;
-      case bftEntryType   : setEntryType(bd.getEntryType()); break;
-      case bftWorkType    : setWorkType(bd.getWorkType()); break;
-      case bftAuthor      : break;
-    }});
-
-    bd.getAuthors().forEach(authors::add);
+    copyAllFieldsFrom(bd, true, true);
   }
 
 //---------------------------------------------------------------------------

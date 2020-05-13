@@ -92,7 +92,7 @@ public class NewArgDlgCtrlr extends HyperDlg
 
       if ((work != null) && (hcbPerson.selectedID() == -1))
       {
-        HDT_Person person = findFirst(work.getAuthors(), author -> (author.getPerson() != null) && (author.getInFileName() == Ternary.True), Author::getPerson);
+        HDT_Person person = findFirst(work.getAuthors(), author -> (author.getPerson() != null) && author.getInFileName().isTrue(), Author::getPerson);
 
         if (person == null)
           person = findFirst(work.getAuthors(), author -> (author.getPerson() != null) && (author.getInFileName() != Ternary.False), Author::getPerson);

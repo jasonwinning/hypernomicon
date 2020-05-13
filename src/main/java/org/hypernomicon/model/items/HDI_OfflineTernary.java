@@ -34,7 +34,9 @@ public class HDI_OfflineTernary extends HDI_OfflineBase
   {
     Unset, False, True;
 
-    public boolean boolVal() { return this == True; }
+    public boolean isTrue () { return this == True ; }
+    public boolean isFalse() { return this == False; }
+    public boolean isUnset() { return this == Unset; }
 
     @Override public String toString()
     {
@@ -71,7 +73,7 @@ public class HDI_OfflineTernary extends HDI_OfflineBase
   @Override public void writeToXml(Tag tag, StringBuilder xml)
   {
     if (value != Unset)
-      writeBooleanTag(xml, tag, value.boolVal());
+      writeBooleanTag(xml, tag, value.isTrue());
   }
 
 //---------------------------------------------------------------------------

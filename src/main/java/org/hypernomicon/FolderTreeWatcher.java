@@ -287,7 +287,7 @@ public class FolderTreeWatcher
       {
         PathInfo oldPathInfo = watcherEvent.oldPathInfo,
                  newPathInfo = watcherEvent.newPathInfo;
-        FilePath newPath = nullSwitch(newPathInfo.getFilePath(), (FilePath)null);
+        FilePath newPath = nullSwitch(newPathInfo, null, PathInfo::getFilePath);
 
         switch (watcherEvent.kind)
         {

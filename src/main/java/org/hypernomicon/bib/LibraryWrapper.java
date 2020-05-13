@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableSet;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.data.EntryType;
+import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
@@ -271,7 +272,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
       try
       {
         mwd = MergeWorksDlgCtrlr.build("Merge Remote Changes with Local Changes", entry, BibEntry.create(type(), this, jObj, true),
-                                       null, null, entry.getWork(), false, false, false);
+                                       null, null, entry.getWork(), false, false, Ternary.False);
       }
       catch (IOException e)
       {

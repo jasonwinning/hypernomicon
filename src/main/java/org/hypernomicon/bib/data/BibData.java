@@ -43,7 +43,7 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 
   private static final Map<String, YearType> descToYearType = new HashMap<>();
- 
+
   public static enum YearType
   {
     ytUnknown(""),
@@ -263,29 +263,11 @@ public abstract class BibData
   {
     EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum -> { switch (bibFieldEnum.getType())
     {
-      case bftString :
-
-        setStr(bibFieldEnum, bd.getStr(bibFieldEnum));
-        break;
-
-      case bftMultiString :
-
-        setMultiStr(bibFieldEnum, bd.getMultiStr(bibFieldEnum));
-        break;
-
-      case bftEntryType :
-
-        if (includeEntryType) setEntryType(bd.getEntryType());
-        break;
-
-      case bftWorkType :
-
-        setWorkType(bd.getWorkType());
-        break;
-
-      case bftAuthor :
-
-        break;
+      case bftString      : setStr(bibFieldEnum, bd.getStr(bibFieldEnum)); break;
+      case bftMultiString : setMultiStr(bibFieldEnum, bd.getMultiStr(bibFieldEnum)); break;
+      case bftEntryType   : if (includeEntryType) setEntryType(bd.getEntryType()); break;
+      case bftWorkType    : setWorkType(bd.getWorkType()); break;
+      case bftAuthor      : break;
     }});
 
     if ((includeAuthors == false) || bd.getAuthors().isEmpty()) return;
@@ -316,6 +298,19 @@ public abstract class BibData
     }});
 
     return set;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static boolean externalFieldsAreSame(BibData bd1, BibData bd2)
+  {
+    EnumSet<BibFieldEnum> set1 = bd1.fieldsWithExternalData(),
+                          set2 = bd2.fieldsWithExternalData();
+
+    if (set1.equals(set2) == false) return false;
+
+    return findFirst(set1, field -> bd1.fieldsAreEqual(field, bd2) == false) == null;
   }
 
 //---------------------------------------------------------------------------

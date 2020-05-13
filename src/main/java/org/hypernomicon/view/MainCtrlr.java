@@ -44,6 +44,7 @@ import org.hypernomicon.bib.data.RISBibData;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.Authors;
+import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
@@ -2700,7 +2701,7 @@ public final class MainCtrlr
     HDT_Work work = null;
     BibData bdToUse = null;
     BibEntry bibEntry = null;
-    boolean newEntryChecked = false;
+    Ternary newEntryChoice = Ternary.Unset;
     EntryType newEntryType = EntryType.etUnentered;
 
     if (promptForExistingRecord)
@@ -2728,7 +2729,7 @@ public final class MainCtrlr
 
             try
             {
-              mwd = MergeWorksDlgCtrlr.build("Merge Fields", work.getBibData(), bibEntry, bdToUse, null, work, false, false, false,
+              mwd = MergeWorksDlgCtrlr.build("Merge Fields", work.getBibData(), bibEntry, bdToUse, null, work, false, false, newEntryChoice,
                                              nullSwitch(filePathToUse, work.filePath()));
             }
             catch (IOException e)
@@ -2758,7 +2759,7 @@ public final class MainCtrlr
           {
             try
             {
-              mwd = MergeWorksDlgCtrlr.build("Merge Fields", workBD, bdToUse, null, null, work, false, true, false,
+              mwd = MergeWorksDlgCtrlr.build("Merge Fields", workBD, bdToUse, null, null, work, false, true, newEntryChoice,
                                              nullSwitch(filePathToUse, work.filePath()));
             }
             catch (IOException e)
@@ -2778,7 +2779,7 @@ public final class MainCtrlr
 
       if (mwd != null)
       {
-        newEntryChecked = mwd.creatingNewEntry();
+        newEntryChoice = mwd.creatingNewEntry();
         newEntryType = mwd.getEntryType();
       }
     }
@@ -2821,7 +2822,7 @@ public final class MainCtrlr
     if (bdToUse == GUIBibData.NoneFoundBD)
       bdToUse = work.getBibData();
 
-    if (workHyperTab().showWorkDialog(null, filePathToUse, bdToUse, newEntryChecked, newEntryType))
+    if (workHyperTab().showWorkDialog(null, filePathToUse, bdToUse, newEntryChoice, newEntryType))
       return true;
 
     if (deleteRecord)
@@ -2929,7 +2930,7 @@ public final class MainCtrlr
     try
     {
       mwd = MergeWorksDlgCtrlr.build("Import Into " + (creatingNewWork ? "New" : "Existing") + " Work Record",
-                                     workBibData, bd, null, null, work, creatingNewWork, showNewEntry, newEntryChecked);
+                                     workBibData, bd, null, null, work, creatingNewWork, showNewEntry, newEntryChecked ? Ternary.True : Ternary.Unset);
     }
     catch (IOException e)
     {
@@ -2943,7 +2944,7 @@ public final class MainCtrlr
       return;
     }
 
-    if (mwd.creatingNewEntry())
+    if (mwd.creatingNewEntry().isTrue())
     {
       BibEntry entry = db.getBibLibrary().addEntry(mwd.getEntryType());
       work.setBibEntryKey(entry.getKey());

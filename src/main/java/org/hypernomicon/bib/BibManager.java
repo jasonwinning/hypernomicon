@@ -43,6 +43,7 @@ import org.hypernomicon.bib.CollectionTree.BibCollectionType;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.Exceptions.HyperDataException;
+import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.HyperSubjList;
@@ -651,7 +652,7 @@ public class BibManager extends HyperDlg
 
     try
     {
-      mwd = MergeWorksDlgCtrlr.build("Import Into Existing Work Record", work.getBibData(), entry, null, null, work, false, false, false);
+      mwd = MergeWorksDlgCtrlr.build("Import Into Existing Work Record", work.getBibData(), entry, null, null, work, false, false, Ternary.False);
     }
     catch (IOException e)
     {

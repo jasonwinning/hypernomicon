@@ -35,6 +35,7 @@ import org.hypernomicon.bib.data.BibField;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.data.GUIBibData;
+import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
@@ -87,27 +88,28 @@ public class MergeWorksDlgCtrlr extends HyperDlg
   private final Map<BibFieldEnum, BibFieldRow> extraRows = new HashMap<>();
   private int nextRowNdx = 4;
   private boolean creatingNewWork, previewInitialized = false;
+  private Ternary newEntryChoice;
 
   public EntryType getEntryType()   { return nullSwitch(extraRows.get(bfEntryType), null, row -> EntryTypeCtrlr.class.cast(row).getEntryType()); }
-  public boolean creatingNewEntry() { return chkNewEntry.isVisible() && chkNewEntry.isSelected(); }
+  public Ternary creatingNewEntry() { return chkNewEntry.isVisible() == false ? Ternary.Unset : (chkNewEntry.isSelected() ? Ternary.True : newEntryChoice); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static MergeWorksDlgCtrlr build(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
-                                         boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked, FilePath filePath) throws IOException
+                                         boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice, FilePath filePath) throws IOException
   {
     return ((MergeWorksDlgCtrlr) createUsingFullPath("view/workMerge/MergeWorksDlg.fxml", title, true))
-      .init(bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChecked, filePath);
+      .init(bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChoice, filePath);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static MergeWorksDlgCtrlr build(String title, BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
-                                         boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked) throws IOException
+                                         boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice) throws IOException
   {
-    return build(title, bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChecked,
+    return build(title, bd1, bd2, bd3, bd4, destWork, creatingNewWork, showNewEntry, newEntryChoice,
                  nullSwitch(destWork, null, HDT_Work::filePath));
   }
 
@@ -115,8 +117,9 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 
   private MergeWorksDlgCtrlr init(BibData bd1, BibData bd2, BibData bd3, BibData bd4, HDT_Work destWork,
-                                  boolean creatingNewWork, boolean showNewEntry, boolean newEntryChecked, FilePath filePath) throws IOException
+                                  boolean creatingNewWork, boolean showNewEntry, Ternary newEntryChoice, FilePath filePath) throws IOException
   {
+    this.newEntryChoice = newEntryChoice;
     apPreview = new AnchorPane();
     mdp = WorkDlgCtrlr.addPreview(stagePane, apMain, apPreview, btnPreview);
 
@@ -201,7 +204,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
       chkNewEntry.setVisible(false);
     else
     {
-      chkNewEntry.setSelected(newEntryChecked);
+      chkNewEntry.setSelected(newEntryChoice.isTrue());
       chkNewEntry.setText("Create new " + db.getBibLibrary().type().getUserFriendlyName() + " entry");
       addField(bfEntryType, bd1, bd2, bd3, bd4);
     }
@@ -364,7 +367,10 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 
       mergeInto(mergedBD);
 
-      WorkDlgCtrlr.promptToCreateBibEntry(mergedBD, chkNewEntry);
+      if (newEntryChoice.isFalse())
+        newEntryChoice = Ternary.Unset;
+
+      newEntryChoice = WorkDlgCtrlr.promptToCreateBibEntry(mergedBD, chkNewEntry, newEntryChoice, null);
 
       if (chkNewEntry.isSelected())
       {

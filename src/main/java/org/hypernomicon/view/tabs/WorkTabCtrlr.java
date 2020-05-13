@@ -1657,9 +1657,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean showWorkDialog(HDT_WorkFile workFile) { return showWorkDialog(workFile, null, null, false, EntryType.etUnentered); }
+  public boolean showWorkDialog(HDT_WorkFile workFile) { return showWorkDialog(workFile, null, null, Ternary.Unset, EntryType.etUnentered); }
 
-  public boolean showWorkDialog(HDT_WorkFile workFile, FilePath filePathToUse, BibData bdToUse, boolean newEntryChecked, EntryType newEntryType)
+  public boolean showWorkDialog(HDT_WorkFile workFile, FilePath filePathToUse, BibData bdToUse, Ternary newEntryChoice, EntryType newEntryType)
   {
     boolean result;
 
@@ -1679,7 +1679,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     else
     {
       if ((workFile == null) && (filePathToUse != null))
-        wdc = WorkDlgCtrlr.build(filePathToUse, bdToUse, newEntryChecked, newEntryType);
+        wdc = WorkDlgCtrlr.build(filePathToUse, bdToUse, newEntryChoice, newEntryType);
       else
         wdc = WorkDlgCtrlr.build(workFile);
 
@@ -1900,7 +1900,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       try
       {
-        mwd = MergeWorksDlgCtrlr.build("Merge Bibliographic Data", workBD, pdfBD, queryBD, null, curWork, false, true, false);
+        mwd = MergeWorksDlgCtrlr.build("Merge Bibliographic Data", workBD, pdfBD, queryBD, null, curWork, false, true, Ternary.Unset);
       }
       catch (IOException e)
       {
@@ -1912,7 +1912,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       BibData destBD = workBD;
 
-      if (mwd.creatingNewEntry())
+      if (mwd.creatingNewEntry().isTrue())
       {
         BibEntry entry = db.getBibLibrary().addEntry(mwd.getEntryType());
         curWork.setBibEntryKey(entry.getKey());
@@ -1938,7 +1938,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     try
     {
       mwd = MergeWorksDlgCtrlr.build("Merge Bibliographic Data", workBibData,
-                                     pdfBD.get(), crossrefBD.get(), googleBD.get(), curWork, false, true, false);
+                                     pdfBD.get(), crossrefBD.get(), googleBD.get(), curWork, false, true, Ternary.Unset);
     }
     catch (IOException e)
     {
@@ -1948,7 +1948,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     if (mwd.showModal() == false) return;
 
-    if (mwd.creatingNewEntry())
+    if (mwd.creatingNewEntry().isTrue())
     {
       BibEntry entry = db.getBibLibrary().addEntry(mwd.getEntryType());
       curWork.setBibEntryKey(entry.getKey());

@@ -137,10 +137,11 @@ public class WorkDlgCtrlr extends HyperDlg
   private HDT_WorkFile oldWorkFile = null, newWorkFile = null;
   private PDFJSWrapper jsWrapper = null;
   private FilePath previewFilePath = null, origFilePath = null;
-  private BibData curBD = null;
+  private BibData curBD = null, origBDtoUse = null;
   private HDT_Work curWork;
   private ObjectProperty<HDT_Folder> destFolder = new SimpleObjectProperty<>();
   private BibDataRetriever bibDataRetriever = null;
+  private Ternary newEntryChoice;
   private boolean userOverrideDest = false, dontRegenerateFilename = false, alreadyChangingTitle = false, previewInitialized = false;
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
@@ -152,20 +153,20 @@ public class WorkDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  public static WorkDlgCtrlr build(FilePath filePathToUse, BibData bdToUse, boolean newEntryChecked, EntryType newEntryType)
+  public static WorkDlgCtrlr build(FilePath filePathToUse, BibData bdToUse, Ternary newEntryChoice, EntryType newEntryType)
   {
-    return ((WorkDlgCtrlr) create("WorkDlg.fxml", "Import New Work File", true)).init(null, filePathToUse, bdToUse, newEntryChecked, newEntryType);
+    return ((WorkDlgCtrlr) create("WorkDlg.fxml", "Import New Work File", true)).init(null, filePathToUse, bdToUse, newEntryChoice, newEntryType);
   }
 
   public static WorkDlgCtrlr build(HDT_WorkFile workFileToUse)
   {
-    return ((WorkDlgCtrlr) create("WorkDlg.fxml", "Work File", true)).init(workFileToUse, null, null, false, EntryType.etUnentered);
+    return ((WorkDlgCtrlr) create("WorkDlg.fxml", "Work File", true)).init(workFileToUse, null, null, Ternary.Unset, EntryType.etUnentered);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private WorkDlgCtrlr init(HDT_WorkFile workFileToUse, FilePath filePathToUse, BibData bdToUse, boolean newEntryChecked, EntryType newEntryType)
+  private WorkDlgCtrlr init(HDT_WorkFile workFileToUse, FilePath filePathToUse, BibData bdToUse, Ternary newEntryChoice, EntryType newEntryType)
   {
     apPreview = new AnchorPane();
     mdp = addPreview(stagePane, apMain, apPreview, btnPreview);
@@ -201,7 +202,10 @@ public class WorkDlgCtrlr extends HyperDlg
     curWork = ui.workHyperTab().activeRecord();
     curBD = new GUIBibData(curWork.getBibData());
 
-    chkCreateBibEntry.setSelected(newEntryChecked);
+    this.newEntryChoice = newEntryChoice;
+    origBDtoUse = bdToUse == null ? null : new GUIBibData(bdToUse);
+
+    chkCreateBibEntry.setSelected(newEntryChoice.isTrue());
 
     if ((db.bibLibraryIsLinked() == false) || (curWork.getBibEntryKey().length() > 0))
       setAllVisible(false, chkCreateBibEntry, cbEntryType);
@@ -932,7 +936,7 @@ public class WorkDlgCtrlr extends HyperDlg
     try
     {
       MergeWorksDlgCtrlr mwd = MergeWorksDlgCtrlr.build("Merge Information From PDF File", curBD,
-        bd1, bd2, null, curWork, false, curWork.getBibEntryKey().isBlank(), false, origFilePath);
+        bd1, bd2, null, curWork, false, curWork.getBibEntryKey().isBlank(), Ternary.Unset, origFilePath);
 
       if (mwd.showModal())
       {
@@ -943,7 +947,9 @@ public class WorkDlgCtrlr extends HyperDlg
         if (db.bibLibraryIsLinked() && curWork.getBibEntryKey().isBlank())
         {
           cbEntryType.getSelectionModel().select(mwd.getEntryType());
-          chkCreateBibEntry.setSelected(mwd.creatingNewEntry());
+          newEntryChoice = mwd.creatingNewEntry();
+          chkCreateBibEntry.setSelected(newEntryChoice.isTrue());
+          origBDtoUse = new GUIBibData(curBD);
 
           if (hcbType.selectedRecord() == null)
           {
@@ -1120,19 +1126,28 @@ public class WorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void promptToCreateBibEntry(BibData bd, CheckBox chkCreateBibEntry)
+  public static Ternary promptToCreateBibEntry(BibData bd, CheckBox chkCreateBibEntry, Ternary choice, BibData origBD)
   {
-    if (chkCreateBibEntry.isSelected()) return;
+    if (chkCreateBibEntry.isSelected())
+    {
+      chkCreateBibEntry.setSelected(true);
+      return Ternary.True;
+    }
+
+    if (choice.isFalse() && ((origBD == null) || BibData.externalFieldsAreSame(bd, origBD)))
+      return Ternary.False;
 
     EnumSet<BibFieldEnum> extFields = bd.fieldsWithExternalData();
-    if (extFields.isEmpty()) return;
+    if (extFields.isEmpty()) return choice;
 
     String msg = "The current work record is not associated with a " +
                  db.getBibLibrary().type().getUserFriendlyName() + " entry. Create one now?\n" +
                  "Otherwise, existing information for these fields will be lost: " +
                  extFields.stream().map(BibFieldEnum::getUserFriendlyName).reduce((s1, s2) -> s1 + ", " + s2).orElse("");
 
-    chkCreateBibEntry.setSelected(confirmDialog(msg));
+    choice = confirmDialog(msg) ? Ternary.True : Ternary.False;
+    chkCreateBibEntry.setSelected(choice.isTrue());
+    return choice;
   }
 
 //---------------------------------------------------------------------------
@@ -1162,7 +1177,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     if (chkCreateBibEntry.isVisible())
     {
-      promptToCreateBibEntry(curBD, chkCreateBibEntry);
+      newEntryChoice = promptToCreateBibEntry(curBD, chkCreateBibEntry, newEntryChoice, origBDtoUse);
 
       if (chkCreateBibEntry.isSelected() && (getEntryType() == null))
         return falseWithWarningMessage("Select a bibliographic entry type.", cbEntryType);
