@@ -408,13 +408,13 @@ public class PDFBibData extends BibDataStandalone
 
       PDFTextStripper pdfStripper = new PDFTextStripper();
 
-      parseAndExtractIDs(pdfDoc, pdfStripper, 1, 7);
+      int numPages = pdfDoc.getNumberOfPages();
+
+      parseAndExtractIDs(pdfDoc, pdfStripper, 1, numPages > 60 ? 11 : Math.max(numPages, 11));
 
       if (getStr(bfDOI).length() > 0) return;
 
-      int numPages = pdfDoc.getNumberOfPages();
-
-      if (numPages > 7)
+      if (numPages > 11)
         parseAndExtractIDs(pdfDoc, pdfStripper, numPages - 3, numPages);
     }
   }
@@ -424,6 +424,8 @@ public class PDFBibData extends BibDataStandalone
 
   private void parseAndExtractIDs(PDDocument pdfDoc, PDFTextStripper pdfStripper, int startPage, int endPage) throws IOException
   {
+    if (startPage < 1) startPage = 1;
+
     pdfStripper.setStartPage(startPage);
     pdfStripper.setEndPage(endPage);
 

@@ -18,6 +18,7 @@
 package org.hypernomicon.view.dialogs;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 
 import static org.hypernomicon.util.Util.*;
@@ -25,6 +26,7 @@ import static org.hypernomicon.util.Util.*;
 public class NewLinkDlgCtrlr extends HyperDlg
 {
   @FXML public TextField tfDisplayText, tfURL;
+  @FXML private Button btnPaste;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -55,6 +57,9 @@ public class NewLinkDlgCtrlr extends HyperDlg
   {
     String clipText = getClipboardText(true).trim();
     selText = selText.trim();
+
+    btnPaste.setOnAction(event -> tfURL.setText(ultraTrim(getClipboardText(true))));
+    setToolTip(btnPaste, "Paste text from clipboard");
 
     if (isStringUrl(selText))
     {

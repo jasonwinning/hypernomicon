@@ -22,11 +22,12 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.TreeView?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -34,329 +35,308 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane minHeight="356.0" minWidth="1026.0" prefHeight="760.0" prefWidth="1026.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.settings.SettingsDlgCtrlr">
+<AnchorPane minHeight="356.0" minWidth="1026.0" prefHeight="657.0" prefWidth="1271.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.settings.SettingsDlgCtrlr">
    <children>
-      <TabPane fx:id="tpMain" layoutY="32.0" prefHeight="384.0" prefWidth="1026.0" styleClass="wizard" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="32.0">
-        <tabs>
-          <Tab text="Settings specific to this computer">
-            <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                     <children>
-                        <TabPane fx:id="tpComputerSpecific" prefHeight="364.0" prefWidth="1104.0" styleClass="nonwizard" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                          <tabs>
-                              <Tab text="General">
-                                <content>
-                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                                       <children>
-                                          <GridPane prefHeight="320.0" prefWidth="887.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                             <columnConstraints>
-                                                <ColumnConstraints hgrow="ALWAYS" minWidth="0.0" prefWidth="908.0" />
-                                                <ColumnConstraints hgrow="NEVER" maxWidth="31.0" minWidth="31.0" prefWidth="31.0" />
-                                                <ColumnConstraints hgrow="NEVER" maxWidth="75.0" minWidth="75.0" prefWidth="75.0" />
-                                             </columnConstraints>
-                                             <rowConstraints>
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                             </rowConstraints>
-                                             <children>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0">
-                                                   <children>
-                                                      <Label layoutX="-2.0" text="Image editor path" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
-                                                   <children>
-                                                      <TextField fx:id="tfImageEditor" layoutX="-349.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="0.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                                   <children>
-                                                      <Button layoutX="1.0" mnemonicParsing="false" onAction="#btnImageEditorBrowseClick" prefWidth="32.0" text="..." AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="0.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                                                   <children>
-                                                      <Button fx:id="btnImgEditorAdvanced" layoutY="1.0" mnemonicParsing="false" prefWidth="70.0" text="Advanced" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-                                                   <children>
-                                                      <Label text="PDF viewer path" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
-                                                   <children>
-                                                      <TextField fx:id="tfPDFReader" layoutX="-8.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="0.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                                                   <children>
-                                                      <Button layoutX="-9.0" layoutY="2.0" mnemonicParsing="false" onAction="#btnPDFReaderClick" prefWidth="32.0" text="..." AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="0.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
-                                                   <children>
-                                                      <Button fx:id="btnPdfViewerAdvanced" layoutY="1.0" mnemonicParsing="false" prefWidth="70.0" text="Advanced" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
-                                                   <children>
-                                                      <CheckBox fx:id="chkInternet" layoutY="4.0" mnemonicParsing="false" text="Check for internet connection" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5" GridPane.rowSpan="2">
-                                                   <children>
-                                                      <GridPane layoutX="32.0" layoutY="-22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                                        <columnConstraints>
-                                                          <ColumnConstraints hgrow="SOMETIMES" maxWidth="224.0" minWidth="224.0" prefWidth="224.0" />
-                                                          <ColumnConstraints halignment="CENTER" hgrow="NEVER" maxWidth="79.0" minWidth="72.0" prefWidth="79.0" />
-                                                            <ColumnConstraints halignment="CENTER" hgrow="NEVER" maxWidth="208.0" minWidth="208.0" prefWidth="208.0" />
-                                                            <ColumnConstraints halignment="CENTER" hgrow="NEVER" maxWidth="73.0" minWidth="73.0" prefWidth="73.0" />
-                                                            <ColumnConstraints hgrow="SOMETIMES" />
-                                                        </columnConstraints>
-                                                        <rowConstraints>
-                                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                        </rowConstraints>
-                                                         <children>
-                                                            <Label text="Information display preference:" GridPane.rowIndex="1" />
-                                                            <Label text="(takes effect next time application starts)" GridPane.columnIndex="4" GridPane.rowIndex="1" />
-                                                            <Label text="Compact" GridPane.columnIndex="1" />
-                                                            <Label text="and" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                                            <Label text="dense" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                                                            <Label text="Big and" GridPane.columnIndex="3" />
-                                                            <Label text="easy to" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                                                            <Label text="read" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-                                                            <Slider fx:id="sliderFontSize" blockIncrement="1.0" majorTickUnit="1.0" max="16.0" min="9.0" minorTickCount="1" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="10.0" GridPane.columnIndex="2" GridPane.rowSpan="3" />
-                                                         </children>
-                                                      </GridPane>
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="7">
-                                                   <children>
-                                                      <CheckBox fx:id="chkNewVersionCheck" layoutY="4.0" mnemonicParsing="false" text="Check for new application version on startup" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="8">
-                                                   <children>
-                                                      <CheckBox fx:id="chkAutoOpenPDF" layoutY="4.0" mnemonicParsing="false" text="Automatically preview selected file in Work File dialog" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="9">
-                                                   <children>
-                                                      <CheckBox fx:id="chkAutoRetrieveBib" layoutY="4.0" mnemonicParsing="false" text="Automatically retrieve bibliographic info for selected file internet in Work File dialog" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="10">
-                                                   <children>
-                                                      <CheckBox fx:id="chkLinuxWorkaround" layoutY="4.0" mnemonicParsing="false" text="Enable workaround for when parent windows stop being resizable" />
-                                                   </children>
-                                                </AnchorPane>
-                                             </children>
-                                             <padding>
-                                                <Insets left="4.0" right="4.0" />
-                                             </padding>
-                                          </GridPane>
-                                       </children>
-                                    </AnchorPane>
-                                </content>
-                              </Tab>
-                              <Tab fx:id="tabWebButtons" text="Web Search Buttons">
-                                <content>
-                                </content>
-                              </Tab>
-                          </tabs>
-                        </TabPane>
-                     </children>
-                  </AnchorPane>
-            </content>
-          </Tab>
-          <Tab fx:id="tabDBSpecific" text="Settings specific to this database">
-            <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                     <children>
-                        <TabPane fx:id="tpDBSpecific" prefHeight="200.0" prefWidth="200.0" styleClass="nonwizard" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                          <tabs>
-                              <Tab text="General">
-                                <content>
-                                  <AnchorPane minHeight="0.0" minWidth="0.0">
-                                    <children>
-                                      <GridPane prefHeight="320.0" prefWidth="887.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                        <columnConstraints>
-                                           <ColumnConstraints hgrow="ALWAYS" />
-                                           <ColumnConstraints hgrow="NEVER" maxWidth="31.0" minWidth="31.0" prefWidth="31.0" />
-                                        </columnConstraints>
-                                        <rowConstraints>
-                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                        </rowConstraints>
-                                        <children>
-                                          <AnchorPane prefHeight="200.0" prefWidth="200.0">
-                                                   <children>
-                                                      <CheckBox fx:id="chkUseSentenceCase" mnemonicParsing="false" text="Use sentence case instead of title case for titles" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="16.0" />
-                                                   </children>
-                                          </AnchorPane>
-                                        </children>
-                                        <padding>
-                                          <Insets left="4.0" right="4.0" />
-                                        </padding>                      
-                                      </GridPane> 
-                                    </children>
+      <SplitPane dividerPositions="0.18124507486209615" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <items>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+            <children>
+              <TreeView fx:id="treeView" layoutX="11.0" layoutY="91.0" prefHeight="200.0" prefWidth="234.0" showRoot="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            </children>
+          </AnchorPane>
+          <TabPane fx:id="tpMain" layoutY="32.0" prefHeight="384.0" prefWidth="1026.0" styleClass="wizard" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="32.0">
+             <tabs>
+                <Tab fx:id="tabWebButtons" text="Web Search Buttons">
+                  <content>
+                  </content>
+                </Tab>
+                <Tab fx:id="tabComputerSpecific" text="Computer">
+                  <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                         <children>
+                            <GridPane prefHeight="320.0" prefWidth="887.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                               <columnConstraints>
+                                  <ColumnConstraints hgrow="ALWAYS" minWidth="0.0" prefWidth="908.0" />
+                                  <ColumnConstraints hgrow="NEVER" maxWidth="31.0" minWidth="31.0" prefWidth="31.0" />
+                                  <ColumnConstraints hgrow="NEVER" maxWidth="75.0" minWidth="75.0" prefWidth="75.0" />
+                               </columnConstraints>
+                               <rowConstraints>
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                               </rowConstraints>
+                               <children>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                                     <children>
+                                        <Label layoutX="-2.0" text="Image editor path" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+                                     </children>
                                   </AnchorPane>
-                                </content>
-                              </Tab>
-                              <Tab fx:id="tabFolders" text="Default Folders">
-                                <content>
-                                </content>
-                              </Tab>
-                              <Tab fx:id="tabNaming" text="Work File Naming">
-                                <content>
-                                </content>
-                              </Tab>
-                              <Tab fx:id="tabLinkToExtBibMgr" text="Bibliography Manager">
-                                <content>
-                                  <AnchorPane fx:id="apLinkToExtBibMgr" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                                       <children>
-                                          <GridPane layoutX="14.0" layoutY="14.0" prefHeight="248.0" prefWidth="472.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
-                                            <columnConstraints>
-                                              <ColumnConstraints hgrow="NEVER" maxWidth="75.0" minWidth="75.0" prefWidth="75.0" />
-                                              <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
-                                            </columnConstraints>
-                                            <rowConstraints>
-                                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                            </rowConstraints>
-                                             <children>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0">
-                                                   <children>
-                                                      <Label layoutX="15.0" layoutY="-5.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 1." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
-                                                   <children>
-                                                      <ToggleButton fx:id="btnZoteroAuthorize" layoutY="5.0" maxWidth="140.0" minWidth="140.0" mnemonicParsing="false" prefWidth="140.0" text="Link to Zotero account" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="5.0" />
-                                                      <ToggleButton fx:id="btnMendeleyAuthorize" layoutX="167.0" layoutY="5.0" maxWidth="160.0" minWidth="160.0" mnemonicParsing="false" prefWidth="160.0" text="Link to Mendeley account" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="143.0" AnchorPane.topAnchor="5.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
-                                                   <children>
-                                                      <Label layoutY="-2.0" text="Click button to initiate process of linking to reference manager account." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
-                                                   <children>
-                                                      <Label fx:id="lblStep2" layoutX="8.0" layoutY="-2.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 2." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                                   <children>
-                                                      <Label fx:id="lblRedirect" layoutY="8.0" text="Go to verification web page" underline="true" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="8.0">
-                                                         <cursor>
-                                                            <Cursor fx:constant="HAND" />
-                                                         </cursor>
-                                                      </Label>
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
-                                                   <children>
-                                                      <Label fx:id="lblStep2Instructions" layoutX="-272.0" layoutY="10.0" text="Click link to open web site where you will authorize Hypernomicon to access your Zotero account and get verification code." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
-                                                   <children>
-                                                      <Label fx:id="lblStep3" layoutX="-11.0" layoutY="1.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 3." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
-                                                   <children>
-                                                      <Button fx:id="btnCodePaste" maxHeight="23.0" minHeight="23.0" mnemonicParsing="false" prefHeight="23.0" prefWidth="38.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0">
-                                                         <graphic>
-                                                            <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                                                               <image>
-                                                                  <Image url="@../../resources/images/page_paste.png" />
-                                                               </image>
-                                                            </ImageView>
-                                                         </graphic>
-                                                      </Button>                                    
-                                                      <TextField fx:id="tfVerificationCode" layoutX="-65.0" layoutY="4.0" prefHeight="23.0" prefWidth="248.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="40.0" AnchorPane.topAnchor="4.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="5">
-                                                   <children>
-                                                      <Label fx:id="lblStep3Instructions" layoutX="-21.0" layoutY="4.0" text="Enter verification code." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="6">
-                                                   <children>
-                                                      <Label fx:id="lblStep4" layoutX="-1.0" layoutY="-1.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 4." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
-                                                   <children>
-                                                      <Button fx:id="btnVerify" layoutY="5.0" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" prefWidth="60.0" text="Verify" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="5.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                                <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="7">
-                                                   <children>
-                                                      <Label fx:id="lblStep4Instructions" layoutX="-260.0" layoutY="7.0" text="When you click this button, Hypernomicon uses the verification code you entered to finalize the linking process." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
-                                                   </children>
-                                                </AnchorPane>
-                                             </children>
-                                          </GridPane>
-                                       </children>
-                                    </AnchorPane>
-                                </content>
-                              </Tab>
-                              <Tab fx:id="tabUnlinkFromExtBibMgr" text="Bibliography Manager">
-                                <content>
-                                  <AnchorPane fx:id="apUnlinkFromExtBibMgr" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                                       <children>
-                                          <Label fx:id="lblCurrentlyLinked" layoutX="14.0" layoutY="14.0" text="This database is currently linked to a Zotero library." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0" />
-                                          <Button fx:id="btnUnlink" layoutX="14.0" layoutY="40.0" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" prefWidth="60.0" text="Unlink" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="40.0" />
-                                       </children>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+                                     <children>
+                                        <TextField fx:id="tfImageEditor" layoutX="-349.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="0.0" />
+                                     </children>
                                   </AnchorPane>
-                                </content>
-                              </Tab>
-                          </tabs>
-                        </TabPane>
-                     </children>
-                  </AnchorPane>
-            </content>
-          </Tab>
-        </tabs>
-      </TabPane>
-      <ToggleButton fx:id="btnComputer" layoutX="41.0" layoutY="7.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="208.0" selected="true" text="Settings specific to this computer" AnchorPane.leftAnchor="41.0" AnchorPane.topAnchor="7.0">
-         <toggleGroup>
-            <ToggleGroup fx:id="tgShow" />
-         </toggleGroup></ToggleButton>
-      <ToggleButton fx:id="btnDatabase" layoutX="255.0" layoutY="7.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="214.0" text="Settings specific to this database" toggleGroup="$tgShow" AnchorPane.leftAnchor="255.0" AnchorPane.topAnchor="7.0" />
-      <Label layoutX="4.0" layoutY="11.0" text="Show:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="11.0" />
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                     <children>
+                                        <Button layoutX="1.0" mnemonicParsing="false" onAction="#btnImageEditorBrowseClick" prefWidth="32.0" text="..." AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="0.0" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                     <children>
+                                        <Button fx:id="btnImgEditorAdvanced" layoutY="1.0" mnemonicParsing="false" prefWidth="70.0" text="Advanced" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+                                     <children>
+                                        <Label text="PDF viewer path" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
+                                     <children>
+                                        <TextField fx:id="tfPDFReader" layoutX="-8.0" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="0.0" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                     <children>
+                                        <Button layoutX="-9.0" layoutY="2.0" mnemonicParsing="false" onAction="#btnPDFReaderClick" prefWidth="32.0" text="..." AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="0.0" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                                     <children>
+                                        <Button fx:id="btnPdfViewerAdvanced" layoutY="1.0" mnemonicParsing="false" prefWidth="70.0" text="Advanced" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
+                                     <children>
+                                        <CheckBox fx:id="chkInternet" layoutY="4.0" mnemonicParsing="false" text="Check for internet connection" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5" GridPane.rowSpan="2">
+                                     <children>
+                                        <GridPane layoutX="32.0" layoutY="-22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                          <columnConstraints>
+                                            <ColumnConstraints hgrow="SOMETIMES" maxWidth="224.0" minWidth="224.0" prefWidth="224.0" />
+                                            <ColumnConstraints halignment="CENTER" hgrow="NEVER" maxWidth="79.0" minWidth="72.0" prefWidth="79.0" />
+                                              <ColumnConstraints halignment="CENTER" hgrow="NEVER" maxWidth="208.0" minWidth="208.0" prefWidth="208.0" />
+                                              <ColumnConstraints halignment="CENTER" hgrow="NEVER" maxWidth="73.0" minWidth="73.0" prefWidth="73.0" />
+                                              <ColumnConstraints hgrow="SOMETIMES" />
+                                          </columnConstraints>
+                                          <rowConstraints>
+                                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                          </rowConstraints>
+                                           <children>
+                                              <Label text="Information display preference:" GridPane.rowIndex="1" />
+                                              <Label text="(takes effect next time application starts)" GridPane.columnIndex="4" GridPane.rowIndex="1" />
+                                              <Label text="Compact" GridPane.columnIndex="1" />
+                                              <Label text="and" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                              <Label text="dense" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                              <Label text="Big and" GridPane.columnIndex="3" />
+                                              <Label text="easy to" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                                              <Label text="read" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                                              <Slider fx:id="sliderFontSize" blockIncrement="1.0" majorTickUnit="1.0" max="16.0" min="9.0" minorTickCount="1" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="10.0" GridPane.columnIndex="2" GridPane.rowSpan="3" />
+                                           </children>
+                                        </GridPane>
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="7">
+                                     <children>
+                                        <CheckBox fx:id="chkNewVersionCheck" layoutY="4.0" mnemonicParsing="false" text="Check for new application version on startup" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="8">
+                                     <children>
+                                        <CheckBox fx:id="chkAutoOpenPDF" layoutY="4.0" mnemonicParsing="false" text="Automatically preview selected file in Work File dialog" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="9">
+                                     <children>
+                                        <CheckBox fx:id="chkAutoRetrieveBib" layoutY="4.0" mnemonicParsing="false" text="Automatically retrieve bibliographic info for selected file internet in Work File dialog" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="10">
+                                     <children>
+                                        <CheckBox fx:id="chkLinuxWorkaround" layoutY="4.0" mnemonicParsing="false" text="Enable workaround for when parent windows stop being resizable" />
+                                     </children>
+                                  </AnchorPane>
+                               </children>
+                               <padding>
+                                  <Insets left="4.0" right="4.0" />
+                               </padding>
+                            </GridPane>
+                         </children>
+                      </AnchorPane>
+                  </content>
+                </Tab>
+                <Tab fx:id="tabDBSpecific" text="Database">
+                  <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0">
+                      <children>
+                        <GridPane prefHeight="320.0" prefWidth="887.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                          <columnConstraints>
+                             <ColumnConstraints hgrow="ALWAYS" />
+                             <ColumnConstraints hgrow="NEVER" maxWidth="31.0" minWidth="31.0" prefWidth="31.0" />
+                          </columnConstraints>
+                          <rowConstraints>
+                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                          </rowConstraints>
+                          <children>
+                            <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                               <children>
+                                  <CheckBox fx:id="chkUseSentenceCase" mnemonicParsing="false" text="Use sentence case instead of title case for titles" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="16.0" />
+                               </children>
+                            </AnchorPane>
+                          </children>
+                          <padding>
+                            <Insets left="4.0" right="4.0" />
+                          </padding>                      
+                        </GridPane> 
+                      </children>
+                    </AnchorPane>
+                  </content>
+                </Tab>
+                <Tab fx:id="tabFolders" text="Default Folders">
+                  <content>
+                  </content>
+                </Tab>
+                <Tab fx:id="tabNaming" text="Work File Naming">
+                  <content>
+                  </content>
+                </Tab>
+                <Tab fx:id="tabLinkToExtBibMgr" text="Bibliography Manager">
+                  <content>
+                    <AnchorPane fx:id="apLinkToExtBibMgr" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                         <children>
+                            <GridPane layoutX="14.0" layoutY="14.0" prefHeight="248.0" prefWidth="472.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
+                              <columnConstraints>
+                                <ColumnConstraints hgrow="NEVER" maxWidth="75.0" minWidth="75.0" prefWidth="75.0" />
+                                <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
+                              </columnConstraints>
+                              <rowConstraints>
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              </rowConstraints>
+                               <children>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                                     <children>
+                                        <Label layoutX="15.0" layoutY="-5.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 1." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+                                     <children>
+                                        <ToggleButton fx:id="btnZoteroAuthorize" layoutY="5.0" maxHeight="25.0" maxWidth="140.0" minHeight="25.0" minWidth="140.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="140.0" text="Link to Zotero account" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="5.0" />
+                                        <ToggleButton fx:id="btnMendeleyAuthorize" layoutX="143.0" layoutY="5.0" maxHeight="25.0" maxWidth="160.0" minHeight="25.0" minWidth="160.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="160.0" text="Link to Mendeley account" AnchorPane.leftAnchor="143.0" AnchorPane.topAnchor="5.0" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
+                                     <children>
+                                        <Label layoutY="-2.0" text="Click button to initiate process of linking to reference manager account." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+                                     <children>
+                                        <Label fx:id="lblStep2" layoutX="8.0" layoutY="-2.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 2." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                     <children>
+                                        <Label fx:id="lblRedirect" layoutY="8.0" text="Go to verification web page" underline="true" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="8.0">
+                                           <cursor>
+                                              <Cursor fx:constant="HAND" />
+                                           </cursor>
+                                        </Label>
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
+                                     <children>
+                                        <Label fx:id="lblStep2Instructions" layoutX="-272.0" layoutY="10.0" text="Click link to open web site where you will authorize Hypernomicon to access your Zotero account and get verification code." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
+                                     <children>
+                                        <Label fx:id="lblStep3" layoutX="-11.0" layoutY="1.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 3." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                     <children>
+                                        <Button fx:id="btnCodePaste" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="38.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0">
+                                           <graphic>
+                                              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                                 <image>
+                                                    <Image url="@../../resources/images/page_paste.png" />
+                                                 </image>
+                                              </ImageView>
+                                           </graphic>
+                                        </Button>                                    
+                                        <TextField fx:id="tfVerificationCode" layoutX="-65.0" layoutY="4.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="248.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="40.0" AnchorPane.topAnchor="4.0" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="5">
+                                     <children>
+                                        <Label fx:id="lblStep3Instructions" layoutX="-21.0" layoutY="4.0" text="Enter verification code." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="6">
+                                     <children>
+                                        <Label fx:id="lblStep4" layoutX="-1.0" layoutY="-1.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 4." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                     <children>
+                                        <Button fx:id="btnVerify" layoutY="5.0" maxHeight="25.0" maxWidth="60.0" minHeight="25.0" minWidth="60.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="60.0" text="Verify" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="5.0" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="7">
+                                     <children>
+                                        <Label fx:id="lblStep4Instructions" layoutX="-260.0" layoutY="7.0" text="When you click this button, Hypernomicon uses the verification code you entered to finalize the linking process." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="-2.0" />
+                                     </children>
+                                  </AnchorPane>
+                               </children>
+                            </GridPane>
+                         </children>
+                      </AnchorPane>
+                  </content>
+                </Tab>
+                <Tab fx:id="tabUnlinkFromExtBibMgr" text="Bibliography Manager">
+                  <content>
+                    <AnchorPane fx:id="apUnlinkFromExtBibMgr" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                       <children>
+                          <Label fx:id="lblCurrentlyLinked" layoutX="14.0" layoutY="14.0" text="This database is currently linked to a Zotero library." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0" />
+                          <Button fx:id="btnUnlink" layoutX="14.0" layoutY="40.0" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" prefWidth="60.0" text="Unlink" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="40.0" />
+                       </children>
+                    </AnchorPane>
+                  </content>
+                </Tab>
+             </tabs>
+          </TabPane>
+        </items>
+      </SplitPane>
    </children>
 </AnchorPane>

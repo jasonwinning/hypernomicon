@@ -192,9 +192,9 @@ public class HyperTableColumn
 
             setGraphic(record == null ? imgViewForRecordType(type) : imgViewForRecord(record));
 
-            if (type == hdtWork)
+            if ((type == hdtWork) && (record != null))
             {
-              HDT_Work work = cell.getRecord();
+              HDT_Work work = (HDT_Work)record;
 
               if (work.workType.isNotNull())
               {

@@ -186,10 +186,10 @@ public class FileManager extends HyperDlg
   private static HyperTask task;
   private static long totalTaskCount, curTaskCount;
 
-  FileRow getFolderRow()             { return nullSwitch(curFolder, null, folder -> folderTree.getRowsForRecord(folder).get(0)); }
-  public void clearHistory()         { history.clear(); }
-  public void setNeedRefresh()       { if (suppressNeedRefresh == false) needRefresh = true; }
-  @Override public boolean isValid() { return true; }
+  FileRow getFolderRow()                { return nullSwitch(curFolder, null, folder -> folderTree.getRowsForRecord(folder).get(0)); }
+  public void clearHistory()            { history.clear(); }
+  public void setNeedRefresh()          { if (suppressNeedRefresh == false) needRefresh = true; }
+  @Override protected boolean isValid() { return true; }
 
   private List<MarkedRowInfo> getSrcRows(boolean dragging) { return dragging ? dragRows : markedRows; }
 

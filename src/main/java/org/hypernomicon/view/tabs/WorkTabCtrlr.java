@@ -42,6 +42,7 @@ import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
 import org.hypernomicon.view.HyperView.TextViewInfo;
+import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.dialogs.ChooseParentWorkFileDlgCtrlr;
 import org.hypernomicon.view.dialogs.FileDlgCtrlr;
 import org.hypernomicon.view.dialogs.NewPersonDlgCtrlr;
@@ -186,6 +187,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "WorldCat");
     setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Google Scholar");
+    setToolTip(btnAutofill, MainCtrlr.AUTOFILL_TOOLTIP);
 
     ui.setSearchKeyToolTip(tfSearchKey);
 
@@ -1829,6 +1831,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     };
 
     BibData bd = new GUIBibData();
+    bd.getAuthors().setAllFromTable(getAuthorGroups());
 
     if (crossref)
     {
@@ -1840,7 +1843,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       else
         bd.setStr(bfDOI, safeStr(doi));
 
-      bibDataRetriever = BibDataRetriever.forCrossref(httpClient, bd, getAuthorGroups(), doneHndlr);
+      bibDataRetriever = BibDataRetriever.forCrossref(httpClient, bd, doneHndlr);
     }
     else
     {
@@ -1852,7 +1855,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       else
         bd.setMultiStr(bfISBNs, isbns);
 
-      bibDataRetriever = BibDataRetriever.forGoogleBooks(httpClient, bd, getAuthorGroups(), doneHndlr);
+      bibDataRetriever = BibDataRetriever.forGoogleBooks(httpClient, bd, doneHndlr);
     }
   }
 
@@ -1885,8 +1888,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     setAllVisible(true, btnStop, progressBar);
 
-    bibDataRetriever = new BibDataRetriever(httpClient, curWork.getBibData(), curWork.getWorkTypeEnum(), getAuthorGroups(),
-                                            pdfFilePaths, (pdfBD, queryBD, messageShown) ->
+    bibDataRetriever = new BibDataRetriever(httpClient, workBD, pdfFilePaths, (pdfBD, queryBD, messageShown) ->
     {
       setAllVisible(false, btnStop, progressBar);
       if ((pdfBD == null) && (queryBD == null))
@@ -1900,7 +1902,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       try
       {
-        mwd = MergeWorksDlgCtrlr.build("Merge Bibliographic Data", workBD, pdfBD, queryBD, null, curWork, false, true, Ternary.Unset);
+        mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", workBD, pdfBD, queryBD, null, curWork, false, true, Ternary.Unset);
       }
       catch (IOException e)
       {
@@ -1937,7 +1939,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     try
     {
-      mwd = MergeWorksDlgCtrlr.build("Merge Bibliographic Data", workBibData,
+      mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", workBibData,
                                      pdfBD.get(), crossrefBD.get(), googleBD.get(), curWork, false, true, Ternary.Unset);
     }
     catch (IOException e)

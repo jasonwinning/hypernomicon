@@ -384,7 +384,6 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
     try
     {
       JsonObj jMainObj = new JsonObj();
-
       JsonArray jArr = new JsonArray();
 
       for (BibEntry_T entry : getNonTrashEntries())

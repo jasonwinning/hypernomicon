@@ -60,7 +60,6 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
@@ -72,7 +71,6 @@ public class SelectWorkDlgCtrlr extends HyperDlg
   @FXML private TextField tfFile;
   @FXML private AnchorPane apMain;
   @FXML private ProgressBar progressBar;
-  @FXML private HBox hBox;
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
 
@@ -97,25 +95,70 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
   public static SelectWorkDlgCtrlr build(HDT_Person authorToUse, FilePath filePathToUse)
   {
-    return ((SelectWorkDlgCtrlr) create("SelectWorkDlg.fxml", "Select a Work Record", true)).init(authorToUse, true, filePathToUse, true, null, false);
+    return ((SelectWorkDlgCtrlr) create("SelectWorkDlg.fxml", "Select a Work Record", true)).init(null, authorToUse, filePathToUse, true, null, false);
   }
 
-  public static SelectWorkDlgCtrlr build(HDT_Person authorToUse, BibEntry bibEntryToUse)
+  public static SelectWorkDlgCtrlr build(HDT_Work workToUse, BibEntry bibEntryToUse)
   {
-    return ((SelectWorkDlgCtrlr) create("SelectWorkDlg.fxml", "Select a Work Record", true)).init(authorToUse, false, null, false, bibEntryToUse, true);
+    return ((SelectWorkDlgCtrlr) create("SelectWorkDlg.fxml", "Select a Work Record", true)).init(workToUse, null, null, false, bibEntryToUse, true);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private SelectWorkDlgCtrlr init(HDT_Person authorToUse, boolean enableCreateNew, FilePath filePathToUse, boolean filePathIsConstant,
-                                                                                   BibEntry bibEntryToUse, boolean bibEntryIsConstant)
+  private SelectWorkDlgCtrlr init(HDT_Work workToUse, HDT_Person authorToUse, FilePath filePathToUse, boolean filePathIsConstant,
+                                                                              BibEntry bibEntryToUse, boolean bibEntryIsConstant)
   {
+    bibEntry = bibEntryToUse;
+    work = workToUse;
+
+    if (work == null)
+    {
+      if ((authorToUse == null) && (bibEntry != null))
+      {
+        String doi = bibEntry.getStr(BibFieldEnum.bfDOI);
+
+        if (doi.length() > 0)
+        {
+          for (HDT_Work curWork : db.works)
+          {
+            if (curWork.getDOI().equalsIgnoreCase(doi))
+            {
+              work = curWork;
+              break;
+            }
+          }
+        }
+
+        if ((work == null) && (HDT_WorkType.getEnumVal(bibEntry.getWorkType()) == WorkTypeEnum.wtBook))
+        {
+          List<String> isbns = bibEntry.getMultiStr(BibFieldEnum.bfISBNs);
+
+          if (isbns.isEmpty() == false)
+          {
+            for (HDT_Work curWork : db.works)
+            {
+              if (curWork.getWorkTypeEnum() == WorkTypeEnum.wtBook) for (String isbn : curWork.getISBNs())
+              {
+                if (isbns.contains(isbn))
+                {
+                  work = curWork;
+                  break;
+                }
+              }
+            }
+          }
+        }
+
+        if (work == null)
+          authorToUse = findFirstHaving(bibEntry.getAuthors(), bibAuthor -> HDT_Person.lookUpByName(bibAuthor.getName()));
+      }
+    }
+    else
+      authorToUse = null;
+
     filePath = filePathToUse;
     author = authorToUse;
-    bibEntry = bibEntryToUse;
-
-    cbBibEntry.setDisable(enableCreateNew == false);
 
     this.bibEntryIsConstant = bibEntryIsConstant;
 
@@ -162,9 +205,6 @@ public class SelectWorkDlgCtrlr extends HyperDlg
                                                     .collect(Collectors.toCollection(ArrayList::new));
     }));
 
-    if (enableCreateNew == false)
-      hBox.getChildren().remove(btnCreateNew);
-
     btnCreateNew.setOnAction(event ->
     {
       createNewClicked = true;
@@ -210,16 +250,13 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
       if (HDT_Work.isUnenteredSet(newValue.getRecord()))
         cbBibEntry.setDisable(true);
-      else if (enableCreateNew)
-        cbBibEntry.setDisable(false);
     });
 
     if (filePathToUse != null)
     {
       setAllVisible(true, btnStop, progressBar);
 
-      bibDataRetriever = new BibDataRetriever(httpClient, null, WorkTypeEnum.wtNone, null,
-                                              safeListOf(filePathToUse), (pdfBD, queryBD, messageShown) ->
+      bibDataRetriever = new BibDataRetriever(httpClient, null, safeListOf(filePathToUse), (pdfBD, queryBD, messageShown) ->
       {
         setAllVisible(false, btnStop, progressBar);
 

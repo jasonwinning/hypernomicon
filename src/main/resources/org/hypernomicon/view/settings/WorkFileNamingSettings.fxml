@@ -97,7 +97,7 @@
           </AnchorPane>
           <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="1">
              <children>
-                <TextField fx:id="tfTest1" layoutY="2.0" text="Ross, Don" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                <TextField fx:id="tfTest1" layoutY="2.0" text="Ross, Don" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
              </children>
           </AnchorPane>
           <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
@@ -127,7 +127,7 @@
           </AnchorPane>
           <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="2">
              <children>
-                <TextField fx:id="tfTest2" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                <TextField fx:id="tfTest2" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
              </children>
           </AnchorPane>
           <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
@@ -157,7 +157,7 @@
           </AnchorPane>
           <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="3">
              <children>
-                <TextField fx:id="tfTest3" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                <TextField fx:id="tfTest3" layoutY="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
              </children>
           </AnchorPane>
           <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
@@ -187,7 +187,7 @@
           </AnchorPane>
           <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="4">
              <children>
-                <TextField fx:id="tfTest4" layoutY="2.0" text="2000" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                <TextField fx:id="tfTest4" layoutY="2.0" text="2000" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
              </children>
           </AnchorPane>
           <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5">
@@ -217,7 +217,7 @@
           </AnchorPane>
           <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="5">
              <children>
-                <TextField fx:id="tfTest5" layoutX="87.0" layoutY="2.0" text="Rainforest Realism: A Dennettian Theory of Existence" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                <TextField fx:id="tfTest5" layoutX="87.0" layoutY="2.0" text="Rainforest Realism: A Dennettian Theory of Existence" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="3.0" />
              </children>
           </AnchorPane>
        </children>
@@ -230,6 +230,6 @@
     <Label layoutX="14.0" layoutY="264.0" text="Maximum number of characters (usually 255):" />
     <TextField fx:id="tfMaxChar" layoutX="260.0" layoutY="260.0" text="255" />
     <Label fx:id="lblExample" layoutX="14.0" layoutY="288.0" text="Example:" />
-    <TextField fx:id="tfExample" layoutX="69.0" layoutY="284.0" prefHeight="25.0" prefWidth="957.0" AnchorPane.leftAnchor="69.0" AnchorPane.rightAnchor="0.0" />
+    <TextField fx:id="tfExample" layoutX="69.0" layoutY="284.0" prefHeight="25.0" prefWidth="957.0" AnchorPane.leftAnchor="69.0" AnchorPane.rightAnchor="4.0" />
   </children>
 </AnchorPane>

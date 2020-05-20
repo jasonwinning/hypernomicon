@@ -20,22 +20,19 @@ package org.hypernomicon.bib.data;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordType.hdtWork;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
+import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_RecordBase;
-import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.json.JsonArray;
@@ -147,7 +144,7 @@ public class GoogleBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getQueryUrl(String title, List<ObjectGroup> authGroups, String isbn)
+  private static String getQueryUrl(String title, BibAuthors authors, String isbn)
   {
     String url = "https://www.googleapis.com/books/v1/volumes?q=";
 
@@ -157,20 +154,14 @@ public class GoogleBibData extends BibDataStandalone
     if (safeStr(title).isEmpty()) return url;
 
     String auths = "", eds = "";
-    if (authGroups != null)
+    if (authors != null)
     {
-      for (ObjectGroup authGroup : authGroups)
+      for (BibAuthor author : authors)
       {
-        boolean ed = authGroup.getValue(tagEditor).bool,
-                tr = authGroup.getValue(tagTranslator).bool;
+        boolean ed = author.getType() == AuthorType.editor,
+                tr = author.getType() == AuthorType.translator;
 
-        HDT_Person person = authGroup.getPrimary();
-        String name;
-
-        if (person == null)
-          name = convertToEnglishChars(new PersonName(authGroup.getPrimaryStr()).getLast());
-        else
-          name = person.getLastNameEngChar();
+        String name = author.getName().toEngChar().getLast();
 
         if (ed)
           eds = eds + (eds.length() > 0 ? "+" : "") + escapeURL("\"" + name + "\"", false);
@@ -206,7 +197,7 @@ public class GoogleBibData extends BibDataStandalone
     doHttpRequest(httpClient, null, null, isbnIt, alreadyCheckedIDs, successHndlr, failHndlr);
   }
 
-  static void doHttpRequest(AsyncHttpClient httpClient, String title, List<ObjectGroup> authGroups, Iterator<String> isbnIt,
+  static void doHttpRequest(AsyncHttpClient httpClient, String title, BibAuthors authors, Iterator<String> isbnIt,
                             Set<String> alreadyCheckedIDs, Consumer<BibData> successHndlr, Consumer<Exception> failHndlr)
   {
     String isbn = "";
@@ -229,7 +220,7 @@ public class GoogleBibData extends BibDataStandalone
     alreadyCheckedIDs.add(isbn.toLowerCase());
     String finalIsbn = isbn;
 
-    JsonHttpClient.getObjAsync(GoogleBibData.getQueryUrl(title, authGroups, isbn), httpClient, jsonObj ->
+    JsonHttpClient.getObjAsync(GoogleBibData.getQueryUrl(title, authors, isbn), httpClient, jsonObj ->
     {
       BibData bd = GoogleBibData.createFromJSON(jsonObj, title, finalIsbn);
 

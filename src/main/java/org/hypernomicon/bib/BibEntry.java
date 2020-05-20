@@ -137,6 +137,8 @@ public abstract class BibEntry extends BibData implements BibEntity
   public void unassignWork()
   {
     HDT_Work work = getWork();
+    if (work == null) return;
+
     work.setBibEntryKey("");
 
     BibData bd = work.getBibData();

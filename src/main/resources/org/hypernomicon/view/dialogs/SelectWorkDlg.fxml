@@ -101,10 +101,10 @@
                         </AnchorPane>
                         <BorderPane pickOnBounds="false" prefHeight="200.0" prefWidth="200.0">
                            <center>
-                              <HBox fx:id="hBox" alignment="CENTER" pickOnBounds="false" spacing="4.0">
+                              <HBox alignment="CENTER" pickOnBounds="false" spacing="4.0">
                                  <children>
-                                    <Button fx:id="btnOK" maxWidth="164.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="25.0" prefWidth="164.0" text="Use Existing Work Record" />
-                                    <Button fx:id="btnCreateNew" mnemonicParsing="false" prefHeight="25.0" text="Create New Record" />
+                                    <Button fx:id="btnOK" maxWidth="164.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="25.0" prefWidth="164.0" text="Use Selected Work Record" />
+                                    <Button fx:id="btnCreateNew" mnemonicParsing="false" prefHeight="25.0" text="Create New Work Record" />
                                     <Button fx:id="btnCancel" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="25.0" prefWidth="60.0" text="Cancel" />
                                  </children>
                               </HBox>

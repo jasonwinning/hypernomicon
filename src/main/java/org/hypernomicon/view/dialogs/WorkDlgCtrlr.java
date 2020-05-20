@@ -63,6 +63,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.previewWindow.PDFJSWrapper;
 import org.hypernomicon.view.previewWindow.PreviewWrapper;
@@ -316,6 +317,8 @@ public class WorkDlgCtrlr extends HyperDlg
 
     btnAutoFill       .setOnAction(event -> extractDataFromPdf(true , true, false));
     mnuPopulateFromPDF.setOnAction(event -> extractDataFromPdf(false, true, false));
+
+    setToolTip(btnAutoFill,   MainCtrlr.AUTOFILL_TOOLTIP);
 
     htISBN = new HyperTable(tvISBN, 0, true, "");
 
@@ -836,8 +839,7 @@ public class WorkDlgCtrlr extends HyperDlg
     {
       setAllVisible(true, btnStop, progressBar);
 
-      bibDataRetriever = new BibDataRetriever(httpClient, curBD, HDT_WorkType.getEnumVal(curBD.getWorkType()), getAuthorGroups(),
-                                              safeListOf(origFilePath), (pdfBD, queryBD, messageShown) ->
+      bibDataRetriever = new BibDataRetriever(httpClient, curBD, safeListOf(origFilePath), (pdfBD, queryBD, messageShown) ->
       {
         setAllVisible(false, btnStop, progressBar);
 
@@ -935,7 +937,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     try
     {
-      MergeWorksDlgCtrlr mwd = MergeWorksDlgCtrlr.build("Merge Information From PDF File", curBD,
+      MergeWorksDlgCtrlr mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", curBD,
         bd1, bd2, null, curWork, false, curWork.getBibEntryKey().isBlank(), Ternary.Unset, origFilePath);
 
       if (mwd.showModal())
@@ -996,12 +998,12 @@ public class WorkDlgCtrlr extends HyperDlg
     if (crossref)
     {
       bd.setStr(bfDOI, doi);
-      bibDataRetriever = BibDataRetriever.forCrossref(httpClient, bd, null, doneHndlr);
+      bibDataRetriever = BibDataRetriever.forCrossref(httpClient, bd, doneHndlr);
     }
     else
     {
       bd.setMultiStr(bfISBNs, safeListOf(isbn));
-      bibDataRetriever = BibDataRetriever.forGoogleBooks(httpClient, bd, null, doneHndlr);
+      bibDataRetriever = BibDataRetriever.forGoogleBooks(httpClient, bd, doneHndlr);
     }
   }
 

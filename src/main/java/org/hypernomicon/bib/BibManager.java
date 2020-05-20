@@ -35,19 +35,24 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.EnumHashBiMap;
 
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.bib.CollectionTree.BibCollectionType;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
+import org.hypernomicon.bib.data.BibDataRetriever;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
-import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.relations.HyperSubjList;
+import org.hypernomicon.util.AsyncHttpClient;
+import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
+import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.dialogs.HyperDlg;
 import org.hypernomicon.view.dialogs.SelectWorkDlgCtrlr;
 import org.hypernomicon.view.mainText.MainTextUtil;
@@ -68,6 +73,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TitledPane;
@@ -84,7 +90,7 @@ import javafx.util.StringConverter;
 
 public class BibManager extends HyperDlg
 {
-  @FXML private Button btnCreateNew, btnDelete, btnMainWindow, btnPreviewWindow, btnSelect, btnStop, btnSync, btnUpdateRelatives;
+  @FXML private Button btnCreateNew, btnAutofill, btnAssign, btnUnassign, btnDelete, btnMainWindow, btnPreviewWindow, btnStop, btnSync, btnUpdateRelatives;
   @FXML private ComboBox<EntryType> cbNewType;
   @FXML private Label lblSelect;
   @FXML private SplitPane spMain;
@@ -95,6 +101,7 @@ public class BibManager extends HyperDlg
   @FXML private ToolBar toolBar;
   @FXML private TreeView<BibCollectionRow> treeView;
   @FXML private WebView webView;
+  @FXML private ProgressBar progressBar;
 
   private static final String dialogTitle = "Bibliographic Entry Manager";
 
@@ -103,13 +110,17 @@ public class BibManager extends HyperDlg
   private CollectionTree collTree;
   private LibraryWrapper<? extends BibEntry, ? extends BibCollection> libraryWrapper = null;
   private SyncTask syncTask = null;
+  private String assignCaption, unassignCaption;
+  private ImageView assignImg, unassignImg;
+  private static final AsyncHttpClient httpClient = new AsyncHttpClient();
+  private BibDataRetriever bibDataRetriever = null;
 
   public final ObjectProperty<HDT_Work> workRecordToAssign = new SimpleObjectProperty<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean isValid() { return true; }
+  @Override protected boolean isValid() { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -125,6 +136,8 @@ public class BibManager extends HyperDlg
     }
 
     if (shownAlready() == false) return;
+
+    stop();
 
     collTree.clear();
     entryTable.clear();
@@ -152,6 +165,8 @@ public class BibManager extends HyperDlg
 
     if (btnStop.isDisabled() == false) return;
 
+    stop();
+
     RotateTransition rt1 = new RotateTransition(Duration.millis(1000), btnSync.getGraphic());
     rt1.setByAngle(360);
     rt1.setCycleCount(1);
@@ -175,7 +190,7 @@ public class BibManager extends HyperDlg
     {
       if (Boolean.FALSE.equals(wasRunning) || Boolean.TRUE.equals(isRunning)) return;
 
-      btnStop.setDisable(true);
+      stop();
       seqT.stop();
 
       ImageView iv1 = imgViewFromRelPath("resources/images/refresh.png");
@@ -212,9 +227,74 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void hideBottomControls()
+  private void stop()
   {
-    setAllVisible(false, lblSelect, btnSelect, btnCreateNew, cbNewType);
+    if (bibDataRetriever != null)
+      bibDataRetriever.stop();
+
+    toolBar.getItems().remove(progressBar);
+    btnStop.setDisable(true);
+    btnSync.setDisable(false);
+
+    if (libraryWrapper != null)
+      libraryWrapper.stop();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void autofill()
+  {
+    if (ui.cantSaveRecord()) return;
+
+    stop();
+
+    btnStop.setDisable(false);
+    toolBar.getItems().add(progressBar);
+    btnSync.setDisable(true);
+
+    BibEntry entry = tableView.getSelectionModel().getSelectedItem().getEntry();
+
+    List<FilePath> pdfFilePaths;
+
+    if (entry.linkedToWork())
+      pdfFilePaths = entry.getWork().workFiles.stream().filter(HDT_WorkFile::pathNotEmpty)
+                                                       .map(HDT_WorkFile::filePath)
+                                                       .collect(Collectors.toList());
+    else
+      pdfFilePaths = Collections.emptyList();
+
+    bibDataRetriever = new BibDataRetriever(httpClient, entry, pdfFilePaths, (pdfBD, queryBD, messageShown) ->
+    {
+      stop();
+
+      if ((pdfBD == null) && (queryBD == null))
+      {
+        if (messageShown == false)
+          messageDialog("Unable to find bibliographic information.", mtInformation);
+
+        return;
+      }
+
+      MergeWorksDlgCtrlr mwd = null;
+
+      try
+      {
+        mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", entry, pdfBD, queryBD, null, entry.getWork(), false, false, Ternary.False);
+      }
+      catch (IOException e)
+      {
+        messageDialog("Unable to initialize merge dialog window.", mtError);
+        return;
+      }
+
+      if (mwd.showModal() == false) return;
+
+      mwd.mergeInto(entry);
+
+      refresh();
+      ui.update();
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -225,25 +305,23 @@ public class BibManager extends HyperDlg
     entryTable = new BibEntryTable(tableView, PREF_KEY_HT_BIB_ENTRIES);
     collTree = new CollectionTree(treeView);
 
-    toolBar.getItems().removeAll(btnDelete, btnPreviewWindow); // These are not yet supported. (Not sure if the preview button is needed?)
+    assignCaption = btnAssign.getText();
+    unassignCaption = btnUnassign.getText();
+    assignImg = (ImageView) btnAssign.getGraphic();
+    unassignImg = (ImageView) btnUnassign.getGraphic();
+    btnUnassign.setGraphic(null);
+
+    toolBar.getItems().removeAll(btnUnassign, progressBar, btnDelete, btnPreviewWindow); // Latter 2 are not yet supported. (Not sure if the preview button is needed?)
 
     btnMainWindow.setOnAction(event -> ui.windows.focusStage(app.getPrimaryStage()));
     btnSync.setOnAction(event -> sync());
+    btnStop.setOnAction(event -> stop());
+    btnAutofill.setOnAction(event -> autofill());
 
-    setToolTip(btnStop      , "Stop synchronizing");
     setToolTip(btnMainWindow, "Return to main application window");
+    setToolTip(btnAutofill,   MainCtrlr.AUTOFILL_TOOLTIP);
 
     btnUpdateRelatives.disableProperty().bind(btnStop.disabledProperty().not());
-
-    btnStop.setOnAction(event ->
-    {
-      if (syncTask == null)
-        messageDialog("Internal error #43949", mtError);
-      else
-        syncTask.cancel();
-
-      libraryWrapper.stop();
-    });
 
     workRecordToAssign.addListener((ob, oldValue, newValue) ->
     {
@@ -268,16 +346,13 @@ public class BibManager extends HyperDlg
       if ((newValue != null) && newValue.getBibEntryKey().isEmpty())
       {
         lblSelect.setText("Assigning to work record: " + newValue.getCBText());
-        setAllVisible(true, lblSelect, btnSelect, btnCreateNew, cbNewType);
+        setAllVisible(true, lblSelect, btnCreateNew, cbNewType);
         return;
       }
 
       hideBottomControls();
     });
 
-    btnSelect.setDisable(true);
-
-    btnSelect.setOnAction(event -> btnSelectClick());
     btnCreateNew.setOnAction(event -> btnCreateNewClick());
     btnUpdateRelatives.setOnAction(event -> btnUpdateRelativesClick());
 
@@ -287,49 +362,8 @@ public class BibManager extends HyperDlg
 
     entryTable.addContextMenuItem("Go to work record", HDT_Work.class, work -> ui.goToRecord(work, true));
 
-    entryTable.addContextMenuItem("Unassign work record", row -> nonNull(row.getWork()), row ->
-    {
-      if (confirmDialog("Are you sure you want to unassign the work record?") == false) return;
-      if (ui.cantSaveRecord()) return;
-
-      HDT_Work work = row.getWork();
-
-      row.getEntry().unassignWork();
-
-      if (workRecordToAssign.get() == work)
-      {
-        workRecordToAssign.set(null);
-        workRecordToAssign.set(work);
-      }
-
-      refresh();
-      ui.update();
-    });
-
-    entryTable.addContextMenuItem("Create new work record for this entry", row -> isNull(row.getWork()), row ->
-    {
-      if (ui.cantSaveRecord()) return;
-
-      HDT_Work work = db.createNewBlankRecord(hdtWork);
-
-      work.getBibData().copyAllFieldsFrom(row.getEntry(), false, false);
-      work.getAuthors().setAll(row.getEntry().getAuthors());
-      work.setBibEntryKey(row.getEntry().getKey());
-
-      ui.goToRecord(work, false);
-    });
-
-    entryTable.addContextMenuItem("Assign this entry to an existing work", row -> isNull(row.getWork()), row ->
-    {
-      if (ui.cantSaveRecord()) return;
-
-      HDT_Person person = findFirstHaving(row.getEntry().getAuthors(), bibAuthor -> HDT_Person.lookUpByName(bibAuthor.getName()));
-
-      SelectWorkDlgCtrlr dlg = SelectWorkDlgCtrlr.build(person, row.getEntry());
-
-      if (dlg.showModal())
-        assignEntryToWork(dlg.getWork(), row.getEntry());
-    });
+    entryTable.addContextMenuItem("Unassign work record" , row -> nonNull(row.getWork()), this::unassign);
+    entryTable.addContextMenuItem("Assign to work record", row -> isNull (row.getWork()), this::assign  );
 
     entryTable.addContextMenuItem("Launch work", HDT_Work.class, HDT_Work::canLaunch, work -> work.launch(-1));
 
@@ -348,6 +382,8 @@ public class BibManager extends HyperDlg
     htRelatives.addCol(hdtWork, ctIcon);
     htRelatives.addCol(hdtWork, ctNone);
     htRelatives.setDblClickHandler(HDT_Work.class, this::goToWork);
+
+    htRelatives.addDefaultMenuItems();
 
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -393,10 +429,8 @@ public class BibManager extends HyperDlg
         return;
       }
 
-      if (newTreeItem == oldTreeItem)
-        return;
-
-      entryTable.update(getViewForTreeItem(newTreeItem));
+      if (newTreeItem != oldTreeItem)
+        entryTable.update(getViewForTreeItem(newTreeItem));
     });
 
   //---------------------------------------------------------------------------
@@ -404,9 +438,7 @@ public class BibManager extends HyperDlg
 
     dialogStage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (ui.windows.getCyclingFocus()) return;
-
-      if (Boolean.TRUE.equals(newValue) == false) return;
+      if (ui.windows.getCyclingFocus() || (Boolean.TRUE.equals(newValue) == false)) return;
 
       ui.windows.push(dialogStage);
 
@@ -424,16 +456,41 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static enum BibEntryRelation
+  private void hideBottomControls()
   {
-    Parent,
-    Sibling,
-    Child
+    setAllVisible(false, lblSelect, btnCreateNew, cbNewType);
   }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static enum BibEntryRelation { Parent, Sibling, Child }
 
   private static final List<EntryType> childTypes  = Arrays.asList(etBookChapter, etEncyclopediaArticle, etConferencePaper, etDictionaryEntry),
                                        parentTypes = Arrays.asList(etBook, etConferenceProceedings);
 
+//---------------------------------------------------------------------------
+
+  private void unassign(BibEntryRow row)
+  {
+    if (confirmDialog("Are you sure you want to unassign the work record?") == false) return;
+    if (ui.cantSaveRecord()) return;
+
+    HDT_Work work = row.getWork();
+
+    row.getEntry().unassignWork();
+
+    if (workRecordToAssign.get() == work)
+    {
+      workRecordToAssign.set(null);
+      workRecordToAssign.set(work);
+    }
+
+    refresh();
+    ui.update();
+  }
+
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static class RelatedBibEntry
@@ -441,7 +498,7 @@ public class BibManager extends HyperDlg
     public final BibEntryRelation relation;
     public final BibEntry entry;
 
-    public RelatedBibEntry(BibEntryRelation relation, BibEntry entry)
+    private RelatedBibEntry(BibEntryRelation relation, BibEntry entry)
     {
       this.relation = relation;
       this.entry = entry;
@@ -624,27 +681,35 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void btnSelectClick()
+  private void assign(BibEntryRow row)
   {
     if (ui.cantSaveRecord()) return;
 
-    HDT_Work work = workRecordToAssign.get();
-    BibEntry entry = tableView.getSelectionModel().getSelectedItem().getEntry();
+    SelectWorkDlgCtrlr dlg = SelectWorkDlgCtrlr.build(workRecordToAssign.get(), row.getEntry());
 
-    if (HDT_Work.isUnenteredSet(work))
+    if (dlg.showModal() == false) return;
+
+    HDT_Work work = dlg.getWork();
+
+    if (work == null)
     {
-      messageDialog("Cannot assign a bibliographic entry to a work record of that type.", mtError);
-      workRecordToAssign.set(null);
+      work = db.createNewBlankRecord(hdtWork);
+
+      work.getBibData().copyAllFieldsFrom(row.getEntry(), false, false);
+      work.getAuthors().setAll(row.getEntry().getAuthors());
+      work.setBibEntryKey(row.getEntry().getKey());
+
+      ui.goToRecord(work, false);
       return;
     }
 
-    assignEntryToWork(work, entry);
+    assignToExisting(work, row.getEntry());
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void assignEntryToWork(HDT_Work work, BibEntry entry)
+  private void assignToExisting(HDT_Work work, BibEntry entry)
   {
     if ((work == null) || (entry == null)) return;
 
@@ -652,7 +717,7 @@ public class BibManager extends HyperDlg
 
     try
     {
-      mwd = MergeWorksDlgCtrlr.build("Import Into Existing Work Record", work.getBibData(), entry, null, null, work, false, false, Ternary.False);
+      mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", work.getBibData(), entry, null, null, work, false, false, Ternary.False);
     }
     catch (IOException e)
     {
@@ -733,7 +798,21 @@ public class BibManager extends HyperDlg
 
     BibEntryRow row = tableView.getSelectionModel().getSelectedItem();
 
-    btnSelect.setDisable((row == null) || (row.getWork() != null));
+    btnAssign  .setDisable(row == null);
+    btnAutofill.setDisable(row == null);
+
+    if ((row == null) || (row.getWork() == null))
+    {
+      btnAssign.setOnAction(event -> assign(tableView.getSelectionModel().getSelectedItem()));
+      btnAssign.setGraphic(assignImg);
+      btnAssign.setText(assignCaption);
+    }
+    else
+    {
+      btnAssign.setOnAction(event -> unassign(tableView.getSelectionModel().getSelectedItem()));
+      btnAssign.setGraphic(unassignImg);
+      btnAssign.setText(unassignCaption);
+    }
   }
 
 //---------------------------------------------------------------------------

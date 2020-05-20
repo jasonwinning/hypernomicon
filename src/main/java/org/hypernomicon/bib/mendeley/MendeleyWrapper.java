@@ -120,19 +120,19 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     Mendeley_Count("Mendeley-Count"),
     Link("Link"),
     None("None");
-    
+
     final private String name;
     private static Map<String, MendeleyHeader> map = new HashMap<>();
 
     private MendeleyHeader(String name) { this.name = name; }
 
     @Override public String toString() { return name; }
-    
+
     static { EnumSet.allOf(MendeleyHeader.class).forEach(header -> map.put(header.name.toLowerCase(), header)); }
 
-    public static MendeleyHeader get(Header header) { return map.getOrDefault(header.getName().toLowerCase(), None); }    
+    public static MendeleyHeader get(Header header) { return map.getOrDefault(header.getName().toLowerCase(), None); }
   }
- 
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -199,7 +199,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
             assignSB(nextUrl, val.split("<")[1].split(">")[0]);
 
           break;
-          
+
         default : break;
       }
     }));
@@ -729,7 +729,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
           if (key.equals("authors") || key.equals("editors") || key.equals("translators"))
           {
-            fieldName =  formatMendeleyFieldName(key.substring(0, key.length() - 1));
+            fieldName = formatMendeleyFieldName(key.substring(0, key.length() - 1));
             addFieldHtml(fieldName, makeCreatorsHtml(jArr, fieldName));
           }
           else
@@ -804,7 +804,10 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     List<String> list;
 
     if (fieldName.equalsIgnoreCase("websites"))
+    {
+      fieldName = "URL";
       list = StreamSupport.stream(jArr.getStrs().spliterator(), false).map(str -> anchorTag(str, str)).collect(Collectors.toList());
+    }
     else
       list = Lists.newArrayList((Iterable<String>)jArr.getStrs());
 

@@ -168,6 +168,8 @@ public final class MainCtrlr
 
   private static final String TREE_SELECT_BTN_CAPTION = "Select";
 
+  public static final String AUTOFILL_TOOLTIP = "Try to automatically fill in missing bibliographic information";
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -973,6 +975,9 @@ public final class MainCtrlr
 
   private void closeWindows(boolean exitingApp)
   {
+    tfOmniGoTo.clear();
+    clearOmniFinder();
+
     if ((fileManagerDlg != null) && fileManagerDlg.getStage().isShowing())
       fileManagerDlg.getStage().close();
 
@@ -2624,13 +2629,21 @@ public final class MainCtrlr
 
     if (newValue.isEmpty())
     {
-      tvFind.setPlaceholder(new Text(""));
-      omniFinder.stop();
+      clearOmniFinder();
       return;
     }
 
     tvFind.setPlaceholder(new Text("Searching..."));
     omniFinder.setQueryAndStart(newValue, showingMore);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void clearOmniFinder()
+  {
+    tvFind.setPlaceholder(new Text(""));
+    omniFinder.stop();
   }
 
 //---------------------------------------------------------------------------
@@ -2729,7 +2742,7 @@ public final class MainCtrlr
 
             try
             {
-              mwd = MergeWorksDlgCtrlr.build("Merge Fields", work.getBibData(), bibEntry, bdToUse, null, work, false, false, newEntryChoice,
+              mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", work.getBibData(), bibEntry, bdToUse, null, work, false, false, newEntryChoice,
                                              nullSwitch(filePathToUse, work.filePath()));
             }
             catch (IOException e)
@@ -2759,7 +2772,7 @@ public final class MainCtrlr
           {
             try
             {
-              mwd = MergeWorksDlgCtrlr.build("Merge Fields", workBD, bdToUse, null, null, work, false, true, newEntryChoice,
+              mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", workBD, bdToUse, null, null, work, false, true, newEntryChoice,
                                              nullSwitch(filePathToUse, work.filePath()));
             }
             catch (IOException e)
@@ -2858,16 +2871,16 @@ public final class MainCtrlr
 
       .addButton("Work", mrYes)
       .addButton("Misc. file", mrNo)
-      .addButton("Bibliographic details", mrContinue)
+      .addButton("Bibliographic details", mrOk)
       .addButton("Cancel", mrCancel)
 
       .showModal();
 
     switch (result)
     {
-      case mrYes      : importWorkFile(null, filePath, true); return;
-      case mrNo       : importMiscFile(null, filePath      ); return;
-      case mrContinue : importBibFile (null, filePath      ); return;
+      case mrYes : importWorkFile(null, filePath, true); return;
+      case mrNo  : importMiscFile(null, filePath      ); return;
+      case mrOk  : importBibFile (null, filePath      ); return;
 
       default         : return;
     }

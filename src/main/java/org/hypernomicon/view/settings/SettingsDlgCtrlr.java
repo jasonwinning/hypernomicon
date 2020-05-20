@@ -20,6 +20,8 @@ package org.hypernomicon.view.settings;
 import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import com.github.scribejava.core.exceptions.OAuthException;
@@ -49,6 +51,8 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
@@ -56,6 +60,7 @@ import javafx.stage.Window;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.view.settings.SettingsDlgCtrlr.SettingsPage.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
@@ -64,25 +69,37 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 public class SettingsDlgCtrlr extends HyperDlg
 {
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
-  @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize, btnComputer, btnDatabase;
+  @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize;
   @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced;
   @FXML private CheckBox chkAutoOpenPDF, chkNewVersionCheck, chkAutoRetrieveBib, chkInternet, chkUseSentenceCase, chkLinuxWorkaround;
   @FXML private Label lblCurrentlyLinked, lblRedirect, lblStep2, lblStep2Instructions,
                       lblStep3, lblStep3Instructions, lblStep4, lblStep4Instructions;
   @FXML private Slider sliderFontSize;
-  @FXML private Tab tabLinkToExtBibMgr, tabDBSpecific, tabFolders, tabNaming, tabUnlinkFromExtBibMgr, tabWebButtons;
-  @FXML private TabPane tpMain, tpComputerSpecific, tpDBSpecific;
+  @FXML private Tab tabLinkToExtBibMgr, tabComputerSpecific, tabDBSpecific, tabFolders, tabNaming, tabUnlinkFromExtBibMgr, tabWebButtons;
+  @FXML TreeView<SettingsPage> treeView;
+  @FXML private TabPane tpMain;
   @FXML private TextField tfImageEditor, tfPDFReader, tfVerificationCode;
 
   private StringProperty authUrl;
   private OAuth1RequestToken requestToken;
   private boolean noDB;
   private SettingsControl webBtnSettingsCtrlr;
+  private final Map<SettingsPage, Tab> pageToTab = new EnumMap<>(SettingsPage.class);
+  private final Map<SettingsPage, TreeItem<SettingsPage>> pageToTreeItem = new EnumMap<>(SettingsPage.class);
 
   public static enum SettingsPage
   {
-    CompGeneral,
-    BibMgr
+    CompGeneral("Settings applying to this computer"),
+    WebSearch("Web Search Buttons"),
+    DBSpecific("Settings applying to this database"),
+    Folders("Default Folders"),
+    WorkNaming("Work File Naming"),
+    BibMgr("Bibliography Manager");
+
+    private final String caption;
+
+    private SettingsPage(String caption) { this.caption = caption; }
+    @Override public String toString()   { return caption; }
   }
 
 //---------------------------------------------------------------------------
@@ -98,7 +115,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
   public static SettingsDlgCtrlr build()
   {
-    return build(SettingsPage.CompGeneral);
+    return build(CompGeneral);
   }
 
   public static SettingsDlgCtrlr build(SettingsPage page)
@@ -109,9 +126,59 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void addTreeItem(SettingsPage page, Tab tab, SettingsPage parent)
+  {
+    pageToTab.put(page, tab);
+    TreeItem<SettingsPage> item = new TreeItem<>(page);
+    item.setExpanded(true);
+    pageToTreeItem.put(page, item);
+
+    if (parent != null)
+      pageToTreeItem.get(parent).getChildren().add(item);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void initTree()
+  {
+    TreeItem<SettingsPage> root = new TreeItem<>(null);
+    treeView.setRoot(root);
+
+    addTreeItem(CompGeneral, tabComputerSpecific, null       );
+    addTreeItem(DBSpecific , tabDBSpecific      , null       );
+    addTreeItem(WebSearch  , tabWebButtons      , CompGeneral);
+    addTreeItem(Folders    , tabFolders         , DBSpecific );
+    addTreeItem(WorkNaming , tabNaming          , DBSpecific );
+    addTreeItem(BibMgr     , tabLinkToExtBibMgr , DBSpecific );
+
+    root.getChildren().add(pageToTreeItem.get(CompGeneral));
+
+    if (db.isLoaded()) root.getChildren().add(pageToTreeItem.get(DBSpecific));
+
+    treeView.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if (newValue != null)
+        tpMain.getSelectionModel().select(pageToTab.get(newValue.getValue()));
+    });
+
+    tabUnlinkFromExtBibMgr.setContent(null); // apUnlinkFromExtBibMgr has to be removed from this tab before it can be added to other tab
+
+    if (db.isLoaded() && db.bibLibraryIsLinked())
+    {
+      setUnlinkMessage();
+      tabLinkToExtBibMgr.setContent(apUnlinkFromExtBibMgr);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private SettingsDlgCtrlr init(SettingsPage page)
   {
     noDB = (db == null) || (db.prefs == null) || (db.isLoaded() == false);
+
+    initTree();
 
     webBtnSettingsCtrlr = initControl(tabWebButtons, "WebButtonSettings");
     initControl(tabFolders, "FolderSettings");
@@ -120,17 +187,6 @@ public class SettingsDlgCtrlr extends HyperDlg
     btnZoteroAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltZotero));
     btnMendeleyAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltMendeley));
     lblRedirect.setOnMouseClicked(event -> openWebLink(authUrl.get()));
-
-    btnComputer.selectedProperty().addListener((ob, ov, nv) ->
-    {
-      tpMain.getSelectionModel().select(Boolean.TRUE.equals(nv) ? 0 : 1);
-    });
-
-    btnComputer.getToggleGroup().selectedToggleProperty().addListener((ob, oldVal, newVal) ->
-    {
-      if (newVal == null)
-        oldVal.setSelected(true);
-    });
 
     btnVerify.setOnAction(event ->
     {
@@ -158,16 +214,6 @@ public class SettingsDlgCtrlr extends HyperDlg
     setToolTip(btnCodePaste, "Paste text from clipboard");
 
     btnVerify.disableProperty().bind(tfVerificationCode.textProperty().isEmpty());
-
-    tpDBSpecific.getTabs().remove(tabUnlinkFromExtBibMgr);
-
-    if (db.isLoaded() == false)
-      tpComputerSpecific.getTabs().remove(tabLinkToExtBibMgr);
-    else if (db.bibLibraryIsLinked())
-    {
-      setUnlinkMessage();
-      tabLinkToExtBibMgr.setContent(apUnlinkFromExtBibMgr);
-    }
 
     btnVerify           .visibleProperty().bind(authUrl.isNotEmpty());
     lblRedirect         .visibleProperty().bind(authUrl.isNotEmpty());
@@ -228,19 +274,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     dialogStage.setOnHiding(event -> webBtnSettingsCtrlr.save());
 
-    onShown = () ->
-    {
-      switch (page)
-      {
-        case BibMgr:
-          btnDatabase.setSelected(true);
-          tpDBSpecific.getSelectionModel().select(tabLinkToExtBibMgr);
-          break;
-
-        default:
-          break;
-      }
-    };
+    onShown = () -> treeView.getSelectionModel().select(pageToTreeItem.get(page));
 
     return this;
   }

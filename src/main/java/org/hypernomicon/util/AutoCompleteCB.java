@@ -132,7 +132,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
     TextField editor = cb.getEditor();
     String typed = editor.getText().substring(0, editor.getSelection().getStart()), // Get unselected text
-           typedLC = typed.toLowerCase();
+           typedLC = convertToEnglishChars(typed).toLowerCase();
     boolean match = false;
 
     Iterator<HyperTableCell> it = items.iterator();
@@ -142,7 +142,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
       HyperTableCell cell = it.next();
 
       HDT_Record record = HyperTableCell.getRecord(cell);
-      String cellText = HyperTableCell.getCellText(cell);
+      String cellText = convertToEnglishChars(HyperTableCell.getCellText(cell));
 
       if (cellText.toLowerCase().startsWith(typedLC))
       {
@@ -194,7 +194,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
     String editorText = cb.getEditor().getText();
 
-    if (editorText.isEmpty()) return false;
+    if (editorText.isBlank()) return false;
 
     for (int ndx = 0; ndx < items.size(); ndx++)
     {
@@ -212,11 +212,9 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
             lv.scrollTo(lv.getSelectionModel().getSelectedIndex());
             return true;
           }
-          else
-          {
-            lv.getSelectionModel().clearSelection();
-            return false;
-          }
+
+          lv.getSelectionModel().clearSelection();
+          return false;
         }
         catch (Exception e) { noOp(); }
       }

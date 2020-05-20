@@ -20,12 +20,14 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane maxHeight="104.0" minHeight="104.0" prefHeight="104.0" prefWidth="913.0" minWidth="300.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.NewLinkDlgCtrlr">
+<AnchorPane maxHeight="104.0" minHeight="104.0" minWidth="300.0" prefHeight="104.0" prefWidth="913.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.dialogs.NewLinkDlgCtrlr">
    <children>
       <GridPane hgap="4.0" layoutX="169.0" layoutY="11.0" prefHeight="64.0" prefWidth="913.0" vgap="4.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="8.0">
         <columnConstraints>
@@ -37,10 +39,35 @@
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <Label text="Text to Display:" />
-            <Label text="Web Address:" GridPane.rowIndex="1" />
-            <TextField fx:id="tfDisplayText" GridPane.columnIndex="1" />
-            <TextField fx:id="tfURL" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <AnchorPane>
+               <children>
+                  <Label text="Text to Display:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane GridPane.rowIndex="1">
+               <children>
+                  <Label text="Web Address:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="4.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane GridPane.columnIndex="1">
+               <children>
+                  <TextField fx:id="tfDisplayText" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="0.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
+               <children>
+                  <Button fx:id="btnPaste" maxHeight="25.0" maxWidth="32.0" minHeight="25.0" minWidth="32.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="32.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <graphic>
+                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../../resources/images/page_paste.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+                  <TextField fx:id="tfURL" layoutX="36.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="768.0" AnchorPane.leftAnchor="36.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="0.0" />
+               </children>
+            </AnchorPane>
          </children>
          <padding>
             <Insets left="4.0" right="4.0" />

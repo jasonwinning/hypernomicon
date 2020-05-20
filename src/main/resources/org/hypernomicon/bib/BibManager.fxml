@@ -19,6 +19,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -46,7 +47,7 @@
          <children>
             <ToolBar fx:id="toolBar" prefHeight="40.0" prefWidth="200.0">
               <items>
-                  <Button fx:id="btnDelete" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
+                  <Button fx:id="btnDelete" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
                      <graphic>
                         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -55,7 +56,7 @@
                         </ImageView>
                      </graphic>
                   </Button>
-                  <Button fx:id="btnSync" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
+                  <Button fx:id="btnSync" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
                      <graphic>
                         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -64,7 +65,7 @@
                         </ImageView>
                      </graphic>
                   </Button>
-                  <Button fx:id="btnStop" disable="true" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
+                  <Button fx:id="btnStop" disable="true" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
                      <graphic>
                         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -73,7 +74,34 @@
                         </ImageView>
                      </graphic>
                   </Button>
-                  <Button fx:id="btnMainWindow" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
+                  <Button fx:id="btnAssign" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" text="Assign to Work Record">
+                     <graphic>
+                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../resources/images/paper-add.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+                  <Button fx:id="btnUnassign" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" text="Unassign Work Record">
+                     <graphic>
+                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../resources/images/paper-minus.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+                  <Button fx:id="btnAutofill" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" text="Auto-Fill">
+                     <graphic>
+                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../resources/images/wand-magic.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+                  <Button fx:id="btnMainWindow" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
                      <graphic>
                         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -82,7 +110,7 @@
                         </ImageView>
                      </graphic>
                   </Button>
-                  <Button fx:id="btnPreviewWindow" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
+                  <Button fx:id="btnPreviewWindow" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
                      <graphic>
                         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                            <image>
@@ -91,6 +119,7 @@
                         </ImageView>
                      </graphic>
                   </Button>
+                  <ProgressBar fx:id="progressBar" prefHeight="18.0" prefWidth="134.0" />
               </items>
             </ToolBar>
             <SplitPane fx:id="spMain" dividerPositions="0.17597173144876324, 0.8056537102473498" prefHeight="160.0" prefWidth="200.0" GridPane.rowIndex="1">
@@ -143,9 +172,8 @@
             </SplitPane>
          </children>
       </GridPane>
-      <Label fx:id="lblSelect" alignment="CENTER_RIGHT" layoutX="2.0" layoutY="785.0" prefHeight="17.0" prefWidth="1056.0" text="Assigning to work record: Dennett 1991 Real Patterns" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="359.0" />
-      <Button fx:id="btnSelect" layoutX="1065.0" layoutY="781.0" mnemonicParsing="false" prefWidth="60.0" text="Select" AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="292.0" />
-      <Button fx:id="btnCreateNew" layoutX="1129.0" layoutY="782.0" mnemonicParsing="false" prefWidth="85.0" text="Create New:" AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="203.0" />
-      <ComboBox fx:id="cbNewType" layoutX="1260.0" layoutY="783.0" prefHeight="25.0" prefWidth="197.0" AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="2.0" />
+      <Label fx:id="lblSelect" alignment="CENTER_RIGHT" layoutX="2.0" layoutY="785.0" prefHeight="17.0" prefWidth="1118.0" text="Assigning to work record: Dennett 1991 Real Patterns" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="297.0" />
+      <Button fx:id="btnCreateNew" layoutX="1129.0" layoutY="782.0" maxHeight="25.0" minHeight="25.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="85.0" text="Create New:" AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="203.0" />
+      <ComboBox fx:id="cbNewType" layoutX="1260.0" layoutY="783.0" maxHeight="25.0" minHeight="25.0" prefHeight="25.0" prefWidth="197.0" AnchorPane.bottomAnchor="2.0" AnchorPane.rightAnchor="2.0" />
    </children>
 </AnchorPane>

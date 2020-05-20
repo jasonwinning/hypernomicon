@@ -32,9 +32,10 @@ import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
+import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
-import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
 import org.json.simple.parser.ParseException;
@@ -46,7 +47,6 @@ public class BibDataRetriever
 
   private final AsyncHttpClient httpClient;
   private final WorkTypeEnum workTypeEnum;
-  private final List<ObjectGroup> authorGroups;
   private final List<FilePath> pdfFiles;
   private final RetrieveHandler doneHndlr;
   private final boolean queryCrossref, queryGoogle;
@@ -54,23 +54,38 @@ public class BibDataRetriever
 
   public interface RetrieveHandler { public void handle(BibData pdfBD, BibData queryBD, boolean messageShown); }
 
-  public BibDataRetriever(AsyncHttpClient httpClient, BibData workBD, WorkTypeEnum workTypeEnum, List<ObjectGroup> authorGroups,
-                          List<FilePath> pdfFiles, RetrieveHandler doneHndlr)
+  public BibDataRetriever(AsyncHttpClient httpClient, BibData workBD, List<FilePath> pdfFiles, RetrieveHandler doneHndlr)
   {
-    this(httpClient, workBD, workTypeEnum, authorGroups, pdfFiles, true, true, doneHndlr);
+    this(httpClient, workBD, pdfFiles, true, true, doneHndlr);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private BibDataRetriever(AsyncHttpClient httpClient, BibData workBD, WorkTypeEnum workTypeEnum, List<ObjectGroup> authorGroups,
-                           List<FilePath> pdfFiles, boolean queryCrossref, boolean queryGoogle, RetrieveHandler doneHndlr)
+  private BibDataRetriever(AsyncHttpClient httpClient, BibData workBD, List<FilePath> pdfFiles,
+                           boolean queryCrossref, boolean queryGoogle, RetrieveHandler doneHndlr)
   {
-    this.workBD = workBD;
-    this.httpClient = httpClient;
-    this.workTypeEnum = workTypeEnum;
-    this.authorGroups = authorGroups;
     this.pdfFiles = pdfFiles;
+
+    if (collEmpty(pdfFiles) == false) try
+    {
+      pdfBD = PDFBibData.createFromFiles(pdfFiles);
+
+      if (BibData.isEmpty(pdfBD))
+        pdfBD = null;
+      else if (workBD == null)
+        workBD = pdfBD;
+    }
+    catch (IOException e)
+    {
+      messageDialog("An error occurred while extracting metadata: " + e.getMessage(), mtError, true);
+    }
+
+    this.workBD = workBD;
+
+    workTypeEnum = HDT_WorkType.getEnumVal(workBD == null ? null : workBD.getWorkType());
+
+    this.httpClient = httpClient;
     this.doneHndlr = doneHndlr;
     this.queryCrossref = queryCrossref;
     this.queryGoogle = queryGoogle;
@@ -81,19 +96,17 @@ public class BibDataRetriever
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static BibDataRetriever forCrossref(AsyncHttpClient httpClient, BibData workBD, List<ObjectGroup> authorGroups,
-                                             Consumer<BibData> doneHndlr)
+  public static BibDataRetriever forCrossref(AsyncHttpClient httpClient, BibData workBD, Consumer<BibData> doneHndlr)
   {
-    return new BibDataRetriever(httpClient, workBD, wtNone, authorGroups, null, true, false, (pdfBD, queryBD, ms) -> doneHndlr.accept(queryBD));
+    return new BibDataRetriever(httpClient, workBD, null, true, false, (pdfBD, queryBD, ms) -> doneHndlr.accept(queryBD));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static BibDataRetriever forGoogleBooks(AsyncHttpClient httpClient, BibData workBD, List<ObjectGroup> authorGroups,
-                                                Consumer<BibData> doneHndlr)
+  public static BibDataRetriever forGoogleBooks(AsyncHttpClient httpClient, BibData workBD, Consumer<BibData> doneHndlr)
   {
-    return new BibDataRetriever(httpClient, workBD, wtNone, authorGroups, null, false, true, (pdfBD, queryBD, ms) -> doneHndlr.accept(queryBD));
+    return new BibDataRetriever(httpClient, workBD, null, false, true, (pdfBD, queryBD, ms) -> doneHndlr.accept(queryBD));
   }
 
 //---------------------------------------------------------------------------
@@ -161,23 +174,6 @@ public class BibDataRetriever
 
     if (stage < 2)
     {
-      //   if there are 1 or more PDF files
-      //     get PDF bib info
-
-      if (collEmpty(pdfFiles) == false) try
-      {
-        pdfBD = PDFBibData.createFromFiles(pdfFiles);
-
-        if (BibData.isEmpty(pdfBD))
-          pdfBD = null;
-        else if (workBD == null)
-          workBD = pdfBD;
-      }
-      catch (IOException e)
-      {
-        messageDialog("An error occurred while extracting metadata: " + e.getMessage(), mtError, true);
-      }
-
       //   if there is a DOI
       //     if can get bib info from DOI
       //       exit
@@ -215,7 +211,9 @@ public class BibDataRetriever
 
           CrossrefBibData.doHttpRequest(httpClient, doi, alreadyCheckedIDs, bd ->
           {
-            queryBD = bd;
+            if ((HDT_WorkType.getEnumVal(bd == null ? null : bd.getWorkType()) != wtBook) || ((workTypeEnum != wtChapter) && (workTypeEnum != wtPaper)))
+              queryBD = bd;
+
             doStage(3);
           }, this::finish);
           return;
@@ -226,6 +224,8 @@ public class BibDataRetriever
     String title = workBD == null ? "" : ultraTrim(workBD.getStr(bfTitle));
     if (title.isBlank())
       title = pdfBD == null ? "" : ultraTrim(pdfBD.getStr(bfTitle));
+
+    BibAuthors authors = workBD == null ? null : workBD.getAuthors();
 
     if (stage < 4)
     {
@@ -239,11 +239,11 @@ public class BibDataRetriever
       {
         int year = parseInt(yearStr, -1);
 
-        if (queryCrossref && (title.length() > 0) && ((workTypeEnum != wtBook) || (year >= 1998)))
+        if (queryCrossref && (title.length() > 0) && ((workTypeEnum != wtBook) || (year >= 1995)))
         {
           if (stopped) return;
 
-          CrossrefBibData.doHttpRequest(httpClient, title, yearStr, workTypeEnum == wtPaper, authorGroups, "", alreadyCheckedIDs, bd ->
+          CrossrefBibData.doHttpRequest(httpClient, title, yearStr, workTypeEnum == wtPaper, authors, "", alreadyCheckedIDs, bd ->
           {
             searchedCrossref = true;
             queryBD = bd;
@@ -328,7 +328,7 @@ public class BibDataRetriever
       {
         if (stopped) return;
 
-        GoogleBibData.doHttpRequest(httpClient, title, authorGroups, null, alreadyCheckedIDs, bd ->
+        GoogleBibData.doHttpRequest(httpClient, title, authors, null, alreadyCheckedIDs, bd ->
         {
           queryBD = bd;
           doStage(7);
@@ -347,7 +347,7 @@ public class BibDataRetriever
       title = workBD == null ? "" : ultraTrim(workBD.getStr(bfTitle));
       String yearStr = workBD == null ? "" : workBD.getStr(bfYear);
 
-      CrossrefBibData.doHttpRequest(httpClient, title, yearStr, workTypeEnum == wtPaper, authorGroups, "", alreadyCheckedIDs, bd ->
+      CrossrefBibData.doHttpRequest(httpClient, title, yearStr, workTypeEnum == wtPaper, authors, "", alreadyCheckedIDs, bd ->
       {
         queryBD = bd;
         finish(null);

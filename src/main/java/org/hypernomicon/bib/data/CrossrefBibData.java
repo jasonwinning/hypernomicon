@@ -20,7 +20,6 @@ package org.hypernomicon.bib.data;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
-import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -35,10 +34,9 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpResponseException;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
+import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_RecordBase;
-import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.json.JsonArray;
@@ -260,7 +258,7 @@ public class CrossrefBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getQueryUrl(String title, String yearStr, List<ObjectGroup> authGroups, String doi)
+  private static String getQueryUrl(String title, String yearStr, BibAuthors authors, String doi)
   {
     String url = "https://api.crossref.org/works", auths = "", eds = "";
 
@@ -271,20 +269,14 @@ public class CrossrefBibData extends BibDataStandalone
 
     url = url + "?";
 
-    if (authGroups != null)
+    if (authors != null)
     {
-      for (ObjectGroup authGroup : authGroups)
+      for (BibAuthor author : authors)
       {
-        boolean ed = authGroup.getValue(tagEditor).bool,
-                tr = authGroup.getValue(tagTranslator).bool;
+        boolean ed = author.getType() == AuthorType.editor,
+                tr = author.getType() == AuthorType.translator;
 
-        HDT_Person person = authGroup.getPrimary();
-        String name;
-
-        if (person == null)
-          name = convertToEnglishChars(new PersonName(authGroup.getPrimaryStr()).getLast());
-        else
-          name = person.getLastNameEngChar();
+        String name = author.getName().toEngChar().getLast();
 
         if (ed)
           eds = eds + " " + name;
@@ -331,7 +323,7 @@ public class CrossrefBibData extends BibDataStandalone
     doHttpRequest(httpClient, null, null, false, null, doi, alreadyCheckedIDs, successHndlr, failHndlr);
   }
 
-  static void doHttpRequest(AsyncHttpClient httpClient, String title, String yearStr, boolean isPaper, List<ObjectGroup> authGroups, String doi,
+  static void doHttpRequest(AsyncHttpClient httpClient, String title, String yearStr, boolean isPaper, BibAuthors authors, String doi,
                             Set<String> alreadyCheckedIDs, Consumer<BibData> successHndlr, Consumer<Exception> failHndlr)
   {
     if ((doi.length() > 0) && alreadyCheckedIDs.contains(doi.toLowerCase()))
@@ -342,7 +334,7 @@ public class CrossrefBibData extends BibDataStandalone
 
     alreadyCheckedIDs.add(doi.toLowerCase());
 
-    JsonHttpClient.getObjAsync(CrossrefBibData.getQueryUrl(title, yearStr, authGroups, doi), httpClient, jsonObj ->
+    JsonHttpClient.getObjAsync(CrossrefBibData.getQueryUrl(title, yearStr, authors, doi), httpClient, jsonObj ->
     {
       BibData bd = CrossrefBibData.createFromJSON(jsonObj, title, yearStr, isPaper, doi);
 
