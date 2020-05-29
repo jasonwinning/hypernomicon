@@ -158,7 +158,7 @@ public class CrossrefBibData extends BibDataStandalone
     setDateIfPresent(jsonObj, ytIssued);
     setDateIfPresent(jsonObj, ytCreated);
 
-    setStr(bfURL   , jsonObj.getStrSafe("URL"));
+    setStr(bfURL, jsonObj.getStrSafe("URL"));
 
     if (jsonObj.containsKey("link"))
     {
@@ -208,9 +208,8 @@ public class CrossrefBibData extends BibDataStandalone
 
   private void addAuthorsFromJson(JsonArray jsonArr, AuthorType aType)
   {
-    if (jsonArr == null) return;
-
-    jsonArr.getObjs().forEach(author -> authors.add(new BibAuthor(aType, new PersonName(author.getStrSafe("given"), author.getStrSafe("family")))));
+    if (jsonArr != null)
+      jsonArr.getObjs().forEach(author -> authors.add(new BibAuthor(aType, new PersonName(author.getStrSafe("given"), author.getStrSafe("family")))));
   }
 
 //---------------------------------------------------------------------------

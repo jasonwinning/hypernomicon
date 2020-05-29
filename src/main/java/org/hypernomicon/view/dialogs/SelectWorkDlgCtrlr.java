@@ -56,6 +56,7 @@ import com.google.common.collect.Lists;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
@@ -67,6 +68,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 {
   @FXML private ComboBox<HyperTableCell> cbAuthor, cbWork, cbBibEntry;
   @FXML private Button btnCreateNew, btnStop, btnLaunch;
+  @FXML private Label lblBibEntry;
   @FXML private ToggleButton btnPreview;
   @FXML private TextField tfFile;
   @FXML private AnchorPane apMain;
@@ -111,6 +113,11 @@ public class SelectWorkDlgCtrlr extends HyperDlg
   {
     bibEntry = bibEntryToUse;
     work = workToUse;
+
+    lblBibEntry.setText(db.bibLibraryIsLinked() ? "Existing " + db.getBibLibrary().type().getUserFriendlyName() + " entry:" : "");
+
+    if (db.bibLibraryIsLinked() == false)
+      cbBibEntry.setDisable(true);
 
     if (work == null)
     {
@@ -230,6 +237,8 @@ public class SelectWorkDlgCtrlr extends HyperDlg
         updatePreview();
       }
 
+      if (db.bibLibraryIsLinked() == false) return;
+
       if (bibEntryIsConstant)
       {
         hcbBibEntry.selectID(bibEntry.numericID());
@@ -248,8 +257,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
       hcbBibEntry.selectID(-1);
 
-      if (HDT_Work.isUnenteredSet(newValue.getRecord()))
-        cbBibEntry.setDisable(true);
+      cbBibEntry.setDisable(HDT_Work.isUnenteredSet(newValue.getRecord()));
     });
 
     if (filePathToUse != null)

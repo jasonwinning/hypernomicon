@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.melloware.jintellitype.JIntellitype;
 import com.teamdev.jxbrowser.chromium.BrowserCore;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
 import com.teamdev.jxbrowser.chromium.internal.ipc.IPCException;
@@ -705,10 +704,6 @@ public class PreviewWindow extends HyperDlg
       Platform.runLater(() ->
       {
         app.getPrimaryStage().close();
-
-        if (JIntellitype.isJIntellitypeSupported())
-          //JIntellitype.getInstance().cleanUp();   // This causes the VM to crash in Java 11
-          System.exit(0);
 
         if (Environment.isMac())
           Platform.exit();

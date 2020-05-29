@@ -35,6 +35,8 @@ import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.reports.ReportEngine;
 
+import com.sun.javafx.runtime.VersionInfo;
+
 public class AboutDlgCtrlr extends HyperDlg
 {
   @FXML private WebView webView;
@@ -102,7 +104,6 @@ public class AboutDlgCtrlr extends HyperDlg
         "<li>" + anchorTag("XMP Toolkit for Java", "https://www.adobe.com/devnet/xmp.html") + "</li>" +
         "<li>" + anchorTag("Mammoth .docx to HTML converter", "https://github.com/mwilliamson/java-mammoth") + "</li>" +
         "<li>" + anchorTag("JBibTex", "https://github.com/jbibtex/jbibtex") + "</li>" +
-        "<li>" + anchorTag("JIntellitype", "https://code.google.com/archive/p/jintellitype/") + "</li>" +
         "<li>" + anchorTag("highlight", "http://johannburkard.de/blog/programming/javascript/highlight-javascript-text-higlighting-jquery-plugin.html") +
 
         "</li></ul>Icons:<br><ul>" +
@@ -173,8 +174,8 @@ public class AboutDlgCtrlr extends HyperDlg
         "Copyright \u00a9 2015-2020 Jason Winning.<br><br>" +
         "Operating system: " + SystemUtils.OS_NAME + "<br>" +
         "Operating system version: " + SystemUtils.OS_VERSION + "<br>" +
-        "Java runtime: " + SystemUtils.JAVA_RUNTIME_NAME + "<br>" +
-        "Java runtime version: " + SystemUtils.JAVA_RUNTIME_VERSION + "<br>" +
+        "Java runtime: " + SystemUtils.JAVA_RUNTIME_VERSION + " " + SystemUtils.JAVA_RUNTIME_NAME + "<br>" +
+        "JavaFX version: " + VersionInfo. getRuntimeVersion() + "<br>" +
         anchorTag("Website", "http://hypernomicon.org/") + "&nbsp;&nbsp;&nbsp;" +
         anchorTag("Release Notes", "https://sourceforge.net/p/hypernomicon/wiki/ReleaseNotes/") + "&nbsp;&nbsp;&nbsp;" +
         anchorTag("GitHub repo", "https://github.com/jasonwinning/hypernomicon") + "</body></html>";

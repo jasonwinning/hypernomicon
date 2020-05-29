@@ -141,7 +141,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
   {
     cell.setOnDragDetected(event ->
     {
-      if (cell.getItem() == null) return;
+      if ((cell.getItem() == null) || event.isBackButtonDown() || event.isForwardButtonDown()) return;
 
       Dragboard dragBoard = cell.startDragAndDrop(TransferMode.ANY);
       startDrag(cell.getItem());

@@ -102,8 +102,6 @@ public final class App extends Application
   private Stage primaryStage;
   private VersionNumber version;
   private boolean testMainTextEditing = false;
-  private double deltaX;
-  private long swipeStartTime;
   private static boolean isDebugging;
   private static final double baseDisplayScale = 81.89306640625;
   private static int total, ctr, lastPercent;
@@ -381,25 +379,6 @@ public final class App extends Application
         ui.omniFocus();
     });
 
-    scene.setOnScrollStarted(event ->
-    {
-      swipeStartTime = System.currentTimeMillis();
-      deltaX = event.getDeltaX();
-    });
-
-    scene.setOnScroll(event -> deltaX = deltaX + event.getDeltaX());
-
-    scene.setOnScrollFinished(event ->
-    {
-      double swipeTime = System.currentTimeMillis() - swipeStartTime;
-
-      if (swipeTime < 200)
-      {
-        if      (deltaX >  500) ui.btnBackClick();
-        else if (deltaX < -500) ui.btnForwardClick();
-      }
-    });
-
     scene.addEventFilter(DragEvent.DRAG_OVER, event ->
     {
       if (event.getDragboard().hasContent(HYPERNOMICON_DATA_FORMAT))
@@ -413,10 +392,10 @@ public final class App extends Application
 
     scene.addEventFilter(DragEvent.DRAG_DROPPED, event ->
     {
-      if (event.getDragboard().hasContent(HYPERNOMICON_DATA_FORMAT))
-        return;
-
       Dragboard board = event.getDragboard();
+
+      if (board.hasContent(HYPERNOMICON_DATA_FORMAT))
+        return;
 
       if (board.hasImage())
         if (isDebugging)

@@ -52,6 +52,7 @@
                            <children>
                               <Hyperlink fx:id="linkIntroVideo" layoutX="6.0" layoutY="3.0" text="Introductory Tutorial" />
                               <Hyperlink fx:id="linkFileMgmtVideo" layoutX="6.0" layoutY="22.0" text="Managing PDFs, Other Files, and Folders" />
+                              <Hyperlink fx:id="linkRefMgmtVideo" layoutX="6.0" layoutY="41.0" text="Integration with Zotero and Mendeley" />
                            </children>
                         </AnchorPane>
                      </content>

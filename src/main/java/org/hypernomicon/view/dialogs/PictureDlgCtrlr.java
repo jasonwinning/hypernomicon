@@ -937,12 +937,19 @@ public class PictureDlgCtrlr extends HyperDlg
     {
       HDT_RecordWithPath existingRecord = HyperPath.getRecordFromFilePath(newFileDest);
 
-      if ((existingRecord != null) && (existingRecord != personHyperTab.activeRecord()))
-        return falseWithErrorMessage(HyperPath.alreadyInUseMessage(newFileDest, existingRecord));
+      boolean replacingPictureForSamePerson = false;
+
+      if (existingRecord != null)
+      {
+        if (existingRecord != personHyperTab.activeRecord())
+          return falseWithErrorMessage(HyperPath.alreadyInUseMessage(newFileDest, existingRecord));
+
+        replacingPictureForSamePerson = true;
+      }
 
       if (newFileSrc.equals(newFileDest) == false)
       {
-        if (newFileDest.exists())
+        if (newFileDest.exists() && (replacingPictureForSamePerson == false))
           return falseWithErrorMessage("Unable to move/rename file: A file with that name already exists.");
 
         if (newFileSrc.exists() == false)

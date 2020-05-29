@@ -889,7 +889,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       iv.setFitWidth(16);
       iv.setFitHeight(16);
       btnBibManager.setGraphic(iv);
-      setToolTip(btnBibManager, "Go to external bibliography manager entry");
+      setToolTip(btnBibManager, "Go to " + db.getBibLibrary().type().getUserFriendlyName() + " entry for this work");
     }
 
     if (updatePreview)
@@ -1437,7 +1437,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       btnBibManager.setVisible(true);
       btnBibManager.setGraphic(iv);
-      setToolTip(btnBibManager, "Assign to external bibliography manager entry");
+      setToolTip(btnBibManager, "Assign to " + db.getBibLibrary().type().getUserFriendlyName() + " entry");
     }
     else
       btnBibManager.setVisible(false);

@@ -95,7 +95,7 @@
             <Label layoutX="14.0" layoutY="207.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 5." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="207.0" />
             <TextField fx:id="tfYear" layoutX="85.0" layoutY="208.0" prefHeight="22.0" prefWidth="150.0" AnchorPane.leftAnchor="85.0" AnchorPane.topAnchor="208.0" />
             <Label layoutX="15.0" layoutY="232.0" text="Type in the year." AnchorPane.leftAnchor="15.0" AnchorPane.topAnchor="232.0" />
-            <CheckBox fx:id="chkCreateBibEntry" layoutX="385.0" layoutY="248.0" mnemonicParsing="false" text="Create new entry in external reference manager of type:" AnchorPane.rightAnchor="216.0" AnchorPane.topAnchor="248.0" />
+            <CheckBox fx:id="chkCreateBibEntry" layoutX="385.0" layoutY="248.0" mnemonicParsing="false" text="Create new Zotero entry of type:" AnchorPane.rightAnchor="216.0" AnchorPane.topAnchor="248.0" />
             <ComboBox fx:id="cbEntryType" layoutX="719.0" layoutY="244.0" prefHeight="22.0" prefWidth="186.0" AnchorPane.rightAnchor="12.0" />
             <SplitMenuButton fx:id="btnAutoFill" layoutX="85.0" layoutY="268.0" maxHeight="22.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="112.0" text="Auto-Fill" AnchorPane.leftAnchor="85.0" AnchorPane.topAnchor="268.0">
               <items>

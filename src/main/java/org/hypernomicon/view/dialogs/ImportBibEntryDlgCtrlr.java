@@ -77,7 +77,9 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
 
   private ImportBibEntryDlgCtrlr init(List<String> lines, FilePath filePath)
   {
-    if (db.bibLibraryIsLinked() == false)
+    if (db.bibLibraryIsLinked())
+      chkNewEntry.setText("Create new " + db.getBibLibrary().type().getUserFriendlyName() + " entry (unless existing work is already assigned to one)");
+    else
     {
       chkNewEntry.setSelected(false);
       chkNewEntry.setVisible(false);

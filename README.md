@@ -106,5 +106,4 @@ Hypernomicon uses [JxBrowser](https://www.teamdev.com/jxbrowser). You may not us
   * [XMP Toolkit for Java](https://www.adobe.com/devnet/xmp.html)
   * [Mammoth .docx to HTML converter](https://github.com/mwilliamson/java-mammoth)
   * [JBibTex](https://github.com/jbibtex/jbibtex)
-  * [JIntellitype](https://code.google.com/archive/p/jintellitype/)
   * [highlight](http://johannburkard.de/blog/programming/javascript/highlight-javascript-text-higlighting-jquery-plugin.html)

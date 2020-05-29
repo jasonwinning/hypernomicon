@@ -210,6 +210,8 @@ public class WorkDlgCtrlr extends HyperDlg
 
     if ((db.bibLibraryIsLinked() == false) || (curWork.getBibEntryKey().length() > 0))
       setAllVisible(false, chkCreateBibEntry, cbEntryType);
+    else
+      chkCreateBibEntry.setText("Create new " + db.getBibLibrary().type().getUserFriendlyName() + " entry of type:");
 
     if (workFileToUse == null)
     {

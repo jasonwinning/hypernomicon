@@ -43,7 +43,7 @@ public class SyncBibDlgCtrlr extends HyperDlg
 
   static SyncBibDlgCtrlr build()
   {
-    return createUsingFullPath("view/settings/SyncBibDlg.fxml", "Link to External Bibliography Manager", true);
+    return createUsingFullPath("view/settings/SyncBibDlg.fxml", "Link to " + db.getBibLibrary().type().getUserFriendlyName(), true);
   }
 
 //---------------------------------------------------------------------------

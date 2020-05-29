@@ -93,7 +93,9 @@ import org.apache.commons.lang3.SystemUtils;
 import org.jbibtex.ParseException;
 import org.jbibtex.TokenMgrException;
 import com.google.common.collect.EnumHashBiMap;
-import com.melloware.jintellitype.JIntellitype;
+
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 import javafx.application.Platform;
@@ -416,32 +418,16 @@ public final class MainCtrlr
       });
     }
 
-    if (JIntellitype.isJIntellitypeSupported())  // In JavaFX 12, support will exist for forward and back mouse buttons so that
-    {                                            // JIntellitype can be removed. See https://bugs.openjdk.java.net/browse/JDK-8090930
-      JIntellitype.getInstance().addIntellitypeListener(code ->
-      {
-        switch (code)
-        {
-          case JIntellitype.APPCOMMAND_BROWSER_BACKWARD :
+//---------------------------------------------------------------------------
 
-            if (primaryStage().isFocused())
-              Platform.runLater(this::btnBackClick);
-            else if (fileManagerDlg != null)
-              if (fileManagerDlg.getStage().isShowing() && fileManagerDlg.getStage().isFocused())
-                Platform.runLater(fileManagerDlg::btnBackClick);
-            return;
+    primaryStage().addEventFilter(MouseEvent.MOUSE_CLICKED, event ->
+    {
+      if      (event.getButton() == MouseButton.BACK   ) Platform.runLater(this::btnBackClick   );
+      else if (event.getButton() == MouseButton.FORWARD) Platform.runLater(this::btnForwardClick);
+      else                                               return;
 
-          case JIntellitype.APPCOMMAND_BROWSER_FORWARD :
-
-            if (primaryStage().isFocused())
-              Platform.runLater(this::btnForwardClick);
-            else if (fileManagerDlg != null)
-              if (fileManagerDlg.getStage().isShowing() && fileManagerDlg.getStage().isFocused())
-                Platform.runLater(fileManagerDlg::btnForwardClick);
-            return;
-        }
-      });
-    }
+      event.consume();
+    });
 
 //---------------------------------------------------------------------------
 
@@ -960,10 +946,6 @@ public final class MainCtrlr
     else
     {
       stage.close();
-
-      if (JIntellitype.isJIntellitypeSupported())
-        //JIntellitype.getInstance().cleanUp();   // This causes the VM to crash in Java 11
-        System.exit(0);
 
       if (Environment.isMac())
         Platform.exit();

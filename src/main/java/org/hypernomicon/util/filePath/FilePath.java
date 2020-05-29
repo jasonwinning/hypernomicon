@@ -163,14 +163,13 @@ public class FilePath implements Comparable<FilePath>
   public boolean deletePromptOnFail(boolean noExistOK)
   {
     StringBuilder errorSB = new StringBuilder("");
-    String msgStr;
 
     while (deleteReturnsBoolean(noExistOK, errorSB) == false)
     {
-      if (errorSB.length() > 0)
-        msgStr = "Attempt to delete file failed: \"" + errorSB.toString() + System.lineSeparator() + System.lineSeparator() + "Try again?";
-      else
-        msgStr = "Attempt to delete file failed: \"" + toString() + "\". Try again?";
+      String msgStr = errorSB.length() > 0 ?
+        "Attempt to delete file failed: \"" + errorSB.toString() + System.lineSeparator() + System.lineSeparator() + "Try again?"
+      :
+        "Attempt to delete file failed: \"" + toString() + "\". Try again?";
 
       if (confirmDialog(msgStr) == false)
         return false;
@@ -184,9 +183,9 @@ public class FilePath implements Comparable<FilePath>
 
   @Override public boolean equals(Object other)
   {
-    FilePath otherFilePath;
-
     if (other == null) return false;
+
+    FilePath otherFilePath;
 
     if      (other instanceof FilePath) otherFilePath = (FilePath)other;
     else if (other instanceof String)   otherFilePath = new FilePath((String)other);
@@ -289,9 +288,8 @@ public class FilePath implements Comparable<FilePath>
     if (singleCall && SystemUtils.IS_OS_WINDOWS)
     {
       ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "RD /S /Q \"" + filePath + "\"");
-      pb.redirectErrorStream(true);
+      Process proc = pb.redirectErrorStream(true).start();
 
-      Process proc = pb.start();
       try
       {
         proc.waitFor();
@@ -309,14 +307,15 @@ public class FilePath implements Comparable<FilePath>
         {
           if (errStr.toLowerCase().contains("denied") || errStr.toLowerCase().contains("access"))
             errStr = errStr + "\n\nIt may work to restart Hypernomicon and try again.";
+
           throw new IOException(errStr);
         }
       }
+
+      return;
     }
-    else
-    {
-      FileUtils.deleteDirectory(filePath.toFile());
-    }
+
+    FileUtils.deleteDirectory(filePath.toFile());
   }
 
 //---------------------------------------------------------------------------
@@ -331,9 +330,8 @@ public class FilePath implements Comparable<FilePath>
     if (SystemUtils.IS_OS_WINDOWS)
     {
       ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "ren \"" + srcFilePath + "\" \"" + destFilePath.getNameOnly() + "\"");
-      pb.redirectErrorStream(true);
+      Process proc = pb.redirectErrorStream(true).start();
 
-      Process proc = pb.start();
       try
       {
         proc.waitFor();
@@ -351,14 +349,15 @@ public class FilePath implements Comparable<FilePath>
         {
           if (errStr.toLowerCase().contains("denied"))
             errStr = errStr + "\n\nIt may work to restart Hypernomicon and try again.";
+
           throw new IOException(errStr);
         }
       }
+
+      return;
     }
-    else
-    {
-      FileUtils.moveDirectory(srcFilePath.toFile(), destFilePath.toFile());
-    }
+
+    FileUtils.moveDirectory(srcFilePath.toFile(), destFilePath.toFile());
   }
 
 //---------------------------------------------------------------------------
@@ -418,13 +417,11 @@ public class FilePath implements Comparable<FilePath>
       return true;
     }
 
-    try (RandomAccessFile raFile = new RandomAccessFile(toFile(), "rw"))
+    try (RandomAccessFile raFile = new RandomAccessFile(toFile(), "rw");
+         FileChannel channel = raFile.getChannel(); FileLock lock = channel.tryLock())
     {
-      try (FileChannel channel = raFile.getChannel(); FileLock lock = channel.tryLock())
-      {
-        if (lock == null)
-          return false;
-      }
+      if (lock == null)
+        return false;
     }
     catch (FileNotFoundException e)
     {
@@ -481,9 +478,7 @@ public class FilePath implements Comparable<FilePath>
     if (equals(subFilePath)) return true;
 
     FilePath parent = subFilePath.getParent();
-    if (FilePath.isEmpty(parent)) return false;
-
-    return isSubpath(parent);
+    return FilePath.isEmpty(parent) ? false : isSubpath(parent);
   }
 
 //---------------------------------------------------------------------------

@@ -418,6 +418,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     SyncBibDlgCtrlr.build().sync();
 
     setUnlinkMessage();
+    tfVerificationCode.clear();
     tabLinkToExtBibMgr.setContent(apUnlinkFromExtBibMgr);
   }
 

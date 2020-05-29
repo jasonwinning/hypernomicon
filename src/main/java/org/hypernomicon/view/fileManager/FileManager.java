@@ -73,6 +73,7 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
@@ -279,6 +280,15 @@ public class FileManager extends HyperDlg
     });
 
     dialogStage.setOnHidden(event -> ui.windows.focusStage(app.getPrimaryStage()));
+
+    dialogStage.addEventFilter(MouseEvent.MOUSE_CLICKED, event ->
+    {
+      if      (event.getButton() == MouseButton.BACK   ) Platform.runLater(this::btnBackClick   );
+      else if (event.getButton() == MouseButton.FORWARD) Platform.runLater(this::btnForwardClick);
+      else                                               return;
+
+      event.consume();
+    });
 
     recordTable.addDefaultMenuItems();
 

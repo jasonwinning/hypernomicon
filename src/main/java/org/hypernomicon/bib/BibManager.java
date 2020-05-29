@@ -122,31 +122,7 @@ public class BibManager extends HyperDlg
 
   @Override protected boolean isValid() { return true; }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void setLibrary(LibraryWrapper<? extends BibEntry, ? extends BibCollection> libraryWrapper)
-  {
-    this.libraryWrapper = libraryWrapper;
-
-    if (libraryWrapper != null)
-    {
-      setToolTip(btnSync, "Synchronize with " + libraryWrapper.type().getUserFriendlyName());
-      initCB(cbNewType);
-    }
-
-    if (shownAlready() == false) return;
-
-    stop();
-
-    collTree.clear();
-    entryTable.clear();
-
-    if (libraryWrapper == null) return;
-
-    collTree.rebuild(libraryWrapper.getKeyToColl());
-    treeView.getSelectionModel().clearAndSelect(0);
-  }
+  private void hideBottomControls()     { setAllVisible(false, lblSelect, btnCreateNew, cbNewType); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -154,147 +130,6 @@ public class BibManager extends HyperDlg
   public static BibManager build()
   {
     return ((BibManager) createUsingFullPath("bib/BibManager.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void sync()
-  {
-    if (ui.cantSaveRecord()) return;
-
-    if (btnStop.isDisabled() == false) return;
-
-    stop();
-
-    RotateTransition rt1 = new RotateTransition(Duration.millis(1000), btnSync.getGraphic());
-    rt1.setByAngle(360);
-    rt1.setCycleCount(1);
-    rt1.setInterpolator(Interpolator.EASE_IN);
-
-    RotateTransition rt2 = new RotateTransition(Duration.millis(1000), btnSync.getGraphic());
-    rt2.setByAngle(360);
-    rt2.setCycleCount(Animation.INDEFINITE);
-    rt2.setInterpolator(Interpolator.LINEAR);
-
-    SequentialTransition seqT = new SequentialTransition(rt1, rt2);
-    seqT.play();
-
-    btnStop.setDisable(false);
-
-    libraryWrapper.setKeyChangeHandler(entryTable::updateKey);
-
-    syncTask = libraryWrapper.createNewSyncTask();
-
-    syncTask.runningProperty().addListener((ob, wasRunning, isRunning) ->
-    {
-      if (Boolean.FALSE.equals(wasRunning) || Boolean.TRUE.equals(isRunning)) return;
-
-      stop();
-      seqT.stop();
-
-      ImageView iv1 = imgViewFromRelPath("resources/images/refresh.png");
-      iv1.setFitWidth(16);
-      iv1.setFitHeight(16);
-      btnSync.setGraphic(iv1);
-
-      if ((syncTask.getState() == State.FAILED) || (syncTask.getState() == State.CANCELLED))
-      {
-        Throwable ex = syncTask.getException();
-
-        if (ex instanceof HyperDataException)
-          messageDialog(ex.getMessage(), mtError);
-      }
-
-      boolean changed = syncTask.getChanged();
-      syncTask = null;
-
-      if (changed == false) return;
-
-      collTree.refresh(libraryWrapper.getKeyToColl());
-      refresh();
-
-      ui.update();
-      ui.saveAllToDisk(true, true, true);
-    });
-
-    HyperThread thread = new HyperThread(syncTask);
-    thread.setDaemon(true);
-    syncTask.setThread(thread);
-    thread.start();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void stop()
-  {
-    if (bibDataRetriever != null)
-      bibDataRetriever.stop();
-
-    toolBar.getItems().remove(progressBar);
-    btnStop.setDisable(true);
-    btnSync.setDisable(false);
-
-    if (libraryWrapper != null)
-      libraryWrapper.stop();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void autofill()
-  {
-    if (ui.cantSaveRecord()) return;
-
-    stop();
-
-    btnStop.setDisable(false);
-    toolBar.getItems().add(progressBar);
-    btnSync.setDisable(true);
-
-    BibEntry entry = tableView.getSelectionModel().getSelectedItem().getEntry();
-
-    List<FilePath> pdfFilePaths;
-
-    if (entry.linkedToWork())
-      pdfFilePaths = entry.getWork().workFiles.stream().filter(HDT_WorkFile::pathNotEmpty)
-                                                       .map(HDT_WorkFile::filePath)
-                                                       .collect(Collectors.toList());
-    else
-      pdfFilePaths = Collections.emptyList();
-
-    bibDataRetriever = new BibDataRetriever(httpClient, entry, pdfFilePaths, (pdfBD, queryBD, messageShown) ->
-    {
-      stop();
-
-      if ((pdfBD == null) && (queryBD == null))
-      {
-        if (messageShown == false)
-          messageDialog("Unable to find bibliographic information.", mtInformation);
-
-        return;
-      }
-
-      MergeWorksDlgCtrlr mwd = null;
-
-      try
-      {
-        mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", entry, pdfBD, queryBD, null, entry.getWork(), false, false, Ternary.False);
-      }
-      catch (IOException e)
-      {
-        messageDialog("Unable to initialize merge dialog window.", mtError);
-        return;
-      }
-
-      if (mwd.showModal() == false) return;
-
-      mwd.mergeInto(entry);
-
-      refresh();
-      ui.update();
-    });
   }
 
 //---------------------------------------------------------------------------
@@ -456,9 +291,168 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void hideBottomControls()
+  public void setLibrary(LibraryWrapper<? extends BibEntry, ? extends BibCollection> libraryWrapper)
   {
-    setAllVisible(false, lblSelect, btnCreateNew, cbNewType);
+    this.libraryWrapper = libraryWrapper;
+
+    if (libraryWrapper != null)
+    {
+      setToolTip(btnSync, "Synchronize with " + libraryWrapper.type().getUserFriendlyName());
+      initCB(cbNewType);
+    }
+
+    if (shownAlready() == false) return;
+
+    stop();
+
+    collTree.clear();
+    entryTable.clear();
+
+    if (libraryWrapper == null) return;
+
+    collTree.rebuild(libraryWrapper.getKeyToColl());
+    treeView.getSelectionModel().clearAndSelect(0);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void sync()
+  {
+    if (ui.cantSaveRecord()) return;
+
+    if (btnStop.isDisabled() == false) return;
+
+    stop();
+
+    RotateTransition rt1 = new RotateTransition(Duration.millis(1000), btnSync.getGraphic());
+    rt1.setByAngle(360);
+    rt1.setCycleCount(1);
+    rt1.setInterpolator(Interpolator.EASE_IN);
+
+    RotateTransition rt2 = new RotateTransition(Duration.millis(1000), btnSync.getGraphic());
+    rt2.setByAngle(360);
+    rt2.setCycleCount(Animation.INDEFINITE);
+    rt2.setInterpolator(Interpolator.LINEAR);
+
+    SequentialTransition seqT = new SequentialTransition(rt1, rt2);
+    seqT.play();
+
+    btnStop.setDisable(false);
+
+    libraryWrapper.setKeyChangeHandler(entryTable::updateKey);
+
+    syncTask = libraryWrapper.createNewSyncTask();
+
+    syncTask.runningProperty().addListener((ob, wasRunning, isRunning) ->
+    {
+      if (Boolean.FALSE.equals(wasRunning) || Boolean.TRUE.equals(isRunning)) return;
+
+      stop();
+      seqT.stop();
+
+      ImageView iv1 = imgViewFromRelPath("resources/images/refresh.png");
+      iv1.setFitWidth(16);
+      iv1.setFitHeight(16);
+      btnSync.setGraphic(iv1);
+
+      if ((syncTask.getState() == State.FAILED) || (syncTask.getState() == State.CANCELLED))
+      {
+        Throwable ex = syncTask.getException();
+
+        if (ex instanceof HyperDataException)
+          messageDialog(ex.getMessage(), mtError);
+      }
+
+      boolean changed = syncTask.getChanged();
+      syncTask = null;
+
+      if (changed == false) return;
+
+      collTree.refresh(libraryWrapper.getKeyToColl());
+      refresh();
+
+      ui.update();
+      ui.saveAllToDisk(true, true, true);
+    });
+
+    HyperThread thread = new HyperThread(syncTask);
+    thread.setDaemon(true);
+    syncTask.setThread(thread);
+    thread.start();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void stop()
+  {
+    if (bibDataRetriever != null)
+      bibDataRetriever.stop();
+
+    toolBar.getItems().remove(progressBar);
+    btnStop.setDisable(true);
+    btnSync.setDisable(false);
+
+    if (libraryWrapper != null)
+      libraryWrapper.stop();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void autofill()
+  {
+    if (ui.cantSaveRecord()) return;
+
+    stop();
+
+    btnStop.setDisable(false);
+    toolBar.getItems().add(progressBar);
+    btnSync.setDisable(true);
+
+    BibEntry entry = tableView.getSelectionModel().getSelectedItem().getEntry();
+
+    List<FilePath> pdfFilePaths;
+
+    if (entry.linkedToWork())
+      pdfFilePaths = entry.getWork().workFiles.stream().filter(HDT_WorkFile::pathNotEmpty)
+                                                       .map(HDT_WorkFile::filePath)
+                                                       .collect(Collectors.toList());
+    else
+      pdfFilePaths = Collections.emptyList();
+
+    bibDataRetriever = new BibDataRetriever(httpClient, entry, pdfFilePaths, (pdfBD, queryBD, messageShown) ->
+    {
+      stop();
+
+      if ((pdfBD == null) && (queryBD == null))
+      {
+        if (messageShown == false)
+          messageDialog("Unable to find bibliographic information.", mtInformation);
+
+        return;
+      }
+
+      MergeWorksDlgCtrlr mwd = null;
+
+      try
+      {
+        mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", entry, pdfBD, queryBD, null, entry.getWork(), false, false, Ternary.False);
+      }
+      catch (IOException e)
+      {
+        messageDialog("Unable to initialize merge dialog window.", mtError);
+        return;
+      }
+
+      if (mwd.showModal() == false) return;
+
+      mwd.mergeInto(entry);
+
+      refresh();
+      ui.update();
+    });
   }
 
 //---------------------------------------------------------------------------
