@@ -406,10 +406,7 @@ public class MainTextCtrlr
     KeyWork keyWork = new KeyWork((HDT_RecordWithPath) db.records(keyType).getByID(keyID));
 
     String keyText = taKeyWorks.getText();
-    if (keyText.isEmpty())
-      keyText = keyWork.getEditorText();
-    else
-      keyText = keyText + ", " + keyWork.getEditorText();
+    keyText = keyText.isEmpty() ? keyWork.getEditorText() : (keyText + ", " + keyWork.getEditorText());
 
     taKeyWorks.setText(keyText);
   }

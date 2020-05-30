@@ -360,10 +360,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       setFavNameToggle(fav != null);
 
       programmaticFavNameChange = true;
-      if (fav == null)
-        tfName.setText("");
-      else
-        tfName.setText(fav.name);
+      tfName.setText(fav == null ? "" : fav.name);
       programmaticFavNameChange = false;
     }
 
@@ -531,7 +528,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     public void clear()
     {
-      resultsTable.clear();
+      resultsTable.reset();
       recordTypeToColumnGroupItems = LinkedHashMultimap.create();
       resultsBackingList.clear();
 
@@ -674,7 +671,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           return false;
       }
 
-      resultsTable.clear();
+      resultsTable.reset();
       webView.getEngine().loadContent("");
 
       if (setCaption)
@@ -1162,10 +1159,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           {
             relType = schema.getRelType();
 
-            if (relType == rtNone)
-              subjType = hdtNone;
-            else
-              subjType = db.getSubjType(relType);
+            subjType = relType == rtNone ? hdtNone : db.getSubjType(relType);
 
             if ((recordType == hdtNone) || (recordType == subjType))
             {
@@ -1812,12 +1806,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       updateProgress(0, 1);
 
-      List<ResultsRow> resultRowList;
-
-      if (onlySelected)
-        resultRowList = curQV.resultsTable.getTV().getSelectionModel().getSelectedItems();
-      else
-        resultRowList = results();
+      List<ResultsRow> resultRowList = onlySelected ? curQV.resultsTable.getTV().getSelectionModel().getSelectedItems() : results();
 
       int ndx = 0; for (ResultsRow row : resultRowList)
       {

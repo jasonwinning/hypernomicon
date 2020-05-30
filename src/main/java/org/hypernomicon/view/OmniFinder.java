@@ -353,10 +353,10 @@ public class OmniFinder
 
         case tierExactName:
 
-          if (record.getType() == hdtPerson)
-            return authorMatch(null, (HDT_Person)record, tierAuthorExact);
-
-          return record.getNameEngChar().toLowerCase().equals(queryLC);
+          return record.getType() == hdtPerson ?
+            authorMatch(null, (HDT_Person)record, tierAuthorExact)
+          :
+            record.getNameEngChar().toLowerCase().equals(queryLC);
 
         case tierKeyword:
 
@@ -374,17 +374,17 @@ public class OmniFinder
 
         case tierNameContains:
 
-          if (record.getType() == hdtPerson)
-            return authorMatch(null, (HDT_Person)record, tierAuthorContains);
-
-          return record.getNameEngChar().toLowerCase().contains(queryLC);
+          return record.getType() == hdtPerson ?
+            authorMatch(null, (HDT_Person)record, tierAuthorContains)
+          :
+            record.getNameEngChar().toLowerCase().contains(queryLC);
 
         case tierNameStartExact:
 
-          if (record.getType() == hdtPerson)
-            return authorMatch(null, (HDT_Person)record, tierAuthorStartExact);
-
-          return record.getNameEngChar().toLowerCase().startsWith(queryLC);
+          return record.getType() == hdtPerson ?
+            authorMatch(null, (HDT_Person)record, tierAuthorStartExact)
+          :
+            record.getNameEngChar().toLowerCase().startsWith(queryLC);
 
         default: return false;
       }

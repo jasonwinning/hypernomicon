@@ -156,10 +156,10 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
   private void addPersonsFromInst(HDT_Institution nearestChildInst, HDT_Institution inst, Map<HDT_Person, Set<HDT_Institution>> peopleMap)
   {
-    if (nearestChildInst == curInst)
-      inst.subInstitutions.forEach(subInst -> addPersonsFromInst(subInst, subInst, peopleMap));
-    else
-      inst.subInstitutions.forEach(subInst -> addPersonsFromInst(nearestChildInst, subInst, peopleMap));
+    inst.subInstitutions.forEach(nearestChildInst == curInst ?
+      subInst -> addPersonsFromInst(subInst, subInst, peopleMap)
+    :
+      subInst -> addPersonsFromInst(nearestChildInst, subInst, peopleMap));
 
     inst.persons.forEach(person ->
     {
@@ -371,10 +371,10 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     HDT_Country country = instToCheck.country.get();
 
-    if ((country != null) && (country != baseInst.country.get()))
-      return true;
-
-    return hasSubInstWithDifferentLocation(instToCheck, baseInst);
+    return (country != null) && (country != baseInst.country.get()) ?
+      true
+    :
+      hasSubInstWithDifferentLocation(instToCheck, baseInst);
   }
 
 //---------------------------------------------------------------------------

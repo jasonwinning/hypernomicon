@@ -61,6 +61,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
   private static ColumnGroup generalGroup;
 
   public TableView<ResultsRow> getTV() { return tv; }
+  public HDT_Record selectedRecord()   { return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, ResultsRow::getRecord); }
 
 //---------------------------------------------------------------------------
 
@@ -129,7 +130,6 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
   }
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
   public static final class ResultCellValue<Comp_T extends Comparable<Comp_T>> implements Comparable<ResultCellValue<Comp_T>>
   {
@@ -158,10 +158,10 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
     @SuppressWarnings("unchecked")
     @Override public int compareTo(ResultCellValue<Comp_T> other)
     {
-      if (strToComp != null)
-        return strToComp.apply(text).compareTo(other.strToComp.apply(other.text));
-
-      return sortVal.compareTo((Comp_T) other.sortVal);
+      return strToComp != null ?
+        strToComp.apply(text).compareTo(other.strToComp.apply(other.text))
+      :
+        sortVal.compareTo((Comp_T) other.sortVal);
     }
   }
 
@@ -177,7 +177,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
     tv.setPlaceholder(new Label("There are no query results to display."));
     tv.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-    initColumns();
+    reset();
 
     tv.setRowFactory(theTV ->
     {
@@ -205,18 +205,6 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear()
-  {
-    tv.getColumns().clear();
-    tv.getItems().clear();
-    colGroups.clear();
-
-    initColumns();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   private <Comp_T extends Comparable<Comp_T>> ObservableValue<ResultCellValue<Comp_T>> getCustomCellValue(String str, Function<String, Comp_T> strToComp)
   {
     return new ResultCellValue<>(str, strToComp).getObservable();
@@ -224,8 +212,12 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
   private static final double RESULT_COL_MAX_WIDTH = 400.0;
 
-  private void initColumns()
+  public void reset()
   {
+    tv.getColumns().clear();
+    tv.getItems().clear();
+    colGroups.clear();
+
     datesAdded = false;
     generalGroup = new ColumnGroup("General");
     ColumnGroupItem item;
@@ -367,12 +359,10 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
     ResultColumn<String> col = new ResultColumn<>(firstItem.caption);
 
-    Function<String, String> strToComp;
-
-    if (firstItem.tag == tagTitle)
-      strToComp = str -> makeSortKeyByType(str, hdtWork);
-    else
-      strToComp = str -> str.trim().toLowerCase();
+    Function<String, String> strToComp = firstItem.tag == tagTitle ?
+      str -> makeSortKeyByType(str, hdtWork)
+    :
+      str -> str.trim().toLowerCase();
 
     boolean visible = false;
     for (ColumnGroupItem item : map.values())
@@ -412,14 +402,6 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
     tv.getColumns().add(col);
 
     return col;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HDT_Record selectedRecord()
-  {
-    return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, ResultsRow::getRecord);
   }
 
 //---------------------------------------------------------------------------

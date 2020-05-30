@@ -107,10 +107,10 @@ public class ZoteroAuthors extends BibAuthors
       String firstName = creatorObj.getStrSafe("firstName"),
              lastName  = creatorObj.getStrSafe("lastName");
 
-      if ((firstName.length() > 0) || (lastName.length() > 0))
-        list.add(new BibAuthor(aType, new PersonName(firstName, lastName)));
-      else
-        list.add(new BibAuthor(aType, new PersonName(creatorObj.getStrSafe("name"))));
+      list.add(new BibAuthor(aType, (firstName.length() > 0) || (lastName.length() > 0) ?
+        new PersonName(firstName, lastName)
+      :
+        new PersonName(creatorObj.getStrSafe("name"))));
     });
   }
 

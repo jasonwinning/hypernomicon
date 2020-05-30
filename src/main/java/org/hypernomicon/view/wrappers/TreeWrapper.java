@@ -298,10 +298,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
     prev = item.getParent();
 
-    if ((prev == null) || (prev == ttv.getRoot()))
-      return lastDescendant(ttv.getRoot());
-
-    return prev;
+    return (prev == null) || (prev == ttv.getRoot()) ? lastDescendant(ttv.getRoot()) : prev;
   }
 
 //---------------------------------------------------------------------------
@@ -309,10 +306,10 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   private TreeItem<TreeRow> lastDescendant(TreeItem<TreeRow> treeItem)
   {
-    if (treeItem.getChildren().size() > 0)
-      return lastDescendant(treeItem.getChildren().get(treeItem.getChildren().size() - 1));
-
-    return treeItem;
+    return treeItem.getChildren().size() > 0 ?
+      lastDescendant(treeItem.getChildren().get(treeItem.getChildren().size() - 1))
+    :
+      treeItem;
   }
 
 //---------------------------------------------------------------------------
@@ -320,10 +317,10 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   private TreeItem<TreeRow> getNext(TreeItem<TreeRow> item, boolean fromChild)
   {
-    if ((fromChild == false) && (item.getChildren().size() > 0))
-      return item.getChildren().get(0);
-
-    return nullSwitch(item.nextSibling(), nullSwitch(item.getParent(), null, parent -> getNext(parent, true)), UnaryOperator.identity());
+    return (fromChild == false) && (item.getChildren().size() > 0) ?
+      item.getChildren().get(0)
+    :
+      nullSwitch(item.nextSibling(), nullSwitch(item.getParent(), null, parent -> getNext(parent, true)), UnaryOperator.identity());
   }
 
 //---------------------------------------------------------------------------
@@ -361,10 +358,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
     expand(treeItem);
 
-    if (targetRow.getTreeModel().hasParentChildRelation(target.getType(), source.getType()) == false)
-      return false;
-
-    return true;
+    return targetRow.getTreeModel().hasParentChildRelation(target.getType(), source.getType());
   }
 
 //---------------------------------------------------------------------------

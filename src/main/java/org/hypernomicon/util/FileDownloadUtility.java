@@ -208,12 +208,7 @@ public class FileDownloadUtility
           origFileNameStr = origFileNameStr.substring(0, origFileNameStr.indexOf('&'));
 
         if (origFileNameStr.isEmpty())
-        {
-          if (assumeIsImage)
-            origFileNameStr = "image" + ZoteroWrapper.generateWriteToken();
-          else
-            origFileNameStr = "file" + ZoteroWrapper.generateWriteToken();
-        }
+          origFileNameStr = (assumeIsImage ? "image" : "file") + ZoteroWrapper.generateWriteToken();
 
         String ext = FilenameUtils.getExtension(origFileNameStr);
 
@@ -239,20 +234,17 @@ public class FileDownloadUtility
         }
         catch (Exception e)
         {
-          if (httpClient.wasCancelledByUser())
-            runInFXThread(() -> failHndlr.accept(new TerminateTaskException()));
-          else
-            runInFXThread(() -> failHndlr.accept(e));
+          runInFXThread(httpClient.wasCancelledByUser() ?
+            () -> failHndlr.accept(new TerminateTaskException())
+          :
+            () -> failHndlr.accept(e));
 
           return false;
         }
       }
       else
       {
-        if (fileNameStr.isEmpty())
-          saveFilePath = dirPath.resolve(fileName.toString());
-        else
-          saveFilePath = dirPath.resolve(fileNameStr);
+        saveFilePath = dirPath.resolve(fileNameStr.isEmpty() ? fileName.toString() : fileNameStr);
 
         // opens input stream from the HTTP connection
         // opens an output stream to save into file

@@ -87,7 +87,7 @@ public abstract class HyperDlg
       }
 
       dialogStage.initOwner(owner);
-      dialogStage.getIcons().addAll(app.getPrimaryStage().getIcons());
+      dialogStage.getIcons().addAll(ui.getStage().getIcons());
       Scene scene = new Scene(mainPane);
       dialogStage.setScene(scene);
 

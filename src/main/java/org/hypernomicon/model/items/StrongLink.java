@@ -128,10 +128,10 @@ public class StrongLink
       if ((link.getPosition() != null) || (link.getDebate() != null))
         if ((spoke2.getType() == hdtPosition) || (spoke2.getType() == hdtDebate))
         {
-          if (link.getSpoke(spoke2.getType()) == null)
-            return falseWithErrorMessage("A position record and a problem/debate record cannot be linked together.");
-          else
-            return falseWithErrorMessage("Two records of the same type cannot be linked together.");
+          return falseWithErrorMessage(link.getSpoke(spoke2.getType()) == null ?
+            "A position record and a problem/debate record cannot be linked together."
+          :
+            "Two records of the same type cannot be linked together.");
         }
     }
 
@@ -143,10 +143,10 @@ public class StrongLink
       if ((link.getPosition() != null) || (link.getDebate() != null))
         if ((spoke1.getType() == hdtPosition) || (spoke1.getType() == hdtDebate))
         {
-          if (link.getSpoke(spoke1.getType()) == null)
-            return falseWithErrorMessage("A position record and a problem/debate record cannot be linked together.");
-          else
-            return falseWithErrorMessage("Two records of the same type cannot be linked together.");
+          return falseWithErrorMessage(link.getSpoke(spoke1.getType()) == null ?
+            "A position record and a problem/debate record cannot be linked together."
+          :
+            "Two records of the same type cannot be linked together.");
         }
     }
 

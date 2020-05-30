@@ -152,6 +152,7 @@ public final class MainCtrlr
   public final Map<String, WebButton> webButtonMap = new HashMap<>();
   public HyperViewSequence viewSequence;
   private final EnumHashBiMap<TabEnum, Tab> selectorTabs = EnumHashBiMap.create(TabEnum.class);
+  private Stage stage;
   private HyperFavorites favorites;
   private OmniFinder omniFinder;
   private HyperCB hcbGoTo;
@@ -178,7 +179,7 @@ public final class MainCtrlr
   private List<ResultsRow> results()          { return curQV.resultsTable.getTV().getItems(); }
   MenuBar getMenuBar()                        { return menuBar; }
   public TreeWrapper getTree()                { return treeHyperTab().getTree(); }
-  private Stage primaryStage()                { return app.getPrimaryStage(); }
+  public Stage getStage()                     { return stage; }
   public boolean isShuttingDown()             { return shuttingDown; }
 
   @FXML private void mnuExitClick()           { shutDown(true, true, true); }
@@ -204,13 +205,12 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void init() throws IOException
+  public void init(Stage stage) throws IOException
   {
+    this.stage = stage;
     menuBar.setUseSystemMenuBar(true);
 
     updateProgress("", -1);
-
-    Stage stage = primaryStage();
 
     windows.push(stage);
 
@@ -420,7 +420,7 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
-    primaryStage().addEventFilter(MouseEvent.MOUSE_CLICKED, event ->
+    stage.addEventFilter(MouseEvent.MOUSE_CLICKED, event ->
     {
       if      (event.getButton() == MouseButton.BACK   ) Platform.runLater(this::btnBackClick   );
       else if (event.getButton() == MouseButton.FORWARD) Platform.runLater(this::btnForwardClick);
@@ -521,10 +521,10 @@ public final class MainCtrlr
 
     tfID.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if ((Boolean.TRUE.equals(newValue) == false) && (activeRecord() != null))
-        tfID.setText(String.valueOf(activeRecord().getID()));
-      else
-        tfID.setText("");
+      tfID.setText((Boolean.TRUE.equals(newValue) == false) && (activeRecord() != null) ?
+        String.valueOf(activeRecord().getID())
+      :
+        "");
     });
 
 //---------------------------------------------------------------------------
@@ -616,7 +616,7 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
-    primaryStage().setOnCloseRequest(event ->
+    stage.setOnCloseRequest(event ->
     {
       shutDown(true, true, true);
       event.consume();
@@ -638,7 +638,7 @@ public final class MainCtrlr
 
   public PreviewSource determinePreviewContext()
   {
-    if (primaryStage().isFocused())
+    if (stage.isFocused())
     {
       switch (activeTabEnum())
       {
@@ -650,10 +650,7 @@ public final class MainCtrlr
       }
     }
 
-    if ((fileManagerDlg != null) && fileManagerDlg.getStage().isShowing() && fileManagerDlg.getStage().isFocused())
-      return pvsManager;
-
-    return pvsOther;
+    return (fileManagerDlg != null) && fileManagerDlg.getStage().isShowing() && fileManagerDlg.getStage().isFocused() ? pvsManager : pvsOther;
   }
 
 //---------------------------------------------------------------------------
@@ -881,20 +878,14 @@ public final class MainCtrlr
 
     closeWindows(true);
 
-    Stage stage = primaryStage();
-
     if (savePrefs)
     {
       forEachHyperTab(HyperTab::getDividerPositions);
       fileManagerDlg.getDividerPositions();
       bibManagerDlg.getDividerPositions();
 
-      boolean iconified = stage.isIconified(), fullScreen = stage.isFullScreen(), maximized;
-
-      if (Environment.isMac())
-        maximized = this.maximized;
-      else
-        maximized = stage.isMaximized(); // stage.maximized is never changed from true to false on Mac OS X. JDK-8087618
+      boolean iconified = stage.isIconified(), fullScreen = stage.isFullScreen(),
+              maximized = Environment.isMac() ? this.maximized : stage.isMaximized(); // stage.maximized is never changed from true to false on Mac OS X. JDK-8087618
 
       if (fullScreen || maximized) iconified = false; // This has to be done due to bug JDK-8087997
 
@@ -1036,10 +1027,10 @@ public final class MainCtrlr
 
       @Override public ResultsRow fromString(String string)
       {
-        if (cbResultGoTo.getItems() == null)
-          return new ResultsRow("");
-
-        return nullSwitch(findFirst(cbResultGoTo.getItems(), row -> string.equals(row.getCBText())), new ResultsRow(string));
+        return cbResultGoTo.getItems() == null ?
+          new ResultsRow("")
+        :
+          nullSwitch(findFirst(cbResultGoTo.getItems(), row -> string.equals(row.getCBText())), new ResultsRow(string));
       }
     });
   }
@@ -1149,7 +1140,7 @@ public final class MainCtrlr
 
       fileChooser.setInitialDirectory(dir);
 
-      filePath = windows.showOpenDialog(fileChooser, primaryStage());
+      filePath = windows.showOpenDialog(fileChooser, stage);
     }
 
     if (FilePath.isEmpty(filePath)) return;
@@ -1190,12 +1181,9 @@ public final class MainCtrlr
 
     dirChooser.setTitle("Select an empty folder in which to create database");
 
-    if (file.exists() && file.isDirectory())
-      dirChooser.setInitialDirectory(file);
-    else
-      dirChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
+    dirChooser.setInitialDirectory(file.exists() && file.isDirectory() ? file : new File(System.getProperty("user.dir")));
 
-    FilePath rootPath = ui.windows.showDirDialog(dirChooser, primaryStage());
+    FilePath rootPath = ui.windows.showDirDialog(dirChooser, stage);
     if (FilePath.isEmpty(rootPath)) return;
 
     String[] list = rootPath.toFile().list();
@@ -1375,12 +1363,10 @@ public final class MainCtrlr
 
     if (confirm)
     {
-      String msg;
-
-      if (type == hdtTerm)
-        msg = "Are you sure you want to delete this record and all associated concepts?";
-      else
-        msg = "Are you sure you want to delete this record?";
+      String msg = type == hdtTerm ?
+        "Are you sure you want to delete this record and all associated concepts?"
+      :
+        "Are you sure you want to delete this record?";
 
       String name = record.getCBText();
       if (ultraTrim(name).isEmpty())
@@ -1437,7 +1423,7 @@ public final class MainCtrlr
     tfID.setText("");
     hcbGoTo.clear();
 
-    primaryStage().setTitle(appTitle);
+    stage.setTitle(appTitle);
   }
 
 //---------------------------------------------------------------------------
@@ -1938,10 +1924,10 @@ public final class MainCtrlr
 
     if (hdbExists == false)
     {
-      if (hdbPath == null)
-        return false;
-
-      return falseWithErrorMessage("Unable to load database. The file does not exist: " + hdbPath.toString());
+      return hdbPath == null ?
+        false
+      :
+        falseWithErrorMessage("Unable to load database. The file does not exist: " + hdbPath.toString());
     }
 
     if (internetNotCheckedYet && appPrefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))
@@ -2000,7 +1986,7 @@ public final class MainCtrlr
       getTree().expandMainBranches();
       fileManagerDlg.folderTree.expandMainBranches();
 
-      primaryStage().setTitle(appTitle + " - " + db.getRootPath(appPrefs.get(PREF_KEY_SOURCE_FILENAME, "")));
+      stage.setTitle(appTitle + " - " + db.getRootPath(appPrefs.get(PREF_KEY_SOURCE_FILENAME, "")));
     }
     else
       mnuCloseClick();
@@ -2042,7 +2028,7 @@ public final class MainCtrlr
     if ((db.isLoaded() == false) || (activeTabEnum() == queryTabEnum) || (activeTabEnum() == treeTabEnum) || (activeRecord() == null) || shuttingDown)
       return false;
 
-    CommitableWrapper.commitWrapper(primaryStage().getScene().getFocusOwner());
+    CommitableWrapper.commitWrapper(stage.getScene().getFocusOwner());
 
     return activeTab().saveToRecord() == false;
   }
@@ -2054,8 +2040,8 @@ public final class MainCtrlr
   {
     if ((db.isLoaded() == false) || shuttingDown) return;
 
-    if (windows.getOutermostStage() != primaryStage())
-      windows.focusStage(primaryStage());
+    if (windows.getOutermostStage() != stage)
+      windows.focusStage(stage);
 
     if (cantSaveRecord())
     {
@@ -2184,8 +2170,8 @@ public final class MainCtrlr
     if (getTabEnumByRecordType(record.getType()) == personTabEnum)
       if (record.getType() != hdtPerson) return;
 
-    if (windows.getOutermostStage() != primaryStage())
-      windows.focusStage(primaryStage());
+    if (windows.getOutermostStage() != stage)
+      windows.focusStage(stage);
 
     if (save && cantSaveRecord()) return;
 
@@ -2243,10 +2229,10 @@ public final class MainCtrlr
 
         record = db.records(activeType()).getByKeyNdx(ndx);
 
-        if (tabEnum == termTabEnum)
-          viewSequence.updateCurrentView(new HyperView<>(termTabEnum, ((HDT_Term)record).concepts.get(0)));
-        else
-          viewSequence.updateCurrentView(new HyperView<>(tabEnum, record));
+        viewSequence.updateCurrentView(tabEnum == termTabEnum ?
+          new HyperView<>(termTabEnum, ((HDT_Term)record).concepts.get(0))
+        :
+          new HyperView<>(tabEnum, record));
       }
     }
     else
@@ -2901,10 +2887,10 @@ public final class MainCtrlr
 
     if (bd == null)
     {
-      if (ex == null)
-        messageDialog("Unable to parse bibliographic information.", mtError);
-      else
-        messageDialog("An error occurred while trying to parse BibTex file" + pathStr + ": " + ex.getMessage(), mtError);
+      falseWithErrorMessage(ex == null ?
+        "Unable to parse bibliographic information."
+      :
+        "An error occurred while trying to parse BibTex file" + pathStr + ": " + ex.getMessage());
 
       return;
     }

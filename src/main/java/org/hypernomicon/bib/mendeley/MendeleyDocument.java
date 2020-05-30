@@ -143,11 +143,10 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
   {
     JsonArray collArray = jObj.getArray("folder_uuids");
 
-    if (collArray != null)
-      if ((mWrapper.getTrash().contains(this) == false) || deletedOK)
-        return Lists.newArrayList((Iterable<String>)collArray.getStrs());
-
-    return new ArrayList<>();
+    return (collArray != null) && ((mWrapper.getTrash().contains(this) == false) || deletedOK) ?
+      Lists.newArrayList((Iterable<String>)collArray.getStrs())
+    :
+      new ArrayList<>();
   }
 
 //---------------------------------------------------------------------------
@@ -316,10 +315,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
         JsonArray jArr = jObj.getArray("websites");
 
-        if ((jArr != null) && (jArr.size() > 0))
-          return jArr.getStr(0);
-
-        return "";
+        return (jArr != null) && (jArr.size() > 0) ? jArr.getStr(0) : "";
 
       case bfVolume : case bfIssue   : case bfPages    : case bfPublisher :
       case bfPubLoc : case bfEdition : case bfLanguage :
@@ -471,11 +467,10 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
     return Arrays.stream(BibFieldEnum.values()).allMatch(bibFieldEnum ->
     {
-      if (bibFieldEnum == bfYear)
-        if (backupItem.getStr(bfYear).isBlank() && (StringUtils.isNumeric(getStr(bfYear)) == false))
-          return true;
-
-      return fieldsAreEqual(bibFieldEnum, backupItem);
+      return (bibFieldEnum == bfYear) && backupItem.getStr(bfYear).isBlank() && (StringUtils.isNumeric(getStr(bfYear)) == false) ?
+        true
+      :
+        fieldsAreEqual(bibFieldEnum, backupItem);
     });
   }
 
@@ -618,10 +613,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
       case Sibling:
 
         jsonArr = jObj.getArray("editors");
-        if (jsonArr == null)
-          dest.jObj.put("editors", new JsonArray());
-        else
-          dest.jObj.put("editors", jsonArr.clone());
+        dest.jObj.put("editors", jsonArr == null ? new JsonArray() : jsonArr.clone());
 
         break;
     }

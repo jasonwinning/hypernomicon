@@ -297,13 +297,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     {
       TableRow<HyperTableRow> row = new TableRow<>();
 
-      row.itemProperty().addListener((ob, oldValue, newValue) ->
-      {
-        if (newValue == null)
-          row.setContextMenu(null);
-        else
-          row.setContextMenu(createContextMenu(newValue));
-      });
+      row.itemProperty().addListener((ob, oldValue, newValue) -> row.setContextMenu(newValue == null ? null : createContextMenu(newValue)));
 
       return row;
     });
@@ -385,10 +379,10 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public HyperTableColumn addCol(HDT_RecordType objType, HyperCtrlType ctrlType)
   {
-    if ((ctrlType == ctDropDown) || (ctrlType == ctDropDownList))
-      return addColAltPopulator(objType, ctrlType, new StandardPopulator(objType));
-
-    return addColAltPopulator(objType, ctrlType, Populator.create(cvtRecord));
+    return addColAltPopulator(objType, ctrlType, (ctrlType == ctDropDown) || (ctrlType == ctDropDownList) ?
+      new StandardPopulator(objType)
+    :
+      Populator.create(cvtRecord));
   }
 
 //---------------------------------------------------------------------------

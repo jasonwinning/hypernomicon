@@ -687,10 +687,10 @@ public class WorkDlgCtrlr extends HyperDlg
 
     FilePath folderPath = nullSwitch(destFolder.getValue(), null, HDT_Folder::filePath);
 
-    if (FilePath.isEmpty(folderPath) || (folderPath.exists() == false))
-      dirChooser.setInitialDirectory(db.topicalPath().toFile());
-    else
-      dirChooser.setInitialDirectory(folderPath.toFile());
+    dirChooser.setInitialDirectory(FilePath.isEmpty(folderPath) || (folderPath.exists() == false) ?
+      db.topicalPath().toFile()
+    :
+      folderPath.toFile());
 
     dirChooser.setTitle("Select Destination Folder");
 
@@ -921,10 +921,10 @@ public class WorkDlgCtrlr extends HyperDlg
     else if (queryBD instanceof GoogleBibData)
     {
       String isbn = GoogleBibData.class.cast(queryBD).getQueryIsbn();
-      if (isbn.isBlank())
-        lblAutoPopulated.setText("Fields have been auto-populated from Google Books");
-      else
-        lblAutoPopulated.setText("Fields auto-populated from Google Books, isbn: " + isbn);
+      lblAutoPopulated.setText(isbn.isBlank() ?
+        "Fields have been auto-populated from Google Books"
+      :
+        "Fields auto-populated from Google Books, isbn: " + isbn);
     }
 
     populateFieldsFromBibData(queryBD, true);
@@ -1203,20 +1203,16 @@ public class WorkDlgCtrlr extends HyperDlg
       return true;
     }
 
-    if (rbCurrent.isSelected())
-    {
-      if (chkKeepFilenameUnchanged.isSelected())
-        newFilePath = origFilePath;
-      else
-        newFilePath = origFilePath.getDirOnly().resolve(tfNewFile.getText());
-    }
-    else
-    {
-      if (chkKeepFilenameUnchanged.isSelected())
-        newFilePath = destFolder.get().filePath().resolve(origFilePath.getNameOnly());
-      else
-        newFilePath = destFolder.get().filePath().resolve(tfNewFile.getText());
-    }
+    newFilePath = rbCurrent.isSelected() ?
+      (chkKeepFilenameUnchanged.isSelected() ?
+        origFilePath
+      :
+        origFilePath.getDirOnly().resolve(tfNewFile.getText()))
+    :
+      (chkKeepFilenameUnchanged.isSelected() ?
+        destFolder.get().filePath().resolve(origFilePath.getNameOnly())
+      :
+        destFolder.get().filePath().resolve(tfNewFile.getText()));
 
     HDT_RecordWithPath existingFile = HyperPath.getRecordFromFilePath(newFilePath);
 

@@ -199,7 +199,7 @@ public class PreviewWindow extends HyperDlg
 
     paneType.setOnMouseClicked(event -> curWrapper().go());
 
-    btnGoToMain.setOnAction(event -> ui.windows.focusStage(app.getPrimaryStage()));
+    btnGoToMain.setOnAction(event -> ui.windows.focusStage(ui.getStage()));
     btnGoToManager.setOnAction(event ->
     {
       if (fileManagerDlg.getStage().isShowing())
@@ -377,10 +377,7 @@ public class PreviewWindow extends HyperDlg
     {
       int pageNum = curWrapper().getPageNum();
 
-      if (Boolean.TRUE.equals(newValue))
-        tfPreviewPage.setText("");
-      else
-        tfPreviewPage.setText(pageNum == -1 ? "" : curWrapper().getLabelByPage(pageNum));
+      tfPreviewPage.setText(Boolean.TRUE.equals(newValue) ? "" : (pageNum == -1 ? "" : curWrapper().getLabelByPage(pageNum)));
     });
 
     tfPreviewPage.setOnAction(event -> curWrapper().updatePage(curWrapper().getPageByLabel(tfPreviewPage.getText())));
@@ -420,7 +417,7 @@ public class PreviewWindow extends HyperDlg
     dialogStage.setOnHiding(event ->
     {
       srcToWrapper.values().forEach(PreviewWrapper::prepareToHide);
-      ui.windows.focusStage(app.getPrimaryStage());
+      ui.windows.focusStage(ui.getStage());
     });
 
     dialogStage.setOnHidden(event -> srcToWrapper.values().forEach(PreviewWrapper::prepareToShow));
@@ -603,10 +600,7 @@ public class PreviewWindow extends HyperDlg
           if (workFile.works.size() > 1)
           {
             btnContents.setDisable(false);
-            if (workFile.works.size() == 2)
-              btnContents.setText("1 other record...");
-            else
-              btnContents.setText((workFile.works.size() - 1) + " other records...");
+            btnContents.setText(workFile.works.size() == 2 ? "1 other record..." : ((workFile.works.size() - 1) + " other records..."));
           }
         }
       }
@@ -703,7 +697,7 @@ public class PreviewWindow extends HyperDlg
 
       Platform.runLater(() ->
       {
-        app.getPrimaryStage().close();
+        ui.getStage().close();
 
         if (Environment.isMac())
           Platform.exit();

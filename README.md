@@ -50,7 +50,7 @@ Contributions can be submitted via [Pull requests](https://github.com/jasonwinni
 
 ### Prerequisites
 
-* A recent version of [JDK 11](https://jdk.java.net/11/) for building 'master' branch
+* [JDK 11](https://adoptopenjdk.net/index.html?variant=openjdk11&ga=ga) or later for building 'master' branch
 * A recent version of [Git](https://git-scm.com/downloads)
 * [Maven](https://maven.apache.org/download.cgi) version 3.0.5 or greater
 

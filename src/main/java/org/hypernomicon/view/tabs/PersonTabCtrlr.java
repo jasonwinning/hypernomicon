@@ -22,7 +22,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
@@ -242,12 +241,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     htWorks.buildRows(curPerson.miscFiles.stream().filter(Predicate.not(htWorks::containsRecord)), (row, file) ->
     {
-      row.setCellValue(0, file, "");  // it's blank because files don't have a year
+      row.setCellValue(0, file, "");  // it's blank because file records don't have a year
 
-      if (file.fileType.isNotNull())
-        row.setCellValue(1, file, "File (" + file.fileType.get().name() + ")");
-      else
-        row.setCellValue(1, file, "File");
+      row.setCellValue(1, file, "File" + (file.fileType.isNull() ? "" : " (" + file.fileType.get().name() + ")"));
 
       row.setCellValue(2, file, "");
       row.setCellValue(3, file, "");
@@ -470,10 +466,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
   private void addOtherToTopicTable(HDT_Record displayer, HyperTableRow row)
   {
-    if (displayer.getType() == hdtWorkLabel)
-      row.setCellValue(1, displayer, HDT_WorkLabel.class.cast(displayer).getExtendedText());
-    else
-      row.setCellValue(1, displayer, displayer.listName());
+    row.setCellValue(1, displayer, displayer.getType() == hdtWorkLabel ? HDT_WorkLabel.class.cast(displayer).getExtendedText() : displayer.listName());
   }
 
 //---------------------------------------------------------------------------
@@ -569,10 +562,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       }
       catch (SearchKeyException e)
       {
-        if (e.getTooShort())
-          messageDialog("Unable to modify investigation \"" + iV.tfName.getText() + "\": search key must be at least 3 characters.", mtError);
-        else
-          messageDialog("Unable to modify investigation \"" + iV.tfName.getText() + "\": search key already exists.", mtError);
+        falseWithErrorMessage(e.getTooShort() ?
+          "Unable to modify investigation \"" + iV.tfName.getText() + "\": search key must be at least 3 characters."
+        :
+          "Unable to modify investigation \"" + iV.tfName.getText() + "\": search key already exists.");
 
         tpPerson.getSelectionModel().select(iV.tab);
         safeFocus(iV.tfSearchKey);
@@ -627,10 +620,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     HDT_Subfield oldSubfield = curPerson.subfield.get();
 
-    if ((subfieldID > 0) && (hcbField.selectedID() > 0))
-      curPerson.subfield.setID(subfieldID);
-    else
-      curPerson.subfield.setID(-1);
+    curPerson.subfield.setID((subfieldID > 0) && (hcbField.selectedID() > 0) ? subfieldID : -1);
 
     if ((oldSubfield != null) && oldSubfield.persons.isEmpty())
       db.deleteRecord(hdtSubfield, oldSubfield.getID());
@@ -1153,10 +1143,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   {
     Tab tab = tpPerson.getSelectionModel().getSelectedItem();
 
-    if (tab.equals(tabOverview))
-      return mainText.getViewInfo();
-
-    return nullSwitch(findFirst(invViews, iV -> iV.tab.equals(tab)), new TextViewInfo(), iV -> iV.textWrapper.getViewInfo());
+    return tab.equals(tabOverview) ?
+      mainText.getViewInfo()
+    :
+      nullSwitch(findFirst(invViews, iV -> iV.tab.equals(tab)), new TextViewInfo(), iV -> iV.textWrapper.getViewInfo());
   }
 
 //---------------------------------------------------------------------------

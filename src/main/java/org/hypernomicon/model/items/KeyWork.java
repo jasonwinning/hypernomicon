@@ -129,10 +129,10 @@ public class KeyWork implements Comparable<KeyWork>
 
   public KeyWork(HDT_RecordType recordType, int recordID, String searchKey, boolean online)
   {
-    if (online)
-      record = new OnlineRecordPointer(db.records(recordType).getByID(recordID));
-    else
-      record = new OfflineRecordPointer(recordType, recordID);
+    record = online ?
+      new OnlineRecordPointer(db.records(recordType).getByID(recordID))
+    :
+      new OfflineRecordPointer(recordType, recordID);
 
     this.searchKey = searchKey;
     searchKeyInitialized = true;
@@ -244,10 +244,10 @@ public class KeyWork implements Comparable<KeyWork>
 
   public String getEditorText()
   {
-    if (updateSearchKeyAndCheckIfActive())
-      return searchKey;
-
-    return "<a id=\"" + record.getID() + "\" type=\"" + db.getTypeTagStr(record.getType()) + "\">" + searchKey + "</a>";
+    return updateSearchKeyAndCheckIfActive() ?
+      searchKey
+    :
+      "<a id=\"" + record.getID() + "\" type=\"" + db.getTypeTagStr(record.getType()) + "\">" + searchKey + "</a>";
   }
 
   //---------------------------------------------------------------------------

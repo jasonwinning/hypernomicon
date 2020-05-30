@@ -574,9 +574,7 @@ public final class HyperDB
     FilePath newRootFilePath = new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, System.getProperty("user.dir")));
     boolean dbChanged = false;
 
-    if (FilePath.isEmpty(rootFilePath))
-      dbChanged = true;
-    else if (rootFilePath.equals(newRootFilePath) == false)
+    if (FilePath.isEmpty(rootFilePath) || (rootFilePath.equals(newRootFilePath) == false))
       dbChanged = true;
 
     close(null);
@@ -894,10 +892,7 @@ public final class HyperDB
   {
     if (isUnstoredRecord(id, type)) return true;
 
-    if (type == hdtFolder)
-      return isSpecialFolder(id, checkSubfolders);
-
-    return false;
+    return type == hdtFolder ? isSpecialFolder(id, checkSubfolders) : false;
   }
 
 //---------------------------------------------------------------------------

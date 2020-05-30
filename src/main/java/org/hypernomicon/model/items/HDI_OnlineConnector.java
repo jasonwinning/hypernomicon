@@ -157,10 +157,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
     {
       case tagHub :
 
-        if (connector.isLinked())
-          val.hubID = connector.getHub().getID();
-        else
-          val.hubID = -1;
+        val.hubID = connector.isLinked() ? connector.getHub().getID() : -1;
         break;
 
       case tagDisplayRecord :
@@ -169,10 +166,10 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 
         mainText.displayItems.forEach(displayItem ->
         {
-          if (displayItem.type == diRecord)
-            val.displayItems.add(new DisplayItem(displayItem.record.getID(), displayItem.record.getType()));
-          else
-            val.displayItems.add(new DisplayItem(displayItem.type));
+          val.displayItems.add(displayItem.type == diRecord ?
+            new DisplayItem(displayItem.record.getID(), displayItem.record.getType())
+          :
+            new DisplayItem(displayItem.type));
         });
 
         break;
@@ -198,11 +195,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 
       default :
 
-        if (mainText.getPlain().matches(".*\\p{Alnum}.*") == false)
-          val.htmlText = "";
-        else
-          val.htmlText = mainText.getHtml();
-
+        val.htmlText = mainText.getPlain().matches(".*\\p{Alnum}.*") ? mainText.getHtml() : "";
         break;
     }
   }

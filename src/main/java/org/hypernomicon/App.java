@@ -99,12 +99,12 @@ import javafx.scene.input.TransferMode;
  */
 public final class App extends Application
 {
-  private Stage primaryStage;
   private VersionNumber version;
   private boolean testMainTextEditing = false;
   private static boolean isDebugging;
-  private static final double baseDisplayScale = 81.89306640625;
   private static int total, ctr, lastPercent;
+
+  private static final double baseDisplayScale = 81.89306640625;
 
   public static App app;
   public static BibManager bibManagerDlg = null;
@@ -120,7 +120,6 @@ public final class App extends Application
   public static final FolderTreeWatcher folderTreeWatcher = new FolderTreeWatcher();
   public static final String appTitle = "Hypernomicon";
 
-  public Stage getPrimaryStage()    { return primaryStage; }
   public boolean debugging()        { return isDebugging; }
   public VersionNumber getVersion() { return version; }
 
@@ -178,11 +177,9 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void start(Stage primaryStage)
+  @Override public void start(Stage stage)
   {
-    this.primaryStage = primaryStage;
-
-    primaryStage.setTitle(appTitle);
+    stage.setTitle(appTitle);
 
     if (appPrefs == null)
     {
@@ -192,7 +189,7 @@ public final class App extends Application
 
     try
     {
-      initMainWindows();
+      initMainWindows(stage);
     }
     catch(IOException e)
     {
@@ -328,12 +325,10 @@ public final class App extends Application
 
       if (testMainTextEditing)
       {
-        MainTextWrapper mainText;
-
-        if (record.getType() == hdtInvestigation)
-          mainText = ui.personHyperTab().getInvMainTextWrapper(record.getID());
-        else
-          mainText = ui.activeTab().mainTextWrapper();
+        MainTextWrapper mainText = record.getType() == hdtInvestigation ?
+          ui.personHyperTab().getInvMainTextWrapper(record.getID())
+        :
+          ui.activeTab().mainTextWrapper();
 
         if (mainText != null)
           mainText.beginEditing(false);
@@ -352,7 +347,7 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initMainWindows() throws IOException
+  private void initMainWindows(Stage stage) throws IOException
   {
     Application.setUserAgentStylesheet(STYLESHEET_MODENA);
 
@@ -360,7 +355,7 @@ public final class App extends Application
     Region rootNode = loader.load();
 
     ui = loader.getController();
-    ui.init();
+    ui.init(stage);
 
     Scene scene = new Scene(rootNode);
 
@@ -397,9 +392,8 @@ public final class App extends Application
       if (board.hasContent(HYPERNOMICON_DATA_FORMAT))
         return;
 
-      if (board.hasImage())
-        if (isDebugging)
-          System.out.println("has image");
+      if (board.hasImage() && isDebugging)
+        System.out.println("has image");
 
       if (board.hasFiles())
       {
@@ -411,36 +405,36 @@ public final class App extends Application
       event.consume();
     });
 
-    primaryStage.setScene(scene);
+    stage.setScene(scene);
 
-    primaryStage.getIcons().addAll(Stream.of("16x16", "32x32", "48x48", "64x64", "128x128", "256x256")
-                                         .map(str -> new Image(App.class.getResourceAsStream("resources/images/logo-" + str + ".png")))
-                                         .collect(Collectors.toList()));
+    stage.getIcons().addAll(Stream.of("16x16", "32x32", "48x48", "64x64", "128x128", "256x256")
+                                  .map(str -> new Image(App.class.getResourceAsStream("resources/images/logo-" + str + ".png")))
+                                  .collect(Collectors.toList()));
     ui.hideFindTable();
 
     initScaling(rootNode);
 
-    double  x          = appPrefs.getDouble (PREF_KEY_WINDOW_X,          primaryStage.getX()),
-            y          = appPrefs.getDouble (PREF_KEY_WINDOW_Y,          primaryStage.getY()),
-            width      = appPrefs.getDouble (PREF_KEY_WINDOW_WIDTH,      primaryStage.getWidth()),
-            height     = appPrefs.getDouble (PREF_KEY_WINDOW_HEIGHT,     primaryStage.getHeight());
-    boolean fullScreen = appPrefs.getBoolean(PREF_KEY_WINDOW_FULLSCREEN, primaryStage.isFullScreen()),
-            maximized  = appPrefs.getBoolean(PREF_KEY_WINDOW_MAXIMIZED,  primaryStage.isMaximized());
+    double  x          = appPrefs.getDouble (PREF_KEY_WINDOW_X,          stage.getX()),
+            y          = appPrefs.getDouble (PREF_KEY_WINDOW_Y,          stage.getY()),
+            width      = appPrefs.getDouble (PREF_KEY_WINDOW_WIDTH,      stage.getWidth()),
+            height     = appPrefs.getDouble (PREF_KEY_WINDOW_HEIGHT,     stage.getHeight());
+    boolean fullScreen = appPrefs.getBoolean(PREF_KEY_WINDOW_FULLSCREEN, stage.isFullScreen()),
+            maximized  = appPrefs.getBoolean(PREF_KEY_WINDOW_MAXIMIZED,  stage.isMaximized());
 
-    primaryStage.setX(x); // set X and Y first so that window gets full-screened or
-    primaryStage.setY(y); // maximized onto the correct monitor if there are more than one
+    stage.setX(x); // set X and Y first so that window gets full-screened or
+    stage.setY(y); // maximized onto the correct monitor if there are more than one
 
-    if      (fullScreen) primaryStage.setFullScreen(true);
-    else if (maximized)  primaryStage.setMaximized(true);
+    if      (fullScreen) stage.setFullScreen(true);
+    else if (maximized)  stage.setMaximized(true);
     else
     {
-      primaryStage.setWidth(width);
-      primaryStage.setHeight(height);
+      stage.setWidth(width);
+      stage.setHeight(height);
 
-      ensureVisible(primaryStage, rootNode.getPrefWidth(), rootNode.getPrefHeight());
+      ensureVisible(stage, rootNode.getPrefWidth(), rootNode.getPrefHeight());
     }
 
-    primaryStage.show();
+    stage.show();
 
     scaleNodeForDPI(rootNode);
     MainTextWrapper.rescale();

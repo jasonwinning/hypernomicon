@@ -739,10 +739,10 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
         case STRING :
 
-          if (key.equals("notes"))
-            addFieldHtml(fieldName, makeHtmlRows(fieldName, document.getMultiStr(bfMisc)));
-          else
-            addFieldHtml(fieldName, makeStringHtml(fieldName, jObj.getStrSafe(key)));
+          addFieldHtml(fieldName, key.equals("notes") ?
+            makeHtmlRows(fieldName, document.getMultiStr(bfMisc))
+          :
+            makeStringHtml(fieldName, jObj.getStrSafe(key)));
           break;
 
         case INTEGER :

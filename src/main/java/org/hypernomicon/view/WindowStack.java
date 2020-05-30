@@ -193,7 +193,7 @@ public final class WindowStack
 
     focusStage(stage);
 
-    if (SystemUtils.IS_OS_LINUX && (stage == app.getPrimaryStage()))
+    if (SystemUtils.IS_OS_LINUX && (stage == ui.getStage()))
     {
       // This is a workaround for: https://bugs.openjdk.java.net/browse/JDK-8140491
       //

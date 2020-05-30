@@ -81,10 +81,10 @@ public class SearchResultFileList
 
     private boolean overlaps(SearchResultFile other)
     {
-      if (filePath.equals(other.filePath) == false)
-        return false;
-
-      return (endPage >= other.startPage) && (other.endPage >= startPage);
+      return filePath.equals(other.filePath) == false ?
+        false
+      :
+        ((endPage >= other.startPage) && (other.endPage >= startPage));
     }
 
   //---------------------------------------------------------------------------
@@ -92,11 +92,11 @@ public class SearchResultFileList
 
     private boolean contains(SearchResultFile other)
     {
-      if (filePath.equals(other.filePath) == false)
-        return false;
-
-      return ((startPage <= other.startPage) && (endPage >= other.endPage)) ||
-             ((other.startPage <= startPage) && (other.endPage >= endPage));
+      return filePath.equals(other.filePath) == false ?
+        false
+      :
+        (((startPage <= other.startPage) && (endPage >= other.endPage))  ||
+         ((other.startPage <= startPage) && (other.endPage >= endPage)));
     }
 
     //---------------------------------------------------------------------------

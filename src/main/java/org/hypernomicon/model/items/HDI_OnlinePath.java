@@ -135,10 +135,10 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 
         if (hyperPath.filePath().isDirectory())
         {
-          if (hyperPath.getRecord() == db.getRootFolder())
-            return HyperPath.ROOT_PATH_STR;
-
-          return db.getRootPath().relativize(hyperPath.filePath()).toString();
+          return hyperPath.getRecord() == db.getRootFolder() ?
+            HyperPath.ROOT_PATH_STR
+          :
+            db.getRootPath().relativize(hyperPath.filePath()).toString();
         }
 
         // now it should fall through to tagParentFolder case
@@ -147,10 +147,11 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 
         if (hyperPath.parentFolder() == null)
           return "";
-        else if (hyperPath.parentFolder().getID() == ROOT_FOLDER_ID)
-          return HyperPath.ROOT_PATH_STR;
 
-        return db.getRootPath().relativize(hyperPath.parentFolder().filePath()).toString();
+        return hyperPath.parentFolder().getID() == ROOT_FOLDER_ID ?
+          HyperPath.ROOT_PATH_STR
+        :
+          db.getRootPath().relativize(hyperPath.parentFolder().filePath()).toString();
 
       default :
 

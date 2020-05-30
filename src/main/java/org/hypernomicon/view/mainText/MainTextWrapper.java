@@ -493,11 +493,7 @@ public final class MainTextWrapper
 
             concepts.forEach(concept ->
             {
-              if (relRecordsHtml.length() == 0)
-                relRecordsHtml.append("<b hypncon-no-links=true>Related concepts: </b>");
-              else
-                relRecordsHtml.append("; ");
-
+              relRecordsHtml.append(relRecordsHtml.length() == 0 ? "<b hypncon-no-links=true>Related concepts: </b>" : "; ");
               relRecordsHtml.append(getGoToRecordAnchor(concept, "", concept.getExtendedName()));
             });
           }
@@ -509,11 +505,7 @@ public final class MainTextWrapper
 
             displayers.forEach(displayer ->
             {
-              if (relRecordsHtml.length() == 0)
-                relRecordsHtml.append("<b hypncon-no-links=true>Displayers: </b>");
-              else
-                relRecordsHtml.append("; ");
-
+              relRecordsHtml.append(relRecordsHtml.length() == 0 ? "<b hypncon-no-links=true>Displayers: </b>" : "; ");
               relRecordsHtml.append(getGoToRecordAnchor(displayer.getSpoke(), "", displayer.getSpoke().getCBText()));
             });
           }

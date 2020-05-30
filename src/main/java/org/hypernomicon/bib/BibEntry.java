@@ -221,10 +221,10 @@ public abstract class BibEntry extends BibData implements BibEntity
       }
 
       cResult = e1.getStr(bfYear).compareTo(e2.getStr(bfYear));
-      if (cResult != 0)
-        return cResult;
-
-      return makeSortKeyByType(e1.getStr(bfTitle), hdtWork).compareTo(makeSortKeyByType(e1.getStr(bfTitle), hdtWork));
+      return cResult != 0 ?
+        cResult
+      :
+        makeSortKeyByType(e1.getStr(bfTitle), hdtWork).compareTo(makeSortKeyByType(e1.getStr(bfTitle), hdtWork));
     };
   }
 

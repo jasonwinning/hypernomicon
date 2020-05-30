@@ -226,10 +226,10 @@ public class PreviewWrapper
   {
     if (curPrevFile == null) return false;
 
-    if (isForward)
-      return (curPrevFile.navNdx + 1) < curPrevFile.navList.size();
-
-    return curPrevFile.navNdx >= 1;
+    return isForward ?
+      (curPrevFile.navNdx + 1) < curPrevFile.navList.size()
+    :
+      curPrevFile.navNdx >= 1;
   }
 
 //---------------------------------------------------------------------------
@@ -307,14 +307,10 @@ public class PreviewWrapper
 
   private MenuItem getMenuItemForNavNdx(int ndx)
   {
-    MenuItem item;
     int page = curPrevFile.navList.get(ndx);
     String pageLabel = safeStr(getLabelByPage(page)), pageStr = String.valueOf(page);
 
-    if ((pageLabel.length() > 0) && (pageLabel.equals(pageStr) == false))
-      item = new MenuItem("Page " + pageLabel + " (" + pageStr + ")");
-    else
-      item = new MenuItem("Page " + pageStr);
+    MenuItem item = new MenuItem("Page " + (pageLabel.isEmpty() || pageLabel.equals(pageStr) ? pageStr : (pageLabel + " (" + pageStr + ")")));
 
     item.setOnAction(event ->
     {

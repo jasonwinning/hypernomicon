@@ -54,10 +54,10 @@ public class ChangeParentDlgCtrlr extends HyperDlg
     label1.setText("The " + db.getTypeName(child.getType()) + " record:");
     label2.setText("will be attached under the " + db.getTypeName(newParent.getType()) + " record:");
 
-    if (copyIsOK)
-      label3.setText("Select [ Move ] if it should also be unattached from the " + db.getTypeName(oldParent.getType()) + " record:");
-    else
-      label3.setText("and will be unattached from the " + db.getTypeName(oldParent.getType()) + " record:");
+    label3.setText(copyIsOK ?
+      "Select [ Move ] if it should also be unattached from the " + db.getTypeName(oldParent.getType()) + " record:"
+    :
+      "and will be unattached from the " + db.getTypeName(oldParent.getType()) + " record:");
 
     tfChild.setText(child.name());
     tfOldParent.setText(oldParent.name());

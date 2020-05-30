@@ -21,7 +21,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.ArrayList;
@@ -160,10 +159,10 @@ public class SelectConceptDlgCtrlr extends HyperDlg
     }
     catch (SearchKeyException e)
     {
-      if (e.getTooShort())
-        messageDialog("Unable to create term record: search key must be at least 3 characters.", mtError);
-      else
-        messageDialog("Unable to create term record: search key already exists.", mtError);
+      falseWithErrorMessage(e.getTooShort() ?
+        "Unable to create term record: search key must be at least 3 characters."
+      :
+        "Unable to create term record: search key already exists.");
 
       db.deleteRecord(hdtTerm, term.getID());
       term = null;

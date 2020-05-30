@@ -103,10 +103,10 @@ public class HyperPath
 
   public boolean isEmpty()
   {
-    if ((record != null) && (record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID))
-      return false;
-
-    return FilePath.isEmpty(fileName);
+    return (record != null) && (record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID) ?
+      false
+    :
+      FilePath.isEmpty(fileName);
   }
 
 //---------------------------------------------------------------------------
@@ -116,10 +116,10 @@ public class HyperPath
 
   public String getNameStr()
   {
-    if ((record != null) && (record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID))
-      return ROOT_PATH_STR;
-
-    return fileName == null ? "" : fileName.getNameOnly().toString();
+    return (record != null) && (record.getType() == hdtFolder) && (record.getID() == ROOT_FOLDER_ID) ?
+      ROOT_PATH_STR
+    :
+      (fileName == null ? "" : fileName.getNameOnly().toString());
   }
 
 //---------------------------------------------------------------------------
@@ -281,10 +281,10 @@ public class HyperPath
       case hdtWorkFile :
 
         HDT_WorkFile workFile = HDT_WorkFile.class.cast(existingRecord);
-        if (workFile.works.size() > 0)
-          return "The file: " + filePath + " is already in use as a work file, work record ID: " + workFile.works.get(0).getID();
-        else
-          return "The file: " + filePath + " is already in use as a work file, ID: " + workFile.getID();
+        return workFile.works.size() > 0 ?
+          "The file: " + filePath + " is already in use as a work file, work record ID: " + workFile.works.get(0).getID()
+        :
+          "The file: " + filePath + " is already in use as a work file, ID: " + workFile.getID();
 
       case hdtPerson :
 

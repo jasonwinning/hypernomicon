@@ -253,7 +253,7 @@ public class FileManager extends HyperDlg
     btnRefresh.setOnAction(event -> pruneAndRefresh());
     btnRename.setOnAction(event -> rename(null));
 
-    btnMainWindow.setOnAction(event -> ui.windows.focusStage(app.getPrimaryStage()));
+    btnMainWindow.setOnAction(event -> ui.windows.focusStage(ui.getStage()));
     btnPreviewWindow.setOnAction(event -> ui.openPreviewWindow(pvsManager));
     btnPaste.setDisable(true);
     pasteMenuItem.disabled = true;
@@ -279,7 +279,7 @@ public class FileManager extends HyperDlg
       if (needRefresh) refresh();
     });
 
-    dialogStage.setOnHidden(event -> ui.windows.focusStage(app.getPrimaryStage()));
+    dialogStage.setOnHidden(event -> ui.windows.focusStage(ui.getStage()));
 
     dialogStage.addEventFilter(MouseEvent.MOUSE_CLICKED, event ->
     {
@@ -388,10 +388,7 @@ public class FileManager extends HyperDlg
 
       row.itemProperty().addListener((ob, oldValue, newValue) ->
       {
-        if (newValue == null)
-          row.setContextMenu(null);
-        else
-          row.setContextMenu(fileTable.createContextMenu(newValue, fileTable.getContextMenuSchemata()));
+        row.setContextMenu(newValue == null ? null : fileTable.createContextMenu(newValue, fileTable.getContextMenuSchemata()));
       });
 
       return row;
@@ -753,10 +750,7 @@ public class FileManager extends HyperDlg
       return true;
     }};
 
-    if (!HyperTask.performTaskWithProgressDialog(task))
-      return false;
-
-    return !srcToDest.isEmpty();
+    return !HyperTask.performTaskWithProgressDialog(task) ? false : !srcToDest.isEmpty();
   }
 
 //---------------------------------------------------------------------------

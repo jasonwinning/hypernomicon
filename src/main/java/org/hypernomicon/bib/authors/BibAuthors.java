@@ -130,20 +130,20 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
       HDT_Person person = authGroup.getPrimary();
 
-      if (person == null)
-        authorTypes.forEach(authorType -> add(authorType, new PersonName(authGroup.getPrimaryStr())));
-      else
-        authorTypes.forEach(authorType -> add(authorType, person));
+      authorTypes.forEach(person == null ?
+        authorType -> add(authorType, new PersonName(authGroup.getPrimaryStr()))
+      :
+        authorType -> add(authorType, person));
     });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void getListsForWorkMerge(List<PersonName> nameList,         // list of names that will be shown in work merge dialog table 
+  public void getListsForWorkMerge(List<PersonName> nameList,         // list of names that will be shown in work merge dialog table
                                    List<HDT_Person> personList,       // person records that will be populated in work merge dialog table
-                                   Map<PersonName, Boolean> nameToEd, 
-                                   Map<PersonName, Boolean> nameToTr, 
+                                   Map<PersonName, Boolean> nameToEd,
+                                   Map<PersonName, Boolean> nameToTr,
                                    HDT_Work destWork)
   {
     if (isEmpty()) return;
@@ -156,7 +156,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 
     translatorList.forEach(bibAuthor ->
     {
-      PersonName name = bibAuthor.getName();      
+      PersonName name = bibAuthor.getName();
       if (name.isEmpty()) return;
 
       if (nameList.contains(name) == false)
@@ -223,29 +223,29 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
     }
 
     int startNdx = 0;
-    
+
     while (startNdx < nonRecordNames.size())
     {
       List<List<Author>> matchedAuthorsList = new ArrayList<>(); // List of matches for each non-record author
 
-      HyperTask task = NewPersonDlgCtrlr.createDupCheckTask(nonRecordNames  .subList(startNdx, nonRecordNames.size()), 
-                                                            nonRecordAuthors.subList(startNdx, nonRecordNames.size()), 
-                                                            matchedAuthorsList, 
+      HyperTask task = NewPersonDlgCtrlr.createDupCheckTask(nonRecordNames  .subList(startNdx, nonRecordNames.size()),
+                                                            nonRecordAuthors.subList(startNdx, nonRecordNames.size()),
+                                                            matchedAuthorsList,
                                                             null);
 
       if (!HyperTask.performTaskWithProgressDialog(task)) return;
 
       int ndx;
-      
+
       for (ndx = startNdx; ndx < nonRecordNames.size(); ndx++)
       {
         List<Author> matchedAuthors = matchedAuthorsList.get(ndx - startNdx);
-        
+
         if (matchedAuthors.size() > 0)
         {
           int nameListNdx = nameListIndices.get(ndx);
-          PersonName name = nonRecordAuthors.get(ndx).getName();          
-          boolean ed = nameToEd.get(name), tr = nameToTr.get(name);          
+          PersonName name = nonRecordAuthors.get(ndx).getName();
+          boolean ed = nameToEd.get(name), tr = nameToTr.get(name);
           NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.build(name, null, false, null, null, matchedAuthors);
 
           if (npdc.showModal() == false) return;
@@ -261,20 +261,20 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
             personList.set(nameListNdx, null);
             name = npdc.getName();
           }
-          
+
           nameList.set(nameListNdx, name);
           nameToEd.put(name, ed);
           nameToTr.put(name, tr);
-          
+
           startNdx = ndx + 1;
           break;
         }
       }
-      
+
       if (ndx == nonRecordNames.size())
         startNdx = ndx;
     }
-    
+
     removeDupPersonRecordsFromLists(nameList, personList);
   }
 

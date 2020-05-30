@@ -63,6 +63,8 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
   public boolean getCreateNewBibEntry() { return chkNewEntry.isSelected(); }
   public boolean getDeleteFile()        { return chkDeleteFile.isSelected(); }
   public boolean getFailedToLoad()      { return failedToLoad; }
+  public List<String> getLines()        { return convertMultiLineStrToStrList(taContents.getText(), false); }
+  public FilePath getFilePath()         { return tfFile.getText().length() > 0 ? new FilePath(tfFile.getText()) : null; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -189,12 +191,8 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
       dir = new File(System.getProperty("user.dir"));
 
     fileChooser.setInitialDirectory(dir);
-    FilePath filePath;
 
-    if (shownAlready())
-      filePath = ui.windows.showOpenDialog(fileChooser, getStage());
-    else
-      filePath = ui.windows.showOpenDialog(fileChooser, app.getPrimaryStage());
+    FilePath filePath = ui.windows.showOpenDialog(fileChooser, shownAlready() ? getStage() : ui.getStage());
 
     if (FilePath.isEmpty(filePath))
     {
@@ -203,25 +201,6 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
     }
 
     loadEntry(filePath);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public List<String> getLines()
-  {
-    return convertMultiLineStrToStrList(taContents.getText(), false);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public FilePath getFilePath()
-  {
-    if (tfFile.getText().length() > 0)
-      return new FilePath(tfFile.getText());
-
-    return null;
   }
 
 //---------------------------------------------------------------------------

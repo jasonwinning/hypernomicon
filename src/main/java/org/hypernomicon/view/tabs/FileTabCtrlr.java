@@ -125,10 +125,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
       FilePath filePath = curMiscFile.filePath(),
                relPath = db.getRootPath().relativize(filePath);
 
-      if (relPath == null)
-        tfFileName.setText(filePath.getNameOnly().toString());
-      else
-        tfFileName.setText(relPath.toString());
+      tfFileName.setText(relPath == null ? filePath.getNameOnly().toString() : relPath.toString());
     }
     else
       tfFileName.setText("");

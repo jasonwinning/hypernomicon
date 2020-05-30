@@ -79,12 +79,10 @@ public class HDI_OfflineAuthors extends HDI_OfflineBase
   {
     authors.forEach(author ->
     {
-      String name;
-
-      if (author.personID > 0)
-        name = db.persons.getByID(author.personID).getName().getLastFirst();
-      else
-        name = author.name.getLastFirst();
+      String name = author.personID > 0 ?
+        db.persons.getByID(author.personID).getName().getLastFirst()
+      :
+        author.name.getLastFirst();
 
       if (author.nestedItems != null)
         writePointerTagWithNestedPointers(xml, tag, author.personID, name, author.nestedItems, true);

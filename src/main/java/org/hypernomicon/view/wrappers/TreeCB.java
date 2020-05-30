@@ -95,10 +95,10 @@ class TreeCB
 
       @Override public TreeRow fromString(String string)
       {
-        if (comboBox.getItems() == null)
-          return new TreeRow(string);
-
-        return nullSwitch(findFirst(comboBox.getItems(), row -> string.equals(row.getCBText())), new TreeRow(string));
+        return comboBox.getItems() == null ?
+          new TreeRow(string)
+        :
+          nullSwitch(findFirst(comboBox.getItems(), row -> string.equals(row.getCBText())), new TreeRow(string));
       }
     });
 

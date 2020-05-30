@@ -100,17 +100,17 @@ public class DupAuthorsReportEngine extends ReportEngine
     {
       ObservableList<HyperTableCell> cells = FXCollections.observableArrayList(HyperTableCell.blankCell);
 
-      if (author.getPerson() == null)
-        cells.add(new HyperTableCell(-1, author.getFullName(false), hdtNone));
-      else
-        cells.add(new HyperTableCell(author.getPerson().getID(), author.getFullName(false), hdtPerson));
+      cells.add(author.getPerson() == null ?
+        new HyperTableCell(-1, author.getFullName(false), hdtNone)
+      :
+        new HyperTableCell(author.getPerson().getID(), author.getFullName(false), hdtPerson));
 
       cells.add(getWorkCell(author));
 
-      if (match.getPerson() == null)
-        cells.add(new HyperTableCell(-1, match.getFullName(false), hdtNone));
-      else
-        cells.add(new HyperTableCell(match.getPerson().getID(), match.getFullName(false), hdtPerson));
+      cells.add(match.getPerson() == null ?
+        new HyperTableCell(-1, match.getFullName(false), hdtNone)
+      :
+        new HyperTableCell(match.getPerson().getID(), match.getFullName(false), hdtPerson));
 
       cells.add(getWorkCell(match));
 

@@ -233,7 +233,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
         if (npdc.showModal())
         {
-          htAuthors.getPopulator(1).setChanged(row);                      // A new record has been created so force it to repopulate
+          htAuthors.getPopulator(1).setChanged(row);               // A new record has been created so force it to repopulate
           htAuthors.selectID(1, row, npdc.getPerson().getID());
           saveToRecord();
           curWork.setPersonIsInFileName(npdc.getPerson(), isInFileName);
@@ -375,12 +375,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     Predicate<HDT_WorkFile> condHandler = workFile ->
     {
-      if (inNormalMode || workFile.getPath().isEmpty()) return false;
-
-      if (workFile.works.stream().anyMatch(work -> work.getWorkTypeEnum() != wtUnenteredSet))
-        return false;
-
-      return curWork.getWorkTypeEnum() == wtUnenteredSet;
+      return inNormalMode || workFile.getPath().isEmpty() || workFile.works.stream().anyMatch(work -> work.getWorkTypeEnum() != wtUnenteredSet) ?
+        false
+      :
+        curWork.getWorkTypeEnum() == wtUnenteredSet;
     };
 
     htWorkFiles.addContextMenuItem("Move to a dedicated work record", HDT_WorkFile.class, condHandler, this::moveUnenteredWorkFile);
@@ -583,9 +581,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     lblTitle.setOnMouseClicked(event ->
     {
-      String title = tfTitle.getText();
-
-      title = HDT_Work.fixCase(convertToSingleLine(ultraTrim(title)));
+      String title = HDT_Work.fixCase(convertToSingleLine(ultraTrim(tfTitle.getText())));
 
       alreadyChangingTitle = true;
       tfTitle.setText(title);
@@ -878,10 +874,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
             updatePreview = false;
     }
 
-    if ((argCnt > 0) || (mentionerCnt == 0))
-      lowerTabPane.getSelectionModel().select(tabArguments);
-    else
-      lowerTabPane.getSelectionModel().select(tabKeyMentions);
+    lowerTabPane.getSelectionModel().select((argCnt > 0) || (mentionerCnt == 0) ? tabArguments : tabKeyMentions);
 
     if (curWork.getBibEntryKey().length() > 0)
     {
@@ -1197,7 +1190,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     fileChooser.setInitialDirectory(db.unenteredPath().toFile());
 
-    List<File> files = ui.windows.showOpenMultipleDialog(fileChooser, app.getPrimaryStage());
+    List<File> files = ui.windows.showOpenMultipleDialog(fileChooser, ui.getStage());
     if (collEmpty(files)) return;
 
     FilePathSet filePaths = files.stream().map(FilePath::new).collect(Collectors.toCollection(FilePathSet::new));
@@ -1322,10 +1315,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private FilePath pickDirectory(boolean moveOnly, FilePathSet files, MutableBoolean allSame)
   {
     DirectoryChooser dirChooser = new DirectoryChooser();
-
-    FilePath destPath = curWork.workFiles.size() > 0 ? curWork.filePath().getDirOnly() : db.unenteredPath();
-
-    FilePath folder = null;
+    FilePath folder = null,
+             destPath = curWork.workFiles.size() > 0 ? curWork.filePath().getDirOnly() : db.unenteredPath();
     HDT_Folder folderRecord = null;
 
     while (folderRecord == null)
@@ -1341,7 +1332,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
           dirChooser.setInitialDirectory(folder.toFile());
       }
 
-      folder = ui.windows.showDirDialog(dirChooser, app.getPrimaryStage());
+      folder = ui.windows.showDirDialog(dirChooser, ui.getStage());
 
       if (FilePath.isEmpty(folder)) return null;
 
@@ -1409,14 +1400,14 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     tfSearchKey.setText("");
     tfURL.setText("");
 
-    htAuthors.clear();
-    htLabels.clear();
-    htSubworks.clear();
+    htAuthors       .clear();
+    htLabels        .clear();
+    htSubworks      .clear();
     htInvestigations.clear();
-    htArguments.clear();
-    htMiscFiles.clear();
-    htWorkFiles.clearKeepSortOrder();
-    htKeyMentioners.clear();
+    htArguments     .clear();
+    htMiscFiles     .clear();
+    htWorkFiles     .clearKeepSortOrder();
+    htKeyMentioners .clear();
 
     tabPane.getTabs().forEach(tab -> tab.setText(tabCaptions.get(tab)));
 
@@ -1529,10 +1520,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private static String makeWorkSearchKey(String name, String year, HDT_Work work)
   {
-    if (name.isEmpty() || year.isEmpty())
-      return "";
-
-    return makeWorkSearchKey(name + " " + year, work);
+    return name.isEmpty() || year.isEmpty() ? "" : makeWorkSearchKey(name + " " + year, work);
   }
 
 //---------------------------------------------------------------------------
@@ -1559,9 +1547,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     } while (keyTaken);
 
-    searchKey = (searchKey + keyLetter).trim();
-
-    return SearchKeys.prepSearchKey(searchKey);
+    return SearchKeys.prepSearchKey(searchKey + keyLetter);
   }
 
 //---------------------------------------------------------------------------
@@ -1680,10 +1666,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     }
     else
     {
-      if ((workFile == null) && (filePathToUse != null))
-        wdc = WorkDlgCtrlr.build(filePathToUse, bdToUse, newEntryChoice, newEntryType);
-      else
-        wdc = WorkDlgCtrlr.build(workFile);
+      wdc = (workFile == null) && (filePathToUse != null) ?
+        WorkDlgCtrlr.build(filePathToUse, bdToUse, newEntryChoice, newEntryType)
+      :
+        WorkDlgCtrlr.build(workFile);
 
       result = wdc.showModal();
 
@@ -1712,10 +1698,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private String getDoiFromBibTab()
   {
-    if (tpBib.getSelectionModel().getSelectedItem() == tabMiscBib)
-      return matchDOI(taMiscBib.getText());
-
-    return nullSwitch(getBibDataFromBibTab(), "", bd -> bd.getStr(bfDOI));
+    return tpBib.getSelectionModel().getSelectedItem() == tabMiscBib ?
+      matchDOI(taMiscBib.getText())
+    :
+      nullSwitch(getBibDataFromBibTab(), "", bd -> bd.getStr(bfDOI));
   }
 
 //---------------------------------------------------------------------------
@@ -1734,10 +1720,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   private List<String> getIsbnsFromBibTab()
   {
-    if (tpBib.getSelectionModel().getSelectedItem() == tabMiscBib)
-      return matchISBN(taMiscBib.getText());
-
-    return nullSwitch(getBibDataFromBibTab(), new ArrayList<>(), bd -> bd.getMultiStr(bfISBNs));
+    return tpBib.getSelectionModel().getSelectedItem() == tabMiscBib ?
+      matchISBN(taMiscBib.getText())
+    :
+      nullSwitch(getBibDataFromBibTab(), new ArrayList<>(), bd -> bd.getMultiStr(bfISBNs));
   }
 
 //---------------------------------------------------------------------------
@@ -1747,9 +1733,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     Tab curTab = tpBib.getSelectionModel().getSelectedItem();
 
-    if (curTab == tabPdfMetadata) return pdfBD.get();
-    if (curTab == tabCrossref)    return crossrefBD.get();
-    if (curTab == tabGoogleBooks) return googleBD.get();
+    if (curTab == tabPdfMetadata) return pdfBD     .get();
+    if (curTab == tabCrossref   ) return crossrefBD.get();
+    if (curTab == tabGoogleBooks) return googleBD  .get();
 
     return null;
   }

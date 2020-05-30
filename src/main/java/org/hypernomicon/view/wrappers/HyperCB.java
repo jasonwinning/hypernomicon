@@ -89,10 +89,10 @@ public class HyperCB implements CommitableWrapper
     HyperTableCell htc = cb.getValue();
     String str = cb.getEditor().getText();
 
-    if ((htc == null) || (htc.getText().equals(str) == false))
-      return new HyperTableCell(-1, str, selectedType());
-
-    return htc;
+    return (htc == null) || (htc.getText().equals(str) == false) ?
+      new HyperTableCell(-1, str, selectedType())
+    :
+      htc;
   }
 
 //---------------------------------------------------------------------------

@@ -75,11 +75,10 @@ public class HyperObjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends H
   {
     lastException = null;
 
-    if (o instanceof HDT_Record)
-      if (((HDT_Record)o).getType() == relSet.getObjType())
-        return relSet.alreadyHasAsObject(subj, (HDT_ObjType) o);
-
-    return false;
+    return (o instanceof HDT_Record) && (((HDT_Record)o).getType() == relSet.getObjType()) ?
+      relSet.alreadyHasAsObject(subj, (HDT_ObjType) o)
+    :
+      false;
   }
 
 //---------------------------------------------------------------------------

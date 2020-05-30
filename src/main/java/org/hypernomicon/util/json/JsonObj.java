@@ -66,10 +66,10 @@ public class JsonObj implements Cloneable
   {
     Object obj = jObj.get(key);
 
-    if (obj instanceof String)
-      return parseLong(getStr(key), def);
-
-    return nullSwitch((Long)jObj.get(key), def, Long::longValue);
+    return obj instanceof String ?
+      parseLong(getStr(key), def)
+    :
+      nullSwitch((Long)jObj.get(key), def, Long::longValue);
   }
 
 //---------------------------------------------------------------------------
@@ -79,10 +79,10 @@ public class JsonObj implements Cloneable
   {
     Object obj = jObj.get(key);
 
-    if (obj instanceof String)
-      return parseBoolean(getStr(key));
-
-    return obj instanceof Boolean ? ((Boolean)obj).booleanValue() : def;
+    return obj instanceof String ?
+      parseBoolean(getStr(key))
+    :
+      (obj instanceof Boolean ? ((Boolean)obj).booleanValue() : def);
   }
 
 //---------------------------------------------------------------------------

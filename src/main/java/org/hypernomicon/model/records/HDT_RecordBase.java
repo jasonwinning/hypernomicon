@@ -489,10 +489,7 @@ public abstract class HDT_RecordBase implements HDT_Record
           {
             int parentType = inst.parentInst.get().instType.getID();
 
-            if ((parentType == 1) || (parentType == 6))
-              sortKey = inst.name();
-            else
-              sortKey = inst.parentInst.get().name() + " " + inst.name();
+            sortKey = (parentType == 1) || (parentType == 6) ? inst.name() : (inst.parentInst.get().name() + " " + inst.name());
           }
           else
             sortKey = inst.name();
@@ -568,10 +565,10 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   @Override public final String getResultTextForTag(Tag tag)
   {
-    if ((tag == nameTag) || (tag == tagName))
-      return listName();
-
-    return nullSwitch(items.get(tag), "", item -> item.getResultTextForTag(tag));
+    return (tag == nameTag) || (tag == tagName) ?
+      listName()
+    :
+      nullSwitch(items.get(tag), "", item -> item.getResultTextForTag(tag));
   }
 
 //---------------------------------------------------------------------------

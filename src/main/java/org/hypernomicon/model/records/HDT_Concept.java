@@ -75,14 +75,10 @@ public class HDT_Concept extends HDT_RecordWithConnector
 
   public String getExtendedName()
   {
-    if (glossary.isNull())
-      return name();
-
-    if (glossary.get().getID() == 1)
-      if (term.get().concepts.size() == 1)
-        return name();
-
-    return name() + " (" + glossary.get().name() + ")";
+    return glossary.isNull() || ((glossary.get().getID() == 1) && (term.get().concepts.size() == 1)) ?
+      name()
+    :
+      name() + " (" + glossary.get().name() + ")";
   }
 
 //---------------------------------------------------------------------------

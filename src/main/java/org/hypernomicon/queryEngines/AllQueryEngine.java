@@ -176,12 +176,10 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
         HDT_Record specifiedRecord = HyperTableCell.getRecord(param2);
         if (HDT_Record.isEmpty(specifiedRecord)) return false;
 
-        boolean result;
-
-        if (curQuery == QUERY_LINKING_TO_RECORD)
-          result = db.firstMentionsSecond(record, specifiedRecord, true, choseNotToWait);
-        else
-          result = db.firstMentionsSecond(specifiedRecord, record, true, choseNotToWait);
+        boolean result = curQuery == QUERY_LINKING_TO_RECORD ?
+          db.firstMentionsSecond(record, specifiedRecord, true, choseNotToWait)
+        :
+          db.firstMentionsSecond(specifiedRecord, record, true, choseNotToWait);
 
         if (choseNotToWait.isTrue()) // Mentions index rebuild should never be running here
         {

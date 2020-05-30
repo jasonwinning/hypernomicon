@@ -527,10 +527,10 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       for (int ndx = 0; ndx < downloadCount; ndx++)
         keys = keys + (keys.isEmpty() ? downloadQueue.get(ndx) : "," + downloadQueue.get(ndx));
 
-      if (readCmd == ZoteroCmd.readCollections)
-        jArr = doReadCommand(ZoteroCmd.readCollections, "", keys);
-      else
-        jArr = doReadCommand(readCmd, keys, "");
+      jArr = readCmd == ZoteroCmd.readCollections ?
+        doReadCommand(ZoteroCmd.readCollections, "", keys)
+      :
+        doReadCommand(readCmd, keys, "");
 
       if (jsonClient.getStatusCode() == HttpStatus.SC_OK)
       {

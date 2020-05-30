@@ -148,7 +148,7 @@ public class BibManager extends HyperDlg
 
     toolBar.getItems().removeAll(btnUnassign, progressBar, btnDelete, btnPreviewWindow); // Latter 2 are not yet supported. (Not sure if the preview button is needed?)
 
-    btnMainWindow.setOnAction(event -> ui.windows.focusStage(app.getPrimaryStage()));
+    btnMainWindow.setOnAction(event -> ui.windows.focusStage(ui.getStage()));
     btnSync.setOnAction(event -> sync());
     btnStop.setOnAction(event -> stop());
     btnAutofill.setOnAction(event -> autofill());
@@ -283,7 +283,7 @@ public class BibManager extends HyperDlg
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    dialogStage.setOnHidden(event -> ui.windows.focusStage(app.getPrimaryStage()));
+    dialogStage.setOnHidden(event -> ui.windows.focusStage(ui.getStage()));
 
     return this;
   }
@@ -820,19 +820,13 @@ public class BibManager extends HyperDlg
     {
       @Override public String toString(EntryType et)
       {
-        if (map.containsKey(et))
-          return et.getUserFriendlyName();
-
-        return "";
+        return map.containsKey(et) ? et.getUserFriendlyName() : "";
       }
 
       @Override public EntryType fromString(String string)
       {
         EntryType et = EntryType.parse(string);
-        if (map.containsKey(et))
-          return et;
-
-        return null;
+        return map.containsKey(et) ? et : null;
       }
     });
 

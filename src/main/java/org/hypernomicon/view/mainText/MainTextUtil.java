@@ -174,12 +174,7 @@ public class MainTextUtil
     lastEventID = jsEventID;
 
     if (jsEvent == JS_EVENT_OPEN_FILE)
-    {
-      if (ui.btnPointerLaunch.isSelected())
-        jsEvent = JS_EVENT_LAUNCH_FILE;
-      else
-        jsEvent = JS_EVENT_OPEN_PREVIEW;
-    }
+      jsEvent = ui.btnPointerLaunch.isSelected() ? JS_EVENT_LAUNCH_FILE : JS_EVENT_OPEN_PREVIEW;
 
     if ((jsEvent == JS_EVENT_OPEN_RECORD) || (jsEvent == JS_EVENT_LAUNCH_FILE) || (jsEvent == JS_EVENT_OPEN_PREVIEW))
     {
@@ -573,17 +568,15 @@ public class MainTextUtil
     if (sortByName)
       sortedKeys.sort((s1, s2) ->
       {
-        String bibAuthors1, bibAuthors2;
+        String bibAuthors1 = s1.getRecordType() == hdtWork ?
+          HDT_Work.class.cast(s1.getRecord()).getShortAuthorsStr(true)
+        :
+          HDT_MiscFile.class.cast(s1.getRecord()).getShortAuthorsStr(true);
 
-        if (s1.getRecordType() == hdtWork)
-          bibAuthors1 = HDT_Work.class.cast(s1.getRecord()).getShortAuthorsStr(true);
-        else
-          bibAuthors1 = HDT_MiscFile.class.cast(s1.getRecord()).getShortAuthorsStr(true);
-
-        if (s2.getRecordType() == hdtWork)
-          bibAuthors2 = HDT_Work.class.cast(s2.getRecord()).getShortAuthorsStr(true);
-        else
-          bibAuthors2 = HDT_MiscFile.class.cast(s2.getRecord()).getShortAuthorsStr(true);
+        String bibAuthors2 = s2.getRecordType() == hdtWork ?
+          HDT_Work.class.cast(s2.getRecord()).getShortAuthorsStr(true)
+        :
+          HDT_MiscFile.class.cast(s2.getRecord()).getShortAuthorsStr(true);
 
         return bibAuthors1.compareTo(bibAuthors2);
       });
@@ -701,10 +694,7 @@ public class MainTextUtil
 
     String span = "<span id=SKW" + tagNdx.toString() + " hypnconType=" + String.valueOf(recordWMT.getType().ordinal()) + " hypnconID=" + String.valueOf(recordWMT.getID());
 
-    if (sortByName)
-      return span + " class=\"" + ALPHA_SORTED_INNER_CLASS + (topmost ? " " + TOPMOST_CLASS : "") + "\">";
-
-    return span + " class=\"" + NUMERIC_SORTED_INNER_CLASS + (topmost ? " " + TOPMOST_CLASS : "") + "\">";
+    return span + " class=\"" + (sortByName ? ALPHA_SORTED_INNER_CLASS : NUMERIC_SORTED_INNER_CLASS) + (topmost ? " " + TOPMOST_CLASS : "") + "\">";
   }
 
 //---------------------------------------------------------------------------
@@ -797,10 +787,7 @@ public class MainTextUtil
       sortedKeys.add(searchKey);
     });
 
-    if (sortByName)
-      sortedKeys.sort(String::compareToIgnoreCase);
-    else
-      sortedKeys.sort((s1, s2) -> keyToKeyWork.get(s1).compareTo(keyToKeyWork.get(s2)));
+    sortedKeys.sort(sortByName ? String::compareToIgnoreCase : (s1, s2) -> keyToKeyWork.get(s1).compareTo(keyToKeyWork.get(s2)));
 
     return linkMap;
   }

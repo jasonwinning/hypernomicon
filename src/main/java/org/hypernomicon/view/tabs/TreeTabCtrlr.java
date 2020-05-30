@@ -500,10 +500,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     String caption = nullSwitch(newValue.getValue(), "", TreeRow::getName);
 
-    if (newValue.getParent() == ttv2.getRoot())
-      return caption;
-    else
-      return getTreePath(ttv2, newValue.getParent()) + " / " + caption;
+    return newValue.getParent() == ttv2.getRoot() ? caption : (getTreePath(ttv2, newValue.getParent()) + " / " + caption);
   }
 
 //---------------------------------------------------------------------------

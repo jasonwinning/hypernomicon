@@ -77,10 +77,7 @@ public class HDT_Institution extends HDT_RecordBase
 
     int parentType = parentInst.get().instType.getID();
 
-    if ((parentType == 1) || (parentType == 6))
-      return name();
-
-    return parentInst.get().name() + " " + name();
+    return (parentType == 1) || (parentType == 6) ? name() : (parentInst.get().name() + " " + name());
   }
 
 //---------------------------------------------------------------------------
@@ -93,10 +90,7 @@ public class HDT_Institution extends HDT_RecordBase
 
     int parentType = parentInst.get().instType.getID();
 
-    if ((parentType == 1) || (parentType == 6))
-      return name();
-
-    return name() + ", " + parentInst.get().name();
+    return (parentType == 1) || (parentType == 6) ? name() : (name() + ", " + parentInst.get().name());
   }
 
 //---------------------------------------------------------------------------

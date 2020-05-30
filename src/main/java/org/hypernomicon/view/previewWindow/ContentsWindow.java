@@ -143,7 +143,7 @@ public class ContentsWindow extends HyperDlg
       ui.windows.push(dialogStage);
     });
 
-    dialogStage.setOnHidden(event -> ui.windows.focusStage(app.getPrimaryStage()));
+    dialogStage.setOnHidden(event -> ui.windows.focusStage(ui.getStage()));
 
     htContents.setTooltip(5, ButtonAction.baCustom, "Jump to start page in preview window");
     htContents.setTooltip(8, ButtonAction.baCustom, "Jump to end page in preview window");

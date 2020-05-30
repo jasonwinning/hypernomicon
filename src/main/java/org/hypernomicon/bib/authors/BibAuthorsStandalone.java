@@ -76,10 +76,7 @@ public class BibAuthorsStandalone extends BibAuthors
 
   @Override public String getStr()
   {
-    if (listsAreEmpty() && (safeStr(oneLiner).length() > 0))
-      return oneLiner;
-
-    return super.getStr();
+    return listsAreEmpty() && (safeStr(oneLiner).length() > 0) ? oneLiner : super.getStr();
   }
 
 //---------------------------------------------------------------------------
@@ -87,12 +84,10 @@ public class BibAuthorsStandalone extends BibAuthors
 
   @Override public String getStr(AuthorType authorType)
   {
-    if (authorType == AuthorType.author)
-      if (listsAreEmpty())
-        if (safeStr(oneLiner).length() > 0)
-          return oneLiner;
-
-    return super.getStr(authorType);
+    return (authorType == AuthorType.author) && listsAreEmpty() && (safeStr(oneLiner).length() > 0) ?
+      oneLiner
+    :
+      super.getStr(authorType);
   }
 
 //---------------------------------------------------------------------------
@@ -115,12 +110,12 @@ public class BibAuthorsStandalone extends BibAuthors
 
   @Override public Iterator<BibAuthor> iterator()
   {
-    if (listsAreEmpty())
-      return getOneLinerAsList().iterator();
-
-    return Iterators.unmodifiableIterator(Iterators.concat(authors.get(AuthorType.author    ).iterator(),
-                                                           authors.get(AuthorType.editor    ).iterator(),
-                                                           authors.get(AuthorType.translator).iterator()));
+    return listsAreEmpty() ?
+      getOneLinerAsList().iterator()
+    :
+      Iterators.unmodifiableIterator(Iterators.concat(authors.get(AuthorType.author    ).iterator(),
+                                                      authors.get(AuthorType.editor    ).iterator(),
+                                                      authors.get(AuthorType.translator).iterator()));
   }
 
 //---------------------------------------------------------------------------

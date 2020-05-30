@@ -343,10 +343,10 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
         if (author == null) author = findFirstHaving(bdToUse.getAuthors(), bibAuthor ->
         {
-          if (bibAuthor.getPerson() != null)
-            return bibAuthor.getPerson();
-
-          return HDT_Person.lookUpByName(bibAuthor.getName());
+          return bibAuthor.getPerson() != null ?
+            bibAuthor.getPerson()
+          :
+            HDT_Person.lookUpByName(bibAuthor.getName());
         });
 
         List<String> titleList = bdToUse.getMultiStr(BibFieldEnum.bfTitle);
@@ -402,10 +402,10 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
     if ((author == null) && (work != null)) author = findFirstHaving(work.getBibData().getAuthors(), bibAuthor ->
     {
-      if (bibAuthor.getPerson() != null)
-        return bibAuthor.getPerson();
-
-      return HDT_Person.lookUpByName(bibAuthor.getName());
+      return bibAuthor.getPerson() != null ?
+        bibAuthor.getPerson()
+      :
+        HDT_Person.lookUpByName(bibAuthor.getName());
     });
 
     hcbAuthor.addAndSelectEntryOrBlank(author, HDT_Record::getCBText);

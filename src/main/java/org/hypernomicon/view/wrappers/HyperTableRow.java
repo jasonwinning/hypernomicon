@@ -88,10 +88,10 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 
   @Override <HDT_T extends HDT_Record> HDT_T getRecordByType(HDT_RecordType type)
   {
-    if (type == hdtNone)
-      return getRecord();
-
-    return findFirst(cells, cell -> HyperTableCell.getCellType(cell) == type, cell -> HyperTableCell.getRecord(cell));
+    return type == hdtNone ?
+      getRecord()
+    :
+      findFirst(cells, cell -> HyperTableCell.getCellType(cell) == type, cell -> HyperTableCell.getRecord(cell));
   }
 
 //---------------------------------------------------------------------------
@@ -119,7 +119,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
   {
     HyperTableCell cell = cells.get(colNdx);
     HyperTableColumn col = table.getColumn(colNdx);
-    boolean restricted, isNotCheckBox = col.getCtrlType() != ctCheckbox;
+    boolean isNotCheckBox = col.getCtrlType() != ctCheckbox;
 
     if ((cell != null) && cell.equals(newCell))
     {
@@ -134,12 +134,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 
     if (populator != null)
     {
-      if (populator.getValueType() == cvtVaries)
-        restricted = ((VariablePopulator)populator).getRestricted(this);
-      else
-        restricted = col.getCtrlType() == ctDropDownList;
-
-      if (restricted)
+      if (((populator.getValueType() == cvtVaries) && ((VariablePopulator)populator).getRestricted(this)) || (col.getCtrlType() == ctDropDownList))
       {
         HyperTableCell matchedCell = populator.match(this, newCell);
 

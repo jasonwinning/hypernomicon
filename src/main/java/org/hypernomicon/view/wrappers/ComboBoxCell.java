@@ -190,10 +190,10 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 
   private String getString()
   {
-    if (textHndlr != null)
-      return textHndlr.apply(getTableView().getItems().get(getTableRow().getIndex()));
-
-    return HyperTableCell.getCellText(getItem());
+    return textHndlr != null ?
+      textHndlr.apply(getTableView().getItems().get(getTableRow().getIndex()))
+    :
+      HyperTableCell.getCellText(getItem());
   }
 
 //---------------------------------------------------------------------------

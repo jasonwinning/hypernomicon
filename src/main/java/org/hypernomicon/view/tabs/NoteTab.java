@@ -284,17 +284,14 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     {
       HDT_Folder folder = curNote.getDefaultFolder();
 
-      if ((folder != null) && folder.filePath().exists())
-        dirChooser.setInitialDirectory(folder.filePath().toFile());
-      else
-        dirChooser.setInitialDirectory(db.topicalPath().toFile());
+      dirChooser.setInitialDirectory((folder != null) && folder.filePath().exists() ? folder.filePath().toFile() : db.topicalPath().toFile());
     }
     else
       dirChooser.setInitialDirectory(folderPath.toFile());
 
     dirChooser.setTitle("Select Folder");
 
-    FilePath filePath = ui.windows.showDirDialog(dirChooser, app.getPrimaryStage());
+    FilePath filePath = ui.windows.showDirDialog(dirChooser, ui.getStage());
 
     if (FilePath.isEmpty(filePath)) return;
 

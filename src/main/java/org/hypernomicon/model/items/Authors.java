@@ -411,20 +411,15 @@ public final class Authors implements Iterable<Author>
       return "";
 
     List<Author> authors = new ArrayList<>(authorCol);
-    String peopleStr = "";
 
     if (authors.size() == 1)
-    {
-      if (firstInitials && (fullNameIfSingleton == false))
-        return authors.get(0).getBibName();
-
-      return authors.get(0).getNameLastFirst();
-    }
+      return firstInitials && (fullNameIfSingleton == false) ? authors.get(0).getBibName() : authors.get(0).getNameLastFirst();
 
     if (sort)
       authors.sort(null);
 
     int num = Math.min(6, authors.size());
+    String peopleStr = "";
 
     for (int ndx = 0; ndx < num; ndx++)
     {

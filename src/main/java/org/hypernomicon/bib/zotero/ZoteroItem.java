@@ -144,11 +144,10 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
   {
     JsonArray collArray = jObj.getObj("data").getArray("collections");
 
-    if (collArray != null)
-      if ((zWrapper.getTrash().contains(this) == false) || deletedOK)
-        return Lists.newArrayList((Iterable<String>)collArray.getStrs());
-
-    return new ArrayList<>();
+    return (collArray != null) && ((zWrapper.getTrash().contains(this) == false) || deletedOK) ?
+      Lists.newArrayList((Iterable<String>)collArray.getStrs())
+    :
+      new ArrayList<>();
   }
 
 //---------------------------------------------------------------------------

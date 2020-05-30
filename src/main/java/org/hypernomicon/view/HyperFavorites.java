@@ -166,16 +166,10 @@ public class HyperFavorites
           for (int colNdx = 0; colNdx < 6; colNdx++)
           {
             int id = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).getInt("id", -1);
-            HDT_RecordType type;
-            String text = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).get("text", "");
+            String text    = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).get("text", ""),
+                   typeStr = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).get("type", "all");
 
-            String typeStr = node.node("queries").node("query" + ndx).node("row" + rowNdx).node("col" + colNdx).get("type", "all");
-            if (typeStr.equals("all"))
-              type = hdtNone;
-            else
-              type = db.parseTypeTagStr(typeStr);
-
-            row.cells[colNdx] = new HyperTableCell(id, text, type);
+            row.cells[colNdx] = new HyperTableCell(id, text, typeStr.equals("all") ? hdtNone : db.parseTypeTagStr(typeStr));
           }
 
           query.rows.add(row);

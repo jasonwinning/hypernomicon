@@ -65,10 +65,7 @@ public class HDT_Position extends HDT_RecordWithConnector
     while (position.debates.isEmpty() && (position.largerPositions.size() > 0))
       position = position.largerPositions.get(0);
 
-    if (position.debates.size() > 0)
-      return position.debates.get(0);
-
-    return null;
+    return position.debates.size() > 0 ? position.debates.get(0) : null;
   }
 
 //---------------------------------------------------------------------------

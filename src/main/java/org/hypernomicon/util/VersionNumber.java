@@ -55,18 +55,8 @@ public class VersionNumber implements Magnitude<VersionNumber>
     parts = Collections.unmodifiableList(tempParts);
   }
 
-  public int numParts() { return parts.size(); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public int getPart(int ndx)
-  {
-    if (ndx >= parts.size())
-      return 0;
-
-    return parts.get(ndx);
-  }
+  public int numParts()       { return parts.size(); }
+  public int getPart(int ndx) { return ndx >= parts.size() ? 0 : parts.get(ndx); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

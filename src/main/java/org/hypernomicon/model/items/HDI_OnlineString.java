@@ -48,10 +48,10 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 
   public String get()
   {
-    if ((record.getType() == hdtConcept) && (mainTag == record.getNameTag()))
-      return ((HDT_Concept)record).term.get().name();
-
-    return strValue;
+    return (record.getType() == hdtConcept) && (mainTag == record.getNameTag()) ?
+      ((HDT_Concept)record).term.get().name()
+    :
+      strValue;
   }
 
 //---------------------------------------------------------------------------
@@ -59,10 +59,10 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 
   @Override public void setFromOfflineValue(HDI_OfflineString val, Tag tag)
   {
-    if (tag == tagListName)  // This is used by HDT_PositionVerdict and HDT_ArgumentVerdict
-      strValue = safeStr(val.recordState.listName);
-    else
-      strValue = val.get();
+    strValue = tag == tagListName ?  // This is used by HDT_PositionVerdict and HDT_ArgumentVerdict
+      safeStr(val.recordState.listName)
+    :
+      val.get();
   }
 
 //---------------------------------------------------------------------------

@@ -651,10 +651,10 @@ public class NewPersonDlgCtrlr extends HyperDlg
         person = null;
       }
 
-      if (e.getTooShort())
-        return falseWithErrorMessage("Unable to modify record: search key must be at least 3 characters.", tfSearchKey);
-      else
-        return falseWithErrorMessage("Unable to modify record: search key already exists.", tfSearchKey);
+      return e.getTooShort() ?
+        falseWithErrorMessage("Unable to modify record: search key must be at least 3 characters.", tfSearchKey)
+      :
+        falseWithErrorMessage("Unable to modify record: search key already exists.", tfSearchKey);
     }
 
     if (rbMerge.isSelected())
@@ -671,10 +671,10 @@ public class NewPersonDlgCtrlr extends HyperDlg
       }
     }
 
-    if (rbUseDupName.isSelected())
-      person.setName(new PersonName(tfDupFirstName.getText(), tfDupLastName.getText()));
-    else
-      person.setName(new PersonName(tfFirstName.getText(), tfLastName.getText()));
+    person.setName(rbUseDupName.isSelected() ?
+      new PersonName(tfDupFirstName.getText(), tfDupLastName.getText())
+    :
+      new PersonName(tfFirstName.getText(), tfLastName.getText()));
 
     stopDupThread();
     return true;

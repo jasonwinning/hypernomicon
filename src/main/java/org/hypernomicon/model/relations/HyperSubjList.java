@@ -68,11 +68,10 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
   @SuppressWarnings("unchecked")
   @Override public boolean contains(Object o)
   {
-    if (o instanceof HDT_Record)
-      if (((HDT_Record)o).getType() == relSet.getSubjType())
-        return relSet.alreadyHasAsObject((HDT_SubjType)o, obj);
-
-    return false;
+    return (o instanceof HDT_Record) && (((HDT_Record)o).getType() == relSet.getSubjType()) ?
+      relSet.alreadyHasAsObject((HDT_SubjType)o, obj)
+    :
+      false;
   }
 
 //---------------------------------------------------------------------------

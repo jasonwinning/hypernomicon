@@ -162,21 +162,13 @@ public class FileDlgCtrlr extends HyperDlg
         if (curWork.workFiles.size() > 0)
           newFilePath = curWork.filePath();
 
-        if (FilePath.isEmpty(newFilePath) == false)
-          tfNewPath.setText(newFilePath.getDirOnly().toString());
-        else
-          tfNewPath.setText(db.topicalPath().toString());
+        tfNewPath.setText(FilePath.isEmpty(newFilePath) ? db.topicalPath().toString() : newFilePath.getDirOnly().toString());
       }
     }
     else
     {
       if (tfNewPath.getText().isEmpty())
-      {
-        if (FilePath.isEmpty(srcFilePath) == false)
-          tfNewPath.setText(srcFilePath.getDirOnly().toString());
-        else
-          tfNewPath.setText(db.miscFilesPath().toString());
-      }
+        tfNewPath.setText(FilePath.isEmpty(srcFilePath) ? db.miscFilesPath().toString() : srcFilePath.getDirOnly().toString());
 
       if (curFileRecord != null)
       {
@@ -406,33 +398,15 @@ public class FileDlgCtrlr extends HyperDlg
 
     // check to see if destination file name currently points to a file in the database
 
-    FilePath fileName;
     boolean success = true;
-    FilePath destFilePath = null;
 
-    if (chkDontChangeFilename.isSelected())
-      fileName = srcFilePath.getNameOnly();
-    else
-      fileName = new FilePath(tfFileName.getText());
-
-    if (rbNeither.isSelected())
-      destFilePath = srcFilePath.getDirOnly().resolve(fileName);
-    else
-      destFilePath = new FilePath(tfNewPath.getText()).resolve(fileName);
+    FilePath fileName = chkDontChangeFilename.isSelected() ? srcFilePath.getNameOnly() : new FilePath(tfFileName.getText()),
+             destFilePath = rbNeither.isSelected() ? srcFilePath.getDirOnly().resolve(fileName) : new FilePath(tfNewPath.getText()).resolve(fileName);
 
     HDT_RecordWithPath existingRecord = HyperPath.getRecordFromFilePath(destFilePath);
 
-    if (existingRecord != null)
-    {
-      if (existingRecord == curFileRecord) // chosen file is the one already attached to this record
-      {
-        // Nothing needs to be done here
-      }
-      else
-      {
-        return falseWithErrorMessage(HyperPath.alreadyInUseMessage(destFilePath, existingRecord));
-      }
-    }
+    if ((existingRecord != null) && (existingRecord != curFileRecord))
+      return falseWithErrorMessage(HyperPath.alreadyInUseMessage(destFilePath, existingRecord));
 
     if (rbNeither.isSelected() == false)
     {

@@ -65,10 +65,10 @@ public class DesktopApi
   {
     if (FilePath.isEmpty(filePath)) return true;
 
-    if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC)
-      return openDesktop(filePath);
-
-    return openSystemSpecific(filePath.toString());
+    return SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC ?
+      openDesktop(filePath)
+    :
+      openSystemSpecific(filePath.toString());
   }
 
 //---------------------------------------------------------------------------
@@ -76,10 +76,10 @@ public class DesktopApi
 
   public static boolean edit(FilePath filePath)
   {
-    if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC)
-      return editDesktop(filePath);
-
-    return openSystemSpecific(filePath.toString());
+    return SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC ?
+      editDesktop(filePath)
+    :
+      openSystemSpecific(filePath.toString());
   }
 
 //---------------------------------------------------------------------------
@@ -185,7 +185,7 @@ public class DesktopApi
       if (wait)
       {
         exitValue = proc.waitFor();
-        
+
         try (InputStream is = proc.getErrorStream())
         {
           assignSB(errorSB, IOUtils.toString(is, StandardCharsets.UTF_8));

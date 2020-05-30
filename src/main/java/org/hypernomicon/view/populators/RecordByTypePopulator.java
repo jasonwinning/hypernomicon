@@ -282,10 +282,10 @@ public class RecordByTypePopulator extends Populator
 
     HDT_RecordType recordType = rowToRecordType.get(row);
 
-    if ((recordType == hdtNone) || (id < 1))
-      return HyperTableCell.blankCell;
-
-    return getCell(db.records(recordType).getByID(id));
+    return (recordType == hdtNone) || (id < 1) ?
+      HyperTableCell.blankCell
+    :
+      getCell(db.records(recordType).getByID(id));
   }
 
 //---------------------------------------------------------------------------

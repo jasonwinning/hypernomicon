@@ -94,10 +94,7 @@ public class ProgressDlgCtrlr extends HyperDlg
 
       lastPercent = percent;
 
-      if (percent < 0)
-        lblPercent.setText("Working...");
-      else
-        lblPercent.setText("Progress: " + java.lang.Math.round(newValue.doubleValue() * 100.0) + " %");
+      lblPercent.setText(percent < 0 ? "Working..." : "Progress: " + java.lang.Math.round(newValue.doubleValue() * 100.0) + " %");
     });
 
     dialogStage.setOnShowing(event ->

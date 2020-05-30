@@ -105,10 +105,10 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 
   public PersonName getName(boolean engChar)
   {
-    if (engChar)
-      return new PersonName(getFirstNameEngChar(), getLastNameEngChar());
-
-    return new PersonName(getFirstName(), getLastName());
+    return engChar ?
+      new PersonName(getFirstNameEngChar(), getLastNameEngChar())
+    :
+      new PersonName(getFirstName(), getLastName());
   }
 
 //---------------------------------------------------------------------------
@@ -181,12 +181,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
     SearchKeyword hyperKey = db.getKeyByKeyword(key);
 
     if ((hyperKey != null) && (hyperKey.record != person))
-    {
-      if (hyperKey.record.getType() == hdtPerson)
-        return HDT_Person.class.cast(hyperKey.record);
-      else
-        return null;
-    }
+      return hyperKey.record.getType() == hdtPerson ? HDT_Person.class.cast(hyperKey.record) : null;
 
     for (String val : new SplitString(keys.toString(), ';'))
       if (val.trim().equalsIgnoreCase(key))
@@ -235,14 +230,8 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 
     private void add(String newKey, boolean newUseForDupCheck)
     {
-      if (newKey.isEmpty()) return;
-
-      if (lowerCase) newKey = newKey.toLowerCase();
-
-      if (keys.containsKey(newKey) && newUseForDupCheck)
-        keys.put(newKey, true);
-      else
-        keys.put(newKey, newUseForDupCheck);
+      if (newKey.isEmpty() == false)
+        keys.put(lowerCase ? newKey.toLowerCase() : newKey, newUseForDupCheck);
     }
   }
 
@@ -401,12 +390,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
       {
         String name = "";
         for (int ndx = 0; ndx < nameList.size(); ndx++)
-        {
-          if (nameList.get(ndx).length() > 0)
-            name = name + nameList.get(ndx) + " ";
-          else
-            name = name + initialList.get(ndx) + ". ";
-        }
+          name = name + (nameList.get(ndx).length() > 0 ? (nameList.get(ndx) + " ") : (initialList.get(ndx) + ". "));
 
         keySet.add(name + last, true);
 
@@ -414,12 +398,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
         {
           String middleNames = "";
           for (int ndx = 1; ndx < nameList.size(); ndx++)
-          {
-            if (nameList.get(ndx).length() > 0)
-              middleNames = middleNames + nameList.get(ndx) + " ";
-            else
-              middleNames = middleNames + initialList.get(ndx) + ". ";
-          }
+            middleNames = middleNames + (nameList.get(ndx).length() > 0 ? (nameList.get(ndx) + " ") : (initialList.get(ndx) + ". "));
 
           keySet.add(initialList.get(0) + ". " + middleNames + last, true);
           keySet.add(middleNames + last, true);

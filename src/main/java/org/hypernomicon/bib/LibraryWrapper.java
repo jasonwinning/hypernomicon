@@ -333,10 +333,10 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
   {
     Predicate<BibEntry_T> predicate = item ->
     {
-      if (keyToTrashEntry.containsKey(item.getKey()))
-        return false;
-
-      return item.getCollKeys(true).stream().noneMatch(keyToColl::containsKey);
+      return keyToTrashEntry.containsKey(item.getKey()) ?
+        false
+      :
+        item.getCollKeys(true).stream().noneMatch(keyToColl::containsKey);
     };
 
     return keyToAllEntry.values().stream().filter(predicate).collect(ImmutableSet.toImmutableSet());

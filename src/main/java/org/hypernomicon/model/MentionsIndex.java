@@ -288,10 +288,10 @@ class MentionsIndex
 
     task.progressProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (newValue.doubleValue() == 1.0)
-        Platform.runLater(() -> ui.updateProgress("", -1.0));
-      else
-        Platform.runLater(() -> ui.updateProgress("Indexing:", ctr / total));
+      Platform.runLater(newValue.doubleValue() == 1.0 ?
+        () -> ui.updateProgress("", -1.0)
+      :
+        () -> ui.updateProgress("Indexing:", ctr / total));
     });
 
     thread = new RebuildThread(task);
@@ -324,10 +324,10 @@ class MentionsIndex
     if (choseNotToWait.isTrue())
       return null;
 
-    if (descOnly)
-      return mentionedInDescToMentioners.getForwardSet(target);
-
-    return mentionedAnywhereToMentioners.getForwardSet(target);
+    return descOnly ?
+      mentionedInDescToMentioners.getForwardSet(target)
+    :
+      mentionedAnywhereToMentioners.getForwardSet(target);
   }
 
 //---------------------------------------------------------------------------
@@ -339,10 +339,10 @@ class MentionsIndex
     if (choseNotToWait.isTrue())
       return false;
 
-    if (descOnly)
-      return mentionedInDescToMentioners.getForwardSet(target).contains(mentioner);
-
-    return mentionedAnywhereToMentioners.getForwardSet(target).contains(mentioner);
+    return descOnly ?
+      mentionedInDescToMentioners.getForwardSet(target).contains(mentioner)
+    :
+      mentionedAnywhereToMentioners.getForwardSet(target).contains(mentioner);
   }
 
 //---------------------------------------------------------------------------

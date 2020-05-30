@@ -111,10 +111,10 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 
     determineType();
 
-    if (mimetype == MediaType.OCTET_STREAM)
-      return FilenameUtils.getExtension(hyperPath.getNameStr()).toUpperCase() + " File";
-
-    return mimetype.toString();
+    return mimetype == MediaType.OCTET_STREAM ?
+      (FilenameUtils.getExtension(hyperPath.getNameStr()).toUpperCase() + " File")
+    :
+      mimetype.toString();
   }
 
 //---------------------------------------------------------------------------

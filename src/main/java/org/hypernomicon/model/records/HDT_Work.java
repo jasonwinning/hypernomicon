@@ -131,6 +131,14 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static String fixCase(String title)
+  {
+    return db.prefs.getBoolean(PREF_KEY_SENTENCE_CASE, false) ? sentenceCase(title) : titleCase(title);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static boolean isUnenteredSet(HDT_Work work)
   {
     return work == null ? false : work.getWorkTypeEnum() == WorkTypeEnum.wtUnenteredSet;
@@ -200,8 +208,6 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
   public void setLargerWork(int newID, boolean noIsbnUpdate)
   {
-    boolean ask = false;
-
     if (largerWork.getID() == newID) return;
 
     largerWork.setID(newID);
@@ -258,12 +264,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
       return;
     }
 
-    if (workFiles.size() != largerWork.workFiles.size())
-      ask = true;
-    else
-      ask = workFiles.stream().allMatch(largerWork.workFiles::contains) == false;
-
-    if (ask)
+    if ((workFiles.size() != largerWork.workFiles.size()) || (workFiles.stream().allMatch(largerWork.workFiles::contains) == false))
     {
       String msg = workFiles.size() == 1 ? " file is " : " files are ";
       if (confirmDialog("Currently, " + workFiles.size() + msg + "attached to the child work. Replace with parent work file(s)?"))
@@ -442,17 +443,6 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     }
 
     return new WorkBibData(this);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String fixCase(String title)
-  {
-    if (db.prefs.getBoolean(PREF_KEY_SENTENCE_CASE, false))
-      return sentenceCase(title);
-
-    return titleCase(title);
   }
 
 //---------------------------------------------------------------------------
