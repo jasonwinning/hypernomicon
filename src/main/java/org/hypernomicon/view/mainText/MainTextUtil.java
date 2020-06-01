@@ -22,10 +22,10 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.KeywordLinkList.charIsPartOfWebLink;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.MediaUtil.*;
-import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;

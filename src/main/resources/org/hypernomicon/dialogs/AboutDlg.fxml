@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Copyright 2015-2020 Jason Winning
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.web.WebView?>
+<?scenebuilder-stylesheet textarea.css?>
+
+<AnchorPane id="SpecialUI" maxHeight="300.0" maxWidth="738.0" minHeight="300.0" minWidth="738.0" prefHeight="300.0" prefWidth="738.0" styleClass="anchor-pane" stylesheets="@about.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.AboutDlgCtrlr">
+   <children>
+      <TabPane fx:id="tabPane" prefHeight="54.0" prefWidth="898.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <tabs>
+            <Tab fx:id="tabGeneral" closable="false" text="General" />
+            <Tab fx:id="tabContributors" closable="false" text="Contributors" />
+            <Tab fx:id="tabAcknowledgements" closable="false" text="Acknowledgements" />
+            <Tab closable="false" text="License" />
+         </tabs>
+      </TabPane>
+      <ImageView fitHeight="152.0" fitWidth="121.0" layoutX="50.0" layoutY="55.0" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="75.0">
+         <image>
+            <Image url="@../resources/images/logobig.png" />
+         </image>
+      </ImageView>
+      <WebView fx:id="webView" layoutX="182.0" layoutY="75.0" prefHeight="225.0" prefWidth="627.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="221.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="75.0" />
+   </children>
+</AnchorPane>

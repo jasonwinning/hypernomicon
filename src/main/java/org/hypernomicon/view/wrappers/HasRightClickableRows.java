@@ -28,7 +28,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource;
+import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;

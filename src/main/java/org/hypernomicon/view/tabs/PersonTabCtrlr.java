@@ -21,14 +21,19 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
-import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.model.Exceptions.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.dialogs.InvestigationsDlgCtrlr;
+import org.hypernomicon.dialogs.NewInstDlgCtrlr;
+import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
+import org.hypernomicon.dialogs.PictureDlgCtrlr;
+import org.hypernomicon.dialogs.InvestigationsDlgCtrlr.InvestigationSetting;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HyperPath;
@@ -41,12 +46,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
-import org.hypernomicon.view.dialogs.InvestigationsDlgCtrlr;
-import org.hypernomicon.view.dialogs.InvestigationsDlgCtrlr.InvestigationSetting;
 import org.hypernomicon.view.mainText.MainTextWrapper;
-import org.hypernomicon.view.dialogs.NewInstDlgCtrlr;
-import org.hypernomicon.view.dialogs.NewPersonDlgCtrlr;
-import org.hypernomicon.view.dialogs.PictureDlgCtrlr;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.SubjectPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
@@ -126,7 +126,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   private boolean alreadyChangingName = false;
 
   @Override public String recordName()               { return new PersonName(tfFirst.getText(), tfLast.getText()).getLastFirst(); }
-  @Override HDT_RecordType getType()                 { return hdtPerson; }
+  @Override protected HDT_RecordType getType()       { return hdtPerson; }
   @Override public void enable(boolean enabled)      { ui.tabPersons.getContent().setDisable(enabled == false); }
   @Override public void setRecord(HDT_Person person) { curPerson = person; }
   @Override public MainTextWrapper mainTextWrapper() { return mainText; }
@@ -664,7 +664,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init()
+  @Override protected void init()
   {
     mainText = new MainTextWrapper(apOverview);
 

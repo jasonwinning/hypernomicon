@@ -26,6 +26,8 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
+import org.hypernomicon.dialogs.HyperDlg;
+import org.hypernomicon.dialogs.ObjectOrderDlgCtrlr;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
@@ -37,8 +39,6 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.NestedValue;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
-import org.hypernomicon.view.dialogs.HyperDlg;
-import org.hypernomicon.view.dialogs.ObjectOrderDlgCtrlr;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;

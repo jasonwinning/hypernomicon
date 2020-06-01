@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Copyright 2015-2020 Jason Winning
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="500.0" prefWidth="1209.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.previewWindow.ContentsWindow">
+   <children>
+      <TableView fx:id="tvContents" editable="true" layoutX="167.0" layoutY="150.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <columns>
+          <TableColumn editable="false" minWidth="-1.0" prefWidth="408.0" text="Authors" />
+            <TableColumn editable="false" maxWidth="65.0" minWidth="65.0" prefWidth="65.0" resizable="false" text="Type" />
+          <TableColumn editable="false" minWidth="-1.0" prefWidth="408.0" text="Title" />
+            <TableColumn editable="false" maxWidth="45.0" minWidth="45.0" prefWidth="45.0" resizable="false" text="Year" />
+            <TableColumn maxWidth="60.0" minWidth="60.0" prefWidth="60.0" resizable="false" text="Start pg." />
+            <TableColumn editable="false" maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false" sortable="false" />
+            <TableColumn editable="false" maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false" sortable="false" />
+            <TableColumn maxWidth="60.0" minWidth="60.0" prefWidth="60.0" resizable="false" text="End pg." />
+            <TableColumn editable="false" maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false" sortable="false" />
+            <TableColumn editable="false" maxWidth="40.0" minWidth="40.0" prefWidth="40.0" resizable="false" sortable="false" />
+        </columns>
+      </TableView>
+   </children>
+</AnchorPane>

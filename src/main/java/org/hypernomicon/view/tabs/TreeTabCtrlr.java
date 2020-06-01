@@ -20,14 +20,13 @@ package org.hypernomicon.view.tabs;
 import java.util.EnumSet;
 
 import org.controlsfx.control.MasterDetailPane;
-
+import org.hypernomicon.dialogs.ChooseParentDlgCtrlr;
+import org.hypernomicon.dialogs.RenameDlgCtrlr;
+import org.hypernomicon.dialogs.VerdictDlgCtrlr;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.HyperView.TextViewInfo;
-import org.hypernomicon.view.dialogs.ChooseParentDlgCtrlr;
-import org.hypernomicon.view.dialogs.RenameDlgCtrlr;
-import org.hypernomicon.view.dialogs.VerdictDlgCtrlr;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.wrappers.HyperTreeCellValue;
@@ -37,13 +36,13 @@ import org.hypernomicon.view.wrappers.TreeWrapper;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.dialogs.RenameDlgCtrlr.NameType.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
-import static org.hypernomicon.view.dialogs.RenameDlgCtrlr.NameType.*;
-import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -76,7 +75,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   public String textToHilite = "";
   private TreeWrapper tree;
 
-  @Override HDT_RecordType getType()              { return hdtNone; }
+  @Override protected HDT_RecordType getType()    { return hdtNone; }
   @Override public void enable(boolean enabled)   { ui.tabTree.getContent().setDisable(enabled == false); }
   @Override public void clear()                   { tree.clear(); }
   @Override public boolean saveToRecord()         { return true; }
@@ -113,7 +112,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init()
+  @Override protected void init()
   {
     tree = new TreeWrapper(ttv, true, ui.cbTreeGoTo, false);
 

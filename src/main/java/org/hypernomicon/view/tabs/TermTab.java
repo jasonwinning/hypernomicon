@@ -19,9 +19,6 @@ package org.hypernomicon.view.tabs;
 
 import org.hypernomicon.view.HyperView;
 import org.hypernomicon.view.HyperView.TextViewInfo;
-import org.hypernomicon.view.dialogs.MergeTermDlgCtrlr;
-import org.hypernomicon.view.dialogs.RecordDropdownDlgCtrlr;
-import org.hypernomicon.view.dialogs.SelectConceptDlgCtrlr;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -48,6 +45,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.hypernomicon.dialogs.MergeTermDlgCtrlr;
+import org.hypernomicon.dialogs.RecordDropdownDlgCtrlr;
+import org.hypernomicon.dialogs.SelectConceptDlgCtrlr;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.HyperObjList;
@@ -91,7 +91,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   private TabPane tpConcepts;
   private boolean alreadyChangingTab = false, updatingGlossaries = false;
 
-  @Override HDT_RecordType getType()                { return hdtTerm; }
+  @Override protected HDT_RecordType getType()      { return hdtTerm; }
   @Override public void enable(boolean enabled)     { ui.tabTerms.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
@@ -163,7 +163,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init()
+  @Override protected void init()
   {
     ctrlr.init(hdtConcept, this);
 

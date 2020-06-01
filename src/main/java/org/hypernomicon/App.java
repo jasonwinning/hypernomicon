@@ -26,8 +26,14 @@ import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.tabs.HyperTab.*;
 
 import org.hypernomicon.bib.BibManager;
+import org.hypernomicon.dialogs.NewVersionDlgCtrlr;
+import org.hypernomicon.fileManager.FileManager;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.previewWindow.ContentsWindow;
+import org.hypernomicon.previewWindow.PDFJSWrapper;
+import org.hypernomicon.previewWindow.PreviewWindow;
+import org.hypernomicon.query.QueryTabCtrlr.QueryView;
 import org.hypernomicon.util.AsyncHttpClient;
 import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.MediaUtil;
@@ -36,14 +42,8 @@ import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.MainCtrlr;
-import org.hypernomicon.view.dialogs.NewVersionDlgCtrlr;
-import org.hypernomicon.view.fileManager.FileManager;
 import org.hypernomicon.view.mainText.MainTextWrapper;
-import org.hypernomicon.view.previewWindow.ContentsWindow;
-import org.hypernomicon.view.previewWindow.PDFJSWrapper;
-import org.hypernomicon.view.previewWindow.PreviewWindow;
 import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.QueryTabCtrlr.QueryView;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -205,13 +205,12 @@ public final class App extends Application
 
     String versionStr = manifestValue("Impl-Version");
 
-    if (safeStr(versionStr).isEmpty() == false)
-      if (new VersionNumber(2, versionStr).equals(dbVersion) == false)
-      {
-        messageDialog("Internal error #69698", mtError);
-        ui.shutDown(false, false, false);
-        return;
-      }
+    if ((safeStr(versionStr).isEmpty() == false) && (new VersionNumber(2, versionStr).equals(dbVersion) == false))
+    {
+      messageDialog("Internal error #69698", mtError);
+      ui.shutDown(false, false, false);
+      return;
+    }
 
     version = dbVersion;
 

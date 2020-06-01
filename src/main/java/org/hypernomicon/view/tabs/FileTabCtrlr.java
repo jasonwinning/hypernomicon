@@ -24,7 +24,6 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
-import org.hypernomicon.view.dialogs.FileDlgCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
@@ -38,6 +37,8 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+
+import org.hypernomicon.dialogs.FileDlgCtrlr;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -72,7 +73,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   private HDT_MiscFile curMiscFile;
 
   @Override public String recordName()                 { return tfName.getText(); }
-  @Override HDT_RecordType getType()                   { return hdtMiscFile; }
+  @Override protected HDT_RecordType getType()         { return hdtMiscFile; }
   @Override public void enable(boolean enabled)        { ui.tabFiles.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text)    { mainText.hilite(text); }
   @Override public TextViewInfo mainTextInfo()         { return mainText.getViewInfo(); }

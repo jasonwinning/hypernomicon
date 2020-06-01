@@ -48,7 +48,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.hypernomicon.view.fileManager.FileManager;
+import org.hypernomicon.fileManager.FileManager;
 
 public class FilePath implements Comparable<FilePath>
 {

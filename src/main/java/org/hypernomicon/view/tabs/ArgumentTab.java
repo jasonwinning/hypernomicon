@@ -56,7 +56,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
   private RecordByTypePopulator verdictPopulator;
   private HDT_Argument curArgument;
 
-  @Override HDT_RecordType getType()                { return hdtArgument; }
+  @Override protected HDT_RecordType getType()      { return hdtArgument; }
   @Override public void enable(boolean enabled)     { ui.tabArguments.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
@@ -159,7 +159,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init()
+  @Override protected void init()
   {
     ctrlr.init(hdtArgument, this);
 

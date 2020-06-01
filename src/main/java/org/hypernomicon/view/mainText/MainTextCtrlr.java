@@ -41,6 +41,9 @@ import org.jsoup.nodes.Document;
 
 import com.sun.javafx.webkit.Accessor;
 
+import org.hypernomicon.dialogs.FileDlgCtrlr;
+import org.hypernomicon.dialogs.InsertMiscFileDlgCtrlr;
+import org.hypernomicon.dialogs.NewLinkDlgCtrlr;
 import org.hypernomicon.model.KeywordLinkList;
 import org.hypernomicon.model.items.KeyWork;
 import org.hypernomicon.model.items.MainText;
@@ -52,9 +55,6 @@ import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.view.controls.HiddenSidesPane;
-import org.hypernomicon.view.dialogs.FileDlgCtrlr;
-import org.hypernomicon.view.dialogs.InsertMiscFileDlgCtrlr;
-import org.hypernomicon.view.dialogs.NewLinkDlgCtrlr;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperCB;

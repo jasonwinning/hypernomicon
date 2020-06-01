@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view.populators;
 
-import static org.hypernomicon.view.tabs.QueryTabCtrlr.*;
+import static org.hypernomicon.query.QueryTabCtrlr.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import java.util.ArrayList;
@@ -26,9 +26,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.hypernomicon.model.records.HDT_RecordType;
-import org.hypernomicon.queryEngines.QueryEngine.QueryType;
-import org.hypernomicon.view.tabs.QueryTabCtrlr;
-import org.hypernomicon.view.tabs.QueryTabCtrlr.QueryView;
+import org.hypernomicon.query.QueryTabCtrlr;
+import org.hypernomicon.query.QueryTabCtrlr.QueryView;
+import org.hypernomicon.query.engines.QueryEngine.QueryType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 

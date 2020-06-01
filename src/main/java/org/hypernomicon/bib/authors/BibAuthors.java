@@ -31,13 +31,13 @@ import com.google.common.collect.Iterators;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
+import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.ObjectGroup;
-import org.hypernomicon.view.dialogs.NewPersonDlgCtrlr;
 
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.util.Util.*;

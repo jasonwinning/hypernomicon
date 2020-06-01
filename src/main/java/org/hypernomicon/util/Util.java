@@ -19,14 +19,14 @@ package org.hypernomicon.util;
 
 import org.hypernomicon.App;
 import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.dialogs.InternetCheckDlgCtrlr;
+import org.hypernomicon.dialogs.LockedDlgCtrlr;
+import org.hypernomicon.settings.LaunchCommandsDlgCtrlr;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.WindowStack;
-import org.hypernomicon.view.settings.LaunchCommandsDlgCtrlr;
-import org.hypernomicon.view.dialogs.InternetCheckDlgCtrlr;
-import org.hypernomicon.view.dialogs.LockedDlgCtrlr;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;

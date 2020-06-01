@@ -44,7 +44,7 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
   private HyperTable htParents, htSubdebates, htPositions;
   private HDT_Debate curDebate;
 
-  @Override HDT_RecordType getType()                { return hdtDebate; }
+  @Override protected HDT_RecordType getType()      { return hdtDebate; }
   @Override public void enable(boolean enabled)     { ui.tabDebates.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
@@ -82,7 +82,7 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init()
+  @Override protected void init()
   {
     ctrlr.init(hdtDebate, this);
     ctrlr.tvParents.getColumns().remove(2);

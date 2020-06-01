@@ -39,13 +39,13 @@ import com.google.common.collect.ImmutableSet;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.data.EntryType;
+import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.mainText.MainTextUtil;
-import org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;

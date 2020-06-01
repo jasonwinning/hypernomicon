@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Copyright 2015-2020 Jason Winning
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+
+<AnchorPane id="SpecialUI" maxHeight="314.0" minHeight="314.0" minWidth="778.0" prefHeight="314.0" styleClass="anchor-pane" stylesheets="@welcome.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.WelcomeDlgCtrlr">
+   <children>
+      <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <center>
+            <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="314.0" prefWidth="778.0" styleClass="anchor-pane">
+               <children>
+                  <ImageView fitHeight="112.0" fitWidth="94.0" layoutX="37.0" layoutY="33.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../resources/images/logobig.png" />
+                     </image>
+                  </ImageView>
+                  <Button fx:id="btnNew" layoutX="144.0" layoutY="33.0" mnemonicParsing="false" prefHeight="51.0" prefWidth="162.0" text="Start a new database" wrapText="true" />
+                  <Button fx:id="btnClose" layoutX="144.0" layoutY="94.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="51.0" prefWidth="162.0" text="Close this Window" />
+                  <TitledPane animated="false" collapsible="false" layoutX="340.0" layoutY="33.0" prefHeight="112.0" prefWidth="398.0" text="Open recent">
+                    <content>
+                      <AnchorPane fx:id="apRecent" minHeight="0.0" minWidth="0.0" prefHeight="85.0" prefWidth="267.0">
+                           <children>
+                              <Hyperlink fx:id="linkMore" layoutX="6.0" layoutY="63.0" text="More..." />
+                           </children>
+                        </AnchorPane>
+                    </content>
+                  </TitledPane>
+                  <TitledPane animated="false" collapsible="false" layoutX="37.0" layoutY="172.0" prefHeight="112.0" prefWidth="269.0" text="Training Videos">
+                     <content>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="0.0" prefWidth="29.0">
+                           <children>
+                              <Hyperlink fx:id="linkIntroVideo" layoutX="6.0" layoutY="3.0" text="Introductory Tutorial" />
+                              <Hyperlink fx:id="linkFileMgmtVideo" layoutX="6.0" layoutY="22.0" text="Managing PDFs, Other Files, and Folders" />
+                              <Hyperlink fx:id="linkRefMgmtVideo" layoutX="6.0" layoutY="41.0" text="Integration with Zotero and Mendeley" />
+                           </children>
+                        </AnchorPane>
+                     </content>
+                  </TitledPane>
+                  <TitledPane animated="false" collapsible="false" layoutX="340.0" layoutY="172.0" prefHeight="112.0" prefWidth="399.0" text="Links">
+                    <content>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                           <children>
+                              <Hyperlink fx:id="linkForums" layoutX="6.0" layoutY="3.0" text="Discussion Forums" />
+                              <Hyperlink fx:id="linkWiki" layoutX="6.0" layoutY="26.0" text="Wiki" />
+                              <Hyperlink fx:id="linkNews" layoutX="6.0" layoutY="49.0" text="News" />
+                           </children>
+                        </AnchorPane>
+                    </content>
+                  </TitledPane>
+               </children>
+            </AnchorPane>
+         </center>
+      </BorderPane>
+   </children>
+</AnchorPane>

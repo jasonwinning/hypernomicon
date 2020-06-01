@@ -23,6 +23,11 @@ import org.hypernomicon.bib.data.BibDataRetriever;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.bib.data.GUIBibData;
 import org.hypernomicon.bib.data.PDFBibData;
+import org.hypernomicon.dialogs.ChooseParentWorkFileDlgCtrlr;
+import org.hypernomicon.dialogs.FileDlgCtrlr;
+import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
+import org.hypernomicon.dialogs.WorkDlgCtrlr;
+import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.model.SearchKeys;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.Author;
@@ -43,13 +48,8 @@ import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.MainCtrlr;
-import org.hypernomicon.view.dialogs.ChooseParentWorkFileDlgCtrlr;
-import org.hypernomicon.view.dialogs.FileDlgCtrlr;
-import org.hypernomicon.view.dialogs.NewPersonDlgCtrlr;
-import org.hypernomicon.view.dialogs.WorkDlgCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.*;
-import org.hypernomicon.view.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
@@ -61,11 +61,11 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.MediaUtil.*;
-import static org.hypernomicon.view.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.File;
@@ -154,7 +154,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   public HyperCB hcbType;
 
   @Override public String recordName()               { return tfTitle.getText(); }
-  @Override HDT_RecordType getType()                 { return hdtWork; }
+  @Override protected HDT_RecordType getType()       { return hdtWork; }
   @Override public void enable(boolean enabled)      { ui.tabWorks.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text)  { mainText.hilite(text); }
   @Override public TextViewInfo mainTextInfo()       { return mainText.getViewInfo(); }
@@ -174,7 +174,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init()
+  @Override protected void init()
   {
     mainText = new MainTextWrapper(apDescription);
 

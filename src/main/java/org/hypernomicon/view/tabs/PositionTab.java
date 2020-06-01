@@ -20,13 +20,13 @@ package org.hypernomicon.view.tabs;
 import java.util.EnumSet;
 import java.util.List;
 
+import org.hypernomicon.dialogs.NewArgDlgCtrlr;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 import org.hypernomicon.model.records.HDT_Position.PositionSource;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.view.HyperView.TextViewInfo;
-import org.hypernomicon.view.dialogs.NewArgDlgCtrlr;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
@@ -51,7 +51,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
   private HyperTable htParents, htArguments, htSubpositions;
   private HDT_Position curPosition;
 
-  @Override HDT_RecordType getType()                { return hdtPosition; }
+  @Override protected HDT_RecordType getType()      { return hdtPosition; }
   @Override public void enable(boolean enabled)     { ui.tabPositions.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
@@ -134,7 +134,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init()
+  @Override protected void init()
   {
     List<TableColumn<HyperTableRow, ?>> cols;
 

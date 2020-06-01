@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.function.UnaryOperator;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
-
+import org.hypernomicon.dialogs.ChangeParentDlgCtrlr;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Debate;
@@ -39,7 +39,7 @@ import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
-import org.hypernomicon.view.dialogs.ChangeParentDlgCtrlr;
+
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;

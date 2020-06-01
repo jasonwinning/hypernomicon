@@ -22,9 +22,10 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.hypernomicon.dialogs.ProgressDlgCtrlr;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
-import org.hypernomicon.view.dialogs.ProgressDlgCtrlr;
+
 import javafx.concurrent.Task;
 
 public abstract class HyperTask extends Task<Boolean>

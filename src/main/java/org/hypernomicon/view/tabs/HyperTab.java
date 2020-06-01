@@ -79,8 +79,8 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
 //---------------------------------------------------------------------------
 
-  abstract void init();
-  abstract HDT_RecordType getType();
+  protected abstract void init();
+  protected abstract HDT_RecordType getType();
 
   public abstract String recordName();
   public abstract boolean update();
@@ -112,7 +112,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
   public static void addHyperTab(TabEnum tabEnum, Tab tab, String ctrlrFilename) throws IOException
   {
-    FXMLLoader loader = new FXMLLoader(App.class.getResource("view/tabs/" + ctrlrFilename));
+    FXMLLoader loader = new FXMLLoader(App.class.getResource(ctrlrFilename));
     tab.setContent(loader.load());
     HyperTab.class.cast(loader.getController()).baseInit(tabEnum, tab);
   }

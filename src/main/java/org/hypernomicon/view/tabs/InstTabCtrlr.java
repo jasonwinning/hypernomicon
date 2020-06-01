@@ -17,10 +17,10 @@
 
 package org.hypernomicon.view.tabs;
 
+import org.hypernomicon.dialogs.NewRegionDlgCtrlr;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
 import org.hypernomicon.util.WebButton.WebButtonField;
-import org.hypernomicon.view.dialogs.NewRegionDlgCtrlr;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.SubjectPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
@@ -70,7 +70,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   @FXML private Hyperlink hlMaps;
 
   @Override public String recordName()                 { return tfName.getText(); }
-  @Override HDT_RecordType getType()                   { return hdtInstitution; }
+  @Override protected HDT_RecordType getType()         { return hdtInstitution; }
   @Override public void enable(boolean enabled)        { ui.tabInst.getContent().setDisable(enabled == false); }
   @Override public void setRecord(HDT_Institution rec) { curInst = rec; }
   @Override public void setDividerPositions()          { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
@@ -173,7 +173,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override void init()
+  @Override protected void init()
   {
     htSubInst = new HyperTable(tvSubInstitutions, 0, true, PREF_KEY_HT_INST_SUB);
 

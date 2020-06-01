@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+   Copyright 2015-2020 Jason Winning
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.workMerge.EntryTypeCtrlr">
+   <children>
+      <GridPane fx:id="gp" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <AnchorPane>
+               <children>
+                  <RadioButton fx:id="rb1" layoutX="-22.0" layoutY="23.0" mnemonicParsing="false" selected="true" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="grp" />
+                     </toggleGroup></RadioButton>
+                  <ComboBox fx:id="cb1" layoutX="21.0" layoutY="17.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane GridPane.columnIndex="1">
+               <children>
+                  <RadioButton fx:id="rb2" layoutY="23.0" mnemonicParsing="false" toggleGroup="$grp" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0" />
+                  <ComboBox fx:id="cb2" layoutX="40.0" layoutY="17.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
+               <children>
+                  <RadioButton fx:id="rb3" layoutX="8.0" layoutY="23.0" mnemonicParsing="false" toggleGroup="$grp" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0" />
+                  <ComboBox fx:id="cb3" layoutX="47.0" layoutY="17.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane GridPane.columnIndex="3">
+               <children>
+                  <RadioButton fx:id="rb4" layoutY="23.0" mnemonicParsing="false" toggleGroup="$grp" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0" />
+                  <ComboBox fx:id="cb4" layoutX="55.0" layoutY="17.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="19.0" AnchorPane.rightAnchor="8.0" />
+               </children>
+            </AnchorPane>
+         </children>
+      </GridPane>
+      <Label fx:id="lbl" text="" />
+   </children>
+   <GridPane.margin>
+      <Insets left="4.0" right="4.0" />
+   </GridPane.margin>
+</AnchorPane>

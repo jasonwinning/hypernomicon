@@ -37,7 +37,7 @@ import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.queryEngines.AllQueryEngine;
+import org.hypernomicon.query.engines.AllQueryEngine;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
