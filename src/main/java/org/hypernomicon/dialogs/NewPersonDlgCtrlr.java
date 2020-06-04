@@ -84,7 +84,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
   public static NewPersonDlgCtrlr build(boolean mustCreate, String name, Author origAuthor)
   {
-    return ((NewPersonDlgCtrlr) create("NewPersonDlg.fxml", "Add a New Person to the Database", true))
+    return ((NewPersonDlgCtrlr) create("NewPersonDlg", "Add a New Person to the Database", true))
       .init(name, null, null, mustCreate, null, origAuthor, new ArrayList<>());
   }
 
@@ -93,7 +93,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
   public static NewPersonDlgCtrlr build(PersonName personName, String searchKey, boolean mustCreate, HDT_Person person, Author origAuthor, List<Author> matchedAuthors)
   {
-    return ((NewPersonDlgCtrlr) create("NewPersonDlg.fxml", "Potential Duplicate(s)", true))
+    return ((NewPersonDlgCtrlr) create("NewPersonDlg", "Potential Duplicate(s)", true))
       .init(null, personName, searchKey, mustCreate, person, origAuthor, matchedAuthors);
   }
 

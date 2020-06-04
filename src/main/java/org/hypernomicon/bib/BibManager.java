@@ -129,7 +129,7 @@ public class BibManager extends HyperDlg
 
   public static BibManager build()
   {
-    return ((BibManager) createUsingFullPath("bib/BibManager.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
+    return ((BibManager) createUsingFullPath("bib/BibManager", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
   }
 
 //---------------------------------------------------------------------------

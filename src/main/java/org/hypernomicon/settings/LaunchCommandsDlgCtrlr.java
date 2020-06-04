@@ -128,7 +128,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
   static LaunchCommandsDlgCtrlr build(String title, String appPrefKey, String commandsPrefKey, String commandTypePrefKey)
   {
-    return ((LaunchCommandsDlgCtrlr) createUsingFullPath("settings/LaunchCommandsDlg.fxml", title, true))
+    return ((LaunchCommandsDlgCtrlr) createUsingFullPath("settings/LaunchCommandsDlg", title, true))
       .init(appPrefKey, commandsPrefKey, commandTypePrefKey);
   }
 

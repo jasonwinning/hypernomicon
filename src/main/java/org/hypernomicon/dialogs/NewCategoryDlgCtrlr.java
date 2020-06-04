@@ -49,7 +49,7 @@ public class NewCategoryDlgCtrlr extends HyperDlg
 
   public static NewCategoryDlgCtrlr build(HDT_RecordType recordType)
   {
-    return ((NewCategoryDlgCtrlr) create("NewCategoryDlg.fxml", "New Category", true)).init(recordType);
+    return ((NewCategoryDlgCtrlr) create("NewCategoryDlg", "New Category", true)).init(recordType);
   }
 
 //---------------------------------------------------------------------------

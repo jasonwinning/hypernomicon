@@ -132,7 +132,7 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
 
   public static NewDatabaseDlgCtrlr build(String newPath)
   {
-    return ((NewDatabaseDlgCtrlr) create("NewDatabaseDlg.fxml", "Customize How Database Will Be Created", true)).init(newPath);
+    return ((NewDatabaseDlgCtrlr) create("NewDatabaseDlg", "Customize How Database Will Be Created", true)).init(newPath);
   }
 
 //---------------------------------------------------------------------------

@@ -33,9 +33,9 @@ public abstract class AbstractRow<HDT_T extends HDT_Record, RowType extends Abst
 
   public abstract <HDT_T1 extends HDT_T> HDT_T1 getRecord();
 
-  public HDT_RecordType    getRecordType() { return nullSwitch(getRecord(), hdtNone, HDT_Record::getType); }
-  public int               getRecordID()   { return nullSwitch(getRecord(), -1, HDT_Record::getID); }
-  public TreeItem<RowType> getTreeItem()   { return null; }
+  public HDT_RecordType getRecordType() { return nullSwitch(getRecord(), hdtNone, HDT_Record::getType); }
+  public int            getRecordID  () { return nullSwitch(getRecord(), -1, HDT_Record::getID); }
+  TreeItem<RowType>     getTreeItem  () { return null; }
 
 //---------------------------------------------------------------------------
 

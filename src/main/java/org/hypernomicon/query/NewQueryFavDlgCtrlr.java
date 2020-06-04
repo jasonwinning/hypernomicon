@@ -41,7 +41,7 @@ public class NewQueryFavDlgCtrlr extends HyperDlg
 
   static NewQueryFavDlgCtrlr build(String newName)
   {
-    return ((NewQueryFavDlgCtrlr) createUsingFullPath("query/NewQueryFavDlg.fxml", "Add Query Favorite", true)).init(newName);
+    return ((NewQueryFavDlgCtrlr) createUsingFullPath("query/NewQueryFavDlg", "Add Query Favorite", true)).init(newName);
   }
 
 //---------------------------------------------------------------------------

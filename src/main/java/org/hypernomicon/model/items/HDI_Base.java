@@ -17,24 +17,18 @@
 
 package org.hypernomicon.model.items;
 
-import java.util.List;
-
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 
 public class HDI_Base
 {
-  protected final HDI_Schema schema;
-  protected final Tag mainTag;
+  private final HDI_Schema schema;
 
-  public HDI_Base(HDI_Schema newSchema)
+  public HDI_Base(HDI_Schema schema)
   {
-    schema = newSchema;
-    mainTag = newSchema.getTag();
+    this.schema = schema;
   }
 
-  public List<Tag> getTags()             { return schema.getTags(); }
   public HyperDataCategory getCategory() { return schema.getCategory(); }
   public HDI_Schema getSchema()          { return schema; }
 }

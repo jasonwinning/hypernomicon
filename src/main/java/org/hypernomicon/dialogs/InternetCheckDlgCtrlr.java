@@ -43,7 +43,7 @@ public class InternetCheckDlgCtrlr extends HyperDlg
 
   public static InternetCheckDlgCtrlr build()
   {
-    return create("InternetCheckDlg.fxml", appTitle, true);
+    return create("InternetCheckDlg", appTitle, true);
   }
 
 //---------------------------------------------------------------------------

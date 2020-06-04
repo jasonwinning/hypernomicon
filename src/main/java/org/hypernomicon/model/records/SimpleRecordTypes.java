@@ -94,11 +94,7 @@ public class SimpleRecordTypes
   { public HDT_ArgumentVerdict(HDT_RecordState xmlState, HyperDataset<HDT_ArgumentVerdict> dataset) { super(xmlState, dataset);  } }
 
   public static final class HDT_InstitutionType extends HDT_SimpleRecord
-  {
-    public static final int FACULTY_INST_TYPE_ID = 9,
-                            DEPARTMENT_INST_TYPE_ID = 10;
-
-    public HDT_InstitutionType(HDT_RecordState xmlState, HyperDataset<HDT_InstitutionType> dataset) { super(xmlState, dataset);  } }
+  { public HDT_InstitutionType(HDT_RecordState xmlState, HyperDataset<HDT_InstitutionType> dataset) { super(xmlState, dataset);  } }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

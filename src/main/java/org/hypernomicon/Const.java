@@ -258,31 +258,31 @@ public final class Const
     PREF_KEY_DOI_SRCH = "doiSrch",
     PREF_KEY_ISBN_SRCH = "isbnSrch";
 
-  public static final VersionNumber dbVersion = new VersionNumber(2, 1, 18, 1); // 1.18.1
+  public static final VersionNumber dbVersion = new VersionNumber(1, 18, 1); // 1.18.1
 
   // This is the minimum version that the application version is able to load
   public static final Map<VersionNumber, VersionNumber> appVersionToMinRecordsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
 
-    .put(new VersionNumber(2, 1), new VersionNumber(2, 1))
+    .put(new VersionNumber(1), new VersionNumber(1))
     .build();
 
   // This is the minimum version that the application version is able to load
   public static final Map<VersionNumber, VersionNumber> appVersionToMinSettingsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
 
-    .put(new VersionNumber(2, 1), new VersionNumber(2, 1))
+    .put(new VersionNumber(1), new VersionNumber(1))
     .build();
 
   // This is the version that the application version will actually save to
   public static final Map<VersionNumber, VersionNumber> appVersionToMaxRecordsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
 
-    .put(new VersionNumber(2, 1, 17, 5), new VersionNumber(2, 1))
-    .put(dbVersion, new VersionNumber(2, 1, 1))
+    .put(new VersionNumber(1, 17, 5), new VersionNumber(1))
+    .put(dbVersion, new VersionNumber(1, 1))
     .build();
 
   // This is the version that the application version will actually save to
   public static final Map<VersionNumber, VersionNumber> appVersionToMaxSettingsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
 
-    .put(new VersionNumber(2, 1, 17, 5), new VersionNumber(2, 1))
-    .put(dbVersion, new VersionNumber(2, 1, 1))
+    .put(new VersionNumber(1, 17, 5), new VersionNumber(1))
+    .put(dbVersion, new VersionNumber(1, 1))
     .build();
 }

@@ -30,6 +30,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.DirectoryChooser;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -53,6 +54,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 //---------------------------------------------------------------------------
@@ -73,6 +75,14 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
   @Override public void setRecord(HDT_Note note)    { curNote = note; }
+
+  private NoteTab() throws IOException
+  {
+    super(ui.tabNotes);
+    baseInit(noteTabEnum, ui.tabNotes);
+  }
+
+  @SuppressWarnings("unused") public static void create() throws IOException { new NoteTab(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

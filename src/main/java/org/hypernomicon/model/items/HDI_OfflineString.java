@@ -21,7 +21,6 @@ import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_RecordState;
 import org.hypernomicon.model.records.HDT_RecordType;
-import static org.hypernomicon.model.records.HDT_RecordState.*;
 
 import java.util.Map;
 
@@ -34,11 +33,10 @@ public class HDI_OfflineString extends HDI_OfflineBase
   String strValue = "";
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 
-  public HDI_OfflineString(HDI_Schema newSchema, HDT_RecordState recordState)
+  public HDI_OfflineString(HDI_Schema schema, HDT_RecordState recordState)
   {
-    super(newSchema, recordState);
+    super(schema, recordState);
   }
 
 //---------------------------------------------------------------------------

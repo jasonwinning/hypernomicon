@@ -40,7 +40,7 @@ public class WelcomeDlgCtrlr extends HyperDlg
 
   public static WelcomeDlgCtrlr build()
   {
-    return ((WelcomeDlgCtrlr) create("WelcomeDlg.fxml", "Welcome - " + appTitle, false)).init();
+    return ((WelcomeDlgCtrlr) create("WelcomeDlg", "Welcome - " + appTitle, false)).init();
   }
 
   public boolean newClicked()   { return newClicked ; }

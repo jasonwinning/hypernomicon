@@ -29,11 +29,12 @@ import static org.hypernomicon.util.Util.*;
 public class VersionNumber implements Magnitude<VersionNumber>
 {
   private final List<Integer> parts;
+  private final int minParts = 2;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public VersionNumber(int minParts, Integer... parts)
+  public VersionNumber(Integer... parts)
   {
     List<Integer> tempParts = Lists.newArrayList(parts);
 
@@ -43,7 +44,7 @@ public class VersionNumber implements Magnitude<VersionNumber>
     this.parts = Collections.unmodifiableList(tempParts);
   }
 
-  public VersionNumber(int minParts, String str)
+  public VersionNumber(String str)
   {
     List<Integer> tempParts = new ArrayList<>();
 

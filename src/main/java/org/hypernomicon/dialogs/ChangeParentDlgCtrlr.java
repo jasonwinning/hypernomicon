@@ -43,7 +43,7 @@ public class ChangeParentDlgCtrlr extends HyperDlg
 
   public static ChangeParentDlgCtrlr build(HDT_Record oldParent, HDT_Record newParent, HDT_Record child, boolean copyIsOK)
   {
-    return ((ChangeParentDlgCtrlr) create("ChangeParentDlg.fxml", "Copy or Move Record to Destination", true)).init(oldParent, newParent, child, copyIsOK);
+    return ((ChangeParentDlgCtrlr) create("ChangeParentDlg", "Copy or Move Record to Destination", true)).init(oldParent, newParent, child, copyIsOK);
   }
 
 //---------------------------------------------------------------------------

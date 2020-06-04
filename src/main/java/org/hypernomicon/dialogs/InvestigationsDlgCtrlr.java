@@ -69,7 +69,7 @@ public class InvestigationsDlgCtrlr extends HyperDlg
 
   public static InvestigationsDlgCtrlr build(HDT_Work work, HDT_Person curPerson)
   {
-    return ((InvestigationsDlgCtrlr) create("InvestigationsDlg.fxml", "Assign Investigations - " + work.name(), true)).init(work, curPerson);
+    return ((InvestigationsDlgCtrlr) create("InvestigationsDlg", "Assign Investigations - " + work.name(), true)).init(work, curPerson);
   }
 
 //---------------------------------------------------------------------------

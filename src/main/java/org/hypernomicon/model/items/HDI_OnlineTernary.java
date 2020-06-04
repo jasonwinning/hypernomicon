@@ -28,7 +28,7 @@ public class HDI_OnlineTernary extends HDI_OnlineBase<HDI_OfflineTernary>
 {
   private Ternary value;
 
-  public HDI_OnlineTernary(HDI_Schema newSchema, HDT_Record newRecord) { super(newSchema, newRecord); }
+  public HDI_OnlineTernary(HDI_Schema schema, HDT_Record record) { super(schema, record); }
 
   public Ternary get()           { return value; }
   public void set(Ternary value) { this.value = value; }

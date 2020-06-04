@@ -69,7 +69,7 @@ public class RenameDlgCtrlr extends HyperDlg
 
   public static RenameDlgCtrlr build(String title, NameType nameType, String oldName)
   {
-    return ((RenameDlgCtrlr) create("RenameDlg.fxml", title, true)).init(nameType, oldName);
+    return ((RenameDlgCtrlr) create("RenameDlg", title, true)).init(nameType, oldName);
   }
 
 //---------------------------------------------------------------------------

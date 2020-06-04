@@ -21,7 +21,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -82,16 +81,11 @@ public class HDT_Argument extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addCounterArg(HDT_Argument countered, HDT_ArgumentVerdict verdict)
+  public void addCounteredArg(HDT_Argument countered, HDT_ArgumentVerdict verdict) throws RelationCycleException
   {
     HyperObjList<HDT_Argument, HDT_Argument> list = getObjList(rtCounterOfArgument);
-    if (list.add(countered) == false)
-    {
-      try                              { list.throwLastException(); }
-      catch (RelationCycleException e) { messageDialog(e.getMessage(), mtError); }
-
-      return;
-    }
+    list.add(countered);
+    list.throwLastException();
 
     if (verdict == null) return;
 

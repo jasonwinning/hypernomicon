@@ -120,7 +120,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
   public static SettingsDlgCtrlr build(SettingsPage page)
   {
-    return ((SettingsDlgCtrlr) createUsingFullPath("settings/SettingsDlg.fxml", appTitle + " Settings", true)).init(page);
+    return ((SettingsDlgCtrlr) createUsingFullPath("settings/SettingsDlg", appTitle + " Settings", true)).init(page);
   }
 
 //---------------------------------------------------------------------------

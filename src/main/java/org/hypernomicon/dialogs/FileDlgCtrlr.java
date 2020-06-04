@@ -74,12 +74,12 @@ public class FileDlgCtrlr extends HyperDlg
 
   public static FileDlgCtrlr build(String title, HDT_MiscFile curFileRecord, String recordName, boolean canBrowseToExistingMiscFileRecord)
   {
-    return ((FileDlgCtrlr) create("FileDlg.fxml", title, true)).init(hdtMiscFile, curFileRecord, null, recordName, canBrowseToExistingMiscFileRecord);
+    return ((FileDlgCtrlr) create("FileDlg", title, true)).init(hdtMiscFile, curFileRecord, null, recordName, canBrowseToExistingMiscFileRecord);
   }
 
   public static FileDlgCtrlr build(String title, HDT_WorkFile curFileRecord, HDT_Work curWork)
   {
-    return ((FileDlgCtrlr) create("FileDlg.fxml", title, true)).init(hdtWorkFile, curFileRecord, curWork, "", false);
+    return ((FileDlgCtrlr) create("FileDlg", title, true)).init(hdtWorkFile, curFileRecord, curWork, "", false);
   }
 
 //---------------------------------------------------------------------------

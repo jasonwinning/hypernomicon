@@ -176,10 +176,10 @@ public abstract class HDT_RecordBase implements HDT_Record
         case hdcBibEntryKey   : item = new HDI_OnlineBibEntryKey  (schema, (HDT_Work               ) this); break;
         case hdcAuthors       : item = new HDI_OnlineAuthors      (schema, (HDT_Work               ) this); break;
         case hdcHubSpokes     : item = new HDI_OnlineHubSpokes    (schema, (HDT_Hub                ) this); break;
+        case hdcPersonName    : item = new HDI_OnlinePersonName   (schema, (HDT_Person             ) this); break;
 
         case hdcBoolean       : item = new HDI_OnlineBoolean      (schema, this); break;
         case hdcTernary       : item = new HDI_OnlineTernary      (schema, this); break;
-        case hdcPersonName    : item = new HDI_OnlinePersonName   (schema, this); break;
         case hdcPointerMulti  : item = new HDI_OnlinePointerMulti (schema, this); break;
         case hdcPointerSingle : item = new HDI_OnlinePointerSingle(schema, this); break;
         case hdcString        : item = new HDI_OnlineString       (schema, this); break;

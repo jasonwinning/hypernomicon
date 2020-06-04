@@ -45,7 +45,7 @@ public class ProgressDlgCtrlr extends HyperDlg
 
   public static ProgressDlgCtrlr build()
   {
-    return ((ProgressDlgCtrlr) create("ProgressDlg.fxml", appTitle, true)).init();
+    return ((ProgressDlgCtrlr) create("ProgressDlg", appTitle, true)).init();
   }
 
 //---------------------------------------------------------------------------

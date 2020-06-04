@@ -97,12 +97,12 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
   public static SelectWorkDlgCtrlr build(HDT_Person authorToUse, FilePath filePathToUse)
   {
-    return ((SelectWorkDlgCtrlr) create("SelectWorkDlg.fxml", "Select a Work Record", true)).init(null, authorToUse, filePathToUse, true, null, false);
+    return ((SelectWorkDlgCtrlr) create("SelectWorkDlg", "Select a Work Record", true)).init(null, authorToUse, filePathToUse, true, null, false);
   }
 
   public static SelectWorkDlgCtrlr build(HDT_Work workToUse, BibEntry bibEntryToUse)
   {
-    return ((SelectWorkDlgCtrlr) create("SelectWorkDlg.fxml", "Select a Work Record", true)).init(workToUse, null, null, false, bibEntryToUse, true);
+    return ((SelectWorkDlgCtrlr) create("SelectWorkDlg", "Select a Work Record", true)).init(workToUse, null, null, false, bibEntryToUse, true);
   }
 
 //---------------------------------------------------------------------------

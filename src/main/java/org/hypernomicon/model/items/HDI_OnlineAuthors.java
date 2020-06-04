@@ -38,9 +38,9 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 {
   private Authors authors;
 
-  public HDI_OnlineAuthors(HDI_Schema newSchema, HDT_Work newWork)
+  public HDI_OnlineAuthors(HDI_Schema schema, HDT_Work work)
   {
-    super(newSchema, newWork);
+    super(schema, work);
 
     initAuthors();
   }

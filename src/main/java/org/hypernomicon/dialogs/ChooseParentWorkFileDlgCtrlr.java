@@ -46,7 +46,7 @@ public class ChooseParentWorkFileDlgCtrlr extends HyperDlg
 
   public static ChooseParentWorkFileDlgCtrlr build(HDT_Work work)
   {
-    return ((ChooseParentWorkFileDlgCtrlr) create("ChooseParentWorkFileDlg.fxml", "Choose Work File", true)).init(work);
+    return ((ChooseParentWorkFileDlgCtrlr) create("ChooseParentWorkFileDlg", "Choose Work File", true)).init(work);
   }
 
 //---------------------------------------------------------------------------

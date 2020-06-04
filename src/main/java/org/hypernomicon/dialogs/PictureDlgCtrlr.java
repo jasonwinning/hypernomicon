@@ -92,7 +92,7 @@ public class PictureDlgCtrlr extends HyperDlg
 
   public static PictureDlgCtrlr build(Rectangle2D viewPort)
   {
-    return ((PictureDlgCtrlr) create("PictureDlg.fxml", "Edit Picture", true)).init(viewPort);
+    return ((PictureDlgCtrlr) create("PictureDlg", "Edit Picture", true)).init(viewPort);
   }
 
 //---------------------------------------------------------------------------

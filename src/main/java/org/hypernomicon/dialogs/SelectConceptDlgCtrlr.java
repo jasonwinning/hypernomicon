@@ -57,7 +57,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
   public static SelectConceptDlgCtrlr build(HDT_Concept oldConcept)
   {
-    return ((SelectConceptDlgCtrlr) create("SelectConceptDlg.fxml", "Term Select", true)).init(oldConcept);
+    return ((SelectConceptDlgCtrlr) create("SelectConceptDlg", "Term Select", true)).init(oldConcept);
   }
 
 //---------------------------------------------------------------------------

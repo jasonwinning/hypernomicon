@@ -22,7 +22,6 @@ import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.MainText.DisplayItemType;
 import org.hypernomicon.model.records.HDT_RecordState;
 import org.hypernomicon.model.records.HDT_RecordType;
-import static org.hypernomicon.model.records.HDT_RecordState.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -72,9 +71,9 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDI_OfflineConnector(HDI_Schema newSchema, HDT_RecordState recordState)
+  public HDI_OfflineConnector(HDI_Schema schema, HDT_RecordState recordState)
   {
-    super(newSchema, recordState);
+    super(schema, recordState);
     htmlText = "";
 
     hubID = -1;

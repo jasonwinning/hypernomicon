@@ -46,12 +46,12 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 
   //---------------------------------------------------------------------------
 
-  public HDI_OnlineConnector(HDI_Schema newSchema, HDT_RecordWithConnector newRecord)
+  public HDI_OnlineConnector(HDI_Schema schema, HDT_RecordWithConnector record)
   {
-    super(newSchema, newRecord);
+    super(schema, record);
 
-    newRecord.initConnector();
-    connector = newRecord.getConnector();
+    record.initConnector();
+    connector = record.getConnector();
 
     if (record.getType() != hdtHub)                 // MainText reference should be reset when creating a new Online Item, in case it points to
       connector.mainText = new MainText(connector); // an existing MainText of a linked Hub. If that is the case, it will be pointed back to the

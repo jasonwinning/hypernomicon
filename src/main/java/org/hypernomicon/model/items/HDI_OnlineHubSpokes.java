@@ -35,11 +35,11 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDI_OnlineHubSpokes(HDI_Schema newSchema, HDT_Hub newRecord)
+  public HDI_OnlineHubSpokes(HDI_Schema schema, HDT_Hub hub)
   {
-    super(newSchema, newRecord);
+    super(schema, hub);
 
-    hub = newRecord;
+    this.hub = hub;
   }
 
 //---------------------------------------------------------------------------

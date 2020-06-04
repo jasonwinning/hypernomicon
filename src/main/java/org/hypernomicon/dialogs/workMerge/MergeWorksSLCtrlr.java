@@ -39,7 +39,7 @@ public class MergeWorksSLCtrlr extends BibFieldRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void mergeInto(BibData bd)
+  @Override void mergeInto(BibData bd)
   {
     String str;
 
@@ -54,7 +54,7 @@ public class MergeWorksSLCtrlr extends BibFieldRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4)
+  @Override void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4)
   {
     this.ap = ap;
     this.bibFieldEnum = bibFieldEnum;
@@ -65,26 +65,20 @@ public class MergeWorksSLCtrlr extends BibFieldRow
     {
       deleteGridPaneColumn(gp, 3);
     }
-    else
+    else if (bd4.fieldNotEmpty(bibFieldEnum))
     {
-      if (bd4.fieldNotEmpty(bibFieldEnum))
-      {
-        tf4.setText(bd4.getStr(bibFieldEnum));
-        rb4.setSelected(true);
-      }
+      tf4.setText(bd4.getStr(bibFieldEnum));
+      rb4.setSelected(true);
     }
 
     if (bd3 == null)
     {
       deleteGridPaneColumn(gp, 2);
     }
-    else
+    else if (bd3.fieldNotEmpty(bibFieldEnum))
     {
-      if (bd3.fieldNotEmpty(bibFieldEnum))
-      {
-        tf3.setText(bd3.getStr(bibFieldEnum));
-        rb3.setSelected(true);
-      }
+      tf3.setText(bd3.getStr(bibFieldEnum));
+      rb3.setSelected(true);
     }
 
     if (bd2.fieldNotEmpty(bibFieldEnum))

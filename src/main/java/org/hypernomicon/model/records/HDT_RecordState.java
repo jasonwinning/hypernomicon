@@ -28,27 +28,23 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.google.common.escape.Escaper;
-
-import static com.google.common.xml.XmlEscapers.*;
-
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Exceptions.InvalidItemException;
 import org.hypernomicon.model.items.*;
 
 public class HDT_RecordState
 {
-  public Map<Tag, HDI_OfflineBase> items;
+  public final Map<Tag, HDI_OfflineBase> items;
   private static final String QUOTE = "\"";
 
   public int id;
   public final HDT_RecordType type;
-  public final String sortKeyAttr, searchKey;
-  public String listName, simpleName;
+  final String sortKeyAttr, searchKey;
+  public String listName;
+  String simpleName;
   public Instant creationDate, modifiedDate, viewDate;
-  boolean stored;
-
-  public final boolean dummyFlag;
+  public boolean stored;
+  final boolean dummyFlag;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -83,14 +79,6 @@ public class HDT_RecordState
     modifiedDate = null;
     viewDate     = null;
 
-    initItems();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void initItems()
-  {
     items = new LinkedHashMap<>();
 
     Collection<HDI_Schema> schemas = db.getSchemasByRecordType(type);
@@ -127,8 +115,6 @@ public class HDT_RecordState
 
   public void loadItemFromXML(Tag tag, String nodeText, HDT_RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems) throws InvalidItemException
   {
-    stored = true;
-
     if ((type == hdtHub) && (tag == tagName))
       return;
 
@@ -149,8 +135,10 @@ public class HDT_RecordState
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final void writeToXML(StringBuilder xml)
+  void writeToXML(StringBuilder xml)
   {
+    stored = true;
+
     if (type.isSimple()) { writeWholeRecord(xml, simpleName, listName); return; }
 
     writeRecordOpenTag(xml);
@@ -161,17 +149,13 @@ public class HDT_RecordState
         item.writeToXml(tag, xml);
     });
 
-    writeRecordCloseTag(xml);
-
-    stored = true;
+    xml.append("</record>" + System.lineSeparator() + System.lineSeparator());
   }
 
-  private static Escaper xmlContentEscaper = xmlContentEscaper(), xmlAttributeEscaper = xmlAttributeEscaper();
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected void writeWholeRecord(StringBuilder xml, String nameToUse, String listNameAttr)
+  private void writeWholeRecord(StringBuilder xml, String nameToUse, String listNameAttr)
   {
     String searchKeyAttr = "", sortKeyAttrXML = "";
 
@@ -192,7 +176,7 @@ public class HDT_RecordState
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected void writeRecordOpenTag(StringBuilder xml)
+  private void writeRecordOpenTag(StringBuilder xml)
   {
     String searchKeyAttr = "", typeName = db.getTypeTagStr(type), sortKeyAttrXML = sortKeyAttr;
 
@@ -216,96 +200,6 @@ public class HDT_RecordState
     xml.append("  <creation_date>" + dateTimeToIso8601offset(creationDate) + "</creation_date>"); xml.append(System.lineSeparator())
        .append("  <modified_date>" + dateTimeToIso8601offset(modifiedDate) + "</modified_date>"); xml.append(System.lineSeparator())
        .append("  <view_date>"     + dateTimeToIso8601offset(viewDate)     + "</view_date>"    ); xml.append(System.lineSeparator());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  static void writeRecordCloseTag(StringBuilder xml)
-  {
-    xml.append("</record>" + System.lineSeparator() + System.lineSeparator());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void writePointerTagWithNestedPointers(StringBuilder xml, Tag tag, int objID, String value, Map<Tag, HDI_OfflineBase> map)
-  {
-    writePointerTagWithNestedPointers(xml, tag, objID, value, map, false);
-  }
-
-  public static void writePointerTagWithNestedPointers(StringBuilder xml, Tag tag, int objID, String value, Map<Tag, HDI_OfflineBase> map, boolean noIDOk)
-  {
-    if ((objID < 1) && (noIDOk == false)) return;
-
-    if (map.isEmpty())
-    {
-      writePointerTag(xml, tag, objID, hdtNone, value, noIDOk);
-      return;
-    }
-
-    String idStr = "";
-    if (objID > 0)
-      idStr = " id=" + QUOTE + objID + QUOTE;
-
-    xml.append("  <" + db.getTagStr(tag) + idStr + ">" + xmlContentEscaper.escape(value))
-       .append(System.lineSeparator());
-
-    map.forEach((nestedTag, nestedItem) ->
-    {
-      xml.append("  ");
-      nestedItem.writeToXml(nestedTag, xml);
-    });
-
-    xml.append("  </" + db.getTagStr(tag) + ">" + System.lineSeparator());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void writePointerTag(StringBuilder xml, Tag tag, int objID, HDT_RecordType objType, String value)
-  {
-    writePointerTag(xml, tag, objID, objType, value, false);
-  }
-
-  public static void writePointerTag(StringBuilder xml, Tag tag, int objID, HDT_RecordType objType, String value, boolean noIDOk)
-  {
-    if ((objID < 1) && (noIDOk == false)) return;
-
-    String idStr = "", typeStr = "";
-
-    if (objID > 0)          idStr   = " id="   + QUOTE + objID                     + QUOTE;
-    if (objType != hdtNone) typeStr = " type=" + QUOTE + db.getTypeTagStr(objType) + QUOTE;
-
-    xml.append("  <" + db.getTagStr(tag) + typeStr + idStr + ">" + xmlContentEscaper.escape(value) + "</" + db.getTagStr(tag) + ">")
-       .append(System.lineSeparator());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void writeStringTag(StringBuilder xml, Tag tag, String tagText)
-  {
-    if (tagText.isEmpty()) return;
-    xml.append("  <" + db.getTagStr(tag) + ">" + xmlContentEscaper.escape(tagText) + "</" + db.getTagStr(tag) + ">" + System.lineSeparator());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void writeBooleanTag(StringBuilder xml, Tag tag, boolean tf)
-  {
-    xml.append("  <" + db.getTagStr(tag) + ">" + (tf ? "true" : "false") + "</" + db.getTagStr(tag) + ">" + System.lineSeparator());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void setDates(Instant instant)
-  {
-    creationDate = instant;
-    modifiedDate = instant;
-    viewDate     = instant;
   }
 
 //---------------------------------------------------------------------------

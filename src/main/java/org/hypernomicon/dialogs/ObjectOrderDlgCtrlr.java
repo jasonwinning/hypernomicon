@@ -47,7 +47,7 @@ public class ObjectOrderDlgCtrlr extends HyperDlg
 
   public static ObjectOrderDlgCtrlr build(HyperTable ht, List<HyperTableRow> rows)
   {
-    return ((ObjectOrderDlgCtrlr) create("ObjectOrderDlg.fxml", "Change Order of Rows", true)).init(ht, rows);
+    return ((ObjectOrderDlgCtrlr) create("ObjectOrderDlg", "Change Order of Rows", true)).init(ht, rows);
   }
 
 //---------------------------------------------------------------------------

@@ -29,7 +29,7 @@ import javafx.scene.control.Tab;
 
 public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWithConnector> extends HyperTab<HDT_RT, HDT_CT>
 {
-  NodeTabCtrlr<HDT_RT, HDT_CT> ctrlr;
+  final NodeTabCtrlr<HDT_RT, HDT_CT> ctrlr;
 
   @Override public final MainTextWrapper mainTextWrapper() { return ctrlr.mainTextWrapper(); }
   @Override public String recordName()                     { return ctrlr.nameCtrl().getText(); }
@@ -38,13 +38,11 @@ public abstract class HyperNodeTab<HDT_RT extends HDT_Record, HDT_CT extends HDT
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void baseInit(TabEnum tabEnum, Tab tab) throws IOException
+  HyperNodeTab(Tab tab) throws IOException
   {
     FXMLLoader loader = new FXMLLoader(App.class.getResource("view/tabs/NodeTab.fxml"));
     tab.setContent(loader.load());
     ctrlr = loader.getController();
-
-    super.baseInit(tabEnum, tab);
   }
 
 //---------------------------------------------------------------------------

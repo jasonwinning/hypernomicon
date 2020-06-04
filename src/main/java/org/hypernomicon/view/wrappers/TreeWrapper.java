@@ -32,8 +32,10 @@ import java.util.function.UnaryOperator;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.dialogs.ChangeParentDlgCtrlr;
+import org.hypernomicon.dialogs.VerdictDlgCtrlr;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.HDT_Argument;
 import org.hypernomicon.model.records.HDT_Debate;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_RecordType;
@@ -415,9 +417,26 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     {
       try
       {
-        HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(newRelType, subjRecord, true);
-        objList.add(objRecord);
-        objList.throwLastException();
+        if (subjRecord.getType() == hdtArgument)
+        {
+          HDT_Argument childArg = (HDT_Argument) child;
+
+          VerdictDlgCtrlr vdc = VerdictDlgCtrlr.build("Select Verdict for " + childArg.getCBText(), objRecord);
+
+          if (vdc.showModal() == false)
+            return;
+
+          if (objRecord.getType() == hdtPosition)
+            childArg.addPosition((HDT_Position)objRecord, vdc.hcbVerdict.selectedRecord());
+          else if (objRecord.getType() == hdtArgument)
+            childArg.addCounteredArg((HDT_Argument)objRecord, vdc.hcbVerdict.selectedRecord());
+        }
+        else
+        {
+          HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(newRelType, subjRecord, true);
+          objList.add(objRecord);
+          objList.throwLastException();
+        }
 
         if (cpdc.getTransferMode() == TransferMode.MOVE)
         {

@@ -33,14 +33,13 @@ public class BibCollectionRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public BibCollectionRow(BibCollectionType type) { this(type, null); }
-  public BibCollectionRow(BibCollection coll)     { this(bctUser, coll); }
+  BibCollectionRow(BibCollectionType type) { this(type, null); }
+  BibCollectionRow(BibCollection coll)     { this(bctUser, coll); }
 
-  public TreeItem<BibCollectionRow> getTreeItem() { return treeItem; }
-  public BibCollectionType getType()              { return type; }
-  public BibCollection getCollection()            { return coll; }
-  public String getKey()                          { return key; }
-  public void updateCollObj(BibCollection coll)   { this.coll = coll; }
+  TreeItem<BibCollectionRow> getTreeItem() { return treeItem; }
+  BibCollectionType getType()              { return type; }
+  String getKey()                          { return key; }
+  void updateCollObj(BibCollection coll)   { this.coll = coll; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -57,7 +56,7 @@ public class BibCollectionRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getSortKey()
+  String getSortKey()
   {
     switch (type)
     {
@@ -71,7 +70,7 @@ public class BibCollectionRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getText()
+  String getText()
   {
     switch (type)
     {

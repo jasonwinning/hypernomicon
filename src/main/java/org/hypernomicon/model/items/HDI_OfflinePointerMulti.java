@@ -26,9 +26,7 @@ import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_RecordState;
 import org.hypernomicon.model.records.HDT_RecordType;
-import org.hypernomicon.model.relations.RelationSet.RelationType;
 
-import static org.hypernomicon.model.records.HDT_RecordState.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
@@ -36,13 +34,13 @@ import static org.hypernomicon.util.Util.*;
 public class HDI_OfflinePointerMulti extends HDI_OfflineBase
 {
   final List<Integer> objIDs = new ArrayList<>();
-  private final RelationType relType;
-  public final Map<Integer, Map<Tag, HDI_OfflineBase>> objIDtoMaps = new LinkedHashMap<>();
+  private final HDT_RecordType objType;
+  final Map<Integer, Map<Tag, HDI_OfflineBase>> objIDtoMaps = new LinkedHashMap<>();
 
-  public HDI_OfflinePointerMulti(HDI_Schema newSchema, HDT_RecordState recordState)
+  public HDI_OfflinePointerMulti(HDI_Schema schema, HDT_RecordState recordState)
   {
-    super(newSchema, recordState);
-    relType = schema.getRelType();
+    super(schema, recordState);
+    objType = db.getObjType(schema.getRelType());
   }
 
 //---------------------------------------------------------------------------
@@ -61,8 +59,6 @@ public class HDI_OfflinePointerMulti extends HDI_OfflineBase
 
   @Override public void writeToXml(Tag tag, StringBuilder xml)
   {
-    HDT_RecordType objType = db.getObjType(relType);
-
     objIDs.forEach(objID ->
     {
       if (objIDtoMaps.containsKey(objID))

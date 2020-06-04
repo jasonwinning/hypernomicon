@@ -43,7 +43,7 @@ public class FavOrderDlgCtrlr extends HyperDlg
 
   public static FavOrderDlgCtrlr build()
   {
-    return ((FavOrderDlgCtrlr) create("FavOrderDlg.fxml", "Change Order of Favorites", true)).init();
+    return ((FavOrderDlgCtrlr) create("FavOrderDlg", "Change Order of Favorites", true)).init();
   }
 
 //---------------------------------------------------------------------------

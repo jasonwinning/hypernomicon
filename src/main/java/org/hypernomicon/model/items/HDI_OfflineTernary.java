@@ -17,7 +17,6 @@
 
 package org.hypernomicon.model.items;
 
-import static org.hypernomicon.model.records.HDT_RecordState.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.items.HDI_OfflineTernary.Ternary.*;
 
@@ -54,9 +53,9 @@ public class HDI_OfflineTernary extends HDI_OfflineBase
 
   Ternary value = Unset;
 
-  public HDI_OfflineTernary(HDI_Schema newSchema, HDT_RecordState recordState)
+  public HDI_OfflineTernary(HDI_Schema schema, HDT_RecordState recordState)
   {
-    super(newSchema, recordState);
+    super(schema, recordState);
   }
 
 //---------------------------------------------------------------------------

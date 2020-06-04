@@ -32,6 +32,9 @@ import org.hypernomicon.model.relations.HyperSubjList;
 
 public class HDT_Institution extends HDT_RecordBase
 {
+  public static final int FACULTY_INST_TYPE_ID = 9,
+                          DEPARTMENT_INST_TYPE_ID = 10;
+
   public final HyperSubjList<HDT_Person, HDT_Institution> persons;
   public final HyperSubjList<HDT_Institution, HDT_Institution> subInstitutions;
 
@@ -61,8 +64,8 @@ public class HDT_Institution extends HDT_RecordBase
 
   public void setCity(String newCity) { updateTagString(tagCity, newCity); }
   public String getCity()             { return getTagString(tagCity); }
-  public boolean isDeptOrFaculty()    { return (instType.getID() == HDT_InstitutionType.FACULTY_INST_TYPE_ID) ||
-                                               (instType.getID() == HDT_InstitutionType.DEPARTMENT_INST_TYPE_ID); }
+  public boolean isDeptOrFaculty()    { return (instType.getID() == FACULTY_INST_TYPE_ID) ||
+                                               (instType.getID() == DEPARTMENT_INST_TYPE_ID); }
 
   public void setURL(String newURL) { updateTagString(tagWebURL, newURL); }
   public String getURL()            { return getTagString(tagWebURL); }

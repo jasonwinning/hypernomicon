@@ -50,7 +50,7 @@ public class ChangeIDDlgCtrlr extends HyperDlg
 
   public static ChangeIDDlgCtrlr build()
   {
-    return ((ChangeIDDlgCtrlr) create("ChangeIDDlg.fxml", "Change Record ID", true)).init();
+    return ((ChangeIDDlgCtrlr) create("ChangeIDDlg", "Change Record ID", true)).init();
   }
 
 //---------------------------------------------------------------------------

@@ -38,6 +38,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -99,6 +100,14 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   @Override public boolean saveToRecord()           { return ctrlr.saveToRecord(curConcept); }
 
   private ConceptTab curTab()      { return (ConceptTab) tpConcepts.getSelectionModel().getSelectedItem(); }
+
+  private TermTab() throws IOException
+  {
+    super(ui.tabTerms);
+    baseInit(termTabEnum, ui.tabTerms);
+  }
+
+  @SuppressWarnings("unused") public static void create() throws IOException { new TermTab(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

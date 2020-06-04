@@ -30,13 +30,13 @@ import javafx.scene.layout.AnchorPane;
 
 public abstract class BibFieldRow
 {
-  protected AnchorPane ap;
-  protected BibFieldEnum bibFieldEnum;
+  AnchorPane ap;
+  BibFieldEnum bibFieldEnum;
 
-  public final AnchorPane getAnchorPane() { return ap; }
+  final AnchorPane getAnchorPane() { return ap; }
 
-  protected abstract void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4);
-  public abstract void mergeInto(BibData bd);
+  abstract void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4);
+  abstract void mergeInto(BibData bd);
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

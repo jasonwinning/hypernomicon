@@ -43,12 +43,12 @@ public class EntryTypeCtrlr extends BibFieldRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void mergeInto(BibData bd) { return; } // EntryType should have already been set by the time this gets called
+  @Override void mergeInto(BibData bd) { return; } // EntryType should have already been set by the time this gets called
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4)
+  @Override void init(BibFieldEnum bibFieldEnum, AnchorPane ap, BibData bd1, BibData bd2, BibData bd3, BibData bd4)
   {
     this.ap = ap;
     this.bibFieldEnum = bibFieldEnum;

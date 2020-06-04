@@ -48,7 +48,7 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
 
   public static <HDT_T2 extends HDT_Record> RecordDropdownDlgCtrlr<HDT_T2> build(HDT_RecordType recordType)
   {
-    RecordDropdownDlgCtrlr<HDT_T2> rdd = create("RecordDropdownDlg.fxml", "Select a Term Record to Merge With", true);
+    RecordDropdownDlgCtrlr<HDT_T2> rdd = create("RecordDropdownDlg", "Select a Term Record to Merge With", true);
     rdd.init(recordType);
     return rdd;
   }

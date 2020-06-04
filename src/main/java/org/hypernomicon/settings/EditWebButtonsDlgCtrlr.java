@@ -53,7 +53,7 @@ public class EditWebButtonsDlgCtrlr extends HyperDlg
 
   static EditWebButtonsDlgCtrlr build(WebButton webBtn, String prefKey) throws IOException
   {
-    return ((EditWebButtonsDlgCtrlr) createUsingFullPath("settings/EditWebButtonsDlg.fxml", "Edit Web Button", true))
+    return ((EditWebButtonsDlgCtrlr) createUsingFullPath("settings/EditWebButtonsDlg", "Edit Web Button", true))
       .init(webBtn, prefKey);
   }
 

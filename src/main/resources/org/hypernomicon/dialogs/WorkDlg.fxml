@@ -58,7 +58,7 @@
                <graphic>
                   <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@../../resources/images/rocket-fly.png" />
+                        <Image url="@../resources/images/rocket-fly.png" />
                      </image>
                   </ImageView>
                </graphic>
@@ -71,7 +71,7 @@
                <graphic>
                   <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@../../resources/images/view-document.png" />
+                        <Image url="@../resources/images/view-document.png" />
                      </image>
                   </ImageView>
                </graphic>
@@ -105,7 +105,7 @@
                <graphic>
                   <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@../../resources/images/wand-magic.png" />
+                        <Image url="@../resources/images/wand-magic.png" />
                      </image>
                   </ImageView>
                </graphic>
@@ -121,7 +121,7 @@
                <graphic>
                   <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@../../resources/images/cancel.png" />
+                        <Image url="@../resources/images/cancel.png" />
                      </image>
                   </ImageView>
                </graphic>

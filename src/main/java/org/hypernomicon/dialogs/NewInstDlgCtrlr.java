@@ -25,7 +25,6 @@ import java.util.function.Predicate;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Institution;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_InstitutionType;
 
 import static org.hypernomicon.util.Util.*;
 
@@ -51,7 +50,7 @@ public class NewInstDlgCtrlr extends HyperDlg
 
   public static NewInstDlgCtrlr build(HDT_Institution parent, String newName, boolean isParent)
   {
-    return ((NewInstDlgCtrlr) create("NewInstDlg.fxml", "New Institution or Institutional Division", true)).init(parent, newName, isParent);
+    return ((NewInstDlgCtrlr) create("NewInstDlg", "New Institution or Institutional Division", true)).init(parent, newName, isParent);
   }
 
 //---------------------------------------------------------------------------
@@ -83,7 +82,7 @@ public class NewInstDlgCtrlr extends HyperDlg
         tfName.setText(newName);
     }
 
-    hcbType.selectID(HDT_InstitutionType.DEPARTMENT_INST_TYPE_ID);
+    hcbType.selectID(HDT_Institution.DEPARTMENT_INST_TYPE_ID);
 
     return this;
   }

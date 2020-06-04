@@ -172,7 +172,7 @@ public class PreviewWindow extends HyperDlg
 
   public static PreviewWindow build()
   {
-    return ((PreviewWindow) createUsingFullPath("previewWindow/PreviewWindow.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
+    return ((PreviewWindow) createUsingFullPath("previewWindow/PreviewWindow", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
   }
 
 //---------------------------------------------------------------------------

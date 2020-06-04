@@ -55,7 +55,7 @@ public class MergeTermDlgCtrlr extends HyperDlg
 
   public static MergeTermDlgCtrlr build(HDT_Term term1, HDT_Term term2)
   {
-    return ((MergeTermDlgCtrlr) create("MergeTermDlg.fxml", "Specify How to Merge Fields", true)).init(term1, term2);
+    return ((MergeTermDlgCtrlr) create("MergeTermDlg", "Specify How to Merge Fields", true)).init(term1, term2);
   }
 
 //---------------------------------------------------------------------------

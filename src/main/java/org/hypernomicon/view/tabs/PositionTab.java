@@ -17,6 +17,7 @@
 
 package org.hypernomicon.view.tabs;
 
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -41,7 +42,9 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+
 import javafx.scene.control.TableColumn;
 
 //---------------------------------------------------------------------------
@@ -56,6 +59,14 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
   @Override public void setRecord(HDT_Position pos) { curPosition = pos; }
+
+  private PositionTab() throws IOException
+  {
+    super(ui.tabPositions);
+    baseInit(positionTabEnum, ui.tabPositions);
+  }
+
+  @SuppressWarnings("unused") public static void create() throws IOException { new PositionTab(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

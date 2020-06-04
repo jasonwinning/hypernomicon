@@ -264,19 +264,19 @@ public final class MainCtrlr
     ttDates = new Tooltip("No dates to show.");
     ttDates.setStyle("-fx-font-size: 14px;");
 
-    PersonTabCtrlr   .addHyperTab(personTabEnum   , tabPersons     , "view/tabs/PersonTab.fxml");
-    InstTabCtrlr     .addHyperTab(instTabEnum     , tabInst        , "view/tabs/InstTab.fxml");
-    WorkTabCtrlr     .addHyperTab(workTabEnum     , tabWorks       , "view/tabs/WorkTab.fxml");
-    FileTabCtrlr     .addHyperTab(fileTabEnum     , tabFiles       , "view/tabs/FileTab.fxml");
+    PersonTabCtrlr   .addHyperTab(personTabEnum, tabPersons, "view/tabs/PersonTab");
+    InstTabCtrlr     .addHyperTab(instTabEnum  , tabInst   , "view/tabs/InstTab");
+    WorkTabCtrlr     .addHyperTab(workTabEnum  , tabWorks  , "view/tabs/WorkTab");
+    FileTabCtrlr     .addHyperTab(fileTabEnum  , tabFiles  , "view/tabs/FileTab");
 
-    new DebateTab()  .baseInit   (debateTabEnum   , tabDebates);
-    new PositionTab().baseInit   (positionTabEnum , tabPositions);
-    new ArgumentTab().baseInit   (argumentTabEnum , tabArguments);
-    new NoteTab()    .baseInit   (noteTabEnum     , tabNotes);
-    new TermTab()    .baseInit   (termTabEnum     , tabTerms);
+    DebateTab  .create();
+    PositionTab.create();
+    ArgumentTab.create();
+    NoteTab    .create();
+    TermTab    .create();
 
-    QueryTabCtrlr    .addHyperTab(queryTabEnum    , tabQueries     , "query/QueryTab.fxml");
-    TreeTabCtrlr     .addHyperTab(treeTabEnum     , tabTree        , "view/tabs/TreeTab.fxml");
+    QueryTabCtrlr    .addHyperTab(queryTabEnum , tabQueries, "query/QueryTab");
+    TreeTabCtrlr     .addHyperTab(treeTabEnum  , tabTree   , "view/tabs/TreeTab");
 
     addSelectorTab(omniTabEnum);
     addSelectorTab(listTabEnum);

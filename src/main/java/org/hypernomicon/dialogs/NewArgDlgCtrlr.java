@@ -66,7 +66,7 @@ public class NewArgDlgCtrlr extends HyperDlg
 
   public static NewArgDlgCtrlr build(HDT_Position curPosition)
   {
-    return ((NewArgDlgCtrlr) create("NewArgDlg.fxml", "New Argument", true)).init(curPosition);
+    return ((NewArgDlgCtrlr) create("NewArgDlg", "New Argument", true)).init(curPosition);
   }
 
 //---------------------------------------------------------------------------

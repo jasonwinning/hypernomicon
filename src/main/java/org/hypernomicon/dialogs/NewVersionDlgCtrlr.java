@@ -35,7 +35,7 @@ public class NewVersionDlgCtrlr extends HyperDlg
 
   public static NewVersionDlgCtrlr build()
   {
-    return ((NewVersionDlgCtrlr) create("NewVersionDlg.fxml", "A New Version Is Available", false)).init();
+    return ((NewVersionDlgCtrlr) create("NewVersionDlg", "A New Version Is Available", false)).init();
   }
 
 //---------------------------------------------------------------------------

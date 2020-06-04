@@ -31,10 +31,12 @@ import org.hypernomicon.model.records.HDT_Concept;
 public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 {
   private String strValue = "";
+  private final Tag tag;
 
-  public HDI_OnlineString(HDI_Schema newSchema, HDT_Record newRecord)
+  public HDI_OnlineString(HDI_Schema schema, HDT_Record record)
   {
-    super(newSchema, newRecord);
+    super(schema, record);
+    tag = schema.getTags().get(0);
   }
 
   public void set(String strValue) { this.strValue = strValue; }
@@ -48,7 +50,7 @@ public class HDI_OnlineString extends HDI_OnlineBase<HDI_OfflineString>
 
   public String get()
   {
-    return (record.getType() == hdtConcept) && (mainTag == record.getNameTag()) ?
+    return (record.getType() == hdtConcept) && (tag == record.getNameTag()) ?
       ((HDT_Concept)record).term.get().name()
     :
       strValue;

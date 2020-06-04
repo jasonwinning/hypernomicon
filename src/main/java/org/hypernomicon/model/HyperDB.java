@@ -216,63 +216,63 @@ public final class HyperDB
 
 //---------------------------------------------------------------------------
 
-  public String     getNestedString (HDT_Record subj, HDT_Record obj, Tag tag) { return getRelSet(subj, obj).getNestedString (subj, obj, tag); }
-  public boolean    getNestedBoolean(HDT_Record subj, HDT_Record obj, Tag tag) { return getRelSet(subj, obj).getNestedBoolean(subj, obj, tag); }
-  public Ternary    getNestedTernary(HDT_Record subj, HDT_Record obj, Tag tag) { return getRelSet(subj, obj).getNestedTernary(subj, obj, tag); }
-  public HDT_Record getNestedPointer(HDT_Record subj, HDT_Record obj, Tag tag) { return getRelSet(subj, obj).getNestedPointer(subj, obj, tag); }
+  public String     getNestedString (HDT_Record subj, HDT_Record obj, Tag tag) { return relSet(subj, obj).getNestedString (subj, obj, tag); }
+  public boolean    getNestedBoolean(HDT_Record subj, HDT_Record obj, Tag tag) { return relSet(subj, obj).getNestedBoolean(subj, obj, tag); }
+  public Ternary    getNestedTernary(HDT_Record subj, HDT_Record obj, Tag tag) { return relSet(subj, obj).getNestedTernary(subj, obj, tag); }
+  public HDT_Record getNestedPointer(HDT_Record subj, HDT_Record obj, Tag tag) { return relSet(subj, obj).getNestedPointer(subj, obj, tag); }
   public boolean relationHasNestedValues(RelationType relType)                 { return relationSets.get(relType).getHasNestedItems(); }
   public HDI_Schema getNestedSchema(RelationType relType, Tag tag)             { return relationSets.get(relType).getSchema(tag); }
   public Set<Tag> getNestedTags(RelationType relType)                          { return relationSets.get(relType).getNestedTags(); }
 
   @SuppressWarnings("unchecked")
-  private <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> RelationSet<HDT_SubjType, HDT_ObjType> getRelSet(HDT_SubjType subj, HDT_ObjType obj)
+  private <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> RelationSet<HDT_SubjType, HDT_ObjType> relSet(HDT_SubjType subj, HDT_ObjType obj)
   { return (RelationSet<HDT_SubjType, HDT_ObjType>) relationSets.get(getRelation(subj.getType(), obj.getType())); }
 
   @SuppressWarnings("unchecked")
-  private <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> RelationSet<HDT_SubjType, HDT_ObjType> getRelSet(RelationType relType)
+  private <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> RelationSet<HDT_SubjType, HDT_ObjType> relSet(RelationType relType)
   { return (RelationSet<HDT_SubjType, HDT_ObjType>) relationSets.get(relType); }
 
   public void setNestedItemFromOfflineValue(HDT_Record subj, HDT_Record obj, Tag tag, HDI_OfflineBase value) throws RelationCycleException
-  { getRelSet(subj, obj).setNestedItemFromOfflineValue(subj, obj, tag, value); }
+  { relSet(subj, obj).setNestedItemFromOfflineValue(subj, obj, tag, value); }
 
   public void saveNestedValuesToOfflineMap(HDT_Record subj, HDT_Record obj, Map<Tag, HDI_OfflineBase> tagToNestedItem, HDT_RecordState recordState)
-  { getRelSet(subj, obj).saveNestedValuesToOfflineMap(subj, obj, tagToNestedItem, recordState); }
+  { relSet(subj, obj).saveNestedValuesToOfflineMap(subj, obj, tagToNestedItem, recordState); }
 
   public <HDT_ObjType extends HDT_Record, HDT_SubjType extends HDT_Record> HyperObjList<HDT_SubjType, HDT_ObjType> getObjectList(RelationType relType, HDT_SubjType subj, boolean modTracking)
-  { return new HyperObjList<>(getRelSet(relType), subj, modTracking); }
+  { return new HyperObjList<>(relSet(relType), subj, modTracking); }
 
   public <HDT_ObjType extends HDT_Record, HDT_SubjType extends HDT_Record> HyperSubjList<HDT_SubjType, HDT_ObjType> getSubjectList(RelationType relType, HDT_ObjType obj)
-  { return new HyperSubjList<>(getRelSet(relType), obj); }
+  { return new HyperSubjList<>(relSet(relType), obj); }
 
   public <HDT_ObjType extends HDT_Record, HDT_SubjType extends HDT_Record> HyperObjPointer<HDT_SubjType, HDT_ObjType> getObjPointer(RelationType relType, HDT_SubjType subj)
-  { return new HyperObjPointer<>(getRelSet(relType), subj, true); }
+  { return new HyperObjPointer<>(relSet(relType), subj, true); }
 
   public <HDT_ObjType extends HDT_Record, HDT_SubjType extends HDT_Record> HyperSubjPointer<HDT_SubjType, HDT_ObjType> getSubjPointer(RelationType relType, HDT_ObjType obj)
-  { return new HyperSubjPointer<>(getRelSet(relType), obj); }
+  { return new HyperSubjPointer<>(relSet(relType), obj); }
 
   public HDT_RecordType getNestedTargetType(RelationType relType, Tag mainTag)
   { return relationSets.get(relType).getTargetType(mainTag); }
 
   public <HDT_SubjType extends HDT_Record> List<ObjectGroup> getObjectGroupList(RelationType relType, HDT_SubjType subj, Collection<Tag> tags)
-  { return getRelSet(relType).getObjectGroupList(subj, tags); }
+  { return relationSets.get(relType).getObjectGroupList(subj, tags); }
 
   public <HDT_SubjType extends HDT_Record> void updateObjectGroups(RelationType relType, HDT_SubjType subj, List<ObjectGroup> groups)
-  { getRelSet(relType).updateObjectGroups(subj, groups); subj.modifyNow(); }
+  { relationSets.get(relType).updateObjectGroups(subj, groups); subj.modifyNow(); }
 
   public void updateNestedString(HDT_Record subj, HDT_Record obj, Tag tag, String str)
-  { if (getRelSet(subj, obj).setNestedString(subj, obj, tag, str)) subj.modifyNow(); }
+  { if (relSet(subj, obj).setNestedString(subj, obj, tag, str)) subj.modifyNow(); }
 
   public void updateNestedBoolean(HDT_Record subj, HDT_Record obj, Tag tag, boolean bool)
-  { if (getRelSet(subj, obj).setNestedBoolean(subj, obj, tag, bool)) subj.modifyNow(); }
+  { if (relSet(subj, obj).setNestedBoolean(subj, obj, tag, bool)) subj.modifyNow(); }
 
   public void updateNestedTernary(HDT_Record subj, HDT_Record obj, Tag tag, Ternary ternary)
-  { if (getRelSet(subj, obj).setNestedTernary(subj, obj, tag, ternary)) subj.modifyNow(); }
+  { if (relSet(subj, obj).setNestedTernary(subj, obj, tag, ternary)) subj.modifyNow(); }
 
   public void updateNestedPointer(HDT_Record subj, HDT_Record obj, Tag tag, HDT_Record target)
-  { if (getRelSet(subj, obj).setNestedPointer(subj, obj, tag, target)) subj.modifyNow(); }
+  { if (relSet(subj, obj).setNestedPointer(subj, obj, tag, target)) subj.modifyNow(); }
 
   public <HDT_SubjType extends HDT_Record> void resolvePointersByRelation(RelationType relType, HDT_SubjType subj) throws HDB_InternalError
-  { getRelSet(relType).resolvePointers(subj); }
+  { relationSets.get(relType).resolvePointers(subj); }
 
   private HDT_Folder xmlFolder, booksFolder, papersFolder, miscFilesFolder, picturesFolder, resultsFolder, unenteredFolder, topicalFolder;
 
@@ -544,7 +544,7 @@ public final class HyperDB
 
   private VersionNumber getVersionNumberSavingAs(Map<VersionNumber, VersionNumber> appVersionToMaxVersion)
   {
-    VersionNumber versionNumber = new VersionNumber(2, 0);
+    VersionNumber versionNumber = new VersionNumber(0);
 
     for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
     {
@@ -663,7 +663,7 @@ public final class HyperDB
         if (versionStr.isBlank())
           throw new HyperDataException("XML settings data version number not found.");
 
-        checkVersion(new VersionNumber(2, versionStr), "the Settings XML file", appVersionToMinSettingsXMLVersion, appVersionToMaxSettingsXMLVersion);
+        checkVersion(new VersionNumber(versionStr), "the Settings XML file", appVersionToMinSettingsXMLVersion, appVersionToMaxSettingsXMLVersion);
 
         boolean writeFolderIDs = false;
 
@@ -1100,11 +1100,11 @@ public final class HyperDB
         Attribute attribute = attributes.next();
 
         if (attribute.getName().toString().equals(versionAttr))
-          return new VersionNumber(2, attribute.getValue());
+          return new VersionNumber(attribute.getValue());
       }
     }
 
-    return new VersionNumber(2, 1);
+    return new VersionNumber(1);
   }
 
 //---------------------------------------------------------------------------
@@ -1152,7 +1152,9 @@ public final class HyperDB
         }
       }
 
-      return new HDT_RecordState(type, id, sortKeyAttr, "", searchKey, listName);
+      HDT_RecordState xmlRecord = new HDT_RecordState(type, id, sortKeyAttr, "", searchKey, listName);
+      xmlRecord.stored = true;
+      return xmlRecord;
     }
 
     return null;
@@ -1238,8 +1240,8 @@ public final class HyperDB
                             Map<VersionNumber, VersionNumber> appVersionToMinVersion,
                             Map<VersionNumber, VersionNumber> appVersionToMaxVersion) throws HyperDataException
   {
-    VersionNumber newestTooOldAppVersion = new VersionNumber(2, 0),
-                  oldestTooNewAppVersion = new VersionNumber(2, Integer.MAX_VALUE);
+    VersionNumber newestTooOldAppVersion = new VersionNumber(0),
+                  oldestTooNewAppVersion = new VersionNumber(Integer.MAX_VALUE);
 
     for (Entry<VersionNumber, VersionNumber> entry : appVersionToMinVersion.entrySet())
     {
@@ -1271,7 +1273,7 @@ public final class HyperDB
         alreadyShowedUpgradeMsg = true;
       }
 
-      newestTooOldAppVersion = new VersionNumber(2, 0);
+      newestTooOldAppVersion = new VersionNumber(0);
 
       for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
       {

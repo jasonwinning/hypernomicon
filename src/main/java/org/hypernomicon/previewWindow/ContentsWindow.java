@@ -59,7 +59,7 @@ public class ContentsWindow extends HyperDlg
 
   public static ContentsWindow build()
   {
-    return ((ContentsWindow) createUsingFullPath("previewWindow/ContentsWindow.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
+    return ((ContentsWindow) createUsingFullPath("previewWindow/ContentsWindow", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
   }
 
 //---------------------------------------------------------------------------

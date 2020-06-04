@@ -47,7 +47,7 @@ public class NewLinkDlgCtrlr extends HyperDlg
 
   public static NewLinkDlgCtrlr build(String selText)
   {
-    return ((NewLinkDlgCtrlr) create("NewLinkDlg.fxml", "Insert Link", true)).init(selText);
+    return ((NewLinkDlgCtrlr) create("NewLinkDlg", "Insert Link", true)).init(selText);
   }
 
 //---------------------------------------------------------------------------

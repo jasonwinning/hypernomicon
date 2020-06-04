@@ -48,10 +48,10 @@ public class ZoteroOAuthApi extends DefaultApi10a
 
   public static OAuth10aService service()
   {
-    if (service == null)
-      service = new ServiceBuilder("e9d7bdc517f7cd37a455").apiSecret("89d44b5b0887f9c2a893").build(ZoteroOAuthApi.instance());
-
-    return service;
+    return service != null ?
+      service
+    :
+      (service = new ServiceBuilder("e9d7bdc517f7cd37a455").apiSecret("89d44b5b0887f9c2a893").build(ZoteroOAuthApi.instance()));
   }
 
 //---------------------------------------------------------------------------

@@ -156,12 +156,12 @@ public class WorkDlgCtrlr extends HyperDlg
 
   public static WorkDlgCtrlr build(FilePath filePathToUse, BibData bdToUse, Ternary newEntryChoice, EntryType newEntryType)
   {
-    return ((WorkDlgCtrlr) create("WorkDlg.fxml", "Import New Work File", true)).init(null, filePathToUse, bdToUse, newEntryChoice, newEntryType);
+    return ((WorkDlgCtrlr) create("WorkDlg", "Import New Work File", true)).init(null, filePathToUse, bdToUse, newEntryChoice, newEntryType);
   }
 
   public static WorkDlgCtrlr build(HDT_WorkFile workFileToUse)
   {
-    return ((WorkDlgCtrlr) create("WorkDlg.fxml", "Work File", true)).init(workFileToUse, null, null, Ternary.Unset, EntryType.etUnentered);
+    return ((WorkDlgCtrlr) create("WorkDlg", "Work File", true)).init(workFileToUse, null, null, Ternary.Unset, EntryType.etUnentered);
   }
 
 //---------------------------------------------------------------------------

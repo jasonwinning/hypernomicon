@@ -39,14 +39,16 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 {
   private HyperPath hyperPath;
   private final RelationType relType;
+  private final HDT_RecordWithPath recordWithPath;
 
 //---------------------------------------------------------------------------
 
-  public HDI_OnlinePath(HDI_Schema newSchema, HDT_RecordWithPath newRecord)
+  public HDI_OnlinePath(HDI_Schema schema, HDT_RecordWithPath recordWithPath)
   {
-    super(newSchema, newRecord);
+    super(schema, recordWithPath);
 
     relType = schema.getRelType();
+    this.recordWithPath = recordWithPath;
     initPath();
   }
 
@@ -55,7 +57,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 
   private void initPath()
   {
-    hyperPath = HDT_RecordWithPath.class.cast(record).getPath();
+    hyperPath = recordWithPath.getPath();
   }
 
 //---------------------------------------------------------------------------
@@ -67,7 +69,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
     {
       case tagParentFolder : case tagFolder : case tagPictureFolder :
 
-        HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
+        HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, recordWithPath, false);
         objList.clear();
 
         if (val.folderID > 0)
@@ -100,7 +102,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
   {
     if (relType == rtNone) return;
 
-    db.resolvePointersByRelation(relType, record);
+    db.resolvePointersByRelation(relType, recordWithPath);
 
     // The remainder of this method is for backwards compatibility with records XML version 1.0
 
@@ -108,7 +110,7 @@ public class HDI_OnlinePath extends HDI_OnlineBase<HDI_OfflinePath>
 
     // This has to be done after bringing records online because special folder IDs are loaded from the Settings file afterward
 
-    HDI_OfflinePath offlinePath = new HDI_OfflinePath(schema, record.getRecordStateBackup());
+    HDI_OfflinePath offlinePath = new HDI_OfflinePath(getSchema(), recordWithPath.getRecordStateBackup());
     offlinePath.folderID = db.getPicturesFolder().getID();
     try { setFromOfflineValue(offlinePath, Tag.tagPictureFolder); } catch (RelationCycleException e) { noOp(); }
   }

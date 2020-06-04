@@ -42,9 +42,9 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 {
   private final RelationType relType;
 
-  public HDI_OnlinePointerMulti(HDI_Schema newSchema, HDT_Record newRecord)
+  public HDI_OnlinePointerMulti(HDI_Schema schema, HDT_Record record)
   {
-    super(newSchema, newRecord);
+    super(schema, record);
     relType = schema.getRelType();
   }
 

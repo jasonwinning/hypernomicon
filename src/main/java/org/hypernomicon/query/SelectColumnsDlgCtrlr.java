@@ -63,7 +63,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 
   static SelectColumnsDlgCtrlr build()
   {
-    return ((SelectColumnsDlgCtrlr) createUsingFullPath("query/SelectColumnsDlg.fxml", "Select Columns", true)).init();
+    return ((SelectColumnsDlgCtrlr) createUsingFullPath("query/SelectColumnsDlg", "Select Columns", true)).init();
   }
 
 //---------------------------------------------------------------------------

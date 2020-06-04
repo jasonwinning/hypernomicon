@@ -39,13 +39,11 @@ public class MendeleyOAuthApi extends DefaultApi20
 
   public static OAuth20Service service()
   {
-    if (service == null) service = new ServiceBuilder("7087")
+    return service != null ? service : (service = new ServiceBuilder("7087")
       .apiSecret("ShGQ9F8yP9t3u3nR")
       .callback("http://hypernomicon.org/verification.html")
       .defaultScope("all")
-      .build(MendeleyOAuthApi.instance());
-
-    return service;
+      .build(MendeleyOAuthApi.instance()));
   }
 
 //---------------------------------------------------------------------------

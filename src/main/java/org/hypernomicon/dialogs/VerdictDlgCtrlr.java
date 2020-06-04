@@ -44,7 +44,7 @@ public class VerdictDlgCtrlr extends HyperDlg
 
   public static VerdictDlgCtrlr build(String title, HDT_Record parent)
   {
-    return ((VerdictDlgCtrlr) create("VerdictDlg.fxml", title, false)).init(parent);
+    return ((VerdictDlgCtrlr) create("VerdictDlg", title, false)).init(parent);
   }
 
 //---------------------------------------------------------------------------
@@ -62,7 +62,7 @@ public class VerdictDlgCtrlr extends HyperDlg
     else if (parent.getType() == hdtArgument)
     {
       lblParentType.setText("Target Argument:");
-      hcbVerdict = new HyperCB(cbVerdict, ctDropDownList, new StandardPopulator(hdtPositionVerdict));
+      hcbVerdict = new HyperCB(cbVerdict, ctDropDownList, new StandardPopulator(hdtArgumentVerdict));
     }
     else
     {

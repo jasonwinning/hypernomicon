@@ -47,7 +47,7 @@ public class InsertMiscFileDlgCtrlr extends HyperDlg
 
   public static InsertMiscFileDlgCtrlr build()
   {
-    return ((InsertMiscFileDlgCtrlr) create("InsertMiscFileDlg.fxml", "Insert Misc. File", true)).init();
+    return ((InsertMiscFileDlgCtrlr) create("InsertMiscFileDlg", "Insert Misc. File", true)).init();
   }
 
 //---------------------------------------------------------------------------

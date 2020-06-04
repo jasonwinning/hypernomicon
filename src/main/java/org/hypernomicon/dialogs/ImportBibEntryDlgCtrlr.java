@@ -71,7 +71,7 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
 
   public static ImportBibEntryDlgCtrlr build(List<String> lines, FilePath filePath)
   {
-    return ((ImportBibEntryDlgCtrlr) create("ImportBibEntryDlg.fxml", "Import Bibliography File", true)).init(lines, filePath);
+    return ((ImportBibEntryDlgCtrlr) create("ImportBibEntryDlg", "Import Bibliography File", true)).init(lines, filePath);
   }
 
 //---------------------------------------------------------------------------

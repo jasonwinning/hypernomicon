@@ -38,7 +38,7 @@ public class ZoteroCollection extends BibCollection implements ZoteroEntity
   @Override public String getParentKey()
   {
     String parentKey = jObj.getObj("data").getStrSafe("parentCollection");
-    return parentKey.length() > 0 ? parentKey : null;
+    return parentKey.isEmpty() ? null : parentKey;
   }
 
 //---------------------------------------------------------------------------

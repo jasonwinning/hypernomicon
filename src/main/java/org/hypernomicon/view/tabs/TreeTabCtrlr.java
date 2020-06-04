@@ -23,6 +23,7 @@ import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.dialogs.ChooseParentDlgCtrlr;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.dialogs.VerdictDlgCtrlr;
+import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -454,9 +455,18 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         if (vdc.showModal())
         {
           if (parent.getType() == hdtPosition)
-            childArg.addPosition((HDT_Position) parent, vdc.hcbVerdict.selectedRecord());
+            childArg.addPosition((HDT_Position)parent, vdc.hcbVerdict.selectedRecord());
           else if (parent.getType() == hdtArgument)
-            childArg.addCounterArg((HDT_Argument)parent, vdc.hcbVerdict.selectedRecord());
+          {
+            try
+            {
+              childArg.addCounteredArg((HDT_Argument)parent, vdc.hcbVerdict.selectedRecord());
+            }
+            catch (RelationCycleException e)
+            {
+              messageDialog(e.getMessage(), mtError);
+            }
+          }
         }
         break;
 

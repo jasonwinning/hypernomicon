@@ -68,7 +68,7 @@ public abstract class HyperDlg
   {
     try
     {
-      FXMLLoader loader = new FXMLLoader(App.class.getResource(loc));
+      FXMLLoader loader = new FXMLLoader(App.class.getResource(loc + ".fxml"));
       AnchorPane mainPane = (AnchorPane) loader.load();
 
       Stage dialogStage = new Stage();

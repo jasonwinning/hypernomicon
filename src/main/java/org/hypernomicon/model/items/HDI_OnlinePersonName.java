@@ -23,15 +23,17 @@ import java.util.List;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Person;
 
 public class HDI_OnlinePersonName extends HDI_OnlineBase<HDI_OfflinePersonName>
 {
+  private final HDT_Person person;
 
-  public HDI_OnlinePersonName(HDI_Schema newSchema, HDT_Record newRecord)
+  public HDI_OnlinePersonName(HDI_Schema schema, HDT_Person person)
   {
-    super(newSchema, newRecord);
+    super(schema, person);
+
+    this.person = person;
   }
 
 //---------------------------------------------------------------------------
@@ -45,7 +47,7 @@ public class HDI_OnlinePersonName extends HDI_OnlineBase<HDI_OfflinePersonName>
   @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
   {
     if (tag == tagLastName)
-      list.add(record.listName());
+      list.add(person.listName());
   }
 
 //---------------------------------------------------------------------------
@@ -53,8 +55,6 @@ public class HDI_OnlinePersonName extends HDI_OnlineBase<HDI_OfflinePersonName>
 
   @Override public String getResultTextForTag(Tag tag)
   {
-    HDT_Person person = (HDT_Person) record;
-
     return tag == tagFirstName ? person.getFirstName() : person.getLastName();
   }
 
@@ -63,8 +63,6 @@ public class HDI_OnlinePersonName extends HDI_OnlineBase<HDI_OfflinePersonName>
 
   @Override public void getToOfflineValue(HDI_OfflinePersonName val, Tag tag)
   {
-    HDT_Person person = (HDT_Person) record;
-
     if (tag == tagFirstName) val.firstName = person.getFirstName();
     else                     val.lastName  = person.getLastName();
   }

@@ -42,7 +42,7 @@ public class MendeleyFolder extends BibCollection implements MendeleyEntity
   @Override public String getParentKey()
   {
     String parentKey = jObj.getStrSafe("parent_id");
-    return parentKey.length() > 0 ? parentKey : null;
+    return parentKey.isEmpty() ? null : parentKey;
   }
 
 //---------------------------------------------------------------------------

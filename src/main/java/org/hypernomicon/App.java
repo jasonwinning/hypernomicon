@@ -205,7 +205,7 @@ public final class App extends Application
 
     String versionStr = manifestValue("Impl-Version");
 
-    if ((safeStr(versionStr).isEmpty() == false) && (new VersionNumber(2, versionStr).equals(dbVersion) == false))
+    if ((safeStr(versionStr).isEmpty() == false) && (new VersionNumber(versionStr).equals(dbVersion) == false))
     {
       messageDialog("Internal error #69698", mtError);
       ui.shutDown(false, false, false);
@@ -285,7 +285,7 @@ public final class App extends Application
 
           if (m.find())
           {
-            VersionNumber curNum = new VersionNumber(2, m.group(2));
+            VersionNumber curNum = new VersionNumber(m.group(2));
             if (curNum.compareTo(updateNum) > 0)
               updateNum = curNum;
           }

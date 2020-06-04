@@ -112,7 +112,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
   public static void addHyperTab(TabEnum tabEnum, Tab tab, String ctrlrFilename) throws IOException
   {
-    FXMLLoader loader = new FXMLLoader(App.class.getResource(ctrlrFilename));
+    FXMLLoader loader = new FXMLLoader(App.class.getResource(ctrlrFilename + ".fxml"));
     tab.setContent(loader.load());
     HyperTab.class.cast(loader.getController()).baseInit(tabEnum, tab);
   }

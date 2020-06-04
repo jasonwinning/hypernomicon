@@ -19,8 +19,6 @@ package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
-import static org.hypernomicon.model.records.HDT_RecordState.writePointerTag;
-
 
 import java.util.Map;
 
@@ -28,23 +26,19 @@ import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_RecordState;
 import org.hypernomicon.model.records.HDT_RecordType;
-import org.hypernomicon.model.relations.RelationSet.RelationType;
 
 public class HDI_OfflineNestedPointer extends HDI_OfflineBase
 {
   int objID = -1;
-  private final RelationType relType;
+  private final HDT_RecordType targetType;
 
-  public HDI_OfflineNestedPointer(HDI_Schema newSchema, HDT_RecordState recordState)
+  public HDI_OfflineNestedPointer(HDI_Schema schema, HDT_RecordState recordState)
   {
-    super(newSchema, recordState);
-    relType = schema.getRelType();
+    super(schema, recordState);
+    targetType = schema.getNestedTargetType();
   }
 
-//---------------------------------------------------------------------------
-
-  public int getObjID()           { return objID; }
-  public void setObjID(int objID) { this.objID = objID; }
+  public int getObjID() { return objID; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -59,9 +53,7 @@ public class HDI_OfflineNestedPointer extends HDI_OfflineBase
 
   @Override public void writeToXml(Tag tag, StringBuilder xml)
   {
-    HDT_RecordType objType = db.getNestedTargetType(relType, mainTag);
-
-    writePointerTag(xml, tag, objID, hdtNone, db.records(objType).getByID(objID).getXMLObjectName());
+    writePointerTag(xml, tag, objID, hdtNone, db.records(targetType).getByID(objID).getXMLObjectName());
   }
 
   //---------------------------------------------------------------------------

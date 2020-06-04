@@ -45,7 +45,7 @@ public class MergeSpokeDlgCtrlr extends HyperDlg
 
   public static MergeSpokeDlgCtrlr build(HDT_RecordWithConnector record1, HDT_RecordWithConnector record2)
   {
-    return ((MergeSpokeDlgCtrlr) create("MergeSpokeDlg.fxml", "Select How to Merge Fields", true)).init(record1, record2);
+    return ((MergeSpokeDlgCtrlr) create("MergeSpokeDlg", "Select How to Merge Fields", true)).init(record1, record2);
   }
 
 //---------------------------------------------------------------------------

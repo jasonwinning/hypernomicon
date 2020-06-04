@@ -19,7 +19,6 @@ package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordState.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import java.util.Map;
@@ -38,9 +37,9 @@ public class HDI_OfflineHubSpokes extends HDI_OfflineBase
 
 //---------------------------------------------------------------------------
 
-  public HDI_OfflineHubSpokes(HDI_Schema newSchema, HDT_RecordState recordState)
+  public HDI_OfflineHubSpokes(HDI_Schema schema, HDT_RecordState recordState)
   {
-    super(newSchema, recordState);
+    super(schema, recordState);
   }
 
 //---------------------------------------------------------------------------

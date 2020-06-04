@@ -199,7 +199,7 @@ public class FileManager extends HyperDlg
 
   public static FileManager build()
   {
-    return ((FileManager) createUsingFullPath("fileManager/FileManager.fxml", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
+    return ((FileManager) createUsingFullPath("fileManager/FileManager", dialogTitle, true, StageStyle.DECORATED, Modality.NONE)).init();
   }
 
 //---------------------------------------------------------------------------

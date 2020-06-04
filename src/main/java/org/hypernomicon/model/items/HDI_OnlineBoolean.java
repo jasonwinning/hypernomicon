@@ -27,9 +27,9 @@ public class HDI_OnlineBoolean extends HDI_OnlineBase<HDI_OfflineBoolean>
 {
   private boolean boolValue;
 
-  public HDI_OnlineBoolean(HDI_Schema newSchema, HDT_Record newRecord)
+  public HDI_OnlineBoolean(HDI_Schema schema, HDT_Record record)
   {
-    super(newSchema, newRecord);
+    super(schema, record);
   }
 
 //---------------------------------------------------------------------------

@@ -18,7 +18,6 @@
 package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordState.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 
 import static org.hypernomicon.util.Util.*;
@@ -41,11 +40,11 @@ public class HDI_OfflineAuthors extends HDI_OfflineBase
     public Map<Tag, HDI_OfflineBase> nestedItems = null;
   }
 
-  List<OfflineAuthor> authors = new ArrayList<>();
+  final List<OfflineAuthor> authors = new ArrayList<>();
 
-  public HDI_OfflineAuthors(HDI_Schema newSchema, HDT_RecordState recordState)
+  public HDI_OfflineAuthors(HDI_Schema schema, HDT_RecordState recordState)
   {
-    super(newSchema, recordState);
+    super(schema, recordState);
   }
 
 //---------------------------------------------------------------------------

@@ -22,9 +22,6 @@ import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_RecordState;
 import org.hypernomicon.model.records.HDT_RecordType;
-import org.hypernomicon.model.relations.RelationSet.RelationType;
-
-import static org.hypernomicon.model.records.HDT_RecordState.*;
 
 import java.util.Map;
 
@@ -35,12 +32,10 @@ public class HDI_OfflinePath extends HDI_OfflineBase
 {
   int folderID = -1;
   String fileName = "";
-  final RelationType relType;
 
-  public HDI_OfflinePath(HDI_Schema newSchema, HDT_RecordState recordState)
+  public HDI_OfflinePath(HDI_Schema schema, HDT_RecordState recordState)
   {
-    super(newSchema, recordState);
-    relType = schema.getRelType();
+    super(schema, recordState);
   }
 
   public void setFileName(String fileName) { this.fileName = fileName; }

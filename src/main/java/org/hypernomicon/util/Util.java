@@ -135,8 +135,10 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import com.google.common.escape.Escaper;
-import com.google.common.html.HtmlEscapers;
 import com.ibm.icu.text.Transliterator;
+
+import static com.google.common.xml.XmlEscapers.*;
+import static com.google.common.html.HtmlEscapers.*;
 
 import javafx.scene.control.skin.ComboBoxListViewSkin;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
@@ -150,7 +152,9 @@ public final class Util
   public static final StopWatch stopWatch1 = new StopWatch(), stopWatch2 = new StopWatch(), stopWatch3 = new StopWatch(),
                                 stopWatch4 = new StopWatch(), stopWatch5 = new StopWatch(), stopWatch6 = new StopWatch();
 
-  public static final Escaper htmlEscaper = HtmlEscapers.htmlEscaper();
+  public static final Escaper htmlEscaper         = htmlEscaper(),
+                              xmlContentEscaper   = xmlContentEscaper(),
+                              xmlAttributeEscaper = xmlAttributeEscaper();
 
   static String hostName = "";
 

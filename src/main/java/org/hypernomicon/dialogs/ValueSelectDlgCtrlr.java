@@ -40,7 +40,7 @@ public class ValueSelectDlgCtrlr extends HyperDlg
 
   public static ValueSelectDlgCtrlr build(List<HyperTableCell> list)
   {
-    return ((ValueSelectDlgCtrlr) create("ValueSelectDlg.fxml", "Choose a Value", true)).init(list);
+    return ((ValueSelectDlgCtrlr) create("ValueSelectDlg", "Choose a Value", true)).init(list);
   }
 
 //---------------------------------------------------------------------------
@@ -49,6 +49,7 @@ public class ValueSelectDlgCtrlr extends HyperDlg
   private ValueSelectDlgCtrlr init(List<HyperTableCell> list)
   {
     if (collEmpty(list)) return this;
+
     HDT_RecordType objType = HyperTableCell.getCellType(list.get(0));
 
     listView.setItems(FXCollections.observableArrayList(list));

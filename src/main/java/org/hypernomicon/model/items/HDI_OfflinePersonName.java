@@ -22,7 +22,6 @@ import org.hypernomicon.model.records.HDT_RecordState;
 import org.hypernomicon.model.records.HDT_RecordType;
 import org.hypernomicon.model.HyperDB.Tag;
 
-import static org.hypernomicon.model.records.HDT_RecordState.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 
@@ -32,9 +31,9 @@ public class HDI_OfflinePersonName extends HDI_OfflineBase
 {
   String firstName = "", lastName = "";
 
-  public HDI_OfflinePersonName(HDI_Schema newSchema, HDT_RecordState recordState)
+  public HDI_OfflinePersonName(HDI_Schema schema, HDT_RecordState recordState)
   {
-    super(newSchema, recordState);
+    super(schema, recordState);
   }
 
   public String getFirstName() { return firstName; }

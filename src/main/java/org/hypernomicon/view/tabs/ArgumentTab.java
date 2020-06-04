@@ -24,9 +24,11 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.App;
+import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.ObjectGroup;
@@ -61,6 +63,14 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
   @Override public void setRecord(HDT_Argument arg) { curArgument = arg; }
+
+  private ArgumentTab() throws IOException
+  {
+    super(ui.tabArguments);
+    baseInit(argumentTabEnum, ui.tabArguments);
+  }
+
+  @SuppressWarnings("unused") public static void create() throws IOException { new ArgumentTab(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -356,7 +366,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       case hdtArgument :
 
         HDT_Argument counterArg = db.createNewBlankRecord(hdtArgument);
-        counterArg.addCounterArg(curArgument, null);
+        try { counterArg.addCounteredArg(curArgument, null); } catch (RelationCycleException e) { noOp(); }
         curArgument.positions.forEach(position -> counterArg.addPosition(position, null));
         ui.goToRecord(counterArg, false);
         lowerCtrlr.tabPane.getSelectionModel().select(lowerCtrlr.tabWhereMade);

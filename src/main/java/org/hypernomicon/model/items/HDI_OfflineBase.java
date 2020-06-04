@@ -17,6 +17,10 @@
 
 package org.hypernomicon.model.items;
 
+import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.model.records.HDT_RecordType.hdtNone;
+import static org.hypernomicon.util.Util.*;
+
 import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
@@ -26,15 +30,97 @@ import org.hypernomicon.model.records.HDT_RecordType;
 
 public abstract class HDI_OfflineBase extends HDI_Base
 {
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final String QUOTE = "\"";
+
   final HDT_RecordState recordState;
 
-  public HDI_OfflineBase(HDI_Schema newSchema, HDT_RecordState recordState)
+  public HDI_OfflineBase(HDI_Schema schema, HDT_RecordState recordState)
   {
-    super(newSchema);
+    super(schema);
     this.recordState = recordState;
   }
 
   public abstract void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems);
 
   public abstract void writeToXml(Tag tag, StringBuilder xml);
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static void writePointerTagWithNestedPointers(StringBuilder xml, Tag tag, int objID, String value, Map<Tag, HDI_OfflineBase> map)
+  {
+    writePointerTagWithNestedPointers(xml, tag, objID, value, map, false);
+  }
+
+  static void writePointerTagWithNestedPointers(StringBuilder xml, Tag tag, int objID, String value, Map<Tag, HDI_OfflineBase> map, boolean noIDOk)
+  {
+    if ((objID < 1) && (noIDOk == false)) return;
+
+    if (map.isEmpty())
+    {
+      writePointerTag(xml, tag, objID, hdtNone, value, noIDOk);
+      return;
+    }
+
+    String idStr = "";
+    if (objID > 0)
+      idStr = " id=" + QUOTE + objID + QUOTE;
+
+    xml.append("  <" + db.getTagStr(tag) + idStr + ">" + xmlContentEscaper.escape(value))
+       .append(System.lineSeparator());
+
+    map.forEach((nestedTag, nestedItem) ->
+    {
+      xml.append("  ");
+      nestedItem.writeToXml(nestedTag, xml);
+    });
+
+    xml.append("  </" + db.getTagStr(tag) + ">" + System.lineSeparator());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static void writePointerTag(StringBuilder xml, Tag tag, int objID, HDT_RecordType objType, String value)
+  {
+    writePointerTag(xml, tag, objID, objType, value, false);
+  }
+
+  static void writePointerTag(StringBuilder xml, Tag tag, int objID, HDT_RecordType objType, String value, boolean noIDOk)
+  {
+    if ((objID < 1) && (noIDOk == false)) return;
+
+    String idStr = "", typeStr = "";
+
+    if (objID > 0)          idStr   = " id="   + QUOTE + objID                     + QUOTE;
+    if (objType != hdtNone) typeStr = " type=" + QUOTE + db.getTypeTagStr(objType) + QUOTE;
+
+    xml.append("  <" + db.getTagStr(tag) + typeStr + idStr + ">" + xmlContentEscaper.escape(value) + "</" + db.getTagStr(tag) + ">")
+       .append(System.lineSeparator());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static void writeStringTag(StringBuilder xml, Tag tag, String tagText)
+  {
+    if (tagText.isEmpty()) return;
+    xml.append("  <" + db.getTagStr(tag) + ">" + xmlContentEscaper.escape(tagText) + "</" + db.getTagStr(tag) + ">" + System.lineSeparator());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static void writeBooleanTag(StringBuilder xml, Tag tag, boolean tf)
+  {
+    xml.append("  <" + db.getTagStr(tag) + ">" + (tf ? "true" : "false") + "</" + db.getTagStr(tag) + ">" + System.lineSeparator());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

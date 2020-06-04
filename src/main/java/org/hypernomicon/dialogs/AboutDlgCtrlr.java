@@ -54,7 +54,7 @@ public class AboutDlgCtrlr extends HyperDlg
 
   public static AboutDlgCtrlr build()
   {
-    return ((AboutDlgCtrlr) create("AboutDlg.fxml", "About " + appTitle, false)).init();
+    return ((AboutDlgCtrlr) create("AboutDlg", "About " + appTitle, false)).init();
   }
 
 //---------------------------------------------------------------------------

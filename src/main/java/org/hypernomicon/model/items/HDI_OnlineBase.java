@@ -27,12 +27,12 @@ import org.hypernomicon.model.records.HDT_Record;
 
 public abstract class HDI_OnlineBase<HDI_Derived extends HDI_OfflineBase> extends HDI_Base
 {
-  protected final HDT_Record record;
+  final HDT_Record record;
 
-  public HDI_OnlineBase(HDI_Schema newSchema, HDT_Record newRecord)
+  public HDI_OnlineBase(HDI_Schema schema, HDT_Record record)
   {
-    super(newSchema);
-    record = newRecord;
+    super(schema);
+    this.record = record;
   }
 
   public void expire() { return; }

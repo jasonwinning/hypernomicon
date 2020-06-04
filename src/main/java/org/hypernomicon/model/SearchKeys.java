@@ -46,9 +46,9 @@ public final class SearchKeys
 
   //---------------------------------------------------------------------------
 
-    public SearchKeyword(String newKeyword, HDT_Record newRecord)
+    public SearchKeyword(String newKeyword, HDT_Record record)
     {
-      record = newRecord;
+      this.record = record;
 
       if (newKeyword.isEmpty())
       {

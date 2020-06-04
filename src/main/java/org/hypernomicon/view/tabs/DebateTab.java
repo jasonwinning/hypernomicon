@@ -28,7 +28,10 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.HDT_RecordType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+
+import java.io.IOException;
 
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
@@ -49,6 +52,14 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
   @Override public void setRecord(HDT_Debate deb)   { curDebate = deb; }
+
+  private DebateTab() throws IOException
+  {
+    super(ui.tabDebates);
+    baseInit(debateTabEnum, ui.tabDebates);
+  }
+
+  @SuppressWarnings("unused") public static void create() throws IOException { new DebateTab(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

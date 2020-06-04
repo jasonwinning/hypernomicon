@@ -201,7 +201,7 @@ public class LockedDlgCtrlr extends HyperDlg
 
   public static LockedDlgCtrlr build(String otherCompName)
   {
-    return ((LockedDlgCtrlr) create("LockedDlg.fxml", "Database is Currently Locked", true)).init(otherCompName);
+    return ((LockedDlgCtrlr) create("LockedDlg", "Database is Currently Locked", true)).init(otherCompName);
   }
 
 //---------------------------------------------------------------------------
@@ -209,7 +209,7 @@ public class LockedDlgCtrlr extends HyperDlg
 
   public static LockedDlgCtrlr build(String title, Throwable e)
   {
-    return ((LockedDlgCtrlr) create("LockedDlg.fxml", title, true)).init(e);
+    return ((LockedDlgCtrlr) create("LockedDlg", title, true)).init(e);
   }
 
 //---------------------------------------------------------------------------
