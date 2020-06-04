@@ -55,7 +55,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
@@ -68,21 +68,21 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   private ArrayListMultimap<HDT_Subj, HDT_Obj> subjToObjList = ArrayListMultimap.create();
   private final HashBasedTable<HDT_Subj, HDT_Obj, Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>>> objectGroups = HashBasedTable.create();
   private final Map<Tag, HDI_Schema> tagToSchema = new LinkedHashMap<>();
-  private final Map<Tag, HDT_RecordType> tagToTargetType = new EnumMap<>(Tag.class);
+  private final Map<Tag, RecordType> tagToTargetType = new EnumMap<>(Tag.class);
   private final List<RelationChangeHandler> changeHandlers = new ArrayList<>();
 
-  private static final EnumMap<HDT_RecordType, Set<RelationSet<? extends HDT_Record, ? extends HDT_Record>>> orphanTypeToRelSets = new EnumMap<>(HDT_RecordType.class);
-  private static final EnumBasedTable<HDT_RecordType, HDT_RecordType, RelationType> typeMappings = new EnumBasedTable<>(HDT_RecordType.class, HDT_RecordType.class);
+  private static final EnumMap<RecordType, Set<RelationSet<? extends HDT_Record, ? extends HDT_Record>>> orphanTypeToRelSets = new EnumMap<>(RecordType.class);
+  private static final EnumBasedTable<RecordType, RecordType, RelationType> typeMappings = new EnumBasedTable<>(RecordType.class, RecordType.class);
 
   private final RelationType type;
-  private final HDT_RecordType objType, subjType;
+  private final RecordType objType, subjType;
   private final boolean hasNestedItems, trackOrphans;
 
-  public HDT_RecordType getObjType()                      { return objType; }
-  public HDT_RecordType getSubjType()                     { return subjType; }
+  public RecordType getObjType()                          { return objType; }
+  public RecordType getSubjType()                         { return subjType; }
   public HDI_Schema getSchema(Tag tag)                    { return tagToSchema == null ? null : tagToSchema.get(tag); }
   public Collection<HDI_Schema> getSchemas()              { return tagToSchema.values(); }
-  public HDT_RecordType getTargetType(Tag tag)            { return tagToTargetType.get(tag); }
+  public RecordType getTargetType(Tag tag)                { return tagToTargetType.get(tag); }
   public boolean getHasNestedItems()                      { return hasNestedItems; }
   public Set<Tag> getNestedTags()                         { return tagToSchema == null ? new HashSet<>() : new HashSet<>(tagToSchema.keySet()); }
   public void addChangeHandler(RelationChangeHandler rch) { changeHandlers.add(rch); }
@@ -231,7 +231,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static RelationType getRelation(HDT_RecordType subjType, HDT_RecordType objType)
+  public static RelationType getRelation(RecordType subjType, RecordType objType)
   {
     return nullSwitch(typeMappings.get(subjType, objType), RelationType.rtNone);
   }
@@ -239,7 +239,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static EnumSet<RelationType> getRelationsForObjType(HDT_RecordType objType)
+  public static EnumSet<RelationType> getRelationsForObjType(RecordType objType)
   {
     Collection<RelationType> relTypes = typeMappings.getColumn(objType);
     return collEmpty(relTypes) ? EnumSet.noneOf(RelationType.class) : EnumSet.copyOf(relTypes);
@@ -248,7 +248,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static EnumSet<RelationType> getRelationsForSubjType(HDT_RecordType subjType)
+  public static EnumSet<RelationType> getRelationsForSubjType(RecordType subjType)
   {
     Collection<RelationType> relTypes = typeMappings.getRow(subjType);
     return collEmpty(relTypes) ? EnumSet.noneOf(RelationType.class) : EnumSet.copyOf(relTypes);
@@ -258,7 +258,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 
   @SuppressWarnings({ "unchecked" })
-  public void saveNestedValuesToOfflineMap(HDT_Subj subj, HDT_Obj obj, Map<Tag, HDI_OfflineBase> tagToNestedItem, HDT_RecordState recordState)
+  public void saveNestedValuesToOfflineMap(HDT_Subj subj, HDT_Obj obj, Map<Tag, HDI_OfflineBase> tagToNestedItem, RecordState recordState)
   {
     Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items = objectGroups.get(subj, obj);
     if (items == null) return;
@@ -839,7 +839,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addNestedItem(HyperDataCategory dataCat, Tag tag, HDT_RecordType targetType) throws HDB_InternalError
+  private void addNestedItem(HyperDataCategory dataCat, Tag tag, RecordType targetType) throws HDB_InternalError
   {
     HDI_Schema schema = new HDI_Schema(dataCat, type, tag);
 

@@ -58,7 +58,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
@@ -154,7 +154,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   public HyperCB hcbType;
 
   @Override public String recordName()               { return tfTitle.getText(); }
-  @Override protected HDT_RecordType getType()       { return hdtWork; }
+  @Override protected RecordType getType()           { return hdtWork; }
   @Override public void enable(boolean enabled)      { ui.tabWorks.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text)  { mainText.hilite(text); }
   @Override public TextViewInfo mainTextInfo()       { return mainText.getViewInfo(); }
@@ -1625,7 +1625,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void newClick(HDT_RecordType objType, HyperTableRow row)
+  @Override public void newClick(RecordType objType, HyperTableRow row)
   {
     switch (objType)
     {

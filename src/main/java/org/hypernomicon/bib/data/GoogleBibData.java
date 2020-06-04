@@ -20,7 +20,7 @@ package org.hypernomicon.bib.data;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
-import static org.hypernomicon.model.records.HDT_RecordType.hdtWork;
+import static org.hypernomicon.model.records.RecordType.hdtWork;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.Iterator;

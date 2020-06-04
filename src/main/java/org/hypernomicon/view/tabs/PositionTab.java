@@ -40,7 +40,7 @@ import com.google.common.collect.ImmutableSet;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
@@ -54,7 +54,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
   private HyperTable htParents, htArguments, htSubpositions;
   private HDT_Position curPosition;
 
-  @Override protected HDT_RecordType getType()      { return hdtPosition; }
+  @Override protected RecordType getType()          { return hdtPosition; }
   @Override public void enable(boolean enabled)     { ui.tabPositions.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
@@ -176,7 +176,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
     {
       RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
 
-      HDT_RecordType parentType = cellVal.getType();
+      RecordType parentType = cellVal.getType();
       rbtp.setRecordType(row, parentType);
       rbtp.setChanged(row);
       row.setCellValue(nextColNdx, new HyperTableCell(-1, "", parentType));
@@ -253,7 +253,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void newClick(HDT_RecordType objType, HyperTableRow row)
+  @Override public void newClick(RecordType objType, HyperTableRow row)
   {
     if (ui.cantSaveRecord()) return;
 

@@ -17,7 +17,7 @@
 
 package org.hypernomicon.dialogs;
 
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.OmniFinder;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
@@ -61,7 +61,7 @@ public class RecordSelectDlgCtrlr extends HyperDlg
   private RecordSelectDlgCtrlr init(List<HyperTableCell> list, Populator populator, String queryStr)
   {
     if (collEmpty(list)) return this;
-    HDT_RecordType objType = HyperTableCell.getCellType(list.get(0));
+    RecordType objType = HyperTableCell.getCellType(list.get(0));
 
     htFind = new HyperTable(tvFind, 1, false, ""); htFind.disableRefreshAfterCellUpdate = true;
 

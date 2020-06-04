@@ -98,7 +98,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.query.ResultsTable.*;
@@ -125,7 +125,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     private ReportTable reportTable;
 
     public final List<ResultsRow> resultsBackingList = new ArrayList<>();
-    private SetMultimap<HDT_RecordType, ColumnGroupItem> recordTypeToColumnGroupItems;
+    private SetMultimap<RecordType, ColumnGroupItem> recordTypeToColumnGroupItems;
 
     private Tab tab;
     private QueryFavorite fav = null;
@@ -671,7 +671,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       Map<HyperTableRow, QuerySource> sources = new LinkedHashMap<>();
       boolean hasFiltered = false, hasUnfiltered = false;
-      EnumSet<HDT_RecordType> unfilteredTypes = EnumSet.noneOf(HDT_RecordType.class);
+      EnumSet<RecordType> unfilteredTypes = EnumSet.noneOf(RecordType.class);
 
       for (HyperTableRow row : htFields.getDataRows())
       {
@@ -698,7 +698,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           case QST_allRecords :
 
             hasUnfiltered = true;
-            unfilteredTypes = EnumSet.allOf(HDT_RecordType.class);
+            unfilteredTypes = EnumSet.allOf(RecordType.class);
             unfilteredTypes.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
             break;
 
@@ -709,13 +709,13 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       // Generate combined record source
 
       QuerySource combinedSource;
-      HDT_RecordType singleType = null;
+      RecordType singleType = null;
       Set<HDT_Record> filteredRecords = new LinkedHashSet<>();
 
       if (hasUnfiltered)
       {
         combinedSource = new CombinedUnfilteredQuerySource(unfilteredTypes);
-        if (unfilteredTypes.size() == 1) singleType = (HDT_RecordType) unfilteredTypes.toArray()[0];
+        if (unfilteredTypes.size() == 1) singleType = (RecordType) unfilteredTypes.toArray()[0];
       }
       else if (hasFiltered)
       {
@@ -735,7 +735,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         combinedSource = new CombinedFilteredQuerySource(filteredRecords);
       }
       else
-        combinedSource = new CombinedUnfilteredQuerySource(EnumSet.noneOf(HDT_RecordType.class));
+        combinedSource = new CombinedUnfilteredQuerySource(EnumSet.noneOf(RecordType.class));
 
       boolean searchLinkedRecords = (singleType != null) && (singleType != hdtNone);
       int total = combinedSource.count();
@@ -820,16 +820,16 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    private void addColumns(HDT_RecordType recordType, Collection<ColumnGroupItem> items)
+    private void addColumns(RecordType recordType, Collection<ColumnGroupItem> items)
     {
-      EnumMap<HDT_RecordType, ColumnGroupItem> map;
+      EnumMap<RecordType, ColumnGroupItem> map;
 
       for (ColumnGroupItem item : items)
       {
         if (item.tag == tagName) continue;
 
         ResultColumn<? extends Comparable<?>> col = null;
-        map = new EnumMap<>(HDT_RecordType.class);
+        map = new EnumMap<>(RecordType.class);
         map.put(recordType, item);
 
         for (ColumnGroup grp : colGroups) for (ColumnGroupItem otherItem : grp.items)
@@ -862,7 +862,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     public void addRecord(HDT_Record record, boolean addToObsList)
     {
-      HDT_RecordType recordType = record.getType();
+      RecordType recordType = record.getType();
 
       if (recordTypeToColumnGroupItems.containsKey(recordType) == false)
       {
@@ -1112,7 +1112,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       VariablePopulator vp1 = htFields.getPopulator(2), vp2 = htFields.getPopulator(3), vp3 = htFields.getPopulator(4);
 
-      HDT_RecordType recordType, subjType, objType = hdtNone;
+      RecordType recordType, subjType, objType = hdtNone;
       RelationType relType;
       int query = row.getID(1);
       HyperTableCell op1 = row.getCell(2);
@@ -1361,7 +1361,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   private void updateCB()                           { if (curQV != null) curQV.updateCB(); }
   public void btnExecuteClick()                     { curQV.btnExecuteClick(true); }   // if any of the queries are unfiltered, they
                                                                                        // will all be treated as unfiltered
-  @Override protected HDT_RecordType getType()      { return hdtNone; }
+  @Override protected RecordType getType()          { return hdtNone; }
   @Override public boolean update()                 { curQV.refreshView(); return true; }
   @Override public void setRecord(HDT_Record rec)   { if (curQV != null) curQV.setRecord(rec); }
   @Override public int getRecordCount()             { return results().size(); }

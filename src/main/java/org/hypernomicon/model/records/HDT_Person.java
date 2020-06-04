@@ -39,7 +39,7 @@ import javafx.geometry.Rectangle2D;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -63,7 +63,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Person(HDT_RecordState xmlState, HyperDataset<HDT_Person> dataset)
+  public HDT_Person(RecordState xmlState, HyperDataset<HDT_Person> dataset)
   {
     super(xmlState, dataset, tagNone);
 

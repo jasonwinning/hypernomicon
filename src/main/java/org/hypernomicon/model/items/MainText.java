@@ -21,7 +21,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import java.util.ArrayList;
@@ -367,7 +367,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean typeHasKeyWorks(HDT_RecordType type)
+  public static boolean typeHasKeyWorks(RecordType type)
   {
     switch (type)
     {

@@ -19,7 +19,7 @@ package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 
@@ -49,7 +49,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 
   private TreeWrapper popupTree;
   private static String title;
-  private EnumSet<HDT_RecordType> types;
+  private EnumSet<RecordType> types;
   private HDT_Record parent, child;
 
   public HDT_Record getParent() { return parent; }
@@ -57,7 +57,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ChooseParentDlgCtrlr build(HDT_Record child, EnumSet<HDT_RecordType> types)
+  public static ChooseParentDlgCtrlr build(HDT_Record child, EnumSet<RecordType> types)
   {
     return ((ChooseParentDlgCtrlr) create("ChooseParentDlg", "Record Select", true)).init(child, types);
   }
@@ -65,7 +65,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private ChooseParentDlgCtrlr init(HDT_Record child, EnumSet<HDT_RecordType> types)
+  private ChooseParentDlgCtrlr init(HDT_Record child, EnumSet<RecordType> types)
   {
     popupTree = new TreeWrapper(ttv, false, new ComboBox<TreeRow>(), true);
     this.types = types;
@@ -74,11 +74,11 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 
     title = "Select a ";
 
-    Iterator<HDT_RecordType> it = types.iterator();
+    Iterator<RecordType> it = types.iterator();
 
     for (int ctr = 1; it.hasNext(); ctr++)
     {
-      HDT_RecordType type = it.next();
+      RecordType type = it.next();
 
       title += db.getTypeName(type);
 

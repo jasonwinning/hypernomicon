@@ -21,7 +21,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.HyperDB.*;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 
 import static org.hypernomicon.util.Util.*;
 
@@ -46,7 +46,7 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <HDT_T2 extends HDT_Record> RecordDropdownDlgCtrlr<HDT_T2> build(HDT_RecordType recordType)
+  public static <HDT_T2 extends HDT_Record> RecordDropdownDlgCtrlr<HDT_T2> build(RecordType recordType)
   {
     RecordDropdownDlgCtrlr<HDT_T2> rdd = create("RecordDropdownDlg", "Select a Term Record to Merge With", true);
     rdd.init(recordType);
@@ -56,7 +56,7 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(HDT_RecordType recordType)
+  private void init(RecordType recordType)
   {
     hcbRecord = new HyperCB(cbRecord, ctDropDownList, new StandardPopulator(recordType));
     typeName = db.getTypeName(recordType);

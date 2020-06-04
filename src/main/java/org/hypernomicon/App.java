@@ -18,7 +18,7 @@
 package org.hypernomicon;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -301,8 +301,8 @@ public final class App extends Application
 
   private void testUpdatingAllRecords(int passes)
   {
-    List<HDT_RecordType> types = List.of(hdtPerson,   hdtInstitution, hdtInvestigation, hdtDebate,   hdtPosition,
-                                         hdtArgument, hdtWork,        hdtTerm,          hdtMiscFile, hdtNote);
+    List<RecordType> types = List.of(hdtPerson,   hdtInstitution, hdtInvestigation, hdtDebate,   hdtPosition,
+                                     hdtArgument, hdtWork,        hdtTerm,          hdtMiscFile, hdtNote);
 
     total = 0; ctr = 0; lastPercent = 0;
     types.forEach(type -> total += db.records(type).size());
@@ -316,7 +316,7 @@ public final class App extends Application
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void testUpdatingRecords(HDT_RecordType type)
+  private void testUpdatingRecords(RecordType type)
   {
     db.records(type).forEach(record ->
     {

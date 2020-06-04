@@ -39,7 +39,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.dialogs.RenameDlgCtrlr.NameType.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.Util.*;
@@ -76,7 +76,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   public String textToHilite = "";
   private TreeWrapper tree;
 
-  @Override protected HDT_RecordType getType()    { return hdtNone; }
+  @Override protected RecordType getType()        { return hdtNone; }
   @Override public void enable(boolean enabled)   { ui.tabTree.getContent().setDisable(enabled == false); }
   @Override public void clear()                   { tree.clear(); }
   @Override public boolean saveToRecord()         { return true; }
@@ -400,7 +400,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private void chooseParent(HDT_Record child)
   {
-    EnumSet<HDT_RecordType> types = null;
+    EnumSet<RecordType> types = null;
 
     switch (child.getType())
     {

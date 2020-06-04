@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
@@ -37,7 +37,7 @@ import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 import org.hypernomicon.model.records.HDT_Debate;
 import org.hypernomicon.model.records.HDT_Position;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Position.PositionSource;
 
 //---------------------------------------------------------------------------
@@ -47,7 +47,7 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
   private HyperTable htParents, htSubdebates, htPositions;
   private HDT_Debate curDebate;
 
-  @Override protected HDT_RecordType getType()      { return hdtDebate; }
+  @Override protected RecordType getType()          { return hdtDebate; }
   @Override public void enable(boolean enabled)     { ui.tabDebates.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
@@ -151,7 +151,7 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void newClick(HDT_RecordType objType, HyperTableRow row)
+  @Override public void newClick(RecordType objType, HyperTableRow row)
   {
     if (ui.cantSaveRecord()) return;
 

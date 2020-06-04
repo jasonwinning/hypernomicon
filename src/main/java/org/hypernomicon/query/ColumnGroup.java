@@ -18,14 +18,14 @@
 package org.hypernomicon.query;
 
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet;
 import org.hypernomicon.query.SelectColumnsDlgCtrlr.TypeCheckBox;
 
@@ -34,7 +34,7 @@ public final class ColumnGroup
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  final HDT_RecordType recordType;
+  final RecordType recordType;
   final String caption;
   final List<ColumnGroupItem> items = new ArrayList<>();
   TypeCheckBox checkBox;
@@ -42,7 +42,7 @@ public final class ColumnGroup
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  ColumnGroup(HDT_RecordType recordType, Set<Tag> tags)
+  ColumnGroup(RecordType recordType, Set<Tag> tags)
   {
     this.recordType = recordType;
     caption = db.getTypeName(recordType);

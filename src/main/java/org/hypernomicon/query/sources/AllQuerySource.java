@@ -17,11 +17,11 @@
 
 package org.hypernomicon.query.sources;
 
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 
 import java.util.EnumSet;
 
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 
 public class AllQuerySource extends CombinedUnfilteredQuerySource
 {
@@ -36,9 +36,9 @@ public class AllQuerySource extends CombinedUnfilteredQuerySource
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static EnumSet<HDT_RecordType> types()
+  private static EnumSet<RecordType> types()
   {
-    EnumSet<HDT_RecordType> types = EnumSet.allOf(HDT_RecordType.class);
+    EnumSet<RecordType> types = EnumSet.allOf(RecordType.class);
     types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
     return types;
   }

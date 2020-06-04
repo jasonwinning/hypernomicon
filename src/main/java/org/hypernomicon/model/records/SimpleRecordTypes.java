@@ -53,7 +53,7 @@ public class SimpleRecordTypes
 
   static abstract class HDT_SimpleRecord extends HDT_RecordBase
   {
-    HDT_SimpleRecord(HDT_RecordState xmlState, HyperDataset<? extends HDT_SimpleRecord> dataset)
+    HDT_SimpleRecord(RecordState xmlState, HyperDataset<? extends HDT_SimpleRecord> dataset)
     {
       super(xmlState, dataset, tagNone);
     }
@@ -66,7 +66,7 @@ public class SimpleRecordTypes
 
   private static abstract class HDT_Verdict extends HDT_SimpleRecord
   {
-    private HDT_Verdict(HDT_RecordState xmlState, HyperDataset<? extends HDT_Verdict> dataset)      { super(xmlState, dataset); }
+    private HDT_Verdict(RecordState xmlState, HyperDataset<? extends HDT_Verdict> dataset)      { super(xmlState, dataset); }
 
     @Override public String getCBText() { return name(); }
     @Override public String listName()  { return getTagString(tagListName); }
@@ -76,25 +76,25 @@ public class SimpleRecordTypes
 //---------------------------------------------------------------------------
 
   public static final class HDT_Country extends HDT_SimpleRecord
-  { public HDT_Country(HDT_RecordState xmlState, HyperDataset<HDT_Country> dataset)                 { super(xmlState, dataset);  } }
+  { public HDT_Country(RecordState xmlState, HyperDataset<HDT_Country> dataset)                 { super(xmlState, dataset);  } }
 
   public static final class HDT_Rank extends HDT_SimpleRecord
-  { public HDT_Rank(HDT_RecordState xmlState, HyperDataset<HDT_Rank> dataset)                       { super(xmlState, dataset);  } }
+  { public HDT_Rank(RecordState xmlState, HyperDataset<HDT_Rank> dataset)                       { super(xmlState, dataset);  } }
 
   public static final class HDT_PersonStatus extends HDT_SimpleRecord
-  { public HDT_PersonStatus(HDT_RecordState xmlState, HyperDataset<HDT_PersonStatus> dataset)       { super(xmlState, dataset);  } }
+  { public HDT_PersonStatus(RecordState xmlState, HyperDataset<HDT_PersonStatus> dataset)       { super(xmlState, dataset);  } }
 
   public static final class HDT_Field extends HDT_SimpleRecord
-  { public HDT_Field(HDT_RecordState xmlState, HyperDataset<HDT_Field> dataset)                     { super(xmlState, dataset);  } }
+  { public HDT_Field(RecordState xmlState, HyperDataset<HDT_Field> dataset)                     { super(xmlState, dataset);  } }
 
   public static final class HDT_PositionVerdict extends HDT_Verdict
-  { public HDT_PositionVerdict(HDT_RecordState xmlState, HyperDataset<HDT_PositionVerdict> dataset) { super(xmlState, dataset);  } }
+  { public HDT_PositionVerdict(RecordState xmlState, HyperDataset<HDT_PositionVerdict> dataset) { super(xmlState, dataset);  } }
 
   public static final class HDT_ArgumentVerdict extends HDT_Verdict
-  { public HDT_ArgumentVerdict(HDT_RecordState xmlState, HyperDataset<HDT_ArgumentVerdict> dataset) { super(xmlState, dataset);  } }
+  { public HDT_ArgumentVerdict(RecordState xmlState, HyperDataset<HDT_ArgumentVerdict> dataset) { super(xmlState, dataset);  } }
 
   public static final class HDT_InstitutionType extends HDT_SimpleRecord
-  { public HDT_InstitutionType(HDT_RecordState xmlState, HyperDataset<HDT_InstitutionType> dataset) { super(xmlState, dataset);  } }
+  { public HDT_InstitutionType(RecordState xmlState, HyperDataset<HDT_InstitutionType> dataset) { super(xmlState, dataset);  } }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -103,7 +103,7 @@ public class SimpleRecordTypes
   {
     public final List<HDT_MiscFile> miscFiles;
 
-    public HDT_FileType(HDT_RecordState xmlState, HyperDataset<HDT_FileType> dataset)
+    public HDT_FileType(RecordState xmlState, HyperDataset<HDT_FileType> dataset)
     {
       super(xmlState, dataset);
       miscFiles = getSubjList(rtTypeOfFile);
@@ -135,7 +135,7 @@ public class SimpleRecordTypes
       return map;
     }
 
-    public HDT_WorkType(HDT_RecordState xmlState, HyperDataset<HDT_WorkType> dataset) { super(xmlState, dataset); }
+    public HDT_WorkType(RecordState xmlState, HyperDataset<HDT_WorkType> dataset) { super(xmlState, dataset); }
 
     public WorkTypeEnum enumVal() { return getEnumVal(this); }
 

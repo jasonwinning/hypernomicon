@@ -20,7 +20,7 @@ package org.hypernomicon.view.wrappers;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 
@@ -31,7 +31,7 @@ import java.util.function.Function;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
@@ -60,7 +60,7 @@ public class HyperTableColumn
   final private TableColumn<HyperTableRow, HyperTableCell> tc;
   final private TableColumn<HyperTableRow, Boolean> chkCol;
   final private Populator populator;
-  final private HDT_RecordType objType;
+  final private RecordType objType;
   final private HyperCtrlType ctrlType;
   final EnumMap<ButtonAction, String> tooltips = new EnumMap<>(ButtonAction.class);
   final CellUpdateHandler updateHandler;
@@ -78,7 +78,7 @@ public class HyperTableColumn
   public HyperCtrlType getCtrlType()                 { return ctrlType; }
   public int getColNdx()                             { return colNdx; }
   public String getHeader()                          { return tc.getText(); }
-  HDT_RecordType getObjType()                        { return objType; }
+  RecordType getObjType()                            { return objType; }
   void setCanEditIfEmpty(boolean newVal)             { canEditIfEmpty.setValue(newVal); }
   void setNumeric(boolean newVal)                    { isNumeric.setValue(newVal); }
   public void setDontCreateNewRecord(boolean newVal) { dontCreateNewRecord.setValue(newVal); }
@@ -88,27 +88,27 @@ public class HyperTableColumn
 
 //---------------------------------------------------------------------------
 
-  HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol) {
+  HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol) {
     this(table, objType, ctrlType, populator, targetCol, null, null, null, null); }
 
-  HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, EventHandler<ActionEvent> onAction) {
+  HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, EventHandler<ActionEvent> onAction) {
     this(table, objType, ctrlType, populator, targetCol, null, onAction, null, null); }
 
-  HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, CellUpdateHandler updateHandler) {
+  HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, CellUpdateHandler updateHandler) {
     this(table, objType, ctrlType, populator, targetCol, null, null, updateHandler, null); }
 
-  HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol,
+  HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol,
                           EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler) {
     this(table, objType, ctrlType, populator, targetCol, null, onAction, updateHandler, null); }
 
-  HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, ButtonCellHandler btnHandler, String btnCaption) {
+  HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, ButtonCellHandler btnHandler, String btnCaption) {
     this(table, objType, ctrlType, populator, targetCol, btnHandler, null, null, btnCaption); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private HyperTableColumn(HyperTable table, HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol,
+  private HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol,
                            ButtonCellHandler btnHandler, EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler, String btnCaption)
   {
     this.ctrlType = ctrlType;
@@ -188,7 +188,7 @@ public class HyperTableColumn
             if (empty || (cell == null) || (getTableRow().getItem() == null)) { setGraphic(null); setTooltip(null); return; }
 
             HDT_Record record = HyperTableCell.getRecord(cell);
-            HDT_RecordType type = HyperTableCell.getCellType(cell);
+            RecordType type = HyperTableCell.getCellType(cell);
 
             setGraphic(record == null ? imgViewForRecordType(type) : imgViewForRecord(record));
 

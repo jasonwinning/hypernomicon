@@ -21,7 +21,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.*;
@@ -117,12 +117,12 @@ public final class HyperDB
 {
   public static final HyperDB db = new HyperDB();
 
-  final private EnumMap<HDT_RecordType, HyperDataset<? extends HDT_Record>> datasets = new EnumMap<>(HDT_RecordType.class);
-  final private EnumMap<HDT_RecordType, HyperDataset<? extends HDT_Record>.CoreAccessor> accessors = new EnumMap<>(HDT_RecordType.class);
+  final private EnumMap<RecordType, HyperDataset<? extends HDT_Record>> datasets = new EnumMap<>(RecordType.class);
+  final private EnumMap<RecordType, HyperDataset<? extends HDT_Record>.CoreAccessor> accessors = new EnumMap<>(RecordType.class);
   final private EnumMap<RelationType, RelationSet<HDT_Record, HDT_Record>> relationSets = new EnumMap<>(RelationType.class);
   final private EnumMap<RelationType, Boolean> relTypeToIsMulti = new EnumMap<>(RelationType.class);
-  final private EnumMap<Tag, HDT_RecordType> tagToObjType = new EnumMap<>(Tag.class);
-  final private EnumMap<Tag, EnumSet<HDT_RecordType>> tagToSubjType = new EnumMap<>(Tag.class);
+  final private EnumMap<Tag, RecordType> tagToObjType = new EnumMap<>(Tag.class);
+  final private EnumMap<Tag, EnumSet<RecordType>> tagToSubjType = new EnumMap<>(Tag.class);
   final private EnumMap<Tag, String> tagToHeader = new EnumMap<>(Tag.class);
 
   final private List<Consumer<HDT_Record>> recordDeleteHandlers          = new ArrayList<>();
@@ -131,13 +131,13 @@ public final class HyperDB
                                            dbMentionsNdxCompleteHandlers = new ArrayList<>(),
                                            bibChangedHandlers            = new ArrayList<>();
 
-  final private EnumBiMap<HDT_RecordType, Tag> typeToTag = EnumBiMap.create(HDT_RecordType.class, Tag.class);
+  final private EnumBiMap<RecordType, Tag> typeToTag = EnumBiMap.create(RecordType.class, Tag.class);
   final private EnumHashBiMap<Tag, String> tagToStr = EnumHashBiMap.create(Tag.class);
-  final private EnumHashBiMap<HDT_RecordType, String> typeToTagStr = EnumHashBiMap.create(HDT_RecordType.class);
+  final private EnumHashBiMap<RecordType, String> typeToTagStr = EnumHashBiMap.create(RecordType.class);
   final private SearchKeys searchKeys = new SearchKeys();
   final private MentionsIndex mentionsIndex = new MentionsIndex(dbMentionsNdxCompleteHandlers);
   final private List<HDT_Record> initialNavList = new ArrayList<>();
-  final private EnumMap<HDT_RecordType, RelationChangeHandler> keyWorkHandlers = new EnumMap<>(HDT_RecordType.class);
+  final private EnumMap<RecordType, RelationChangeHandler> keyWorkHandlers = new EnumMap<>(RecordType.class);
   final private Map<HDT_RecordWithPath, Set<HDT_RecordWithConnector>> keyWorkIndex = new HashMap<>();
   final private BidiOneToManyMainTextMap displayedAtIndex = new BidiOneToManyMainTextMap();
   final private Map<String, HDT_Work> bibEntryKeyToWork = new HashMap<>();
@@ -168,15 +168,15 @@ public final class HyperDB
 
   public boolean isDeletionInProgress()                         { return deletionInProgress; }
   public boolean resolvingPointers()                            { return pointerResolutionInProgress; }
-  public int getNextID(HDT_RecordType type)                     { return datasets.get(type).getNextID(); }
-  public boolean idAvailable(HDT_RecordType type, int id)       { return datasets.get(type).idAvailable(id); }
-  public String getTypeTagStr(HDT_RecordType type)              { return typeToTagStr.get(type); }
-  public HDT_RecordType parseTypeTagStr(String tag)             { return typeToTagStr.inverse().getOrDefault(tag, hdtNone); }
+  public int getNextID(RecordType type)                         { return datasets.get(type).getNextID(); }
+  public boolean idAvailable(RecordType type, int id)           { return datasets.get(type).idAvailable(id); }
+  public String getTypeTagStr(RecordType type)                  { return typeToTagStr.get(type); }
+  public RecordType parseTypeTagStr(String tag)                 { return typeToTagStr.inverse().getOrDefault(tag, hdtNone); }
   public boolean isLoaded()                                     { return loaded; }
   public boolean bibLibraryIsLinked()                           { return bibLibrary != null; }
   public Instant getCreationDate()                              { return dbCreationDate; }
-  public HDT_RecordType getSubjType(RelationType relType)       { return relationSets.get(relType).getSubjType(); }
-  public HDT_RecordType getObjType(RelationType relType)        { return relationSets.get(relType).getObjType(); }
+  public RecordType getSubjType(RelationType relType)           { return relationSets.get(relType).getSubjType(); }
+  public RecordType getObjType(RelationType relType)            { return relationSets.get(relType).getObjType(); }
   public boolean relationIsMulti(RelationType relType)          { return relTypeToIsMulti.get(relType).booleanValue(); }
   public String getTagStr(Tag tag)                              { return tagToStr.get(tag); }
   public String getTagHeader(Tag tag)                           { return tagToHeader.getOrDefault(tag, ""); }
@@ -196,7 +196,7 @@ public final class HyperDB
   public LibraryWrapper<? extends BibEntry, ? extends BibCollection> getBibLibrary()        { return bibLibrary; }
   public List<Consumer<HDT_Record>> getRecordDeleteHandlers()                               { return unmodifiableList(recordDeleteHandlers); }
   public void addRelationChangeHandler(RelationType relType, RelationChangeHandler handler) { relationSets.get(relType).addChangeHandler(handler); }
-  public void addKeyWorkHandler(HDT_RecordType recordType, RelationChangeHandler handler)   { keyWorkHandlers.put(recordType, handler); }
+  public void addKeyWorkHandler(RecordType recordType, RelationChangeHandler handler)       { keyWorkHandlers.put(recordType, handler); }
   public void addCloseDBHandler(Runnable handler)                                           { dbCloseHandlers.add(handler); }
   public void addPreDBChangeHandler(Runnable handler)                                       { dbPreChangeHandlers.add(handler); }
   public void addMentionsNdxCompleteHandler(Runnable handler)                               { dbMentionsNdxCompleteHandlers.add(handler); }
@@ -235,7 +235,7 @@ public final class HyperDB
   public void setNestedItemFromOfflineValue(HDT_Record subj, HDT_Record obj, Tag tag, HDI_OfflineBase value) throws RelationCycleException
   { relSet(subj, obj).setNestedItemFromOfflineValue(subj, obj, tag, value); }
 
-  public void saveNestedValuesToOfflineMap(HDT_Record subj, HDT_Record obj, Map<Tag, HDI_OfflineBase> tagToNestedItem, HDT_RecordState recordState)
+  public void saveNestedValuesToOfflineMap(HDT_Record subj, HDT_Record obj, Map<Tag, HDI_OfflineBase> tagToNestedItem, RecordState recordState)
   { relSet(subj, obj).saveNestedValuesToOfflineMap(subj, obj, tagToNestedItem, recordState); }
 
   public <HDT_ObjType extends HDT_Record, HDT_SubjType extends HDT_Record> HyperObjList<HDT_SubjType, HDT_ObjType> getObjectList(RelationType relType, HDT_SubjType subj, boolean modTracking)
@@ -250,7 +250,7 @@ public final class HyperDB
   public <HDT_ObjType extends HDT_Record, HDT_SubjType extends HDT_Record> HyperSubjPointer<HDT_SubjType, HDT_ObjType> getSubjPointer(RelationType relType, HDT_ObjType obj)
   { return new HyperSubjPointer<>(relSet(relType), obj); }
 
-  public HDT_RecordType getNestedTargetType(RelationType relType, Tag mainTag)
+  public RecordType getNestedTargetType(RelationType relType, Tag mainTag)
   { return relationSets.get(relType).getTargetType(mainTag); }
 
   public <HDT_SubjType extends HDT_Record> List<ObjectGroup> getObjectGroupList(RelationType relType, HDT_SubjType subj, Collection<Tag> tags)
@@ -397,7 +397,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperDataset<? extends HDT_Record>.CoreAccessor records(HDT_RecordType type)
+  public HyperDataset<? extends HDT_Record>.CoreAccessor records(RecordType type)
   {
     HyperDataset<? extends HDT_Record>.CoreAccessor accessor = accessors.get(type);
 
@@ -423,7 +423,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void writeDatasetToXML(List<StringBuilder> xmlList, HDT_RecordType type) throws HDB_InternalError, TerminateTaskException
+  private void writeDatasetToXML(List<StringBuilder> xmlList, RecordType type) throws HDB_InternalError, TerminateTaskException
   {
     StringBuilder xml = xmlList.get(xmlList.size() - 1);
 
@@ -888,7 +888,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean isProtectedRecord(int id, HDT_RecordType type, boolean checkSubfolders)
+  public boolean isProtectedRecord(int id, RecordType type, boolean checkSubfolders)
   {
     if (isUnstoredRecord(id, type)) return true;
 
@@ -919,7 +919,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean isUnstoredRecord(int id, HDT_RecordType type)
+  public static boolean isUnstoredRecord(int id, RecordType type)
   {
     switch (type)
     {
@@ -933,7 +933,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void deleteRecord(HDT_RecordType type, int id)
+  public void deleteRecord(RecordType type, int id)
   {
     if (deletionInProgress == false)
       startMentionsRebuildAfterDelete = false;
@@ -1110,7 +1110,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HDT_RecordState getNextRecordFromXML(XMLEventReader eventReader) throws XMLStreamException, HyperDataException
+  private RecordState getNextRecordFromXML(XMLEventReader eventReader) throws XMLStreamException, HyperDataException
   {
     while (eventReader.hasNext())
     {
@@ -1124,7 +1124,7 @@ public final class HyperDB
         continue;
 
       int id = -1;
-      HDT_RecordType type = hdtNone;
+      RecordType type = hdtNone;
       String sortKeyAttr = "", listName = "", searchKey = "";
 
       Iterator<Attribute> attributes = startElement.getAttributes();
@@ -1152,7 +1152,7 @@ public final class HyperDB
         }
       }
 
-      HDT_RecordState xmlRecord = new HDT_RecordState(type, id, sortKeyAttr, "", searchKey, listName);
+      RecordState xmlRecord = new RecordState(type, id, sortKeyAttr, "", searchKey, listName);
       xmlRecord.stored = true;
       return xmlRecord;
     }
@@ -1164,7 +1164,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public <T extends HDT_RecordBase> T createNewRecordFromState(HDT_RecordState recordState, boolean bringOnline) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException
+  public <T extends HDT_RecordBase> T createNewRecordFromState(RecordState recordState, boolean bringOnline) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException
   {
     return (T) datasets.get(recordState.type).createNewRecord(recordState, bringOnline);
   }
@@ -1173,9 +1173,9 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public <T extends HDT_RecordBase> T createNewBlankRecord(HDT_RecordType type)
+  public <T extends HDT_RecordBase> T createNewBlankRecord(RecordType type)
   {
-    HDT_RecordState recordState = new HDT_RecordState(type, -1, "", "", "", "");
+    RecordState recordState = new RecordState(type, -1, "", "", "", "");
 
     try
     {
@@ -1197,11 +1197,11 @@ public final class HyperDB
   {
     private final Tag tag;
     private int objID;
-    private HDT_RecordType objType;
+    private RecordType objType;
 
   //---------------------------------------------------------------------------
 
-    private HDX_Element(StartElement startElement, HDT_RecordState xmlRecord) throws InvalidItemException
+    private HDX_Element(StartElement startElement, RecordState xmlRecord) throws InvalidItemException
     {
       tag = tagToStr.inverse().getOrDefault(startElement.getName().getLocalPart(), tagNone);
 
@@ -1303,13 +1303,13 @@ public final class HyperDB
 
       checkVersion(versionNumber, "this XML record data", appVersionToMinRecordsXMLVersion, appVersionToMaxRecordsXMLVersion);
 
-      HDT_RecordState xmlRecord = getNextRecordFromXML(eventReader);
+      RecordState xmlRecord = getNextRecordFromXML(eventReader);
 
       while (xmlRecord != null)
       {
         boolean notDoneReadingRecord = eventReader.hasNext(), noInnerTags = true, wasAlreadyInStartTag = false;
         Map<Tag, HDI_OfflineBase> nestedItems = null;
-        HDT_RecordType objType = hdtNone;
+        RecordType objType = hdtNone;
         XMLEvent event = null;
         String nodeText = "";
         Tag tag = tagNone;
@@ -1418,7 +1418,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initNestedItems(HDT_RecordState xmlRecord, Map<Tag, HDI_OfflineBase> nestedItems, RelationType relation)
+  private void initNestedItems(RecordState xmlRecord, Map<Tag, HDI_OfflineBase> nestedItems, RelationType relation)
   {
     Collection<HDI_Schema> schemas = relationSets.get(relation).getSchemas();
     if (schemas == null) return;
@@ -1446,7 +1446,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void readNestedItem(HDT_RecordState xmlRecord, Map<Tag, HDI_OfflineBase> nestedItems, RelationType relationType, HDX_Element hdxElement, XMLEventReader eventReader) throws XMLStreamException, HyperDataException, InvalidItemException
+  private void readNestedItem(RecordState xmlRecord, Map<Tag, HDI_OfflineBase> nestedItems, RelationType relationType, HDX_Element hdxElement, XMLEventReader eventReader) throws XMLStreamException, HyperDataException, InvalidItemException
   {
     boolean notDone = eventReader.hasNext();
     String nodeText = "";
@@ -1581,7 +1581,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void close(Set<HDT_RecordType> datasetsToKeep) throws HDB_InternalError
+  public void close(Set<RecordType> datasetsToKeep) throws HDB_InternalError
   {
     boolean bringOnline = datasetsToKeep != null; // Datasets remain online through process of creating a new database
 
@@ -1618,28 +1618,28 @@ public final class HyperDB
 
     try
     {
-      HDT_RecordState recordState;
+      RecordState recordState;
 
-      recordState = new HDT_RecordState(hdtFolder, ROOT_FOLDER_ID, "", "", "", "");
+      recordState = new RecordState(hdtFolder, ROOT_FOLDER_ID, "", "", "", "");
       createNewRecordFromState(recordState, bringOnline);
 
-      recordState = new HDT_RecordState(hdtDebate, 1, "", "", "", "");
+      recordState = new RecordState(hdtDebate, 1, "", "", "", "");
       HDI_OfflineString.class.cast(recordState.items.get(tagName)).set("All debates");
       createNewRecordFromState(recordState, bringOnline);
 
-      recordState = new HDT_RecordState(hdtNote, 1, "", "", "", "");
+      recordState = new RecordState(hdtNote, 1, "", "", "", "");
       HDI_OfflineString.class.cast(recordState.items.get(tagName)).set("All notes");
       createNewRecordFromState(recordState, bringOnline);
 
-      recordState = new HDT_RecordState(hdtWorkLabel, 1, "", "", "", "");
+      recordState = new RecordState(hdtWorkLabel, 1, "", "", "", "");
       HDI_OfflineString.class.cast(recordState.items.get(tagText)).set("All labels");
       createNewRecordFromState(recordState, bringOnline);
 
-      recordState = new HDT_RecordState(hdtPersonGroup, 1, "", "", "", "");
+      recordState = new RecordState(hdtPersonGroup, 1, "", "", "", "");
       HDI_OfflineString.class.cast(recordState.items.get(tagName)).set("All groups");
       createNewRecordFromState(recordState, bringOnline);
 
-      recordState = new HDT_RecordState(hdtGlossary, 1, "", "", "", "");
+      recordState = new RecordState(hdtGlossary, 1, "", "", "", "");
       HDI_OfflineString.class.cast(recordState.items.get(tagName)).set("General");
       HDI_OfflineBoolean.class.cast(recordState.items.get(tagActive)).set(true);
       createNewRecordFromState(recordState, bringOnline);
@@ -1652,7 +1652,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void clearAllDataSets(Set<HDT_RecordType> datasetsToKeep)
+  private void clearAllDataSets(Set<RecordType> datasetsToKeep)
   {
     if (datasetsToKeep != null) // It should only be non-null when a new database is being created
       datasetsToKeep.addAll(EnumSet.of(hdtWorkType, hdtPositionVerdict, hdtArgumentVerdict, hdtInstitutionType));
@@ -1667,12 +1667,12 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean newDB(FilePath newPath, Set<HDT_RecordType> datasetsToKeep, Map<String, String> folderMap) throws HDB_InternalError
+  public boolean newDB(FilePath newPath, Set<RecordType> datasetsToKeep, Map<String, String> folderMap) throws HDB_InternalError
   {
     if (loaded == false) return false;
 
     if (datasetsToKeep == null)
-      datasetsToKeep = EnumSet.noneOf(HDT_RecordType.class);
+      datasetsToKeep = EnumSet.noneOf(RecordType.class);
 
     close(datasetsToKeep);
 
@@ -1721,7 +1721,7 @@ public final class HyperDB
 
   private void createSpecialFolderRecord(int id, String name, String prefKey) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException
   {
-    HDT_RecordState recordState = new HDT_RecordState(hdtFolder, id, "", "", "", "");
+    RecordState recordState = new RecordState(hdtFolder, id, "", "", "", "");
     HDI_OfflinePath.class.cast(recordState.items.get(tagFileName)).setFileName(name);
     HDI_OfflinePath.class.cast(recordState.items.get(tagParentFolder)).setFolderID(ROOT_FOLDER_ID);
     createNewRecordFromState(recordState, true);
@@ -1731,7 +1731,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Set<Tag> getTagsByRecordType(HDT_RecordType recordType)
+  public Set<Tag> getTagsByRecordType(RecordType recordType)
   {
     EnumSet<Tag> tags = EnumSet.noneOf(Tag.class);
 
@@ -1748,7 +1748,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Collection<HDI_Schema> getSchemasByRecordType(HDT_RecordType type)
+  public Collection<HDI_Schema> getSchemasByRecordType(RecordType type)
   {
     return nullSwitch(datasets.get(type), null, HyperDataset::getSchemas);
   }
@@ -1813,7 +1813,7 @@ public final class HyperDB
 
     if (klass == null) return null;
 
-    HDT_RecordType type = typeByRecordClass(klass);
+    RecordType type = typeByRecordClass(klass);
 
     typeToTagStr.put(type, tagStr);
     typeToTag.put(type, tag);
@@ -2073,14 +2073,14 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addItem(HDT_RecordType recordType, HyperDataCategory dataCat, RelationType relType, Tag... tags) throws HDB_InternalError
+  private void addItem(RecordType recordType, HyperDataCategory dataCat, RelationType relType, Tag... tags) throws HDB_InternalError
   {
     HDI_Schema schema;
-    EnumSet<HDT_RecordType> types = tagToSubjType.get(tags[0]);
+    EnumSet<RecordType> types = tagToSubjType.get(tags[0]);
 
     if (types == null)
     {
-      types = EnumSet.noneOf(HDT_RecordType.class);
+      types = EnumSet.noneOf(RecordType.class);
 
       for (Tag tag : tags)
         tagToSubjType.put(tag, types);
@@ -2117,14 +2117,14 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unused")
-  private void addTernaryItem  (HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcTernary      , rtNone, tags); }
+  private void addTernaryItem  (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcTernary      , rtNone, tags); }
 
-  private void addBooleanItem  (HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcBoolean      , rtNone, tags); }
-  private void addPointerMulti (HDT_RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerMulti , rt    , tags); }
-  private void addPointerSingle(HDT_RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerSingle, rt    , tags); }
-  private void addStringItem   (HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcString       , rtNone, tags); }
-  private void addPathItem     (HDT_RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPath         , rt    , tags); }
-  private void addConnectorItem(HDT_RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcConnector    , rtNone, tags); }
+  private void addBooleanItem  (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcBoolean      , rtNone, tags); }
+  private void addPointerMulti (RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerMulti , rt    , tags); }
+  private void addPointerSingle(RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPointerSingle, rt    , tags); }
+  private void addStringItem   (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcString       , rtNone, tags); }
+  private void addPathItem     (RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPath         , rt    , tags); }
+  private void addConnectorItem(RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcConnector    , rtNone, tags); }
 
   private void addBibEntryKeyItem() throws HDB_InternalError { addItem(hdtWork,   hdcBibEntryKey, rtNone,         tagBibEntryKey           ); }
   private void addAuthorsItem    () throws HDB_InternalError { addItem(hdtWork,   hdcAuthors,     rtAuthorOfWork, tagAuthor                ); }
@@ -2194,7 +2194,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getTypeName(HDT_RecordType type)
+  public String getTypeName(RecordType type)
   {
     return nullSwitch(typeToTag.get(type), type == hdtNone ? "All" : "Unknown", tagToHeader::get);
   }

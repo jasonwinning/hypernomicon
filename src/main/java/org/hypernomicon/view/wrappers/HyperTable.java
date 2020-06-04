@@ -20,7 +20,7 @@ package org.hypernomicon.view.wrappers;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
@@ -34,7 +34,7 @@ import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.NestedValue;
 import org.hypernomicon.model.relations.ObjectGroup;
@@ -115,7 +115,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public <Pop extends Populator> Pop getPopulator(int colNdx)      { return cols.get(colNdx).getPopulator(); }
   public void clearFilter()                                        { filteredRows.setPredicate(row -> true); }
   public void setFilter(Predicate<HyperTableRow> filter)           { filteredRows.setPredicate(filter); }
-  public HDT_RecordType getTypeByCol(int colNdx)                   { return cols.get(colNdx).getObjType(); }
+  public RecordType getTypeByCol(int colNdx)                       { return cols.get(colNdx).getObjType(); }
   public List<HyperTableCell> getSelByCol(int colNdx)              { return cols.get(colNdx).getSelectedItems(); }
   boolean getCanAddRows()                                          { return canAddRows; }
   public void setCanAddRows(boolean value)                         { canAddRows = value; tv.setEditable(value); }
@@ -377,7 +377,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperTableColumn addCol(HDT_RecordType objType, HyperCtrlType ctrlType)
+  public HyperTableColumn addCol(RecordType objType, HyperCtrlType ctrlType)
   {
     return addColAltPopulator(objType, ctrlType, (ctrlType == ctDropDown) || (ctrlType == ctDropDownList) ?
       new StandardPopulator(objType)
@@ -388,20 +388,20 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperTableColumn addColWithUpdateHandler(HDT_RecordType objType, HyperCtrlType ctrlType, CellUpdateHandler updateHandler) {
+  public HyperTableColumn addColWithUpdateHandler(RecordType objType, HyperCtrlType ctrlType, CellUpdateHandler updateHandler) {
     return addColAltPopulatorWithUpdateHandler(objType, ctrlType, new StandardPopulator(objType), updateHandler); }
 
-  public HyperTableColumn addColAltPopulator(HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator) {
+  public HyperTableColumn addColAltPopulator(RecordType objType, HyperCtrlType ctrlType, Populator populator) {
     return addCol(new HyperTableColumn(this, objType, ctrlType, populator, -1)); }
 
-  public HyperTableColumn addColAltPopulatorWithUpdateHandler(HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, CellUpdateHandler updateHandler) {
+  public HyperTableColumn addColAltPopulatorWithUpdateHandler(RecordType objType, HyperCtrlType ctrlType, Populator populator, CellUpdateHandler updateHandler) {
     return addCol(new HyperTableColumn(this, objType, ctrlType, populator, -1, updateHandler)); }
 
-  public HyperTableColumn addColAltPopulatorWithActionHandler(HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction) {
+  public HyperTableColumn addColAltPopulatorWithActionHandler(RecordType objType, HyperCtrlType ctrlType, Populator populator, EventHandler<ActionEvent> onAction) {
     return addCol(new HyperTableColumn(this, objType, ctrlType, populator, -1, onAction)); }
 
-  public HyperTableColumn addColAltPopulatorWithBothHandlers(HDT_RecordType objType, HyperCtrlType ctrlType, Populator populator,
-                                                 EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler) {
+  public HyperTableColumn addColAltPopulatorWithBothHandlers(RecordType objType, HyperCtrlType ctrlType, Populator populator,
+                                                             EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler) {
     return addCol(new HyperTableColumn(this, objType, ctrlType, populator, -1, onAction, updateHandler)); }
 
   public HyperTableColumn addActionCol(HyperCtrlType ctrlType, int targetCol) {
@@ -425,7 +425,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperTableColumn addTextEditColWithUpdateHandler(HDT_RecordType objType, boolean canEditIfEmpty, boolean isNumeric, CellUpdateHandler updateHandler)
+  public HyperTableColumn addTextEditColWithUpdateHandler(RecordType objType, boolean canEditIfEmpty, boolean isNumeric, CellUpdateHandler updateHandler)
   {
     HyperTableColumn col = new HyperTableColumn(this, objType, ctEdit, null, -1, updateHandler);
     col.setCanEditIfEmpty(canEditIfEmpty);
@@ -438,7 +438,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperTableColumn addTextEditCol(HDT_RecordType objType, boolean canEditIfEmpty, boolean isNumeric)
+  public HyperTableColumn addTextEditCol(RecordType objType, boolean canEditIfEmpty, boolean isNumeric)
   {
     HyperTableColumn col = new HyperTableColumn(this, objType, ctEdit, null, -1);
     col.setCanEditIfEmpty(canEditIfEmpty);
@@ -521,7 +521,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void selectType(int colNdx, HyperTableRow row, HDT_RecordType newType)
+  public void selectType(int colNdx, HyperTableRow row, RecordType newType)
   {
     nullSwitch(findFirst(cols.get(colNdx).getPopulator().populate(row, false), cell -> cell.getType() == newType), cell -> row.setCellValue(colNdx, cell));
   }
@@ -573,7 +573,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 // Determine start record and object record (to be replaced) for tree selection
 
     int startID = row.getID(colNdx);
-    HDT_RecordType startType = row.getType(colNdx);
+    RecordType startType = row.getType(colNdx);
     if (startID > 0)
       ui.treeSelector.setTarget(db.records(startType).getByID(startID));
     else
@@ -704,7 +704,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public List<ObjectGroup> getObjectGroupList(HDT_Record subj, RelationType relType, int primaryColNdx, Map<Integer, Tag> colNdxToTag)
   {
     List<ObjectGroup> list = new ArrayList<>();
-    HDT_RecordType objType = db.getObjType(relType);
+    RecordType objType = db.getObjType(relType);
 
     db.getNestedTags(relType).stream().filter(Predicate.not(colNdxToTag::containsValue)).forEach(tag -> colNdxToTag.put(-1, tag));
 
@@ -784,7 +784,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public <HDT_T extends HDT_Record> List<HDT_T> saveToList(int colNdx, HDT_RecordType objType)
+  public <HDT_T extends HDT_Record> List<HDT_T> saveToList(int colNdx, RecordType objType)
   {
     return rows.stream().filter(row -> row.getType(colNdx) == objType)
                         .map(row -> row.getID(colNdx))

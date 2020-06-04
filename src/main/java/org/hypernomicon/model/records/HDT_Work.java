@@ -60,7 +60,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Work(HDT_RecordState xmlState, HyperDataset<HDT_Work> dataset)
+  public HDT_Work(RecordState xmlState, HyperDataset<HDT_Work> dataset)
   {
     super(xmlState, dataset, tagTitle);
 

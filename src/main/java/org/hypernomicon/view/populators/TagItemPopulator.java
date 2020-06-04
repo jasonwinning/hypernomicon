@@ -26,20 +26,20 @@ import java.util.List;
 import java.util.Set;
 
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class TagItemPopulator extends Populator
 {
   private final Set<Tag> tags;
-  private final HDT_RecordType recordType;
+  private final RecordType recordType;
   final List<HyperTableCell> choices;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TagItemPopulator(HDT_RecordType recordType)
+  public TagItemPopulator(RecordType recordType)
   {
     this.recordType = recordType;
     tags = db.getTagsByRecordType(recordType);
@@ -51,8 +51,8 @@ public class TagItemPopulator extends Populator
 
 //---------------------------------------------------------------------------
 
-  @Override public CellValueType getValueType()                    { return cvtTagItem; }
-  @Override public HDT_RecordType getRecordType(HyperTableRow row) { return recordType; }
+  @Override public CellValueType getValueType()                { return cvtTagItem; }
+  @Override public RecordType getRecordType(HyperTableRow row) { return recordType; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

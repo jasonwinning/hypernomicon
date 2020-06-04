@@ -19,14 +19,14 @@ package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 
 import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_RecordState;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordState;
+import org.hypernomicon.model.records.RecordType;
 
 public class HDI_OfflineHubSpokes extends HDI_OfflineBase
 {
@@ -37,7 +37,7 @@ public class HDI_OfflineHubSpokes extends HDI_OfflineBase
 
 //---------------------------------------------------------------------------
 
-  public HDI_OfflineHubSpokes(HDI_Schema schema, HDT_RecordState recordState)
+  public HDI_OfflineHubSpokes(HDI_Schema schema, RecordState recordState)
   {
     super(schema, recordState);
   }
@@ -45,7 +45,7 @@ public class HDI_OfflineHubSpokes extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
+  @Override public void setFromXml(Tag tag, String nodeText, RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
   {
     switch (objType)
     {
@@ -62,7 +62,7 @@ public class HDI_OfflineHubSpokes extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void writeTag(int id, HDT_RecordType type, StringBuilder xml)
+  private void writeTag(int id, RecordType type, StringBuilder xml)
   {
     if (id > 0)
       writePointerTag(xml, tagLinkedRecord, id, type, db.records(type).getByID(id).getXMLObjectName());

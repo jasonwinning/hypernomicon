@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.query.QueryTabCtrlr;
 import org.hypernomicon.query.QueryTabCtrlr.QueryView;
 import org.hypernomicon.query.engines.QueryEngine.QueryType;
@@ -62,7 +62,7 @@ public class QueryPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public HDT_RecordType getRecordType(HyperTableRow row)
+  @Override public RecordType getRecordType(HyperTableRow row)
   {
     return rowToQueryType.getOrDefault(row, QueryType.qtAllRecords).getRecordType();
   }

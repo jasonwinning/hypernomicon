@@ -32,7 +32,7 @@ public class HDT_Debate extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Debate(HDT_RecordState xmlState, HyperDataset<HDT_Debate> dataset)
+  public HDT_Debate(RecordState xmlState, HyperDataset<HDT_Debate> dataset)
   {
     super(xmlState, dataset, tagName);
 

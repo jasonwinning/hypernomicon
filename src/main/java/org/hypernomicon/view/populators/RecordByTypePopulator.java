@@ -27,12 +27,12 @@ import java.util.function.Predicate;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod.*;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -40,7 +40,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class RecordByTypePopulator extends Populator
 {
-  private final Map<HyperTableRow, HDT_RecordType> rowToRecordType = new HashMap<>();
+  private final Map<HyperTableRow, RecordType> rowToRecordType = new HashMap<>();
   private final Map<HyperTableRow, Boolean> rowToChanged = new HashMap<>();
   private final Map<HyperTableRow, List<HyperTableCell>> rowToChoices = new HashMap<>();
   private final boolean nameOnly;
@@ -61,7 +61,7 @@ public class RecordByTypePopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setRecordType(HyperTableRow row, HDT_RecordType newType)
+  public void setRecordType(HyperTableRow row, RecordType newType)
   {
     if (row == null) row = dummyRow;
 
@@ -91,7 +91,7 @@ public class RecordByTypePopulator extends Populator
 
   // If num = 5, returns a list of the 5 most recently viewed records
 
-  private List<Integer> getRecent(HDT_RecordType recordType, int num)
+  private List<Integer> getRecent(RecordType recordType, int num)
   {
     Instant dates[] = new Instant[num];
     int ids[] = new int[num], pos[] = new int[num], revPos[] = new int[num];
@@ -171,7 +171,7 @@ public class RecordByTypePopulator extends Populator
     if ((hasChanged(row) == false) && (force == false))
       return choices;
 
-    HDT_RecordType recordType = rowToRecordType.get(row);
+    RecordType recordType = rowToRecordType.get(row);
     choices.clear();
     choices.add(HyperTableCell.blankCell);
 
@@ -258,7 +258,7 @@ public class RecordByTypePopulator extends Populator
     if (rowToRecordType.containsKey(row) == false)
       rowToRecordType.put(row, hdtNone);
 
-    HDT_RecordType recordType = rowToRecordType.get(row);
+    RecordType recordType = rowToRecordType.get(row);
 
     if ((recordType == hdtNone) || (HyperTableCell.getCellType(cell) == hdtNone) || (HyperTableCell.getCellID(cell) < 1))
       return HyperTableCell.blankCell;
@@ -280,7 +280,7 @@ public class RecordByTypePopulator extends Populator
     if (rowToRecordType.containsKey(row) == false)
       rowToRecordType.put(row, hdtNone);
 
-    HDT_RecordType recordType = rowToRecordType.get(row);
+    RecordType recordType = rowToRecordType.get(row);
 
     return (recordType == hdtNone) || (id < 1) ?
       HyperTableCell.blankCell
@@ -309,7 +309,7 @@ public class RecordByTypePopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public HDT_RecordType getRecordType(HyperTableRow row)
+  @Override public RecordType getRecordType(HyperTableRow row)
   {
     return rowToRecordType.getOrDefault(nullSwitch(row, dummyRow), hdtNone);
   }
@@ -331,7 +331,7 @@ public class RecordByTypePopulator extends Populator
   {
     if (row == null) row = dummyRow;
 
-    HDT_RecordType type = ((id > 0) || (safeStr(value).length() > 0)) ? rowToRecordType.getOrDefault(row, hdtNone) : hdtNone;
+    RecordType type = ((id > 0) || (safeStr(value).length() > 0)) ? rowToRecordType.getOrDefault(row, hdtNone) : hdtNone;
 
     HyperTableCell cell = new HyperTableCell(id, value, type);
 

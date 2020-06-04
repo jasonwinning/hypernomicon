@@ -67,7 +67,7 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
   @Override public void setFromOfflineValue(HDI_OfflinePointerSingle val, Tag tag) throws RelationCycleException
   {
     HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
-    HDT_RecordType objType = db.getObjType(relType);
+    RecordType objType = db.getObjType(relType);
 
     int objID = val.getObjID(); if (objID < 1) return;
 

@@ -45,7 +45,7 @@ public class HDT_Argument extends HDT_RecordWithConnector
   public final List<HDT_Argument> counteredArgs, counterArgs;
   public final List<HDT_Work> works;
 
-  public HDT_Argument(HDT_RecordState xmlState, HyperDataset<HDT_Argument> dataset)
+  public HDT_Argument(RecordState xmlState, HyperDataset<HDT_Argument> dataset)
   {
     super(xmlState, dataset, tagName);
 

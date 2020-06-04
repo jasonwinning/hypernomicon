@@ -18,7 +18,7 @@
 package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.Arrays;
@@ -86,7 +86,7 @@ public class StrongLink
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Connector getSpoke(HDT_RecordType cType)
+  public Connector getSpoke(RecordType cType)
   {
     switch (cType)
     {
@@ -200,7 +200,7 @@ public class StrongLink
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean disconnectRecord(HDT_RecordType spokeType, boolean deleteHub)
+  public boolean disconnectRecord(RecordType spokeType, boolean deleteHub)
   {
     if (hub == null) return false;
 

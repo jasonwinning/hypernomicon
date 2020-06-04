@@ -20,9 +20,9 @@ package org.hypernomicon.model.items;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.MainText.DisplayItemType;
-import org.hypernomicon.model.records.HDT_RecordState;
-import org.hypernomicon.model.records.HDT_RecordType;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import org.hypernomicon.model.records.RecordState;
+import org.hypernomicon.model.records.RecordType;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
@@ -42,10 +42,10 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 
   static class DisplayItem
   {
-    DisplayItem(int recordID, HDT_RecordType recordType) { this(recordID, recordType, diRecord); }
-    DisplayItem(DisplayItemType type)                    { this(-1, hdtNone, type);              }
+    DisplayItem(int recordID, RecordType recordType) { this(recordID, recordType, diRecord); }
+    DisplayItem(DisplayItemType type)                { this(-1, hdtNone, type);              }
 
-    private DisplayItem(int recordID, HDT_RecordType recordType, DisplayItemType type)
+    private DisplayItem(int recordID, RecordType recordType, DisplayItemType type)
     {
       this.recordID = recordID;
       this.recordType = recordType;
@@ -54,7 +54,7 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 
     final DisplayItemType type;
     final int recordID;
-    final HDT_RecordType recordType;
+    final RecordType recordType;
   }
 
 //---------------------------------------------------------------------------
@@ -64,14 +64,14 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
   String htmlText;
   final List<DisplayItem> displayItems;
   final List<KeyWork> keyWorks;
-  final Map<HDT_RecordType, Set<Integer>> usedKeyWorks;
+  final Map<RecordType, Set<Integer>> usedKeyWorks;
 
   private static Map<String, DisplayItemType> strToItemType = null;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDI_OfflineConnector(HDI_Schema schema, HDT_RecordState recordState)
+  public HDI_OfflineConnector(HDI_Schema schema, RecordState recordState)
   {
     super(schema, recordState);
     htmlText = "";
@@ -102,7 +102,7 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
+  @Override public void setFromXml(Tag tag, String nodeText, RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
   {
     switch (tag)
     {

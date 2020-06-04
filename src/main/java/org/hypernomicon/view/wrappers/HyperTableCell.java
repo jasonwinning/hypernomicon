@@ -19,12 +19,12 @@ package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.makeSortKeyByType;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 
 //---------------------------------------------------------------------------
@@ -42,19 +42,19 @@ public final class HyperTableCell implements Comparable<HyperTableCell>, Cloneab
 
   private int id;
   private String text;
-  private HDT_RecordType type;
+  private RecordType type;
   private HyperCellSortMethod sortMethod = hsmStandard;
 
-  public int getID()              { return id; }
-  public String getText()         { return text; }
-  public HDT_RecordType getType() { return type; }
+  public int getID()          { return id; }
+  public String getText()     { return text; }
+  public RecordType getType() { return type; }
 
   public <HDT_T extends HDT_Record> HDT_T getRecord()            { return HyperTableCell.getRecord(this); }
 
   static HyperTableCell checkboxCellFromBoolean(boolean boolVal) { return boolVal ? trueCheckboxCell : falseCheckboxCell; }
   public static int getCellID(HyperTableCell cell)               { return cell == null ? -1 : cell.id; }
   public static String getCellText(HyperTableCell cell)          { return cell == null ? "" : safeStr(cell.text); }
-  public static HDT_RecordType getCellType(HyperTableCell cell)  { return (cell == null) || (cell.type == null) ? hdtNone : cell.type; }
+  public static RecordType getCellType(HyperTableCell cell)      { return (cell == null) || (cell.type == null) ? hdtNone : cell.type; }
   public static boolean isEmpty(HyperTableCell cell)             { return cell == null ? true : cell.equals(HyperTableCell.blankCell); }
 
   @Override public HyperTableCell clone()
@@ -62,12 +62,12 @@ public final class HyperTableCell implements Comparable<HyperTableCell>, Cloneab
 
 //---------------------------------------------------------------------------
 
-  public HyperTableCell(int newID, String newText, HDT_RecordType newType)  { this(newID, newText, newType, hsmStandard); }
+  public HyperTableCell(int newID, String newText, RecordType newType)      { this(newID, newText, newType, hsmStandard); }
   public HyperTableCell(HDT_Record record, String newText)                  { this(record.getID(), newText, record.getType(), hsmStandard); }
 
   HyperTableCell(HDT_Record record, String newText, HyperCellSortMethod sm) { this(record.getID(), newText, record.getType(), sm); }
 
-  public HyperTableCell(int newID, String newText, HDT_RecordType newType, HyperCellSortMethod newSortMethod)
+  public HyperTableCell(int newID, String newText, RecordType newType, HyperCellSortMethod newSortMethod)
   {
     id = newID;
     text = newText;
@@ -197,7 +197,7 @@ public final class HyperTableCell implements Comparable<HyperTableCell>, Cloneab
     int id = getCellID(cell);
     if (id < 1) return null;
 
-    HDT_RecordType type = getCellType(cell);
+    RecordType type = getCellType(cell);
     return type == hdtNone ? null : (HDT_T)db.records(type).getByID(id);
   }
 

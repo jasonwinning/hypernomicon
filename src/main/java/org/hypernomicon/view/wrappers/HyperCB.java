@@ -32,7 +32,7 @@ import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Person;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.query.engines.AllQueryEngine;
@@ -43,7 +43,7 @@ import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
@@ -601,11 +601,11 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_RecordType selectedType()
+  public RecordType selectedType()
   {
     if (populator != null)
     {
-      HDT_RecordType type = populator.getRecordType(row);
+      RecordType type = populator.getRecordType(row);
 
       if ((type != null) && (type != hdtNone))
         return type;
@@ -638,7 +638,7 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void selectType(HDT_RecordType objType)
+  public void selectType(RecordType objType)
   {
     populate(false);
 

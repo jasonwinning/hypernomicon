@@ -19,11 +19,11 @@ package org.hypernomicon.view;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Concept;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.tabs.HyperTab.*;
 
 import java.util.Set;
@@ -44,13 +44,13 @@ public class HyperView<HDT_CT extends HDT_Record>
 
   private HDT_CT viewRecord;
   private final int tabRecordKeyNdx;
-  private final HDT_RecordType tabRecordType;
+  private final RecordType tabRecordType;
   private final TabEnum tabEnum;
   private final TextViewInfo textInfo;
 
   int getTabRecordKeyNdx()          { return tabRecordKeyNdx; }
   public TextViewInfo getTextInfo() { return textInfo; }
-  HDT_RecordType getTabRecordType() { return tabRecordType; }
+  RecordType getTabRecordType()     { return tabRecordType; }
   public TabEnum getTabEnum()       { return tabEnum; }
   public HDT_CT getViewRecord()     { return viewRecord; }
 

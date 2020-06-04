@@ -27,7 +27,7 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static java.nio.file.StandardWatchEventKinds.*;
 import static org.hypernomicon.FolderTreeWatcher.WatcherEvent.WatcherEventKind.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;

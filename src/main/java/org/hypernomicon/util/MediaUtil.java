@@ -34,7 +34,7 @@ import org.apache.tika.mime.MimeTypeException;
 import org.hypernomicon.App;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.util.filePath.FilePath;
@@ -101,10 +101,10 @@ public class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String imgDataURIbyRecordType (HDT_RecordType type  ) { return imgDataURI(imgRelPathByType(type  )); }
+  public static String imgDataURIbyRecordType (RecordType type      ) { return imgDataURI(imgRelPathByType(type  )); }
   public static String imgDataURIbyRecord     (HDT_Record     record) { return imgDataURI(imgRelPath      (record)); }
 
-  public static ImageView imgViewForRecordType(HDT_RecordType type  ) { return imgViewFromRelPath(imgRelPathByType(type  )); }
+  public static ImageView imgViewForRecordType(RecordType type      ) { return imgViewFromRelPath(imgRelPathByType(type  )); }
   public static ImageView imgViewForRecord    (HDT_Record     record) { return imgViewFromRelPath(imgRelPath      (record)); }
 
 //---------------------------------------------------------------------------
@@ -243,7 +243,7 @@ public class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String imgRelPathByType(HDT_RecordType type)
+  private static String imgRelPathByType(RecordType type)
   {
     switch (type)
     {

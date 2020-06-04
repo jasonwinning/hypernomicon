@@ -20,7 +20,7 @@ package org.hypernomicon.model.items;
 import java.util.List;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
@@ -32,7 +32,7 @@ import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.HDI_OfflineConnector;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordState;
+import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.view.mainText.MainTextUtil;
@@ -118,7 +118,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
           HDT_RecordWithPath keyWorkRecord = keyWork.getRecord();
           mainText.keyWorks.add(keyWork.getOnlineCopy());
 
-          HDT_RecordState recordState = val.recordState;
+          RecordState recordState = val.recordState;
 
           if (recordState.type == hdtHub)
           {

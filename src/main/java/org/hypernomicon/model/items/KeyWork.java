@@ -18,13 +18,13 @@
 package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_MiscFile;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.util.SplitString;
@@ -39,7 +39,7 @@ public class KeyWork implements Comparable<KeyWork>
   private abstract class RecordPointer
   {
     abstract int getID();
-    abstract HDT_RecordType getType();
+    abstract RecordType getType();
     abstract HDT_Record getRecord();
 
     boolean isExpired() { return false; }
@@ -51,7 +51,7 @@ public class KeyWork implements Comparable<KeyWork>
       final int prime = 31;
       int result = 1;
       result = prime * result + getID();
-      result = prime * result + nullSwitch(getType(), 0, HDT_RecordType::hashCode);
+      result = prime * result + nullSwitch(getType(), 0, RecordType::hashCode);
       return result;
     }
 
@@ -73,20 +73,20 @@ public class KeyWork implements Comparable<KeyWork>
 
   private class OfflineRecordPointer extends RecordPointer
   {
-    private final HDT_RecordType type;
+    private final RecordType type;
     private final int id;
 
     //---------------------------------------------------------------------------
 
-    private OfflineRecordPointer(HDT_RecordType type, int id)
+    private OfflineRecordPointer(RecordType type, int id)
     {
       this.type = type;
       this.id = id;
     }
 
-    @Override int getID()              { return id; }
-    @Override HDT_RecordType getType() { return type; }
-    @Override HDT_Record getRecord()   { return db.records(getType()).getByID(getID()); }
+    @Override int getID()            { return id; }
+    @Override RecordType getType()   { return type; }
+    @Override HDT_Record getRecord() { return db.records(getType()).getByID(getID()); }
 
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
@@ -102,11 +102,11 @@ public class KeyWork implements Comparable<KeyWork>
       this.record = record;
     }
 
-    @Override int getID()              { return record.getID(); }
-    @Override HDT_RecordType getType() { return record.getType(); }
-    @Override HDT_Record getRecord()   { return record; }
+    @Override int getID()            { return record.getID(); }
+    @Override RecordType getType()   { return record.getType(); }
+    @Override HDT_Record getRecord() { return record; }
 
-    @Override boolean isExpired()      { return HDT_Record.isEmpty(record); }
+    @Override boolean isExpired()    { return HDT_Record.isEmpty(record); }
   }
 
   //---------------------------------------------------------------------------
@@ -127,7 +127,7 @@ public class KeyWork implements Comparable<KeyWork>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public KeyWork(HDT_RecordType recordType, int recordID, String searchKey, boolean online)
+  public KeyWork(RecordType recordType, int recordID, String searchKey, boolean online)
   {
     record = online ?
       new OnlineRecordPointer(db.records(recordType).getByID(recordID))
@@ -141,7 +141,7 @@ public class KeyWork implements Comparable<KeyWork>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public HDT_RecordType getRecordType() { return record.getType(); }
+  public RecordType getRecordType()     { return record.getType(); }
   public int getRecordID()              { return record.getID(); }
   public HDT_RecordWithPath getRecord() { return (HDT_RecordWithPath) record.getRecord(); }
   boolean isExpired()                   { return record == null ? true : record.isExpired(); }

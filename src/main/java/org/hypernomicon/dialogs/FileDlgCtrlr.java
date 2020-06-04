@@ -22,7 +22,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
@@ -61,7 +61,7 @@ public class FileDlgCtrlr extends HyperDlg
 
   private FilePath srcFilePath;
   private HDT_RecordWithPath curFileRecord;
-  private HDT_RecordType recordType;
+  private RecordType recordType;
   private HDT_Work curWork;
   private HyperCB hcbType;
   private boolean copyOnly, canBrowseToExistingMiscFileRecord = false;
@@ -85,7 +85,7 @@ public class FileDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private FileDlgCtrlr init(HDT_RecordType recordType, HDT_RecordWithPath curFileRecord, HDT_Work curWork, String recordName, boolean canBrowseToExistingMiscFileRecord)
+  private FileDlgCtrlr init(RecordType recordType, HDT_RecordWithPath curFileRecord, HDT_Work curWork, String recordName, boolean canBrowseToExistingMiscFileRecord)
   {
     this.canBrowseToExistingMiscFileRecord = canBrowseToExistingMiscFileRecord;
     this.curWork = curWork;

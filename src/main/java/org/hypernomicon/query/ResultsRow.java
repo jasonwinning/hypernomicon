@@ -18,12 +18,12 @@
 package org.hypernomicon.query;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.query.ResultsTable.ResultCellValue;
 import org.hypernomicon.view.wrappers.AbstractRow;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.time.Instant;
@@ -53,7 +53,7 @@ public final class ResultsRow extends AbstractRow<HDT_Record, ResultsRow>
 
   String getRecordTypeStr()
   {
-    HDT_RecordType type = getRecordType();
+    RecordType type = getRecordType();
     return type == hdtNone ? "" : db.getTypeName(type);
   }
 

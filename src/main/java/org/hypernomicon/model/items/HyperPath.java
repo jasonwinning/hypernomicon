@@ -20,7 +20,7 @@ package org.hypernomicon.model.items;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,8 +35,8 @@ import com.google.common.collect.Sets;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Folder;
-import org.hypernomicon.model.records.HDT_RecordState;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordState;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperObjPointer;
@@ -63,7 +63,7 @@ public class HyperPath
 //---------------------------------------------------------------------------
 
   public HDT_RecordWithPath getRecord()     { return record; }
-  public HDT_RecordType     getRecordType() { return record == null ? hdtNone : record.getType(); }
+  public RecordType         getRecordType() { return record == null ? hdtNone : record.getType(); }
   public FilePath           getFileName()   { return fileName; }
   public HDT_Folder         parentFolder()  { return folderPtr == null ? folder : folderPtr.get(); }
 
@@ -199,7 +199,7 @@ public class HyperPath
 
     if ((parentRecord == null) || (doCreateRecord == false)) return null;
 
-    HDT_RecordState recordState = new HDT_RecordState(hdtFolder, -1, "", "", "", "");
+    RecordState recordState = new RecordState(hdtFolder, -1, "", "", "", "");
 
     try
     {
@@ -235,7 +235,7 @@ public class HyperPath
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static HDT_RecordWithPath createRecordAssignedToPath(HDT_RecordType type, FilePath filePath)
+  public static HDT_RecordWithPath createRecordAssignedToPath(RecordType type, FilePath filePath)
   {
     if ((type != hdtWorkFile) && (type != hdtMiscFile))
     {

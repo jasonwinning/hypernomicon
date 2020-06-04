@@ -19,7 +19,7 @@ package org.hypernomicon.view;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
@@ -30,7 +30,7 @@ import java.util.List;
 
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -72,7 +72,7 @@ public class TreeSelector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addTargetType(HDT_RecordType targetType)
+  public void addTargetType(RecordType targetType)
   {
     RelationType relType = baseIsSubj ? getRelation(base.getType(), targetType) : getRelation(targetType, base.getType());
 
@@ -82,7 +82,7 @@ public class TreeSelector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void linking(HDT_Record base, HDT_RecordType targetType)
+  public void linking(HDT_Record base, RecordType targetType)
   {
     reset();
 
@@ -96,7 +96,7 @@ public class TreeSelector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public RelationType getRelTypeForTargetType(HDT_RecordType targetType)
+  public RelationType getRelTypeForTargetType(RecordType targetType)
   {
     return findFirst(targetTypes, ttType -> ttType.targetType == targetType, rtNone, ttType -> ttType.relType);
   }
@@ -106,14 +106,14 @@ public class TreeSelector
 
   private static class TreeTargetType
   {
-    private TreeTargetType(RelationType relType, HDT_RecordType objType)
+    private TreeTargetType(RelationType relType, RecordType objType)
     {
       this.relType = relType;
       this.targetType = objType;
     }
 
     private RelationType relType;
-    private HDT_RecordType targetType;
+    private RecordType targetType;
   }
 
 //---------------------------------------------------------------------------

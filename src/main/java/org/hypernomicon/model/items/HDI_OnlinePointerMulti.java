@@ -34,7 +34,7 @@ import java.util.Map.Entry;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 
@@ -73,7 +73,7 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
     HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
     List<HDT_Record> newList = new ArrayList<>();
 
-    HDT_RecordType objType = db.getObjType(relType);
+    RecordType objType = db.getObjType(relType);
 
     val.objIDs.forEach(objID -> nullSwitch((HDT_Record)db.records(objType).getByID(objID.intValue()), newList::add));
 

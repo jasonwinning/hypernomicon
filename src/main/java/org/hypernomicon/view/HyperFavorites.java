@@ -18,13 +18,13 @@
 package org.hypernomicon.view;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.MainCtrlr.FavMenuItem;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -122,7 +122,7 @@ public class HyperFavorites
           node.node("queries").node("query" + favNdx).node("row" + rowNdx).node("col" + colNdx).putInt("id", getCellID(cell));
           node.node("queries").node("query" + favNdx).node("row" + rowNdx).node("col" + colNdx).put("text", getCellText(cell));
 
-          HDT_RecordType type = getCellType(cell);
+          RecordType type = getCellType(cell);
           String typeStr = type == hdtNone ? "all" : db.getTypeTagStr(type);
           node.node("queries").node("query" + favNdx).node("row" + rowNdx).node("col" + colNdx).put("type", typeStr);
         }
@@ -147,7 +147,7 @@ public class HyperFavorites
       if (node.node("favTypes").get(String.valueOf(ndx), "").equals("record"))
       {
         int id = node.node("ids").getInt(String.valueOf(ndx), -1);
-        HDT_RecordType type = db.parseTypeTagStr(node.node("types").get(String.valueOf(ndx), ""));
+        RecordType type = db.parseTypeTagStr(node.node("types").get(String.valueOf(ndx), ""));
 
         nullSwitch((HDT_Record)db.records(type).getByID(id), record -> mainList.add(ui.new FavMenuItem(record)));
       }
@@ -212,7 +212,7 @@ public class HyperFavorites
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void changeRecordID(HDT_RecordType changedType, int oldID, int newID)
+  void changeRecordID(RecordType changedType, int oldID, int newID)
   {
     for (int ndx = FIRST_FAV_MENU_ITEM_NDX; ndx < mainList.size(); ndx++)
     {

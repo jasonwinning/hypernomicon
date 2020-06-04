@@ -18,7 +18,7 @@
 package org.hypernomicon.model;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
@@ -28,7 +28,7 @@ public class Exceptions
 {
   public static class InvalidItemException extends Exception
   {
-    public InvalidItemException(int recordID, HDT_RecordType recordType, String itemName)
+    public InvalidItemException(int recordID, RecordType recordType, String itemName)
     {
       super("Invalid item tag: \"" + itemName + "\". Record type: " + db.getTypeTagStr(recordType) + " ID : " + recordID);
     }
@@ -59,7 +59,7 @@ public class Exceptions
 
   public static class DuplicateRecordException extends Exception
   {
-    DuplicateRecordException(int id, HDT_RecordType type)
+    DuplicateRecordException(int id, RecordType type)
     {
       super("Duplicate record: type = " + db.getTypeTagStr(type) + ", ID = " + id);
     }

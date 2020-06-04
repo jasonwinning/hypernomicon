@@ -27,7 +27,7 @@ public class HDT_Investigation extends HDT_RecordWithConnector
 {
   public final HyperObjPointer<HDT_Investigation, HDT_Person> person;
 
-  public HDT_Investigation(HDT_RecordState xmlState, HyperDataset<HDT_Investigation> dataset)
+  public HDT_Investigation(RecordState xmlState, HyperDataset<HDT_Investigation> dataset)
   {
     super(xmlState, dataset, tagName);
 

@@ -35,7 +35,7 @@ public class HDT_Position extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Position(HDT_RecordState xmlState, HyperDataset<HDT_Position> dataset)
+  public HDT_Position(RecordState xmlState, HyperDataset<HDT_Position> dataset)
   {
     super(xmlState, dataset, tagName);
 

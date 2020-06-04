@@ -37,7 +37,7 @@ public class HDT_Note extends HDT_RecordWithConnector implements HDT_RecordWithP
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Note(HDT_RecordState xmlState, HyperDataset<HDT_Note> dataset)
+  public HDT_Note(RecordState xmlState, HyperDataset<HDT_Note> dataset)
   {
     super(xmlState, dataset, tagName);
 

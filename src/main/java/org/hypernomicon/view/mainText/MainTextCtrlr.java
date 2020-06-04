@@ -23,7 +23,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
 import static org.hypernomicon.view.populators.Populator.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
@@ -51,7 +51,7 @@ import org.hypernomicon.model.items.MainText.DisplayItem;
 import org.hypernomicon.model.items.MainText.DisplayItemType;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.view.controls.HiddenSidesPane;
@@ -156,9 +156,9 @@ public class MainTextCtrlr
     GridPane.setHgrow(webview, Priority.ALWAYS);
     GridPane.setVgrow(webview, Priority.ALWAYS);
 
-    EnumSet<HDT_RecordType> typeSet = EnumSet.noneOf(HDT_RecordType.class);
+    EnumSet<RecordType> typeSet = EnumSet.noneOf(RecordType.class);
 
-    EnumSet.allOf(HDT_RecordType.class).forEach(type ->
+    EnumSet.allOf(RecordType.class).forEach(type ->
     {
       if (type.hasConnector() && (type != hdtHub) && (type != hdtWorkLabel))
         typeSet.add(type);
@@ -173,8 +173,8 @@ public class MainTextCtrlr
     {
       if (newValue == null) return;
 
-      HDT_RecordType oldType = HyperTableCell.getCellType(oldValue),
-                     newType = HyperTableCell.getCellType(newValue);
+      RecordType oldType = HyperTableCell.getCellType(oldValue),
+                 newType = HyperTableCell.getCellType(newValue);
 
       if (oldType != newType)
       {
@@ -365,7 +365,7 @@ public class MainTextCtrlr
   {
     if (ui.cantSaveRecord()) return;
 
-    HDT_RecordType keyType = hcbKeyType.selectedType();
+    RecordType keyType = hcbKeyType.selectedType();
     List<KeyWork> keyWorks = new ArrayList<>(curRecord.getMainText().getKeyWorks());
 
     HDT_RecordWithPath keyRecord = db.createNewBlankRecord(keyType);
@@ -394,7 +394,7 @@ public class MainTextCtrlr
     int keyID = hcbKeyName.selectedID();
     if (keyID < 1) return;
 
-    HDT_RecordType keyType = hcbKeyType.selectedType();
+    RecordType keyType = hcbKeyType.selectedType();
 
     List<KeyWork> list = new ArrayList<>();
 
@@ -597,7 +597,7 @@ public class MainTextCtrlr
     subDoc.getElementsByTag("a").forEach(aElement ->
     {
       int id = parseInt(aElement.attributes().get("id") , -1);
-      HDT_RecordType type = db.parseTypeTagStr(aElement.attributes().get("type"));
+      RecordType type = db.parseTypeTagStr(aElement.attributes().get("type"));
 
       if ((id > 0) && (type != hdtNone))
       {
@@ -706,7 +706,7 @@ public class MainTextCtrlr
 
     if (hcbType.selectedType() == hdtNone)
     {
-      HDT_RecordType type = db.parseTypeTagStr(appPrefs.get(PREF_KEY_DISPLAY_RECORD_TYPE, ""));
+      RecordType type = db.parseTypeTagStr(appPrefs.get(PREF_KEY_DISPLAY_RECORD_TYPE, ""));
 
       hcbType.selectType(type == hdtNone ? hdtConcept : type);
     }

@@ -23,25 +23,25 @@ import java.util.List;
 import java.util.Set;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.util.Util.*;
 
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class RecordTypePopulator extends Populator
 {
-  private Set<HDT_RecordType> types;
+  private Set<RecordType> types;
   private boolean changed = true;
   final List<HyperTableCell> choices = new ArrayList<>();
 
   public RecordTypePopulator()                           { this(null); }
-  public RecordTypePopulator(Set<HDT_RecordType> set)    { setTypes(set); }
+  public RecordTypePopulator(Set<RecordType> set)        { setTypes(set); }
 
-  public Set<HDT_RecordType> getTypes()                  { return types; }
-  public void setTypes(Set<HDT_RecordType> set)          { types = set; changed = true; }
+  public Set<RecordType> getTypes()                      { return types; }
+  public void setTypes(Set<RecordType> set)              { types = set; changed = true; }
 
   @Override public boolean hasChanged(HyperTableRow row) { return changed; }
   @Override public void setChanged(HyperTableRow row)    { changed = true; }
@@ -57,11 +57,11 @@ public class RecordTypePopulator extends Populator
     choices.clear();
 
     if (types == null)
-      types = EnumSet.noneOf(HDT_RecordType.class);
+      types = EnumSet.noneOf(RecordType.class);
 
     if (types.isEmpty())
     {
-      for (HDT_RecordType type : HDT_RecordType.values())
+      for (RecordType type : RecordType.values())
         if ((type != hdtNone) && (type != hdtAuxiliary))
           types.add(type);
     }

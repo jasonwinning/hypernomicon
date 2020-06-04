@@ -21,7 +21,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryTabCtrlr.*;
 
 import java.util.ArrayList;
@@ -139,7 +139,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
         {
           dummySearchKeys.removeAll();
 
-          HDT_RecordState recordState = new HDT_RecordState(hdtPerson, -1, "", "", "", "", true);
+          RecordState recordState = new RecordState(hdtPerson, -1, "", "", "", "", true);
 
           try { searchDummy = db.createNewRecordFromState(recordState, true); } catch (Exception e) { noOp(); }
 
@@ -284,7 +284,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
         {
           @Override protected void runFilter()
           {
-            HDT_RecordType specifiedType = getCellType(op1);
+            RecordType specifiedType = getCellType(op1);
             int specifiedID = getCellID(op2);
             if ((specifiedType == hdtNone) || (specifiedID == -1)) return;
             HDT_Record record = db.records(specifiedType).getByID(specifiedID);

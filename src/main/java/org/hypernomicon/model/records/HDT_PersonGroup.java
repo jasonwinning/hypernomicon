@@ -28,7 +28,7 @@ public class HDT_PersonGroup extends HDT_RecordBase
 {
   public final List<HDT_PersonGroup> parentGroups, subGroups;
 
-  public HDT_PersonGroup(HDT_RecordState xmlState, HyperDataset<HDT_PersonGroup> dataset)
+  public HDT_PersonGroup(RecordState xmlState, HyperDataset<HDT_PersonGroup> dataset)
   {
     super(xmlState, dataset, tagName);
 

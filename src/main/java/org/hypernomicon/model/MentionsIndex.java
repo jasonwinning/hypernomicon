@@ -35,7 +35,7 @@ import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.util.BidiOneToManyRecordMap;
@@ -44,7 +44,7 @@ import org.jsoup.nodes.Element;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
 
@@ -54,7 +54,7 @@ class MentionsIndex
                                        mentionedAnywhereToMentioners = new BidiOneToManyRecordMap();
   private final List<Runnable> ndxCompleteHandlers;
   private final KeywordLinkList linkList = new KeywordLinkList();
-  private final EnumSet<HDT_RecordType> types;
+  private final EnumSet<RecordType> types;
   private final List<String> strList = new ArrayList<>();
 
   private RebuildThread thread = null;
@@ -69,7 +69,7 @@ class MentionsIndex
   {
     this.ndxCompleteHandlers = ndxCompleteHandlers;
 
-    types = EnumSet.allOf(HDT_RecordType.class);
+    types = EnumSet.allOf(RecordType.class);
     types.removeAll(EnumSet.of(hdtNone, hdtAuxiliary, hdtHub));
   }
 
@@ -256,7 +256,7 @@ class MentionsIndex
         ctr = -1.0; total = 0.0;
         types.forEach(type -> total += db.records(type).size());
 
-        for (HDT_RecordType type : types) for (HDT_Record record : db.records(type))
+        for (RecordType type : types) for (HDT_Record record : db.records(type))
         {
           if ((((int)ctr++) % 50) == 0)
           {

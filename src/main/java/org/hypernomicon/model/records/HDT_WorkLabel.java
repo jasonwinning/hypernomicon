@@ -20,7 +20,7 @@ package org.hypernomicon.model.records;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +37,7 @@ public class HDT_WorkLabel extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_WorkLabel(HDT_RecordState xmlState, HyperDataset<HDT_WorkLabel> dataset)
+  public HDT_WorkLabel(RecordState xmlState, HyperDataset<HDT_WorkLabel> dataset)
   {
     super(xmlState, dataset, tagText);
 

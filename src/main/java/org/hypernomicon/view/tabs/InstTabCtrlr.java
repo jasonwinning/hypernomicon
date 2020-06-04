@@ -31,7 +31,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -70,7 +70,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   @FXML private Hyperlink hlMaps;
 
   @Override public String recordName()                 { return tfName.getText(); }
-  @Override protected HDT_RecordType getType()         { return hdtInstitution; }
+  @Override protected RecordType getType()             { return hdtInstitution; }
   @Override public void enable(boolean enabled)        { ui.tabInst.getContent().setDisable(enabled == false); }
   @Override public void setRecord(HDT_Institution rec) { curInst = rec; }
   @Override public void setDividerPositions()          { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }

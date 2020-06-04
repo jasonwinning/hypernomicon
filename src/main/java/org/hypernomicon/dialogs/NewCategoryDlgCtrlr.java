@@ -18,14 +18,14 @@
 package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.EnumSet;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
@@ -47,7 +47,7 @@ public class NewCategoryDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewCategoryDlgCtrlr build(HDT_RecordType recordType)
+  public static NewCategoryDlgCtrlr build(RecordType recordType)
   {
     return ((NewCategoryDlgCtrlr) create("NewCategoryDlg", "New Category", true)).init(recordType);
   }
@@ -55,7 +55,7 @@ public class NewCategoryDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private NewCategoryDlgCtrlr init(HDT_RecordType recordType)
+  private NewCategoryDlgCtrlr init(RecordType recordType)
   {
     typePopulator = new RecordTypePopulator(EnumSet.of(hdtField, hdtCountry, hdtRank, hdtPersonStatus));
     hcbRecordType = new HyperCB(cbRecordType, ctDropDownList, typePopulator);
@@ -64,8 +64,8 @@ public class NewCategoryDlgCtrlr extends HyperDlg
 
     cbRecordType.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
-      HDT_RecordType oldType = HyperTableCell.getCellType(oldValue),
-                     newType = HyperTableCell.getCellType(newValue);
+      RecordType oldType = HyperTableCell.getCellType(oldValue),
+                 newType = HyperTableCell.getCellType(newValue);
 
       if (oldType == newType) return;
 
@@ -79,7 +79,7 @@ public class NewCategoryDlgCtrlr extends HyperDlg
     {
       int oldID = HyperTableCell.getCellID(oldValue),
           newID = HyperTableCell.getCellID(newValue);
-      HDT_RecordType type = hcbRecordType.selectedType();
+      RecordType type = hcbRecordType.selectedType();
 
       if (oldID == newID) return;
 

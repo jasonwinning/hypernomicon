@@ -18,21 +18,21 @@
 package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 
 import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_RecordState;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordState;
+import org.hypernomicon.model.records.RecordType;
 
 public class HDI_OfflineNestedPointer extends HDI_OfflineBase
 {
   int objID = -1;
-  private final HDT_RecordType targetType;
+  private final RecordType targetType;
 
-  public HDI_OfflineNestedPointer(HDI_Schema schema, HDT_RecordState recordState)
+  public HDI_OfflineNestedPointer(HDI_Schema schema, RecordState recordState)
   {
     super(schema, recordState);
     targetType = schema.getNestedTargetType();
@@ -43,7 +43,7 @@ public class HDI_OfflineNestedPointer extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
+  @Override public void setFromXml(Tag tag, String nodeText, RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
   {
     this.objID = objID;
   }

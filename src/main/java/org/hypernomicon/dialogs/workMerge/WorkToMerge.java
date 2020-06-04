@@ -17,7 +17,7 @@
 
 package org.hypernomicon.dialogs.workMerge;
 
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.dialogs.WorkDlgCtrlr.createAuthorRecordHandler;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;

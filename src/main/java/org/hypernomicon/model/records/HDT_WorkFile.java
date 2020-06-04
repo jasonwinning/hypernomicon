@@ -39,7 +39,7 @@ public class HDT_WorkFile extends HDT_RecordBase implements HDT_RecordWithPath
   private final HyperPath path;
   public final List<HDT_Work> works;
 
-  public HDT_WorkFile(HDT_RecordState xmlState, HyperDataset<HDT_WorkFile> dataset)
+  public HDT_WorkFile(RecordState xmlState, HyperDataset<HDT_WorkFile> dataset)
   {
     super(xmlState, dataset, tagName);
 

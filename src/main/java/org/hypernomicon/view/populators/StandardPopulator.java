@@ -22,7 +22,7 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import java.util.List;
 import java.util.function.Predicate;
 
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -31,14 +31,14 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 public class StandardPopulator extends Populator
 {
   private final RecordByTypePopulator rtp;
-  private final HDT_RecordType objType;
+  private final RecordType objType;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public StandardPopulator(HDT_RecordType objType) { this(objType, null, false); }
+  public StandardPopulator(RecordType objType) { this(objType, null, false); }
 
-  public StandardPopulator(HDT_RecordType objType, Predicate<Integer> filter, boolean nameOnly)
+  public StandardPopulator(RecordType objType, Predicate<Integer> filter, boolean nameOnly)
   {
     this.objType = objType;
 
@@ -52,7 +52,7 @@ public class StandardPopulator extends Populator
   @Override public CellValueType getValueType()                                     { return cvtRecord; }
   @Override public boolean hasChanged(HyperTableRow row)                            { return rtp.hasChanged(dummyRow); }
   @Override public void setChanged(HyperTableRow row)                               { rtp.setChanged(dummyRow); }
-  @Override public HDT_RecordType getRecordType(HyperTableRow row)                  { return rtp.getRecordType(dummyRow); }
+  @Override public RecordType getRecordType(HyperTableRow row)                      { return rtp.getRecordType(dummyRow); }
   @Override public void clear()                                                     { rtp.clear(); rtp.setRecordType(dummyRow, objType); }
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)  { return rtp.populate(dummyRow, force); }
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell)     { return rtp.match(dummyRow, cell); }

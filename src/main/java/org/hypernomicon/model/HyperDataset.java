@@ -18,7 +18,7 @@
 package org.hypernomicon.model;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.Exceptions.*;
@@ -110,7 +110,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
   //---------------------------------------------------------------------------
 
   private final HyperCore<HDT_DT> core = new HyperCore<>();
-  private final HDT_RecordType type;
+  private final RecordType type;
   private final List<HDT_DT> needIDs = new ArrayList<>();
   private final Map<Tag, HDI_Schema> tagToSchema = new LinkedHashMap<>();
   private boolean online = false;
@@ -119,7 +119,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 
 //---------------------------------------------------------------------------
 
-  HyperDataset(HDT_RecordType type)
+  HyperDataset(RecordType type)
   {
     this.type = type;
   }
@@ -127,7 +127,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
   // This should ONLY ever be called by HDT_RecordBase.updateSortKey!!!
   public void updateSortKey(String newKey, int id) { core.setKey(id, newKey); }
 
-  HDT_RecordType getType()                         { return type; }
+  RecordType getType()                             { return type; }
   int getNextID()                                  { int id = 0; while (true) if (idAvailable(++id)) return id; }
   HDI_Schema getSchema(Tag tag)                    { return tagToSchema.get(tag); }
   Collection<HDI_Schema> getSchemas()              { return tagToSchema.values(); }
@@ -223,7 +223,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  HDT_DT createNewRecord(HDT_RecordState recordState, boolean bringOnline) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException
+  HDT_DT createNewRecord(RecordState recordState, boolean bringOnline) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException
   {
     if (bringOnline)
     {
@@ -260,13 +260,13 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private final HDT_DT createRecord(HDT_RecordState recordState)
+  private final HDT_DT createRecord(RecordState recordState)
   {
     Class<HDT_DT> klazz = (Class<HDT_DT>) recordState.type.getRecordClass();
 
     try
     {
-      return klazz.getConstructor(HDT_RecordState.class, getClass()).newInstance(recordState, this);
+      return klazz.getConstructor(RecordState.class, getClass()).newInstance(recordState, this);
     }
     catch (NoSuchMethodException    | InstantiationException    | IllegalAccessException |
            IllegalArgumentException | InvocationTargetException | SecurityException e)

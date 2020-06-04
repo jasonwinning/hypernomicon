@@ -39,13 +39,13 @@ import org.hypernomicon.model.SearchKeys.SearchKeyword;
 public interface HDT_Record
 {
   int getID();
-  HDT_RecordType getType();
+  RecordType getType();
   void assignID() throws HDB_InternalError;
 
   void bringStoredCopyOnline(boolean dontRebuildMentions) throws RelationCycleException, SearchKeyException, HubChangedException;
   boolean hasStoredState();
-  HDT_RecordState getRecordStateBackup();
-  void restoreTo(HDT_RecordState backupState, boolean dontRebuildMentions) throws RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException;
+  RecordState getRecordStateBackup();
+  void restoreTo(RecordState backupState, boolean dontRebuildMentions) throws RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException;
   void saveToStoredState() throws HDB_InternalError;
   void writeStoredStateToXML(StringBuilder xml);
 

@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.query.engines.QueryEngine.QueryType;
 import org.hypernomicon.query.sources.QuerySource;
 import org.hypernomicon.view.populators.QueryPopulator;
@@ -31,7 +31,7 @@ import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.engines.QueryEngine.QueryType.*;
 
 @SuppressWarnings("unused")
@@ -61,12 +61,12 @@ public abstract class QueryEngine<HDT_T extends HDT_Record>
 
     private final int code;
     private final String caption;
-    private final HDT_RecordType recordType;
+    private final RecordType recordType;
     private static final Map<Integer, QueryType> codeToValMap = new HashMap<>();
-    private static final EnumMap<QueryType, HDT_RecordType> queryTypeToRecordType;
-    private static final EnumMap<HDT_RecordType, QueryType> recordTypeToQueryType;
+    private static final EnumMap<QueryType, RecordType> queryTypeToRecordType;
+    private static final EnumMap<RecordType, QueryType> recordTypeToQueryType;
 
-    private QueryType(int code, String caption, HDT_RecordType recordType)
+    private QueryType(int code, String caption, RecordType recordType)
     {
       this.code = code;
       this.caption = caption;
@@ -76,7 +76,7 @@ public abstract class QueryEngine<HDT_T extends HDT_Record>
     static
     {
       queryTypeToRecordType = new EnumMap<>(QueryType.class);
-      recordTypeToQueryType = new EnumMap<>(HDT_RecordType.class);
+      recordTypeToQueryType = new EnumMap<>(RecordType.class);
 
       EnumSet.allOf(QueryType.class).forEach(type ->
       {
@@ -86,9 +86,9 @@ public abstract class QueryEngine<HDT_T extends HDT_Record>
       });
     }
 
-    public int getCode()                  { return code; }
-    public String getCaption()            { return caption; }
-    public HDT_RecordType getRecordType() { return recordType; }
+    public int getCode()              { return code; }
+    public String getCaption()        { return caption; }
+    public RecordType getRecordType() { return recordType; }
 
     //---------------------------------------------------------------------------
 
@@ -102,7 +102,7 @@ public abstract class QueryEngine<HDT_T extends HDT_Record>
 
   //---------------------------------------------------------------------------
 
-    public static QueryType fromRecordType(HDT_RecordType recordType)
+    public static QueryType fromRecordType(RecordType recordType)
     {
       return recordType == null ? qtAllRecords : recordTypeToQueryType.getOrDefault(recordType, qtAllRecords);
     }

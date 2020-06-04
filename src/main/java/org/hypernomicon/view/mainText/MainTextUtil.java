@@ -21,7 +21,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.KeywordLinkList.charIsPartOfWebLink;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -48,7 +48,7 @@ import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Hub;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.HDT_WorkLabel;
 import org.hypernomicon.util.filePath.FilePath;
@@ -156,7 +156,7 @@ public class MainTextUtil
   public static void handleJSEvent(String htmlToUse, WebEngine weToUse, TextViewInfo viewInfo)
   {
     int recordID = -1, recordTypeOrd;
-    HDT_RecordType recordType = hdtNone;
+    RecordType recordType = hdtNone;
     JSObject jsToJava = null;
 
     // It might seem strange to do this instead of passing an object to javascript with methods the script can call
@@ -180,7 +180,7 @@ public class MainTextUtil
     {
       recordID = (Integer)jsToJava.getMember("recordID");
       recordTypeOrd = (Integer)jsToJava.getMember("recordType");
-      recordType = getEnumVal(recordTypeOrd, HDT_RecordType.class);
+      recordType = getEnumVal(recordTypeOrd, RecordType.class);
 
       if ((recordType == hdtNote) && (jsEvent == JS_EVENT_OPEN_PREVIEW))
         jsEvent = JS_EVENT_LAUNCH_FILE;
@@ -484,7 +484,7 @@ public class MainTextUtil
     {
       int recordID = parseInt(span.attr("hypnconID"), -1),
           recordTypeOrd = parseInt(span.attr("hypnconType"), -1);
-      HDT_RecordType recordType = getEnumVal(recordTypeOrd, HDT_RecordType.class);
+      RecordType recordType = getEnumVal(recordTypeOrd, RecordType.class);
 
       HDT_RecordWithConnector record = (HDT_RecordWithConnector) db.records(recordType).getByID(recordID);
 

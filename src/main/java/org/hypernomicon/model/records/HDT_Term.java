@@ -19,7 +19,7 @@ package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 
@@ -39,7 +39,7 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Term(HDT_RecordState xmlState, HyperDataset<HDT_Term> dataset)
+  public HDT_Term(RecordState xmlState, HyperDataset<HDT_Term> dataset)
   {
     super(xmlState, dataset, tagTerm);
 

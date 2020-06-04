@@ -32,7 +32,7 @@ public class HDT_Subfield extends HDT_RecordBase
 
   public final HyperObjPointer<HDT_Subfield, HDT_Field> field;
 
-  public HDT_Subfield(HDT_RecordState xmlState, HyperDataset<HDT_Subfield> dataset)
+  public HDT_Subfield(RecordState xmlState, HyperDataset<HDT_Subfield> dataset)
   {
     super(xmlState, dataset, tagName);
 

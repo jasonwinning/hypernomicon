@@ -21,7 +21,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
 
@@ -32,7 +32,7 @@ import javafx.scene.control.TextField;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 
 public class NewDatabaseDlgCtrlr extends HyperDlg
 {
@@ -107,9 +107,9 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public EnumSet<HDT_RecordType> getChoices()
+  public EnumSet<RecordType> getChoices()
   {
-    EnumSet<HDT_RecordType> choices = EnumSet.noneOf(HDT_RecordType.class);
+    EnumSet<RecordType> choices = EnumSet.noneOf(RecordType.class);
 
     if (chkCountries.isSelected()) choices.add(hdtCountry);
     if (chkRegions  .isSelected()) choices.add(hdtRegion);

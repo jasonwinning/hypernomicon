@@ -21,7 +21,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
@@ -58,7 +58,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
   private RecordByTypePopulator verdictPopulator;
   private HDT_Argument curArgument;
 
-  @Override protected HDT_RecordType getType()      { return hdtArgument; }
+  @Override protected RecordType getType()          { return hdtArgument; }
   @Override public void enable(boolean enabled)     { ui.tabArguments.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
@@ -202,7 +202,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
     {
       RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
 
-      HDT_RecordType parentType = cellVal.getType();
+      RecordType parentType = cellVal.getType();
       rbtp.setRecordType(row, parentType);
       rbtp.setChanged(row);
       row.setCellValue(nextColNdx, new HyperTableCell(-1, "", parentType));
@@ -357,7 +357,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void newClick(HDT_RecordType objType, HyperTableRow row)
+  @Override public void newClick(RecordType objType, HyperTableRow row)
   {
     if (ui.cantSaveRecord()) return;
 

@@ -18,15 +18,15 @@
 package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.model.records.HDT_RecordType.hdtNone;
+import static org.hypernomicon.model.records.RecordType.hdtNone;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_RecordState;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordState;
+import org.hypernomicon.model.records.RecordType;
 
 public abstract class HDI_OfflineBase extends HDI_Base
 {
@@ -36,15 +36,15 @@ public abstract class HDI_OfflineBase extends HDI_Base
 
   private static final String QUOTE = "\"";
 
-  final HDT_RecordState recordState;
+  final RecordState recordState;
 
-  public HDI_OfflineBase(HDI_Schema schema, HDT_RecordState recordState)
+  public HDI_OfflineBase(HDI_Schema schema, RecordState recordState)
   {
     super(schema);
     this.recordState = recordState;
   }
 
-  public abstract void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems);
+  public abstract void setFromXml(Tag tag, String nodeText, RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems);
 
   public abstract void writeToXml(Tag tag, StringBuilder xml);
 
@@ -85,12 +85,12 @@ public abstract class HDI_OfflineBase extends HDI_Base
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static void writePointerTag(StringBuilder xml, Tag tag, int objID, HDT_RecordType objType, String value)
+  static void writePointerTag(StringBuilder xml, Tag tag, int objID, RecordType objType, String value)
   {
     writePointerTag(xml, tag, objID, objType, value, false);
   }
 
-  static void writePointerTag(StringBuilder xml, Tag tag, int objID, HDT_RecordType objType, String value, boolean noIDOk)
+  static void writePointerTag(StringBuilder xml, Tag tag, int objID, RecordType objType, String value, boolean noIDOk)
   {
     if ((objID < 1) && (noIDOk == false)) return;
 

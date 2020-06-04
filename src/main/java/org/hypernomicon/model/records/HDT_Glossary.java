@@ -30,7 +30,7 @@ public class HDT_Glossary extends HDT_RecordBase
   public final List<HDT_Glossary> parentGlossaries;
   public final HyperSubjList<HDT_Glossary, HDT_Concept> concepts;
 
-  public HDT_Glossary(HDT_RecordState xmlState, HyperDataset<HDT_Glossary> dataset)
+  public HDT_Glossary(RecordState xmlState, HyperDataset<HDT_Glossary> dataset)
   {
     super(xmlState, dataset, tagName);
 

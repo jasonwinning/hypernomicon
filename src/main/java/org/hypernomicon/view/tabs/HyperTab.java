@@ -37,7 +37,7 @@ import java.util.prefs.Preferences;
 import org.hypernomicon.App;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Concept;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.HyperView;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextWrapper;
@@ -46,7 +46,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.Exceptions.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -80,7 +80,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 
   protected abstract void init();
-  protected abstract HDT_RecordType getType();
+  protected abstract RecordType getType();
 
   public abstract String recordName();
   public abstract boolean update();
@@ -103,7 +103,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public final TabEnum getTabEnum()        { return tabEnum; }
   void updateWebButtons(Preferences node)  { return; }
 
-  public void newClick(HDT_RecordType objType, HyperTableRow row) { }
+  public void newClick(RecordType objType, HyperTableRow row) { }
 
   public static void forEachHyperTab(Consumer<HyperTab<? extends HDT_Record, ? extends HDT_Record>> a) { enumToHyperTab.values().forEach(a); }
 
@@ -156,7 +156,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final HDT_RecordType getRecordTypeByTabEnum(TabEnum tabEnum)
+  public static final RecordType getRecordTypeByTabEnum(TabEnum tabEnum)
   {
     return nullSwitch(enumToHyperTab.get(tabEnum), hdtNone, HyperTab::getType);
   }
@@ -174,7 +174,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final TabEnum getTabEnumByRecordType(HDT_RecordType recordType)
+  public static final TabEnum getTabEnumByRecordType(RecordType recordType)
   {
     switch (recordType)
     {

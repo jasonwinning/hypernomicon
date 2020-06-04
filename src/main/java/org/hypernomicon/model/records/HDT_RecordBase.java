@@ -41,7 +41,7 @@ import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
@@ -69,11 +69,11 @@ public abstract class HDT_RecordBase implements HDT_Record
   private final Map<Tag, HDI_OnlineBase<? extends HDI_OfflineBase>> items;
   private final boolean dummyFlag;
   private final String sortKeyAttr;
-  private final HDT_RecordType type;
+  private final RecordType type;
 
   private int id;
   private Instant creationDate, modifiedDate, viewDate;
-  private HDT_RecordState xmlState;
+  private RecordState xmlState;
 
   private boolean online = false, expired = false;
 
@@ -94,7 +94,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final boolean hasStoredState()       { return xmlState.stored; }
   @Override public final void updateSortKey()           { dataset.updateSortKey(makeSortKey(), id); }
   @Override public final HDI_Schema getSchema(Tag tag)  { return nullSwitch(items.get(tag), null, HDI_Base::getSchema); }
-  @Override public final HDT_RecordType getType()       { return type; }
+  @Override public final RecordType getType()           { return type; }
 
   @Override public String name()                        { return name.get(); }
   @Override public void setName(String str)             { setNameInternal(str, true); }
@@ -131,10 +131,10 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  HDT_RecordBase(HDT_RecordState xmlState, HyperDataset<? extends HDT_Record> dataset, Tag nameTag)
+  HDT_RecordBase(RecordState xmlState, HyperDataset<? extends HDT_Record> dataset, Tag nameTag)
   {
     name = new NameItem();
-    type = HDT_RecordType.typeByRecordClass(getClass());
+    type = RecordType.typeByRecordClass(getClass());
 
     this.xmlState = xmlState;
     id = xmlState.id;
@@ -261,7 +261,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 
   @Override @SuppressWarnings({ "unchecked", "rawtypes" })
-  public final void restoreTo(HDT_RecordState backupState, boolean dontRebuildMentions) throws RelationCycleException, SearchKeyException, HubChangedException
+  public final void restoreTo(RecordState backupState, boolean dontRebuildMentions) throws RelationCycleException, SearchKeyException, HubChangedException
   {
     if (online && isUnitable())
     {
@@ -333,10 +333,10 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 
   @Override @SuppressWarnings({ "unchecked" })
-  public final HDT_RecordState getRecordStateBackup()
+  public final RecordState getRecordStateBackup()
   {
     String searchKey = type == hdtWorkLabel ? "" : getSearchKey();
-    HDT_RecordState newState = new HDT_RecordState(type, id, getSortKeyAttr(), name(), searchKey, "");
+    RecordState newState = new RecordState(type, id, getSortKeyAttr(), name(), searchKey, "");
     newState.stored = false;
 
     if (type.getDisregardDates() == false)
@@ -523,7 +523,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final String makeSortKeyByType(String base, HDT_RecordType type)
+  public static final String makeSortKeyByType(String base, RecordType type)
   {
     switch (type)
     {

@@ -26,7 +26,7 @@ import org.hypernomicon.model.records.SimpleRecordTypes.*;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-public enum HDT_RecordType
+public enum RecordType
 {
   hdtNone           (HDT_Record         .class),
 
@@ -66,12 +66,12 @@ public enum HDT_RecordType
 
   private final Class<? extends HDT_Record> klass;
   private final boolean simple, gotConnector, disregardDates;
-  private final static Map<Class<? extends HDT_Record>, HDT_RecordType> classToType;
+  private final static Map<Class<? extends HDT_Record>, RecordType> classToType;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private <T extends HDT_Record> HDT_RecordType(Class<T> klass)
+  private <T extends HDT_Record> RecordType(Class<T> klass)
   {
     this.klass = klass;
     simple = HDT_SimpleRecord.class.isAssignableFrom(klass);
@@ -85,7 +85,7 @@ public enum HDT_RecordType
   static
   {
     classToType = new HashMap<>();
-    EnumSet.allOf(HDT_RecordType.class).forEach(type -> classToType.put(type.klass, type));
+    EnumSet.allOf(RecordType.class).forEach(type -> classToType.put(type.klass, type));
     classToType.put(HDT_Record.class, hdtNone);
   }
 
@@ -97,7 +97,7 @@ public enum HDT_RecordType
   public boolean hasConnector()                       { return gotConnector; }
   public boolean getDisregardDates()                  { return disregardDates; }
 
-  public static HDT_RecordType typeByRecordClass(Class<? extends HDT_Record> klass) { return classToType.getOrDefault(klass, hdtNone); }
+  public static RecordType typeByRecordClass(Class<? extends HDT_Record> klass) { return classToType.getOrDefault(klass, hdtNone); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

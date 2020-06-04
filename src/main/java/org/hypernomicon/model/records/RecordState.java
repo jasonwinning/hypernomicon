@@ -19,7 +19,7 @@ package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
@@ -32,13 +32,13 @@ import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Exceptions.InvalidItemException;
 import org.hypernomicon.model.items.*;
 
-public class HDT_RecordState
+public class RecordState
 {
   public final Map<Tag, HDI_OfflineBase> items;
   private static final String QUOTE = "\"";
 
   public int id;
-  public final HDT_RecordType type;
+  public final RecordType type;
   final String sortKeyAttr, searchKey;
   public String listName;
   String simpleName;
@@ -49,12 +49,12 @@ public class HDT_RecordState
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_RecordState(HDT_RecordType type, int id, String sortKeyAttr, String simpleName, String searchKey, String listName)
+  public RecordState(RecordType type, int id, String sortKeyAttr, String simpleName, String searchKey, String listName)
   {
     this(type, id, sortKeyAttr, simpleName, searchKey, listName, false);
   }
 
-  public HDT_RecordState(HDT_RecordType type, int id, String sortKeyAttr, String simpleName, String searchKey, String listName, boolean dummyFlag)
+  public RecordState(RecordType type, int id, String sortKeyAttr, String simpleName, String searchKey, String listName, boolean dummyFlag)
   {
     if (type.isSimple())
     {
@@ -113,7 +113,7 @@ public class HDT_RecordState
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void loadItemFromXML(Tag tag, String nodeText, HDT_RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems) throws InvalidItemException
+  public void loadItemFromXML(Tag tag, String nodeText, RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems) throws InvalidItemException
   {
     if ((type == hdtHub) && (tag == tagName))
       return;

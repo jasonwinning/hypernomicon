@@ -18,7 +18,7 @@
 package org.hypernomicon.view;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.OmniFinder.TierEnum.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod.*;
@@ -55,14 +55,14 @@ public class OmniFinder
   private final List<ObservableList<HyperTableCell>> cellLists = new ArrayList<>();
   private final List<HyperTableRow> rows = new ArrayList<>();
   private final EnumSet<TierEnum> tierSet;
-  private final EnumMap<TierEnum, ImmutableSet<HDT_RecordType>> tierToTypeSet = new EnumMap<>(TierEnum.class);
+  private final EnumMap<TierEnum, ImmutableSet<RecordType>> tierToTypeSet = new EnumMap<>(TierEnum.class);
   private final Set<HDT_Record> records = new HashSet<>();
 
   private String query = "";
   private Iterator<HDT_Record> source = null;
   private FinderThread finderThread = null;
   private boolean stopRequested = false, stopped = true, showingMore = false, incremental = true;
-  private HDT_RecordType typeFilter;
+  private RecordType typeFilter;
   public Runnable doneHndlr = null;
 
   public boolean noResults()  { return collEmpty(records); }
@@ -86,12 +86,12 @@ public class OmniFinder
 
   public OmniFinder(HyperTable htFind) { this(htFind, hdtNone, true); }
 
-  public OmniFinder(HyperTable htFind, HDT_RecordType typeFilter, boolean incremental)
+  public OmniFinder(HyperTable htFind, RecordType typeFilter, boolean incremental)
   {
     this.typeFilter = typeFilter;
     this.incremental = incremental;
 
-    ImmutableSet<HDT_RecordType> typeSet, authoredSet = ImmutableSet.of(hdtWork, hdtMiscFile);
+    ImmutableSet<RecordType> typeSet, authoredSet = ImmutableSet.of(hdtWork, hdtMiscFile);
 
     if (typeFilter == hdtNone)
       typeSet = ImmutableSet.of
@@ -140,7 +140,7 @@ public class OmniFinder
     private String lastQuery = "", queryLC;
     private Iterator<TierEnum> tierIt;
     private Iterator<? extends HDT_Record> recordIt;
-    private Iterator<HDT_RecordType> typeIt;
+    private Iterator<RecordType> typeIt;
     int rowNdx = 0, runLaters = 0;
     long startTime, nextInterval;
 

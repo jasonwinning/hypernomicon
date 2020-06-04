@@ -29,7 +29,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.util.filePath.FilePath;
 
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import org.hypernomicon.view.wrappers.AbstractTreeWrapper;
 import org.hypernomicon.view.wrappers.TreeModel;
 

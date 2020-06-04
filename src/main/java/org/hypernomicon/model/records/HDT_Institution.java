@@ -19,7 +19,7 @@ package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import org.hypernomicon.model.HyperDataset;
@@ -46,7 +46,7 @@ public class HDT_Institution extends HDT_RecordBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Institution(HDT_RecordState xmlState, HyperDataset<HDT_Institution> dataset)
+  public HDT_Institution(RecordState xmlState, HyperDataset<HDT_Institution> dataset)
   {
     super(xmlState, dataset, tagName);
 

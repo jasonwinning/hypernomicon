@@ -24,20 +24,20 @@ import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_RecordState;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordState;
+import org.hypernomicon.model.records.RecordType;
 
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 
 public class HDI_OfflinePointerMulti extends HDI_OfflineBase
 {
   final List<Integer> objIDs = new ArrayList<>();
-  private final HDT_RecordType objType;
+  private final RecordType objType;
   final Map<Integer, Map<Tag, HDI_OfflineBase>> objIDtoMaps = new LinkedHashMap<>();
 
-  public HDI_OfflinePointerMulti(HDI_Schema schema, HDT_RecordState recordState)
+  public HDI_OfflinePointerMulti(HDI_Schema schema, RecordState recordState)
   {
     super(schema, recordState);
     objType = db.getObjType(schema.getRelType());
@@ -46,7 +46,7 @@ public class HDI_OfflinePointerMulti extends HDI_OfflineBase
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromXml(Tag tag, String nodeText, HDT_RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
+  @Override public void setFromXml(Tag tag, String nodeText, RecordType objType, int objID, Map<Tag, HDI_OfflineBase> nestedItems)
   {
     objIDs.add(objID);
 

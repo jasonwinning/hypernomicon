@@ -18,7 +18,7 @@
 package org.hypernomicon.view.populators;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -63,7 +63,7 @@ public class SubjectPopulator extends Populator
 //---------------------------------------------------------------------------
 
   @Override public CellValueType getValueType()                                 { return cvtRecord; }
-  @Override public HDT_RecordType getRecordType(HyperTableRow row)              { return db.getSubjType(relType); }
+  @Override public RecordType getRecordType(HyperTableRow row)                  { return db.getSubjType(relType); }
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return equalMatch(row, cell); }
   @Override public void setChanged(HyperTableRow row)                           { rowToChanged.put(nullSwitch(row, dummyRow), true); }
 
@@ -191,7 +191,7 @@ public class SubjectPopulator extends Populator
   {
     if (row == null) row = dummyRow;
 
-    HDT_RecordType type = ((id > 0) || (safeStr(value).length() > 0)) ? db.getSubjType(relType) : hdtNone;
+    RecordType type = ((id > 0) || (safeStr(value).length() > 0)) ? db.getSubjType(relType) : hdtNone;
 
     HyperTableCell cell = new HyperTableCell(id, value, type);
 

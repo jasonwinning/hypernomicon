@@ -19,7 +19,7 @@ package org.hypernomicon.model.records;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -45,7 +45,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
   private final HyperPath path;
   private boolean checkedForExistence;
 
-  public HDT_Folder(HDT_RecordState xmlState, HyperDataset<HDT_Folder> dataset)
+  public HDT_Folder(RecordState xmlState, HyperDataset<HDT_Folder> dataset)
   {
     super(xmlState, dataset, tagName); // tagName is not actually used; name should always be blank
 

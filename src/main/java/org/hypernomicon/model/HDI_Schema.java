@@ -23,7 +23,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import java.util.List;
 
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 
@@ -37,10 +37,10 @@ public final class HDI_Schema
 
 //---------------------------------------------------------------------------
 
-  public List<Tag> getTags()                  { return tags; }
-  public HyperDataCategory getCategory()      { return category; }
-  public RelationType getRelType()            { return relType; }
-  public HDT_RecordType getNestedTargetType() { return db.getNestedTargetType(relType, tags.get(0)); }
+  public List<Tag> getTags()              { return tags; }
+  public HyperDataCategory getCategory()  { return category; }
+  public RelationType getRelType()        { return relType; }
+  public RecordType getNestedTargetType() { return db.getNestedTargetType(relType, tags.get(0)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

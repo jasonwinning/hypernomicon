@@ -27,7 +27,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
@@ -65,7 +65,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
   @FXML private TextField tfName, tfSearchKey;
 
   private Label debateLink, noteLink, labelLink, conceptLink;
-  private HDT_RecordType recordType;
+  private RecordType recordType;
   private MainTextWrapper mainText;
   private HyperNodeTab<HDT_RT, HDT_CT> hyperTab;
 
@@ -81,7 +81,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void init(HDT_RecordType recordType, HyperNodeTab<HDT_RT, HDT_CT> hyperTab)
+  void init(RecordType recordType, HyperNodeTab<HDT_RT, HDT_CT> hyperTab)
   {
     this.recordType = recordType;
     this.hyperTab = hyperTab;
@@ -372,7 +372,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setLinkToEvent(Label label, HDT_RecordType type)
+  private void setLinkToEvent(Label label, RecordType type)
   {
     label.setOnMouseClicked(mouseEvent ->
     {

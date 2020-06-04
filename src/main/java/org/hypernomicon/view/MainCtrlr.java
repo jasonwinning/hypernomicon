@@ -20,7 +20,7 @@ package org.hypernomicon.view;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.query.QueryTabCtrlr.*;
@@ -391,7 +391,7 @@ public final class MainCtrlr
     forEachHyperTab(hyperTab ->
     {
       TabEnum hyperTabEnum = hyperTab.getTabEnum();
-      HDT_RecordType recordType = getRecordTypeByTabEnum(hyperTabEnum);
+      RecordType recordType = getRecordTypeByTabEnum(hyperTabEnum);
 
       nullSwitch(imgViewForRecordType(recordType), graphic ->
       {
@@ -540,7 +540,7 @@ public final class MainCtrlr
         return;
       }
 
-      HDT_RecordType type = activeType();
+      RecordType type = activeType();
 
       int curRecordNdx = db.records(type).getKeyNdxByID(activeRecord().getID()),
           newRecordNdx = parseInt(tfRecord.getText(), 0) - 1;
@@ -796,7 +796,7 @@ public final class MainCtrlr
 
   private void mnuFindWithinNameClick()
   {
-    HDT_RecordType type = selectorType();
+    RecordType type = selectorType();
     String query = tfSelector.getText();
     boolean backClick = activeTabEnum() != queryTabEnum;
 
@@ -1297,7 +1297,7 @@ public final class MainCtrlr
   {
     if (cantSaveRecord()) return;
 
-    HDT_RecordType type = selectorType();
+    RecordType type = selectorType();
     String name = hcbGoTo.selectedID() == -1 ? cbGoTo.getEditor().getText() : "";
 
     HDT_Record record = db.createNewBlankRecord(type);
@@ -1339,7 +1339,7 @@ public final class MainCtrlr
 
     if (record == null) return false;
 
-    HDT_RecordType type = record.getType();
+    RecordType type = record.getType();
 
     switch (type)
     {
@@ -1483,7 +1483,7 @@ public final class MainCtrlr
 
     if (ctrlr.showModal())
     {
-      HDT_RecordType changedType = ctrlr.hcbRecord.selectedType();
+      RecordType changedType = ctrlr.hcbRecord.selectedType();
       int oldID = parseInt(ctrlr.tfOldID.getText(), -100),
           newID = parseInt(ctrlr.tfNewID.getText(), -1);
 
@@ -1503,7 +1503,7 @@ public final class MainCtrlr
   @FXML private void mnuNewCountryClick     () { mnuNewCategoryClick(hdtCountry     ); }
   @FXML private void mnuNewPersonStatusClick() { mnuNewCategoryClick(hdtPersonStatus); }
 
-  private void mnuNewCategoryClick(HDT_RecordType type)
+  private void mnuNewCategoryClick(RecordType type)
   {
     if (db.isLoaded() == false)
     {
@@ -1520,7 +1520,7 @@ public final class MainCtrlr
     int id = parseInt(ctrlr.tfNewID.getText(), -1);
     type = ctrlr.hcbRecordType.selectedType();
 
-    HDT_RecordState recordState = new HDT_RecordState(type, id, ctrlr.tfNewKey.getText(), "", "", "");
+    RecordState recordState = new RecordState(type, id, ctrlr.tfNewKey.getText(), "", "", "");
 
     try { db.createNewRecordFromState(recordState, true); } catch (Exception e) { noOp(); }
 
@@ -1696,7 +1696,7 @@ public final class MainCtrlr
   {
     if (record == null) return;
 
-    HDT_RecordType type = record.getType();
+    RecordType type = record.getType();
     boolean backClick = activeTabEnum() != queryTabEnum;
 
     lblStatus.setText("");
@@ -1798,8 +1798,8 @@ public final class MainCtrlr
     String recordStr = db.getTypeName(record.getType()) + " \"" + record.getCBText() + "\"";
 
     HDT_Hub hub = record.isUnitable() ? HDT_RecordWithConnector.class.cast(record).getHub() : null;
-    HDT_RecordState backupState = record.getRecordStateBackup(),
-                    hubState = hub == null ? null : hub.getRecordStateBackup();
+    RecordState backupState = record.getRecordStateBackup(),
+                hubState = hub == null ? null : hub.getRecordStateBackup();
 
     try
     {
@@ -2060,7 +2060,7 @@ public final class MainCtrlr
   public TabEnum activeTabEnum()                    { return viewSequence.isEmpty() ? personTabEnum : viewSequence.curTabEnum(); }
   public HyperTab<? extends HDT_Record,
                   ? extends HDT_Record> activeTab() { return viewSequence.isEmpty() ? null : viewSequence.curHyperTab(); }
-  public HDT_RecordType activeType()                { return viewSequence.isEmpty() ? hdtPerson : viewSequence.curHyperView().getTabRecordType(); }
+  public RecordType activeType()                    { return viewSequence.isEmpty() ? hdtPerson : viewSequence.curHyperView().getTabRecordType(); }
   public HDT_Record activeRecord()                  { return viewSequence.isEmpty() ? null : activeTab().activeRecord(); }
   public HDT_Record viewRecord()                    { return viewSequence.isEmpty() ? null : activeTab().viewRecord(); }
 
@@ -2265,7 +2265,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private HDT_RecordType selectorType()
+  private RecordType selectorType()
   {
     TabEnum tabEnum = selectorTabEnum();
 

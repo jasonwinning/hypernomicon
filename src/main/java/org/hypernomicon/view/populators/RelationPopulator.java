@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view.populators;
 
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
@@ -27,22 +27,22 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 public class RelationPopulator extends Populator
 {
-  private final HDT_RecordType objType;
+  private final RecordType objType;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public RelationPopulator(HDT_RecordType objType)                 { this.objType = objType; }
+  public RelationPopulator(RecordType objType)                 { this.objType = objType; }
 
-  @Override public CellValueType getValueType()                    { return cvtRelation; }
-  @Override public HDT_RecordType getRecordType(HyperTableRow row) { return objType; }
+  @Override public CellValueType getValueType()                { return cvtRelation; }
+  @Override public RecordType getRecordType(HyperTableRow row) { return objType; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

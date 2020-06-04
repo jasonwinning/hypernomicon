@@ -18,7 +18,7 @@
 package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
 
 import org.hypernomicon.model.records.HDT_Record;

@@ -26,7 +26,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.model.Exceptions.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.InvestigationsDlgCtrlr;
@@ -126,7 +126,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   private boolean alreadyChangingName = false;
 
   @Override public String recordName()               { return new PersonName(tfFirst.getText(), tfLast.getText()).getLastFirst(); }
-  @Override protected HDT_RecordType getType()       { return hdtPerson; }
+  @Override protected RecordType getType()           { return hdtPerson; }
   @Override public void enable(boolean enabled)      { ui.tabPersons.getContent().setDisable(enabled == false); }
   @Override public void setRecord(HDT_Person person) { curPerson = person; }
   @Override public MainTextWrapper mainTextWrapper() { return mainText; }
@@ -1107,7 +1107,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void newClick(HDT_RecordType objType, HyperTableRow row)
+  @Override public void newClick(RecordType objType, HyperTableRow row)
   {
     switch (objType)
     {

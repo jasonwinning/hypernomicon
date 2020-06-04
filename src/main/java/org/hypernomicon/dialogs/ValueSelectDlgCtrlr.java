@@ -17,7 +17,7 @@
 
 package org.hypernomicon.dialogs;
 
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import static org.hypernomicon.util.Util.*;
@@ -50,7 +50,7 @@ public class ValueSelectDlgCtrlr extends HyperDlg
   {
     if (collEmpty(list)) return this;
 
-    HDT_RecordType objType = HyperTableCell.getCellType(list.get(0));
+    RecordType objType = HyperTableCell.getCellType(list.get(0));
 
     listView.setItems(FXCollections.observableArrayList(list));
 

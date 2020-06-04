@@ -26,7 +26,7 @@ import java.util.function.Function;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.wrappers.HasRightClickableRows;
 
@@ -34,7 +34,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import javafx.application.Platform;
@@ -66,7 +66,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
   {
     private ResultColumn(String caption) { super(caption); }
 
-    final EnumMap<HDT_RecordType, ColumnGroupItem> map = new EnumMap<>(HDT_RecordType.class);
+    final EnumMap<RecordType, ColumnGroupItem> map = new EnumMap<>(RecordType.class);
   }
 
 //---------------------------------------------------------------------------
@@ -293,7 +293,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ResultColumn<String> addNonGeneralColumn(EnumMap<HDT_RecordType, ColumnGroupItem> map)
+  ResultColumn<String> addNonGeneralColumn(EnumMap<RecordType, ColumnGroupItem> map)
   {
     ColumnGroupItem firstItem = map.entrySet().iterator().next().getValue();
 

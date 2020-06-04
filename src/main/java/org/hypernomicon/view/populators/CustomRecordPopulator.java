@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -36,12 +36,12 @@ public class CustomRecordPopulator extends Populator
 
 //---------------------------------------------------------------------------
 
-  private HDT_RecordType recordType;
+  private RecordType recordType;
   private PopulateHandler handler;
 
 //---------------------------------------------------------------------------
 
-  public CustomRecordPopulator(HDT_RecordType recordType, PopulateHandler handler)
+  public CustomRecordPopulator(RecordType recordType, PopulateHandler handler)
   {
     this.recordType = recordType;
     this.handler = handler;
@@ -51,7 +51,7 @@ public class CustomRecordPopulator extends Populator
 //---------------------------------------------------------------------------
 
   @Override public CellValueType getValueType()                                 { return cvtRecord; }
-  @Override public HDT_RecordType getRecordType(HyperTableRow row)              { return recordType; }
+  @Override public RecordType getRecordType(HyperTableRow row)                  { return recordType; }
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return equalMatch(row, cell); }
 
 //---------------------------------------------------------------------------

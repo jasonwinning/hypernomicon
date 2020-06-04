@@ -19,22 +19,22 @@ package org.hypernomicon.query.sources;
 
 import java.util.EnumSet;
 
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 
 public class DatasetQuerySource extends CombinedUnfilteredQuerySource
 {
-  private final HDT_RecordType type;
+  private final RecordType type;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public DatasetQuerySource(HDT_RecordType type)
+  public DatasetQuerySource(RecordType type)
   {
     super(EnumSet.of(type));
     this.type = type;
   }
 
-  public HDT_RecordType recordType()            { return type; }
+  public RecordType recordType()                { return type; }
   @Override public QuerySourceType sourceType() { return QuerySourceType.QST_recordsByType; }
 
 //---------------------------------------------------------------------------

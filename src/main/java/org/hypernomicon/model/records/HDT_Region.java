@@ -32,7 +32,7 @@ public class HDT_Region extends HDT_RecordBase
 
   public final HyperObjPointer<HDT_Region, HDT_Country> country;
 
-  public HDT_Region(HDT_RecordState xmlState, HyperDataset<HDT_Region> dataset)
+  public HDT_Region(RecordState xmlState, HyperDataset<HDT_Region> dataset)
   {
     super(xmlState, dataset, tagName);
 

@@ -30,7 +30,7 @@ public class HDT_Hub extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Hub(HDT_RecordState xmlState, HyperDataset<HDT_Hub> dataset)
+  public HDT_Hub(RecordState xmlState, HyperDataset<HDT_Hub> dataset)
   {
     super(xmlState, dataset, tagName);
   }

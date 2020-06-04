@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.util.BidiOneToManyRecordMap;
 
@@ -36,7 +36,7 @@ import com.google.common.collect.ImmutableSet;
 import javafx.scene.control.TreeItem;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, RowType>>
@@ -44,7 +44,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
   final private BidiOneToManyRecordMap parentToChildren;
   final private MappingFromRecordToRows recordToRows;
   final private AbstractTreeWrapper<RowType> treeWrapper;
-  final private Map<HDT_RecordType, Set<HDT_RecordType>> parentChildRelations;
+  final private Map<RecordType, Set<RecordType>> parentChildRelations;
 
   private RowType rootRow;
   public boolean pruningOperationInProgress = false;
@@ -235,7 +235,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean hasParentChildRelation(HDT_RecordType parentType, HDT_RecordType childType)
+  boolean hasParentChildRelation(RecordType parentType, RecordType childType)
   {
     return nullSwitch(parentChildRelations.get(parentType), false, rels -> rels.contains(childType));
   }
@@ -243,15 +243,15 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addParentChildRelationMapping(HDT_RecordType parentType, HDT_RecordType childType)
+  private void addParentChildRelationMapping(RecordType parentType, RecordType childType)
   {
-    Set<HDT_RecordType> childTypes;
+    Set<RecordType> childTypes;
 
     if (parentChildRelations.containsKey(parentType))
       childTypes = parentChildRelations.get(parentType);
     else
     {
-      childTypes = EnumSet.noneOf(HDT_RecordType.class);
+      childTypes = EnumSet.noneOf(RecordType.class);
       parentChildRelations.put(parentType, childTypes);
     }
 
@@ -261,7 +261,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addKeyWorkRelation(HDT_RecordType recordType, boolean forward)
+  public void addKeyWorkRelation(RecordType recordType, boolean forward)
   {
     if (forward)
     {
@@ -292,8 +292,8 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 
   public void addParentChildRelation(RelationType relType, boolean forward)
   {
-    HDT_RecordType objType  = db.getObjType(relType),
-                   subjType = db.getSubjType(relType);
+    RecordType objType  = db.getObjType(relType),
+               subjType = db.getSubjType(relType);
 
     if (forward)
     {

@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -42,7 +42,7 @@ public class HybridSubjectPopulator extends Populator
 //---------------------------------------------------------------------------
 
   @Override public CellValueType getValueType()                                 { return cvtRecord; }
-  @Override public HDT_RecordType getRecordType(HyperTableRow row)              { return db.getSubjType(relType); }
+  @Override public RecordType getRecordType(HyperTableRow row)                  { return db.getSubjType(relType); }
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return equalMatch(row, cell); }
 
 //---------------------------------------------------------------------------

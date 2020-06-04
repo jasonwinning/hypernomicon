@@ -17,10 +17,10 @@
 
 package org.hypernomicon.view.wrappers;
 
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 
 import static org.hypernomicon.util.Util.*;
 
@@ -33,13 +33,13 @@ public abstract class AbstractRow<HDT_T extends HDT_Record, RowType extends Abst
 
   public abstract <HDT_T1 extends HDT_T> HDT_T1 getRecord();
 
-  public HDT_RecordType getRecordType() { return nullSwitch(getRecord(), hdtNone, HDT_Record::getType); }
-  public int            getRecordID  () { return nullSwitch(getRecord(), -1, HDT_Record::getID); }
-  TreeItem<RowType>     getTreeItem  () { return null; }
+  public RecordType getRecordType() { return nullSwitch(getRecord(), hdtNone, HDT_Record::getType); }
+  public int        getRecordID  () { return nullSwitch(getRecord(), -1, HDT_Record::getID); }
+  TreeItem<RowType> getTreeItem  () { return null; }
 
 //---------------------------------------------------------------------------
 
-  <HDT_T1 extends HDT_T> HDT_T1 getRecordByType(HDT_RecordType recordType)
+  <HDT_T1 extends HDT_T> HDT_T1 getRecordByType(RecordType recordType)
   {
     HDT_T1 record = getRecord();
 

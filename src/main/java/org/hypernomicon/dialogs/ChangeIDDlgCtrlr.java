@@ -18,13 +18,13 @@
 package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.populators.RecordTypePopulator;
@@ -63,8 +63,8 @@ public class ChangeIDDlgCtrlr extends HyperDlg
 
     cbType.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
-      HDT_RecordType oldType = HyperTableCell.getCellType(oldValue),
-                     newType = HyperTableCell.getCellType(newValue);
+      RecordType oldType = HyperTableCell.getCellType(oldValue),
+                 newType = HyperTableCell.getCellType(newValue);
 
       if (oldType == newType) return;
 

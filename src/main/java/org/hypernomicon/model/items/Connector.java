@@ -18,12 +18,12 @@
 package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.records.HDT_Hub;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 
 public final class Connector
@@ -48,7 +48,7 @@ public final class Connector
   MainText mainText;
   private boolean alreadyModifying = false;
 
-  public HDT_RecordType getType()            { return getSpoke().getType(); }
+  public RecordType getType()                { return getSpoke().getType(); }
   public boolean isLinked()                  { return link != null; }
   public StrongLink getLink()                { return link; }
   public MainText getMainText()              { return mainText; }

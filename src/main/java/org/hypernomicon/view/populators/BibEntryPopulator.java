@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
-import static org.hypernomicon.model.records.HDT_RecordType.*;
+import static org.hypernomicon.model.records.RecordType.*;
 
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.view.wrappers.HyperTableCell;

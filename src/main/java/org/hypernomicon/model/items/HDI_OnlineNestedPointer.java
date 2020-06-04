@@ -25,13 +25,13 @@ import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 
 import static org.hypernomicon.util.Util.*;
 
 public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPointer>
 {
-  private final HDT_RecordType targetType;
+  private final RecordType targetType;
   private HDT_Record target;
 
   public HDI_OnlineNestedPointer(HDI_Schema schema, HDT_Record record)

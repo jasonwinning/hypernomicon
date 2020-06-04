@@ -39,7 +39,7 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_RecordWithConnector(HDT_RecordState xmlState, HyperDataset<? extends HDT_RecordWithConnector> dataset, Tag nameTag)
+  public HDT_RecordWithConnector(RecordState xmlState, HyperDataset<? extends HDT_RecordWithConnector> dataset, Tag nameTag)
   {
     super(xmlState, dataset, nameTag);
 
@@ -118,7 +118,7 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
 
     HDT_RecordWithConnector parent = null;
     List<DisplayItem> displayItems = getMainText().getDisplayItemsCopy();
-    HDT_RecordType type = getType();
+    RecordType type = getType();
 
     if (displayItems.stream().anyMatch(displayItem -> displayItem.type == diRecord)) return;
 

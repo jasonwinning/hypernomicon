@@ -24,7 +24,7 @@ import java.util.Set;
 
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.query.engines.QueryEngine.QueryType;
 
 public abstract class FilteredQuerySource implements QuerySource
@@ -64,7 +64,7 @@ public abstract class FilteredQuerySource implements QuerySource
 
   protected abstract void runFilter();
 
-  public HDT_RecordType recordType()                    { return queryType.getRecordType(); }
+  public RecordType recordType()                        { return queryType.getRecordType(); }
   public boolean containsCell(HyperTableCell cell)      { ensureGenerated(); return list.contains(HyperTableCell.getRecord(cell)); }
   public void addAllTo(Set<HDT_Record> filteredRecords) { ensureGenerated(); filteredRecords.addAll(list); }
   protected void ensureGenerated()                      { if (!generated) { runFilter(); it = list.iterator(); generated = true; }}

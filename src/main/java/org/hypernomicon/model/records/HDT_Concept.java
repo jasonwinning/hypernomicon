@@ -37,7 +37,7 @@ public class HDT_Concept extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Concept(HDT_RecordState xmlState, HyperDataset<HDT_Concept> dataset)
+  public HDT_Concept(RecordState xmlState, HyperDataset<HDT_Concept> dataset)
   {
     super(xmlState, dataset, tagName);
 

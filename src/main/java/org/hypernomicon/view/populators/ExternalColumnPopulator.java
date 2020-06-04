@@ -25,7 +25,7 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 
 //---------------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ public class ExternalColumnPopulator extends Populator
   private final int colNdx;
 
   @Override public CellValueType getValueType()                                 { return cvtRecord; }
-  @Override public HDT_RecordType getRecordType(HyperTableRow row)              { return table.getTypeByCol(colNdx); }
+  @Override public RecordType getRecordType(HyperTableRow row)                  { return table.getTypeByCol(colNdx); }
   @Override public HyperTableCell match(HyperTableRow row, HyperTableCell cell) { return equalMatch(row, cell); }
 
 //---------------------------------------------------------------------------

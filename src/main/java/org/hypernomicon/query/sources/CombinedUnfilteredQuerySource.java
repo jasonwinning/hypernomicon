@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_RecordType;
+import org.hypernomicon.model.records.RecordType;
 
 import com.google.common.collect.Iterators;
 
@@ -30,13 +30,13 @@ import static org.hypernomicon.model.HyperDB.*;
 
 public class CombinedUnfilteredQuerySource implements QuerySource
 {
-  private final Set<HDT_RecordType> types;
+  private final Set<RecordType> types;
   private final Iterator<? extends HDT_Record> it;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public CombinedUnfilteredQuerySource(EnumSet<HDT_RecordType> types)
+  public CombinedUnfilteredQuerySource(EnumSet<RecordType> types)
   {
     this.types = types;
 
