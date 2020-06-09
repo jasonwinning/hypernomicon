@@ -18,10 +18,10 @@
 package org.hypernomicon.view.wrappers;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.hypernomicon.model.records.HDT_Record;
@@ -36,20 +36,21 @@ import com.google.common.collect.ImmutableSet;
 import javafx.scene.control.TreeItem;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.model.records.RecordType.*;
 
 public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, RowType>>
 {
   final private BidiOneToManyRecordMap parentToChildren;
   final private MappingFromRecordToRows recordToRows;
   final private AbstractTreeWrapper<RowType> treeWrapper;
-  final private Map<RecordType, Set<RecordType>> parentChildRelations;
+  final private Set<RecordType> recordTypes = EnumSet.noneOf(RecordType.class);
 
   private RowType rootRow;
   public boolean pruningOperationInProgress = false;
 
   public void expandMainBranch() { rootRow.treeItem.setExpanded(true); }
+  Collection<? extends RecordType> getRecordTypes() { return Collections.unmodifiableSet(recordTypes); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -101,7 +102,6 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
     parentToChildren = new BidiOneToManyRecordMap();
     recordToRows = new MappingFromRecordToRows(tcb);
     this.treeWrapper = treeWrapper;
-    parentChildRelations = new HashMap<>();
   }
 
 //---------------------------------------------------------------------------
@@ -129,7 +129,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void removeRecord(HDT_Record record)
+  void removeRecord(HDT_Record record)
   {
     ImmutableSet.<HDT_Record>copyOf(parentToChildren.getForwardSet(record)).forEach(child  -> unassignParent(child , record));
     ImmutableSet.<HDT_Record>copyOf(parentToChildren.getReverseSet(record)).forEach(parent -> unassignParent(record, parent));
@@ -235,70 +235,13 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean hasParentChildRelation(RecordType parentType, RecordType childType)
-  {
-    return nullSwitch(parentChildRelations.get(parentType), false, rels -> rels.contains(childType));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void addParentChildRelationMapping(RecordType parentType, RecordType childType)
-  {
-    Set<RecordType> childTypes;
-
-    if (parentChildRelations.containsKey(parentType))
-      childTypes = parentChildRelations.get(parentType);
-    else
-    {
-      childTypes = EnumSet.noneOf(RecordType.class);
-      parentChildRelations.put(parentType, childTypes);
-    }
-
-    childTypes.add(childType);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void addKeyWorkRelation(RecordType recordType, boolean forward)
-  {
-    if (forward)
-    {
-      addParentChildRelationMapping(hdtWork, recordType);
-      addParentChildRelationMapping(hdtMiscFile, recordType);
-
-      db.addKeyWorkHandler(recordType, (keyWork, record, affirm) ->
-      {
-        if (affirm) assignParent(keyWork, record);
-        else        unassignParent(keyWork, record);
-      });
-    }
-    else
-    {
-      addParentChildRelationMapping(recordType, hdtWork);
-      addParentChildRelationMapping(recordType, hdtMiscFile);
-
-      db.addKeyWorkHandler(recordType, (keyWork, record, affirm) ->
-      {
-        if (affirm) assignParent(record, keyWork);
-        else        unassignParent(record, keyWork);
-      });
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public void addParentChildRelation(RelationType relType, boolean forward)
   {
-    RecordType objType  = db.getObjType(relType),
-               subjType = db.getSubjType(relType);
+    recordTypes.add(db.getSubjType(relType));
+    recordTypes.add(db.getObjType(relType));
 
     if (forward)
     {
-      addParentChildRelationMapping(objType, subjType);
-
       db.addRelationChangeHandler(relType, (child, parent, affirm) ->
       {
         if (affirm) assignParent(child, parent);
@@ -307,14 +250,35 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
     }
     else
     {
-      addParentChildRelationMapping(subjType, objType);
-
       db.addRelationChangeHandler(relType, (child, parent, affirm) ->
       {
         if (affirm) assignParent(parent, child);
         else        unassignParent(parent, child);
       });
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void addKeyWorkRelation(RecordType recordType, boolean forward)
+  {
+    recordTypes.add(recordType);
+    recordTypes.add(hdtWork);
+    recordTypes.add(hdtMiscFile);
+
+    db.addKeyWorkHandler(recordType, forward ?
+      (keyWork, record, affirm) ->
+      {
+        if (affirm) assignParent(keyWork, record);
+        else        unassignParent(keyWork, record);
+      }
+    :
+      (keyWork, record, affirm) ->
+      {
+        if (affirm) assignParent(record, keyWork);
+        else        unassignParent(record, keyWork);
+      });
   }
 
 //---------------------------------------------------------------------------

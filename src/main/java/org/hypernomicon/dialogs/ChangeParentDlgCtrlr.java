@@ -18,74 +18,64 @@
 package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.Util.*;
 
-import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.view.wrappers.RecordTreeEdge;
+
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.input.TransferMode;
 
 public class ChangeParentDlgCtrlr extends HyperDlg
 {
-  @FXML private Button btnCopy;
+  @FXML private CheckBox chkDetach1, chkDetach2;
   @FXML private Label label1, label2, label3;
-  @FXML private TextField tfChild, tfNewParent, tfOldParent;
+  @FXML private TextField tfChild, tfNewParent, tfOldParent1, tfOldParent2;
 
-  private TransferMode transferMode = null;
-
-  public TransferMode getTransferMode() { return transferMode; }
+  public boolean detachDragSource() { return chkDetach1.isSelected(); }
 
   @Override protected boolean isValid() { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ChangeParentDlgCtrlr build(HDT_Record oldParent, HDT_Record newParent, HDT_Record child, boolean copyIsOK)
+  public static ChangeParentDlgCtrlr build(RecordTreeEdge dragTargetEdge, RecordTreeEdge dragSourceEdge, RecordTreeEdge otherEdgeToDetach)
   {
-    return ((ChangeParentDlgCtrlr) create("ChangeParentDlg", "Copy or Move Record to Destination", true)).init(oldParent, newParent, child, copyIsOK);
+    return ((ChangeParentDlgCtrlr) create("ChangeParentDlg", "Copy or Move Record to Destination", true))
+                                  .init(dragTargetEdge, dragSourceEdge, otherEdgeToDetach);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private ChangeParentDlgCtrlr init(HDT_Record oldParent, HDT_Record newParent, HDT_Record child, boolean copyIsOK)
+  private ChangeParentDlgCtrlr init(RecordTreeEdge dragTargetEdge, RecordTreeEdge dragSourceEdge, RecordTreeEdge otherEdgeToDetach)
   {
-    label1.setText("The " + db.getTypeName(child.getType()) + " record:");
-    label2.setText("will be attached under the " + db.getTypeName(newParent.getType()) + " record:");
+    label1.setText("The " + db.getTypeName(dragTargetEdge.child.getType()) + " record:");
+    label2.setText("will be attached under the " + db.getTypeName(dragTargetEdge.parent.getType()) + " record:");
 
-    label3.setText(copyIsOK ?
-      "Select [ Move ] if it should also be unattached from the " + db.getTypeName(oldParent.getType()) + " record:"
-    :
-      "and will be unattached from the " + db.getTypeName(oldParent.getType()) + " record:");
+    tfChild.setText(dragTargetEdge.child.name());
+    tfNewParent.setText(dragTargetEdge.parent.name());
 
-    tfChild.setText(child.name());
-    tfOldParent.setText(oldParent.name());
-    tfNewParent.setText(newParent.name());
+    tfOldParent1.setText(dragSourceEdge.parent.name());
 
-    btnCopy.setDisable(copyIsOK == false);
+    if (dragSourceEdge.mustDetachIfAttaching(dragTargetEdge))
+    {
+      chkDetach1.setDisable(true);
+      chkDetach1.setSelected(true);
+    }
+    else if (dragSourceEdge.canDetach() == false)
+    {
+      chkDetach1.setDisable(true);
+      chkDetach1.setSelected(false);
+    }
 
-    transferMode = null;
+    if (otherEdgeToDetach == null)
+      setAllVisible(false, chkDetach2, tfOldParent2);
+    else
+      tfOldParent2.setText(otherEdgeToDetach.parent.name());
 
     return this;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnMoveClick()
-  {
-    transferMode = TransferMode.MOVE;
-    btnOkClick();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnCopyClick()
-  {
-    transferMode = TransferMode.COPY;
-    btnOkClick();
   }
 
 //---------------------------------------------------------------------------

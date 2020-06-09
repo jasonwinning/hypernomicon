@@ -23,23 +23,23 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
-import static org.hypernomicon.model.relations.RelationSet.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.dialogs.ChangeParentDlgCtrlr;
 import org.hypernomicon.dialogs.VerdictDlgCtrlr;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Argument;
-import org.hypernomicon.model.records.HDT_Debate;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.relations.HyperObjList;
+import org.hypernomicon.model.relations.RelationSet;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 
 import javafx.application.Platform;
@@ -53,12 +53,12 @@ import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.TransferMode;
 import javafx.scene.control.TreeTableColumn.SortType;
 
 public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 {
   private final TreeTableView<TreeRow> ttv;
+  private final Set<RecordType> recordTypesInTree = EnumSet.noneOf(RecordType.class);
   private final boolean hasTerms;
   private final TreeCB tcb;
   private boolean searchingDown = true, searchingNameOnly = false;
@@ -344,7 +344,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean acceptDrag(TreeRow targetRow, DragEvent dragEvent, TreeItem<TreeRow> treeItem)
+  @Override public boolean isValidDragTarget(TreeRow targetRow, DragEvent dragEvent, TreeItem<TreeRow> treeItem)
   {
     scroll(dragEvent);
 
@@ -360,7 +360,24 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
     expand(treeItem);
 
-    return targetRow.getTreeModel().hasParentChildRelation(target.getType(), source.getType());
+    return getValidTargetTypes(source.getType()).contains(target.getType());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public Set<RecordType> getValidTargetTypes(RecordType sourceType)
+  {
+    Set<RecordType> set = RelationSet.getRelationsForSubjType(sourceType).stream().map(db::getObjType).collect(Collectors.toSet());
+    if (sourceType == hdtWork)
+      set.add(hdtArgument);
+
+    if (recordTypesInTree.isEmpty())
+      List.of(debateTree, termTree, labelTree, noteTree).forEach(treeModel -> recordTypesInTree.addAll(treeModel.getRecordTypes()));
+
+    set.retainAll(recordTypesInTree);
+
+    return set;
   }
 
 //---------------------------------------------------------------------------
@@ -370,93 +387,81 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   {
     dragReset();
 
-    HDT_Record subjRecord, objRecord,
-               oldParent = draggingRow.treeItem.getParent().getValue().getRecord(),
-               newParent = targetRow.getRecord(),
-               child = draggingRow.getRecord();
+    RecordTreeEdge dragSourceEdge = new RecordTreeEdge(draggingRow.treeItem.getParent().getValue().getRecord(), draggingRow.getRecord()),
+                   dragTargetEdge = new RecordTreeEdge(targetRow.getRecord(), draggingRow.getRecord()),
+                   otherEdgeToDetach = dragTargetEdge.edgeToDetach();
 
-    if (oldParent == newParent)
+    if (dragSourceEdge.equals(otherEdgeToDetach))
+      otherEdgeToDetach = null;
+
+    if (dragTargetEdge.canAttach() == false)
+      return;
+
+    if (dragSourceEdge.equals(dragTargetEdge))
     {
       messageDialog("Unable to copy or move source record: It is already attached to destination record.", mtError);
       return;
     }
 
-    MutableBoolean oldForward = new MutableBoolean(true),
-                   newForward = new MutableBoolean(true);
-
-    RelationType oldRelType = getParentChildRelation(oldParent.getType(), child.getType(), oldForward),
-                 newRelType = getParentChildRelation(newParent.getType(), child.getType(), newForward);
-
-    if ((oldRelType == rtNone) || (newRelType == rtNone))
+    if (dragTargetEdge.relType == rtNone)
     {
       messageDialog("Unable to copy or move source record: Internal error #33948.", mtError);
       return;
     }
 
-    if (newForward.booleanValue())
-    {
-      subjRecord = child;
-      objRecord = newParent;
-    }
-    else
-    {
-      subjRecord = newParent;
-      objRecord = child;
-    }
+    ChangeParentDlgCtrlr cpdc = ChangeParentDlgCtrlr.build(dragTargetEdge, dragSourceEdge, otherEdgeToDetach);
 
-    if (db.getObjectList(newRelType, subjRecord, true).contains(objRecord))
-    {
-      messageDialog("Unable to copy or move source record: It is already attached to destination record.", mtError);
+    if (cpdc.showModal() == false)
       return;
-    }
 
-    ChangeParentDlgCtrlr cpdc = ChangeParentDlgCtrlr.build(draggingRow.treeItem.getParent().getValue().getRecord(),
-                                                           targetRow.getRecord(), draggingRow.getRecord(), db.relationIsMulti(newRelType));
+    changeParent(dragTargetEdge, cpdc.detachDragSource() ? dragSourceEdge : null);
 
-    if (cpdc.showModal())
+    Platform.runLater(() ->
     {
-      try
+      sort();
+      ttv.getSelectionModel().select(getTreeItem(targetRow));
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void changeParent(RecordTreeEdge attaching, RecordTreeEdge detaching)
+  {
+    RecordTreeEdge otherDetaching = attaching.edgeToDetach();
+    if ((otherDetaching != null) && otherDetaching.equals(detaching))
+      otherDetaching = null;
+
+    try
+    {
+      if ((attaching.relType == RelationType.rtPositionOfArgument) ||
+          (attaching.relType == RelationType.rtCounterOfArgument))
       {
-        if (subjRecord.getType() == hdtArgument)
-        {
-          HDT_Argument childArg = (HDT_Argument) child;
+        HDT_Argument childArg = (HDT_Argument) attaching.subj;
 
-          VerdictDlgCtrlr vdc = VerdictDlgCtrlr.build("Select Verdict for " + childArg.getCBText(), objRecord);
+        VerdictDlgCtrlr vdc = VerdictDlgCtrlr.build("Select Verdict for " + childArg.getCBText(), attaching.obj);
 
-          if (vdc.showModal() == false)
-            return;
+        if (vdc.showModal() == false)
+          return;
 
-          if (objRecord.getType() == hdtPosition)
-            childArg.addPosition((HDT_Position)objRecord, vdc.hcbVerdict.selectedRecord());
-          else if (objRecord.getType() == hdtArgument)
-            childArg.addCounteredArg((HDT_Argument)objRecord, vdc.hcbVerdict.selectedRecord());
-        }
-        else
-        {
-          HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(newRelType, subjRecord, true);
-          objList.add(objRecord);
-          objList.throwLastException();
-        }
-
-        if (cpdc.getTransferMode() == TransferMode.MOVE)
-        {
-          if (oldForward.booleanValue())
-            db.getObjectList(oldRelType, child, true).remove(oldParent);
-          else
-            db.getObjectList(oldRelType, oldParent, true).remove(child);
-        }
+        if (attaching.obj.getType() == hdtPosition)
+          childArg.addPosition((HDT_Position)(attaching.obj), vdc.hcbVerdict.selectedRecord());
+        else if (attaching.obj.getType() == hdtArgument)
+          childArg.addCounteredArg((HDT_Argument)(attaching.obj), vdc.hcbVerdict.selectedRecord());
       }
-      catch (RelationCycleException e)
-      {
-        messageDialog(e.getMessage(), mtError);
-        return;
-      }
+      else
+        attaching.attach();
 
-      Platform.runLater(() ->
-      {
-        sort();
-        ttv.getSelectionModel().select(getTreeItem(targetRow));
-      });
+      if (detaching != null)
+        detaching.detach();
+
+      if (otherDetaching != null)
+        otherDetaching.detach();
+    }
+    catch (RelationCycleException e)
+    {
+      messageDialog(e.getMessage(), mtError);
+      return;
     }
   }
 
@@ -470,122 +475,24 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     TreeRow parentRow = nullSwitch(nullSwitch(item, null, TreeItem::getParent), null, TreeItem::getValue);
 
     HDT_Record parent = nullSwitch(parentRow, null, TreeRow::getRecord),
-               child = nullSwitch(nullSwitch(item, null, TreeItem::getValue), null, TreeRow::getRecord),
-               subjRecord, objRecord, objToAdd = null;
+               child = nullSwitch(nullSwitch(item, null, TreeItem::getValue), null, TreeRow::getRecord);
 
     if ((parent == null) || (child == null)) return false;
 
-    MutableBoolean forward = new MutableBoolean();
-    RelationType relType = getParentChildRelation(parent.getType(), child.getType(), forward);
+    RecordTreeEdge edge = new RecordTreeEdge(parent, child);
 
-    if ((relType == rtNone) || (relType == rtUnited))
+    if (edge.canDetach() == false)
       return doDetach ? falseWithErrorMessage("Internal error #33948.") : false;
 
-    if (forward.booleanValue())
+    boolean rv = edge.canDetachWithoutAttaching(doDetach);
+
+    if (rv && doDetach) Platform.runLater(() ->
     {
-      subjRecord = child;
-      objRecord = parent;
-    }
-    else
-    {
-      subjRecord = parent;
-      objRecord = child;
-    }
+      sort();
+      ttv.getSelectionModel().select(getTreeItem(parentRow));
+    });
 
-    switch (subjRecord.getType())
-    {
-      case hdtDebate :
-
-        if (relType == rtParentDebateOfDebate)
-        {
-          HDT_Debate debate = (HDT_Debate)subjRecord;
-          if (debate.largerDebates.size() == 1)
-          {
-            if (debate.largerDebates.get(0).getID() == 1)
-              return false;
-            else
-              objToAdd = db.debates.getByID(1);
-          }
-        }
-        break;
-
-      case hdtPosition :
-
-        if (objRecord == db.debates.getByID(1)) return false;
-
-        if ((relType == RelationType.rtDebateOfPosition) || (relType == RelationType.rtParentPosOfPos))
-        {
-          HDT_Position position = (HDT_Position)subjRecord;
-          if ((position.debates.size() + position.largerPositions.size()) == 1)
-            objToAdd = db.debates.getByID(1);
-        }
-        break;
-
-      case hdtNote :
-
-        if (objRecord == db.notes.getByID(1)) return false;
-
-        if (relType == RelationType.rtParentNoteOfNote)
-          if (db.getObjectList(relType, subjRecord, true).size() == 1)
-            objToAdd = db.notes.getByID(1);
-
-        break;
-
-      case hdtGlossary :
-
-        if (objRecord == db.glossaries.getByID(1)) return false;
-
-        if (relType == RelationType.rtParentGlossaryOfGlossary)
-          if (db.getObjectList(relType, subjRecord, true).size() == 1)
-            objToAdd = db.glossaries.getByID(1);
-
-        break;
-
-      case hdtWorkLabel :
-
-        if (objRecord == db.workLabels.getByID(1)) return false;
-
-        if (relType == RelationType.rtParentLabelOfLabel)
-          if (db.getObjectList(relType, subjRecord, true).size() == 1)
-            objToAdd = db.workLabels.getByID(1);
-
-        break;
-
-      default : break;
-    }
-
-    if (doDetach)
-    {
-      db.getObjectList(relType, subjRecord, true).remove(objRecord);
-
-      if (objToAdd != null)
-        db.getObjectList(getRelation(subjRecord.getType(), objToAdd.getType()), subjRecord, true).add(objToAdd);
-
-      Platform.runLater(() ->
-      {
-        sort();
-        ttv.getSelectionModel().select(getTreeItem(parentRow));
-      });
-    }
-
-    return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private RelationType getParentChildRelation(RecordType parentType, RecordType childType, MutableBoolean forward)
-  {
-    RelationType relType = getRelation(childType, parentType);
-
-    if (relType == rtNone)
-    {
-      forward.setFalse();
-      return getRelation(parentType, childType);
-    }
-
-    forward.setTrue();
-    return relType;
+    return rv;
   }
 
 //---------------------------------------------------------------------------

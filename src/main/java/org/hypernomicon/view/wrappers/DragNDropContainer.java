@@ -60,7 +60,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
 
   abstract public void startDrag(RowType row);
   abstract public void dragDone();
-  abstract public boolean acceptDrag(RowType item, DragEvent event, TreeItem<RowType> treeItem);
+  abstract public boolean isValidDragTarget(RowType item, DragEvent event, TreeItem<RowType> treeItem);
   abstract public void dragDroppedOnto(RowType item);
 
 //---------------------------------------------------------------------------
@@ -81,7 +81,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected void dragReset()
+  final protected void dragReset()
   {
     dragMilliCtr = 0;
     lastDragX = -1;
@@ -163,7 +163,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
 
       treeCell.setOnDragOver(event ->
       {
-        if (acceptDrag(treeCell.getItem(), event, treeCell.getTreeItem()))
+        if (isValidDragTarget(treeCell.getItem(), event, treeCell.getTreeItem()))
           event.acceptTransferModes(TransferMode.ANY);
 
         event.consume();
@@ -175,7 +175,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
 
       treeTableRow.setOnDragOver(event ->
       {
-        if (acceptDrag(treeTableRow.getItem(), event, treeTableRow.getTreeItem()))
+        if (isValidDragTarget(treeTableRow.getItem(), event, treeTableRow.getTreeItem()))
           event.acceptTransferModes(TransferMode.ANY);
 
         event.consume();
@@ -185,7 +185,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
     {
       cell.setOnDragOver(event ->
       {
-        if (acceptDrag(cell.getItem(), event, null))
+        if (isValidDragTarget(cell.getItem(), event, null))
           event.acceptTransferModes(TransferMode.ANY);
 
         event.consume();

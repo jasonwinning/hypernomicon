@@ -17,13 +17,11 @@
 
 package org.hypernomicon.view.tabs;
 
-import java.util.EnumSet;
+import java.util.List;
 
 import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.dialogs.ChooseParentDlgCtrlr;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
-import org.hypernomicon.dialogs.VerdictDlgCtrlr;
-import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -31,6 +29,7 @@ import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.wrappers.HyperTreeCellValue;
+import org.hypernomicon.view.wrappers.RecordTreeEdge;
 import org.hypernomicon.view.wrappers.TreeModel;
 import org.hypernomicon.view.wrappers.TreeRow;
 import org.hypernomicon.view.wrappers.TreeWrapper;
@@ -295,20 +294,22 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     debateTree.addParentChildRelation(rtPositionOfArgument, true);
     debateTree.addParentChildRelation(rtCounterOfArgument, true);
     debateTree.addParentChildRelation(rtWorkOfArgument, false);
-    debateTree.addParentChildRelation(rtParentWorkOfWork, true);
-    debateTree.addParentChildRelation(rtWorkOfMiscFile, true);
 
     noteTree.addParentChildRelation(rtParentNoteOfNote, true);
 
     labelTree.addParentChildRelation(rtParentLabelOfLabel, true);
     labelTree.addParentChildRelation(rtLabelOfFile, true);
     labelTree.addParentChildRelation(rtLabelOfWork, true);
-    labelTree.addParentChildRelation(rtParentWorkOfWork, true);
-    labelTree.addParentChildRelation(rtWorkOfMiscFile, true);
     labelTree.addParentChildRelation(rtWorkOfArgument, true);
 
     termTree.addParentChildRelation(rtGlossaryOfConcept, true);
     termTree.addParentChildRelation(rtParentGlossaryOfGlossary, true);
+
+    List.of(debateTree, noteTree, labelTree, termTree).forEach(treeModel ->
+    {
+      treeModel.addParentChildRelation(rtParentWorkOfWork, true);
+      treeModel.addParentChildRelation(rtWorkOfMiscFile, true);
+    });
 
     db.addCloseDBHandler(tree::reset);
   }
@@ -400,102 +401,11 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private void chooseParent(HDT_Record child)
   {
-    EnumSet<RecordType> types = null;
-
-    switch (child.getType())
-    {
-      case hdtWorkLabel : types = EnumSet.of(hdtWorkLabel);                       break;
-      case hdtNote      : types = EnumSet.of(hdtNote);                            break;
-      case hdtPosition  : types = EnumSet.of(hdtDebate, hdtPosition);             break;
-      case hdtDebate    : types = EnumSet.of(hdtDebate);                          break;
-      case hdtArgument  : types = EnumSet.of(hdtPosition, hdtArgument);           break;
-      case hdtWork      : types = EnumSet.of(hdtArgument, hdtWork, hdtWorkLabel); break;
-      case hdtMiscFile  : types = EnumSet.of(hdtWork, hdtWorkLabel);              break;
-      case hdtGlossary  : types = EnumSet.of(hdtGlossary);                        break;
-      default           :                                                         break;
-    }
-
-    ChooseParentDlgCtrlr dlg = ChooseParentDlgCtrlr.build(child, types);
+    ChooseParentDlgCtrlr dlg = ChooseParentDlgCtrlr.build(child);
 
     if (dlg.showModal() == false) return;
 
-    HDT_Record parent = dlg.getParent();
-
-    switch (child.getType())
-    {
-      case hdtWorkLabel :
-
-        HDT_WorkLabel.class.cast(child).parentLabels.add((HDT_WorkLabel) parent);
-        break;
-
-      case hdtNote :
-
-        HDT_Note.class.cast(child).parentNotes.add((HDT_Note) parent);
-        break;
-
-      case hdtPosition :
-
-        if (parent.getType() == hdtDebate)
-          HDT_Position.class.cast(child).debates.add((HDT_Debate) parent);
-        else
-          HDT_Position.class.cast(child).largerPositions.add((HDT_Position) parent);
-        break;
-
-      case hdtDebate :
-
-        HDT_Debate.class.cast(child).largerDebates.add((HDT_Debate) parent);
-        break;
-
-      case hdtArgument :
-
-        HDT_Argument childArg = (HDT_Argument) child;
-
-        VerdictDlgCtrlr vdc = VerdictDlgCtrlr.build("Select Verdict for " + childArg.getCBText(), parent);
-
-        if (vdc.showModal())
-        {
-          if (parent.getType() == hdtPosition)
-            childArg.addPosition((HDT_Position)parent, vdc.hcbVerdict.selectedRecord());
-          else if (parent.getType() == hdtArgument)
-          {
-            try
-            {
-              childArg.addCounteredArg((HDT_Argument)parent, vdc.hcbVerdict.selectedRecord());
-            }
-            catch (RelationCycleException e)
-            {
-              messageDialog(e.getMessage(), mtError);
-            }
-          }
-        }
-        break;
-
-      case hdtWork :
-
-        HDT_Work childWork = (HDT_Work) child;
-        if (parent.getType() == hdtWork)
-          childWork.setLargerWork(parent.getID(), false);
-        else if (parent.getType() == hdtArgument)
-        {
-          childArg = (HDT_Argument)parent;
-          childArg.works.add(childWork);
-        }
-        else
-          childWork.labels.add((HDT_WorkLabel) parent);
-        break;
-
-      case hdtMiscFile :
-
-        if (parent.getType() == hdtWork)
-          HDT_MiscFile.class.cast(child).work.set((HDT_Work) parent);
-        else
-          HDT_MiscFile.class.cast(child).labels.add((HDT_WorkLabel) parent);
-
-        break;
-
-      default :
-        break;
-    }
+    TreeWrapper.changeParent(new RecordTreeEdge(dlg.getParent(), child), null);
 
     ui.update();
   }
