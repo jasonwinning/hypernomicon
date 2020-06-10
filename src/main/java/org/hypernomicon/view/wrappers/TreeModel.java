@@ -18,7 +18,6 @@
 package org.hypernomicon.view.wrappers;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -49,8 +48,9 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
   private RowType rootRow;
   public boolean pruningOperationInProgress = false;
 
-  public void expandMainBranch() { rootRow.treeItem.setExpanded(true); }
-  Collection<? extends RecordType> getRecordTypes() { return Collections.unmodifiableSet(recordTypes); }
+  public void expandMainBranch()                          { rootRow.treeItem.setExpanded(true); }
+  Set<RecordType> getRecordTypes()                        { return Collections.unmodifiableSet(recordTypes); }
+  public Set<RowType> getRowsForRecord(HDT_Record record) { return recordToRows.getRowsForRecord(record); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -227,35 +227,22 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Set<RowType> getRowsForRecord(HDT_Record record)
-  {
-    return recordToRows.getRowsForRecord(record);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public void addParentChildRelation(RelationType relType, boolean forward)
   {
-    recordTypes.add(db.getSubjType(relType));
-    recordTypes.add(db.getObjType(relType));
+    recordTypes.addAll(EnumSet.of(db.getSubjType(relType), db.getObjType(relType)));
 
-    if (forward)
-    {
-      db.addRelationChangeHandler(relType, (child, parent, affirm) ->
+    db.addRelationChangeHandler(relType, forward ?
+      (child, parent, affirm) ->
       {
         if (affirm) assignParent(child, parent);
         else        unassignParent(child, parent);
-      });
-    }
-    else
-    {
-      db.addRelationChangeHandler(relType, (child, parent, affirm) ->
+      }
+    :
+      (child, parent, affirm) ->
       {
         if (affirm) assignParent(parent, child);
         else        unassignParent(parent, child);
       });
-    }
   }
 
 //---------------------------------------------------------------------------
@@ -263,9 +250,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 
   public void addKeyWorkRelation(RecordType recordType, boolean forward)
   {
-    recordTypes.add(recordType);
-    recordTypes.add(hdtWork);
-    recordTypes.add(hdtMiscFile);
+    recordTypes.addAll(EnumSet.of(recordType, hdtWork, hdtMiscFile));
 
     db.addKeyWorkHandler(recordType, forward ?
       (keyWork, record, affirm) ->

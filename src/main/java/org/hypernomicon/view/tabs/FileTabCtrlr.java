@@ -107,11 +107,13 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
  // populate authors
  // ----------------
 
-   hcbWork.addAndSelectEntry(curMiscFile.work, HDT_Record::getCBText);
+    hcbWork.addAndSelectEntry(curMiscFile.work, HDT_Record::getCBText);
 
-   cbWorkChange();
+    cbWorkChange();
 
-   safeFocus(tfName);
+    htLabels.buildRows(curMiscFile.labels, (row, label) -> row.setCellValue(2, label, label.getExtendedText()));
+
+    safeFocus(tfName);
 
     return true;
   }
@@ -137,28 +139,17 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   private void cbWorkChange()
   {
-    int workID = hcbWork.selectedID();
+    HDT_Work work = hcbWork.selectedRecord();
 
-    htLabels .setCanAddRows(workID < 1);
-    htAuthors.setCanAddRows(workID < 1);
-
-    htLabels .clear();
+    htAuthors.setCanAddRows(work == null);
     htAuthors.clear();
 
     if (curMiscFile == null) return;
 
-    if (workID > 0)
-    {
-      HDT_Work work = db.works.getByID(workID);
-
-      htAuthors.buildRows(work.authorRecords, (row, author) -> row.setCellValue(1, author, author.getCBText()));
-      htLabels .buildRows(work.labels,        (row, label)  -> row.setCellValue(2, label, label.getExtendedText()));
-    }
-    else
-    {
+    if (work == null)
       htAuthors.buildRows(curMiscFile.authors, (row, author) -> row.setCellValue(1, author, author.getCBText()));
-      htLabels .buildRows(curMiscFile.labels,  (row, label)  -> row.setCellValue(2, label, label.getExtendedText()));
-    }
+    else
+      htAuthors.buildRows(work.authorRecords, (row, author) -> row.setCellValue(1, author, author.getCBText()));
   }
 
 //---------------------------------------------------------------------------
@@ -265,10 +256,9 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     curMiscFile.work.setID(hcbWork.selectedID());
 
     if (curMiscFile.work.isNull())
-    {
       curMiscFile.setAuthors(htAuthors.saveToList(1, hdtPerson));
-      curMiscFile.setWorkLabels(htLabels.saveToList(2, hdtWorkLabel));
-    }
+
+    curMiscFile.setWorkLabels(htLabels.saveToList(2, hdtWorkLabel));
 
   // Start file type
 

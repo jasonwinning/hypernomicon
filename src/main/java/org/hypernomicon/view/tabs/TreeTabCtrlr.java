@@ -281,6 +281,11 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   //
   //---------------------------------------------------------------------------
 
+  // NOTE: There is some code (like RecordTreeEdge constructor) that assumes that
+  //       if the subject and object type is the same, then the child record is the
+  //       subject record, so there could be bugs if a non-forward relation is added
+  //       where the subject and object type is the same
+
     db.addDeleteHandler(tree::removeRecord);
 
     noteTree.addKeyWorkRelation(hdtNote, true);
@@ -405,7 +410,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     if (dlg.showModal() == false) return;
 
-    TreeWrapper.changeParent(new RecordTreeEdge(dlg.getParent(), child), null);
+    new RecordTreeEdge(dlg.getParent(), child).attach(null, true);
 
     ui.update();
   }

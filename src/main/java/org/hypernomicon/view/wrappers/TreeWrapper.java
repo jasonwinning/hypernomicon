@@ -33,14 +33,9 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.dialogs.ChangeParentDlgCtrlr;
-import org.hypernomicon.dialogs.VerdictDlgCtrlr;
-import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.HDT_Argument;
-import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet;
-import org.hypernomicon.model.relations.RelationSet.RelationType;
 
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -414,55 +409,13 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     if (cpdc.showModal() == false)
       return;
 
-    changeParent(dragTargetEdge, cpdc.detachDragSource() ? dragSourceEdge : null);
+    dragTargetEdge.attach(cpdc.detachDragSource() ? dragSourceEdge : null, true);
 
     Platform.runLater(() ->
     {
       sort();
       ttv.getSelectionModel().select(getTreeItem(targetRow));
     });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void changeParent(RecordTreeEdge attaching, RecordTreeEdge detaching)
-  {
-    RecordTreeEdge otherDetaching = attaching.edgeToDetach();
-    if ((otherDetaching != null) && otherDetaching.equals(detaching))
-      otherDetaching = null;
-
-    try
-    {
-      if ((attaching.relType == RelationType.rtPositionOfArgument) ||
-          (attaching.relType == RelationType.rtCounterOfArgument))
-      {
-        HDT_Argument childArg = (HDT_Argument) attaching.subj;
-
-        VerdictDlgCtrlr vdc = VerdictDlgCtrlr.build("Select Verdict for " + childArg.getCBText(), attaching.obj);
-
-        if (vdc.showModal() == false)
-          return;
-
-        if (attaching.obj.getType() == hdtPosition)
-          childArg.addPosition((HDT_Position)(attaching.obj), vdc.hcbVerdict.selectedRecord());
-        else if (attaching.obj.getType() == hdtArgument)
-          childArg.addCounteredArg((HDT_Argument)(attaching.obj), vdc.hcbVerdict.selectedRecord());
-      }
-      else
-        attaching.attach();
-
-      if (detaching != null)
-        detaching.detach();
-
-      if (otherDetaching != null)
-        otherDetaching.detach();
-    }
-    catch (RelationCycleException e)
-    {
-      messageDialog(e.getMessage(), mtError);
-      return;
-    }
   }
 
 //---------------------------------------------------------------------------

@@ -26,6 +26,7 @@ import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
+
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.ImageView;
 

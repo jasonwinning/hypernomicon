@@ -22,15 +22,16 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 
+import org.hypernomicon.dialogs.VerdictDlgCtrlr;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HyperDB;
-import org.hypernomicon.model.records.HDT_MiscFile;
+import org.hypernomicon.model.records.HDT_Argument;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet;
-import org.hypernomicon.model.relations.RelationSet.RelationType;
 
 public class RecordTreeEdge
 {
@@ -39,9 +40,8 @@ public class RecordTreeEdge
 //---------------------------------------------------------------------------
 
   public final HDT_Record parent, child;
-  final HDT_Record subj, obj;
+  private final HDT_Record subj, obj;
   final RelationType relType;
-  private boolean detached = false;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -110,18 +110,124 @@ public class RecordTreeEdge
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void attach() throws RelationCycleException
+  public boolean attach(RecordTreeEdge detaching, boolean showErrMsg)
   {
-    RecordTreeEdge detaching = edgeToDetach();
+    RecordTreeEdge otherDetaching = edgeToDetach();
+    if ((otherDetaching != null) && otherDetaching.equals(detaching))
+      otherDetaching = null;
 
-    HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, subj, true);
-    objList.add(obj);
-    objList.throwLastException();
+    try
+    {
+      if ((relType == rtPositionOfArgument) || (relType == rtCounterOfArgument))
+      {
+        HDT_Argument childArg = (HDT_Argument) subj;
 
-    detached = false;
+        VerdictDlgCtrlr vdc = VerdictDlgCtrlr.build("Select Verdict for " + childArg.getCBText(), obj);
 
-    if (detaching != null)
-      detaching.detach();
+        if (vdc.showModal() == false)
+          return false;
+
+        if (obj.getType() == hdtPosition)
+          childArg.addPosition((HDT_Position)obj, vdc.hcbVerdict.selectedRecord());
+        else if (obj.getType() == hdtArgument)
+          childArg.addCounteredArg((HDT_Argument)obj, vdc.hcbVerdict.selectedRecord());
+      }
+      else
+      {
+        HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, subj, true);
+        objList.add(obj);
+        objList.throwLastException();
+      }
+
+      if (detaching != null)
+        detaching.detach();
+
+      if (otherDetaching != null)
+        otherDetaching.detach();
+    }
+    catch (RelationCycleException e)
+    {
+      if (showErrMsg)
+        messageDialog(e.getMessage(), mtError);
+
+      return false;
+    }
+
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean canAttach()
+  {
+    if ((obj.getID() == subj.getID()) && (obj.getType() == subj.getType()))
+      return falseWithErrorMessage("A record cannot be its own parent. Please select another record.");
+
+    if (db.getObjectList(relType, subj, true).contains(obj))
+      return falseWithErrorMessage("Unable to associate the records as requested: They are already associated in the requested way.");
+
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean canDetach()
+  {
+    return relType != rtNone;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void detach()
+  {
+    db.getObjectList(relType, subj, true).remove(obj);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  boolean canDetachWithoutAttaching(boolean doDetach)
+  {
+    if (HyperDB.isUnstoredRecord(obj.getID(), obj.getType()))
+      return false;
+
+    HDT_Record objToAdd = null;
+
+    switch (subj.getType())
+    {
+      case hdtDebate : case hdtNote : case hdtGlossary : case hdtWorkLabel : case hdtPersonGroup :
+
+        if (relType == RelationSet.getRelation(subj.getType(), subj.getType()))
+          if (db.getObjectList(relType, subj, true).size() == 1)
+            objToAdd = db.records(subj.getType()).getByID(1);
+
+        break;
+
+      case hdtPosition :
+
+        if ((relType == rtDebateOfPosition) || (relType == rtParentPosOfPos))
+        {
+          HDT_Position position = (HDT_Position)subj;
+          if ((position.debates.size() + position.largerPositions.size()) == 1)
+            objToAdd = db.debates.getByID(1);
+        }
+        break;
+
+      default : break;
+    }
+
+    if (doDetach)
+    {
+      detach();
+
+      if (objToAdd != null)
+        db.getObjectList(getRelation(subj.getType(), objToAdd.getType()), subj, true).add(objToAdd);
+    }
+
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -135,11 +241,11 @@ public class RecordTreeEdge
     if (relType == rtNone)
     {
       result = prime * result + ((parent == null) ? 0 : parent.hashCode());
-      result = prime * result + ((child == null) ? 0 : child.hashCode());
+      result = prime * result + ((child  == null) ? 0 : child .hashCode());
     }
     else
     {
-      result = prime * result + ((obj == null) ? 0 : obj.hashCode());
+      result = prime * result + ((obj  == null) ? 0 : obj .hashCode());
       result = prime * result + ((subj == null) ? 0 : subj.hashCode());
     }
     return result;
@@ -163,87 +269,6 @@ public class RecordTreeEdge
       return (other.parent == parent) && (other.child == child);
 
     return (other.obj == obj) && (other.subj == subj);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean canAttach()
-  {
-    if ((obj.getID() == subj.getID()) && (obj.getType() == subj.getType()))
-      return falseWithErrorMessage("A record cannot be its own parent. Please select another record.");
-
-    if (db.getObjectList(relType, subj, true).contains(obj))
-      return falseWithErrorMessage("Unable to associate the records as requested: They are already associated in the requested way.");
-
-    if ((subj.getType() == hdtMiscFile) && (obj.getType() == hdtWorkLabel))
-      if (HDT_MiscFile.class.cast(subj).work.isNotNull())
-        return falseWithErrorMessage("A file record's labels cannot be changed while it is attached to a work record.");
-
-    return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean canDetach()
-  {
-    return relType != rtNone;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void detach()
-  {
-    if (detached) return;
-
-    db.getObjectList(relType, subj, true).remove(obj);
-    detached = true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public boolean canDetachWithoutAttaching(boolean doDetach)
-  {
-    if (HyperDB.isUnstoredRecord(obj.getID(), obj.getType()))
-      return false;
-
-    HDT_Record objToAdd = null;
-
-    switch (subj.getType())
-    {
-      case hdtDebate : case hdtNote : case hdtGlossary : case hdtWorkLabel : case hdtPersonGroup :
-
-        if (relType == RelationSet.getRelation(subj.getType(), subj.getType()))
-          if (db.getObjectList(relType, subj, true).size() == 1)
-            objToAdd = db.records(subj.getType()).getByID(1);
-
-        break;
-
-      case hdtPosition :
-
-        if ((relType == RelationType.rtDebateOfPosition) || (relType == RelationType.rtParentPosOfPos))
-        {
-          HDT_Position position = (HDT_Position)subj;
-          if ((position.debates.size() + position.largerPositions.size()) == 1)
-            objToAdd = db.debates.getByID(1);
-        }
-        break;
-
-      default : break;
-    }
-
-    if (doDetach)
-    {
-      detach();
-
-      if (objToAdd != null)
-        db.getObjectList(getRelation(subj.getType(), objToAdd.getType()), subj, true).add(objToAdd);
-    }
-
-    return true;
   }
 
 //---------------------------------------------------------------------------

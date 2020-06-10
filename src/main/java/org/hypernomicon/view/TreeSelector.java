@@ -23,17 +23,15 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
-import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
+import org.hypernomicon.view.wrappers.RecordTreeEdge;
 
 public class TreeSelector
 {
@@ -141,46 +139,16 @@ public class TreeSelector
 
   public boolean select(HDT_Record record, boolean showErrMsg)
   {
-    final RelationType relType = getRelTypeForTargetType(record.getType());
-    RelationType oldRelType = null;
-    int ndx = -1;
-    HyperObjList<HDT_Record, HDT_Record> objList;
-    final HDT_Record subj = getSubj(),
-                     obj  = baseIsSubj ? target : base;
+    RecordTreeEdge newEdge = baseIsSubj ? new RecordTreeEdge(record, base) : new RecordTreeEdge(base, record),
+                   oldEdge = ((target == null) || (base == null)) ?
+                               null
+                             :
+                               baseIsSubj ? new RecordTreeEdge(target, base) : new RecordTreeEdge(base, target);
 
-    if (target != null)
-    {
-      oldRelType = getRelation(subj.getType(), obj.getType());
-      objList = db.getObjectList(oldRelType, subj, true);
-      ndx = objList.indexOf(obj);
-      objList.remove(ndx);
-    }
+    boolean rv = newEdge.attach(oldEdge, showErrMsg);
 
-    if (baseIsSubj)
-    {
-      objList = db.getObjectList(relType, base, true);
-      objList.add(record);
-    }
-    else
-    {
-      objList = db.getObjectList(relType, record, true);
-      objList.add(base);
-    }
-
-    try { objList.throwLastException(); }
-    catch (RelationCycleException e)
-    {
-      if (showErrMsg)
-        messageDialog("Cannot use selected record: Records would be organized in a cycle as a result.", mtError);
-
-      if (target != null)
-        db.getObjectList(oldRelType, subj, true).add(ndx, obj);
-
-      return false;
-    }
-
-    target = record;
-    return true;
+    if (rv) target = record;
+    return rv;
   }
 
 //---------------------------------------------------------------------------
