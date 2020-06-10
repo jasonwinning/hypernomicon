@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.records.*;
 
 import com.google.common.collect.ImmutableSet;
@@ -113,6 +114,10 @@ public class StrongLink
       return falseWithErrorMessage("Two records of the same type cannot be linked together.");
     if ((spoke1.getSpoke().isUnitable() == false) || (spoke2.getSpoke().isUnitable() == false))
       return falseWithErrorMessage("One or more of the records are not of a linkable type.");
+    if (HyperDB.isUnstoredRecord(spoke1.getSpoke().getID(), spoke1.getType()))
+      return falseWithErrorMessage("That " + db.getTypeName(spoke1.getType()) + " record cannot be linked to another record.");
+    if (HyperDB.isUnstoredRecord(spoke2.getSpoke().getID(), spoke2.getType()))
+      return falseWithErrorMessage("That " + db.getTypeName(spoke2.getType()) + " record cannot be linked to another record.");
 
     HDT_Hub hub;
     StrongLink link;

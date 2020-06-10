@@ -27,6 +27,7 @@ import static org.hypernomicon.util.Util.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
@@ -166,18 +167,24 @@ public class TreeSelector
     if (record2.getType() == record1.getType())
       return falseWithErrMsgCond(showErrMsg, "You cannot connect records of the same type.");
 
+    if (HyperDB.isUnstoredRecord(record1.getID(), record1.getType()))
+      return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " record cannot be connected to another record.");
+
+    if (HyperDB.isUnstoredRecord(record2.getID(), record2.getType()))
+      return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record cannot be connected to another record.");
+
     if (record2.isLinked())
     {
       if (record2.getLink().getSpoke(record1.getType()) != null)
-        return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " is already connected to a " + db.getTypeName(record1.getType()) + ".");
+        return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record is already connected to a " + db.getTypeName(record1.getType()) + " record.");
 
       if (record1.getType() == hdtDebate)
         if (record2.getLink().getSpoke(hdtPosition) != null)
-          return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " is already connected to a " + db.getTypeName(hdtPosition) + ".");
+          return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record is already connected to a " + db.getTypeName(hdtPosition) + " record.");
 
       if (record1.getType() == hdtPosition)
         if (record2.getLink().getSpoke(hdtDebate) != null)
-          return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " is already connected to a " + db.getTypeName(hdtDebate) + ".");
+          return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record is already connected to a " + db.getTypeName(hdtDebate) + " record.");
 
       if (record1.isLinked())
         return falseWithErrMsgCond(showErrMsg, "Both records are already linked to other records.");
@@ -186,15 +193,15 @@ public class TreeSelector
     if (record1.isLinked())
     {
       if (record1.getLink().getSpoke(record2.getType()) != null)
-        return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " is already connected to a " + db.getTypeName(record2.getType()) + ".");
+        return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " record is already connected to a " + db.getTypeName(record2.getType()) + " record.");
 
       if (record2.getType() == hdtDebate)
         if (record1.getLink().getSpoke(hdtPosition) != null)
-          return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " is already connected to a " + db.getTypeName(hdtPosition) + ".");
+          return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " record is already connected to a " + db.getTypeName(hdtPosition) + " record.");
 
       if (record2.getType() == hdtPosition)
         if (record1.getLink().getSpoke(hdtDebate) != null)
-          falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " is already connected to a " + db.getTypeName(hdtDebate) + ".");
+          falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " record is already connected to a " + db.getTypeName(hdtDebate) + " record.");
     }
 
     ui.uniteRecords(record1, record2, showErrMsg == false);

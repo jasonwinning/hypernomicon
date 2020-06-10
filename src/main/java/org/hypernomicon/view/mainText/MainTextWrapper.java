@@ -29,6 +29,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import org.hypernomicon.App;
+import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.Connector;
@@ -240,7 +241,7 @@ public final class MainTextWrapper
 
     view.setOnMouseClicked(mouseEvent ->
     {
-      if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2))
+      if (mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2) && canEdit())
         mainTextWrapper.beginEditing(true);
     });
 
@@ -248,13 +249,21 @@ public final class MainTextWrapper
 
     int keyWorksSize = keyWorks == null ? 0 : getNestedKeyWorkCount(curRecord, keyWorks);
 
-    if (Jsoup.parse(html).text().trim().isEmpty() && (keyWorksSize == 0) && noDisplayRecords)
+    if (Jsoup.parse(html).text().trim().isEmpty() && (keyWorksSize == 0) && noDisplayRecords && canEdit())
       beginEditing(false);
     else
       setReadOnlyHTML(completeHtml, we, viewInfo, null, true);
 
     showing = true;
     curWrapper = this;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private boolean canEdit()
+  {
+    return curRecord == null ? false : (HyperDB.isUnstoredRecord(curRecord.getID(), curRecord.getType()) == false);
   }
 
 //---------------------------------------------------------------------------
@@ -647,6 +656,8 @@ public final class MainTextWrapper
 
   public void beginEditing(boolean focus)
   {
+    if (canEdit() == false) return;
+
     removeFromParent(bpEditorRoot);
     removeFromParent(view);
 
