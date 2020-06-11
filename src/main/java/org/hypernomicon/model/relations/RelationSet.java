@@ -111,7 +111,10 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     switch (type)
     {
       case rtParentWorkOfWork         : hasNestedItems = false; subjType = hdtWork;          objType = hdtWork;            break;
-      case rtParentGroupOfGroup       : hasNestedItems = false; subjType = hdtPersonGroup;   objType = hdtPersonGroup;     break;
+      case rtParentGroupOfGroup       : hasNestedItems = false; subjType = hdtPersonGroup;   objType = hdtPersonGroup;
+
+        trackOrphans = true; break;
+
       case rtParentLabelOfLabel       : hasNestedItems = false; subjType = hdtWorkLabel;     objType = hdtWorkLabel;
 
         trackOrphans = true; break;
@@ -165,7 +168,10 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case rtTypeOfFile               : hasNestedItems = false; subjType = hdtMiscFile;      objType = hdtFileType;        break;
       case rtConceptOfTerm            : hasNestedItems = false; subjType = hdtTerm;          objType = hdtConcept;         break;
       case rtGlossaryOfConcept        : hasNestedItems = false; subjType = hdtConcept;       objType = hdtGlossary;        break;
-      case rtParentGlossaryOfGlossary : hasNestedItems = false; subjType = hdtGlossary;      objType = hdtGlossary;        break;
+      case rtParentGlossaryOfGlossary : hasNestedItems = false; subjType = hdtGlossary;      objType = hdtGlossary;
+
+        trackOrphans = true; break;
+
       case rtLabelOfWork              : hasNestedItems = false; subjType = hdtWork;          objType = hdtWorkLabel;       break;
       case rtLabelOfFile              : hasNestedItems = false; subjType = hdtMiscFile;      objType = hdtWorkLabel;       break;
       case rtWorkOfMiscFile           : hasNestedItems = false; subjType = hdtMiscFile;      objType = hdtWork;            break;

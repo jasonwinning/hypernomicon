@@ -2364,10 +2364,11 @@ public final class MainCtrlr
         position.debates.add(db.debates.getByID(1));
     });
 
-    db.getOrphans(rtParentDebateOfDebate, HDT_Debate     .class).forEach(debate -> debate.largerDebates.add(db.debates     .getByID(1)));
-    db.getOrphans(rtParentNoteOfNote    , HDT_Note       .class).forEach(note   -> note  .parentNotes  .add(db.notes       .getByID(1)));
-    db.getOrphans(rtParentLabelOfLabel  , HDT_WorkLabel  .class).forEach(label  -> label .parentLabels .add(db.workLabels  .getByID(1)));
-    db.getOrphans(rtParentGroupOfGroup  , HDT_PersonGroup.class).forEach(group  -> group .parentGroups .add(db.personGroups.getByID(1)));
+    db.getOrphans(rtParentDebateOfDebate    , HDT_Debate     .class).forEach(debate   -> debate  .largerDebates   .add(db.debates     .getByID(1)));
+    db.getOrphans(rtParentNoteOfNote        , HDT_Note       .class).forEach(note     -> note    .parentNotes     .add(db.notes       .getByID(1)));
+    db.getOrphans(rtParentLabelOfLabel      , HDT_WorkLabel  .class).forEach(label    -> label   .parentLabels    .add(db.workLabels  .getByID(1)));
+    db.getOrphans(rtParentGroupOfGroup      , HDT_PersonGroup.class).forEach(group    -> group   .parentGroups    .add(db.personGroups.getByID(1)));
+    db.getOrphans(rtParentGlossaryOfGlossary, HDT_Glossary   .class).forEach(glossary -> glossary.parentGlossaries.add(db.glossaries  .getByID(1)));
   }
 
 //---------------------------------------------------------------------------

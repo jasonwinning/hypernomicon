@@ -143,9 +143,9 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       },
       this::chooseParent);
 
-    tree.addContextMenuItem("Detach from this parent", HDT_Record.class,
-      record -> tree.canDetach(false),
-      record -> tree.canDetach(true));
+    tree.addContextMenuItem("Detach from this parent",
+      row -> tree.canDetach(row, false),
+      row -> tree.canDetach(row, true));
 
     tree.addContextMenuItem("Rename...", HDT_WorkLabel.class,
       label -> db.isLoaded(),

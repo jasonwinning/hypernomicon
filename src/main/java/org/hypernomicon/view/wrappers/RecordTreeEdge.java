@@ -18,6 +18,7 @@
 package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
@@ -31,7 +32,6 @@ import org.hypernomicon.model.records.HDT_Argument;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.relations.HyperObjList;
-import org.hypernomicon.model.relations.RelationSet;
 
 public class RecordTreeEdge
 {
@@ -175,7 +175,7 @@ public class RecordTreeEdge
 
   public boolean canDetach()
   {
-    return relType != rtNone;
+    return (relType != rtNone) && (relType != rtGlossaryOfConcept);
   }
 
 //---------------------------------------------------------------------------
@@ -191,40 +191,14 @@ public class RecordTreeEdge
 
   boolean canDetachWithoutAttaching(boolean doDetach)
   {
-    if (HyperDB.isUnstoredRecord(obj.getID(), obj.getType()))
+    if ((canDetach() == false) || HyperDB.isUnstoredRecord(obj.getID(), obj.getType()))
       return false;
-
-    HDT_Record objToAdd = null;
-
-    switch (subj.getType())
-    {
-      case hdtDebate : case hdtNote : case hdtGlossary : case hdtWorkLabel : case hdtPersonGroup :
-
-        if (relType == RelationSet.getRelation(subj.getType(), subj.getType()))
-          if (db.getObjectList(relType, subj, true).size() == 1)
-            objToAdd = db.records(subj.getType()).getByID(1);
-
-        break;
-
-      case hdtPosition :
-
-        if ((relType == rtDebateOfPosition) || (relType == rtParentPosOfPos))
-        {
-          HDT_Position position = (HDT_Position)subj;
-          if ((position.debates.size() + position.largerPositions.size()) == 1)
-            objToAdd = db.debates.getByID(1);
-        }
-        break;
-
-      default : break;
-    }
 
     if (doDetach)
     {
       detach();
 
-      if (objToAdd != null)
-        db.getObjectList(getRelation(subj.getType(), objToAdd.getType()), subj, true).add(objToAdd);
+      ui.attachOrphansToRoots();
     }
 
     return true;

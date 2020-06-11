@@ -33,6 +33,8 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.dialogs.ChangeParentDlgCtrlr;
+import org.hypernomicon.model.records.HDT_Concept;
+import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet;
@@ -210,8 +212,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   {
     super.reset();
 
-    debateTree.reset(db.debates.getByID(1));
-    noteTree  .reset(db.notes.getByID(1));
+    debateTree.reset(db.debates   .getByID(1));
+    noteTree  .reset(db.notes     .getByID(1));
     labelTree .reset(db.workLabels.getByID(1));
 
     if (hasTerms)
@@ -234,6 +236,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
     if ((list.size() != 1) || (list.get(0) != column))
       list.setAll(column);
+    else
+      ttv.sort();
 
     tcb.refresh();
   }
@@ -353,6 +357,15 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
         nullSwitch(parent.getValue(), true, value -> value.getRecord() == null)))
       return false;
 
+    if ((source.getType() == hdtConcept) && (target.getType() == hdtGlossary))
+    {
+      HDT_Concept concept = (HDT_Concept)source;
+      HDT_Glossary glossary = (HDT_Glossary)target;
+
+      if (concept.term.get().getConcept(glossary) != null)
+        return false;
+    }
+
     expand(treeItem);
 
     return getValidTargetTypes(source.getType()).contains(target.getType());
@@ -421,14 +434,16 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean canDetach(boolean doDetach)
+  public boolean canDetach(TreeRow childRow, boolean doDetach)
   {
-    TreeItem<TreeRow> item = selectedItem();
+    if (childRow == null) return false;
+
+    TreeItem<TreeRow> item = childRow.treeItem;
 
     TreeRow parentRow = nullSwitch(nullSwitch(item, null, TreeItem::getParent), null, TreeItem::getValue);
 
     HDT_Record parent = nullSwitch(parentRow, null, TreeRow::getRecord),
-               child = nullSwitch(nullSwitch(item, null, TreeItem::getValue), null, TreeRow::getRecord);
+               child = childRow.getRecord();
 
     if ((parent == null) || (child == null)) return false;
 
