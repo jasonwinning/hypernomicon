@@ -21,6 +21,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.tree.AbstractTreeRow;
 
 import javafx.geometry.Orientation;
 import javafx.scene.Node;

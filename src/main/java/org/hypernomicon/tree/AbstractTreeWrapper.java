@@ -15,11 +15,12 @@
  *
  */
 
-package org.hypernomicon.view.wrappers;
+package org.hypernomicon.tree;
 
 import java.util.List;
 
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.view.wrappers.DragNDropContainer;
 
 import javafx.scene.control.Control;
 import javafx.scene.control.SelectionModel;
@@ -31,22 +32,22 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
 {
   protected boolean selectingFromCB = false;
 
-  public abstract RowType newRow(HDT_Record rootRecord, TreeModel<RowType> treeModel);
-  public abstract TreeItem<RowType> getTreeItem(RowType treeRow);
-  public abstract TreeItem<RowType> getRoot();
-  public abstract SelectionModel<TreeItem<RowType>> getSelectionModel();
-  public abstract void scrollToNdx(int ndx);
-  public abstract void clear();
-  public abstract List<RowType> getRowsForRecord(HDT_Record record); // should never return null
-  public abstract void focusOnTreeCtrl();
-  public abstract void expandMainBranches();
+  protected abstract RowType newRow(HDT_Record rootRecord, TreeModel<RowType> treeModel);
+  protected abstract TreeItem<RowType> getTreeItem(RowType treeRow);
+  protected abstract TreeItem<RowType> getRoot();
+  protected abstract SelectionModel<TreeItem<RowType>> getSelectionModel();
+  protected abstract void scrollToNdx(int ndx);
+  protected abstract void clear();
+  protected abstract List<RowType> getRowsForRecord(HDT_Record record); // should never return null
+  protected abstract void focusOnTreeCtrl();
+  protected abstract void expandMainBranches();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public AbstractTreeWrapper(Control ctrl) { super(ctrl); }
+  protected AbstractTreeWrapper(Control ctrl)   { super(ctrl); }
 
-  public void reset()                           { clear(); }
+  protected void reset()                        { clear(); }
   public final TreeItem<RowType> selectedItem() { return getSelectionModel().getSelectedItem(); }
 
 //---------------------------------------------------------------------------

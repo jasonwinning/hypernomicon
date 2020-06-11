@@ -59,6 +59,9 @@ import org.hypernomicon.query.engines.QueryEngine.QueryType;
 import org.hypernomicon.settings.SettingsDlgCtrlr;
 import org.hypernomicon.settings.WebButtonSettingsCtrlr;
 import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsPage;
+import org.hypernomicon.tree.TreeRow;
+import org.hypernomicon.tree.TreeTabCtrlr;
+import org.hypernomicon.tree.TreeWrapper;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.WebButton;
@@ -276,7 +279,7 @@ public final class MainCtrlr
     TermTab    .create();
 
     QueryTabCtrlr    .addHyperTab(queryTabEnum , tabQueries, "query/QueryTab");
-    TreeTabCtrlr     .addHyperTab(treeTabEnum  , tabTree   , "view/tabs/TreeTab");
+    TreeTabCtrlr     .addHyperTab(treeTabEnum  , tabTree   , "tree/TreeTab");
 
     addSelectorTab(omniTabEnum);
     addSelectorTab(listTabEnum);

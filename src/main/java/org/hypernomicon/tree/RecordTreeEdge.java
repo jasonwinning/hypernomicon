@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.view.wrappers;
+package org.hypernomicon.tree;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.App.*;
@@ -39,7 +39,7 @@ public class RecordTreeEdge
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final HDT_Record parent, child;
+  final HDT_Record parent, child;
   private final HDT_Record subj, obj;
   final RelationType relType;
 
@@ -80,7 +80,7 @@ public class RecordTreeEdge
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean mustDetachIfAttaching(RecordTreeEdge otherEdge)
+  boolean mustDetachIfAttaching(RecordTreeEdge otherEdge)
   {
     if (relType == rtNone)
       return false;
@@ -97,7 +97,7 @@ public class RecordTreeEdge
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public RecordTreeEdge edgeToDetach()
+  RecordTreeEdge edgeToDetach()
   {
     if ((relType == rtNone) || db.relationIsMulti(relType))
       return null;
@@ -159,7 +159,7 @@ public class RecordTreeEdge
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean canAttach()
+  boolean canAttach()
   {
     if ((obj.getID() == subj.getID()) && (obj.getType() == subj.getType()))
       return falseWithErrorMessage("A record cannot be its own parent. Please select another record.");
@@ -173,7 +173,7 @@ public class RecordTreeEdge
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean canDetach()
+  boolean canDetach()
   {
     return (relType != rtNone) && (relType != rtGlossaryOfConcept);
   }

@@ -30,9 +30,10 @@ import org.hypernomicon.fileManager.FileTable.*;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
+import org.hypernomicon.tree.AbstractTreeRow;
+import org.hypernomicon.tree.TreeModel;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.wrappers.AbstractTreeRow;
-import org.hypernomicon.view.wrappers.TreeModel;
+
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.ImageView;
 

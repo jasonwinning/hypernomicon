@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.dialogs;
+package org.hypernomicon.tree;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -24,12 +24,9 @@ import static org.hypernomicon.util.Util.*;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.view.tabs.TreeTabCtrlr;
-import org.hypernomicon.view.wrappers.HyperTreeCellValue;
-import org.hypernomicon.view.wrappers.RecordTreeEdge;
-import org.hypernomicon.view.wrappers.TreeRow;
-import org.hypernomicon.view.wrappers.TreeWrapper;
+
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
@@ -50,14 +47,14 @@ public class ChooseParentDlgCtrlr extends HyperDlg
   private Set<RecordType> types;
   private HDT_Record parent, child;
 
-  public HDT_Record getParent() { return parent; }
+  HDT_Record getParent() { return parent; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ChooseParentDlgCtrlr build(HDT_Record child)
+  static ChooseParentDlgCtrlr build(HDT_Record child)
   {
-    return ((ChooseParentDlgCtrlr) create("ChooseParentDlg", "Record Select", true)).init(child);
+    return ((ChooseParentDlgCtrlr) createUsingFullPath("tree/ChooseParentDlg", "Record Select", true)).init(child);
   }
 
 //---------------------------------------------------------------------------

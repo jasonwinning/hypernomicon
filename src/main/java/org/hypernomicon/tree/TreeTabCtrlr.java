@@ -15,12 +15,11 @@
  *
  */
 
-package org.hypernomicon.view.tabs;
+package org.hypernomicon.tree;
 
 import java.util.List;
 
 import org.controlsfx.control.MasterDetailPane;
-import org.hypernomicon.dialogs.ChooseParentDlgCtrlr;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
@@ -28,11 +27,7 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
-import org.hypernomicon.view.wrappers.HyperTreeCellValue;
-import org.hypernomicon.view.wrappers.RecordTreeEdge;
-import org.hypernomicon.view.wrappers.TreeModel;
-import org.hypernomicon.view.wrappers.TreeRow;
-import org.hypernomicon.view.wrappers.TreeWrapper;
+import org.hypernomicon.view.tabs.HyperTab;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -72,7 +67,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   private boolean useViewInfo = false;
   private String lastTextHilited = "";
 
-  public String textToHilite = "";
+  String textToHilite = "";
   private TreeWrapper tree;
 
   @Override protected RecordType getType()        { return hdtNone; }
@@ -418,7 +413,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String getTreePath(TreeTableView<TreeRow> ttv2, TreeItem<TreeRow> newValue)
+  static String getTreePath(TreeTableView<TreeRow> ttv2, TreeItem<TreeRow> newValue)
   {
     if (newValue == null) return "";
 

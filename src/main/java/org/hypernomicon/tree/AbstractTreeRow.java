@@ -15,9 +15,11 @@
  *
  */
 
-package org.hypernomicon.view.wrappers;
+package org.hypernomicon.tree;
 
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.view.wrappers.AbstractRow;
+
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.ImageView;
 
@@ -27,13 +29,13 @@ public abstract class AbstractTreeRow<HDT_T extends HDT_Record, RowType extends 
 {
   protected TreeItem<RowType> treeItem = null;
   protected ImageView graphic = null;
-  protected final TreeModel<RowType> treeModel;
+  private final TreeModel<RowType> treeModel;
 
   protected AbstractTreeRow(TreeModel<RowType> treeModel) { this.treeModel = treeModel; }
 
 //---------------------------------------------------------------------------
 
-  public abstract ImageView getGraphic();
+  protected abstract ImageView getGraphic();
 
   final TreeModel<RowType> getTreeModel()                { return treeModel; }
   @Override public final TreeItem<RowType> getTreeItem() { return treeItem; }

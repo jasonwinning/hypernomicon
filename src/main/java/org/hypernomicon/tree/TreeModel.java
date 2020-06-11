@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.view.wrappers;
+package org.hypernomicon.tree;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -138,7 +138,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void copyTo(TreeModel<RowType> dest)
+  void copyTo(TreeModel<RowType> dest)
   {
     parentToChildren.getAllHeads().forEach(parent ->
       parentToChildren.getForwardSet(parent).forEach(child ->
@@ -248,7 +248,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addKeyWorkRelation(RecordType recordType, boolean forward)
+  void addKeyWorkRelation(RecordType recordType, boolean forward)
   {
     recordTypes.addAll(EnumSet.of(recordType, hdtWork, hdtMiscFile));
 

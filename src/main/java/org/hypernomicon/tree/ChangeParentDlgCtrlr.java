@@ -15,12 +15,12 @@
  *
  */
 
-package org.hypernomicon.dialogs;
+package org.hypernomicon.tree;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 
-import org.hypernomicon.view.wrappers.RecordTreeEdge;
+import org.hypernomicon.dialogs.HyperDlg;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
@@ -33,16 +33,16 @@ public class ChangeParentDlgCtrlr extends HyperDlg
   @FXML private Label label1, label2, label3;
   @FXML private TextField tfChild, tfNewParent, tfOldParent1, tfOldParent2;
 
-  public boolean detachDragSource() { return chkDetach1.isSelected(); }
+  boolean detachDragSource() { return chkDetach1.isSelected(); }
 
   @Override protected boolean isValid() { return true; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ChangeParentDlgCtrlr build(RecordTreeEdge dragTargetEdge, RecordTreeEdge dragSourceEdge, RecordTreeEdge otherEdgeToDetach)
+  static ChangeParentDlgCtrlr build(RecordTreeEdge dragTargetEdge, RecordTreeEdge dragSourceEdge, RecordTreeEdge otherEdgeToDetach)
   {
-    return ((ChangeParentDlgCtrlr) create("ChangeParentDlg", "Copy or Move Record to Destination", true))
+    return ((ChangeParentDlgCtrlr) createUsingFullPath("tree/ChangeParentDlg", "Copy or Move Record to Destination", true))
                                   .init(dragTargetEdge, dragSourceEdge, otherEdgeToDetach);
   }
 

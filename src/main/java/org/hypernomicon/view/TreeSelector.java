@@ -32,7 +32,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
-import org.hypernomicon.view.wrappers.RecordTreeEdge;
+import org.hypernomicon.tree.RecordTreeEdge;
 
 public class TreeSelector
 {

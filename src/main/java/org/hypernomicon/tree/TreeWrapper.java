@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.view.wrappers;
+package org.hypernomicon.tree;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
-import org.hypernomicon.dialogs.ChangeParentDlgCtrlr;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_Record;
@@ -60,12 +59,12 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   private final TreeCB tcb;
   private boolean searchingDown = true, searchingNameOnly = false;
   private TreeRow draggingRow = null;
-  public final TreeModel<TreeRow> debateTree, termTree, labelTree, noteTree;
+  final TreeModel<TreeRow> debateTree, termTree, labelTree, noteTree;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TreeWrapper(TreeTableView<TreeRow> ttv, boolean hasTerms, ComboBox<TreeRow> comboBox, boolean limitedControl)
+  TreeWrapper(TreeTableView<TreeRow> ttv, boolean hasTerms, ComboBox<TreeRow> comboBox, boolean limitedControl)
   {
     super(ttv);
 
@@ -154,7 +153,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void removeRecord(HDT_Record record)
+  void removeRecord(HDT_Record record)
   {
     debateTree.removeRecord(record);
     noteTree  .removeRecord(record);
@@ -223,8 +222,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked")
-  public void sort()
+  @SuppressWarnings("unchecked") void sort()
   {
     TreeTableColumn<TreeRow, ?> column = ttv.getColumns().get(0);
 
@@ -374,7 +372,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Set<RecordType> getValidTargetTypes(RecordType sourceType)
+  Set<RecordType> getValidTargetTypes(RecordType sourceType)
   {
     Set<RecordType> set = RelationSet.getRelationsForSubjType(sourceType).stream().map(db::getObjType).collect(Collectors.toSet());
     if (sourceType == hdtWork)
@@ -434,7 +432,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean canDetach(TreeRow childRow, boolean doDetach)
+  boolean canDetach(TreeRow childRow, boolean doDetach)
   {
     if (childRow == null) return false;
 

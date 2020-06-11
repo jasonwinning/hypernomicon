@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.view.wrappers;
+package org.hypernomicon.tree;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -66,11 +66,11 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HyperTreeCellValue getNameCell() { return new HyperTreeCellValue(this); }
-  String getCBText()                      { return record == null ? text : "(" + db.getTypeName(getRecordType()) + ") " + getName(); }
-  public String getName()                 { return record == null ? text : (record.getType() == hdtWork ? record.getCBText() : record.listName()); }
+  HyperTreeCellValue getNameCell() { return new HyperTreeCellValue(this); }
+  String getCBText()               { return record == null ? text : "(" + db.getTypeName(getRecordType()) + ") " + getName(); }
+  String getName()                 { return record == null ? text : (record.getType() == hdtWork ? record.getCBText() : record.listName()); }
 
-  public String getDescString()
+  String getDescString()
   {
     return (record != null) && record.hasDesc() ? ((HDT_RecordWithDescription)record).getDesc().getPlainForDisplay() : "";
   }
@@ -85,7 +85,7 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public String getTypeString()
+  String getTypeString()
   {
     if (record == null) return "";
 
