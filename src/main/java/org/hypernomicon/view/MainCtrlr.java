@@ -409,9 +409,7 @@ public final class MainCtrlr
     if (SystemUtils.IS_OS_MAC)
     {
       topHBox.getChildren().remove(topToolBar);
-      topHBox.setMinHeight(0.0);
-      topHBox.setPrefHeight(0.0);
-      topHBox.setMaxHeight(0.0);
+      setHeights(topHBox, 0.0);
       midAnchorPane.getChildren().add(topToolBar);
       AnchorPane.setTopAnchor(topToolBar, 0.0);
       AnchorPane.setRightAnchor(topToolBar, 0.0);

@@ -155,11 +155,6 @@ public class TreeSelector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean falseWithErrMsgCond(boolean showErrMsg, String errMsg)
-  {
-    return showErrMsg ? falseWithErrorMessage(errMsg) : false;
-  }
-
   public boolean selectToUnite(HDT_RecordWithConnector record2, boolean showErrMsg)
   {
     HDT_RecordWithConnector record1 = (HDT_RecordWithConnector) base;

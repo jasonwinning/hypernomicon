@@ -19,6 +19,7 @@ package org.hypernomicon.view.tabs;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitMenuButton;
@@ -26,17 +27,21 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.DirectoryChooser;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_Note;
+import org.hypernomicon.dialogs.RenameDlgCtrlr;
+import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.RecordType;
@@ -51,6 +56,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.dialogs.RenameDlgCtrlr.NameType.ntFolder;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -62,8 +68,9 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 {
   final private SplitMenuButton btnFolder = new SplitMenuButton();
-  final private Button btnBrowse = new Button("...");
+  final private Button btnBrowse = new Button("..."), btnCreateFolder = new Button("Create Folder");
   final private TextField tfFolder = new TextField();
+  private BorderPane bp;
   private TabPane tabPane;
   private Tab tabSubnotes, tabMentioners;
   private HyperTable htParents, htSubnotes, htMentioners;
@@ -92,6 +99,10 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     ctrlr.update(curNote);
 
     tfFolder.setText(curNote.getFolderStr());
+
+    bp.setLeft(curNote.folder.isNull() ? btnCreateFolder : btnFolder);
+
+    bp.setDisable(HyperDB.isUnstoredRecord(curNote.getID(), hdtNote));
 
     folderPath = curNote.filePath();
 
@@ -227,16 +238,19 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     });
 
     setToolTip(btnFolder, "Show folder in system explorer");
+    setToolTip(btnCreateFolder, "Create a new folder and assign it to this note");
 
-    AnchorPane ap = new AnchorPane();
-    ap.getChildren().addAll(btnFolder, tfFolder, btnBrowse);
-    AnchorPane.setLeftAnchor(btnFolder, 0.0);
-    AnchorPane.setRightAnchor(btnBrowse, 0.0);
-    AnchorPane.setLeftAnchor(tfFolder, 75.0);
-    AnchorPane.setRightAnchor(tfFolder, 28.0);
+    BorderPane.setMargin(btnBrowse, new Insets(0, 2, 0, 0));
+    BorderPane.setMargin(tfFolder, new Insets(0, 4, 0, 4));
+
+    bp = new BorderPane();
+    bp.setLeft(btnFolder);
+    bp.setCenter(tfFolder);
+    bp.setRight(btnBrowse);
+
     tfFolder.setEditable(false);
 
-    GridPane.setColumnIndex(ap, 1);
+    GridPane.setColumnIndex(bp, 1);
     ctrlr.gpToolBar.getColumnConstraints().get(0).setMinWidth(510.0);
     ctrlr.gpToolBar.getColumnConstraints().get(0).setMaxWidth(510.0);
     ctrlr.gpToolBar.getColumnConstraints().get(0).setHgrow(javafx.scene.layout.Priority.NEVER);
@@ -245,7 +259,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     ctrlr.gpToolBar.getColumnConstraints().get(1).setMaxWidth(USE_COMPUTED_SIZE);
     ctrlr.gpToolBar.getColumnConstraints().get(1).setPrefWidth(USE_COMPUTED_SIZE);
     ctrlr.gpToolBar.getColumnConstraints().get(1).setHgrow(javafx.scene.layout.Priority.ALWAYS);
-    ctrlr.gpToolBar.getChildren().set(1, ap);
+    ctrlr.gpToolBar.getChildren().set(1, bp);
 
     htParents = new HyperTable(ctrlr.tvParents, 2, true, PREF_KEY_HT_NOTE_PARENTS);
 
@@ -271,8 +285,9 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     db.addMentionsNdxCompleteHandler(this::updateMentioners);
 
-    btnFolder.setOnAction(event -> launchFile(folderPath));
-    btnBrowse.setOnAction(event -> browseClick());
+    btnFolder      .setOnAction(event -> launchFile(folderPath));
+    btnCreateFolder.setOnAction(event -> createFolder());
+    btnBrowse      .setOnAction(event -> browseClick());
 
     htMentioners.addDefaultMenuItems();
     htSubnotes.addDefaultMenuItems();
@@ -284,20 +299,67 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void browseClick()
+  private void createFolder()
+  {
+    HDT_Folder parentFolder = HyperPath.getFolderFromFilePath(getParentForNewFolder(), true);
+
+    String folderName = FilePath.removeInvalidFileNameChars(recordName());
+
+    if (folderName.isBlank())
+      folderName = FilePath.removeInvalidFileNameChars(curNote.name());
+
+    if (folderName.isBlank())
+    {
+      RenameDlgCtrlr dlg = RenameDlgCtrlr.build("Create Folder in: " + parentFolder.filePath(), ntFolder, "");
+
+      if (dlg.showModal() == false) return;
+
+      folderName = dlg.getNewName();
+    }
+
+    FilePath childFilePath = parentFolder.filePath().resolve(folderName);
+
+    try
+    {
+      Files.createDirectory(childFilePath.toPath());
+    }
+    catch (FileAlreadyExistsException e)
+    {
+      messageDialog("Unable to create the folder: A file with that name already exists.", mtError);
+      return;
+    }
+    catch (IOException e)
+    {
+      messageDialog("Unable to create the folder: " + e.getMessage(), mtError);
+      return;
+    }
+
+    assignFolder(HyperPath.getFolderFromFilePath(childFilePath, true));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private FilePath getParentForNewFolder()
+  {
+    HDT_Folder folder = curNote.getDefaultFolder();
+
+    return (folder != null) && folder.filePath().exists() ? folder.filePath() : db.topicalPath();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void browseClick()
   {
     if (ui.cantSaveRecord()) return;
 
     DirectoryChooser dirChooser = new DirectoryChooser();
 
-    if (FilePath.isEmpty(folderPath) || (folderPath.exists() == false))
-    {
-      HDT_Folder folder = curNote.getDefaultFolder();
-
-      dirChooser.setInitialDirectory((folder != null) && folder.filePath().exists() ? folder.filePath().toFile() : db.topicalPath().toFile());
-    }
-    else
-      dirChooser.setInitialDirectory(folderPath.toFile());
+    dirChooser.setInitialDirectory(FilePath.isEmpty(folderPath) || (folderPath.exists() == false) ?
+      getParentForNewFolder().toFile()
+    :
+      folderPath.toFile());
 
     dirChooser.setTitle("Select Folder");
 
@@ -313,6 +375,14 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
       return;
     }
 
+    assignFolder(folder);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void assignFolder(HDT_Folder folder)
+  {
     boolean noOtherNotes = folder.notes.isEmpty();
 
     curNote.folder.set(folder == db.getTopicalFolder() ? null : folder);
@@ -328,12 +398,19 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override public void clear()
   {
-    ctrlr.clear();
+    setHeights(btnFolder      , 25.0 * displayScale);
+    setHeights(tfFolder       , 25.0 * displayScale);
+    setHeights(btnCreateFolder, 25.0 * displayScale);
+    setHeights(btnBrowse      , 25.0 * displayScale);
 
-    htParents.clear();
-    htSubnotes.clear();
+    ctrlr       .clear();
+    htParents   .clear();
+    htSubnotes  .clear();
     htMentioners.clear();
-    tfFolder.clear();
+    tfFolder    .clear();
+
+    if (curNote == null)
+      bp.setLeft(btnFolder);
 
     tabSubnotes.setText(subnotesTabTitle);
     tabMentioners.setText(mentionersTabTitle);

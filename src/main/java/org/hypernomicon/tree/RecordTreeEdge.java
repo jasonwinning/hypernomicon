@@ -23,7 +23,6 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import org.hypernomicon.dialogs.VerdictDlgCtrlr;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
@@ -112,6 +111,9 @@ public class RecordTreeEdge
 
   public boolean attach(RecordTreeEdge detaching, boolean showErrMsg)
   {
+    if (canAttach(showErrMsg) == false)
+      return false;
+
     RecordTreeEdge otherDetaching = edgeToDetach();
     if ((otherDetaching != null) && otherDetaching.equals(detaching))
       otherDetaching = null;
@@ -147,10 +149,7 @@ public class RecordTreeEdge
     }
     catch (RelationCycleException e)
     {
-      if (showErrMsg)
-        messageDialog(e.getMessage(), mtError);
-
-      return false;
+      return falseWithErrMsgCond(showErrMsg, e.getMessage());
     }
 
     return true;
@@ -159,13 +158,16 @@ public class RecordTreeEdge
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean canAttach()
+  boolean canAttach(boolean showErrMsg)
   {
+    if ((relType == rtFolderOfNote) && HyperDB.isUnstoredRecord(subj.getID(), hdtNote))
+      return falseWithErrMsgCond(showErrMsg, "A folder cannot be assigned to that record.");
+
     if ((obj.getID() == subj.getID()) && (obj.getType() == subj.getType()))
-      return falseWithErrorMessage("A record cannot be its own parent. Please select another record.");
+      return falseWithErrMsgCond(showErrMsg, "A record cannot be its own parent. Please select another record.");
 
     if (db.getObjectList(relType, subj, true).contains(obj))
-      return falseWithErrorMessage("Unable to associate the records as requested: They are already associated in the requested way.");
+      return falseWithErrMsgCond(showErrMsg, "Unable to associate the records as requested: They are already associated in the requested way.");
 
     return true;
   }
@@ -197,7 +199,6 @@ public class RecordTreeEdge
     if (doDetach)
     {
       detach();
-
       ui.attachOrphansToRoots();
     }
 

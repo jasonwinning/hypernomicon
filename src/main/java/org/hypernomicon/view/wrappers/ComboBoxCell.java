@@ -153,9 +153,8 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     cB = new ComboBox<>();
     cB.setMaxWidth(Double.MAX_VALUE);
     cB.setPrefWidth(getWidth() - getGraphicTextGap() * 2);
-    cB.setMinHeight (18.0 * displayScale);
-    cB.setPrefHeight(18.0 * displayScale);
-    cB.setMaxHeight (18.0 * displayScale);
+
+    setHeights(cB, 18.0 * displayScale);
 
     HyperTableRow row = getTableRow().getItem();
 

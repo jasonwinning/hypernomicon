@@ -496,13 +496,8 @@ public class NewPersonDlgCtrlr extends HyperDlg
         double height = 419.0 * displayScale,
                diff = dialogStage.getHeight() - stagePane.getHeight();
 
-         stagePane.setMinHeight(height);
-         stagePane.setMaxHeight(height);
-         stagePane.setPrefHeight(height);
-
-         dialogStage.setMinHeight(height + diff);
-         dialogStage.setMaxHeight(height + diff);
-         dialogStage.setHeight(height + diff);
+         setHeights(stagePane  , height);
+         setHeights(dialogStage, height + diff);
 
          tabPane.setVisible(true);
 

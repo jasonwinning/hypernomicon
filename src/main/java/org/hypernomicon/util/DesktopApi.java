@@ -17,8 +17,6 @@
 
 package org.hypernomicon.util;
 
-import static org.hypernomicon.util.Util.MessageDialogType.*;
-
 import java.awt.Desktop;
 import java.io.IOException;
 import java.io.InputStream;
@@ -194,16 +192,10 @@ public class DesktopApi
     }
     catch (IOException | InterruptedException e)
     {
-      if (showErrMsg)
-        messageDialog("An error occurred while trying to start application: " + e.getMessage(), mtError);
-
-      return false;
+      return falseWithErrMsgCond(showErrMsg, "An error occurred while trying to start application: " + e.getMessage());
     }
 
-    if ((exitValue != 0) && showErrMsg)
-      messageDialog("An error occurred while trying to start application: " + errorSB.toString(), mtError);
-
-    return exitValue == 0;
+    return exitValue == 0 ? true : falseWithErrMsgCond(showErrMsg, "An error occurred while trying to start application: " + errorSB.toString());
   }
 
 //---------------------------------------------------------------------------

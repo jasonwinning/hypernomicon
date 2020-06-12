@@ -527,6 +527,11 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static boolean falseWithErrMsgCond(boolean showErrMsg, String errMsg)
+  {
+    return showErrMsg ? falseWithErrorMessage(errMsg) : false;
+  }
+
   public static boolean falseWithErrorMessage  (String msg                  ) { return falseWithMessage(msg, mtError      , null       ); }
   public static boolean falseWithErrorMessage  (String msg, Node nodeToFocus) { return falseWithMessage(msg, mtError      , nodeToFocus); }
   public static boolean falseWithWarningMessage(String msg                  ) { return falseWithMessage(msg, mtWarning    , null       ); }
@@ -782,6 +787,23 @@ public final class Util
     AnchorPane.setBottomAnchor(node, bottom);
     AnchorPane.setLeftAnchor  (node, left  );
     AnchorPane.setRightAnchor (node, right );
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void setHeights(Region region, Double ht)
+  {
+    region.setMinHeight(ht);
+    region.setMaxHeight(ht);
+    region.setPrefHeight(ht);
+  }
+
+  public static void setHeights(Stage stage, Double ht)
+  {
+    stage.setMinHeight(ht);
+    stage.setMaxHeight(ht);
+    stage.setHeight(ht);
   }
 
 //---------------------------------------------------------------------------

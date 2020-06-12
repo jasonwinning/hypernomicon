@@ -400,7 +400,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     if (dragSourceEdge.equals(otherEdgeToDetach))
       otherEdgeToDetach = null;
 
-    if (dragTargetEdge.canAttach() == false)
+    if (dragTargetEdge.canAttach(true) == false)
       return;
 
     if (dragSourceEdge.equals(dragTargetEdge))
