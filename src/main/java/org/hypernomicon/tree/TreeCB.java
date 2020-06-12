@@ -38,7 +38,7 @@ class TreeCB
   private final ComboBox<TreeRow> cb;
   private final Map<HDT_Record, TreeRow> recordToRow;
   private final ObservableList<TreeRow> rows;
-  private boolean sorted = false;
+  private boolean sorted = false, changeIsProgrammatic = false;
   private final TreeWrapper tree;
 
 //---------------------------------------------------------------------------
@@ -59,9 +59,13 @@ class TreeCB
 
       HDT_Record record = tree.selectedRecord();
 
+      changeIsProgrammatic = true;
+
       comboBox.setItems(null);
       rows.sort((row1, row2) -> row1.getCBText().toLowerCase().compareTo(row2.getCBText().toLowerCase()));
       comboBox.setItems(rows);
+
+      changeIsProgrammatic = false;
 
       if (record != null)
         select(record);
@@ -79,6 +83,8 @@ class TreeCB
 
     comboBox.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {
+      if (changeIsProgrammatic) return;
+
       if (newValue == null)
         tree.selectRecord(null, -1, true);
       else if (newValue.getRecordID() > -1)
@@ -112,7 +118,10 @@ class TreeCB
 
   void clear()
   {
+    changeIsProgrammatic = true;
     rows.clear();
+    changeIsProgrammatic = false;
+
     recordToRow.clear();
   }
 
@@ -125,7 +134,10 @@ class TreeCB
 
     TreeRow row = new TreeRow(record, null);
     recordToRow.put(record, row);
+
+    changeIsProgrammatic = true;
     rows.add(row);
+    changeIsProgrammatic = false;
   }
 
 //---------------------------------------------------------------------------
@@ -135,7 +147,9 @@ class TreeCB
   {
     if (tree.getRowsForRecord(record).isEmpty() == false) return;
 
+    changeIsProgrammatic = true;
     rows.remove(recordToRow.get(record));
+    changeIsProgrammatic = false;
 
     recordToRow.remove(record);
   }
@@ -145,7 +159,9 @@ class TreeCB
 
   void clearSelection()
   {
+    changeIsProgrammatic = true;
     cb.getSelectionModel().clearSelection();
+    changeIsProgrammatic = false;
   }
 
 //---------------------------------------------------------------------------
@@ -165,7 +181,9 @@ class TreeCB
   {
     clearSelection();
 
+    changeIsProgrammatic = true;
     nullSwitch(recordToRow.get(record), cb.getSelectionModel()::select);
+    changeIsProgrammatic = false;
   }
 
 //---------------------------------------------------------------------------

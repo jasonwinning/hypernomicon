@@ -26,6 +26,8 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.HyperDB.*;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
 import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
@@ -41,7 +43,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
   private final List<HDT_MiscFile> miscFiles;
   private final List<HDT_WorkFile> workFiles;
   private final List<HDT_Person> picturePeople;
-  
+
   private final HyperPath path;
   private boolean checkedForExistence;
 
@@ -64,7 +66,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
 //---------------------------------------------------------------------------
 
   public boolean isSpecial(boolean checkSubfolders) { return db.isSpecialFolder(getID(), checkSubfolders); }
-  
+
   @Override public HyperPath getPath() { return path; }
   @Override public String name()       { return path.getNameStr(); }
   @Override public String getCBText()  { return path.getNameStr(); }
@@ -213,7 +215,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
   public boolean containsFilesThatAreInUse()
   {
     if ((workFiles.size() > 0) || (picturePeople.size() > 0) || (miscFiles.size() > 0) || isSpecial(true)) return true;
-    
+
     return childFolders.stream().anyMatch(childFolder -> childFolder.path.getRecordsString().length() > 0);
   }
 
@@ -225,7 +227,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     if ( ! (notes.isEmpty() && picturePeople.isEmpty() && workFiles.isEmpty() && miscFiles.isEmpty())) return false;
 
     if (db.isProtectedRecord(getID(), getType(), false)) return false;
-    
+
     return childFolders.stream().allMatch(HDT_Folder::hasNoNonFolderRecordDependencies);
   }
 
@@ -235,6 +237,35 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
   public HDT_Note closestAncestorNote()
   {
     return notes.isEmpty() ? nullSwitch(parentFolder(), db.notes.getByID(1), HDT_Folder::closestAncestorNote) : notes.get(0);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HDT_Folder createSubfolder(String folderName)
+  {
+    boolean restartWatcher = folderTreeWatcher.stop();
+
+    FilePath childFilePath = filePath().resolve(folderName);
+    HDT_Folder childFolder = null;
+
+    try
+    {
+      Files.createDirectory(childFilePath.toPath());
+      childFolder = HyperPath.getFolderFromFilePath(childFilePath, true);
+    }
+    catch (FileAlreadyExistsException e)
+    {
+      messageDialog("Unable to create the folder: A file with that name already exists.", mtError);
+    }
+    catch (IOException e)
+    {
+      messageDialog("Unable to create the folder: " + e.getMessage(), mtError);
+    }
+
+    if (restartWatcher) folderTreeWatcher.createNewWatcherAndStart();
+
+    return childFolder;
   }
 
 //---------------------------------------------------------------------------

@@ -171,12 +171,12 @@ public abstract class HDT_RecordBase implements HDT_Record
 
       switch (schema.getCategory())
       {
-        case hdcConnector     : item = new HDI_OnlineConnector    (schema, (HDT_RecordWithConnector) this); break;
-        case hdcPath          : item = new HDI_OnlinePath         (schema, (HDT_RecordWithPath     ) this); break;
-        case hdcBibEntryKey   : item = new HDI_OnlineBibEntryKey  (schema, (HDT_Work               ) this); break;
-        case hdcAuthors       : item = new HDI_OnlineAuthors      (schema, (HDT_Work               ) this); break;
-        case hdcHubSpokes     : item = new HDI_OnlineHubSpokes    (schema, (HDT_Hub                ) this); break;
-        case hdcPersonName    : item = new HDI_OnlinePersonName   (schema, (HDT_Person             ) this); break;
+        case hdcConnector     : item = new HDI_OnlineConnector    (schema, (HDT_RecordWithConnector ) this); break;
+        case hdcPath          : item = new HDI_OnlinePath         (schema, (HDT_RecordWithPath      ) this); break;
+        case hdcBibEntryKey   : item = new HDI_OnlineBibEntryKey  (schema, (HDT_Work                ) this); break;
+        case hdcAuthors       : item = new HDI_OnlineAuthors      (schema, (HDT_RecordWithAuthors<?>) this); break;
+        case hdcHubSpokes     : item = new HDI_OnlineHubSpokes    (schema, (HDT_Hub                 ) this); break;
+        case hdcPersonName    : item = new HDI_OnlinePersonName   (schema, (HDT_Person              ) this); break;
 
         case hdcBoolean       : item = new HDI_OnlineBoolean      (schema, this); break;
         case hdcTernary       : item = new HDI_OnlineTernary      (schema, this); break;

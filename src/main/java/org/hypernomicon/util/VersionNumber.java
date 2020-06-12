@@ -29,7 +29,8 @@ import static org.hypernomicon.util.Util.*;
 public class VersionNumber implements Magnitude<VersionNumber>
 {
   private final List<Integer> parts;
-  private final int minParts = 2;
+  private final int minParts;
+  public static int minimumParts = 2;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -37,6 +38,8 @@ public class VersionNumber implements Magnitude<VersionNumber>
   public VersionNumber(Integer... parts)
   {
     List<Integer> tempParts = Lists.newArrayList(parts);
+
+    minParts = minimumParts;
 
     while (tempParts.size() < minParts)
       tempParts.add(0);
@@ -49,6 +52,8 @@ public class VersionNumber implements Magnitude<VersionNumber>
     List<Integer> tempParts = new ArrayList<>();
 
     Arrays.asList(str.split("\\.")).forEach(partStr -> tempParts.add(parseInt(partStr, 0)));
+
+    minParts = minimumParts;
 
     while (tempParts.size() < minParts)
       tempParts.add(0);

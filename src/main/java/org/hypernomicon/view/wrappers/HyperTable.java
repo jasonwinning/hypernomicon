@@ -32,8 +32,10 @@ import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
+import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
+import org.hypernomicon.model.records.HDT_Term;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.relations.NestedValue;
@@ -550,7 +552,15 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     Populator pop = null;
     RecordTypePopulator rtp = null;
 
-    ui.treeSelector.reset(ui.activeRecord(), true);
+    if (row.getRecordType() == hdtGlossary)
+    {
+      HDT_Term term = HDT_Term.class.cast(ui.activeRecord());
+      HDT_Concept concept = nullSwitch(row.getRecord(), null, term::getConcept);
+
+      ui.treeSelector.reset(concept == null ? term : concept, true);
+    }
+    else
+      ui.treeSelector.reset(ui.activeRecord(), true);
 
     if (colNdx > 0)
     {

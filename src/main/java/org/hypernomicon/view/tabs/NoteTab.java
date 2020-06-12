@@ -32,8 +32,6 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.DirectoryChooser;
 
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -317,24 +315,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
       folderName = dlg.getNewName();
     }
 
-    FilePath childFilePath = parentFolder.filePath().resolve(folderName);
-
-    try
-    {
-      Files.createDirectory(childFilePath.toPath());
-    }
-    catch (FileAlreadyExistsException e)
-    {
-      messageDialog("Unable to create the folder: A file with that name already exists.", mtError);
-      return;
-    }
-    catch (IOException e)
-    {
-      messageDialog("Unable to create the folder: " + e.getMessage(), mtError);
-      return;
-    }
-
-    assignFolder(HyperPath.getFolderFromFilePath(childFilePath, true));
+    nullSwitch(parentFolder.createSubfolder(folderName), this::assignFolder);
   }
 
 //---------------------------------------------------------------------------

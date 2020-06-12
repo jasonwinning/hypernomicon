@@ -151,7 +151,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     htGlossaries.clear();
 
-    htGlossaries.buildRows(curTerm.getGlossaries(), (row, glossary) -> row.setCellValue(1, glossary, glossary.name()));
+    htGlossaries.buildRows(curTerm.getGlossaries(), (row, glossary) -> row.setCellValue(2, glossary, glossary.name()));
 
     updatingGlossaries = false;
   }
@@ -221,14 +221,13 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     ctrlr.lblParentCaption.setText("Glossaries:");
 
-    ctrlr.tvParents.getColumns().remove(1);
-    htGlossaries = new HyperTable(ctrlr.tvParents, 1, true, PREF_KEY_HT_TERM_GLOSSARIES);
+    htGlossaries = new HyperTable(ctrlr.tvParents, 2, true, PREF_KEY_HT_TERM_GLOSSARIES);
 
-    htGlossaries.addActionCol(ctGoBtn, 1);
+    htGlossaries.addActionCol(ctGoBtn, 2);
+    htGlossaries.addActionCol(ctBrowseBtn, 2);
 
-    htGlossaries.addColWithUpdateHandler(hdtGlossary, ctDropDownList, (row, cellVal, nextColNdx, nextPopulator) -> updateFromGlossaryHT());
-
-    htGlossaries.getColumn(1).setDontCreateNewRecord(true);
+    htGlossaries.addColWithUpdateHandler(hdtGlossary, ctDropDownList, (row, cellVal, nextColNdx, nextPopulator) -> updateFromGlossaryHT())
+                .setDontCreateNewRecord(true);
 
     htGlossaries.addRemoveMenuItem(this::updateFromGlossaryHT);
     htGlossaries.addChangeOrderMenuItem(true, this::updateFromGlossaryHT);
@@ -250,7 +249,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     if (updatingGlossaries) return;
 
     List<HDT_Glossary> oldList = curTerm.getGlossaries(),
-                       newList = htGlossaries.saveToList(1, hdtGlossary);
+                       newList = htGlossaries.saveToList(2, hdtGlossary);
 
     Set<HDT_Glossary> set = new HashSet<>();
 
@@ -441,6 +440,11 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  public void addGlossary(HDT_Glossary glossary)
+  {
+    addGlossary(glossary, curTerm.getGlossaries().size());
+  }
 
   private void addGlossary(HDT_Glossary glossary, int ndx)
   {

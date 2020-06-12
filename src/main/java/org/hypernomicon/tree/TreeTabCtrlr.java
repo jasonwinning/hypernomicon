@@ -124,7 +124,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     tree.addContextMenuItem("Select", HDT_Record.class,
       record -> (ui.treeSelector.getBase() != null) && (record != null) && db.isLoaded(),
-      record -> ui.treeSelect());
+      record -> ui.treeSelector.select(record, true));
 
     tree.addContextMenuItem("Go to this record", HDT_Record.class,
       record -> (record != null) && db.isLoaded(),
@@ -177,6 +177,10 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     tree.addContextMenuItem("New note under this note...", HDT_Note.class,
       note -> db.isLoaded(),
       note -> createChild(note, rtParentNoteOfNote));
+
+    tree.addContextMenuItem("New term in this glossary...", HDT_Glossary.class,
+      glossary -> db.isLoaded(),
+      glossary -> ui.treeSelector.select(glossary, true));
 
     tree.addContextMenuItem("New glossary under this glossary...", HDT_Glossary.class,
       glossary -> db.isLoaded(),
@@ -323,20 +327,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     db.getObjectList(relType, child, true).add(parent);
 
-    if (ui.treeSelector.getBase() != null)
-    {
-      RelationType selRelType = ui.treeSelector.getRelTypeForTargetType(child.getType());
-
-      if (selRelType == rtUnited)
-      {
-        if (ui.treeSelector.selectToUnite((HDT_RecordWithConnector) child, false))
-          return;
-      }
-      else if (selRelType != rtNone)
-        ui.treeSelector.select(child, false);
-    }
-
-    ui.goToRecord(child, false);
+    ui.treeSelector.select(child, false);
   }
 
 //---------------------------------------------------------------------------
@@ -352,6 +343,8 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       newGlossary.setActive(true);
       newGlossary.setName(dlg.getNewName());
       newGlossary.parentGlossaries.add(glossary);
+
+      ui.treeSelector.select(newGlossary, true);
 
       Platform.runLater(() -> { tree.sort(); tree.selectRecord(newGlossary, 0, false); });
     }

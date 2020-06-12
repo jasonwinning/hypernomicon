@@ -22,8 +22,8 @@ import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.Author;
-import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.PersonName;
+import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Person.PotentialKeySet;
 import org.hypernomicon.model.records.HDT_Work;
@@ -659,7 +659,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
       if ((origAuthor != null) && (origAuthor.getPerson() == null))
       {
-        Authors authors = origAuthor.getWork().getAuthors();
+        WorkAuthors authors = origAuthor.getWork().getAuthors();
 
         if (authors.asCollection().contains(origAuthor))
           authors.setAuthorRecord(origAuthor, person);

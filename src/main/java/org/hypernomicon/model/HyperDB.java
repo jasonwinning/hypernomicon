@@ -1969,7 +1969,7 @@ public final class HyperDB
       addPointerSingle(hdtMiscFile, rtWorkOfMiscFile, tagWork);
       addPointerMulti(hdtMiscFile, rtLabelOfFile, tagWorkLabel);
       addPathItem(hdtMiscFile, rtFolderOfMiscFile, tagFolder, tagFileName);
-      addPointerMulti(hdtMiscFile, rtAuthorOfFile, tagAuthor);
+      addAuthorsItem(hdtMiscFile, rtAuthorOfFile);
       addBooleanItem(hdtMiscFile, tagAnnotated);
       addConnectorItem(hdtMiscFile, tagDescription, tagDisplayRecord, tagKeyWork);
 
@@ -2042,7 +2042,7 @@ public final class HyperDB
       addPointerSingle(hdtWork, rtTypeOfWork, tagWorkType);
       addPointerSingle(hdtWork, rtParentWorkOfWork, tagLargerWork);
       addPointerMulti(hdtWork, rtWorkFileOfWork, tagWorkFile);
-      addAuthorsItem();
+      addAuthorsItem(hdtWork, rtAuthorOfWork);
       addPointerMulti(hdtWork, rtInvestigationOfWork, tagInvestigation);
       addPointerMulti(hdtWork, rtLabelOfWork, tagWorkLabel);
       addStringItem(hdtWork, tagWebURL);
@@ -2125,9 +2125,10 @@ public final class HyperDB
   private void addStringItem   (RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcString       , rtNone, tags); }
   private void addPathItem     (RecordType type, RelationType rt, Tag... tags) throws HDB_InternalError { addItem(type, hdcPath         , rt    , tags); }
   private void addConnectorItem(RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcConnector    , rtNone, tags); }
+  private void addAuthorsItem  (RecordType type, RelationType rt             ) throws HDB_InternalError { addItem(type, hdcAuthors      , rt    , tagAuthor); }
 
   private void addBibEntryKeyItem() throws HDB_InternalError { addItem(hdtWork,   hdcBibEntryKey, rtNone,         tagBibEntryKey           ); }
-  private void addAuthorsItem    () throws HDB_InternalError { addItem(hdtWork,   hdcAuthors,     rtAuthorOfWork, tagAuthor                ); }
+
   private void addPersonNameItem () throws HDB_InternalError { addItem(hdtPerson, hdcPersonName,  rtNone,         tagFirstName, tagLastName); }
   private void addHubSpokesItem  () throws HDB_InternalError { addItem(hdtHub,    hdcHubSpokes,   rtNone,         tagLinkedRecord          ); }
 

@@ -35,6 +35,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
@@ -147,7 +148,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     if (curMiscFile == null) return;
 
     if (work == null)
-      htAuthors.buildRows(curMiscFile.authors, (row, author) -> row.setCellValue(1, author, author.getCBText()));
+      htAuthors.buildRows(curMiscFile.authorRecords(), (row, author) -> row.setCellValue(1, author, author.getCBText()));
     else
       htAuthors.buildRows(work.authorRecords, (row, author) -> row.setCellValue(1, author, author.getCBText()));
   }
@@ -257,6 +258,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     if (curMiscFile.work.isNull())
       curMiscFile.setAuthors(htAuthors.saveToList(1, hdtPerson));
+    else
+      db.getObjectList(rtAuthorOfFile, curMiscFile, false).clear();
 
     curMiscFile.setWorkLabels(htLabels.saveToList(2, hdtWorkLabel));
 

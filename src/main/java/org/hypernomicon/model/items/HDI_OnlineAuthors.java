@@ -19,6 +19,7 @@ package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.LinkedHashMap;
@@ -31,34 +32,53 @@ import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.HDI_OfflineAuthors.OfflineAuthor;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Person;
-import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 import org.hypernomicon.model.relations.NestedValue;
 
 public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 {
-  private Authors authors;
-
-  public HDI_OnlineAuthors(HDI_Schema schema, HDT_Work work)
+  public HDI_OnlineAuthors(HDI_Schema schema, HDT_RecordWithAuthors<? extends Authors> record)
   {
-    super(schema, work);
-
-    initAuthors();
+    super(schema, record);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void initAuthors() { authors = HDT_Work.class.cast(record).getAuthors(); }
+  private Authors getAuthors() { return HDT_RecordWithAuthors.class.cast(record).getAuthors(); }
 
-  @Override public void expire()                                   { authors.expire(); }
-  @Override public void resolvePointers() throws HDB_InternalError { authors.resolvePointers(); }
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void expire()
+  {
+    if (record.getType() == hdtMiscFile)
+      db.getObjectList(rtAuthorOfFile, record, false).clear();
+    else
+      getAuthors().expire();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void resolvePointers() throws HDB_InternalError
+  {
+    if (record.getType() == hdtMiscFile)
+      db.resolvePointersByRelation(rtAuthorOfFile, record);
+    else
+      getAuthors().resolvePointers();
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void setFromOfflineValue(HDI_OfflineAuthors val, Tag tag) throws RelationCycleException
   {
-    initAuthors();
+    Authors authors = getAuthors();
+
+    if ((record.getType() == hdtMiscFile) && (authors instanceof WorkAuthors))
+      return;
+
     authors.clearNoMod();
 
     for (OfflineAuthor offlineAuthor : val.authors)
@@ -72,7 +92,10 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
           authors.addNoMod(person, offlineAuthor.nestedItems);
       }
       else
-        authors.addNoMod(offlineAuthor.name, offlineAuthor.nestedItems);
+      {
+        if (authors instanceof WorkAuthors)
+          ((WorkAuthors)authors).addNoMod(offlineAuthor.name, offlineAuthor.nestedItems);
+      }
     }
   }
 
@@ -82,6 +105,11 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
   @Override public void getToOfflineValue(HDI_OfflineAuthors val, Tag tag)
   {
     val.authors.clear();
+
+    Authors authors = getAuthors();
+
+    if ((record.getType() == hdtMiscFile) && (authors instanceof WorkAuthors))
+      return;
 
     authors.forEach(author ->
     {
@@ -134,7 +162,7 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
   @Override public void getStrings(List<String> list, Tag tag, boolean searchLinkedRecords)
   {
     if (searchLinkedRecords)
-      authors.forEach(author -> list.add(author.getNameLastFirst()));
+      getAuthors().forEach(author -> list.add(author.getNameLastFirst()));
   }
 
 //---------------------------------------------------------------------------
@@ -142,9 +170,9 @@ public class HDI_OnlineAuthors extends HDI_OnlineBase<HDI_OfflineAuthors>
 
   @Override public String getResultTextForTag(Tag tag)
   {
-    return authors.stream().map(Author::getNameLastFirst)
-                           .filter(name -> name.length() > 0)
-                           .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+    return getAuthors().stream().map(Author::getNameLastFirst)
+                                .filter(name -> name.length() > 0)
+                                .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
   }
 
 //---------------------------------------------------------------------------

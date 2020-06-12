@@ -55,7 +55,7 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
 
   public final HDT_Record selectedRecord()
   {
-    return nullSwitch(selectedItem(), null, item -> item.getValue().getRecord());
+    return nullSwitch(selectedItem(), (HDT_Record)null, treeItem -> nullSwitch(treeItem.getValue(), null, RowType::getRecord));
   }
 
 //---------------------------------------------------------------------------

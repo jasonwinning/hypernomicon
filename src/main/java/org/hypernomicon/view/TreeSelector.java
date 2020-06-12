@@ -28,9 +28,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hypernomicon.model.HyperDB;
+import org.hypernomicon.model.records.HDT_Concept;
+import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
+import org.hypernomicon.model.records.HDT_Term;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.tree.RecordTreeEdge;
 
@@ -40,10 +43,10 @@ public class TreeSelector
   private final List<TreeTargetType> targetTypes = new ArrayList<>();
   private boolean baseIsSubj = true;
 
-  TreeSelector()              { reset(); }
+  TreeSelector()               { reset(); }
 
-  public HDT_Record getBase() { return base; }
-  HDT_Record getSubj()        { return baseIsSubj ? base : target; }
+  public HDT_Record getBase()  { return base; }
+  private HDT_Record getSubj() { return baseIsSubj ? base : target; }
 
   public void setTarget(HDT_Record target) { this.target = target; }
 
@@ -73,7 +76,10 @@ public class TreeSelector
 
   public void addTargetType(RecordType targetType)
   {
-    RelationType relType = baseIsSubj ? getRelation(base.getType(), targetType) : getRelation(targetType, base.getType());
+    RelationType relType = targetType == hdtGlossary ?
+      rtGlossaryOfConcept
+    :
+      (baseIsSubj ? getRelation(base.getType(), targetType) : getRelation(targetType, base.getType()));
 
     targetTypes.add(new TreeTargetType(relType, targetType));
   }
@@ -95,7 +101,7 @@ public class TreeSelector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public RelationType getRelTypeForTargetType(RecordType targetType)
+  private RelationType getRelTypeForTargetType(RecordType targetType)
   {
     return findFirst(targetTypes, ttType -> ttType.targetType == targetType, rtNone, ttType -> ttType.relType);
   }
@@ -118,7 +124,7 @@ public class TreeSelector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  String getTypesStr()
+  private String getTypesStr()
   {
     int lastNdx = targetTypes.size() - 1;
     String msg = "";
@@ -138,24 +144,86 @@ public class TreeSelector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean select(HDT_Record record, boolean showErrMsg)
+  public void select(HDT_Record record, boolean showErrMsg)
   {
+    if (base == null)
+    {
+      falseWithErrMsgCond(showErrMsg, "Internal error #91827");
+      return;
+    }
+
+    if (record == null) return;
+
+    RelationType relType = getRelTypeForTargetType(record.getType());
+
+    if (relType == rtNone)
+    {
+      falseWithErrMsgCond(showErrMsg, "You must select a record of type: " + getTypesStr() + ".");
+      return;
+    }
+
+    if (relType == rtUnited)
+    {
+      selectToUnite((HDT_RecordWithConnector) record, showErrMsg);
+      return;
+    }
+
+    if (relType == rtGlossaryOfConcept)
+    {
+      if (glossaryChecks((HDT_Glossary) record, showErrMsg) == false)
+        return;
+
+      if (base.getType() == hdtTerm)
+      {
+        ui.goToRecord(base, false);
+        ui.termHyperTab().addGlossary((HDT_Glossary) record);
+        ui.update();
+        return;
+      }
+    }
+
     RecordTreeEdge newEdge = baseIsSubj ? new RecordTreeEdge(record, base) : new RecordTreeEdge(base, record),
                    oldEdge = ((target == null) || (base == null)) ?
-                               null
-                             :
-                               baseIsSubj ? new RecordTreeEdge(target, base) : new RecordTreeEdge(base, target);
+                     null
+                   :
+                     baseIsSubj ? new RecordTreeEdge(target, base) : new RecordTreeEdge(base, target);
 
-    boolean rv = newEdge.attach(oldEdge, showErrMsg);
+    if (newEdge.attach(oldEdge, showErrMsg) == false)
+      return;
 
-    if (rv) target = record;
-    return rv;
+    target = record;
+
+    ui.goToRecord(getSubj(), false);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean selectToUnite(HDT_RecordWithConnector record2, boolean showErrMsg)
+  private boolean glossaryChecks(HDT_Glossary glossary, boolean showErrMsg)
+  {
+    if (base.getType() == hdtTerm)
+    {
+      HDT_Term term = (HDT_Term) base;
+
+      if (term.getConcept(glossary) != null)
+        return falseWithErrMsgCond(showErrMsg, "The term is already in that glossary.");
+
+      return true;
+    }
+
+    HDT_Concept concept = (HDT_Concept) base,
+                otherConcept = concept.term.get().getConcept(glossary);
+
+    if ((otherConcept != null) && (concept != otherConcept))
+      return falseWithErrMsgCond(showErrMsg, "The term is already in that glossary.");
+
+    return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private boolean selectToUnite(HDT_RecordWithConnector record2, boolean showErrMsg)
   {
     HDT_RecordWithConnector record1 = (HDT_RecordWithConnector) base;
 

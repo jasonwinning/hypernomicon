@@ -28,6 +28,7 @@ import org.hypernomicon.dialogs.VerdictDlgCtrlr;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.records.HDT_Argument;
+import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.relations.HyperObjList;
@@ -146,6 +147,9 @@ public class RecordTreeEdge
 
       if (otherDetaching != null)
         otherDetaching.detach();
+
+      if ((relType == rtWorkOfMiscFile) && HDT_MiscFile.class.cast(subj).work.isNotNull())
+        db.getObjectList(rtAuthorOfFile, subj, false).clear();
     }
     catch (RelationCycleException e)
     {

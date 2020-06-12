@@ -191,7 +191,12 @@ public class WorkDlgCtrlr extends HyperDlg
       if (oldWorkFile == null)
       {
         if (filePathToUse == null)
+        {
           btnSrcBrowseClick();
+
+          if (FilePath.isEmpty(origFilePath))
+            safeFocus(tfTitle);
+        }
         else
           useChosenFile(filePathToUse, bdToUse);
       }

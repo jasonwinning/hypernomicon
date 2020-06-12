@@ -37,6 +37,7 @@ import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.StrongLink;
+import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.ObjectGroup;
@@ -161,7 +162,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   @Override public void setRecord(HDT_Work work)     { curWork = work; }
   @Override public MainTextWrapper mainTextWrapper() { return mainText; }
 
-  private List<Author> getAuthorsFromUI()      { return Authors.getListFromObjectGroups(getAuthorGroups(), curWork); }
+  private List<Author> getAuthorsFromUI()      { return WorkAuthors.getListFromObjectGroups(getAuthorGroups(), curWork); }
   public String getShortAuthorsStr()           { return Authors.getShortAuthorsStr(getAuthorsFromUI(), false, true); }
   private List<ObjectGroup> getAuthorGroups()  { return htAuthors.getAuthorGroups(curWork, 1, -1, 2, 3); }
   private void lblSearchKeyClick()             { tfSearchKey.setText(makeWorkSearchKey(getAuthorsFromUI(), tfYear.getText(), curWork)); }

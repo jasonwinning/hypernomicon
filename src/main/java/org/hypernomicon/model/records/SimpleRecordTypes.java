@@ -22,6 +22,7 @@ import java.util.List;
 import com.google.common.collect.EnumHashBiMap;
 
 import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.util.filePath.FilePath;
@@ -41,6 +42,14 @@ public class SimpleRecordTypes
 //---------------------------------------------------------------------------
 
   public interface HDT_RecordWithDescription extends HDT_Record { MainText getDesc(); }
+
+  public interface HDT_RecordWithAuthors<AuthorsType extends Authors> extends HDT_Record
+  {
+    AuthorsType getAuthors();
+
+    default public String getShortAuthorsStr(boolean fnis) { return Authors.getShortAuthorsStr(getAuthors().asCollection(), false, fnis); }
+    default public String getLongAuthorsStr (boolean fnis) { return Authors.getLongAuthorsStr (getAuthors().asCollection(),        fnis); }
+  }
 
   public interface HDT_RecordWithPath extends HDT_Record
   {

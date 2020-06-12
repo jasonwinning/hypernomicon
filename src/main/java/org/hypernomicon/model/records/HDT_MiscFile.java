@@ -29,16 +29,17 @@ import java.util.stream.Collectors;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
+import org.hypernomicon.model.items.FileAuthors;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.HyperObjPointer;
 
-public class HDT_MiscFile extends HDT_RecordWithConnector implements HDT_RecordWithPath
+public class HDT_MiscFile extends HDT_RecordWithConnector implements HDT_RecordWithPath, HDT_RecordWithAuthors<Authors>
 {
   protected final HyperPath path;
-  public final List<HDT_Person> authors;
   public final HyperObjList<HDT_MiscFile, HDT_WorkLabel> labels;
 
   public final HyperObjPointer<HDT_MiscFile, HDT_Work> work;
@@ -51,7 +52,6 @@ public class HDT_MiscFile extends HDT_RecordWithConnector implements HDT_RecordW
   {
     super(xmlState, dataset, tagName);
 
-    authors = getObjList(rtAuthorOfFile);
     labels = getObjList(rtLabelOfFile);
 
     work = getObjPointer(rtWorkOfMiscFile);
@@ -70,16 +70,8 @@ public class HDT_MiscFile extends HDT_RecordWithConnector implements HDT_RecordW
   public void setAnnotated(boolean val) { updateTagBoolean(tagAnnotated, val); }
 
   @Override public HyperPath getPath()  { return path; }
+  @Override public Authors getAuthors() { return nullSwitch(work.get(), new FileAuthors(getObjList(rtAuthorOfFile), this), HDT_Work::getAuthors); }
   @Override public String listName()    { return name(); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public String getShortAuthorsStr(boolean fullNameIfSingleton)
-  {
-    return Authors.getShortAuthorsStr(authors.stream().map(authRecord -> new Author(null, authRecord))
-                                                      .collect(Collectors.toList()), false, fullNameIfSingleton);
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -96,6 +88,16 @@ public class HDT_MiscFile extends HDT_RecordWithConnector implements HDT_RecordW
     });
 
     super.expire();
+  }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  public List<HDT_Person> authorRecords()
+  {
+    return getAuthors().stream().filter(author -> author.getPerson() != null)
+                                .map(Author::getPerson)
+                                .collect(Collectors.toList());
   }
 
   //---------------------------------------------------------------------------

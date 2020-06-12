@@ -46,12 +46,10 @@ import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
 import org.hypernomicon.fileManager.FileRow;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HyperDataset;
-import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
-import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.StrongLink;
+import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.*;
-import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.query.QueryTabCtrlr;
 import org.hypernomicon.query.ResultsRow;
@@ -1286,7 +1284,7 @@ public final class MainCtrlr
   @FXML public void btnSaveClick()
   {
     if (btnSave.getText().equals(TREE_SELECT_BTN_CAPTION))
-      treeSelect();
+      treeSelector.select(getTree().selectedRecord(), true);
     else if (!cantSaveRecord())
       update();
   }
@@ -1299,36 +1297,11 @@ public final class MainCtrlr
     if (cantSaveRecord()) return;
 
     RecordType type = selectorType();
-    String name = hcbGoTo.selectedID() == -1 ? cbGoTo.getEditor().getText() : "";
 
-    HDT_Record record = db.createNewBlankRecord(type);
-    if (name.length() > 0)
-    {
-      if (type == hdtPerson)
-      {
-        HDT_Person person = (HDT_Person)record;
-
-        StringBuilder searchKey = new StringBuilder();
-        PersonName personName = new PersonName(name);
-        person.setName(personName);
-        HDT_Person.makeSearchKey(personName, person, searchKey);
-
-        try { person.setSearchKey(searchKey.toString()); } catch (SearchKeyException e) { noOp(); }
-      }
-      else if (type == hdtWork)
-        record.setName(HDT_Work.fixCase(name.trim()));
-      else
-        record.setName(titleCase(name.trim()));
-    }
-
-    if (type == hdtTerm)
-    {
-      HDT_Concept concept = db.createNewBlankRecord(hdtConcept);
-      HDT_Term.class.cast(record).concepts.add(concept);
-      concept.glossary.set(db.glossaries.getByID(1));
-    }
-
-    goToRecord(record, false);
+    goToRecord(type == hdtTerm ?
+      HDT_Term.create(db.glossaries.getByID(1))
+    :
+      db.createNewBlankRecord(type), false);
   }
 
 //---------------------------------------------------------------------------
@@ -2523,40 +2496,6 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void treeSelect()
-  {
-    if (treeSelector.getBase() == null)
-    {
-      messageDialog("Internal error #91827", mtError);
-      return;
-    }
-
-    HDT_Record record = nullSwitch(getTree().selectedItem(), null, treeItem ->
-                        nullSwitch(treeItem.getValue(), null, TreeRow::getRecord));
-
-    if (record == null) return;
-
-    RelationType relType = treeSelector.getRelTypeForTargetType(record.getType());
-
-    if (relType == rtNone)
-    {
-      messageDialog("You must select a record of type: " + treeSelector.getTypesStr() + ".", mtError);
-      return;
-    }
-
-    if (relType == rtUnited)
-    {
-      treeSelector.selectToUnite((HDT_RecordWithConnector) record, true);
-      return;
-    }
-
-    if (treeSelector.select(record, true))
-      goToRecord(treeSelector.getSubj(), false);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public void uniteRecords(HDT_RecordWithConnector record1, HDT_RecordWithConnector record2, boolean goToRecord2)
   {
     String desc;
@@ -2780,7 +2719,7 @@ public final class MainCtrlr
       }
 
       work = db.createNewBlankRecord(hdtWork);
-      Authors authors = work.getAuthors();
+      WorkAuthors authors = work.getAuthors();
 
       if (bibEntry != null)
       {
@@ -2796,7 +2735,7 @@ public final class MainCtrlr
 
     if ((bdToUse == null) || BibAuthors.isEmpty(bdToUse.getAuthors()))
     {
-      Authors authors = work.getAuthors();
+      WorkAuthors authors = work.getAuthors();
 
       if ((person != null) && (authors.containsPerson(person) == false))
         authors.add(person);

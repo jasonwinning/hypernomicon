@@ -346,7 +346,7 @@ public class OmniFinder
           }
           else if (record.getType() == hdtMiscFile)
           {
-            for (HDT_Person author : ((HDT_MiscFile)record).authors)
+            for (HDT_Person author : ((HDT_MiscFile)record).authorRecords())
               if (authorMatch(null, author, curTier)) return true;
           }
           return false;
@@ -460,15 +460,17 @@ public class OmniFinder
 
             cells.set(2, new HyperTableCell(miscFile.getID(), "", hdtMiscFile, hsmNumeric));
 
-            if (miscFile.authors.isEmpty())
+            List<HDT_Person> authorRecords = miscFile.authorRecords();
+
+            if (authorRecords.isEmpty())
               cells.set(3, new HyperTableCell(-1, "", hdtPerson, hsmTextSimple));
-            else if (miscFile.authors.size() == 1)
+            else if (authorRecords.size() == 1)
             {
-              HDT_Person author = miscFile.authors.get(0);
+              HDT_Person author = authorRecords.get(0);
               cells.set(3, new HyperTableCell(author.getID(), author.getCBText(), hdtPerson, hsmTextSimple));
             }
             else
-              cells.set(3, new HyperTableCell(miscFile.authors.get(0).getID(), miscFile.getShortAuthorsStr(true), hdtPerson, hsmTextSimple));
+              cells.set(3, new HyperTableCell(authorRecords.get(0).getID(), miscFile.getShortAuthorsStr(true), hdtPerson, hsmTextSimple));
 
             break;
 

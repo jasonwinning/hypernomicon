@@ -452,10 +452,12 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
     boolean rv = edge.canDetachWithoutAttaching(doDetach);
 
+    TreeItem<TreeRow> parentItem = getTreeItem(parentRow);
+
     if (rv && doDetach) Platform.runLater(() ->
     {
       sort();
-      ttv.getSelectionModel().select(getTreeItem(parentRow));
+      ttv.getSelectionModel().select(parentItem);
     });
 
     return rv;

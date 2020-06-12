@@ -31,9 +31,10 @@ import java.util.function.Predicate;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.WorkBibData;
 import org.hypernomicon.model.HyperDataset;
-import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.HyperPath;
+import org.hypernomicon.model.items.WorkAuthors;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
@@ -42,9 +43,9 @@ import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.model.relations.ObjectGroup;
 
-public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithPath
+public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithPath, HDT_RecordWithAuthors<WorkAuthors>
 {
-  private final Authors authors;
+  private final WorkAuthors authors;
 
   public final List<HDT_Person> authorRecords;
   public final HyperObjList<HDT_Work, HDT_Investigation> investigations;
@@ -64,7 +65,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   {
     super(xmlState, dataset, tagTitle);
 
-    authors = new Authors(getObjList(rtAuthorOfWork), this);
+    authors = new WorkAuthors(getObjList(rtAuthorOfWork), this);
 
     authorRecords = Collections.unmodifiableList(getObjList(rtAuthorOfWork));
     investigations = getObjList(rtInvestigationOfWork);
@@ -87,6 +88,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
   @Override public String listName()        { return name(); }
   @Override public HyperPath getPath()      { return workFiles.isEmpty() ? HyperPath.EmptyPath : workFiles.get(0).getPath(); }
+  @Override public WorkAuthors getAuthors() { return authors; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -97,7 +99,6 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   public String getDOI()         { return getTagString(tagDOI); }
   public List<String> getISBNs() { return matchISBN(getTagString(tagISBN)); }
   public String getURL()         { return getTagString(tagWebURL); }
-  public Authors getAuthors()    { return authors; }
   public int getStartPageNum()   { return workFiles.isEmpty() ? -1 : getStartPageNum(workFiles.get(0)); }
   public int getEndPageNum()     { return workFiles.isEmpty() ? -1 : getEndPageNum(workFiles.get(0)); }
   public boolean canLaunch()     { return ! (getPath().isEmpty() && getURL().isEmpty()); }
@@ -163,22 +164,6 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     if (theSame) return;
 
     authors.update(newGroups);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public String getShortAuthorsStr(boolean fullNameIfSingleton)
-  {
-    return Authors.getShortAuthorsStr(getAuthors().asCollection(), false, fullNameIfSingleton);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public String getLongAuthorsStr(boolean fullNameIfSingleton)
-  {
-    return Authors.getLongAuthorsStr(getAuthors().asCollection(), fullNameIfSingleton);
   }
 
 //---------------------------------------------------------------------------
