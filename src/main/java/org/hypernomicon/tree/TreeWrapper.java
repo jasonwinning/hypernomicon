@@ -211,9 +211,9 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   {
     super.reset();
 
-    debateTree.reset(db.debates   .getByID(1));
-    noteTree  .reset(db.notes     .getByID(1));
-    labelTree .reset(db.workLabels.getByID(1));
+    debateTree.reset(HDT_Record.class.cast(db.debates   .getByID(1)));
+    noteTree  .reset(HDT_Record.class.cast(db.notes     .getByID(1)));
+    labelTree .reset(HDT_Record.class.cast(db.workLabels.getByID(1)));
 
     if (hasTerms)
       termTree.reset(db.glossaries.getByID(1));

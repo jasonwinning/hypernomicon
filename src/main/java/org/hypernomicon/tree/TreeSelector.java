@@ -15,7 +15,7 @@
  *
  */
 
-package org.hypernomicon.view;
+package org.hypernomicon.tree;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.App.*;
@@ -35,7 +35,6 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.HDT_Term;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
-import org.hypernomicon.tree.RecordTreeEdge;
 
 public class TreeSelector
 {
@@ -43,7 +42,7 @@ public class TreeSelector
   private final List<TreeTargetType> targetTypes = new ArrayList<>();
   private boolean baseIsSubj = true;
 
-  TreeSelector()               { reset(); }
+  public TreeSelector()        { reset(); }
 
   public HDT_Record getBase()  { return base; }
   private HDT_Record getSubj() { return baseIsSubj ? base : target; }
@@ -53,7 +52,7 @@ public class TreeSelector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void reset()
+  public void reset()
   {
     base = null;
     target = null;

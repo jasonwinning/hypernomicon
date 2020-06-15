@@ -46,7 +46,7 @@ public class RecordTreeEdge
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public RecordTreeEdge(HDT_Record parent, HDT_Record child)
+  RecordTreeEdge(HDT_Record parent, HDT_Record child)
   {
     this.parent = parent;
     this.child = child;
@@ -110,7 +110,7 @@ public class RecordTreeEdge
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean attach(RecordTreeEdge detaching, boolean showErrMsg)
+  boolean attach(RecordTreeEdge detaching, boolean showErrMsg)
   {
     if (canAttach(showErrMsg) == false)
       return false;

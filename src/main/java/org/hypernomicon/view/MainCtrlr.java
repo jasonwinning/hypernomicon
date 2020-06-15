@@ -58,6 +58,7 @@ import org.hypernomicon.settings.SettingsDlgCtrlr;
 import org.hypernomicon.settings.WebButtonSettingsCtrlr;
 import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsPage;
 import org.hypernomicon.tree.TreeRow;
+import org.hypernomicon.tree.TreeSelector;
 import org.hypernomicon.tree.TreeTabCtrlr;
 import org.hypernomicon.tree.TreeWrapper;
 import org.hypernomicon.util.PopupDialog;
@@ -1184,7 +1185,7 @@ public final class MainCtrlr
 
     dirChooser.setInitialDirectory(file.exists() && file.isDirectory() ? file : new File(System.getProperty("user.dir")));
 
-    FilePath rootPath = ui.windows.showDirDialog(dirChooser, stage);
+    FilePath rootPath = windows.showDirDialog(dirChooser, stage);
     if (FilePath.isEmpty(rootPath)) return;
 
     String[] list = rootPath.toFile().list();
@@ -2589,21 +2590,21 @@ public final class MainCtrlr
 
   public void importMiscFile(FileRow fileRow, FilePath filePath)
   {
-    if (ui.cantSaveRecord()) return;
+    if (cantSaveRecord()) return;
 
     HDT_MiscFile miscFile = db.createNewBlankRecord(hdtMiscFile);
 
     if (fileRow != null)
       miscFile.getPath().assign(fileRow.getFolder(), fileRow.getFilePath().getNameOnly());
 
-    ui.goToRecord(miscFile, false);
+    goToRecord(miscFile, false);
 
     if (fileHyperTab().showFileDialog(filePath) == false)
     {
       if (fileRow != null)
         miscFile.getPath().clear(false);
 
-      ui.deleteCurrentRecord(false);
+      deleteCurrentRecord(false);
     }
   }
 
