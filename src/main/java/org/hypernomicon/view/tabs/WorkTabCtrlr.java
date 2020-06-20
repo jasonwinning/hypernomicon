@@ -53,7 +53,7 @@ import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
-import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
+import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -170,7 +170,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private void setTabCaption(Tab tab, int cnt) { tab.setText(tabCaptions.get(tab) + " (" + cnt + ")"); }
   private void saveISBNs()                     { curWork.setISBNs(htISBN.dataRowStream().map(row -> row.getText(0)).collect(Collectors.toList())); }
   private void useDOIClick()                   { tfDOI.setText(getDoiFromBibTab()); }
-  private void useISBNClick()                  { htISBN.buildRows(getIsbnsFromBibTab(), (row, isbn) -> row.setCellValue(0, -1, isbn, hdtNone)); }
+  private void useISBNClick()                  { htISBN.buildRows(getIsbnsFromBibTab(), (row, isbn) -> row.setCellValue(0, isbn, hdtNone)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -281,7 +281,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htInvestigations.addColAltPopulatorWithUpdateHandler(hdtPerson, ctDropDownList, new ExternalColumnPopulator(htAuthors, 1), (row, cellVal, nextColNdx, nextPopulator) ->
     {
       ((SubjectPopulator)nextPopulator).setObj(row, HyperTableCell.getRecord(cellVal));
-      row.setCellValue(nextColNdx, new HyperTableCell(-1, "", nextPopulator.getRecordType(row)));
+      row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));
     });
     htInvestigations.addColAltPopulator(hdtInvestigation, ctDropDownList, new SubjectPopulator(rtPersonOfInv, true));
 
@@ -729,7 +729,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     tfSearchKey.setText(curWork.getSearchKey());
     tfURL.setText(curWork.getURL());
 
-    htISBN.buildRows(curWork.getISBNs(), (row, isbn) -> row.setCellValue(0, -1, isbn, hdtNone));
+    htISBN.buildRows(curWork.getISBNs(), (row, isbn) -> row.setCellValue(0, isbn, hdtNone));
 
     mainText.loadFromRecord(curWork, true, getView().getTextInfo());
 
@@ -750,8 +750,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       {
         Populator pop = htAuthors.getPopulator(1);
         pop.populate(null, false);
-        pop.addEntry(null, -1, author.getNameLastFirst());
-        row.setCellValue(1, -1, author.getNameLastFirst(), hdtPerson);
+        pop.addEntry(null, author.getNameLastFirst());
+        row.setCellValue(1, author.getNameLastFirst(), hdtPerson);
       }
       else
         row.setCellValue(1, authorRecord, authorRecord.listName());
@@ -786,7 +786,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         row.setCellValue(0, subWork, subWork.getLongAuthorsStr(true));
 
       row.setCellValue(1, subWork, subWork.name());
-      row.setCellValue(2, subWork, subWork.getYear(), HyperCellSortMethod.hsmNumeric);
+      row.setCellValue(2, subWork, subWork.getYear(), CellSortMethod.smNumeric);
     });
 
   // Populate arguments

@@ -164,12 +164,12 @@ public class HybridSubjectPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public HyperTableCell addEntry(HyperTableRow row, int id, String value)
+  @Override public HyperTableCell addEntry(HyperTableRow row, int id, String text)
   {
     if (row == null) row = dummyRow;
 
-    standardPop.addEntry(row, id, value);
-    return subjPop.addEntry(row, id, value);
+    standardPop.addEntry(row, id, text);
+    return subjPop.addEntry(row, id, text);
   }
 
 //---------------------------------------------------------------------------

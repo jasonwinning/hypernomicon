@@ -61,7 +61,7 @@ import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
-import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
+import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 import org.hypernomicon.view.wrappers.MenuItemSchema;
 import org.hypernomicon.view.wrappers.ReadOnlyCell;
@@ -361,7 +361,7 @@ public class FileManager extends HyperDlg
       history.updateCurrent(new HistoryItem(folderTree.getSelectionModel().getSelectedItem().getValue(), newValue, null));
 
       if (selectNonBlankRecordRow() == false)
-        previewWindow.setPreview(pvsManager, newValue.getFilePath(), 1, -1, null);
+        previewWindow.setPreview(pvsManager, newValue.getFilePath(), null);
     });
 
     recordTable.setOnShowMore(() -> setCurrentFileRow(fileTV.getSelectionModel().getSelectedItem(), true));
@@ -1452,14 +1452,14 @@ public class FileManager extends HyperDlg
 
           HDT_MiscFile miscFile = (HDT_MiscFile) record;
 
-          previewWindow.setPreview(pvsManager, miscFile.filePath(), -1, -1, miscFile);
+          previewWindow.setPreview(pvsManager, miscFile.filePath(), miscFile);
           return;
 
         default : break;
       }
     }
 
-    previewWindow.setPreview(pvsManager, FilePath.isEmpty(fileTablePath) ? filePath : fileTablePath, 1, -1, record);
+    previewWindow.setPreview(pvsManager, FilePath.isEmpty(fileTablePath) ? filePath : fileTablePath, record);
   }
 
 //---------------------------------------------------------------------------
@@ -1509,8 +1509,8 @@ public class FileManager extends HyperDlg
       if ((hasMore) && (relIt.hasNext() == false))
       {
         HyperTableRow row = recordTable.newDataRow();
-        row.setCellValue(0, -1, "",  hdtAuxiliary, HyperCellSortMethod.hsmLast);
-        row.setCellValue(1, -1, "",  hdtNone, HyperCellSortMethod.hsmLast);
+        row.setCellValue(0, "",  hdtAuxiliary, CellSortMethod.smLast);
+        row.setCellValue(1, "",  hdtNone, CellSortMethod.smLast);
         break;
       }
 
@@ -1525,7 +1525,7 @@ public class FileManager extends HyperDlg
     if (folderRecord != null)
     {
       if (selectNonBlankRecordRow() == false)
-        previewWindow.setPreview(pvsManager, folderRecord.filePath(), 1, -1, null);
+        previewWindow.setPreview(pvsManager, folderRecord.filePath(), null);
     }
   }
 

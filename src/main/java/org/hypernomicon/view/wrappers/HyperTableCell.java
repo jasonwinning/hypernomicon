@@ -20,7 +20,7 @@ package org.hypernomicon.view.wrappers;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.makeSortKeyByType;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod.*;
+import static org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Record;
@@ -31,19 +31,19 @@ import org.hypernomicon.model.records.HDT_Work;
 
 public final class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
 {
-  public static enum HyperCellSortMethod
+  public static enum CellSortMethod
   {
-    hsmStandard, hsmTextSimple, hsmNumeric, hsmLast, hsmWork
+    smStandard, smTextSimple, smNumeric, smLast, smWork
   }
 
   public static final HyperTableCell trueCheckboxCell  = new HyperTableCell(1 , "", hdtNone),
                                      falseCheckboxCell = new HyperTableCell(0 , "", hdtNone),
-                                     blankCell = new HyperTableCell(-1, "", hdtNone);
+                                     blankCell = new HyperTableCell("", hdtNone);
 
   private int id;
   private String text;
   private RecordType type;
-  private HyperCellSortMethod sortMethod = hsmStandard;
+  private CellSortMethod sortMethod = smStandard;
 
   public int getID()          { return id; }
   public String getText()     { return text; }
@@ -62,12 +62,14 @@ public final class HyperTableCell implements Comparable<HyperTableCell>, Cloneab
 
 //---------------------------------------------------------------------------
 
-  public HyperTableCell(int newID, String newText, RecordType newType)      { this(newID, newText, newType, hsmStandard); }
-  public HyperTableCell(HDT_Record record, String newText)                  { this(record.getID(), newText, record.getType(), hsmStandard); }
+  public HyperTableCell(           String newText, RecordType newType)         { this(-1   , newText, newType, smStandard); }
+  public HyperTableCell(int newID, String newText, RecordType newType)         { this(newID, newText, newType, smStandard); }
+  public HyperTableCell(HDT_Record record, String newText)                     { this(record.getID(), newText, record.getType(), smStandard); }
 
-  HyperTableCell(HDT_Record record, String newText, HyperCellSortMethod sm) { this(record.getID(), newText, record.getType(), sm); }
+  public HyperTableCell(HDT_Record record, String newText, CellSortMethod sm)  { this(record.getID(), newText, record.getType(), sm); }
+  public HyperTableCell(String newText, RecordType newType, CellSortMethod sm) { this(-1, newText, newType, sm); }
 
-  public HyperTableCell(int newID, String newText, RecordType newType, HyperCellSortMethod newSortMethod)
+  public HyperTableCell(int newID, String newText, RecordType newType, CellSortMethod newSortMethod)
   {
     id = newID;
     text = newText;
@@ -132,7 +134,7 @@ public final class HyperTableCell implements Comparable<HyperTableCell>, Cloneab
   static HyperTableCell simpleSortValue(HyperTableCell cell)
   {
     HyperTableCell newCell = cell.clone();
-    newCell.sortMethod = hsmTextSimple;
+    newCell.sortMethod = smTextSimple;
     return newCell;
   }
 
@@ -141,18 +143,18 @@ public final class HyperTableCell implements Comparable<HyperTableCell>, Cloneab
 
   @Override public int compareTo(HyperTableCell otherCell)
   {
-    if (sortMethod == hsmLast)
+    if (sortMethod == smLast)
       return Integer.MAX_VALUE;
-    else if (otherCell.sortMethod == hsmLast)
+    else if (otherCell.sortMethod == smLast)
       return Integer.MIN_VALUE + 1;
 
-    if (sortMethod == hsmTextSimple)
+    if (sortMethod == smTextSimple)
       return text.compareTo(otherCell.text);
-    else if (sortMethod == hsmNumeric)
+    else if (sortMethod == smNumeric)
     {
       return parseInt(text, Integer.MAX_VALUE) - parseInt(HyperTableCell.getCellText(otherCell), Integer.MAX_VALUE);
     }
-    else if (sortMethod == hsmWork)
+    else if (sortMethod == smWork)
     {
       HDT_Work thisWork = getRecord(), otherWork = otherCell.getRecord();
 

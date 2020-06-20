@@ -63,13 +63,13 @@ public class FilePath implements Comparable<FilePath>
 
   public File toFile()                  { return innerVal.getFile(); }
   public Path toPath()                  { return innerVal.getPath(); }
-  public URI toURI()                    { return nullSwitch(innerVal.getFile(), null, File::toURI); }
-  public boolean exists()               { return innerVal.getFile().exists(); }
-  public long size() throws IOException { return Files.size(innerVal.getPath()); }
-  public boolean isFile()               { return innerVal.getFile().isFile();  }
-  public boolean isDirectory()          { return innerVal.getFile().isDirectory(); }
-  public FilePath getParent()           { return new FilePath(innerVal.getPath().getParent()); }
-  public Instant lastModified()         { return Instant.ofEpochMilli(innerVal.getFile().lastModified()); }
+  public URI toURI()                    { return nullSwitch(toFile(), null, File::toURI); }
+  public boolean exists()               { return toFile().exists(); }
+  public long size() throws IOException { return Files.size(toPath()); }
+  public boolean isFile()               { return toFile().isFile();  }
+  public boolean isDirectory()          { return toFile().isDirectory(); }
+  public FilePath getParent()           { return new FilePath(toPath().getParent()); }
+  public Instant lastModified()         { return Instant.ofEpochMilli(toFile().lastModified()); }
 
   /**
    * Gets the extension of a filename.
@@ -88,7 +88,7 @@ public class FilePath implements Comparable<FilePath>
    * @return the extension of the file or an empty string if none exists or {@code null}
    * if the filename is {@code null}.
    */
-  public String getExtensionOnly()      { return FilenameUtils.getExtension(innerVal.getPathStr()); }
+  public String getExtensionOnly()      { return FilenameUtils.getExtension(toString()); }
 
   public boolean copyTo(FilePath destFilePath, boolean confirmOverwrite) throws IOException { return moveOrCopy(destFilePath, confirmOverwrite, false); }
   public boolean moveTo(FilePath destFilePath, boolean confirmOverwrite) throws IOException { return moveOrCopy(destFilePath, confirmOverwrite, true); }
@@ -102,16 +102,16 @@ public class FilePath implements Comparable<FilePath>
   @Override public int compareTo(FilePath o) { return toPath().compareTo(o.toPath()); }
 
   // If this file is a directory, will return just the directory name. If it is not a directory, will return just the file name.
-  public FilePath getNameOnly() { return new FilePath(FilenameUtils.getName(innerVal.getPathStr())); }
+  public FilePath getNameOnly() { return new FilePath(FilenameUtils.getName(toString())); }
 
   // If this file is a directory, will return the entire path. If it is not a directory, will return the parent directory
-  public FilePath getDirOnly() { return isDirectory() ? this : new FilePath(FilenameUtils.getFullPathNoEndSeparator(innerVal.getPathStr())); }
+  public FilePath getDirOnly() { return isDirectory() ? this : new FilePath(FilenameUtils.getFullPathNoEndSeparator(toString())); }
 
   // this = base, parameter = relative, output = resolved
-  public FilePath resolve(FilePath relativeFilePath) { return new FilePath(innerVal.getPath().resolve(relativeFilePath.toPath())); }
+  public FilePath resolve(FilePath relativeFilePath) { return new FilePath(toPath().resolve(relativeFilePath.toPath())); }
 
   // this = base, parameter = relative, output = resolved
-  public FilePath resolve(String relativeStr) { return new FilePath(innerVal.getPath().resolve(Paths.get(relativeStr))); }
+  public FilePath resolve(String relativeStr) { return new FilePath(toPath().resolve(Paths.get(relativeStr))); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -119,7 +119,7 @@ public class FilePath implements Comparable<FilePath>
   // this = base, parameter = resolved, output = relative
   public FilePath relativize(FilePath resolvedFilePath)
   {
-    try { return new FilePath(innerVal.getPath().relativize(resolvedFilePath.toPath())); }
+    try { return new FilePath(toPath().relativize(resolvedFilePath.toPath())); }
     catch (IllegalArgumentException e) { return null; }
   }
 

@@ -370,14 +370,33 @@ public class SelectWorkDlgCtrlr extends HyperDlg
             }
             else
             {
+              String fullTitle = convertToEnglishChars(strListToStr(titleList, false)).toLowerCase().replaceAll("[^a-z0-9 ]", "");
+              HDT_Work firstMatch = null;
+              boolean multipleMatches = false;
+
               for (HDT_Work curWork : db.works)
               {
-                if (curWork.getNameEngChar().toLowerCase().startsWith(title))
+                if (curWork.getNameEngChar().toLowerCase().replaceAll("[^a-z0-9 ]", "").equals(fullTitle))
                 {
                   work = curWork;
                   updateFields();
                   return;
                 }
+
+                if ((multipleMatches == false) && curWork.getNameEngChar().toLowerCase().startsWith(title))
+                {
+                  if (firstMatch == null)
+                    firstMatch = curWork;
+                  else
+                    multipleMatches = true;
+                }
+              }
+
+              if ((multipleMatches == false) && (firstMatch != null))
+              {
+                work = firstMatch;
+                updateFields();
+                return;
               }
             }
           }

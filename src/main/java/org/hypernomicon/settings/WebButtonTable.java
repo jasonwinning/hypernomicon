@@ -59,13 +59,13 @@ public class WebButtonTable extends WebButtonCtrl
     ht = new HyperTable(tv, 0, true, "");
     this.defaults = defaults;
 
-    List<HyperTableCell> presetCells = Lists.transform(webBtnList, webButton -> new HyperTableCell(-1, webButton.getName(), hdtNone));
+    List<HyperTableCell> presetCells = Lists.transform(webBtnList, webButton -> new HyperTableCell(webButton.getName(), hdtNone));
 
     ht.addTextEditCol(hdtNone, true, false);
     ht.addColAltPopulatorWithUpdateHandler(hdtNone, HyperCtrlType.ctDropDownList, Populator.create(cvtSrchBtnPreset, presetCells),
                                            (row, cellVal, nextColNdx, nextPopulator) ->
     {
-      row.setCellValue(0, -1, nullSwitch(htcToWebButton(cellVal), "", WebButton::getCaption), hdtNone);
+      row.setCellValue(0, nullSwitch(htcToWebButton(cellVal), "", WebButton::getCaption), hdtNone);
     });
 
     ht.addCustomActionCol(-1, "Advanced", (row, colNdx) ->
@@ -87,7 +87,7 @@ public class WebButtonTable extends WebButtonCtrl
         dlg.getPatterns(webBtn);
         webBtnList.add(webBtn);
         ht.getPopulator(1).populate(row, true);
-        row.setCellValue(1, -1, webBtn.getName(), hdtNone);
+        row.setCellValue(1, webBtn.getName(), hdtNone);
       }
       catch (IOException e)
       {
@@ -103,7 +103,7 @@ public class WebButtonTable extends WebButtonCtrl
     {
       WebButton webBtn = ui.webButtonMap.get(prefKey + String.valueOf(ndx));
 
-      ht.newDataRow().setCellValue(1, new HyperTableCell(-1, webBtn.getName(), hdtNone));
+      ht.newDataRow().setCellValue(1, new HyperTableCell(webBtn.getName(), hdtNone));
     }
   }
 

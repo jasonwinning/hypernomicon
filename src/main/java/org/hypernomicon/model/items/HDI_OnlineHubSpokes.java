@@ -104,8 +104,7 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
                                        // hub.expire should be called here, not db.deleteRecord, because pointer resolution is already in progress.
     if (spokeCount == 0) hub.expire(); // HDI_OnlineHubSpokes.resolvePointers (this function) is ultimately called by HyperCore.resolvePointers.
                                        // After the pointers for the hub record items are resolved, HyperCore.resolvePointers checks to see if the
-                                       // record became expired during the process. If so, the hub is removed from the HyperCore (i.e., it is deleted).
-  }
+  }                                    // record became expired during the process. If so, the hub is removed from the HyperCore (i.e., it is deleted).
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

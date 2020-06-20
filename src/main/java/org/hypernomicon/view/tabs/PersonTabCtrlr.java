@@ -53,7 +53,7 @@ import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
+import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
 
 import static java.util.Collections.*;
 
@@ -197,7 +197,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       if (htWorks.containsRecord(work) == false)
       {
         HyperTableRow row = htWorks.newDataRow();
-        row.setCellValue(0, work, work.getYear(), HyperCellSortMethod.hsmNumeric);
+        row.setCellValue(0, work, work.getYear(), CellSortMethod.smNumeric);
 
         String typeName = "";
 
@@ -337,11 +337,11 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       for (HDT_MiscFile miscFile : curPerson.miscFiles)
         if (miscFile.pathNotEmpty())
         {
-          previewWindow.setPreview(pvsPersonTab, miscFile.filePath(), -1, -1, miscFile);
+          previewWindow.setPreview(pvsPersonTab, miscFile.filePath(), miscFile);
           return;
         }
 
-      previewWindow.setPreview(pvsPersonTab, curPerson.filePath(), -1, -1, curPerson);
+      previewWindow.setPreview(pvsPersonTab, curPerson.filePath(), curPerson);
       return;
     }
 
@@ -684,7 +684,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctDropDownList, new StandardPopulator(hdtInstitution, popFilter, true), (row, cellVal, nextColNdx, nextPopulator) ->
     {
       ((SubjectPopulator)nextPopulator).setObj(row, getRecord(cellVal));
-      row.setCellValue(nextColNdx, new HyperTableCell(-1, "", nextPopulator.getRecordType(row)));
+      row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));
     });
     htPersonInst.addColAltPopulator(hdtInstitution, ctDropDownList, new SubjectPopulator(rtParentInstOfInst, true, true));
 
@@ -714,7 +714,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
         previewWindow.setPreview(pvsPersonTab, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
       }
       else
-        previewWindow.setPreview(pvsPersonTab, record.filePath(), -1, -1, record);
+        previewWindow.setPreview(pvsPersonTab, record.filePath(), record);
     });
 
     htArguments = new HyperTable(tvArguments, 4, false, PREF_KEY_HT_PERSON_ARG);

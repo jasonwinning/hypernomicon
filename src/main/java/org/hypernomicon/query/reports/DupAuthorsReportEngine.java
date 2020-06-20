@@ -101,16 +101,16 @@ public class DupAuthorsReportEngine extends ReportEngine
       ObservableList<HyperTableCell> cells = FXCollections.observableArrayList(HyperTableCell.blankCell);
 
       cells.add(author.getPerson() == null ?
-        new HyperTableCell(-1, author.getFullName(false), hdtNone)
+        new HyperTableCell(author.getFullName(false), hdtNone)
       :
-        new HyperTableCell(author.getPerson().getID(), author.getFullName(false), hdtPerson));
+        new HyperTableCell(author.getPerson(), author.getFullName(false)));
 
       cells.add(getWorkCell(author));
 
       cells.add(match.getPerson() == null ?
-        new HyperTableCell(-1, match.getFullName(false), hdtNone)
+        new HyperTableCell(match.getFullName(false), hdtNone)
       :
-        new HyperTableCell(match.getPerson().getID(), match.getFullName(false), hdtPerson));
+        new HyperTableCell(match.getPerson(), match.getFullName(false)));
 
       cells.add(getWorkCell(match));
 
@@ -127,7 +127,7 @@ public class DupAuthorsReportEngine extends ReportEngine
 
   private HyperTableCell getWorkCell(Author author)
   {
-    return nullSwitch(author.getWork(), new HyperTableCell(-1, "", hdtWork), work -> new HyperTableCell(work, work.getCBText()));
+    return nullSwitch(author.getWork(), new HyperTableCell("", hdtWork), work -> new HyperTableCell(work, work.getCBText()));
   }
 
 //---------------------------------------------------------------------------

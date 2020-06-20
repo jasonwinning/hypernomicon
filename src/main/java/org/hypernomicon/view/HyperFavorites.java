@@ -19,7 +19,6 @@ package org.hypernomicon.view;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.view.MainCtrlr.FavMenuItem;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import static org.hypernomicon.App.*;
@@ -40,8 +39,34 @@ import javafx.scene.control.MenuItem;
 
 public class HyperFavorites
 {
-  final List<MenuItem> mainList, queryList;
-  public static final int FIRST_FAV_MENU_ITEM_NDX = 4;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static class FavMenuItem extends MenuItem
+  {
+    public FavMenuItem(HDT_Record record)
+    {
+      super(db.getTypeName(record.getType()) + ": " + record.getCBText());
+      isQuery = false;
+      favRecord = new HyperTableCell(record, record.getCBText());
+      query = null;
+      setOnAction(event -> ui.goToRecord(record, true));
+    }
+
+    public FavMenuItem(QueryFavorite query)
+    {
+      super("Query: " + query.name);
+      isQuery = true;
+      this.query = query;
+      favRecord = null;
+      setOnAction(event -> ui.showSearch(query.autoexec, null, -1, query, null, null, query.name));
+    }
+
+    final private boolean isQuery;
+    final private QueryFavorite query;
+    private HyperTableCell favRecord;
+  }
 
 //---------------------------------------------------------------------------
 
@@ -67,6 +92,9 @@ public class HyperFavorites
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  private final List<MenuItem> mainList, queryList;
+  public static final int FIRST_FAV_MENU_ITEM_NDX = 4;
 
   HyperFavorites(Menu mnuFavorites, Menu mnuQueries)
   {
@@ -149,7 +177,7 @@ public class HyperFavorites
         int id = node.node("ids").getInt(String.valueOf(ndx), -1);
         RecordType type = db.parseTypeTagStr(node.node("types").get(String.valueOf(ndx), ""));
 
-        nullSwitch((HDT_Record)db.records(type).getByID(id), record -> mainList.add(ui.new FavMenuItem(record)));
+        nullSwitch((HDT_Record)db.records(type).getByID(id), record -> mainList.add(new FavMenuItem(record)));
       }
       else if (node.node("favTypes").get(String.valueOf(ndx), "").equals("query"))
       {
@@ -175,7 +203,7 @@ public class HyperFavorites
           query.rows.add(row);
         }
 
-        queryList.add(ui.new FavMenuItem(query));
+        queryList.add(new FavMenuItem(query));
       }
     }
   }

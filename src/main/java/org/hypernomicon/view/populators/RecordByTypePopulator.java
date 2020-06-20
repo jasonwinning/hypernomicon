@@ -29,7 +29,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
-import static org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod.*;
+import static org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
@@ -192,7 +192,7 @@ public class RecordByTypePopulator extends Populator
           firstAdd = false;
         }
 
-        recentChoices.add(new HyperTableCell(record.getID(), nameOnly ? record.name() : record.getCBText(), recordType));
+        recentChoices.add(new HyperTableCell(record, nameOnly ? record.name() : record.getCBText()));
 
         map.put(id, true);
       }
@@ -240,11 +240,11 @@ public class RecordByTypePopulator extends Populator
       return null;
 
     if (nameOnly)
-      return new HyperTableCell(record.getID(), record.name(), record.getType());
+      return new HyperTableCell(record, record.name());
     else if (record.getType() == hdtWork)
-      return new HyperTableCell(record.getID(), record.getCBText(), record.getType(), hsmWork);
+      return new HyperTableCell(record, record.getCBText(), smWork);
     else
-      return new HyperTableCell(record.getID(), record.getCBText(), record.getType());
+      return new HyperTableCell(record, record.getCBText());
   }
 
 //---------------------------------------------------------------------------
@@ -327,13 +327,13 @@ public class RecordByTypePopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public HyperTableCell addEntry(HyperTableRow row, int id, String value)
+  @Override public HyperTableCell addEntry(HyperTableRow row, int id, String text)
   {
     if (row == null) row = dummyRow;
 
-    RecordType type = ((id > 0) || (safeStr(value).length() > 0)) ? rowToRecordType.getOrDefault(row, hdtNone) : hdtNone;
+    RecordType type = ((id > 0) || (safeStr(text).length() > 0)) ? rowToRecordType.getOrDefault(row, hdtNone) : hdtNone;
 
-    HyperTableCell cell = new HyperTableCell(id, value, type);
+    HyperTableCell cell = new HyperTableCell(id, text, type);
 
     if (rowToChoices.containsKey(row) == false)
       rowToChoices.put(row, new ArrayList<>());

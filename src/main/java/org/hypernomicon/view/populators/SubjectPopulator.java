@@ -32,7 +32,7 @@ import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
-import static org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod.*;
+import static org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod.*;
 
 //---------------------------------------------------------------------------
 
@@ -143,11 +143,11 @@ public class SubjectPopulator extends Populator
       HyperTableCell choice;
 
       if (nameOnly)
-        choice = new HyperTableCell(subj.getID(), subj.name(), subj.getType());
+        choice = new HyperTableCell(subj, subj.name());
       else if (subj.getType() == hdtWork)
-        choice = new HyperTableCell(subj.getID(), subj.getCBText(), subj.getType(), hsmWork);
+        choice = new HyperTableCell(subj, subj.getCBText(), smWork);
       else
-        choice = new HyperTableCell(subj.getID(), subj.getCBText(), subj.getType());
+        choice = new HyperTableCell(subj, subj.getCBText());
 
       addToSortedList(choices, choice);
     }
@@ -187,13 +187,13 @@ public class SubjectPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public HyperTableCell addEntry(HyperTableRow row, int id, String value)
+  @Override public HyperTableCell addEntry(HyperTableRow row, int id, String text)
   {
     if (row == null) row = dummyRow;
 
-    RecordType type = ((id > 0) || (safeStr(value).length() > 0)) ? db.getSubjType(relType) : hdtNone;
+    RecordType type = ((id > 0) || (safeStr(text).length() > 0)) ? db.getSubjType(relType) : hdtNone;
 
-    HyperTableCell cell = new HyperTableCell(id, value, type);
+    HyperTableCell cell = new HyperTableCell(id, text, type);
 
     if (rowToChoices.containsKey(row) == false)
       rowToChoices.put(row, new ArrayList<>());

@@ -79,6 +79,7 @@ import org.hypernomicon.query.sources.DatasetQuerySource;
 import org.hypernomicon.query.sources.FilteredQuerySource;
 import org.hypernomicon.query.sources.QuerySource;
 import org.hypernomicon.query.sources.QuerySource.QuerySourceType;
+import org.hypernomicon.view.HyperFavorites.FavMenuItem;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.HyperFavorites.QueryRow;
 import org.hypernomicon.view.HyperView.TextViewInfo;
@@ -194,7 +195,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
             ((query != QUERY_ANY_FIELD_CONTAINS) &&
              (query != QUERY_WITH_NAME_CONTAINING) &&
              (query != QUERY_LIST_ALL)))
-          row.setCellValue(nextColNdx, new HyperTableCell(-1, "", nextPopulator.getRecordType(row)));
+          row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));
 
         ((QueryPopulator)nextPopulator).setQueryType(row, qt, this);
 
@@ -210,7 +211,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         disableAutoShowDropdownList = true;
 
         if (queryChange(cellVal.getID(), row))
-          row.setCellValue(nextColNdx, new HyperTableCell(-1, "", nextPopulator.getRecordType(row)));
+          row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));
 
         disableAutoShowDropdownList = tempDASD;
 
@@ -227,7 +228,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           boolean tempDASD = disableAutoShowDropdownList;
           disableAutoShowDropdownList = true;
 
-          row.setCellValue(nextColNdx, new HyperTableCell(-1, "", nextPopulator.getRecordType(row)));
+          row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));
           Populator pop = VariablePopulator.class.cast(nextPopulator).getPopulator(row);
 
           disableAutoShowDropdownList = tempDASD;
@@ -252,7 +253,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         disableAutoShowDropdownList = true;
 
         if (op2Change(cellVal, row))
-          row.setCellValue(nextColNdx, new HyperTableCell(-1, "", nextPopulator.getRecordType(row)));
+          row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));
 
         disableAutoShowDropdownList = tempDASD;
 
@@ -338,17 +339,17 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           else if (curResult.getType() == hdtMiscFile)
           {
             HDT_MiscFile miscFile = (HDT_MiscFile) curResult;
-            previewWindow.setPreview(pvsQueryTab, miscFile.filePath(), -1, -1, miscFile);
+            previewWindow.setPreview(pvsQueryTab, miscFile.filePath(), miscFile);
           }
           else if ((curResult.getType() == hdtWorkFile) || (curResult.getType() == hdtPerson))
-            previewWindow.setPreview(pvsQueryTab, HDT_RecordWithPath.class.cast(curResult).filePath(), 1, -1, curResult);
+            previewWindow.setPreview(pvsQueryTab, HDT_RecordWithPath.class.cast(curResult).filePath(), curResult);
           else
-            previewWindow.setPreview(pvsQueryTab, null, -1, -1, null);
+            previewWindow.clearPreview(pvsQueryTab);
         }
         else
         {
           webView.getEngine().loadContent("");
-          previewWindow.setPreview(pvsQueryTab, null, -1, -1, null);
+          previewWindow.clearPreview(pvsQueryTab);
         }
       }
       else
@@ -476,7 +477,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           fav.rows.add(queryRow);
         });
 
-        ui.mnuQueries.getItems().add(ui.new FavMenuItem(fav));
+        ui.mnuQueries.getItems().add(new FavMenuItem(fav));
 
         programmaticFavNameChange = true;
         tfName.setText(fav.name);
@@ -1231,7 +1232,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       VariablePopulator vp = htFields.getPopulator(opNum + 1);
       vp.setPopulator(row, null);
       vp.setRestricted(row, true);
-      row.setCellValue(opNum + 1, -1, "", hdtNone);
+      row.setCellValue(opNum + 1, "", hdtNone);
 
       clearingOperand = tempCO;
     }

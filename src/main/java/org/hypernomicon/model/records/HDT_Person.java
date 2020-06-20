@@ -396,12 +396,16 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
 
         if (useAllInitials)
         {
-          String middleNames = "";
+          String middleNames = "", middleInits = "";
           for (int ndx = 1; ndx < nameList.size(); ndx++)
+          {
             middleNames = middleNames + (nameList.get(ndx).length() > 0 ? (nameList.get(ndx) + " ") : (initialList.get(ndx) + ". "));
+            middleInits = middleInits + initialList.get(ndx) + ". ";
+          }
 
           keySet.add(initialList.get(0) + ". " + middleNames + last, true);
           keySet.add(middleNames + last, true);
+          keySet.add(middleInits + last, true);
         }
       }
     }

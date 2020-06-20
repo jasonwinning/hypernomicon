@@ -36,7 +36,7 @@ import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
-import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
+import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
 
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
@@ -227,7 +227,7 @@ public class ContentsWindow extends HyperDlg
         row.setCellValue(1, workType, workType.listName());
 
       row.setCellValue(2, work, title);
-      row.setCellValue(3, work, year, HyperCellSortMethod.hsmNumeric);
+      row.setCellValue(3, work, year, CellSortMethod.smNumeric);
 
       int pageNum = wtc == null ? -1 : wtc.getCurPageNum(work, workFile, true);
 

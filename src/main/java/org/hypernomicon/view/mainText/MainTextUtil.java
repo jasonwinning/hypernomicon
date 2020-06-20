@@ -206,7 +206,7 @@ public class MainTextUtil
         else
         {
           HDT_MiscFile miscFile = db.miscFiles.getByID(recordID);
-          previewWindow.setPreview(pvsOther, miscFile.filePath(), -1, -1, miscFile);
+          previewWindow.setPreview(pvsOther, miscFile.filePath(), miscFile);
         }
 
         ui.openPreviewWindow(pvsOther);

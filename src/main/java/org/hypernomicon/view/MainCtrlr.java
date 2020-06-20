@@ -65,6 +65,7 @@ import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.WebButton;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.HyperFavorites.FavMenuItem;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.mainText.MainTextWrapper;
@@ -564,7 +565,7 @@ public final class MainCtrlr
         if (miscFile == null)
           previewWindow.clearPreview(src);
         else
-          previewWindow.setPreview(src, miscFile.filePath(), -1, -1, miscFile);
+          previewWindow.setPreview(src, miscFile.filePath(), miscFile);
       }
 
       openPreviewWindow(src);
@@ -596,7 +597,7 @@ public final class MainCtrlr
     mnuFindWithinName.setOnAction(event ->
     {
       if (selectorTabEnum() == omniTabEnum)
-        showSearch(true, QueryType.qtAllRecords, QUERY_WITH_NAME_CONTAINING, null, new HyperTableCell(-1, tfSelector.getText(), hdtNone), null, tfSelector.getText());
+        showSearch(true, QueryType.qtAllRecords, QUERY_WITH_NAME_CONTAINING, null, new HyperTableCell(tfSelector.getText(), hdtNone), null, tfSelector.getText());
       else
         mnuFindWithinNameClick();
     });
@@ -606,9 +607,9 @@ public final class MainCtrlr
     mnuFindWithinAnyField.setOnAction(event ->
     {
       if (selectorTabEnum() == omniTabEnum)
-        showSearch(true, QueryType.qtAllRecords, QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(-1, tfSelector.getText(), hdtNone), null, tfSelector.getText());
+        showSearch(true, QueryType.qtAllRecords, QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(tfSelector.getText(), hdtNone), null, tfSelector.getText());
       else
-        showSearch(true, QueryType.fromRecordType(selectorType()), QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(-1, tfSelector.getText(), hdtNone), null, tfSelector.getText());
+        showSearch(true, QueryType.fromRecordType(selectorType()), QUERY_ANY_FIELD_CONTAINS, null, new HyperTableCell(tfSelector.getText(), hdtNone), null, tfSelector.getText());
     });
 
 //---------------------------------------------------------------------------
@@ -802,7 +803,7 @@ public final class MainCtrlr
 
     lblStatus.setText("");
 
-    if (!showSearch(true, QueryType.fromRecordType(type), QUERY_WITH_NAME_CONTAINING, null, new HyperTableCell(-1, query, hdtNone), null, query))
+    if (!showSearch(true, QueryType.fromRecordType(type), QUERY_WITH_NAME_CONTAINING, null, new HyperTableCell(query, hdtNone), null, query))
     {
       discardLastQuery(backClick);
       return;
@@ -1539,34 +1540,6 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public class FavMenuItem extends MenuItem
-  {
-    public FavMenuItem(HDT_Record record)
-    {
-      super(db.getTypeName(record.getType()) + ": " + record.getCBText());
-      isQuery = false;
-      favRecord = new HyperTableCell(record.getID(), record.getCBText(), record.getType());
-      query = null;
-      setOnAction(event -> goToRecord(record, true));
-    }
-
-    public FavMenuItem(QueryFavorite query)
-    {
-      super("Query: " + query.name);
-      isQuery = true;
-      this.query = query;
-      favRecord = null;
-      setOnAction(event -> showSearch(query.autoexec, null, -1, query, null, null, query.name));
-    }
-
-    final public boolean isQuery;
-    final public QueryFavorite query;
-    public HyperTableCell favRecord;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public void updateFavorites()
   {
     mnuToggleFavorite.setText("Add to favorites...");
@@ -1644,8 +1617,7 @@ public final class MainCtrlr
   {
     if (amount < 0)
     {
-      progressBar.setVisible(false);
-      lblProgress.setVisible(false);
+      setAllVisible(false, progressBar, lblProgress);
       return;
     }
 
@@ -1677,7 +1649,7 @@ public final class MainCtrlr
     lblStatus.setText("");
 
     if (showSearch(true, qtAllRecords, descOnly ? QUERY_LINKING_TO_RECORD : QUERY_MATCHING_RECORD, null,
-                   new HyperTableCell(-1, "", type), new HyperTableCell(record, ""), "Mentions: " + record.listName()))
+                   new HyperTableCell("", type), new HyperTableCell(record, ""), "Mentions: " + record.listName()))
     {
       if ((curQV.resultsBackingList.size() > 0) && (curQV.resultsBackingList.equals(List.of(record)) == false))
         return;
@@ -1818,7 +1790,7 @@ public final class MainCtrlr
   public void startEmpty()
   {
     clearAllTabsAndViews();
-    enableControls(db.isLoaded());
+    enableControls(false);
     showWelcomeWindow();
   }
 

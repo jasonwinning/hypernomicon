@@ -93,18 +93,20 @@ public abstract class Populator
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unused")
-  public boolean hasChanged(HyperTableRow row)                            { return true; }
+  public boolean hasChanged(HyperTableRow row)                           { return true; }
 
   @SuppressWarnings("unused")
-  public void setChanged(HyperTableRow row)                               { return; }
+  public void setChanged(HyperTableRow row)                              { return; }
 
-  public void clear()                                                     { return; }
-
-  @SuppressWarnings("unused")
-  public RecordType getRecordType(HyperTableRow row)                      { return hdtNone; }
+  public void clear()                                                    { return; }
 
   @SuppressWarnings("unused")
-  public HyperTableCell addEntry(HyperTableRow row, int id, String value) { messageDialog("Internal error #90129", mtError); return null; }
+  public RecordType getRecordType(HyperTableRow row)                     { return hdtNone; }
+
+  @SuppressWarnings("unused")
+  public HyperTableCell addEntry(HyperTableRow row, int id, String text) { messageDialog("Internal error #90129", mtError); return null; }
+
+  public HyperTableCell addEntry(HyperTableRow row, String text)         { return addEntry(row, -1, text); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

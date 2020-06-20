@@ -60,7 +60,7 @@ public class PreviewWrapper
     private final List<Integer> navList = new ArrayList<>();
     private int navNdx = -1;
 
-    public PreviewFile(FilePath filePath, HDT_RecordWithPath record)
+    private PreviewFile(FilePath filePath, HDT_RecordWithPath record)
     {
       this.filePath = filePath;
       this.record = record;

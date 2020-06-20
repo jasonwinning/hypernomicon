@@ -31,7 +31,7 @@ import static org.hypernomicon.util.Util.*;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.populators.*;
-import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
+import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
 
 //---------------------------------------------------------------------------
 
@@ -103,14 +103,17 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
   public boolean setCellValue(int colNdx, HDT_Record record, String text) {
     return setCellValue(colNdx, new HyperTableCell(record, text)); }
 
+  public boolean setCellValue(int colNdx, String text, RecordType type) {
+    return setCellValue(colNdx, new HyperTableCell(text, type)); }
+
   public boolean setCellValue(int colNdx, int id, String text, RecordType type) {
     return setCellValue(colNdx, new HyperTableCell(id, text, type)); }
 
-  public boolean setCellValue(int colNdx, HDT_Record record, String text, HyperCellSortMethod newSortMethod) {
+  public boolean setCellValue(int colNdx, HDT_Record record, String text, CellSortMethod newSortMethod) {
     return setCellValue(colNdx, new HyperTableCell(record, text, newSortMethod)); }
 
-  public boolean setCellValue(int colNdx, int id, String text, RecordType type, HyperCellSortMethod newSortMethod) {
-    return setCellValue(colNdx, new HyperTableCell(id, text, type, newSortMethod)); }
+  public boolean setCellValue(int colNdx, String text, RecordType type, CellSortMethod newSortMethod) {
+    return setCellValue(colNdx, new HyperTableCell(text, type, newSortMethod)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -90,7 +90,7 @@ public class PreviewWindow extends HyperDlg
   private ClickHoldButton chbBack, chbForward;
 
   public void clearAll()                         { tabToWrapper.values().forEach(PreviewWrapper::reset); clearControls(); }
-  public void clearPreview(PreviewSource src)    { srcToWrapper.get(src).clearPreview(); }
+  public void clearPreview(PreviewSource src)    { setPreview(src, null, null); }
   public FilePath getFilePath(PreviewSource src) { return srcToWrapper.get(src).getFilePath(); }
   private PreviewWrapper curWrapper()            { return tabToWrapper.get(tpPreview.getSelectionModel().getSelectedItem()); }
   PreviewSource curSource()                      { return curWrapper().getSource(); }
@@ -102,9 +102,9 @@ public class PreviewWindow extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class PreviewSetting
+  private static class PreviewSetting
   {
-    public PreviewSetting(FilePath filePath, int startPageNum, int endPageNum, HDT_Record record)
+    private PreviewSetting(FilePath filePath, int startPageNum, int endPageNum, HDT_Record record)
     {
       this.filePath = filePath;
       this.startPageNum = startPageNum;
@@ -112,9 +112,9 @@ public class PreviewWindow extends HyperDlg
       this.record = record;
     }
 
-    public final FilePath filePath;
-    public final int startPageNum, endPageNum;
-    public final HDT_Record record;
+    private final FilePath filePath;
+    private final int startPageNum, endPageNum;
+    private final HDT_Record record;
   }
 
 //---------------------------------------------------------------------------
@@ -429,6 +429,11 @@ public class PreviewWindow extends HyperDlg
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  public void setPreview(PreviewSource src, FilePath filePath, HDT_Record record)
+  {
+    setPreview(src, filePath, -1, -1, record);
+  }
 
   public void setPreview(PreviewSource src, FilePath filePath, int startPageNum, int endPageNum, HDT_Record record)
   {

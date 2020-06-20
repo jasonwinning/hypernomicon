@@ -82,7 +82,7 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
       if (ps != null)
         row.setCellValue(1, ps.author, authStr);
       else
-        row.setCellValue(1, -1, authStr, hdtPerson);
+        row.setCellValue(1, authStr, hdtPerson);
 
       row.setCellValue(2, position, position.name());
     });

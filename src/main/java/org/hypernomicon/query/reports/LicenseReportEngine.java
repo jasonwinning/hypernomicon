@@ -57,8 +57,8 @@ public class LicenseReportEngine extends ReportEngine
   @Override public List<HyperTableRow> getRows()
   {
     List<HyperTableRow> rows = Lists.newArrayList(
-      new HyperTableRow(FXCollections.observableArrayList(new HyperTableCell(-1, "LICENSE.html", hdtNone)), ht),
-      new HyperTableRow(FXCollections.observableArrayList(new HyperTableCell(-1, "NOTICE.html" , hdtNone)), ht));
+      new HyperTableRow(FXCollections.observableArrayList(new HyperTableCell("LICENSE.html", hdtNone)), ht),
+      new HyperTableRow(FXCollections.observableArrayList(new HyperTableCell("NOTICE.html" , hdtNone)), ht));
 
     if (license == null)
     {

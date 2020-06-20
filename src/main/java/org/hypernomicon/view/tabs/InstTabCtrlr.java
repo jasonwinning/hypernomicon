@@ -118,8 +118,8 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     htPersons.buildRows(peopleMap.keySet(), (row, person) ->
     {
       row.setCellValue(0, person, person.listName());
-      row.setCellValue(1, person.rank .getID(), person.rank .isNotNull() ? person.rank .get().name() : "", hdtRank);
-      row.setCellValue(2, person.field.getID(), person.field.isNotNull() ? person.field.get().name() : "", hdtField);
+      row.setCellValue(1, person.rank .get(), person.rank .isNotNull() ? person.rank .get().name() : "");
+      row.setCellValue(2, person.field.get(), person.field.isNotNull() ? person.field.get().name() : "");
 
       List<HDT_Institution> instList = new ArrayList<>(peopleMap.get(person));
       instList.sort((inst1, inst2) -> inst1.name().compareTo(inst2.name()));

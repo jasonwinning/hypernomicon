@@ -115,8 +115,8 @@ public class WorkToMerge
       {
         Populator pop = htAuthors.getPopulator(0);
         pop.populate(null, false);
-        pop.addEntry(null, -1, author.getNameLastFirst());
-        row.setCellValue(0, -1, author.getNameLastFirst(), hdtPerson);
+        pop.addEntry(null, author.getNameLastFirst());
+        row.setCellValue(0, author.getNameLastFirst(), hdtPerson);
       }
       else
       {

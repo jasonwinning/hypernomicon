@@ -251,7 +251,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
             case hdtMiscFile :
 
               HDT_MiscFile miscFile = (HDT_MiscFile)record;
-              previewWindow.setPreview(pvsTreeTab, miscFile.filePath(), -1, -1, miscFile);
+              previewWindow.setPreview(pvsTreeTab, miscFile.filePath(), miscFile);
               clearPreview = false;
               break;
 
@@ -271,7 +271,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         webView.getEngine().loadContent("");
 
       if (clearPreview)
-        previewWindow.setPreview(pvsTreeTab, null, -1, -1, null);
+        previewWindow.clearPreview(pvsTreeTab);
     });
 
   //---------------------------------------------------------------------------

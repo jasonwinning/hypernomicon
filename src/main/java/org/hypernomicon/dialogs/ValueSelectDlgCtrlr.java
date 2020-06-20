@@ -57,7 +57,7 @@ public class ValueSelectDlgCtrlr extends HyperDlg
     StringConverter<HyperTableCell> strConv = new StringConverter<>()
     {
       @Override public String toString(HyperTableCell cell)     { return HyperTableCell.getCellText(cell); }
-      @Override public HyperTableCell fromString(String string) { return new HyperTableCell(-1, string, objType); }
+      @Override public HyperTableCell fromString(String string) { return new HyperTableCell(string, objType); }
     };
 
     listView.setCellFactory(TextFieldListCell.forListView(strConv));

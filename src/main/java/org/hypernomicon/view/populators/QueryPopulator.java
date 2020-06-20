@@ -107,9 +107,9 @@ public class QueryPopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public HyperTableCell addEntry(HyperTableRow row, int id, String value)
+  @Override public HyperTableCell addEntry(HyperTableRow row, int id, String text)
   {
-    HyperTableCell cell = new HyperTableCell(id, value, getRecordType(row));
+    HyperTableCell cell = new HyperTableCell(id, text, getRecordType(row));
 
     if (rowToChoices.containsKey(row) == false)
       rowToChoices.put(row, new ArrayList<>());

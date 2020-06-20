@@ -33,7 +33,7 @@ import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.HyperTableCell.HyperCellSortMethod;
+import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -82,13 +82,13 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
     htParents.buildRows(curPosition.largerPositions, (row, otherPos) ->
     {
-      row.setCellValue(2, -1, db.getTypeName(hdtPosition), hdtPosition);
+      row.setCellValue(2, db.getTypeName(hdtPosition), hdtPosition);
       row.setCellValue(3, otherPos, otherPos.listName());
     });
 
     htParents.buildRows(curPosition.debates, (row, debate) ->
     {
-      row.setCellValue(2, -1, db.getTypeName(hdtDebate), hdtDebate);
+      row.setCellValue(2, db.getTypeName(hdtDebate), hdtDebate);
       row.setCellValue(3, debate, debate.listName());
     });
 
@@ -110,7 +110,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
       if (work != null)
       {
-        row.setCellValue(3, argument, work.getYear(), HyperCellSortMethod.hsmNumeric);
+        row.setCellValue(3, argument, work.getYear(), CellSortMethod.smNumeric);
         row.setCellValue(4, work, work.name());
       }
       else
@@ -136,7 +136,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
       if (ps != null)
         row.setCellValue(2, ps.author, authStr);
       else
-        row.setCellValue(2, -1, authStr, hdtPerson);
+        row.setCellValue(2, authStr, hdtPerson);
     });
 
     return true;
@@ -179,7 +179,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
       RecordType parentType = cellVal.getType();
       rbtp.setRecordType(row, parentType);
       rbtp.setChanged(row);
-      row.setCellValue(nextColNdx, new HyperTableCell(-1, "", parentType));
+      row.setCellValue(nextColNdx, new HyperTableCell("", parentType));
     });
 
     htParents.addColAltPopulator(hdtNone, ctDropDownList, new RecordByTypePopulator());

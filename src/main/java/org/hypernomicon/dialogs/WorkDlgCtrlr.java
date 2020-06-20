@@ -255,7 +255,7 @@ public class WorkDlgCtrlr extends HyperDlg
         isInFileName = curWork.personIsInFileName(origRow.getRecord());
       else
       {
-        htAuthors.getPopulator(0).addEntry(null, -1, authName);
+        htAuthors.getPopulator(0).addEntry(null, authName);
         Author auth = curWork.getAuthors().getAuthor(new PersonName(authName));
         if (auth != null)
           isInFileName = auth.getInFileName();
@@ -901,7 +901,7 @@ public class WorkDlgCtrlr extends HyperDlg
     tfDOI.setText(pdfBD.getStr(bfDOI));
     htISBN.clear();
 
-    htISBN.buildRows(pdfBD.getMultiStr(bfISBNs), (row, isbnStr) -> row.setCellValue(0, -1, isbnStr, hdtNone));
+    htISBN.buildRows(pdfBD.getMultiStr(bfISBNs), (row, isbnStr) -> row.setCellValue(0, isbnStr, hdtNone));
 
     if (doMerge)
     {
@@ -1032,8 +1032,8 @@ public class WorkDlgCtrlr extends HyperDlg
     {
       String authorStr = authorName.getLastFirst();
 
-      htAuthors.getPopulator(0).addEntry(null, -1, authorStr);
-      row.setCellValue(0, -1, authorStr, hdtPerson);
+      htAuthors.getPopulator(0).addEntry(null, authorStr);
+      row.setCellValue(0, authorStr, hdtPerson);
     }
 
     int addend = hasShowInFileCol ? 1 : 0;
@@ -1126,7 +1126,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     htISBN.clear();
 
-    htISBN.buildRows(curBD.getMultiStr(bfISBNs), (row, isbnStr) -> row.setCellValue(0, -1, isbnStr, hdtNone));
+    htISBN.buildRows(curBD.getMultiStr(bfISBNs), (row, isbnStr) -> row.setCellValue(0, isbnStr, hdtNone));
 
     if (populateAuthors)
       loadFromBibAuthors(curBD.getAuthors(), htAuthors, true, curWork);

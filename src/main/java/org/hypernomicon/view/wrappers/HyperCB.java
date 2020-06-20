@@ -90,7 +90,7 @@ public class HyperCB implements CommitableWrapper
     String str = cb.getEditor().getText();
 
     return (htc == null) || (htc.getText().equals(str) == false) ?
-      new HyperTableCell(-1, str, selectedType())
+      new HyperTableCell(str, selectedType())
     :
       htc;
   }
@@ -173,7 +173,7 @@ public class HyperCB implements CommitableWrapper
       @Override public HyperTableCell fromString(String string)
       {
         HyperTableCell cell = nullSwitch(cb.getItems(), null, items -> findFirst(items, htc -> string.equals(htc.getText())));
-        return cell == null ? new HyperTableCell(-1, string, populator.getRecordType(row)) : cell;
+        return cell == null ? new HyperTableCell(string, populator.getRecordType(row)) : cell;
       }
     });
 
@@ -456,7 +456,7 @@ public class HyperCB implements CommitableWrapper
               else
               {
                 pop.populate(row, false);
-                row.setCellValue(colNdx, pop.addEntry(row, -1, npdc.getNameLastFirst()));
+                row.setCellValue(colNdx, pop.addEntry(row, npdc.getNameLastFirst()));
 
                 table.cancelEditing(); // For some reason in this case the keystroke event from earlier causes
               }                        // the table to enter edit mode again
@@ -550,9 +550,9 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void addEntry(int id, String value, boolean select)
+  public void addEntry(int id, String text, boolean select)
   {
-    HyperTableCell cell = populator.addEntry(row, id, value);
+    HyperTableCell cell = populator.addEntry(row, id, text);
     if (select && (id > 0))
     {
       cb.setValue(cell);

@@ -132,7 +132,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     if (db.reindexingMentioners())
     {
-      htMentioners.newDataRow().setCellValue(1, -1, "(Indexing in progress)", hdtNone);
+      htMentioners.newDataRow().setCellValue(1, "(Indexing in progress)", hdtNone);
       return;
     }
 
