@@ -871,8 +871,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           resultsTable.addDateColumns();
 
         Set<Tag> tags = record.getAllTags();
-        tags.remove(tagHub);
-        tags.remove(tagPictureCrop);
+        removeAll(tags, tagHub, tagPictureCrop);
 
         ColumnGroup colGroup = new ColumnGroup(recordType, tags);
         recordTypeToColumnGroupItems.putAll(recordType, colGroup.items);
@@ -1226,7 +1225,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     private void clearOperand(HyperTableRow row, int opNum)
     {
-      boolean tempCO = clearingOperand;
+      boolean wasClearingOperand = clearingOperand;
       clearingOperand = true;
 
       VariablePopulator vp = htFields.getPopulator(opNum + 1);
@@ -1234,7 +1233,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       vp.setRestricted(row, true);
       row.setCellValue(opNum + 1, "", hdtNone);
 
-      clearingOperand = tempCO;
+      clearingOperand = wasClearingOperand;
     }
 
   //---------------------------------------------------------------------------
@@ -1620,10 +1619,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         RelationType relType = RelationType.codeToVal(getCellID(param1));
         if (record.getType() != db.getObjType(relType)) return false;
 
-        int opID = getCellID(param2);
-
         HyperSubjList<HDT_Record, HDT_Record> subjList = db.getSubjectList(relType, record);
-        int subjCount = subjList.size();
+        int subjCount = subjList.size(), opID = getCellID(param2);
 
         if ((opID == IS_EMPTY_OPERAND_ID) || (opID == IS_NOT_EMPTY_OPERAND_ID))
           return (subjCount == 0) == (opID == IS_EMPTY_OPERAND_ID);
@@ -1722,8 +1719,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
               default :
 
-                tagStrVal = record.getResultTextForTag(tag);
-                return (tagStrVal.length() > 0) == (getCellID(param2) == IS_NOT_EMPTY_OPERAND_ID);
+                return (record.getResultTextForTag(tag).length() > 0) == (getCellID(param2) == IS_NOT_EMPTY_OPERAND_ID);
             }
         }
 

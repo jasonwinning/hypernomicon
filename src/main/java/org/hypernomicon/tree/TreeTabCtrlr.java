@@ -180,7 +180,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     tree.addContextMenuItem("New term in this glossary...", HDT_Glossary.class,
       glossary -> db.isLoaded(),
-      glossary -> ui.treeSelector.select(glossary, true));
+      glossary -> createTerm(glossary));
 
     tree.addContextMenuItem("New glossary under this glossary...", HDT_Glossary.class,
       glossary -> db.isLoaded(),
@@ -325,9 +325,17 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   {
     HDT_Record child = db.createNewBlankRecord(db.getSubjType(relType));
 
-    db.getObjectList(relType, child, true).add(parent);
+    ui.treeSelector.attach(child, parent);
+  }
 
-    ui.treeSelector.select(child, false);
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void createTerm(HDT_Glossary glossary)
+  {
+    HDT_Term term = HDT_Term.create(glossary);
+
+    ui.goToRecord(term, false);
   }
 
 //---------------------------------------------------------------------------
@@ -342,9 +350,8 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       HDT_Glossary newGlossary = db.createNewBlankRecord(hdtGlossary);
       newGlossary.setActive(true);
       newGlossary.setName(dlg.getNewName());
-      newGlossary.parentGlossaries.add(glossary);
 
-      ui.treeSelector.select(newGlossary, true);
+      ui.treeSelector.attach(newGlossary, glossary);
 
       Platform.runLater(() -> { tree.sort(); tree.selectRecord(newGlossary, 0, false); });
     }

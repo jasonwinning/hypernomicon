@@ -1114,8 +1114,10 @@ public final class MainCtrlr
 
     if (loadDataFromDisk())
     {
+      // Update record pointers
       viewSequence.refreshAll();
 
+      // Update record pointers
       forEachHyperTab(HyperTab::refresh);
 
       if (activeTabEnum() == queryTabEnum)
@@ -1357,7 +1359,7 @@ public final class MainCtrlr
 
     db.deleteRecord(type, record.getID());
 
-    viewSequence.activateCurrentView();
+    viewSequence.loadViewFromCurrentSlotToUI();
     fileManagerDlg.refresh();
     return true;
   }
@@ -1808,21 +1810,21 @@ public final class MainCtrlr
       return;
     }
 
-    setTabView(new HyperView<>(personTabEnum  , db.persons     .getByID(db.prefs.getInt(PREF_KEY_PERSON_ID     , -1))));
-    setTabView(new HyperView<>(instTabEnum    , db.institutions.getByID(db.prefs.getInt(PREF_KEY_INSTITUTION_ID, -1))));
-    setTabView(new HyperView<>(debateTabEnum  , db.debates     .getByID(db.prefs.getInt(PREF_KEY_DEBATE_ID     , -1))));
-    setTabView(new HyperView<>(positionTabEnum, db.positions   .getByID(db.prefs.getInt(PREF_KEY_POSITION_ID   , -1))));
-    setTabView(new HyperView<>(argumentTabEnum, db.arguments   .getByID(db.prefs.getInt(PREF_KEY_ARGUMENT_ID   , -1))));
-    setTabView(new HyperView<>(workTabEnum    , db.works       .getByID(db.prefs.getInt(PREF_KEY_WORK_ID       , -1))));
+    saveViewToViewsTab(new HyperView<>(personTabEnum  , db.persons     .getByID(db.prefs.getInt(PREF_KEY_PERSON_ID     , -1))));
+    saveViewToViewsTab(new HyperView<>(instTabEnum    , db.institutions.getByID(db.prefs.getInt(PREF_KEY_INSTITUTION_ID, -1))));
+    saveViewToViewsTab(new HyperView<>(debateTabEnum  , db.debates     .getByID(db.prefs.getInt(PREF_KEY_DEBATE_ID     , -1))));
+    saveViewToViewsTab(new HyperView<>(positionTabEnum, db.positions   .getByID(db.prefs.getInt(PREF_KEY_POSITION_ID   , -1))));
+    saveViewToViewsTab(new HyperView<>(argumentTabEnum, db.arguments   .getByID(db.prefs.getInt(PREF_KEY_ARGUMENT_ID   , -1))));
+    saveViewToViewsTab(new HyperView<>(workTabEnum    , db.works       .getByID(db.prefs.getInt(PREF_KEY_WORK_ID       , -1))));
 
     HDT_Concept concept = nullSwitch(db.terms.getByID(db.prefs.getInt(PREF_KEY_TERM_ID, -1)), null, term -> term.concepts.get(0));
 
-    setTabView(new HyperView<>(termTabEnum,     concept));
+    saveViewToViewsTab(new HyperView<>(termTabEnum,     concept));
 
-    setTabView(new HyperView<>(fileTabEnum    , db.miscFiles   .getByID(db.prefs.getInt(PREF_KEY_FILE_ID       , -1))));
-    setTabView(new HyperView<>(noteTabEnum    , db.notes       .getByID(db.prefs.getInt(PREF_KEY_NOTE_ID       , -1))));
-    setTabView(new HyperView<>(queryTabEnum   , null));
-    setTabView(new HyperView<>(treeTabEnum    , null));
+    saveViewToViewsTab(new HyperView<>(fileTabEnum    , db.miscFiles   .getByID(db.prefs.getInt(PREF_KEY_FILE_ID       , -1))));
+    saveViewToViewsTab(new HyperView<>(noteTabEnum    , db.notes       .getByID(db.prefs.getInt(PREF_KEY_NOTE_ID       , -1))));
+    saveViewToViewsTab(new HyperView<>(queryTabEnum   , null));
+    saveViewToViewsTab(new HyperView<>(treeTabEnum    , null));
 
     enableControls(db.isLoaded());
 
@@ -1998,16 +2000,16 @@ public final class MainCtrlr
       return;
     }
 
-    viewSequence.forwardToNewSlotAndView(new HyperView<>(treeTabEnum, record));
+    viewSequence.saveViewFromUItoSlotAdvanceCursorAndLoadNewViewToUI(new HyperView<>(treeTabEnum, record));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TabEnum activeTabEnum()                    { return viewSequence.isEmpty() ? personTabEnum : viewSequence.curTabEnum(); }
+  public TabEnum activeTabEnum()                    { return viewSequence.isEmpty() ? personTabEnum : viewSequence.tabEnumOfViewInCurrentSlot(); }
   public HyperTab<? extends HDT_Record,
-                  ? extends HDT_Record> activeTab() { return viewSequence.isEmpty() ? null : viewSequence.curHyperTab(); }
-  public RecordType activeType()                    { return viewSequence.isEmpty() ? hdtPerson : viewSequence.curHyperView().getTabRecordType(); }
+                  ? extends HDT_Record> activeTab() { return viewSequence.isEmpty() ? null : viewSequence.tabOfViewInCurrentSlot(); }
+  public RecordType activeType()                    { return viewSequence.isEmpty() ? hdtPerson : viewSequence.getViewInCurrentSlot().getTabRecordType(); }
   public HDT_Record activeRecord()                  { return viewSequence.isEmpty() ? null : activeTab().activeRecord(); }
   public HDT_Record viewRecord()                    { return viewSequence.isEmpty() ? null : activeTab().viewRecord(); }
 
@@ -2124,7 +2126,7 @@ public final class MainCtrlr
 
     if (save && cantSaveRecord()) return;
 
-    viewSequence.forwardToNewSlotAndView(new HyperView<>(record));
+    viewSequence.saveViewFromUItoSlotAdvanceCursorAndLoadNewViewToUI(new HyperView<>(record));
 
     if (inv != null)
       personHyperTab().showInvestigation(inv.getID());
@@ -2178,14 +2180,14 @@ public final class MainCtrlr
 
         record = db.records(activeType()).getByKeyNdx(ndx);
 
-        viewSequence.updateCurrentView(tabEnum == termTabEnum ?
+        viewSequence.saveViewToCurrentSlotAndTab(tabEnum == termTabEnum ?
           new HyperView<>(termTabEnum, ((HDT_Term)record).concepts.get(0))
         :
           new HyperView<>(tabEnum, record));
       }
     }
     else
-      viewSequence.updateCurrentView(new HyperView<>(tabEnum, null));
+      viewSequence.saveViewToCurrentSlotAndTab(new HyperView<>(tabEnum, null));
 
     updateBottomPanel(true);
     tab.clear();
@@ -2418,7 +2420,7 @@ public final class MainCtrlr
   {
     if (cantSaveRecord()) return false;
 
-    viewSequence.forwardToNewSlotAndView(new HyperView<>(queryTabEnum, queryHyperTab().activeRecord(), queryHyperTab().mainTextInfo()));
+    viewSequence.saveViewFromUItoSlotAdvanceCursorAndLoadNewViewToUI(new HyperView<>(queryTabEnum, queryHyperTab().activeRecord(), queryHyperTab().mainTextInfo()));
 
     boolean result = queryHyperTab().showSearch(doSearch, type, query, fav, op1, op2, caption);
     updateFavorites();

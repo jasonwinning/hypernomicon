@@ -101,8 +101,10 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     htSubInst.buildRows(curInst.subInstitutions, (row, subInst) ->
     {
       row.setCellValue(0, subInst, subInst.name());
+
       if (subInst.instType.isNotNull())
         row.setCellValue(1, subInst.instType.get(), subInst.instType.get().name());
+
       row.setCellValue(3, subInst, subInst.getURL());
     });
 
@@ -118,8 +120,12 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     htPersons.buildRows(peopleMap.keySet(), (row, person) ->
     {
       row.setCellValue(0, person, person.listName());
-      row.setCellValue(1, person.rank .get(), person.rank .isNotNull() ? person.rank .get().name() : "");
-      row.setCellValue(2, person.field.get(), person.field.isNotNull() ? person.field.get().name() : "");
+
+      if (person.rank.isNotNull())
+        row.setCellValue(1, person.rank.get(), person.rank.get().name());
+
+      if (person.field.isNotNull())
+        row.setCellValue(2, person.field.get(), person.field.get().name());
 
       List<HDT_Institution> instList = new ArrayList<>(peopleMap.get(person));
       instList.sort((inst1, inst2) -> inst1.name().compareTo(inst2.name()));

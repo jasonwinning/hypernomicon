@@ -52,8 +52,7 @@ public class RelationPopulator extends Populator
     List<HyperTableCell> cells = new ArrayList<>();
     EnumSet<RelationType> relTypes = objType == hdtNone ? EnumSet.allOf(RelationType.class) : getRelationsForObjType(objType);
 
-    relTypes.remove(rtNone);
-    relTypes.remove(rtUnited);
+    removeAll(relTypes, rtNone, rtUnited);
 
     relTypes.forEach(relType ->
     {

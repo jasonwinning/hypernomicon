@@ -208,15 +208,9 @@ public class MainTextCtrlr
       {
         hsPane.setPinnedSide(null);
 
-        Robot robot = new Robot();
-        double x = robot.getMouseX(), y = robot.getMouseY();
+        Bounds screenBounds = hsPane.localToScreen(hsPane.getBoundsInLocal());
 
-        Bounds bounds = hsPane.getBoundsInLocal();
-        Bounds screenBounds = hsPane.localToScreen(bounds);
-
-        if (screenBounds == null) return;
-
-        if (screenBounds.contains(x, y) == false)
+        if ((screenBounds != null) && screenBounds.contains(new Robot().getMousePosition()) == false)
           hsPane.hide();
       }
     });

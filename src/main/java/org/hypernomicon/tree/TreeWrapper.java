@@ -216,7 +216,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     labelTree .reset(HDT_Record.class.cast(db.workLabels.getByID(1)));
 
     if (hasTerms)
-      termTree.reset(db.glossaries.getByID(1));
+      termTree.reset(HDT_Record.class.cast(db.glossaries.getByID(1)));
   }
 
 //---------------------------------------------------------------------------

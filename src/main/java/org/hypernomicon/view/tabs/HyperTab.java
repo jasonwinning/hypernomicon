@@ -197,7 +197,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final <HDT_CT extends HDT_Record> HyperTab<? extends HDT_Record, HDT_CT> setTabView(HyperView<HDT_CT> hyperView)
+  public static final <HDT_CT extends HDT_Record> HyperTab<? extends HDT_Record, HDT_CT> saveViewToViewsTab(HyperView<HDT_CT> hyperView)
   {
     HyperTab<? extends HDT_Record, HDT_CT> hyperTab = hyperView.getHyperTab();
     hyperTab.setView(hyperView);
@@ -255,6 +255,8 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  // Update record pointers after saving/reloading database
 
   public void refresh()
   {

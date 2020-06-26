@@ -1142,6 +1142,14 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @SafeVarargs public static <T extends Object> void removeAll(Collection<T> col, T... objs)
+  {
+    col.removeAll(Arrays.asList(objs));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static <E extends Enum<E>> E getEnumVal(int ord, Class<E> cls)
   {
     E[] vals = cls.getEnumConstants();

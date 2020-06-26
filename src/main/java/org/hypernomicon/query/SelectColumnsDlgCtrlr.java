@@ -79,9 +79,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 
     btnOk.setOnAction(event -> getStage().close());
 
-    innerPane.getChildren().remove(chkFirstType);
-    innerPane.getChildren().remove(chkFirstField);
-    innerPane.getChildren().remove(chkSecondType);
+    innerPane.getChildren().removeAll(chkFirstType, chkFirstField, chkSecondType);
 
     chkSelectAll.setSelected(true);
 

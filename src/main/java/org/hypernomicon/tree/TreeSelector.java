@@ -75,7 +75,7 @@ public class TreeSelector
 
   public void addTargetType(RecordType targetType)
   {
-    RelationType relType = targetType == hdtGlossary ?
+    RelationType relType = (base.getType() == hdtTerm) && (targetType == hdtGlossary) ?
       rtGlossaryOfConcept
     :
       (baseIsSubj ? getRelation(base.getType(), targetType) : getRelation(targetType, base.getType()));
@@ -138,6 +138,16 @@ public class TreeSelector
     }
 
     return msg;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void attach(HDT_Record subj, HDT_Record obj)
+  {
+    reset(subj, true);
+    addTargetType(obj.getType());
+    select(obj, true);
   }
 
 //---------------------------------------------------------------------------

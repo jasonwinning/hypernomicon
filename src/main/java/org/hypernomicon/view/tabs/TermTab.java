@@ -202,7 +202,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
       curConcept = ConceptTab.class.cast(newTab).concept;
 
-      ui.viewSequence.updateCurrentView(new HyperView<>(termTabEnum, curConcept, mainTextInfo()));
+      ui.viewSequence.saveViewToCurrentSlotAndTab(new HyperView<>(termTabEnum, curConcept, mainTextInfo()));
 
       HDT_Glossary glossary = curConcept.glossary.get();
       if (glossary.getID() > 1) glossary.viewNow();

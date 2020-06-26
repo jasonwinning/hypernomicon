@@ -54,6 +54,8 @@ public class ContentsWindow extends HyperDlg
   private HDT_WorkFile curWorkFile;
   private boolean mouseAlreadyHere = false;
 
+  @Override protected boolean isValid() { return true; }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -270,14 +272,6 @@ public class ContentsWindow extends HyperDlg
     curWorkFile = null;
     dialogStage.setTitle(dialogTitle);
     htContents.clear();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected boolean isValid()
-  {
-    return true;
   }
 
 //---------------------------------------------------------------------------

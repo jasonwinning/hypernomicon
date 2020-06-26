@@ -88,12 +88,13 @@ public class HyperView<HDT_CT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // Update record pointer after saving/reloading database
+
   @SuppressWarnings("unchecked")
   public void refresh()
   {
-    if (viewRecord == null) return;
-
-    viewRecord = (HDT_CT) db.records(viewRecord.getType()).getByID(viewRecord.getID());
+    if (viewRecord != null)
+      viewRecord = (HDT_CT) db.records(viewRecord.getType()).getByID(viewRecord.getID());
   }
 
 //---------------------------------------------------------------------------

@@ -295,7 +295,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     htArguments.buildRows(posToAdd.stream().filter(Predicate.not(topicRecordsAdded::contains)), (row, pos) ->
     {
       addPosToTopicTable(pos, row, otherToAdd);
-      row.setCellValue(0, pos, pos.listName());
+      row.setCellValue(0, pos, "");  // This is the icon column
       topicRecordsAdded.add(pos);
     });
 
@@ -303,7 +303,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
                                              .filter(topic -> topic != curPerson), (row, topic) ->
     {
       addOtherToTopicTable(topic, row);
-      row.setCellValue(0, topic, topic.listName());
+      row.setCellValue(0, topic, "");  // This is the icon column
       topicRecordsAdded.add(topic);
     });
 
@@ -421,7 +421,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
         addPosToTopicTable(position, row, otherToAdd);
         posToAdd.remove(position);
 
-        row.setCellValue(0, argument, argument.listName());
+        row.setCellValue(0, argument, "");  // This is the icon column
 
         nullSwitch(argument.getPosVerdict(position), verdict -> row.setCellValue(3, argument, verdict.listName()));
 
@@ -431,7 +431,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     else
     {
       HyperTableRow row = htArguments.newDataRow();
-      row.setCellValue(0, argument, argument.listName());
+      row.setCellValue(0, argument, "");  // This is the icon column
 
       nullSwitch(argument.getDebate(), debate ->
       {

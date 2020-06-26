@@ -64,15 +64,17 @@ public class WebButtonSettingsCtrlr implements SettingsControl
 
   @Override public void init(Window owner, boolean noDB)
   {
-    webBtnCtrlList.add(new WebButtonTable(PREF_KEY_PERSON_SRCH, personSrchList, personSrchDefaults, tvPersonSrch));
-    webBtnCtrlList.add(new WebButtonTable(PREF_KEY_WORK_SRCH  , workSrchList,   workSrchDefaults,   tvWorkSrch));
-    webBtnCtrlList.add(new WebButtonTable(PREF_KEY_GEN_SRCH   , genSrchList,    genSrchDefaults,    tvGenSrch));
+    webBtnCtrlList.addAll(List.of(
 
-    webBtnCtrlList.add(new WebButtonBar(PREF_KEY_PERSON_IMG_SRCH, personImgSrchList, tfPersonImgSrch, cbPersonImgSrch, btnPersonImgSrchAdvanced));
-    webBtnCtrlList.add(new WebButtonBar(PREF_KEY_INST_SRCH      , instSrchList,      null           , cbInstSrch     , btnInstSrchAdvanced));
-    webBtnCtrlList.add(new WebButtonBar(PREF_KEY_INST_MAP_SRCH  , instMapSrchList,   tfInstMapSrch  , cbInstMapSrch  , btnInstMapSrchAdvanced));
-    webBtnCtrlList.add(new WebButtonBar(PREF_KEY_DOI_SRCH       , doiSrchList,       tfDOISrch      , cbDOISrch      , btnDOISrchAdvanced));
-    webBtnCtrlList.add(new WebButtonBar(PREF_KEY_ISBN_SRCH      , isbnSrchList,      tfISBNSrch     , cbISBNSrch     , btnISBNSrchAdvanced));
+      new WebButtonTable(PREF_KEY_PERSON_SRCH, personSrchList, personSrchDefaults, tvPersonSrch),
+      new WebButtonTable(PREF_KEY_WORK_SRCH  , workSrchList,   workSrchDefaults,   tvWorkSrch),
+      new WebButtonTable(PREF_KEY_GEN_SRCH   , genSrchList,    genSrchDefaults,    tvGenSrch),
+
+      new WebButtonBar(PREF_KEY_PERSON_IMG_SRCH, personImgSrchList, tfPersonImgSrch, cbPersonImgSrch, btnPersonImgSrchAdvanced),
+      new WebButtonBar(PREF_KEY_INST_SRCH      , instSrchList,      null           , cbInstSrch     , btnInstSrchAdvanced),
+      new WebButtonBar(PREF_KEY_INST_MAP_SRCH  , instMapSrchList,   tfInstMapSrch  , cbInstMapSrch  , btnInstMapSrchAdvanced),
+      new WebButtonBar(PREF_KEY_DOI_SRCH       , doiSrchList,       tfDOISrch      , cbDOISrch      , btnDOISrchAdvanced),
+      new WebButtonBar(PREF_KEY_ISBN_SRCH      , isbnSrchList,      tfISBNSrch     , cbISBNSrch     , btnISBNSrchAdvanced)));
   }
 
 //---------------------------------------------------------------------------
