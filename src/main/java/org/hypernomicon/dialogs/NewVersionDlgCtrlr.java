@@ -19,7 +19,8 @@ package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
-import static org.hypernomicon.util.Util.*;
+
+import org.hypernomicon.util.DesktopUtil;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -45,7 +46,7 @@ public class NewVersionDlgCtrlr extends HyperDlg
   {
     btnDownload.setOnAction(event ->
     {
-      openWebLink("https://sourceforge.net/projects/hypernomicon/files/latest/download");
+      DesktopUtil.openWebLink("https://sourceforge.net/projects/hypernomicon/files/latest/download");
 
       btnOkClick();
     });

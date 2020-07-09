@@ -105,6 +105,7 @@ import org.hypernomicon.model.relations.*;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.util.BidiOneToManyMainTextMap;
 import org.hypernomicon.util.CryptoUtil;
+import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.FilenameMap;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.VersionNumber;
@@ -402,10 +403,7 @@ public final class HyperDB
     HyperDataset<? extends HDT_Record>.CoreAccessor accessor = accessors.get(type);
 
     if (accessor == null)
-    {
       messageDialog("Internal error: null dataset", mtError);
-      return null;
-    }
 
     return accessor;
   }
@@ -933,28 +931,20 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void deleteRecord(RecordType type, int id)
+  public void deleteRecord(HDT_Record record)
   {
     if (deletionInProgress == false)
       startMentionsRebuildAfterDelete = false;
 
-    if (isProtectedRecord(id, type, true))
-    {
-      messageDialog("Unable to delete record.", mtError);
-      return;
-    }
-
-    HDT_Record record = records(type).getByID(id);
-
-    if (record == null)
-    {
-      messageDialog("Unable to delete record.", mtError);
-      return;
-    }
-
-    if (record.isExpired())
+    if ((record != null) && record.isExpired())
     {
       messageDialog("The record has already been deleted.", mtError);
+      return;
+    }
+
+    if (HDT_Record.isEmpty(record) || isProtectedRecord(record.getID(), record.getType(), true))
+    {
+      messageDialog("Unable to delete record.", mtError);
       return;
     }
 
@@ -1553,7 +1543,7 @@ public final class HyperDB
       try { s = FileUtils.readLines(filePath.toFile(), UTF_8); }
       catch (IOException e) { return "whatevervolleyball"; }
 
-      if (s.get(0).equals(getComputerName()) == false)
+      if (s.get(0).equals(DesktopUtil.getComputerName()) == false)
         return s.get(0);
       else
         filePath.deleteReturnsBoolean(true);
@@ -1572,7 +1562,7 @@ public final class HyperDB
   {
     lockFilePath = getLockFilePath();
 
-    try { FileUtils.writeLines(lockFilePath.toFile(), singletonList(getComputerName())); }
+    try { FileUtils.writeLines(lockFilePath.toFile(), singletonList(DesktopUtil.getComputerName())); }
     catch (IOException e) { return false; }
 
     return true;
@@ -1796,9 +1786,15 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addTag(String tagString, Tag tag, String tagHeader) throws HDB_InternalError
+  private void addTag(String tagStr, Tag tag, String tagHeader) throws HDB_InternalError
   {
-    addTag(tagString, tag, tagHeader, null);
+    addTag(tagStr, tag, tagHeader, (Class<HDT_Record>)null);
+  }
+
+  private void addTag(String tagStr, Tag tag, String tagHeader, RecordType type) throws HDB_InternalError
+  {
+    addTag(tagStr, tag, tagHeader, (Class<HDT_Record>)null);
+    tagToObjType.put(tag, type);
   }
 
   private <HDT_T extends HDT_Record> HyperDataset<HDT_T>.CoreAccessor addTag(String tagStr, Tag tag, String tagHeader, Class<HDT_T> klass) throws HDB_InternalError
@@ -1817,6 +1813,7 @@ public final class HyperDB
 
     typeToTagStr.put(type, tagStr);
     typeToTag.put(type, tag);
+    tagToObjType.put(tag, type);
 
     HyperDataset<HDT_T> dataset = new HyperDataset<>(type);
     HyperDataset<HDT_T>.CoreAccessor accessor = dataset.getAccessor();
@@ -1867,6 +1864,22 @@ public final class HyperDB
       personGroups     = addTag("person_group"      , tagPersonGroup,     "Person Group"             , HDT_PersonGroup    .class);
       fileTypes        = addTag("file_type"         , tagFileType,        "File Type"                , HDT_FileType       .class);
 
+                         addTag("author"            , tagAuthor         , "Author"                   , hdtPerson     );
+                         addTag("larger_debate"     , tagLargerDebate   , "Larger Debate"            , hdtDebate     );
+                         addTag("larger_position"   , tagLargerPosition , "Larger Position"          , hdtPosition   );
+                         addTag("parent_note"       , tagParentNote     , "Parent Note"              , hdtNote       );
+                         addTag("parent_glossary"   , tagParentGlossary , "Parent Glossary"          , hdtGlossary   );
+                         addTag("linked_record"     , tagLinkedRecord   , "Linked Record"            , hdtAuxiliary  );
+                         addTag("key_work"          , tagKeyWork        , "Key Works"                , hdtAuxiliary  );
+                         addTag("display_item"      , tagDisplayRecord  , "Relevant Records"         , hdtAuxiliary  );
+                         addTag("larger_work"       , tagLargerWork     , "Larger Work"              , hdtWork       );
+                         addTag("parent_label"      , tagParentLabel    , "Parent Label"             , hdtWorkLabel  );
+                         addTag("parent_group"      , tagParentGroup    , "Parent Group"             , hdtPersonGroup);
+                         addTag("counterargument"   , tagCounterargument, "Counterargument"          , hdtArgument   );
+                         addTag("parent_folder"     , tagParentFolder   , "Parent Folder"            , hdtFolder     );
+                         addTag("parent_institution", tagParentInst     , "Parent Institution"       , hdtInstitution);
+                         addTag("picture_folder"    , tagPictureFolder  , "Picture Folder"           , hdtFolder     );
+
                          addTag("id"                , tagID             , "Record ID");
                          addTag("type"              , tagType           , "Record Type");
                          addTag("sort_key"          , tagSortKey        , "Sort Key");
@@ -1891,7 +1904,6 @@ public final class HyperDB
                          addTag("misc_bib"          , tagMiscBib        , "Misc. Bib. Info");
                          addTag("doi"               , tagDOI            , "DOI");
                          addTag("isbn"              , tagISBN           , "ISBN");
-                         addTag("author"            , tagAuthor         , "Author");
                          addTag("in_filename"       , tagInFileName     , "Included in File Name");
                          addTag("editor"            , tagEditor         , "Editor");
                          addTag("translator"        , tagTranslator     , "Translator");
@@ -1899,50 +1911,18 @@ public final class HyperDB
                          addTag("end_page"          , tagEndPageNum     , "Ending Page Number");
                          addTag("annotated"         , tagAnnotated      , "Annotated");
                          addTag("comments"          , tagComments       , "Description");
-                         addTag("larger_debate"     , tagLargerDebate   , "Larger Debate");
-                         addTag("counterargument"   , tagCounterargument, "Counterargument");
                          addTag("definition"        , tagDefinition     , "Definition");
                          addTag("text"              , tagText           , "Text");
                          addTag("active"            , tagActive         , "Active");
-                         addTag("larger_position"   , tagLargerPosition , "Larger Position");
-                         addTag("parent_institution", tagParentInst     , "Parent Institution");
-                         addTag("parent_glossary"   , tagParentGlossary , "Parent Glossary");
-                         addTag("parent_note"       , tagParentNote     , "Parent Note");
-                         addTag("parent_folder"     , tagParentFolder   , "Parent Folder");
-                         addTag("picture_folder"    , tagPictureFolder  , "Picture Folder");
-                         addTag("linked_record"     , tagLinkedRecord   , "Linked Record");
-                         addTag("display_item"      , tagDisplayRecord  , "Relevant Records");
-                         addTag("key_work"          , tagKeyWork        , "Key Works");
-                         addTag("larger_work"       , tagLargerWork     , "Larger Work");
-                         addTag("parent_label"      , tagParentLabel    , "Parent Label");
-                         addTag("parent_group"      , tagParentGroup    , "Parent Group");
                          addTag("creation_date"     , tagCreationDate   , "Date Created");
                          addTag("modified_date"     , tagModifiedDate   , "Date Modified");
                          addTag("view_date"         , tagViewDate       , "Date Last Viewed");
-
-      typeToTag.keySet().forEach(type -> tagToObjType.put(typeToTag.get(type), type));
 
       for (RelationType relType : RelationType.values())
         if ((relType != rtUnited) && (relType != rtNone))
           relationSets.put(relType, RelationSet.createSet(relType));
 
       MainText.init();
-
-      tagToObjType.put(tagAuthor         , hdtPerson     );
-      tagToObjType.put(tagLargerDebate   , hdtDebate     );
-      tagToObjType.put(tagLargerPosition , hdtPosition   );
-      tagToObjType.put(tagParentNote     , hdtNote       );
-      tagToObjType.put(tagParentGlossary , hdtGlossary   );
-      tagToObjType.put(tagLinkedRecord   , hdtAuxiliary  );
-      tagToObjType.put(tagKeyWork        , hdtAuxiliary  );
-      tagToObjType.put(tagDisplayRecord  , hdtAuxiliary  );
-      tagToObjType.put(tagLargerWork     , hdtWork       );
-      tagToObjType.put(tagParentLabel    , hdtWorkLabel  );
-      tagToObjType.put(tagParentGroup    , hdtPersonGroup);
-      tagToObjType.put(tagCounterargument, hdtArgument   );
-      tagToObjType.put(tagParentFolder   , hdtFolder     );
-      tagToObjType.put(tagParentInst     , hdtInstitution);
-      tagToObjType.put(tagPictureFolder  , hdtFolder     );
 
   /*****************************************************************************
   * ************************************************************************** *

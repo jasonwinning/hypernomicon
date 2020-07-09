@@ -18,6 +18,7 @@
 package org.hypernomicon.util;
 
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.json.JsonObj.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -145,7 +146,7 @@ public class JsonHttpClient
     lastUrl = request.getURI().toURL().toString();
     ResponseHandler<Boolean> responseHndlr = getResponseHndlr(null, null);
 
-    try (CloseableHttpClient httpclient = getHTTPClient())
+    try (CloseableHttpClient httpclient = AsyncHttpClient.createClient())
     {
       rc = httpclient.execute(request, responseHndlr);
     }

@@ -156,7 +156,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
   @Override public void expire()
   {
     while (investigations.isEmpty() == false)
-      db.deleteRecord(hdtInvestigation, investigations.get(0).getID());
+      db.deleteRecord(investigations.get(0));
 
     picture.clear();
 
@@ -164,7 +164,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
     {
       subfield.setID(-1);
       if (oldSubfield.persons.isEmpty())
-        db.deleteRecord(hdtSubfield, oldSubfield.getID());
+        db.deleteRecord(oldSubfield);
     });
 
     super.expire();

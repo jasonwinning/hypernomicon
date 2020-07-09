@@ -25,6 +25,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 
 import java.util.ArrayList;
@@ -94,58 +95,60 @@ public class MainTextUtil
   static
   {
     scriptContent = new StringBuilder()
-        .append("<script>\n\n")
-        .append("var jsToJava = {};\n")
-        .append("function openFile(recordType, recordID)\n{\n")
-        .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(" + String.valueOf(JS_EVENT_OPEN_FILE) + ");\n")
-        .append("}\n\n")
-        .append("function openRecord(recordType, recordID)\n{\n")
-        .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(" + String.valueOf(JS_EVENT_OPEN_RECORD) + ");\n")
-        .append("}\n\n")
-        .append("function openPreview(recordType, recordID)\n{\n")
-        .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(" + String.valueOf(JS_EVENT_OPEN_PREVIEW) + ");\n")
-        .append("}\n\n")
-        .append("function openURL(url)\n{\n")
-        .append("  jsToJava.url = url; callToJava(" + String.valueOf(JS_EVENT_OPEN_URL) + ");\n")
-        .append("}\n\n")
-        .append("function callToJava(eventType)\n{\n")
-        .append("  jsToJava.eventType = eventType;\n")
-        .append("  jsToJava.eventID = (new Date()).getTime();\n")
-        .append("  jsToJava.scrollTop = document.body.scrollTop;\n")
-        .append("  document.title = \"\" + jsToJava.eventID;\n")
-        .append("}\n\n")
-        .append("function switchToAZ()\n{\n")
-        .append("  var i,elements = document.getElementsByTagName('details');\n")
-        .append("  for (i=0; i<elements.length; i++)\n  {\n")
-        .append("    if (elements[i].id.slice(0,3) === \"num\")\n    {\n")
-        .append("      document.getElementById(\"alp\" + elements[i].id.slice(3)).open = elements[i].open;\n    }\n  }\n")
-        .append("  elements = document.getElementsByClassName('" + NUMERIC_SORTED_OUTER_CLASS + "');\n")
-        .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = 'none'; }\n")
-        .append("  elements = document.getElementsByClassName('" + ALPHA_SORTED_OUTER_CLASS + "');\n")
-        .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = (elements[i].tagName === 'SPAN' ? 'inline' : 'block'); }\n")
-        .append("  jsToJava.sortByName = true; callToJava(" + String.valueOf(JS_EVENT_SET_SORT_KEY_METHOD) + ");\n")
-        .append("}\n\n")
-        .append("function switchTo19()\n{\n")
-        .append("  var i,elements = document.getElementsByTagName('details');\n")
-        .append("  for (i=0; i<elements.length; i++)\n  {\n")
-        .append("    if (elements[i].id.slice(0,3) === \"alp\")\n    {\n")
-        .append("      document.getElementById(\"num\" + elements[i].id.slice(3)).open = elements[i].open;\n    }\n  }\n")
-        .append("  elements = document.getElementsByClassName('" + ALPHA_SORTED_OUTER_CLASS + "');\n")
-        .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = 'none'; }\n")
-        .append("  elements = document.getElementsByClassName('" + NUMERIC_SORTED_OUTER_CLASS + "');\n")
-        .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = (elements[i].tagName === 'SPAN' ? 'inline' : 'block'); }\n")
-        .append("  jsToJava.sortByName = false; callToJava(" + String.valueOf(JS_EVENT_SET_SORT_KEY_METHOD) + ");\n")
-        .append("}\n\n")
-        .append("</script>\n\n")
-        .toString();
+
+      .append("<script>\n\n")
+      .append("var jsToJava = {};\n")
+      .append("function openFile(recordType, recordID)\n{\n")
+      .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(" + String.valueOf(JS_EVENT_OPEN_FILE) + ");\n")
+      .append("}\n\n")
+      .append("function openRecord(recordType, recordID)\n{\n")
+      .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(" + String.valueOf(JS_EVENT_OPEN_RECORD) + ");\n")
+      .append("}\n\n")
+      .append("function openPreview(recordType, recordID)\n{\n")
+      .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(" + String.valueOf(JS_EVENT_OPEN_PREVIEW) + ");\n")
+      .append("}\n\n")
+      .append("function openURL(url)\n{\n")
+      .append("  jsToJava.url = url; callToJava(" + String.valueOf(JS_EVENT_OPEN_URL) + ");\n")
+      .append("}\n\n")
+      .append("function callToJava(eventType)\n{\n")
+      .append("  jsToJava.eventType = eventType;\n")
+      .append("  jsToJava.eventID = (new Date()).getTime();\n")
+      .append("  jsToJava.scrollTop = document.body.scrollTop;\n")
+      .append("  document.title = \"\" + jsToJava.eventID;\n")
+      .append("}\n\n")
+      .append("function switchToAZ()\n{\n")
+      .append("  var i,elements = document.getElementsByTagName('details');\n")
+      .append("  for (i=0; i<elements.length; i++)\n  {\n")
+      .append("    if (elements[i].id.slice(0,3) === \"num\")\n    {\n")
+      .append("      document.getElementById(\"alp\" + elements[i].id.slice(3)).open = elements[i].open;\n    }\n  }\n")
+      .append("  elements = document.getElementsByClassName('" + NUMERIC_SORTED_OUTER_CLASS + "');\n")
+      .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = 'none'; }\n")
+      .append("  elements = document.getElementsByClassName('" + ALPHA_SORTED_OUTER_CLASS + "');\n")
+      .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = (elements[i].tagName === 'SPAN' ? 'inline' : 'block'); }\n")
+      .append("  jsToJava.sortByName = true; callToJava(" + String.valueOf(JS_EVENT_SET_SORT_KEY_METHOD) + ");\n")
+      .append("}\n\n")
+      .append("function switchTo19()\n{\n")
+      .append("  var i,elements = document.getElementsByTagName('details');\n")
+      .append("  for (i=0; i<elements.length; i++)\n  {\n")
+      .append("    if (elements[i].id.slice(0,3) === \"alp\")\n    {\n")
+      .append("      document.getElementById(\"num\" + elements[i].id.slice(3)).open = elements[i].open;\n    }\n  }\n")
+      .append("  elements = document.getElementsByClassName('" + ALPHA_SORTED_OUTER_CLASS + "');\n")
+      .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = 'none'; }\n")
+      .append("  elements = document.getElementsByClassName('" + NUMERIC_SORTED_OUTER_CLASS + "');\n")
+      .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = (elements[i].tagName === 'SPAN' ? 'inline' : 'block'); }\n")
+      .append("  jsToJava.sortByName = false; callToJava(" + String.valueOf(JS_EVENT_SET_SORT_KEY_METHOD) + ");\n")
+      .append("}\n\n")
+      .append("</script>\n\n")
+      .toString();
 
     headContent = new StringBuilder(scriptContent)
-        .append("<style type=\"text/css\">\n")
-        .append("  .highlight { background-color: pink; }\n")
-        .append("  details summary { outline: none; }\n")
-        .append("  a:link {color:#0000FF; } a:visited {color:#0000FF; }\n")
-        .append("</style></head>")
-        .toString();
+
+      .append("<style type=\"text/css\">\n")
+      .append("  .highlight { background-color: pink; }\n")
+      .append("  details summary { outline: none; }\n")
+      .append("  a:link {color:#0000FF; } a:visited {color:#0000FF; }\n")
+      .append("</style></head>")
+      .toString();
   }
 
 //---------------------------------------------------------------------------
@@ -407,21 +410,22 @@ public class MainTextUtil
 
   static String getGoToRecordAnchor(HDT_Record record, String style, String content)
   {
-    String parms = getOpenRecordParms(record);
+    String parms = getOpenRecordParms(record),
+           anchor = "<a title=\"" + recordTooltip(record) + "\"" + style + " hypncon=\"true\" ";
 
     switch (record.getType())
     {
       case hdtMiscFile :
-        return "<a title=\"" + recordTooltip(record) + "\"" + style + " hypncon=\"true\" href=\"\" onclick=\"javascript:openFile(" + parms + "); return false;\">" + content + "</a>";
+        return anchor + "href=\"\" onclick=\"javascript:openFile(" + parms + "); return false;\">" + content + "</a>";
 
       case hdtWork :
-        return "<a title=\"" + recordTooltip(record) + "\"" + style + " hypncon=\"true\" oncontextmenu=\"openFile(" + parms + "); return false;\" href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
+        return anchor + "oncontextmenu=\"openFile(" + parms + "); return false;\" href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
 
       case hdtNote :
-        return "<a title=\"" + recordTooltip(record) + "\"" + style + " hypncon=\"true\" oncontextmenu=\"openFile(" + parms + "); return false;\" href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
+        return anchor + "oncontextmenu=\"openFile(" + parms + "); return false;\" href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
 
       default :
-        return "<a title=\"" + recordTooltip(record) + "\"" + style + " hypncon=\"true\" href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
+        return anchor + "href=\"\" onclick=\"javascript:openRecord(" + parms + "); return false;\">" + content + "</a>";
     }
   }
 
@@ -571,9 +575,9 @@ public class MainTextUtil
         String bibAuthors1 = s1.getRecordType() == hdtWork ?
           HDT_Work.class.cast(s1.getRecord()).getShortAuthorsStr(true)
         :
-          HDT_MiscFile.class.cast(s1.getRecord()).getShortAuthorsStr(true);
+          HDT_MiscFile.class.cast(s1.getRecord()).getShortAuthorsStr(true),
 
-        String bibAuthors2 = s2.getRecordType() == hdtWork ?
+        bibAuthors2 = s2.getRecordType() == hdtWork ?
           HDT_Work.class.cast(s2.getRecord()).getShortAuthorsStr(true)
         :
           HDT_MiscFile.class.cast(s2.getRecord()).getShortAuthorsStr(true);
@@ -811,6 +815,15 @@ public class MainTextUtil
     output = output + input + "</font></p></body></html>";
 
     return output;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String mainTextHeadStyleTag()
+  {
+    return "<style>p { margin-top: 0em; margin-bottom: 0em; } " +
+           "body { font-family: arial; font-size: 10pt; } </style>";
   }
 
 //---------------------------------------------------------------------------

@@ -28,6 +28,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.InterComputerMsg;
 import org.hypernomicon.model.HyperDB.HDB_MessageType;
+import org.hypernomicon.util.DesktopUtil;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.HDB_MessageType.*;
@@ -189,7 +190,7 @@ public class LockedDlgCtrlr extends HyperDlg
     btnTryTerminate.setDisable(true);
     btnStop.setDisable(false);
 
-    InterComputerMsg sentMsg = new InterComputerMsg(getComputerName(), otherCompName, newMsgType);
+    InterComputerMsg sentMsg = new InterComputerMsg(DesktopUtil.getComputerName(), otherCompName, newMsgType);
     sentMsg.writeToDisk();
     sentTime = sentMsg.getSentTime();
 

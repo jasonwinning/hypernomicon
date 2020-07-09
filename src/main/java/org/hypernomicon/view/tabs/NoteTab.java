@@ -75,7 +75,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
   private FilePath folderPath;
   private HDT_Note curNote;
 
-  @Override protected RecordType getType()          { return hdtNote; }
+  @Override protected RecordType type()             { return hdtNote; }
   @Override public void enable(boolean enabled)     { ui.tabNotes.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }

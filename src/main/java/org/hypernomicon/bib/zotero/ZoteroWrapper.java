@@ -23,6 +23,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.json.JsonObj.*;
 import static org.hypernomicon.bib.zotero.ZoteroWrapper.ZoteroHeader.*;
 
 import java.io.FileInputStream;

@@ -51,23 +51,14 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
     private CoreAccessor(HyperCore<HDT_DT> core) { this.core = core; }
 
     public int size()                            { return core.size(); }
-    public boolean containsID(int id)            { return core.containsID(id); }
     public Stream<HDT_DT> stream()               { return core.stream(); }
 
-    public String getKeyByID(int id)             { return core.getKeyByID(id); }
-
     public int getKeyNdxByID(int id)             { return core.getKeyNdxByID(id); }
-    public int getKeyNdxByIDNdx(int ndx)         { return core.getKeyNdxByID(core.getIDbyIDNdx(ndx)); }
-
-    public int getIDbyKeyNdx(int ndx)            { return core.getIDbyKeyNdx(ndx); }
-    public int getIDbyIDNdx(int ndx)             { return core.getIDbyIDNdx(ndx); }
-
     public int getIDNdxByID(int id)              { return core.getIDNdxByID(id); }
-    public int getIDNdxByKeyNdx(int ndx)         { return core.getIDNdxByID(core.getIDbyKeyNdx(ndx)); }
 
     public HDT_DT getByID(int id)                { return core.getRecordByID(id); }
-    public HDT_DT getByIDNdx(int ndx)            { return core.getRecordByID(core.getIDbyIDNdx(ndx)); }
     public HDT_DT getByKeyNdx(int ndx)           { return core.getRecordByID(core.getIDbyKeyNdx(ndx)); }
+    private HDT_DT getByIDNdx(int ndx)           { return core.getRecordByID(core.getIDbyIDNdx(ndx)); }
 
     public Iterable<HDT_DT> keyIterable()        { return this::keyIterator; }
     public Iterator<HDT_DT> keyIterator()        { return new CoreIterator(this, true); }
@@ -127,7 +118,6 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
   // This should ONLY ever be called by HDT_RecordBase.updateSortKey!!!
   public void updateSortKey(String newKey, int id) { core.setKey(id, newKey); }
 
-  RecordType getType()                             { return type; }
   int getNextID()                                  { int id = 0; while (true) if (idAvailable(++id)) return id; }
   HDI_Schema getSchema(Tag tag)                    { return tagToSchema.get(tag); }
   Collection<HDI_Schema> getSchemas()              { return tagToSchema.values(); }

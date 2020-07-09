@@ -80,7 +80,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 
   protected abstract void init();
-  protected abstract RecordType getType();
+  protected abstract RecordType type();
 
   public abstract String recordName();
   public abstract boolean update();
@@ -95,8 +95,8 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public TextViewInfo mainTextInfo()       { return new TextViewInfo(); }
   public MainTextWrapper mainTextWrapper() { return null; }
   public void rescale()                    { return; }
-  public int getRecordCount()              { return db.records(getType()).size(); }
-  public final int getActiveID()           { return nullSwitch(activeRecord(), -1, HDT_Record::getID); }
+  public int recordCount()                 { return db.records(type()).size(); }
+  public final int activeID()              { return nullSwitch(activeRecord(), -1, HDT_Record::getID); }
   public final HyperView<HDT_CT> getView() { return view; }
   public final HDT_CT viewRecord()         { return getView().getViewRecord(); }
   public final Tab getTab()                { return tab; }
@@ -158,7 +158,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
   public static final RecordType getRecordTypeByTabEnum(TabEnum tabEnum)
   {
-    return nullSwitch(enumToHyperTab.get(tabEnum), hdtNone, HyperTab::getType);
+    return nullSwitch(enumToHyperTab.get(tabEnum), hdtNone, HyperTab::type);
   }
 
 //---------------------------------------------------------------------------
@@ -244,9 +244,9 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public int getRecordNdx()
+  public int recordNdx()
   {
-    if ((getRecordCount() < 1) || (activeRecord() == null))
+    if ((recordCount() < 1) || (activeRecord() == null))
       return -1;
 
     HDT_RT record = activeRecord();

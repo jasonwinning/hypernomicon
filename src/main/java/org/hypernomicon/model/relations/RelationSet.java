@@ -94,7 +94,6 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   int getObjectCount(HDT_Subj subj)                       { return subjToObjList.get(subj).size(); }
   HDT_Subj getSubject(HDT_Obj obj, int ndx)               { return objToSubjList.get(obj).get(ndx); }
   int getSubjectNdx(HDT_Obj obj, HDT_Subj subj)           { return objToSubjList.get(obj).indexOf(subj); }
-  int getLastObjectNdx(HDT_Subj subj, HDT_Obj obj)        { return subjToObjList.get(subj).lastIndexOf(obj); }
   int getObjectNdx(HDT_Subj subj, HDT_Obj obj)            { return subjToObjList.get(subj).indexOf(obj); }
   HDT_Obj getObject(HDT_Subj subj, int ndx)               { return subjToObjList.get(subj).get(ndx); }
   boolean alreadyHasAsObject(HDT_Subj subj, HDT_Obj obj)  { return subjToObjList.containsEntry(subj, obj); }
@@ -621,7 +620,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     if ((type == RelationType.rtWorkFileOfWork) && (getSubjectCount(obj) == 0))
       if (obj.isExpired() == false) // The obj record may have just been deleted, and the pointers are still being resolved
-        db.deleteRecord(hdtWorkFile, obj.getID());
+        db.deleteRecord(obj);
   }
 
 //---------------------------------------------------------------------------

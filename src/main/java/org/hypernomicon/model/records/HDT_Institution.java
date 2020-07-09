@@ -19,7 +19,6 @@ package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import org.hypernomicon.model.HyperDataset;
@@ -102,7 +101,7 @@ public class HDT_Institution extends HDT_RecordBase
   @Override public void expire()
   {
     while (subInstitutions.isEmpty() == false)
-      db.deleteRecord(hdtInstitution, subInstitutions.get(0).getID());
+      db.deleteRecord(subInstitutions.get(0));
 
     super.expire();
   }

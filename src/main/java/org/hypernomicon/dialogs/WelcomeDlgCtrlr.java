@@ -20,7 +20,7 @@ package org.hypernomicon.dialogs;
 import org.hypernomicon.util.filePath.FilePath;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 
 import java.util.List;
 

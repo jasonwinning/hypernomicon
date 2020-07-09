@@ -23,6 +23,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.model.Exceptions.*;
@@ -126,7 +127,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   private boolean alreadyChangingName = false;
 
   @Override public String recordName()               { return new PersonName(tfFirst.getText(), tfLast.getText()).getLastFirst(); }
-  @Override protected RecordType getType()           { return hdtPerson; }
+  @Override protected RecordType type()              { return hdtPerson; }
   @Override public void enable(boolean enabled)      { ui.tabPersons.getContent().setDisable(enabled == false); }
   @Override public void setRecord(HDT_Person person) { curPerson = person; }
   @Override public MainTextWrapper mainTextWrapper() { return mainText; }
@@ -582,7 +583,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     new ArrayList<>(curPerson.investigations).forEach(inv ->
     {
       if (invViews.stream().noneMatch(iV -> iV.id == inv.getID()))
-        db.deleteRecord(hdtInvestigation, inv.getID());
+        db.deleteRecord(inv);
     });
 
     // End of save investigations
@@ -623,7 +624,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     curPerson.subfield.setID((subfieldID > 0) && (hcbField.selectedID() > 0) ? subfieldID : -1);
 
     if ((oldSubfield != null) && oldSubfield.persons.isEmpty())
-      db.deleteRecord(hdtSubfield, oldSubfield.getID());
+      db.deleteRecord(oldSubfield);
 
     return true;
   }

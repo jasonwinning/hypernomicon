@@ -92,7 +92,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   private TabPane tpConcepts;
   private boolean alreadyChangingTab = false, updatingGlossaries = false;
 
-  @Override protected RecordType getType()          { return hdtTerm; }
+  @Override protected RecordType type()             { return hdtTerm; }
   @Override public void enable(boolean enabled)     { ui.tabTerms.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }
@@ -343,7 +343,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     curTerm.setName(mtd.getName());
 
-    db.deleteRecord(hdtTerm, otherTerm.getID());
+    db.deleteRecord(otherTerm);
     ui.update();
   }
 
@@ -427,7 +427,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
       switchToDifferentTab();
 
     tpConcepts.getTabs().remove(getConceptTab(concept));
-    db.deleteRecord(hdtConcept, concept.getID());
+    db.deleteRecord(concept);
   }
 
 //---------------------------------------------------------------------------

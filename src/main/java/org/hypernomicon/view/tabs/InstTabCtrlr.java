@@ -20,6 +20,7 @@ package org.hypernomicon.view.tabs;
 import org.hypernomicon.dialogs.NewRegionDlgCtrlr;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_Country;
+import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.SubjectPopulator;
@@ -70,7 +71,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   @FXML private Hyperlink hlMaps;
 
   @Override public String recordName()                 { return tfName.getText(); }
-  @Override protected RecordType getType()             { return hdtInstitution; }
+  @Override protected RecordType type()                { return hdtInstitution; }
   @Override public void enable(boolean enabled)        { ui.tabInst.getContent().setDisable(enabled == false); }
   @Override public void setRecord(HDT_Institution rec) { curInst = rec; }
   @Override public void setDividerPositions()          { setDividerPosition(spHoriz, PREF_KEY_INST_MID_HORIZ, 0); }
@@ -197,7 +198,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
                                                .go();
       }
       else
-        openWebLink(row.getText(colNdx));
+        DesktopUtil.openWebLink(row.getText(colNdx));
     });
 
     htSubInst.addTextEditCol(hdtInstitution, true, false);
@@ -208,7 +209,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     {
       if (ui.cantSaveRecord()) return;
       if (confirmDialog("Are you sure you want to delete this record?") == false) return;
-      db.deleteRecord(hdtInstitution, inst.getID());
+      db.deleteRecord(inst);
       ui.update();
     });
 
@@ -262,7 +263,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     btnURL.setOnAction(event ->
     {
       if (tfURL.getText().isBlank() == false)
-        openWebLink(tfURL.getText());
+        DesktopUtil.openWebLink(tfURL.getText());
       else
         ui.webButtonMap.get(PREF_KEY_INST_SRCH).first(WebButtonField.Name, tfName.getText()).go();
     });
@@ -345,7 +346,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
         if (subInst.name()  .isEmpty() &&
             subInst.getURL().isEmpty() &&
             subInst.persons .isEmpty())
-          db.deleteRecord(hdtInstitution, subInstID);
+          db.deleteRecord(subInst);
       }
     });
 

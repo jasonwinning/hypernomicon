@@ -22,6 +22,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collections;

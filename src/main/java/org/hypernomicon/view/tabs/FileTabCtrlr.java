@@ -37,6 +37,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.dialogs.FileDlgCtrlr;
@@ -74,7 +75,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
   private HDT_MiscFile curMiscFile;
 
   @Override public String recordName()                 { return tfName.getText(); }
-  @Override protected RecordType getType()             { return hdtMiscFile; }
+  @Override protected RecordType type()                { return hdtMiscFile; }
   @Override public void enable(boolean enabled)        { ui.tabFiles.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text)    { mainText.hilite(text); }
   @Override public TextViewInfo mainTextInfo()         { return mainText.getViewInfo(); }
@@ -88,7 +89,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
   @Override public boolean update()
   {
-    btnTree.setDisable(ui.getTree().getRowsForRecord(curMiscFile).isEmpty());
+    btnTree.setDisable(ui.tree().getRowsForRecord(curMiscFile).isEmpty());
 
     tfName.setText(curMiscFile.name());
     tfSearchKey.setText(curMiscFile.getSearchKey());
@@ -276,7 +277,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     curMiscFile.fileType.setID(fileTypeID);
 
     if ((oldFileType != null) && oldFileType.miscFiles.isEmpty())
-      db.deleteRecord(hdtFileType, oldFileType.getID());
+      db.deleteRecord(oldFileType);
 
   // End file type
 

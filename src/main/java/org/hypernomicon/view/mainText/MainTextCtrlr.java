@@ -513,13 +513,13 @@ public class MainTextCtrlr
 
       if (fdc.showModal() == false)
       {
-        db.deleteRecord(hdtMiscFile, miscFile.getID());
+        db.deleteRecord(miscFile);
         return;
       }
 
       if (miscFile != fdc.getFileRecord())
       {
-        db.deleteRecord(hdtMiscFile, miscFile.getID());
+        db.deleteRecord(miscFile);
         miscFile = fdc.getFileRecord();
       }
 

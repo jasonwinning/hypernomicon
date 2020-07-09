@@ -63,7 +63,7 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
     {                                                // rtConceptOfTerm relation
       HDT_Concept concept = it.next();
       it.remove();
-      db.deleteRecord(hdtConcept, concept.getID());
+      db.deleteRecord(concept);
     }
 
     super.expire();

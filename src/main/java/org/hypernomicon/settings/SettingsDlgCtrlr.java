@@ -38,6 +38,7 @@ import org.hypernomicon.bib.mendeley.MendeleyOAuthApi;
 import org.hypernomicon.bib.zotero.ZoteroOAuthApi;
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.util.CryptoUtil;
+import org.hypernomicon.util.DesktopUtil;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -186,7 +187,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     btnZoteroAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltZotero));
     btnMendeleyAuthorize.setOnAction(event -> btnAuthorizeClick(LibraryType.ltMendeley));
-    lblRedirect.setOnMouseClicked(event -> openWebLink(authUrl.get()));
+    lblRedirect.setOnMouseClicked(event -> DesktopUtil.openWebLink(authUrl.get()));
 
     btnVerify.setOnAction(event ->
     {

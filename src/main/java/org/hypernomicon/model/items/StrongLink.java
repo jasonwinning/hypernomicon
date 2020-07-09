@@ -247,7 +247,7 @@ public class StrongLink
 
     // Hub now has no more spokes, must be sacrificed
 
-    if (deleteHub) db.deleteRecord(hdtHub, hub.getID());
+    if (deleteHub) db.deleteRecord(hub);
 
     return true;
   }

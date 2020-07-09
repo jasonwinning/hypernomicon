@@ -1361,17 +1361,17 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   private void updateCB()                           { if (curQV != null) curQV.updateCB(); }
   public void btnExecuteClick()                     { curQV.btnExecuteClick(true); }   // if any of the queries are unfiltered, they
                                                                                        // will all be treated as unfiltered
-  @Override protected RecordType getType()          { return hdtNone; }
+  @Override protected RecordType type()             { return hdtNone; }
   @Override public boolean update()                 { curQV.refreshView(); return true; }
   @Override public void setRecord(HDT_Record rec)   { if (curQV != null) curQV.setRecord(rec); }
-  @Override public int getRecordCount()             { return results().size(); }
+  @Override public int recordCount()                { return results().size(); }
   @Override public TextViewInfo mainTextInfo()      { return new TextViewInfo(MainTextUtil.webEngineScrollPos(webView.getEngine())); }
   @Override public void setDividerPositions()       { return; }
   @Override public void getDividerPositions()       { return; }
   @Override public boolean saveToRecord()           { return false; }
   @Override public HDT_Record activeRecord()        { return curQV == null ? null : curQV.curResult; }
   @Override public String recordName()              { return nullSwitch(activeRecord(), "", HDT_Record::getCBText); }
-  @Override public int getRecordNdx()               { return getRecordCount() > 0 ? curQV.tvResults.getSelectionModel().getSelectedIndex() : -1; }
+  @Override public int recordNdx()                  { return recordCount() > 0 ? curQV.tvResults.getSelectionModel().getSelectedIndex() : -1; }
   @Override public void findWithinDesc(String text) { if (activeRecord() != null) MainTextWrapper.hiliteText(text, webView.getEngine()); }
 
   @FXML private void mnuCopyToFolderClick()         { copyFilesToFolder(true); }

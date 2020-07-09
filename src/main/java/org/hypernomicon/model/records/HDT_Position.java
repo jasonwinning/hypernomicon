@@ -105,8 +105,7 @@ public class HDT_Position extends HDT_RecordWithConnector
 
   private PositionSource getSource(boolean noAuthorOK, boolean noWorkOK, boolean notLaunchableOK)
   {
-    PositionSource ps = new PositionSource();
-    PositionSource webPs = null;
+    PositionSource ps = new PositionSource(), webPs = null;
 
     for (HDT_Argument arg : arguments)
     {

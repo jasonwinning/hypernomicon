@@ -26,6 +26,9 @@ import javafx.scene.image.ImageView;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+
+import org.hypernomicon.util.DesktopUtil;
+
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 
@@ -132,7 +135,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
         btn.setText(caption.length() > 0 ? caption : "URL:");
         btn.setGraphic(null);
-        setOnAction((row, colNdx) -> openWebLink(row.getText(colNdx)));
+        setOnAction((row, colNdx) -> DesktopUtil.openWebLink(row.getText(colNdx)));
 
         break;
 

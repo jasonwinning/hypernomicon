@@ -19,7 +19,6 @@ package org.hypernomicon.model.records;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
-import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -184,9 +183,8 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     if (folder.childFolders.isEmpty() == false)
       folder.childFolders.forEach(HDT_Folder::deleteFolderRecordTree);
 
-    int folderID = folder.getID();
-    if (folderID > 0)
-      db.deleteRecord(hdtFolder, folderID);
+    if (folder.getID() > 0)
+      db.deleteRecord(folder);
 
     db.unmapFilePath(filePath);
   }

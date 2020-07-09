@@ -266,7 +266,7 @@ public class WebButton
           str = str.replace(field.key, escapeURL(value, field != WebButtonField.doi));
       }
 
-      openWebLink(str);
+      DesktopUtil.openWebLink(str);
       return;
     }
   }

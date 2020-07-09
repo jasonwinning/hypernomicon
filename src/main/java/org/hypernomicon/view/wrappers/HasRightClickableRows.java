@@ -20,6 +20,7 @@ package org.hypernomicon.view.wrappers;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -23,11 +23,19 @@ import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.Exceptions.*;
 
 import java.io.IOException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.function.Consumer;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 public class AsyncHttpClient
 {
@@ -56,7 +64,7 @@ public class AsyncHttpClient
     {
       cancelledByUser = false;
 
-      try (CloseableHttpClient httpclient = getHTTPClient())
+      try (CloseableHttpClient httpclient = createClient())
       {
         httpclient.execute(request, responseHandler);
       }
@@ -133,6 +141,34 @@ public class AsyncHttpClient
     stopped = true;
 
     return wasRunning;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static CloseableHttpClient createClient()
+  {
+    SSLContext sc = null;
+
+    try
+    {
+      sc = SSLContext.getInstance("TLS");
+
+      X509TrustManager trustMgr = new X509TrustManager()
+      {
+        @Override public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException { return; }
+        @Override public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException { return; }
+        @Override public X509Certificate[] getAcceptedIssuers()                                                        { return null; }
+      };
+
+      sc.init(null, new TrustManager[] { trustMgr }, new SecureRandom());
+    }
+    catch (Exception e)
+    {
+      throw new RuntimeException("Error while creating SSLContext", e);
+    }
+
+    return HttpClientBuilder.create().setSSLContext(sc).setSSLHostnameVerifier((hostname, session) -> true).build();
   }
 
 //---------------------------------------------------------------------------

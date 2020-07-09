@@ -72,7 +72,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 
     popupTree.reset();
 
-    TreeWrapper tree = ui.getTree();
+    TreeWrapper tree = ui.tree();
     tree.debateTree.copyTo(popupTree.debateTree);
     tree.noteTree  .copyTo(popupTree.noteTree  );
     tree.labelTree .copyTo(popupTree.labelTree );

@@ -38,6 +38,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
+import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.wrappers.ClickHoldButton;
 import javafx.application.Platform;
@@ -215,7 +216,7 @@ public class PreviewWindow extends HyperDlg
       FilePath filePath = curWrapper().getFilePath();
 
       if (FilePath.isEmpty(filePath) == false)
-        launchWorkFile(filePath, curWrapper().getPageNum());
+        DesktopUtil.launchWorkFile(filePath, curWrapper().getPageNum());
     });
 
     btnLock.selectedProperty().addListener((ob, oldValue, newValue) ->

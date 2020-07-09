@@ -23,6 +23,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.dialogs.RenameDlgCtrlr.NameType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -1100,7 +1101,7 @@ public class FileManager extends HyperDlg
         setPath.filePath().delete(true);
         db.unmapFilePath(setPath.filePath());
         if ((setPath.getRecordType() != hdtNone) && (setPath.getRecordType() != hdtPerson))
-          db.deleteRecord(setPath.getRecord().getType(), setPath.getRecord().getID());
+          db.deleteRecord(setPath.getRecord());
       }
       catch (IOException e)
       {

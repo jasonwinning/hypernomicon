@@ -19,11 +19,14 @@ package org.hypernomicon.util.json;
 
 import static org.hypernomicon.util.Util.*;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.util.Set;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
+import org.json.simple.parser.JSONParser;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -31,6 +34,8 @@ import org.json.simple.parser.ParseException;
 public class JsonObj implements Cloneable
 {
   public static enum JsonNodeType { OBJECT, STRING, ARRAY, BOOLEAN, INTEGER, NONE }
+
+  public static final JSONParser jsonParser = new JSONParser();
 
   final JSONObject jObj;
 
@@ -109,7 +114,7 @@ public class JsonObj implements Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static JsonNodeType determineType(Object object)
+  static JsonNodeType determineType(Object object)
   {
     if (object instanceof JSONObject) return JsonNodeType.OBJECT;
     if (object instanceof JSONArray ) return JsonNodeType.ARRAY;
@@ -118,6 +123,37 @@ public class JsonObj implements Cloneable
     if (object instanceof Long      ) return JsonNodeType.INTEGER;
 
     return JsonNodeType.NONE;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static JsonObj parseJsonObj(Reader in) throws IOException, org.json.simple.parser.ParseException
+  { return new JsonObj((JSONObject) jsonParser.parse(in)); }
+
+  private static JsonObj parseJsonObj(String str) throws org.json.simple.parser.ParseException
+  { return new JsonObj((JSONObject) jsonParser.parse(str)); }
+
+  public static JsonArray parseJson(String str) throws org.json.simple.parser.ParseException
+  { return wrapJSONObject(jsonParser.parse(str)); }
+
+  public static JsonArray parseJson(Reader in) throws IOException, org.json.simple.parser.ParseException
+  { return wrapJSONObject(jsonParser.parse(in)); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked")
+  private static JsonArray wrapJSONObject(Object obj)
+  {
+    if (obj instanceof JSONObject)
+    {
+      JSONArray jArr = new JSONArray();
+      jArr.add(obj);
+      return new JsonArray(jArr);
+    }
+
+    return obj instanceof JSONArray ? new JsonArray((JSONArray) obj) : null;
   }
 
 //---------------------------------------------------------------------------

@@ -29,6 +29,7 @@ import static org.hypernomicon.query.engines.QueryEngine.QueryType.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
@@ -183,7 +184,7 @@ public final class MainCtrlr
 
   private List<ResultsRow> results()          { return curQV.resultsTable.getTV().getItems(); }
   MenuBar getMenuBar()                        { return menuBar; }
-  public TreeWrapper getTree()                { return treeHyperTab().getTree(); }
+  public TreeWrapper tree()                   { return treeHyperTab().getTree(); }
   public Stage getStage()                     { return stage; }
   public boolean isShuttingDown()             { return shuttingDown; }
 
@@ -330,10 +331,10 @@ public final class MainCtrlr
 
     mnuVideos            .setOnAction(event -> openWebLink("http://hypernomicon.org/support.html"));
 
-    mnuFindNextAll       .setOnAction(event -> getTree().find(cbTreeGoTo.getEditor().getText(), true,  false));
-    mnuFindPreviousAll   .setOnAction(event -> getTree().find(cbTreeGoTo.getEditor().getText(), false, false));
-    mnuFindNextInName    .setOnAction(event -> getTree().find(cbTreeGoTo.getEditor().getText(), true,  true ));
-    mnuFindPreviousInName.setOnAction(event -> getTree().find(cbTreeGoTo.getEditor().getText(), false, true ));
+    mnuFindNextAll       .setOnAction(event -> tree().find(cbTreeGoTo.getEditor().getText(), true,  false));
+    mnuFindPreviousAll   .setOnAction(event -> tree().find(cbTreeGoTo.getEditor().getText(), false, false));
+    mnuFindNextInName    .setOnAction(event -> tree().find(cbTreeGoTo.getEditor().getText(), true,  true ));
+    mnuFindPreviousInName.setOnAction(event -> tree().find(cbTreeGoTo.getEditor().getText(), false, true ));
 
     btnSaveAll.       setOnAction(event -> saveAllToDisk(true, true, true));
     btnDelete.        setOnAction(event -> deleteCurrentRecord(true));
@@ -783,13 +784,13 @@ public final class MainCtrlr
 
     if (fromMenu)
     {
-      goToRecord(getTree().selectedRecord(), false);
+      goToRecord(tree().selectedRecord(), false);
       return;
     }
 
     String text = cbTreeGoTo.getEditor().getText();
     if (text.length() > 0)
-      getTree().findAgain(text);
+      tree().findAgain(text);
   }
 
 //---------------------------------------------------------------------------
@@ -986,7 +987,7 @@ public final class MainCtrlr
                           mnuRevertToDiskCopy, mnuAddToQueryResults, btnFileMgr,            btnBibMgr,     btnPreviewWindow,   btnMentions,
                           btnAdvancedSearch,   btnSaveAll);
     if (disabled)
-      getTree().clear();
+      tree().clear();
 
     hideFindTable();
 
@@ -1073,15 +1074,15 @@ public final class MainCtrlr
 
       if (saveRecord && cantSaveRecord()) return false;
 
-      db.prefs.putInt(PREF_KEY_PERSON_ID     , personHyperTab  ().getActiveID());
-      db.prefs.putInt(PREF_KEY_INSTITUTION_ID, instHyperTab    ().getActiveID());
-      db.prefs.putInt(PREF_KEY_DEBATE_ID     , debateHyperTab  ().getActiveID());
-      db.prefs.putInt(PREF_KEY_POSITION_ID   , positionHyperTab().getActiveID());
-      db.prefs.putInt(PREF_KEY_ARGUMENT_ID   , argumentHyperTab().getActiveID());
-      db.prefs.putInt(PREF_KEY_WORK_ID       , workHyperTab    ().getActiveID());
-      db.prefs.putInt(PREF_KEY_TERM_ID       , termHyperTab    ().getActiveID());
-      db.prefs.putInt(PREF_KEY_FILE_ID       , fileHyperTab    ().getActiveID());
-      db.prefs.putInt(PREF_KEY_NOTE_ID       , noteHyperTab    ().getActiveID());
+      db.prefs.putInt(PREF_KEY_PERSON_ID     , personHyperTab  ().activeID());
+      db.prefs.putInt(PREF_KEY_INSTITUTION_ID, instHyperTab    ().activeID());
+      db.prefs.putInt(PREF_KEY_DEBATE_ID     , debateHyperTab  ().activeID());
+      db.prefs.putInt(PREF_KEY_POSITION_ID   , positionHyperTab().activeID());
+      db.prefs.putInt(PREF_KEY_ARGUMENT_ID   , argumentHyperTab().activeID());
+      db.prefs.putInt(PREF_KEY_WORK_ID       , workHyperTab    ().activeID());
+      db.prefs.putInt(PREF_KEY_TERM_ID       , termHyperTab    ().activeID());
+      db.prefs.putInt(PREF_KEY_FILE_ID       , fileHyperTab    ().activeID());
+      db.prefs.putInt(PREF_KEY_NOTE_ID       , noteHyperTab    ().activeID());
 
       db.prefs.put(PREF_KEY_RECORD_TYPE, db.getTypeTagStr(activeType() == hdtNone ? hdtPerson : activeType()));
 
@@ -1288,7 +1289,7 @@ public final class MainCtrlr
   @FXML public void btnSaveClick()
   {
     if (btnSave.getText().equals(TREE_SELECT_BTN_CAPTION))
-      treeSelector.select(getTree().selectedRecord(), true);
+      treeSelector.select(tree().selectedRecord(), true);
     else if (!cantSaveRecord())
       update();
   }
@@ -1357,7 +1358,7 @@ public final class MainCtrlr
                         "ID: " + record.getID() + "\n\n" + msg) == false) return false;
     }
 
-    db.deleteRecord(type, record.getID());
+    db.deleteRecord(record);
 
     viewSequence.loadViewFromCurrentSlotToUI();
     fileManagerDlg.refresh();
@@ -1934,7 +1935,7 @@ public final class MainCtrlr
       queryHyperTab().enable(true);
       treeHyperTab().enable(true);
 
-      getTree().expandMainBranches();
+      tree().expandMainBranches();
       fileManagerDlg.folderTree.expandMainBranches();
 
       stage.setTitle(appTitle + " - " + db.getRootPath(appPrefs.get(PREF_KEY_SOURCE_FILENAME, "")));
@@ -2143,7 +2144,7 @@ public final class MainCtrlr
 
     if (db.isLoaded() == false)
     {
-      getTree().clear();
+      tree().clear();
       return;
     }
 
@@ -2162,7 +2163,7 @@ public final class MainCtrlr
         break;
     }
 
-    int count = tab.getRecordCount();
+    int count = tab.recordCount();
 
     treeSelector.reset();
 
@@ -2230,7 +2231,7 @@ public final class MainCtrlr
     HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = nullSwitch(getHyperTab(selectorTabEnum), activeTab());
     tfSelector = null;
 
-    int count = hyperTab == null ? 0 : hyperTab.getRecordCount();
+    int count = hyperTab == null ? 0 : hyperTab.recordCount();
 
     mnuRecordSelect.setVisible(true);
 
@@ -2331,7 +2332,7 @@ public final class MainCtrlr
     HyperTab<? extends HDT_Record, ? extends HDT_Record> curTab = activeTab();
     if (curTab == null) return;
 
-    int count = curTab.getRecordCount(), ndx = curTab.getRecordNdx();
+    int count = curTab.recordCount(), ndx = curTab.recordNdx();
     HDT_Record activeRec = activeRecord();
     TabEnum activeTabEnum = activeTabEnum();
 
@@ -2457,7 +2458,7 @@ public final class MainCtrlr
   {
     if (activeTabEnum() == treeTabEnum)
     {
-      getTree().selectNextInstance(increment);
+      tree().selectNextInstance(increment);
       return;
     }
 
@@ -2839,7 +2840,7 @@ public final class MainCtrlr
 
     if (mwd.showModal() == false)
     {
-      if (creatingNewWork) db.deleteRecord(hdtWork, work.getID());
+      if (creatingNewWork) db.deleteRecord(work);
       return;
     }
 

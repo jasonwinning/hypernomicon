@@ -19,7 +19,7 @@ package org.hypernomicon.settings;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.dialogs.HyperDlg;
-import org.hypernomicon.util.DesktopApi;
+import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 
 import static org.hypernomicon.App.*;
@@ -240,13 +240,13 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
         if (list.size() > 1)
         {
-          DesktopApi.exec(true, false, new StringBuilder(), list);
+          DesktopUtil.exec(true, false, new StringBuilder(), list);
           return;
         }
       }
     }
 
-    DesktopApi.exec(true, false, new StringBuilder(), appPath, filePath.toString());
+    DesktopUtil.exec(true, false, new StringBuilder(), appPath, filePath.toString());
   }
 
 //---------------------------------------------------------------------------

@@ -20,16 +20,21 @@ package org.hypernomicon.util;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import static org.hypernomicon.App.*;
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
-
+import org.hypernomicon.settings.LaunchCommandsDlgCtrlr;
 import org.hypernomicon.util.filePath.FilePath;
 
 import com.google.common.collect.Lists;
@@ -37,48 +42,8 @@ import com.google.common.collect.Lists;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-public class DesktopApi
+public class DesktopUtil
 {
-  static boolean browse(String url)
-  {
-    if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC)
-      return browseDesktop(url);
-
-    try
-    {
-      @SuppressWarnings("unused") URI uri = new URI(url);
-    }
-    catch (URISyntaxException e)
-    {
-      return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ". " + e.getMessage());
-    }
-
-    return openSystemSpecific(url);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  static boolean open(FilePath filePath)
-  {
-    if (FilePath.isEmpty(filePath)) return true;
-
-    return SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC ?
-      openDesktop(filePath)
-    :
-      openSystemSpecific(filePath.toString());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static boolean edit(FilePath filePath)
-  {
-    return SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC ?
-      editDesktop(filePath)
-    :
-      openSystemSpecific(filePath.toString());
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -121,8 +86,13 @@ public class DesktopApi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean openDesktop(FilePath filePath)
+  private static boolean openFile(FilePath filePath)
   {
+    if (FilePath.isEmpty(filePath)) return true;
+
+    if ((SystemUtils.IS_OS_WINDOWS == false) && (SystemUtils.IS_OS_MAC == false))
+      return openSystemSpecific(filePath.toString());
+
     try
     {
       if ( ! (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)))
@@ -140,8 +110,11 @@ public class DesktopApi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static boolean editDesktop(FilePath filePath)
+  public static boolean editFile(FilePath filePath)
   {
+    if ((SystemUtils.IS_OS_WINDOWS == false) && (SystemUtils.IS_OS_MAC == false))
+      return openSystemSpecific(filePath.toString());
+
     try
     {
       if ( ! (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.EDIT)))
@@ -196,6 +169,138 @@ public class DesktopApi
     }
 
     return exitValue == 0 ? true : falseWithErrMsgCond(showErrMsg, "An error occurred while trying to start application: " + errorSB.toString());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void searchORCID(String orcid, String first, String last)
+  {
+    if (orcid.length() > 0)
+      openWebLink("http://orcid.org/" + escapeURL(orcid, false));
+    else if ((first + last).length() > 0)
+      openWebLink("https://orcid.org/orcid-search/quick-search/?searchQuery=" + escapeURL(last + ", " + first, true));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void searchDOI(String str)
+  {
+    String doi = matchDOI(str);
+    if (doi.length() > 0)
+      openWebLink("http://dx.doi.org/" + escapeURL(doi, false));
+  }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  public static boolean openWebLink(String url)
+  {
+    url = url.trim();
+
+    if (url.isEmpty()) return true;
+
+    if (url.indexOf(":") == -1)
+      url = "http://" + url;
+
+    if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC)
+      return browseDesktop(url);
+
+    try
+    {
+      @SuppressWarnings("unused") URI uri = new URI(url);
+    }
+    catch (URISyntaxException e)
+    {
+      return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ". " + e.getMessage());
+    }
+
+    return openSystemSpecific(url);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void launchWorkFile(FilePath filePath, int pageNum)
+  {
+    if (FilePath.isEmpty(filePath)) return;
+
+    String readerPath = appPrefs.get(PREF_KEY_PDF_READER, "");
+
+    if ((filePath.getExtensionOnly().toLowerCase().equals("pdf") == false) || readerPath.isEmpty())
+    {
+      openFile(filePath);
+      return;
+    }
+
+    if (pageNum < 1) pageNum = 1;
+
+    LaunchCommandsDlgCtrlr.launch(readerPath, filePath, PREF_KEY_PDF_READER_COMMANDS, PREF_KEY_PDF_READER_COMMAND_TYPE, pageNum);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void highlightFileInExplorer(FilePath filePath)
+  {
+    if (FilePath.isEmpty(filePath)) return;
+
+    try
+    {
+      if (SystemUtils.IS_OS_WINDOWS)
+        Runtime.getRuntime().exec("explorer.exe /select,\"" + filePath + "\"").waitFor();
+
+      else if (SystemUtils.IS_OS_MAC)
+        Runtime.getRuntime().exec(new String[] {"open", "-R", filePath.toString()}).waitFor();
+
+      else if (SystemUtils.IS_OS_LINUX)
+      {
+        if (exec(false, false, new StringBuilder(), "nautilus", filePath.toString()) == false)
+          launchFile(filePath.getDirOnly());  // this won't highlight the file in the folder
+      }
+
+      // xdg-mime query default inode/directory
+
+      else
+        launchFile(filePath.getDirOnly());  // this won't highlight the file in the folder
+    }
+    catch (Exception e)
+    {
+      messageDialog("An error occurred while trying to show the file: " + filePath + ". " + e.getMessage(), mtError);
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static FilePath getHomeDir()
+  {
+    return new FilePath(SystemUtils.getUserHome());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String hostName = "";
+
+  public static String getComputerName()
+  {
+    if (hostName.length() > 0) return hostName;
+
+    hostName = SystemUtils.getHostName();
+    if (hostName.length() > 0) return hostName;
+
+    hostName = safeStr(System.getenv("HOSTNAME"));
+    if (hostName.length() > 0) return hostName;
+
+    hostName = safeStr(System.getenv("COMPUTERNAME"));
+    if (hostName.length() > 0) return hostName;
+
+    try { hostName = safeStr(InetAddress.getLocalHost().getHostName()); }
+    catch (UnknownHostException e) { return ""; }
+
+    return hostName;
   }
 
 //---------------------------------------------------------------------------

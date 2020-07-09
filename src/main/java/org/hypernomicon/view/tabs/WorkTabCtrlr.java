@@ -66,6 +66,7 @@ import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
@@ -155,7 +156,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   public HyperCB hcbType;
 
   @Override public String recordName()               { return tfTitle.getText(); }
-  @Override protected RecordType getType()           { return hdtWork; }
+  @Override protected RecordType type()              { return hdtWork; }
   @Override public void enable(boolean enabled)      { ui.tabWorks.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text)  { mainText.hilite(text); }
   @Override public TextViewInfo mainTextInfo()       { return mainText.getViewInfo(); }
@@ -699,7 +700,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   @Override public boolean update()
   {
-    btnTree.setDisable(ui.getTree().getRowsForRecord(curWork).isEmpty());
+    btnTree.setDisable(ui.tree().getRowsForRecord(curWork).isEmpty());
 
     WorkTypeEnum workTypeEnumVal = curWork.getWorkTypeEnum();
 

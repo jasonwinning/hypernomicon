@@ -23,6 +23,7 @@ import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.json.JsonObj.*;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

@@ -17,6 +17,7 @@
 
 package org.hypernomicon.query.engines;
 
+import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.populators.QueryPopulator;
 import org.hypernomicon.view.populators.VariablePopulator;
@@ -25,7 +26,6 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryTabCtrlr.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.App.*;
 
@@ -110,7 +110,7 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
 
         if (firstCall)
         {
-          FilePath filePath = getHomeDir().resolve("data.csv");
+          FilePath filePath = DesktopUtil.getHomeDir().resolve("data.csv");
           if (filePath.exists()) try
           {
             Files.delete(filePath.toPath());
@@ -140,7 +140,7 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
 
         if (lastCall)
         {
-          FilePath filePath = getHomeDir().resolve("data.csv");
+          FilePath filePath = DesktopUtil.getHomeDir().resolve("data.csv");
 
           try
           {

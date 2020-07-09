@@ -109,7 +109,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
   {
     if (searchDummy != null)
     {
-      db.deleteRecord(hdtPerson, searchDummy.getID());
+      db.deleteRecord(searchDummy);
       searchDummy = null;
       dummySearchKeys.removeAll();
     }

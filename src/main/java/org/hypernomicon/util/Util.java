@@ -21,11 +21,8 @@ import org.hypernomicon.App;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.dialogs.InternetCheckDlgCtrlr;
 import org.hypernomicon.dialogs.LockedDlgCtrlr;
-import org.hypernomicon.settings.LaunchCommandsDlgCtrlr;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.util.json.JsonArray;
-import org.hypernomicon.util.json.JsonObj;
 import org.hypernomicon.view.WindowStack;
 
 import static org.hypernomicon.App.*;
@@ -39,20 +36,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.lang.reflect.Constructor;
 
 import static java.nio.charset.StandardCharsets.*;
 import static java.util.Collections.binarySearch;
 
-import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.net.UnknownHostException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -81,11 +72,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import javax.swing.filechooser.FileSystemView;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -128,11 +114,6 @@ import javafx.util.Duration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 import com.google.common.escape.Escaper;
 import com.ibm.icu.text.Transliterator;
@@ -147,16 +128,12 @@ import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 public final class Util
 {
-  public static final JSONParser jsonParser = new JSONParser();
-
   public static final StopWatch stopWatch1 = new StopWatch(), stopWatch2 = new StopWatch(), stopWatch3 = new StopWatch(),
                                 stopWatch4 = new StopWatch(), stopWatch5 = new StopWatch(), stopWatch6 = new StopWatch();
 
   public static final Escaper htmlEscaper         = htmlEscaper(),
                               xmlContentEscaper   = xmlContentEscaper(),
                               xmlAttributeEscaper = xmlAttributeEscaper();
-
-  static String hostName = "";
 
 //---------------------------------------------------------------------------
 
@@ -244,15 +221,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String mainTextHeadStyleTag()
-  {
-    return "<style>p { margin-top: 0em; margin-bottom: 0em; } " +
-           "body { font-family: arial; font-size: 10pt; } </style>";
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static int parseInt(String value, int def)
   {
     try { return Integer.parseInt(value); }
@@ -304,17 +272,6 @@ public final class Util
     }
 
     return true;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void searchORCID(String orcid, String first, String last)
-  {
-    if (orcid.length() > 0)
-      openWebLink("http://orcid.org/" + escapeURL(orcid, false));
-    else if ((first + last).length() > 0)
-      openWebLink("https://orcid.org/orcid-search/quick-search/?searchQuery=" + escapeURL(last + ", " + first, true));
   }
 
 //---------------------------------------------------------------------------
@@ -376,96 +333,9 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void searchWorldCatISBN(String isbn)
-  {
-    List<String> list = matchISBN(isbn);
-    if (collEmpty(list) == false)
-      openWebLink("http://www.worldcat.org/search?q=bn%3A" + list.get(0) + "&qt=advanced");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void searchDOI(String str)
-  {
-    String doi = matchDOI(str);
-    if (doi.length() > 0)
-      openWebLink("http://dx.doi.org/" + escapeURL(doi, false));
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  public static void openWebLink(String url)
-  {
-    url = url.trim();
-
-    if (url.isEmpty()) return;
-
-    if (url.indexOf(":") == -1)
-      url = "http://" + url;
-
-    DesktopApi.browse(url);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static void launchFile(FilePath filePath)
   {
-    launchWorkFile(filePath, 1);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void launchWorkFile(FilePath filePath, int pageNum)
-  {
-    if (FilePath.isEmpty(filePath)) return;
-
-    String readerPath = appPrefs.get(PREF_KEY_PDF_READER, "");
-
-    if ((filePath.getExtensionOnly().toLowerCase().equals("pdf") == false) || readerPath.isEmpty())
-    {
-      DesktopApi.open(filePath);
-      return;
-    }
-
-    if (pageNum < 1) pageNum = 1;
-
-    LaunchCommandsDlgCtrlr.launch(readerPath, filePath, PREF_KEY_PDF_READER_COMMANDS, PREF_KEY_PDF_READER_COMMAND_TYPE, pageNum);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void highlightFileInExplorer(FilePath filePath)
-  {
-    if (FilePath.isEmpty(filePath)) return;
-
-    try
-    {
-      if (SystemUtils.IS_OS_WINDOWS)
-        Runtime.getRuntime().exec("explorer.exe /select,\"" + filePath + "\"").waitFor();
-
-      else if (SystemUtils.IS_OS_MAC)
-        Runtime.getRuntime().exec(new String[] {"open", "-R", filePath.toString()}).waitFor();
-
-      else if (SystemUtils.IS_OS_LINUX)
-      {
-        if (DesktopApi.exec(false, false, new StringBuilder(), "nautilus", filePath.toString()) == false)
-          launchFile(filePath.getDirOnly());  // this won't highlight the file in the folder
-      }
-
-      // xdg-mime query default inode/directory
-
-      else
-        launchFile(filePath.getDirOnly());  // this won't highlight the file in the folder
-    }
-    catch (Exception e)
-    {
-      messageDialog("An error occurred while trying to show the file: " + filePath + ". " + e.getMessage(), mtError);
-    }
+    DesktopUtil.launchWorkFile(filePath, 1);
   }
 
 //---------------------------------------------------------------------------
@@ -1077,56 +947,9 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static CloseableHttpClient getHTTPClient()
-  {
-    SSLContext sc = null;
-
-    try
-    {
-      sc = SSLContext.getInstance("TLS");
-
-      X509TrustManager trustMgr = new X509TrustManager()
-      {
-        @Override public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException { return; }
-        @Override public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException { return; }
-        @Override public X509Certificate[] getAcceptedIssuers()                                                        { return null; }
-      };
-
-      sc.init(null, new TrustManager[] { trustMgr }, new SecureRandom());
-    }
-    catch (Exception e)
-    {
-      throw new RuntimeException("Error while creating SSLContext", e);
-    }
-
-    return HttpClientBuilder.create().setSSLContext(sc).setSSLHostnameVerifier((hostname, session) -> true).build();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static void assignSB(StringBuilder sb, String s)
   {
     sb.replace(0, sb.length(), s);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String getComputerName()
-  {
-    if (hostName.length() > 0) return hostName;
-
-    hostName = safeStr(System.getenv("HOSTNAME"));
-    if (hostName.length() > 0) return hostName;
-
-    hostName = safeStr(System.getenv("COMPUTERNAME"));
-    if (hostName.length() > 0) return hostName;
-
-    try { hostName = safeStr(InetAddress.getLocalHost().getHostName()); }
-    catch (UnknownHostException e) { return ""; }
-
-    return hostName;
   }
 
 //---------------------------------------------------------------------------
@@ -1171,20 +994,6 @@ public final class Util
   {
     Stream<StringBuilder> strm = (emptiesOK ? list.stream() : list.stream().filter(one -> safeStr(one).length() > 0)).map(StringBuilder::new);
     return strm.reduce((all, one) -> all.append(useSystemNewLineChar ? System.lineSeparator() : "\n").append(one)).orElse(new StringBuilder()).toString();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String replaceChar(String str, int index, char replace)
-  {
-    if (str == null) return null;
-
-    if ((index < 0) || (index >= str.length())) return str;
-
-    char[] chars = str.toCharArray();
-    chars[index] = replace;
-    return String.valueOf(chars);
   }
 
 //---------------------------------------------------------------------------
@@ -1522,37 +1331,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static JsonObj parseJsonObj(Reader in) throws IOException, org.json.simple.parser.ParseException
-  { return new JsonObj((JSONObject) jsonParser.parse(in)); }
-
-  public static JsonObj parseJsonObj(String str) throws org.json.simple.parser.ParseException
-  { return new JsonObj((JSONObject) jsonParser.parse(str)); }
-
-  public static JsonArray parseJson(String str) throws org.json.simple.parser.ParseException
-  { return wrapJSONObject(jsonParser.parse(str)); }
-
-  public static JsonArray parseJson(Reader in) throws IOException, org.json.simple.parser.ParseException
-  { return wrapJSONObject(jsonParser.parse(in)); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @SuppressWarnings("unchecked")
-  private static JsonArray wrapJSONObject(Object obj)
-  {
-    if (obj instanceof JSONObject)
-    {
-      JSONArray jArr = new JSONArray();
-      jArr.add(obj);
-      return new JsonArray(jArr);
-    }
-
-    return obj instanceof JSONArray ? new JsonArray((JSONArray) obj) : null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static <T>      void nullSwitch(T  obj,         Consumer<T>      ex) { if (obj != null)           ex.accept(obj); }
   public static <T>      T    nullSwitch(T  obj, T  def                     ) { return obj == null ? def : obj           ; }
   public static <T1, T2> T1   nullSwitch(T2 obj, T1 def, Function<T2, T1> ex) { return obj == null ? def : ex.apply(obj) ; }
@@ -1674,7 +1452,7 @@ public final class Util
   public static String randomHexStr(int size)          { return randomStr(size, "0123456789abcdef"); }
   public static String randomAlphanumericStr(int size) { return randomStr(size, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHILJLMNOPQRSTUVWXYZ"); }
 
-  public static String randomStr(int size, String charsStr)
+  private static String randomStr(int size, String charsStr)
   {
     if (size < 0) return "";
 
@@ -1706,14 +1484,6 @@ public final class Util
   {
     int ndx = binarySearch(list, item);
     list.add(ndx >= 0 ? ndx + 1 : ~ndx, item);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static FilePath getHomeDir()
-  {
-    return new FilePath(FileSystemView.getFileSystemView().getHomeDirectory());
   }
 
 //---------------------------------------------------------------------------

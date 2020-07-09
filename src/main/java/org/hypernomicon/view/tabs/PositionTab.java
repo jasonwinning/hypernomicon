@@ -54,7 +54,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
   private HyperTable htParents, htArguments, htSubpositions;
   private HDT_Position curPosition;
 
-  @Override protected RecordType getType()          { return hdtPosition; }
+  @Override protected RecordType type()             { return hdtPosition; }
   @Override public void enable(boolean enabled)     { ui.tabPositions.getContent().setDisable(enabled == false); }
   @Override public void findWithinDesc(String text) { ctrlr.hilite(text); }
   @Override public TextViewInfo mainTextInfo()      { return ctrlr.mainTextInfo(); }

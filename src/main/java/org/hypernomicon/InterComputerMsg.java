@@ -19,8 +19,8 @@ package org.hypernomicon;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.HDB_MessageType.*;
-import static org.hypernomicon.util.Util.*;
 import org.hypernomicon.model.HyperDB.HDB_MessageType;
+import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 
 import com.google.common.collect.Lists;
@@ -90,7 +90,7 @@ public class InterComputerMsg
     try { s = FileUtils.readLines(filePath.toFile(), UTF_8); }
     catch (IOException e) { return null; }
 
-    if ((s.size() != 3) || s.get(0).equals(getComputerName()))
+    if ((s.size() != 3) || s.get(0).equals(DesktopUtil.getComputerName()))
       return null;
 
     HDB_MessageType type;

@@ -54,6 +54,7 @@ import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.util.AsyncHttpClient;
+import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.MainCtrlr;
@@ -193,7 +194,7 @@ public class BibManager extends HyperDlg
 
     tableView.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> refresh());
 
-    entryTable.addContextMenuItem("View this entry on the web", row -> row.getURL().length() > 0, row -> openWebLink(row.getURL()));
+    entryTable.addContextMenuItem("View this entry on the web", row -> row.getURL().length() > 0, row -> DesktopUtil.openWebLink(row.getURL()));
 
     entryTable.addContextMenuItem("Go to work record", HDT_Work.class, work -> ui.goToRecord(work, true));
 

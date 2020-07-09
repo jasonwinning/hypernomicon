@@ -23,6 +23,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.HyperPath;
@@ -31,7 +32,6 @@ import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.settings.LaunchCommandsDlgCtrlr;
 import org.hypernomicon.util.AsyncHttpClient;
-import org.hypernomicon.util.DesktopApi;
 import org.hypernomicon.util.FileDownloadUtility;
 import org.hypernomicon.util.PopupDialog;
 import org.hypernomicon.util.PopupDialog.DialogResult;
@@ -560,7 +560,7 @@ public class PictureDlgCtrlr extends HyperDlg
     FilePath picturePath = getDestFilePath(tfName.getText());
 
     if (execPath.isEmpty())
-      DesktopApi.edit(picturePath);
+      editFile(picturePath);
     else
       LaunchCommandsDlgCtrlr.launch(execPath, picturePath, PREF_KEY_IMAGE_EDITOR_COMMANDS, PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE, -1);
   }

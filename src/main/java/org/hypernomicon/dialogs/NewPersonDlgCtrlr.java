@@ -642,7 +642,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
     {
       if (deletePerson)
       {
-        db.deleteRecord(hdtPerson, person.getID());
+        db.deleteRecord(person);
         person = null;
       }
 

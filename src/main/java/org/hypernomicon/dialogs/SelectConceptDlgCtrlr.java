@@ -164,7 +164,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       :
         "Unable to create term record: search key already exists.");
 
-      db.deleteRecord(hdtTerm, term.getID());
+      db.deleteRecord(term);
       term = null;
 
       safeFocus(tfSearchKey);

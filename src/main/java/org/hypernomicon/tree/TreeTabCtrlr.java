@@ -70,7 +70,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   String textToHilite = "";
   private TreeWrapper tree;
 
-  @Override protected RecordType getType()        { return hdtNone; }
+  @Override protected RecordType type()           { return hdtNone; }
   @Override public void enable(boolean enabled)   { ui.tabTree.getContent().setDisable(enabled == false); }
   @Override public void clear()                   { tree.clear(); }
   @Override public boolean saveToRecord()         { return true; }
@@ -434,7 +434,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int getRecordCount()
+  @Override public int recordCount()
   {
     return nullSwitch(activeRecord(), 0, ar -> tree.getRowsForRecord(ar).size());
   }
@@ -442,7 +442,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int getRecordNdx()
+  @Override public int recordNdx()
   {
     return nullSwitch(nullSwitch(tree.selectedItem(), null, TreeItem::getValue), -1, row -> tree.getRowsForRecord(row.getRecord()).indexOf(row));
   }

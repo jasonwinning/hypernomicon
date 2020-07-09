@@ -54,6 +54,7 @@ import org.hypernomicon.model.PathInfo;
 import org.hypernomicon.model.PathInfo.FileKind;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
+import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.filePath.FilePathSet;
 
@@ -469,7 +470,7 @@ public class FolderTreeWatcher
 
     private boolean handleInterComputerMessage()
     {
-      String compName = getComputerName();
+      String compName = DesktopUtil.getComputerName();
       InterComputerMsg receivedMsg;
 
       if (sentResponse)
