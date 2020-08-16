@@ -29,6 +29,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.items.Author;
@@ -143,7 +144,9 @@ public class WorkDlgCtrlr extends HyperDlg
   private ObjectProperty<HDT_Folder> destFolder = new SimpleObjectProperty<>();
   private BibDataRetriever bibDataRetriever = null;
   private Ternary newEntryChoice;
-  private boolean userOverrideDest = false, dontRegenerateFilename = false, alreadyChangingTitle = false, previewInitialized = false;
+  private boolean userOverrideDest = false, dontRegenerateFilename = false, previewInitialized = false;
+
+  private MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
 
@@ -478,18 +481,27 @@ public class WorkDlgCtrlr extends HyperDlg
 
     hlCase.setOnMouseClicked(event ->
     {
-      alreadyChangingTitle = true;
+      alreadyChangingTitle.setTrue();
       tfTitle.setText(HDT_Work.fixCase(tfTitle.getText()));
-      alreadyChangingTitle = false;
+      alreadyChangingTitle.setFalse();
     });
 
-    tfTitle.setTextFormatter(new TextFormatter<>(change ->
+    tfTitle.setTextFormatter(titleFormatter(alreadyChangingTitle));
+    btnStop.setOnAction(event -> stopRetrieving());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static TextFormatter<?> titleFormatter(MutableBoolean alreadyChangingTitle)
+  {
+    return new TextFormatter<>(change ->
     {
-      if (alreadyChangingTitle) return change;
+      if (alreadyChangingTitle.isTrue()) return change;
 
       if (change.getText().length() > 1)
       {
-        alreadyChangingTitle = true;
+        alreadyChangingTitle.setTrue();
 
         String title = convertToSingleLine(change.getControlNewText());
         while (title.contains("  "))
@@ -500,13 +512,11 @@ public class WorkDlgCtrlr extends HyperDlg
 
         change.setRange(0, change.getControlText().length());
         change.setText(ultraTrim(title));
-        alreadyChangingTitle = false;
+        alreadyChangingTitle.setFalse();
       }
 
       return change;
-    }));
-
-    btnStop.setOnAction(event -> stopRetrieving());
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -945,7 +955,8 @@ public class WorkDlgCtrlr extends HyperDlg
     try
     {
       MergeWorksDlgCtrlr mwd = MergeWorksDlgCtrlr.build("Select How to Merge Fields", curBD,
-        bd1, bd2, null, curWork, false, curWork.getBibEntryKey().isBlank(), Ternary.Unset, origFilePath);
+        bd1, bd2, null, curWork, false, curWork.getBibEntryKey().isBlank(),
+        chkCreateBibEntry.isSelected() ? Ternary.True : Ternary.Unset, origFilePath);
 
       if (mwd.showModal())
       {
@@ -1077,7 +1088,7 @@ public class WorkDlgCtrlr extends HyperDlg
   public BibData getBibDataFromGUI()
   {
     curBD.setStr(bfYear, tfYear.getText());
-    curBD.setStr(bfDOI, tfDOI.getText());
+    curBD.setStr(bfDOI, matchDOI(tfDOI.getText()));
     curBD.setTitle(tfTitle.getText());
 
     curBD.setMultiStr(bfMisc, convertMultiLineStrToStrList(taMisc.getText(), true));
@@ -1114,9 +1125,9 @@ public class WorkDlgCtrlr extends HyperDlg
 
     tfYear.setText(curBD.getStr(bfYear));
 
-    alreadyChangingTitle = true;
+    alreadyChangingTitle.setTrue();
     tfTitle.setText(curBD.getStr(bfTitle));
-    alreadyChangingTitle = false;
+    alreadyChangingTitle.setFalse();
 
     taMisc.setText(curBD.getStr(bfMisc));
 

@@ -208,8 +208,17 @@ public class CrossrefBibData extends BibDataStandalone
 
   private void addAuthorsFromJson(JsonArray jsonArr, AuthorType aType)
   {
-    if (jsonArr != null)
-      jsonArr.getObjs().forEach(author -> authors.add(new BibAuthor(aType, new PersonName(author.getStrSafe("given"), author.getStrSafe("family")))));
+    if (jsonArr == null)
+      return;
+
+    jsonArr.getObjs().forEach(author ->
+    {
+      String first = author.getStrSafe("given"), last = author.getStrSafe("family");
+      if (String.valueOf(first + last).isBlank())
+        last = author.getStrSafe("name");
+
+      authors.add(new BibAuthor(aType, new PersonName(first, last)));
+    });
   }
 
 //---------------------------------------------------------------------------

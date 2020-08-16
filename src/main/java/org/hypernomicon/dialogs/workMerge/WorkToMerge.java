@@ -25,6 +25,7 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
 import org.hypernomicon.dialogs.WorkDlgCtrlr;
@@ -61,7 +62,7 @@ public class WorkToMerge
 
   public WorkToMerge(BibData bibData, RadioButton rbTitle, TextField tfTitle, RadioButton rbType, ComboBox<HyperTableCell> cbType,
                                       RadioButton rbYear, TextField tfYear, RadioButton rbAuthors, TableView<HyperTableRow> tvAuthors,
-                                      HDT_Work destWork, boolean creatingNewWork)
+                                      HDT_Work destWork, boolean creatingNewWork, MutableBoolean alreadyChangingTitle)
   {
     this.bibData = bibData;
     this.creatingNewWork = creatingNewWork;
@@ -81,6 +82,8 @@ public class WorkToMerge
 
     tfTitle.setText(bibData.getStr(bfTitle));
     if (tfTitle.getText().isEmpty() == false) rbTitle.setSelected(true);
+
+    tfTitle.setTextFormatter(WorkDlgCtrlr.titleFormatter(alreadyChangingTitle));
 
     tfYear.setText(bibData.getStr(bfYear));
     if (tfYear.getText().isEmpty() == false) rbYear.setSelected(true);

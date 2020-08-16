@@ -23,6 +23,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Argument;
@@ -58,6 +59,7 @@ public class NewArgDlgCtrlr extends HyperDlg
   private HDT_Argument argument;
   private HyperCB hcbPerson, hcbPositionVerdict, hcbWork;
   private boolean revising = false, changingWorkProgrammatically = false;
+  private MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
 
   public HDT_Argument getArgument() { return argument; }
 
@@ -110,6 +112,8 @@ public class NewArgDlgCtrlr extends HyperDlg
       changingWorkProgrammatically = false;
     });
 
+    tfTitle.setTextFormatter(WorkDlgCtrlr.titleFormatter(alreadyChangingTitle));
+
     tfTitle.textProperty().addListener((ob, oldText, newText) -> rbNew.setSelected(true));
 
     chkIncludeAuth.selectedProperty().addListener((ob, oldSelected, newSelected) -> reviseSuggestions());
@@ -128,7 +132,9 @@ public class NewArgDlgCtrlr extends HyperDlg
     rbExisting.setSelected(false);
     rbNew.setSelected(true);
 
+    alreadyChangingTitle.setTrue();
     tfTitle.setText(position.name() + " Argument Stem");
+    alreadyChangingTitle.setFalse();
 
     addListeners(tfArgName1, rbArgName1, true);  addListeners(tfArgName2, rbArgName2, true);
     addListeners(tfArgName3, rbArgName3, true);  addListeners(tfArgName4, rbArgName4, true);

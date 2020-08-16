@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.io.IOException;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibField;
@@ -89,6 +90,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
   private int nextRowNdx = 4;
   private boolean creatingNewWork, previewInitialized = false;
   private Ternary newEntryChoice;
+  private MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
 
   public EntryType getEntryType()   { return nullSwitch(extraRows.get(bfEntryType), null, row -> EntryTypeCtrlr.class.cast(row).getEntryType()); }
   public Ternary creatingNewEntry() { return chkNewEntry.isVisible() == false ? Ternary.Unset : (chkNewEntry.isSelected() ? Ternary.True : newEntryChoice); }
@@ -175,13 +177,17 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     bd4 = bdList.get(3);
 
     if (bd4 != null)
-      works.add(0, new WorkToMerge(bd4, rbTitle4, tfTitle4, rbType4, cbType4, rbYear4, tfYear4, rbAuthors4, tvAuthors4, destWork, creatingNewWork));
+      works.add(0, new WorkToMerge(bd4, rbTitle4, tfTitle4, rbType4, cbType4, rbYear4, tfYear4, rbAuthors4, tvAuthors4,
+                                   destWork, creatingNewWork, alreadyChangingTitle));
 
     if (bd3 != null)
-      works.add(0, new WorkToMerge(bd3, rbTitle3, tfTitle3, rbType3, cbType3, rbYear3, tfYear3, rbAuthors3, tvAuthors3, destWork, creatingNewWork));
+      works.add(0, new WorkToMerge(bd3, rbTitle3, tfTitle3, rbType3, cbType3, rbYear3, tfYear3, rbAuthors3, tvAuthors3,
+                                   destWork, creatingNewWork, alreadyChangingTitle));
 
-    works.add(0, new WorkToMerge(bd2, rbTitle2, tfTitle2, rbType2, cbType2, rbYear2, tfYear2, rbAuthors2, tvAuthors2, destWork, creatingNewWork));
-    works.add(0, new WorkToMerge(bd1, rbTitle1, tfTitle1, rbType1, cbType1, rbYear1, tfYear1, rbAuthors1, tvAuthors1, destWork, creatingNewWork));
+    works.add(0, new WorkToMerge(bd2, rbTitle2, tfTitle2, rbType2, cbType2, rbYear2, tfYear2, rbAuthors2, tvAuthors2,
+                                 destWork, creatingNewWork, alreadyChangingTitle));
+    works.add(0, new WorkToMerge(bd1, rbTitle1, tfTitle1, rbType1, cbType1, rbYear1, tfYear1, rbAuthors1, tvAuthors1,
+                                 destWork, creatingNewWork, alreadyChangingTitle));
 
     if (bd4 == null)
     {
@@ -298,7 +304,9 @@ public class MergeWorksDlgCtrlr extends HyperDlg
         else if (rbTitle3.isSelected()) tf = tfTitle3;
         else                            tf = tfTitle4;
 
+        alreadyChangingTitle.setTrue();
         tf.setText(HDT_Work.fixCase(tf.getText()));
+        alreadyChangingTitle.setFalse();
       });
 
       onShown = () -> safeFocus(rbTitle1);

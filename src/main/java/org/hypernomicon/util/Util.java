@@ -1091,17 +1091,16 @@ public final class Util
     List<Node> rootChildren = parent.getChildrenUnmodifiable();
     if (rootChildren.isEmpty()) return;
 
-    Node bridge = rootChildren.get(0).lookup(".context-menu");
-    if (bridge == null) return;
+    Node contextMenuContent = nullSwitch(rootChildren.get(0).lookup(".context-menu"), null,
+                                         bridge -> ((Parent)bridge).getChildrenUnmodifiable().get(0));
 
-    Class<? extends Object> contextMenuContentClass, menuItemContainerClass;
+    if (contextMenuContent == null) return;
 
     try
     {
-      contextMenuContentClass = Class.forName("com.sun.javafx.scene.control.ContextMenuContent");
-      menuItemContainerClass = Class.forName("com.sun.javafx.scene.control.ContextMenuContent$MenuItemContainer");
+      Class<? extends Object> contextMenuContentClass = Class.forName("com.sun.javafx.scene.control.ContextMenuContent"),
+                              menuItemContainerClass  = Class.forName("com.sun.javafx.scene.control.ContextMenuContent$MenuItemContainer");
 
-      Node contextMenuContent = ((Parent)bridge).getChildrenUnmodifiable().get(0);
       Constructor<?> ctor = menuItemContainerClass.getDeclaredConstructor(contextMenuContentClass, MenuItem.class);
 
       List<Node> list = ((VBox)(contextMenuContentClass.getMethod("getItemsContainer").invoke(contextMenuContent))).getChildren();

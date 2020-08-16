@@ -77,7 +77,6 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   private boolean online = false, expired = false;
 
-  @Override public final Instant getModifiedDate()      { return type.getDisregardDates() ? null : modifiedDate; }
   @Override public final Instant getViewDate()          { return type.getDisregardDates() ? null : viewDate; }
   @Override public final Instant getCreationDate()      { return type.getDisregardDates() ? null : creationDate; }
   @Override public final Tag getNameTag()               { return nameTag; }
@@ -96,6 +95,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final HDI_Schema getSchema(Tag tag)  { return nullSwitch(items.get(tag), null, HDI_Base::getSchema); }
   @Override public final RecordType getType()           { return type; }
 
+  @Override public Instant getModifiedDate()            { return type.getDisregardDates() ? null : modifiedDate; }
   @Override public String name()                        { return name.get(); }
   @Override public void setName(String str)             { setNameInternal(str, true); }
   @Override public String getNameEngChar()              { return name.getEngChar(); }

@@ -100,6 +100,10 @@ import org.jbibtex.ParseException;
 import org.jbibtex.TokenMgrException;
 import com.google.common.collect.EnumHashBiMap;
 
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
@@ -431,6 +435,15 @@ public final class MainCtrlr
       else                                               return;
 
       event.consume();
+    });
+
+//---------------------------------------------------------------------------
+
+    KeyCombination keyComb = new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN);
+    stage.addEventHandler(KeyEvent.KEY_PRESSED, event ->
+    {
+      if (keyComb.match(event) && db.isLoaded())
+        saveAllToDisk(true, true, true);
     });
 
 //---------------------------------------------------------------------------

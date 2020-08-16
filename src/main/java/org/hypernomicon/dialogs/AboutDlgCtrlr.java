@@ -26,6 +26,8 @@ import javafx.scene.web.WebView;
 
 import static org.hypernomicon.util.Util.*;
 
+import java.text.DecimalFormat;
+
 import static org.hypernomicon.App.*;
 
 import org.apache.commons.lang3.SystemUtils;
@@ -167,6 +169,8 @@ public class AboutDlgCtrlr extends HyperDlg
 
   private String getGeneralTabHtml()
   {
+    String maxHeap = app.debugging() ? "Max heap space: " + new DecimalFormat("#,###").format(Runtime.getRuntime().maxMemory()) + "<br>" : "";
+
     return htmlStart +
 
         "Version: " + app.getVersion() + "&nbsp;&nbsp;&nbsp;&nbsp;" + nextVersionHtml + "<br>" +
@@ -175,6 +179,7 @@ public class AboutDlgCtrlr extends HyperDlg
         "Operating system: " + SystemUtils.OS_NAME + "<br>" +
         "Operating system version: " + SystemUtils.OS_VERSION + "<br>" +
         "Java runtime: " + SystemUtils.JAVA_RUNTIME_VERSION + " " + SystemUtils.JAVA_RUNTIME_NAME + "<br>" +
+        maxHeap +
         "JavaFX version: " + VersionInfo. getRuntimeVersion() + "<br>" +
         anchorTag("Website", "http://hypernomicon.org/") + "&nbsp;&nbsp;&nbsp;" +
         anchorTag("Release Notes", "https://sourceforge.net/p/hypernomicon/wiki/ReleaseNotes/") + "&nbsp;&nbsp;&nbsp;" +

@@ -90,7 +90,6 @@
                   <Insets right="8.0" />
                </padding>
             </Label>
-            <TextArea fx:id="taMisc" layoutX="248.0" layoutY="163.0" prefHeight="70.0" prefWidth="651.0" wrapText="true" AnchorPane.leftAnchor="248.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="163.0" />
             <Label layoutX="13.0" layoutY="185.0" text="Select work type." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="186.0" />
             <Label layoutX="14.0" layoutY="207.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 5." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="207.0" />
             <TextField fx:id="tfYear" layoutX="85.0" layoutY="208.0" prefHeight="22.0" prefWidth="150.0" AnchorPane.leftAnchor="85.0" AnchorPane.topAnchor="208.0" />
@@ -168,6 +167,7 @@
             <AnchorPane layoutX="677.0" layoutY="518.0" prefHeight="45.0" prefWidth="71.0" AnchorPane.bottomAnchor="21.0" AnchorPane.rightAnchor="169.0" />
             <Button fx:id="btnOk" layoutX="755.0" layoutY="647.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="22.0" prefWidth="74.0" text="OK" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="88.0" />
             <Button fx:id="btnCancel" layoutX="834.0" layoutY="647.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="22.0" prefWidth="71.0" text="Cancel" AnchorPane.bottomAnchor="8.0" AnchorPane.rightAnchor="12.0" />
+            <TextArea fx:id="taMisc" layoutX="248.0" layoutY="163.0" prefHeight="70.0" prefWidth="651.0" wrapText="true" AnchorPane.leftAnchor="248.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="163.0" />
             <Label layoutX="209.0" layoutY="272.0" text="DOI:" AnchorPane.leftAnchor="209.0" AnchorPane.topAnchor="272.0" />
          </children>
       </AnchorPane>

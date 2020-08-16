@@ -30,7 +30,6 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import org.hypernomicon.util.AutoCompleteCB;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.VariablePopulator;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;

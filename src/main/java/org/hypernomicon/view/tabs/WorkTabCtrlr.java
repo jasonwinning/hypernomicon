@@ -104,7 +104,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
@@ -137,12 +136,13 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private HyperCB hcbLargerWork;
   private MainTextWrapper mainText;
   private final Map<Tab, String> tabCaptions = new HashMap<>();
-  private boolean btnFolderAdded, inNormalMode = true, alreadyChangingTitle = false, programmaticTypeChange = false;
+  private boolean btnFolderAdded, inNormalMode = true, programmaticTypeChange = false;
   private double btnURLLeftAnchor, tfURLLeftAnchor, tfURLRightAnchor;
   private SplitMenuButton btnFolder = null;
   private HDT_Work curWork, lastWork = null;
   private BibDataRetriever bibDataRetriever = null;
   private MenuItemSchema<HDT_Record, HyperTableRow> isbnSrchMenuItemSchema;
+  private MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
   private final ObjectProperty<BibData> crossrefBD = new SimpleObjectProperty<>(),
                                         pdfBD      = new SimpleObjectProperty<>(),
                                         googleBD   = new SimpleObjectProperty<>();
@@ -585,33 +585,14 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     {
       String title = HDT_Work.fixCase(convertToSingleLine(ultraTrim(tfTitle.getText())));
 
-      alreadyChangingTitle = true;
+      alreadyChangingTitle.setTrue();
       tfTitle.setText(title);
-      alreadyChangingTitle = false;
+      alreadyChangingTitle.setFalse();
 
       safeFocus(tfTitle);
     });
 
-    tfTitle.setTextFormatter(new TextFormatter<>(change ->
-    {
-      if (alreadyChangingTitle) return change;
-
-      if (change.getText().length() > 1)
-      {
-        alreadyChangingTitle = true;
-        String newText = change.getControlNewText();
-        change.setRange(0, change.getControlText().length());
-
-        newText = convertToSingleLine(newText);
-        while (newText.contains("  "))
-          newText = newText.replaceAll("  ", " ");
-
-        change.setText(ultraTrim(HDT_Work.fixCase(newText)));
-        alreadyChangingTitle = false;
-      }
-
-      return change;
-    }));
+    tfTitle.setTextFormatter(WorkDlgCtrlr.titleFormatter(alreadyChangingTitle));
 
     crossrefBD.addListener((ob, oldBD, newBD) -> updateMergeButton());
     pdfBD     .addListener((ob, oldBD, newBD) -> updateMergeButton());
@@ -712,9 +693,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       tfYear.setText(curWork.getYear());
     }
 
-    alreadyChangingTitle = true;
+    alreadyChangingTitle.setTrue();
     tfTitle.setText(curWork.name());
-    alreadyChangingTitle = false;
+    alreadyChangingTitle.setFalse();
 
     if (curWork.getBibEntryKey().isBlank() == false)
     {
@@ -1395,9 +1376,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     tfDOI.setText("");
     htISBN.clear();
 
-    alreadyChangingTitle = true;
+    alreadyChangingTitle.setTrue();
     tfTitle.setText("");
-    alreadyChangingTitle = false;
+    alreadyChangingTitle.setFalse();
 
     tfSearchKey.setText("");
     tfURL.setText("");

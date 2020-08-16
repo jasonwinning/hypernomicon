@@ -17,7 +17,6 @@
 
 package org.hypernomicon.view.wrappers;
 
-import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;

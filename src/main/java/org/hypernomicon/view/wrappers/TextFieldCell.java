@@ -27,8 +27,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.input.KeyCode;
 
-import org.hypernomicon.view.wrappers.HyperTableCell;
-
 class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements CommitableWrapper
 {
   private TextField textField;

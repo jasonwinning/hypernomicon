@@ -250,8 +250,18 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
     for (Entry<String, Boolean> entry : keySet.keys.entrySet())
     {
       rv = addSearchKey(keys, entry.getKey(), person);
-      if (entry.getValue() && (rv != null))
-        otherPerson = rv;
+
+      if (rv != null)
+      {
+        if (entry.getValue())
+          otherPerson = rv;
+        else
+        {
+          String fullNameEngChar = name.toEngChar().getFull();
+          if ((fullNameEngChar.contains(" ") == false) && fullNameEngChar.equals(rv.getFullName(true)))
+            otherPerson = rv;
+        }
+      }
     }
 
     assignSB(newSearchKey, keys.toString());

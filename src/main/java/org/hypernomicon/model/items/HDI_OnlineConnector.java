@@ -30,7 +30,6 @@ import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
-import org.hypernomicon.model.items.HDI_OfflineConnector;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;

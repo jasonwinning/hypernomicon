@@ -23,8 +23,10 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.model.HyperDataset;
@@ -75,6 +77,15 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
   public List<HDT_Glossary> getGlossaries()
   {
     return concepts.stream().map(concept -> concept.glossary.get()).collect(Collectors.toList());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public Instant getModifiedDate()
+  {
+    return concepts.stream().map(HDT_Concept::getModifiedDate)
+                            .reduce(super.getModifiedDate(), BinaryOperator.maxBy(Instant::compareTo)::apply);
   }
 
 //---------------------------------------------------------------------------

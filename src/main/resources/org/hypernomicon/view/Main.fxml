@@ -151,7 +151,7 @@
                         </ImageView>
                      </graphic>
                   </Button>
-                  <Button fx:id="btnBibMgr" mnemonicParsing="false" text="Bib Mgr">
+                  <Button fx:id="btnBibMgr" maxHeight="22.0" minHeight="22.0" mnemonicParsing="false" prefHeight="22.0" text="Bib Mgr">
                      <graphic>
                         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                            <image>
