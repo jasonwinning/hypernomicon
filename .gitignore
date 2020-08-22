@@ -5,6 +5,7 @@ sh.exe.stackdump
 .classpath
 .project
 target
+bin
 pom2.xml
 *.bak
 *.log

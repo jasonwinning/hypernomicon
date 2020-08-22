@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Scanner;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -282,27 +283,60 @@ public class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String hostName = "";
+  private static String hostName = null;
+
+  private static String formatName(String name)
+  {
+    return ultraTrim(safeStr(name).replaceAll("\\p{C}", ""));
+  }
 
   public static String getComputerName()
   {
+    if (hostName != null) return hostName;
+
+    hostName = formatName(SystemUtils.getHostName());
     if (hostName.length() > 0) return hostName;
 
-    hostName = SystemUtils.getHostName();
+    hostName = formatName(System.getenv("HOSTNAME"));
     if (hostName.length() > 0) return hostName;
 
-    hostName = safeStr(System.getenv("HOSTNAME"));
+    hostName = formatName(System.getenv("COMPUTERNAME"));
     if (hostName.length() > 0) return hostName;
 
-    hostName = safeStr(System.getenv("COMPUTERNAME"));
-    if (hostName.length() > 0) return hostName;
+    try
+    {
+      hostName = formatName(execReadToString("hostname"));
+      if (hostName.length() > 0) return hostName;
+    }
+    catch (IOException e) { noOp(); }
 
-    try { hostName = safeStr(InetAddress.getLocalHost().getHostName()); }
+    if (SystemUtils.IS_OS_WINDOWS == false) try
+    {
+      hostName = formatName(execReadToString("cat /etc/hostname"));
+      if (hostName.length() > 0) return hostName;
+    }
+    catch (IOException e) { noOp(); }
+
+    try { hostName = formatName(InetAddress.getLocalHost().getHostName()); }
     catch (UnknownHostException e) { return ""; }
+
+    if (hostName.isBlank())
+      messageDialog("Unable to determine computer name", mtError);
 
     return hostName;
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String execReadToString(String execCommand) throws IOException 
+  {
+    try (Scanner s = new Scanner(Runtime.getRuntime().exec(execCommand).getInputStream()).useDelimiter("\\A")) 
+    {
+      return s.hasNext() ? s.next() : "";
+    }
+  }
+    
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

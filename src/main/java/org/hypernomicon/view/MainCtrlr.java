@@ -963,6 +963,8 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // Similar to PDFJSWrapper.closeWindows
+  
   private void closeWindows(boolean exitingApp)
   {
     tfOmniGoTo.clear();

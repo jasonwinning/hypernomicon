@@ -166,14 +166,16 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // Similar to MainCtrlr.closeWindows
+  
   private static void closeWindows()
   {
     Platform.runLater(() ->
     {
-      if (App.previewWindow.getStage().isShowing())
+      if ((App.previewWindow != null) && App.previewWindow.getStage().isShowing())
         App.previewWindow.getStage().close();
 
-      if (App.contentsWindow.getStage().isShowing())
+      if ((App.contentsWindow != null) && App.contentsWindow.getStage().isShowing())
         App.contentsWindow.getStage().close();
     });
   }
