@@ -19,7 +19,9 @@ package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 
 import java.util.function.Predicate;
 
@@ -29,6 +31,7 @@ import org.hypernomicon.model.records.HDT_Institution;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.view.populators.StandardPopulator;
+import org.hypernomicon.view.populators.SubjectPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import javafx.fxml.FXML;
@@ -38,12 +41,12 @@ import javafx.scene.control.TextField;
 
 public class NewInstDlgCtrlr extends HyperDlg
 {
-  public HyperCB hcbParent, hcbType;
+  public HyperCB hcbParent, hcbExisting, hcbType;
 
   @FXML public TextField tfName, tfNewParentName;
-  @FXML private ComboBox<HyperTableCell> cbType, cbParent;
-  @FXML public RadioButton rbNew;
-  @FXML private RadioButton rbExisting;
+  @FXML private ComboBox<HyperTableCell> cbType, cbParent, cbExisting;
+  @FXML public RadioButton rbNewInst, rbNewDiv;
+  @FXML private RadioButton rbExistingInst, rbExistingDiv;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -61,13 +64,45 @@ public class NewInstDlgCtrlr extends HyperDlg
     Predicate<Integer> popFilter = id -> db.institutions.getByID(id).subInstitutions.size() > 0;
 
     hcbParent = new HyperCB(cbParent, ctDropDownList, new StandardPopulator(hdtInstitution, popFilter, true));
+    hcbExisting = new HyperCB(cbExisting, ctDropDownList, new SubjectPopulator(rtParentInstOfInst, false), true);
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType));
 
     hcbParent.dontCreateNewRecord = true;
 
-    cbParent.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) -> rbExisting.setSelected(true));
+    cbParent.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    {
+      rbExistingInst.setSelected(true);
 
-    tfNewParentName.textProperty().addListener((ob, oldValue, newValue) -> rbNew.setSelected(true));
+      if (newValue == null) return;
+
+      if (getCellID(oldValue) != getCellID(newValue))
+      {
+        ((SubjectPopulator)hcbExisting.getPopulator()).setObj(null, getRecord(newValue));
+        if (getCellID(oldValue) > 0)
+          hcbExisting.selectID(-1);
+      }
+    });
+
+    cbExisting.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    {
+      rbExistingInst.setSelected(true);
+      rbExistingDiv .setSelected(true);
+    });
+
+    rbExistingDiv.selectedProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if (Boolean.TRUE.equals(newValue))
+        rbExistingInst.setSelected(true);
+    });
+
+    rbNewInst.selectedProperty().addListener((ob, oldValue, newValue) ->
+    {
+      if (Boolean.TRUE.equals(newValue))
+        rbNewDiv.setSelected(true);
+    });
+
+    tfNewParentName.textProperty().addListener((ob, oldValue, newValue) -> rbNewInst.setSelected(true));
+    tfName         .textProperty().addListener((ob, oldValue, newValue) -> rbNewDiv .setSelected(true));
 
     hcbParent.addAndSelectEntryOrBlank(parent, HDT_Record::name);
 
@@ -92,7 +127,27 @@ public class NewInstDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    return hcbType.selectedID() >= 1 ? true : falseWithErrorMessage("You must select a type.", cbType);
+    if (rbNewInst.isSelected())
+    {
+      if (tfNewParentName.getText().isBlank())
+        return falseWithErrorMessage("You must enter a name for the new institution.", tfNewParentName);
+    }
+    else if (hcbParent.selectedRecord() == null)
+      return falseWithErrorMessage("Select an institution record.", cbParent);
+
+    if (rbNewDiv.isSelected())
+    {
+      if (hcbType.selectedID() < 1)
+        return falseWithErrorMessage("You must select a type.", cbType);
+
+      if (tfName.getText().isBlank())
+        return falseWithErrorMessage("You must enter a division name.", tfName);
+    }
+    else if (hcbExisting.selectedRecord() == null)
+      return falseWithErrorMessage("Select a division.", cbExisting);
+
+
+    return true;
   }
 
 //---------------------------------------------------------------------------

@@ -1048,25 +1048,27 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   {
     if (ui.cantSaveRecord()) return;
 
-    HDT_Institution parentInst = null, oldParent = row.getRecord(1);
+    HDT_Institution parentInst = null, subInst = null, oldParent = row.getRecord(1);
     if ((newName.length() > 0) && (colNdx == 1))
       oldParent = null;
 
     NewInstDlgCtrlr newInstDialog = NewInstDlgCtrlr.build(oldParent, newName, colNdx == 1);
 
-    if (newInstDialog.showModal())
+    if (newInstDialog.showModal() == false) return;
+
+    if (newInstDialog.rbNewInst.isSelected())
     {
-      if (newInstDialog.rbNew.isSelected())
-      {
-        parentInst = db.createNewBlankRecord(hdtInstitution);
-        parentInst.setName(newInstDialog.tfNewParentName.getText());
-      }
-      else
-        parentInst = db.institutions.getByID(newInstDialog.hcbParent.selectedID());
+      parentInst = db.createNewBlankRecord(hdtInstitution);
+      parentInst.setName(newInstDialog.tfNewParentName.getText());
+    }
+    else
+      parentInst = newInstDialog.hcbParent.selectedRecord();
 
-      if (parentInst == null) return;
+    if (parentInst == null) return;
 
-      HDT_Institution subInst = db.createNewBlankRecord(hdtInstitution);
+    if (newInstDialog.rbNewDiv.isSelected())
+    {
+      subInst = db.createNewBlankRecord(hdtInstitution);
 
       subInst.parentInst.set(parentInst);
       subInst.setName(newInstDialog.tfName.getText());
@@ -1075,14 +1077,18 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       subInst.setCity(parentInst.getCity());
       subInst.region.set(parentInst.region.get());
       subInst.country.set(parentInst.country.get());
-
-      curPerson.institutions.add(subInst);
-
-      if (newInstDialog.rbNew.isSelected())
-        ui.goToRecord(parentInst, false);
-      else
-        ui.update();
     }
+    else
+      subInst = newInstDialog.hcbExisting.selectedRecord();
+
+    if (subInst == null) return;
+
+    curPerson.institutions.add(subInst);
+
+    if (newInstDialog.rbNewInst.isSelected())
+      ui.goToRecord(parentInst, false);
+    else
+      ui.update();
   }
 
 //---------------------------------------------------------------------------

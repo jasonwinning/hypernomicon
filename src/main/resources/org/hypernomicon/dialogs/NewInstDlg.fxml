@@ -28,7 +28,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane maxHeight="137.0" minHeight="137.0" minWidth="350.0" prefHeight="137.0" prefWidth="972.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.NewInstDlgCtrlr">
+<AnchorPane maxHeight="204.0" minHeight="137.0" minWidth="350.0" prefHeight="179.0" prefWidth="972.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.NewInstDlgCtrlr">
    <children>
       <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columnConstraints>
@@ -36,50 +36,70 @@
             <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="844.0" />
         </columnConstraints>
         <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <AnchorPane GridPane.columnSpan="2147483647">
+            <AnchorPane prefHeight="200.0" prefWidth="200.0">
                <children>
-                  <Label text="Enter name of division within the institution:" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="7.0" />
+                  <RadioButton fx:id="rbNewInst" layoutY="9.0" mnemonicParsing="false" selected="true" text="New Institution:" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="8.0">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="rgInst" />
+                     </toggleGroup>
+                  </RadioButton>
                </children>
             </AnchorPane>
-            <AnchorPane GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+               <children>
+                  <TextField fx:id="tfNewParentName" layoutX="31.0" layoutY="5.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="4.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+               <children>
+                  <RadioButton fx:id="rbExistingInst" layoutY="7.0" mnemonicParsing="false" text="Existing institution:" toggleGroup="$rgInst" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="8.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+               <children>
+                  <ComboBox fx:id="cbParent" layoutX="42.0" layoutY="5.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="4.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="2">
+               <children>
+                  <Label layoutY="15.0" text="Enter name of division within the institution (or pick an existing one):" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="15.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
+               <children>
+                  <RadioButton fx:id="rbNewDiv" layoutY="9.0" mnemonicParsing="false" selected="true" text="New Division:" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="8.0">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="rgDiv" />
+                     </toggleGroup>
+                  </RadioButton>                  
+               </children>
+            </AnchorPane>
+            <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="3">
                <children>
                   <TextField fx:id="tfName" prefHeight="22.0" prefWidth="778.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="184.0" AnchorPane.topAnchor="4.0" />
                   <ComboBox fx:id="cbType" layoutX="812.0" layoutY="3.0" prefHeight="22.0" prefWidth="143.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="4.0" />
                   <Label layoutX="787.0" layoutY="8.0" text="Type:" AnchorPane.rightAnchor="147.0" AnchorPane.topAnchor="8.0" />
                </children>
             </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
                <children>
-                  <RadioButton fx:id="rbNew" layoutY="9.0" mnemonicParsing="false" selected="true" text="New Institution:" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="8.0">
-                     <toggleGroup>
-                        <ToggleGroup fx:id="radioGroup" />
-                     </toggleGroup>
-                  </RadioButton>
+                  <RadioButton fx:id="rbExistingDiv" layoutY="7.0" mnemonicParsing="false" text="Existing division:" toggleGroup="$rgDiv" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="8.0" />
                </children>
             </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-               <children>
-                  <TextField fx:id="tfNewParentName" layoutX="31.0" layoutY="5.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="4.0" />
-               </children>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+              <children>
+                <ComboBox fx:id="cbExisting" layoutX="42.0" layoutY="5.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="4.0" />
+              </children>
             </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
-               <children>
-                  <RadioButton fx:id="rbExisting" layoutY="7.0" mnemonicParsing="false" text="Existing institution:" toggleGroup="$radioGroup" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="8.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
-               <children>
-                  <ComboBox fx:id="cbParent" layoutX="42.0" layoutY="5.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="4.0" />
-               </children>
-            </AnchorPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="4">
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="5">
                <children>
                   <GridPane layoutX="404.0" layoutY="1.0" maxWidth="160.0" minWidth="160.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <columnConstraints>

@@ -18,12 +18,14 @@
 package org.hypernomicon.util;
 
 import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Scanner;
@@ -33,6 +35,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.settings.LaunchCommandsDlgCtrlr;
@@ -305,15 +308,21 @@ public class DesktopUtil
 
     try
     {
-      hostName = formatName(execReadToString("hostname"));
-      if (hostName.length() > 0) return hostName;
+      for (String line : FileUtils.readLines(new File("/etc/hostname"), (Charset)null))
+      {
+        hostName = formatName(line);
+        if (hostName.length() > 0) return hostName;
+      }
     }
     catch (IOException e) { noOp(); }
 
     if (SystemUtils.IS_OS_WINDOWS == false) try
     {
-      hostName = formatName(execReadToString("cat /etc/hostname"));
-      if (hostName.length() > 0) return hostName;
+      for (String line : FileUtils.readLines(new File("/etc/hostname"), (Charset)null))
+      {
+        hostName = formatName(line);
+        if (hostName.length() > 0) return hostName;
+      }
     }
     catch (IOException e) { noOp(); }
 
@@ -326,17 +335,6 @@ public class DesktopUtil
     return hostName;
   }
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static String execReadToString(String execCommand) throws IOException 
-  {
-    try (Scanner s = new Scanner(Runtime.getRuntime().exec(execCommand).getInputStream()).useDelimiter("\\A")) 
-    {
-      return s.hasNext() ? s.next() : "";
-    }
-  }
-    
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
