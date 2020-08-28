@@ -308,11 +308,8 @@ public class DesktopUtil
 
     try
     {
-      for (String line : FileUtils.readLines(new File("/etc/hostname"), (Charset)null))
-      {
-        hostName = formatName(line);
-        if (hostName.length() > 0) return hostName;
-      }
+      hostName = formatName(execReadToString("hostname"));
+      if (hostName.length() > 0) return hostName;
     }
     catch (IOException e) { noOp(); }
 
@@ -333,6 +330,17 @@ public class DesktopUtil
       messageDialog("Unable to determine computer name", mtError);
 
     return hostName;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String execReadToString(String execCommand) throws IOException
+  {
+    try (Scanner s = new Scanner(Runtime.getRuntime().exec(execCommand).getInputStream()).useDelimiter("\\A"))
+    {
+      return s.hasNext() ? s.next() : "";
+    }
   }
 
 //---------------------------------------------------------------------------
