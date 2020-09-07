@@ -75,7 +75,9 @@ public class MainTextUtil
 
   public static final String headContent,
                              scriptContent,
-                             EMBEDDED_FILE_TAG = "misc-file";
+                             EMBEDDED_FILE_TAG = "misc-file",
+                             SUBSCRIPT_TAG = "sub",
+                             SUPERSCRIPT_TAG = "sup";
 
   static final String         ALPHA_SORTED_OUTER_CLASS   = "sortedKeyWorksAZ",
                               NUMERIC_SORTED_OUTER_CLASS = "sortedKeyWorks19";
@@ -915,6 +917,11 @@ public class MainTextUtil
           startNdx.add(1);
           miscFile = nextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
         }
+
+        str = str.replace("&lt;" + SUBSCRIPT_TAG + "&gt;" , "<sub>")
+                 .replace("&lt;/" + SUBSCRIPT_TAG + "&gt;" , "</sub>")
+                 .replace("&lt;" + SUPERSCRIPT_TAG + "&gt;", "<sup>")
+                 .replace("&lt;/" + SUPERSCRIPT_TAG + "&gt;", "</sup>");
       }
 
       return str;

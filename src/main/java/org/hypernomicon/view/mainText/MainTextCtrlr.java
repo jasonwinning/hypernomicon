@@ -21,6 +21,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -333,8 +334,15 @@ public class MainTextCtrlr
       hsPane.show(Side.RIGHT, true);
       runDelayedInFXThread(5, 100, cbType::requestFocus);
     });
+    
+    Button btnScriptPos = new Button("", imgViewFromRelPath("resources/images/text_subscript.png"));
+    setToolTip(btnScriptPos, "Change text between superscript, subscript, and normal");
+    btnScriptPos.setOnAction(event ->
+    {
+      messageDialog("To change text to subscript, surround with <sub> and </sub> tags. For superscript, use <sup> and </sup> tags.", mtInformation);
+    });
 
-    bar.getItems().addAll(btnLink, btnPicture, btnClear, btnEditLayout, btnPaste);
+    bar.getItems().addAll(btnLink, btnPicture, btnClear, btnEditLayout, btnScriptPos, btnPaste);
 
     bar.getItems().addListener((Change<? extends Node> c) ->
     {
