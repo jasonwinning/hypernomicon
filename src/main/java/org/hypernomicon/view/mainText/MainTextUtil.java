@@ -74,7 +74,8 @@ public class MainTextUtil
   private static final KeywordLinkList list = new KeywordLinkList();
 
   public static final String headContent,
-                             scriptContent;
+                             scriptContent,
+                             EMBEDDED_FILE_TAG = "misc-file";
 
   static final String         ALPHA_SORTED_OUTER_CLASS   = "sortedKeyWorksAZ",
                               NUMERIC_SORTED_OUTER_CLASS = "sortedKeyWorks19";
@@ -536,15 +537,18 @@ public class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  // Returns HTML for record description that is being embedded within another record's description
+  
   static String getSecondaryDisplayHtml(HDT_RecordWithConnector recordWMT, MutableInt tagNdx, TextViewInfo viewInfo)
   {
     MainText mainText = recordWMT.getMainText();
     List<KeyWork> keyWorks = mainText.getKeyWorks();
-    Document doc = Jsoup.parse(mainText.getHtml());
-
+    Document doc = Jsoup.parse(prepHtmlForDisplay(mainText.getHtml()));
+    String embeddedHtml = doc.body().html();
+    
     if (collEmpty(keyWorks))
-      return doc.body().html();
-
+      return embeddedHtml;
+    
     boolean sortByName = db.prefs.getBoolean(PREF_KEY_KEY_WORK_SORT_BY_NAME, true);
 
     StringBuilder secondaryHtml = new StringBuilder("<div class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\" style=\"display: " + (sortByName ? "none" : "block") + ";\"><b>Key Works:&nbsp;</b>");
@@ -554,9 +558,9 @@ public class MainTextUtil
     appendKeyWorkSpanAndBody(recordWMT, secondaryHtml, true, tagNdx, false, viewInfo);
 
     secondaryHtml.append("</div>");
-
-    if (ultraTrim(doc.text()).length() > 0)
-      secondaryHtml.append("<br>" + doc.body().html());
+    
+    if ((ultraTrim(convertToSingleLine(mainText.getPlain())).length() > 0) || mainText.getHtml().contains("&lt;" + EMBEDDED_FILE_TAG + " "))
+      secondaryHtml.append("<br>" + embeddedHtml);
 
     return secondaryHtml.toString();
   }
@@ -831,7 +835,7 @@ public class MainTextUtil
 
   public static HDT_MiscFile nextEmbeddedMiscFile(String str, MutableInt startNdx, MutableInt endNdx, ObjectProperty<Element> elementProp)
   {
-    startNdx.setValue(str.indexOf("&lt;misc-file", startNdx.getValue()));
+    startNdx.setValue(str.indexOf("&lt;" + EMBEDDED_FILE_TAG, startNdx.getValue()));
     elementProp.set(null);
 
     while (startNdx.getValue() >= 0)
@@ -845,14 +849,14 @@ public class MainTextUtil
 
         Document doc = Jsoup.parse(tag);
 
-        elementProp.set(doc.getElementsByTag("misc-file").first());
+        elementProp.set(doc.getElementsByTag(EMBEDDED_FILE_TAG).first());
 
         HDT_MiscFile miscFile = nullSwitch(elementProp.get(), null, element -> db.miscFiles.getByID(parseInt(element.attr("id"), -1)));
 
         if (miscFile != null) return miscFile;
       }
 
-      startNdx.setValue(str.indexOf("&lt;misc-file", startNdx.getValue() + 1));
+      startNdx.setValue(str.indexOf("&lt;" + EMBEDDED_FILE_TAG, startNdx.getValue() + 1));
     }
 
     return null;

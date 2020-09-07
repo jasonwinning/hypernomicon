@@ -531,7 +531,7 @@ public class MainTextCtrlr
 
     Accessor.getPageFor(engine).executeCommand(Command.INSERT_NEW_LINE.getCommand(), null);
 
-    String imageTag = "<misc-file id=\"" + miscFile.getID() + "\" width=\"300px\"/>";
+    String imageTag = "<" + EMBEDDED_FILE_TAG + " id=\"" + miscFile.getID() + "\" width=\"300px\"/>";
 
     engine.executeScript("insertHtmlAtCursor('" + htmlEscaper.escape(imageTag) + "<br>')");
   }

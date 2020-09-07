@@ -630,6 +630,8 @@ public final class MainCtrlr
 
     mnuAutoImport.setSelected(appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true));
     mnuAutoImport.setOnAction(event -> appPrefs.putBoolean(PREF_KEY_AUTO_IMPORT, mnuAutoImport.isSelected()));
+    
+    mnuChangeID.setVisible(app.debugging());
 
 //---------------------------------------------------------------------------
 

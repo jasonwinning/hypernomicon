@@ -326,7 +326,7 @@ public class MainText
   {
     plainText = safeStr(newPlainText);
 
-    if (ultraTrim(convertToSingleLine(plainText)).isEmpty() && (newHtmlText.contains("&lt;misc-file ") == false))
+    if (ultraTrim(convertToSingleLine(plainText)).isEmpty() && (newHtmlText.contains("&lt;" + EMBEDDED_FILE_TAG + " ") == false))
     {
       htmlText = "";
       plainText = "";
