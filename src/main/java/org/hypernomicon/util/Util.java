@@ -230,6 +230,20 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static int parseHex(String value, int def)
+  {
+    if (value == null) return def;
+    
+    if ((value.length() > 2) && ((value.startsWith("0x") || value.startsWith("0X"))))
+      value = value.substring(2);
+    
+    try { return Integer.parseInt(value, 16); }
+    catch (NumberFormatException nfe) { return def; }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static long parseLong(String value, long def)
   {
     try { return Long.parseLong(value); }

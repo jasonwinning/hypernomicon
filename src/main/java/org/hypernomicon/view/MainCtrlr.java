@@ -70,6 +70,7 @@ import org.hypernomicon.view.HyperFavorites.FavMenuItem;
 import org.hypernomicon.view.HyperFavorites.QueryFavorite;
 import org.hypernomicon.view.controls.WebTooltip;
 import org.hypernomicon.view.mainText.MainTextWrapper;
+import org.hypernomicon.view.mainText.SymbolPickerDlgCtrlr;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.tabs.*;
@@ -984,6 +985,8 @@ public final class MainCtrlr
 
     if ((contentsWindow != null) && contentsWindow.getStage().isShowing())
       contentsWindow.getStage().close();
+    
+    SymbolPickerDlgCtrlr.close();
   }
 
 //---------------------------------------------------------------------------

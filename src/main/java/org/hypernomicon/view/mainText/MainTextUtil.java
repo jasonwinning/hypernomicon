@@ -75,9 +75,7 @@ public class MainTextUtil
 
   public static final String headContent,
                              scriptContent,
-                             EMBEDDED_FILE_TAG = "misc-file",
-                             SUBSCRIPT_TAG = "sub",
-                             SUPERSCRIPT_TAG = "sup";
+                             EMBEDDED_FILE_TAG = "misc-file";
 
   static final String         ALPHA_SORTED_OUTER_CLASS   = "sortedKeyWorksAZ",
                               NUMERIC_SORTED_OUTER_CLASS = "sortedKeyWorks19";
@@ -917,11 +915,6 @@ public class MainTextUtil
           startNdx.add(1);
           miscFile = nextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
         }
-
-        str = str.replace("&lt;" + SUBSCRIPT_TAG + "&gt;" , "<sub>")
-                 .replace("&lt;/" + SUBSCRIPT_TAG + "&gt;" , "</sub>")
-                 .replace("&lt;" + SUPERSCRIPT_TAG + "&gt;", "<sup>")
-                 .replace("&lt;/" + SUPERSCRIPT_TAG + "&gt;", "</sup>");
       }
 
       return str;
@@ -942,21 +935,7 @@ public class MainTextUtil
     return hyperText.replace("<style>", "<script>\n" +
         "function insertHtmlAtCursor(html)\n" +
         "{\n" +
-        "  var range, node;\n" +
-        "  if (window.getSelection && window.getSelection().getRangeAt)\n" +
-        "  {\n" +
-        "    if (window.getSelection().rangeCount < 1) window.getSelection().addRange(document.createRange());\n" +
-        "    range = window.getSelection().getRangeAt(0);\n" +
-        "    range.deleteContents();\n" +
-        "    node = range.createContextualFragment(html);\n" +
-        "    range.insertNode(node);\n" +
-        "  }\n" +
-        "  else if (document.selection && document.selection.createRange)\n" +
-        "  {\n" +
-        "    range = document.selection.createRange();\n" +
-        "    range.deleteContents();\n" +
-        "    range.pasteHTML(html);\n" +
-        "  }\n" +
+        "  document.execCommand('insertHtml', false, html);" +
         "}\n\n" +
         "</script><style>a { pointer-events: none; }");
   }

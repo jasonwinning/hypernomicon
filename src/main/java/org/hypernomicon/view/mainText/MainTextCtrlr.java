@@ -21,7 +21,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -54,6 +53,7 @@ import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_FileType;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.view.controls.HiddenSidesPane;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
@@ -120,6 +120,7 @@ public class MainTextCtrlr
 
   private void clearText()     { he.setHtmlText(disableLinks("")); }
   private WebView getWebView() { return (WebView) he.lookup("WebView"); }
+  WebEngine getEngine()        { return getWebView().getEngine(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -300,7 +301,7 @@ public class MainTextCtrlr
     ToolBar bar = (ToolBar) he.lookup(".top-toolbar");
 
     MenuItem menuItem0 = new MenuItem("Paste");
-    menuItem0.setOnAction(event -> Accessor.getPageFor(getWebView().getEngine()).executeCommand(Command.PASTE.getCommand(), null));
+    menuItem0.setOnAction(event -> Accessor.getPageFor(getEngine()).executeCommand(Command.PASTE.getCommand(), null));
 
     MenuItem menuItem1 = new MenuItem("Paste plain text");
     menuItem1.setOnAction(getPlainTextAction(false));
@@ -335,14 +336,19 @@ public class MainTextCtrlr
       runDelayedInFXThread(5, 100, cbType::requestFocus);
     });
     
-    Button btnScriptPos = new Button("", imgViewFromRelPath("resources/images/text_subscript.png"));
-    setToolTip(btnScriptPos, "Change text between superscript, subscript, and normal");
-    btnScriptPos.setOnAction(event ->
-    {
-      messageDialog("To change text to subscript, surround with <sub> and </sub> tags. For superscript, use <sup> and </sup> tags.", mtInformation);
-    });
+    Button btnSubscript = new Button("", imgViewFromRelPath("resources/images/text_subscript.png"));
+    setToolTip(btnSubscript, "Toggle subscript for selected text");
+    btnSubscript.setOnAction(event -> getEngine().executeScript("document.execCommand('subscript', false, '');"));
 
-    bar.getItems().addAll(btnLink, btnPicture, btnClear, btnEditLayout, btnScriptPos, btnPaste);
+    Button btnSuperscript = new Button("", imgViewFromRelPath("resources/images/text_superscript.png"));
+    setToolTip(btnSuperscript, "Toggle superscript for selected text");
+    btnSuperscript.setOnAction(event -> getEngine().executeScript("document.execCommand('superscript', false, '');"));
+
+    Button btnSymbol = new Button("", imgViewFromRelPath("resources/images/text_letter_omega.png"));
+    setToolTip(btnSymbol, "Insert symbol at cursor");
+    btnSymbol.setOnAction(event -> SymbolPickerDlgCtrlr.show());
+
+    bar.getItems().addAll(btnLink, btnPicture, btnClear, btnEditLayout, btnSubscript, btnSuperscript, btnSymbol, btnPaste);
 
     bar.getItems().addListener((Change<? extends Node> c) ->
     {
@@ -532,11 +538,21 @@ public class MainTextCtrlr
       }
 
       miscFile.setName(fdc.tfRecordName.getText());
-      miscFile.fileType.set(HyperTableCell.getRecord(fdc.cbType.getValue()));
+      HyperTableCell cell = fdc.cbType.getValue();
+      int fileTypeID = HyperTableCell.getCellID(cell);
+      
+      if ((fileTypeID < 1) && (HyperTableCell.getCellText(cell).length() > 0))
+      {
+        HDT_FileType fileType = db.createNewBlankRecord(hdtFileType);
+        fileTypeID = fileType.getID();
+        fileType.setName(HyperTableCell.getCellText(cell));
+      }
+      
+      miscFile.fileType.setID(fileTypeID);
     }
 
-    WebEngine engine = getWebView().getEngine();
-
+    WebEngine engine = getEngine();
+    
     Accessor.getPageFor(engine).executeCommand(Command.INSERT_NEW_LINE.getCommand(), null);
 
     String imageTag = "<" + EMBEDDED_FILE_TAG + " id=\"" + miscFile.getID() + "\" width=\"300px\"/>";
@@ -549,7 +565,7 @@ public class MainTextCtrlr
 
   private void btnLinkClick()
   {
-    WebEngine engine = getWebView().getEngine();
+    WebEngine engine = getEngine();
 
     String selText = (String) engine.executeScript("window.getSelection().rangeCount < 1 ? \"\" : window.getSelection().getRangeAt(0).toString()");
 
@@ -583,7 +599,7 @@ public class MainTextCtrlr
                    .replaceAll("\\v", "<br>");
       }
 
-      getWebView().getEngine().executeScript("insertHtmlAtCursor('" + text + "')");
+      getEngine().executeScript("insertHtmlAtCursor('" + text + "')");
     };
   }
 

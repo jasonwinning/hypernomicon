@@ -91,6 +91,12 @@ public final class MainTextWrapper
   {
     this.parentPane = parentPane;
   }
+  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+  
+  public boolean isEditing()         { return showing && editing; }
+  public WebEngine getEditorEngine() { return editCtrlr == null ? null : editCtrlr.getEngine(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
