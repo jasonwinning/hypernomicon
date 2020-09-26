@@ -275,7 +275,7 @@ public class CharacterGrid
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setFont(String newValue)
+  public void setFont(String newValue, boolean programmaticFontChange)
   {
     int focusCol = -1, focusRow = -1;
     
@@ -298,6 +298,9 @@ public class CharacterGrid
         symbolCtrl.setText(str);
         addToParent(symbolCtrl, ap);
       }
+    
+    if (programmaticFontChange == false)
+      appPrefs.node("symbols").put("font", newValue);
     
     if (focusCol > -1)
       focusOnHyperlink(symbolCtrls[focusCol][focusRow]); 

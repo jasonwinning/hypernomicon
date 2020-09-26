@@ -34,11 +34,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import com.google.common.collect.EvictingQueue;
 import com.sun.javafx.webkit.Accessor;
 
 import org.hypernomicon.dialogs.FileDlgCtrlr;
@@ -81,6 +83,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToolBar;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
@@ -109,6 +113,8 @@ public class MainTextCtrlr
   private HyperCB hcbType, hcbName, hcbKeyType, hcbKeyName;
   private HDT_RecordWithConnector curRecord;
   private BooleanProperty prop = null;
+  private boolean ignoreKeyEvent = false;
+  private Queue<KeyEvent> boldEvents = EvictingQueue.create(50);
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -151,7 +157,7 @@ public class MainTextCtrlr
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-
+  
   void init()
   {
     final WebView webview = getWebView();
@@ -297,7 +303,47 @@ public class MainTextCtrlr
     he.setOnMouseClicked (Event::consume);
     he.setOnMousePressed (Event::consume);
     he.setOnMouseReleased(Event::consume);
-
+    
+    // The next 2 event filters address buggy HTMLEditor handling of ctrl-B, ctrl-I, and ctrl-U
+    
+    he.addEventFilter(KeyEvent.KEY_PRESSED, event ->
+    {
+      if (event.isControlDown() || event.isMetaDown())
+      {
+        if ((event.getCode() == KeyCode.B) ||
+            (event.getCode() == KeyCode.I) ||
+            (event.getCode() == KeyCode.U))
+        {
+          if (ignoreKeyEvent)
+            event.consume();
+          else if (event.getCode() == KeyCode.B)
+          {
+            KeyEvent ke = new KeyEvent(event.getSource(), webview, KeyEvent.KEY_RELEASED, event.getCharacter(), event.getText(), event.getCode(), event.isShiftDown(), event.isControlDown(), event.isAltDown(), event.isMetaDown());
+            event.consume();
+            boldEvents.add(ke);
+            webview.fireEvent(ke);
+          }
+          
+          ignoreKeyEvent = true;
+        }
+      }
+    });
+    
+    he.addEventFilter(KeyEvent.KEY_RELEASED, event ->
+    {     
+      if (event.isControlDown() || event.isMetaDown())
+      {
+        if (((event.getCode() == KeyCode.B) && (boldEvents.contains(event) == false)) ||
+            (event.getCode() == KeyCode.I) ||
+            (event.getCode() == KeyCode.U))
+        {
+          event.consume();
+          
+          ignoreKeyEvent = false;
+        }
+      }
+    });
+    
     ToolBar bar = (ToolBar) he.lookup(".top-toolbar");
 
     MenuItem menuItem0 = new MenuItem("Paste");

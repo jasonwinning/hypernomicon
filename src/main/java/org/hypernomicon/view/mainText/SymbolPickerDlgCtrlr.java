@@ -66,6 +66,7 @@ public class SymbolPickerDlgCtrlr extends HyperDlg
   private CharacterGrid charGrid = null;
   private static SymbolPickerDlgCtrlr instance = null;
   private List<Symbol> chars8851, symbols8851, math, greek, misc;
+  private boolean programmaticFontChange = false;
   
   private static final int ROW_COUNT = 8, COL_COUNT = 32;
   
@@ -258,16 +259,25 @@ public class SymbolPickerDlgCtrlr extends HyperDlg
     {
       final ObservableList<String> fonts = FXCollections.observableArrayList(Font.getFamilies());
       fonts.add(0, "");
+      programmaticFontChange = true;
+      
       for (@SuppressWarnings("unused") String fontFamily : fonts)
       {
         cbFont.setValue("");
         cbFont.setItems(fonts);
       }
+      
+      programmaticFontChange = false;
     });    
     
     Platform.runLater(() ->
     {
-      cbFont.getSelectionModel().select("Arial");
+      String font = appPrefs.node("symbols").get("font", "Arial");
+      if (safeStr(font).isBlank()) font = "Arial";
+      
+      programmaticFontChange = true;
+      cbFont.getSelectionModel().select(font);
+      programmaticFontChange = false;
       
       charGrid.setSymbols(math);
       charGrid.setSymbols(greek);
@@ -285,7 +295,14 @@ public class SymbolPickerDlgCtrlr extends HyperDlg
       }
     });
     
-    cbFont.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> charGrid.setFont(newValue));
+    chkUseFont.setSelected(appPrefs.node("symbols").getBoolean("useFont", false));
+    chkUseFont.selectedProperty().addListener((obs, oldValue, newValue) ->
+    {
+      if      (Boolean.TRUE .equals(newValue)) appPrefs.node("symbols").putBoolean("useFont", true);
+      else if (Boolean.FALSE.equals(newValue)) appPrefs.node("symbols").putBoolean("useFont", false);
+    });
+    
+    cbFont.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> charGrid.setFont(newValue, programmaticFontChange));
    
     btnInsert.setOnAction(event -> insertClick());
     
@@ -459,7 +476,7 @@ public class SymbolPickerDlgCtrlr extends HyperDlg
         .add(new Symbol(8594, "&rarr;", "Right arrow"))   // → 
         .add(new Symbol(8595, "&darr;", "Down arrow"))   // ↓ 
         .add(new Symbol(8596, "&harr;", "Left right arrow"))   // ↔ 
-        .add(new Symbol(8660, "&hRaa;", "If and only if"))  // ⇔
+        .add(new Symbol(8660, "&hArr;", "If and only if"))  // ⇔
         .add(new Symbol(172, "&not;", "Negation"))   // ¬
         .add(new Symbol(8704, "&forall;", "For all"))   // ∀ 
         .add(new Symbol(8706, "&part;", "Part"))   // ∂ 
