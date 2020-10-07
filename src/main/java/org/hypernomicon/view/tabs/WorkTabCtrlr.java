@@ -502,7 +502,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     initArgContextMenu();
     btnTree.setOnAction(event -> ui.goToTreeRecord(curWork));
 
-    cbType.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    hcbType.addListener((oldValue, newValue) ->
     {
       if (programmaticTypeChange || (newValue == null)) return;
 
@@ -522,33 +522,33 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         }
 
         changeToNormalMode();
+        
+        return;
       }
-      else
+           
+      if (oldEnumVal != wtUnenteredSet)
       {
-        if (oldEnumVal != wtUnenteredSet)
+        if (oldEnumVal != wtNone)
         {
-          if (oldEnumVal != wtNone)
-          {
-            programmaticTypeChange = true;
-            messageDialog("You cannot change a work with an existing work type into an unentered set of work files.", mtError);
-            programmaticTypeChange = false;
+          programmaticTypeChange = true;
+          messageDialog("You cannot change a work with an existing work type into an unentered set of work files.", mtError);
+          programmaticTypeChange = false;
 
-            Platform.runLater(() -> cbType.setValue(oldValue));
-            return;
-          }
-          else if (curWork.getBibEntryKey().length() > 0)
-          {
-            programmaticTypeChange = true;
-            messageDialog("You cannot change a work that is assigned to a " + db.getBibLibrary().type().getUserFriendlyName() + " entry into an unentered set of work files.", mtError);
-            programmaticTypeChange = false;
-
-            Platform.runLater(() -> cbType.setValue(oldValue));
-            return;
-          }
+          Platform.runLater(() -> cbType.setValue(oldValue));
+          return;
         }
+        else if (curWork.getBibEntryKey().length() > 0)
+        {
+          programmaticTypeChange = true;
+          messageDialog("You cannot change a work that is assigned to a " + db.getBibLibrary().type().getUserFriendlyName() + " entry into an unentered set of work files.", mtError);
+          programmaticTypeChange = false;
 
-        changeToUnenteredSetMode();
+          Platform.runLater(() -> cbType.setValue(oldValue));
+          return;
+        }
       }
+
+      changeToUnenteredSetMode();
     });
 
     Divider div1 = spHoriz1.getDividers().get(0),

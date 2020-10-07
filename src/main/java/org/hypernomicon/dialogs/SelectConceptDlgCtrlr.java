@@ -92,7 +92,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
     hcbTerm.addBlankEntry();
 
-    cbTerm.getSelectionModel().selectedItemProperty().addListener((ob, oldCell, newCell) ->
+    hcbTerm.addListener((oldCell, newCell) ->
     {
       if (alreadyChanging) return;
 

@@ -69,22 +69,21 @@ public class NewInstDlgCtrlr extends HyperDlg
 
     hcbParent.dontCreateNewRecord = true;
 
-    cbParent.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    hcbParent.addListener((oldValue, newValue) ->
     {
+      if (isEmpty(newValue) || (getCellID(oldValue) == getCellID(newValue))) return;
+
       rbExistingInst.setSelected(true);
-
-      if (newValue == null) return;
-
-      if (getCellID(oldValue) != getCellID(newValue))
-      {
-        ((SubjectPopulator)hcbExisting.getPopulator()).setObj(null, getRecord(newValue));
-        if (getCellID(oldValue) > 0)
-          hcbExisting.selectID(-1);
-      }
+        
+      ((SubjectPopulator)hcbExisting.getPopulator()).setObj(null, getRecord(newValue));
+      if (getCellID(oldValue) > 0)
+        hcbExisting.selectID(-1);
     });
 
-    cbExisting.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    hcbExisting.addListener((oldValue, newValue) ->
     {
+      if (isEmpty(newValue) || (getCellID(oldValue) == getCellID(newValue))) return;
+      
       rbExistingInst.setSelected(true);
       rbExistingDiv .setSelected(true);
     });

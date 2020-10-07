@@ -67,16 +67,21 @@ public class HyperCB implements CommitableWrapper
   private HyperTableCell preShowingValue;
   private EventHandler<ActionEvent> onAction, innerOnAction;
   private boolean adjusting = false;
-  public boolean somethingWasTyped, listenForActionEvents = true, dontCreateNewRecord = false;
+  public boolean somethingWasTyped, listenForActionEvents = true, dontCreateNewRecord = false, silentMode = false;
+  
+  private List<HTCListener> listeners = new ArrayList<>();
 
   static final Map<ComboBox<HyperTableCell>, HyperCB> cbRegistry = new HashMap<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static interface HTCListener { public void changed(HyperTableCell oldValue, HyperTableCell newValue); }
+  
   public EventHandler<ActionEvent> getOnAction() { return onAction; }
   public void setChoicesChanged()                { populator.setChanged(null); }
   public ComboBox<HyperTableCell> getComboBox()  { return cb; }
+  public void addListener(HTCListener listener)  { listeners.add(listener); }
 
   @SuppressWarnings("unchecked")
   public <PopType extends Populator> PopType getPopulator() { return (PopType) populator; }
@@ -218,6 +223,14 @@ public class HyperCB implements CommitableWrapper
 
       if (newText.equals(HyperTableCell.getCellText(preShowingValue)) == false)
         endEditModeIfInTable();
+    });
+
+  //---------------------------------------------------------------------------
+
+    cb.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) ->
+    {
+      if (silentMode == false)
+        listeners.forEach(listener -> listener.changed(oldValue, newValue));
     });
   }
 
@@ -486,6 +499,9 @@ public class HyperCB implements CommitableWrapper
   public List<HyperTableCell> populate(boolean force)
   {
     HyperTableCell cell = cb.getValue();
+    
+    silentMode = true;
+    
     List<HyperTableCell> choices = populator.populate(row, force);
     cb.setItems(null);
     cb.setItems(FXCollections.observableList(choices));
@@ -493,6 +509,8 @@ public class HyperCB implements CommitableWrapper
     if (cell != null)
       cb.getSelectionModel().select(cell);
 
+    silentMode = false;
+    
     if ((choices.size() > 0) && HyperTableCell.isEmpty(cell))
     {
       ListView<HyperTableCell> lv = getCBListView(cb);

@@ -1550,7 +1550,7 @@ public final class Util
 
     if (m.find()) return m.group(2);
 
-    str = str.replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0').replace('Â°', '0');
+    str = str.replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0').replace('\u00B0', '0'); // \u00B0 is degree sign (°)
 
     m = p.matcher(safeStr(str));
 
@@ -1636,7 +1636,7 @@ public final class Util
         .replace('\u0002', '/'); // sometimes slash in DOI is encoded as STX control character
 
     if (disregardLetters)
-      str = str.replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0').replace('Â°', '0');
+      str = str.replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0').replace('\u00B0', '0'); // \u00B0 is degree sign (°)
 
     while (str.contains("--"))
       str = str.replace("--", "-");

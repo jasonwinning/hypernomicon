@@ -259,15 +259,9 @@ public class MainTextCtrlr
 
     disableAll(btnMoveUp, btnMoveDown, btnRemove, btnInsert);
 
-    cbName.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
-    {
-      btnInsert.setDisable(HyperTableCell.getRecord(newValue) == null);
-    });
+    hcbName.addListener((oldValue, newValue) -> btnInsert.setDisable(HyperTableCell.getRecord(newValue) == null));
 
-    cbKeyName.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
-    {
-      btnAdd.setDisable(HyperTableCell.getRecord(newValue) == null);
-    });
+    hcbKeyName.addListener((oldValue, newValue) -> btnAdd.setDisable(HyperTableCell.getRecord(newValue) == null));
 
     lvRecords.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
     {

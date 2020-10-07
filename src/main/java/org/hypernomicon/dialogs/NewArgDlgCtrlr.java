@@ -84,7 +84,7 @@ public class NewArgDlgCtrlr extends HyperDlg
 
     rbArgName1.setSelected(true);
 
-    cbWork.getSelectionModel().selectedItemProperty().addListener((ob, oldCell, newCell) ->
+    hcbWork.addListener((oldCell, newCell) ->
     {
       if (changingWorkProgrammatically) return;
 
@@ -141,7 +141,7 @@ public class NewArgDlgCtrlr extends HyperDlg
     addListeners(tfArgName5, rbArgName5, false); addListeners(tfArgName6, rbArgName6, false);
     addListeners(tfArgName7, rbArgName7, false); addListeners(tfArgName8, rbArgName8, false);
 
-    cbPerson.getSelectionModel().selectedItemProperty().addListener((ob, oldCell, newCell) ->
+    hcbPerson.addListener((oldCell, newCell) ->
     {
       if (HyperTableCell.getCellID(oldCell) == HyperTableCell.getCellID(newCell)) return;
 

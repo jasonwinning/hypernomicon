@@ -218,7 +218,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
       btnOkClick();
     });
 
-    cbAuthor.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    hcbAuthor.addListener((oldValue, newValue) ->
     {
       if ((newValue == null) || (HyperTableCell.getCellID(oldValue) == HyperTableCell.getCellID(newValue))) return;
 
@@ -226,7 +226,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
       hcbWork.selectID(-1);
     });
 
-    cbWork.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    hcbWork.addListener((oldValue, newValue) ->
     {
       if ((newValue == null) || (HyperTableCell.getCellID(oldValue) == HyperTableCell.getCellID(newValue))) return;
 

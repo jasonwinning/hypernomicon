@@ -62,12 +62,11 @@ public class NewCategoryDlgCtrlr extends HyperDlg
 
     hcbCompare = new HyperCB(cbCompare, ctDropDownList, new RecordByTypePopulator());
 
-    cbRecordType.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    hcbRecordType.addListener((oldValue, newValue) ->
     {
-      RecordType oldType = HyperTableCell.getCellType(oldValue),
-                 newType = HyperTableCell.getCellType(newValue);
+      RecordType newType = HyperTableCell.getCellType(newValue);
 
-      if (oldType == newType) return;
+      if (HyperTableCell.getCellType(oldValue) == newType) return;
 
       ((RecordByTypePopulator) hcbCompare.getPopulator()).setRecordType(Populator.dummyRow, newType);
       hcbCompare.selectID(-1);
@@ -75,13 +74,12 @@ public class NewCategoryDlgCtrlr extends HyperDlg
       tfNewID.setText(newType == hdtNone ? "" : String.valueOf(db.getNextID(newType)));
     });
 
-    cbCompare.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    hcbCompare.addListener((oldValue, newValue) ->
     {
-      int oldID = HyperTableCell.getCellID(oldValue),
-          newID = HyperTableCell.getCellID(newValue);
+      int newID = HyperTableCell.getCellID(newValue);
       RecordType type = hcbRecordType.selectedType();
 
-      if (oldID == newID) return;
+      if (HyperTableCell.getCellID(oldValue) == newID) return;
 
       if ((newID < 1) || (type == hdtNone))
       {

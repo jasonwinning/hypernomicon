@@ -438,7 +438,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     tfFileTitle.textProperty().addListener((ob, oldValue, newValue) -> btnRegenerateFilenameClick());
 
-    cbType.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    hcbType.addListener((oldValue, newValue) ->
     {
       if (newValue == null) return;
 

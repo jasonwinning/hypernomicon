@@ -228,7 +228,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType), true);
     hcbParentInst = new HyperCB(cbParentInst, ctDropDownList, new StandardPopulator(hdtInstitution), true);
 
-    cbCountry.valueProperty().addListener((ob, oldValue, newValue) ->
+    hcbCountry.addListener((oldValue, newValue) ->
     {
       if (newValue == null) return;
 

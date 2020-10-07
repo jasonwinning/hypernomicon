@@ -772,7 +772,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       return change;
     }));
 
-    cbField.getSelectionModel().selectedItemProperty().addListener((ob, oldValue, newValue) ->
+    hcbField.addListener((oldValue, newValue) ->
     {
       if (newValue == null) return;
 
