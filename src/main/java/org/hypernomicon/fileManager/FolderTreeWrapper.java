@@ -154,6 +154,26 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  void refresh()
+  {
+    sortNode(getRoot());
+    
+    tv.refresh();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void sortNode(TreeItem<FileRow> nodeItem)
+  {
+    nodeItem.getChildren().forEach(this::sortNode);
+    
+    nodeItem.getChildren().sort(sortBasis(TreeItem::getValue));
+  }
+  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   void prune()
   {
     treeModel.pruningOperationInProgress = true; // prevent ConcurrentModificationException

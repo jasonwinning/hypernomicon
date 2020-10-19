@@ -795,18 +795,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String abbreviate(String text)
-  {
-    text = safeStr(text);
-
-    if (text.length() < 35) return text;
-
-    return StringUtils.stripEnd(text.substring(0, 35), " .") + "...";
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static String camelToTitle(String in)
   {
     String out = "";
@@ -1498,6 +1486,14 @@ public final class Util
     int ndx = binarySearch(list, item);
     list.add(ndx >= 0 ? ndx + 1 : ~ndx, item);
   }
+  
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static <T, R extends Comparable<R>> Comparator<T> sortBasis(Function<T, R> function)
+  {
+    return (o1, o2) -> function.apply(o1).compareTo(function.apply(o2));
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1550,7 +1546,7 @@ public final class Util
 
     if (m.find()) return m.group(2);
 
-    str = str.replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0').replace('\u00B0', '0'); // \u00B0 is degree sign (°)
+    str = str.replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0').replace('\u00B0', '0'); // \u00B0 is degree sign
 
     m = p.matcher(safeStr(str));
 
@@ -1636,7 +1632,7 @@ public final class Util
         .replace('\u0002', '/'); // sometimes slash in DOI is encoded as STX control character
 
     if (disregardLetters)
-      str = str.replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0').replace('\u00B0', '0'); // \u00B0 is degree sign (°)
+      str = str.replace('l', '1').replace('I', '1').replace('o', '0').replace('O', '0').replace('\u00B0', '0'); // \u00B0 is degree sign
 
     while (str.contains("--"))
       str = str.replace("--", "-");

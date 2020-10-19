@@ -182,7 +182,8 @@ public final class MainCtrlr
 
   private static final String TREE_SELECT_BTN_CAPTION = "Select";
 
-  public static final String AUTOFILL_TOOLTIP = "Try to automatically fill in missing bibliographic information";
+  public static final String AUTOFILL_TOOLTIP = "Try to automatically fill in missing bibliographic information",
+                             NO_DATES_TOOLTIP = "No dates to show.";
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -270,7 +271,7 @@ public final class MainCtrlr
 
     MainTextWrapper.init();
 
-    ttDates = new Tooltip("No dates to show.");
+    ttDates = new Tooltip(NO_DATES_TOOLTIP);
     ttDates.setStyle("-fx-font-size: 14px;");
 
     PersonTabCtrlr   .addHyperTab(personTabEnum, tabPersons, "view/tabs/PersonTab");
@@ -838,7 +839,7 @@ public final class MainCtrlr
       else if (num == 0)
       {
         discardLastQuery(backClick);
-        lblStatus.setText("No results: searched " + db.getTypeName(type) + " records for \"" + abbreviate(query) + "\"");
+        lblStatus.setText("No results: searched " + db.getTypeName(type) + " records for \"" + query + "\"");
       }
     });
   }
@@ -1066,7 +1067,7 @@ public final class MainCtrlr
   {
     if (record == null)
     {
-      ttDates.setText("No dates to show.");
+      ttDates.setText(NO_DATES_TOOLTIP);
       return;
     }
 
@@ -1078,7 +1079,7 @@ public final class MainCtrlr
     }
     catch(Exception e)
     {
-      ttDates.setText("No dates to show.");
+      ttDates.setText(NO_DATES_TOOLTIP);
     }
   }
 
@@ -1677,7 +1678,7 @@ public final class MainCtrlr
       if ((curQV.resultsBackingList.size() > 0) && (curQV.resultsBackingList.equals(List.of(record)) == false))
         return;
 
-      lblStatus.setText("No mentioners: " + db.getTypeName(type).toLowerCase() + " \"" + abbreviate(record.listName()) + "\"");
+      lblStatus.setText("No mentioners: " + db.getTypeName(type).toLowerCase() + " \"" + record.listName() + "\"");
     }
 
     discardLastQuery(backClick);
@@ -2346,7 +2347,7 @@ public final class MainCtrlr
 
   public void updateBottomPanel(boolean refreshDropDown)
   {
-    ttDates.setText("No dates to show.");
+    ttDates.setText(NO_DATES_TOOLTIP);
     if (db.isLoaded() == false) return;
 
     HyperTab<? extends HDT_Record, ? extends HDT_Record> curTab = activeTab();
@@ -2463,7 +2464,7 @@ public final class MainCtrlr
     {
       String text = HyperTableCell.getCellText(hcbGoTo.selectedHTC()).trim();
       if (text.length() > 0)
-        lblStatus.setText("No results: searched " + db.getTypeName(selectorType()) + " records for \"" + abbreviate(text) + "\"");
+        lblStatus.setText("No results: searched " + db.getTypeName(selectorType()) + " records for \"" + text + "\"");
 
       return;
     }

@@ -574,20 +574,13 @@ public class MainTextUtil
     MutableBoolean firstOne = new MutableBoolean(true);
 
     if (sortByName)
-      sortedKeys.sort((s1, s2) ->
+      sortedKeys.sort(sortBasis(keyWork ->
       {
-        String bibAuthors1 = s1.getRecordType() == hdtWork ?
-          HDT_Work.class.cast(s1.getRecord()).getShortAuthorsStr(true)
+        return keyWork.getRecordType() == hdtWork ?
+          HDT_Work.class.cast(keyWork.getRecord()).getShortAuthorsStr(true)
         :
-          HDT_MiscFile.class.cast(s1.getRecord()).getShortAuthorsStr(true),
-
-        bibAuthors2 = s2.getRecordType() == hdtWork ?
-          HDT_Work.class.cast(s2.getRecord()).getShortAuthorsStr(true)
-        :
-          HDT_MiscFile.class.cast(s2.getRecord()).getShortAuthorsStr(true);
-
-        return bibAuthors1.compareTo(bibAuthors2);
-      });
+          HDT_MiscFile.class.cast(keyWork.getRecord()).getShortAuthorsStr(true);
+      }));
     else
       sortedKeys.sort(null);
 
@@ -741,7 +734,7 @@ public class MainTextUtil
     if ((parentLabel == null) || parentLabel.subLabels.isEmpty()) return;
 
     List<HDT_WorkLabel> sortedLabels = new ArrayList<>(parentLabel.subLabels);
-    sortedLabels.sort((label1, label2) -> label1.name().compareToIgnoreCase(label2.name()));
+    sortedLabels.sort(sortBasis(HDT_Record::name));
 
     sortedLabels.forEach(label ->
     {
@@ -795,7 +788,7 @@ public class MainTextUtil
       sortedKeys.add(searchKey);
     });
 
-    sortedKeys.sort(sortByName ? String::compareToIgnoreCase : (s1, s2) -> keyToKeyWork.get(s1).compareTo(keyToKeyWork.get(s2)));
+    sortedKeys.sort(sortByName ? String::compareToIgnoreCase : sortBasis(keyToKeyWork::get));
 
     return linkMap;
   }

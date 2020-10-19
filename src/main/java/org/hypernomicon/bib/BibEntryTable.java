@@ -87,8 +87,8 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
     tcYear       .setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfYear)));
     tcPublishedIn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfContainerTitle)));
 
-    tcTitle.setComparator((str1, str2) -> makeSortKeyByType(str1, hdtWork).compareTo(makeSortKeyByType(str2, hdtWork)));
-
+    tcTitle.setComparator(sortBasis(str -> makeSortKeyByType(str, hdtWork)));
+    
     Comparator<String> cmp = (str1, str2) ->
     {
       int int1 = parseInt(str1, -1);

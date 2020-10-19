@@ -177,7 +177,9 @@ public class FileTable extends DragNDropContainer<FileRow>
 
   void update(HDT_Folder folder, TreeItem<FileRow> parentTreeItem)
   {
+    previewWindow.disablePreviewUpdating = true;
     clear();
+    previewWindow.disablePreviewUpdating = false;
 
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(folder.filePath().toPath(), "**"))
     {

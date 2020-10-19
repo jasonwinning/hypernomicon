@@ -177,7 +177,7 @@ public class FileManager extends HyperDlg
 
   private List<MarkedRowInfo> markedRows = null, dragRows = null;
   private FilePath srcPathToHilite = null;
-  private boolean clipboardCopying, needRefresh = false, suppressNeedRefresh = false;
+  private boolean clipboardCopying, needRefresh = false, alreadyRefreshing = false, suppressNeedRefresh = false;
   private MenuItemSchema<HDT_RecordWithPath, FileRow> pasteMenuItem;
   private HDT_Folder curFolder;
 
@@ -1276,13 +1276,14 @@ public class FileManager extends HyperDlg
 
   public void refresh()
   {
-    if (dialogStage.isShowing() == false) return;
+    if (alreadyRefreshing || (dialogStage.isShowing() == false)) return;
     needRefresh = false;
+    alreadyRefreshing = true;
 
     if (folderTree.selectedRecord() == null)
       folderTree.selectRecord(db.getRootFolder(), -1, false);
 
-    treeView.refresh();
+    folderTree.refresh();
 
     if (HDT_Record.isEmpty(curFolder))
       curFolder = null;
@@ -1292,6 +1293,7 @@ public class FileManager extends HyperDlg
       fileTable.clear();
       recordTable.clear();
       getStage().setTitle(dialogTitle);
+      alreadyRefreshing = false;
       return;
     }
 
@@ -1309,6 +1311,8 @@ public class FileManager extends HyperDlg
 
     if (FilePath.isEmpty(filePath) == false)
       fileTable.selectByFileName(filePath);
+    
+    alreadyRefreshing = false;
   }
 
 //---------------------------------------------------------------------------

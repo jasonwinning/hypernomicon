@@ -312,10 +312,15 @@ public class MainTextCtrlr
             event.consume();
           else if (event.getCode() == KeyCode.B)
           {
-            KeyEvent ke = new KeyEvent(event.getSource(), webview, KeyEvent.KEY_RELEASED, event.getCharacter(), event.getText(), event.getCode(), event.isShiftDown(), event.isControlDown(), event.isAltDown(), event.isMetaDown());
-            event.consume();
-            boldEvents.add(ke);
-            webview.fireEvent(ke);
+            String selText = (String) getEngine().executeScript("window.getSelection().rangeCount < 1 ? \"\" : window.getSelection().getRangeAt(0).toString()");
+            
+            if (selText.isEmpty())
+            {
+              KeyEvent ke = new KeyEvent(event.getSource(), webview, KeyEvent.KEY_RELEASED, event.getCharacter(), event.getText(), event.getCode(), event.isShiftDown(), event.isControlDown(), event.isAltDown(), event.isMetaDown());
+              event.consume();
+              boldEvents.add(ke);
+              webview.fireEvent(ke);
+            }
           }
           
           ignoreKeyEvent = true;

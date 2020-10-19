@@ -69,7 +69,7 @@ public class RecordTypePopulator extends Populator
     types.forEach(type ->
     {
       HyperTableCell cell = new HyperTableCell(db.getTypeName(type), type);
-      addToSortedList(choices, cell, (c1, c2) -> c1.getText().compareTo(c2.getText()));
+      addToSortedList(choices, cell, sortBasis(HyperTableCell::getText));
     });
 
     changed = false;

@@ -224,7 +224,7 @@ public abstract class BibEntry extends BibData implements BibEntity
       return cResult != 0 ?
         cResult
       :
-        makeSortKeyByType(e1.getStr(bfTitle), hdtWork).compareTo(makeSortKeyByType(e1.getStr(bfTitle), hdtWork));
+        makeSortKeyByType(e1.getStr(bfTitle), hdtWork).compareTo(makeSortKeyByType(e2.getStr(bfTitle), hdtWork));
     };
   }
 

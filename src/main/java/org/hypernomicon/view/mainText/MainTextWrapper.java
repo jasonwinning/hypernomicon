@@ -452,7 +452,7 @@ public final class MainTextWrapper
 
     concepts.removeIf(this::displayerIsAlreadyShowing);
 
-    concepts.sort((t1, t2) -> t1.getSortKey().compareTo(t2.getSortKey()));
+    concepts.sort(sortBasis(HDT_Record::getSortKey));
 
     return concepts;
   }

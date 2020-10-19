@@ -437,8 +437,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     List<HDT_Obj> origList = subjToObjList.get(subj);
 
-    list.sort((og1, og2) -> origList.indexOf(og1.getPrimary()) - origList.indexOf(og2.getPrimary()));
-
+    list.sort(sortBasis(og -> origList.indexOf(og.getPrimary())));
+    
     return list;
   }
 

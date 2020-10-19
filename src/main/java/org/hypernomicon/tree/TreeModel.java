@@ -207,7 +207,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 
   private void insertTreeItem(List<TreeItem<RowType>> list, RowType newRow)
   {
-    addToSortedList(list, treeWrapper.getTreeItem(newRow), (item1, item2) -> item1.getValue().compareTo(item2.getValue()));
+    addToSortedList(list, treeWrapper.getTreeItem(newRow), sortBasis(TreeItem::getValue));
   }
 
 //---------------------------------------------------------------------------

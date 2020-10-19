@@ -1499,7 +1499,7 @@ public final class HyperDB
         return;
     }
 
-    addToSortedList(initialNavList, record, (record1, record2) -> record1.getViewDate().compareTo(record2.getViewDate()));
+    addToSortedList(initialNavList, record, sortBasis(HDT_Record::getViewDate));
 
     while (initialNavList.size() > INITIAL_NAV_LIST_SIZE)
       initialNavList.remove(0);

@@ -37,6 +37,7 @@ import org.hypernomicon.model.records.HDT_Glossary;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet;
+import org.hypernomicon.view.MainCtrlr;
 
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -185,7 +186,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   @Override public void clear()
   {
-    ui.ttDates.setText("No dates to show.");
+    ui.ttDates.setText(MainCtrlr.NO_DATES_TOOLTIP);
 
     if (ttv.getRoot() != null)
     {

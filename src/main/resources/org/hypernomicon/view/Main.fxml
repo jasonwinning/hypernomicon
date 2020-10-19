@@ -392,7 +392,7 @@
             </AnchorPane>
             <AnchorPane fx:id="apStatus" mouseTransparent="true" prefHeight="24.0" prefWidth="1253.0" GridPane.columnSpan="2" GridPane.rowIndex="1">
                <children>
-                  <Label fx:id="lblStatus" layoutY="1.0" text="No database is currently loaded." AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="4.0">
+                  <Label fx:id="lblStatus" layoutY="1.0" prefHeight="17.0" prefWidth="423.0" text="No database is currently loaded." AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="4.0">
                   </Label>
                </children>
             </AnchorPane>

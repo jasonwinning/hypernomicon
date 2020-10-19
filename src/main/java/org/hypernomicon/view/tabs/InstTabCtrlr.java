@@ -129,7 +129,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
         row.setCellValue(2, person.field.get(), person.field.get().name());
 
       List<HDT_Institution> instList = new ArrayList<>(peopleMap.get(person));
-      instList.sort((inst1, inst2) -> inst1.name().compareTo(inst2.name()));
+      instList.sort(sortBasis(HDT_Record::name));
 
       String instStr = instList.stream().map(HDT_Institution::name).reduce((name1, name2) -> name1 + ", " + name2).orElse("");
       int instID = instList.isEmpty() ? -1 : instList.get(0).getID();

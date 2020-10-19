@@ -190,18 +190,11 @@ public class ContentsWindow extends HyperDlg
 
     List<HDT_Work> works = new ArrayList<>(workFile.works);
 
-    works.sort((work1, work2) ->
+    works.sort(sortBasis(work ->
     {
-      int startPage1, startPage2;
-
-      startPage1 = work1.getStartPageNum(workFile);
-      if (startPage1 < 0) startPage1 = Integer.MAX_VALUE;
-
-      startPage2 = work2.getStartPageNum(workFile);
-      if (startPage2 < 0) startPage2 = Integer.MAX_VALUE;
-
-      return startPage1 - startPage2;
-    });
+      int startPage = work.getStartPageNum(workFile);
+      return startPage < 0 ? Integer.MAX_VALUE : startPage;      
+    }));
 
     htContents.buildRows(works, (row, work) ->
     {

@@ -313,21 +313,13 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (results().size() > 0)
       {
         ui.updateBottomPanel(false);
-        curResult = null;
-
-        if (selRowNdx > -1)
-        {
-          ResultsRow row = results().get(selRowNdx);
-          curResult = row.getRecord();
-        }
+        curResult = selRowNdx > -1 ? results().get(selRowNdx).getRecord() : null;
 
         if (curResult != null)
         {
           textToHilite = getTextToHilite();
 
-          String mainText = "";
-          if (curResult.hasDesc())
-            mainText = HDT_RecordWithDescription.class.cast(curResult).getDesc().getHtml();
+          String mainText = curResult.hasDesc() ? HDT_RecordWithDescription.class.cast(curResult).getDesc().getHtml() : "";
 
           MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), new TextViewInfo(), getRecordToHilite());
 

@@ -145,7 +145,6 @@ public class NewInstDlgCtrlr extends HyperDlg
     else if (hcbExisting.selectedRecord() == null)
       return falseWithErrorMessage("Select a division.", cbExisting);
 
-
     return true;
   }
 

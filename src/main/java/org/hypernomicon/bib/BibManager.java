@@ -833,7 +833,7 @@ public class BibManager extends HyperDlg
 
     List<EntryType> choices = new ArrayList<>(map.keySet());
 
-    choices.sort((et1, et2) -> et1.getUserFriendlyName().compareTo(et2.getUserFriendlyName()));
+    choices.sort(sortBasis(EntryType::getUserFriendlyName));
 
     cb.setItems(null);
     cb.setItems(FXCollections.observableList(choices));

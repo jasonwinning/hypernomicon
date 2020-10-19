@@ -62,7 +62,7 @@ class TreeCB
       changeIsProgrammatic = true;
 
       comboBox.setItems(null);
-      rows.sort((row1, row2) -> row1.getCBText().toLowerCase().compareTo(row2.getCBText().toLowerCase()));
+      rows.sort(sortBasis(row -> row.getCBText().toLowerCase()));
       comboBox.setItems(rows);
 
       changeIsProgrammatic = false;

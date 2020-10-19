@@ -66,7 +66,7 @@ public class TagItemPopulator extends Populator
     tags.forEach(tag ->
     {
       HyperTableCell cell = new HyperTableCell(tag.getNum(), db.getTagHeader(tag), recordType);
-      addToSortedList(choices, cell, (c1, c2) -> c1.getText().compareTo(c2.getText()));
+      addToSortedList(choices, cell, sortBasis(HyperTableCell::getText));
     });
 
     return choices;
