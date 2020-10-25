@@ -27,6 +27,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.Node;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
+import javafx.scene.input.KeyEvent;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
@@ -39,6 +40,7 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -90,6 +92,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   private HDT_Term curTerm;
   private HDT_Concept curConcept;
   private TabPane tpConcepts;
+  private long lastArrowKey = 0;
   private boolean alreadyChangingTab = false, updatingGlossaries = false;
 
   @Override protected RecordType type()             { return hdtTerm; }
@@ -184,11 +187,17 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     ctrlr.spMain.getItems().add(1, tpConcepts);
     tpConcepts.getTabs().get(0).setClosable(false);
 
+    tpConcepts.addEventFilter(KeyEvent.ANY, event ->
+    {
+      if (event.getCode().isArrowKey())
+        lastArrowKey = Instant.now().toEpochMilli();
+    });
+    
     tpConcepts.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) ->
     {
       if (alreadyChangingTab) return;
 
-      if (!ctrlr.saveToRecord(curConcept))
+      if (((Instant.now().toEpochMilli() - lastArrowKey) < IGNORE_ARROW_KEYS_IN_TAB_PANE_MS) || !ctrlr.saveToRecord(curConcept))
       {
         alreadyChangingTab = true;
         tpConcepts.getSelectionModel().select(oldTab);

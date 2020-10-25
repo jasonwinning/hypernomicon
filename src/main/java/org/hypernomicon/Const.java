@@ -37,6 +37,7 @@ public final class Const
 
     INITIAL_NAV_LIST_SIZE = 150,
     BUTTON_MENU_DELAY_MS = 300,
+    IGNORE_ARROW_KEYS_IN_TAB_PANE_MS = 300,
     HDB_MRU_SIZE = 4,
 
     BLANK_FN_COMPONENT = 0,

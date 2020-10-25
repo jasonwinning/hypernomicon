@@ -58,6 +58,7 @@ import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
 
 import static java.util.Collections.*;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -87,6 +88,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
@@ -124,7 +126,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   private HyperCB hcbRank, hcbStatus, hcbField, hcbSubfield;
 
   private HDT_Person curPerson;
-  private boolean alreadyChangingName = false;
+  private long lastArrowKey = 0;
+  private boolean alreadyChangingName = false, alreadyChangingTab = false;
 
   @Override public String recordName()               { return new PersonName(tfFirst.getText(), tfLast.getText()).getLastFirst(); }
   @Override protected RecordType type()              { return hdtPerson; }
@@ -664,7 +667,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-
+  
   @Override protected void init()
   {
     mainText = new MainTextWrapper(apOverview);
@@ -792,8 +795,28 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     lblWebsite.setOnMouseClicked(event -> openWebLink(tfWebsite.getText()));
 
-    tpPerson.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> tpPersonChange(ov, nv));
+    tpPerson.addEventFilter(KeyEvent.ANY, event ->
+    {
+      if (event.getCode().isArrowKey())
+        lastArrowKey = Instant.now().toEpochMilli();
+    });
 
+    tpPerson.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) ->
+    {
+      if (alreadyChangingTab) return;
+      
+      if ((Instant.now().toEpochMilli() - lastArrowKey) < IGNORE_ARROW_KEYS_IN_TAB_PANE_MS) // Ignore arrow keys
+      {
+        alreadyChangingTab = true;
+        tpPerson.getSelectionModel().select(oldTab);
+        alreadyChangingTab = false;
+
+        return;
+      }
+      
+      tpPersonChange(oldTab, newTab);
+    });
+    
     lblORCID.setOnMouseClicked(event -> searchORCID(tfORCID.getText(), tfFirst.getText(), tfLast.getText()));
 
     btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + "1"));

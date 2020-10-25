@@ -25,8 +25,10 @@ import org.hypernomicon.view.wrappers.ClickHoldButton;
 import com.google.common.collect.Iterators;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -38,6 +40,7 @@ import static org.hypernomicon.util.Util.*;
 
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TabPane;
+import javafx.scene.input.KeyEvent;
 
 public class HyperViewSequence
 {
@@ -46,6 +49,7 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 
   private int curNdx = -1;
+  private long lastArrowKey = 0;
   private final List<HyperView<? extends HDT_Record>> slots = new ArrayList<>();
   private final TabPane tabPane;
   private boolean alreadyChangingTab = false;
@@ -60,11 +64,17 @@ public class HyperViewSequence
     this.chbForward = chbForward;
     this.chbBack = chbBack;
 
+    tabPane.addEventFilter(KeyEvent.ANY, event ->
+    {
+      if (event.getCode().isArrowKey())
+        lastArrowKey = Instant.now().toEpochMilli();
+    });
+    
     tabPane.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) ->
     {
       if ((db.isLoaded() == false) || alreadyChangingTab) return;
 
-      if (ui.cantSaveRecord())
+      if (((Instant.now().toEpochMilli() - lastArrowKey) < IGNORE_ARROW_KEYS_IN_TAB_PANE_MS) || ui.cantSaveRecord()) // Ignore arrow keys
       {
         alreadyChangingTab = true;
         tabPane.getSelectionModel().select(oldTab);
