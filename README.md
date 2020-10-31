@@ -52,7 +52,7 @@ Contributions can be submitted via [Pull requests](https://github.com/jasonwinni
 
 * [JDK 11](https://adoptopenjdk.net/index.html?variant=openjdk11&ga=ga) or later for building 'master' branch
 * A recent version of [Git](https://git-scm.com/downloads)
-* [Maven](https://maven.apache.org/download.cgi) version 3.0.5 or greater
+* [Maven](https://maven.apache.org/download.cgi) version 3.1.0 or greater
 
 ### How to build Hypernomicon ###
 

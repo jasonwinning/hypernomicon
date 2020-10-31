@@ -1061,8 +1061,7 @@ public final class Util
   public static String manifestValue(String key)
   {
     Class<App> theClass = App.class;
-    String className = theClass.getSimpleName() + ".class",
-           classPath = theClass.getResource(className).toString();
+    String classPath = theClass.getResource(theClass.getSimpleName() + ".class").toString();
 
     if (!classPath.startsWith("jar")) return "";   // Class not from JAR
 
@@ -1070,8 +1069,7 @@ public final class Util
 
     try (InputStream is = new URL(manifestPath).openStream())
     {
-      Manifest manifest = new Manifest(is);
-      return manifest.getMainAttributes().getValue(key);
+      return new Manifest(is).getMainAttributes().getValue(key);
 
     } catch (IOException e) { noOp(); }
 

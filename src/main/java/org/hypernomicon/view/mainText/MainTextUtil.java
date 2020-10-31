@@ -817,10 +817,12 @@ public class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  static String MARGIN_STYLE = "margin-right: 20px;";
+  
   public static String mainTextHeadStyleTag()
   {
     return "<style>p { margin-top: 0em; margin-bottom: 0em; } " +
-           "body { font-family: arial; font-size: 10pt; } </style>";
+           "body { " + MARGIN_STYLE + " font-family: arial; font-size: 10pt; } </style>";
   }
 
 //---------------------------------------------------------------------------

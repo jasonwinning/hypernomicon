@@ -80,7 +80,7 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
   @Override public int compareTo(TreeRow o) { return record.getSortKey().compareTo(o.record.getSortKey()); }
 
   @SuppressWarnings("unchecked")
-  @Override public HDT_Record getRecord()   { return record; }
+  @Override public <HDT_T extends HDT_Record> HDT_T getRecord() { return (HDT_T) record; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

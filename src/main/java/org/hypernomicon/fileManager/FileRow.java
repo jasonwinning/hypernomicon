@@ -68,8 +68,9 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
   void setFolderTreeItem(TreeItem<FileRow> treeItem) { this.treeItem  = treeItem; }
 
   @SuppressWarnings("unchecked")
-  @Override public HDT_RecordWithPath getRecord() { return hyperPath.getRecord(); }
-  @Override public int hashCode()                 { return hyperPath == null ? 0 : nullSwitch(hyperPath.getFileName(), 0, FilePath::hashCode); }
+  @Override public <HDT_T extends HDT_RecordWithPath> HDT_T getRecord() { return (HDT_T) hyperPath.getRecord(); }
+  
+  @Override public int hashCode() { return hyperPath == null ? 0 : nullSwitch(hyperPath.getFileName(), 0, FilePath::hashCode); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

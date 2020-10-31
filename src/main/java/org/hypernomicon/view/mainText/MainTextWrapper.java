@@ -27,7 +27,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-
+import org.jsoup.nodes.Element;
 import org.hypernomicon.App;
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.KeywordLinkList.KeywordLink;
@@ -487,7 +487,14 @@ public final class MainTextWrapper
     MutableBoolean firstOpen = new MutableBoolean(false);
     int keyWorksSize = getNestedKeyWorkCount(curRecord, keyWorks);
 
-    if (doc.head().getElementsByTag("style").isEmpty())
+    Element styleTag = doc.head().getElementsByTag("style").stream().findFirst().orElse(null);
+    if ((styleTag != null) && (styleTag.outerHtml().contains("margin-right") == false))
+    {
+      doc.getElementsByTag("style").forEach(Element::remove);
+      styleTag = null;
+    }
+    
+    if (styleTag == null)
       doc.head().prepend(mainTextHeadStyleTag());
 
     if (doc.body().text().trim().isEmpty())

@@ -764,6 +764,9 @@ public class MainTextCtrlr
       if (borderPane.getTop() == tpKeyWorks)
         borderPane.setTop(null);
 
+    if (html.contains("body { font-family"))
+      html = html.replace("body { font-family", "body { " + MARGIN_STYLE + " font-family");
+    
     he.setHtmlText(disableLinks(html));
     taKeyWorks.setText(keyWorksText);
 

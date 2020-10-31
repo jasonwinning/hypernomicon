@@ -30,7 +30,7 @@ public class BibEntryRow extends AbstractRow<HDT_Work, BibEntryRow>
   public String getURL()             { return entry.getEntryURL(); }
 
   @SuppressWarnings("unchecked")
-  @Override public HDT_Work getRecord() { return getWork(); }
+  @Override public <HDT_T extends HDT_Work> HDT_T getRecord() { return (HDT_T) getWork(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
