@@ -259,7 +259,7 @@ public final class Const
     PREF_KEY_DOI_SRCH = "doiSrch",
     PREF_KEY_ISBN_SRCH = "isbnSrch";
 
-  public static final VersionNumber dbVersion = new VersionNumber(1, 19, 3); // 1.19.3
+  public static final VersionNumber dbVersion = new VersionNumber(1, 19, 4); // 1.19.4
 
   // This is the minimum version that the application version is able to load
   public static final Map<VersionNumber, VersionNumber> appVersionToMinRecordsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()

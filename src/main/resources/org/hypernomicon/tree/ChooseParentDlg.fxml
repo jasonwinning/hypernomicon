@@ -22,7 +22,7 @@
 <?import javafx.scene.control.TreeTableView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="819.0" prefWidth="1111.0" minHeight="300.0" minWidth="300.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.tree.ChooseParentDlgCtrlr">
+<AnchorPane minHeight="300.0" minWidth="300.0" prefHeight="700.0" prefWidth="1111.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.tree.ChooseParentDlgCtrlr">
    <children>
       <TreeTableView fx:id="ttv" layoutX="514.0" layoutY="280.0" prefHeight="790.0" prefWidth="1111.0" AnchorPane.bottomAnchor="29.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columns>

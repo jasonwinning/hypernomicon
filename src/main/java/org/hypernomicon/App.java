@@ -441,13 +441,8 @@ public final class App extends Application
 
     forEachHyperTab(HyperTab::setDividerPositions);
 
-    bibManagerDlg = BibManager.build();
-
-    bibManagerDlg.getStage().setX(appPrefs.getDouble(PREF_KEY_BM_WINDOW_X, bibManagerDlg.getStage().getX()));
-    bibManagerDlg.getStage().setY(appPrefs.getDouble(PREF_KEY_BM_WINDOW_Y, bibManagerDlg.getStage().getY()));
-
-    bibManagerDlg.setInitHeight(PREF_KEY_BM_WINDOW_HEIGHT);
-    bibManagerDlg.setInitWidth(PREF_KEY_BM_WINDOW_WIDTH);
+    bibManagerDlg = BibManager.build();    
+    bibManagerDlg.initBounds(PREF_KEY_BM_WINDOW_X, PREF_KEY_BM_WINDOW_Y, PREF_KEY_BM_WINDOW_HEIGHT, PREF_KEY_BM_WINDOW_WIDTH);
 
     db.addBibChangedHandler(() ->
     {
@@ -463,28 +458,13 @@ public final class App extends Application
     });
 
     fileManagerDlg = FileManager.build();
-
-    fileManagerDlg.getStage().setX(appPrefs.getDouble(PREF_KEY_FM_WINDOW_X, fileManagerDlg.getStage().getX()));
-    fileManagerDlg.getStage().setY(appPrefs.getDouble(PREF_KEY_FM_WINDOW_Y, fileManagerDlg.getStage().getY()));
-
-    fileManagerDlg.setInitHeight(PREF_KEY_FM_WINDOW_HEIGHT);
-    fileManagerDlg.setInitWidth(PREF_KEY_FM_WINDOW_WIDTH);
-
+    fileManagerDlg.initBounds(PREF_KEY_FM_WINDOW_X, PREF_KEY_FM_WINDOW_Y, PREF_KEY_FM_WINDOW_HEIGHT, PREF_KEY_FM_WINDOW_WIDTH);
+    
     previewWindow = PreviewWindow.build();
-
-    previewWindow.getStage().setX(appPrefs.getDouble(PREF_KEY_PREV_WINDOW_X, previewWindow.getStage().getX()));
-    previewWindow.getStage().setY(appPrefs.getDouble(PREF_KEY_PREV_WINDOW_Y, previewWindow.getStage().getY()));
-
-    previewWindow.setInitWidth(PREF_KEY_PREV_WINDOW_WIDTH);
-    previewWindow.setInitHeight(PREF_KEY_PREV_WINDOW_HEIGHT);
+    previewWindow.initBounds(PREF_KEY_PREV_WINDOW_X, PREF_KEY_PREV_WINDOW_Y, PREF_KEY_PREV_WINDOW_WIDTH, PREF_KEY_PREV_WINDOW_HEIGHT);
 
     contentsWindow = ContentsWindow.build();
-
-    contentsWindow.getStage().setX(appPrefs.getDouble(PREF_KEY_CONTENTS_WINDOW_X, contentsWindow.getStage().getX()));
-    contentsWindow.getStage().setY(appPrefs.getDouble(PREF_KEY_CONTENTS_WINDOW_Y, contentsWindow.getStage().getY()));
-
-    contentsWindow.setInitWidth(PREF_KEY_CONTENTS_WINDOW_WIDTH);
-    contentsWindow.setInitHeight(PREF_KEY_CONTENTS_WINDOW_HEIGHT);
+    contentsWindow.initBounds(PREF_KEY_CONTENTS_WINDOW_X, PREF_KEY_CONTENTS_WINDOW_Y, PREF_KEY_CONTENTS_WINDOW_WIDTH, PREF_KEY_CONTENTS_WINDOW_HEIGHT);
   }
 
 //---------------------------------------------------------------------------

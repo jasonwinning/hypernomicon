@@ -20,15 +20,21 @@ package org.hypernomicon.dialogs;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+
+import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.App;
 
 import java.io.IOException;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Point2D;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.robot.Robot;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
@@ -114,10 +120,40 @@ public abstract class HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final void setInitHeight(String prefKey)
+  public final void initBounds(String prefKeyX, String prefKeyY, String prefKeyHeight, String prefKeyWidth)
   {
-    initHeight = appPrefs.getDouble(prefKey, stagePane.getPrefHeight());
+    double val = appPrefs.getDouble(prefKeyX, -1.0);
+    if (val > 0)
+      dialogStage.setX(val);
+    
+    val = appPrefs.getDouble(prefKeyY, -1.0);
+    if (val > 0)
+      dialogStage.setY(val);
+    else if (SystemUtils.IS_OS_WINDOWS && (dialogStage.getY() < 30.0)) // Make sure Windows taskbar isn't at the top and covering the window controls
+      dialogStage.setY(30.0);
 
+    setInitHeight(prefKeyHeight);
+    setInitWidth(prefKeyWidth);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+  
+  private void setInitHeight(String prefKey)
+  {
+    double defHeight = stagePane.getPrefHeight();
+    Point2D point = new Robot().getMousePosition();
+    Screen screen = Screen.getScreensForRectangle(new Rectangle2D(point.getX(), point.getY(), 1, 1)).stream().findFirst().orElse(null);
+    
+    if (screen != null)
+    {
+      double screenHeight = screen.getBounds().getHeight();
+      if (defHeight > (screenHeight - 60.0))
+        defHeight = screenHeight - 60.0;
+    }
+    
+    initHeight = appPrefs.getDouble(prefKey, defHeight);
+    
     if (initHeight < 350)
       initHeight = stagePane.getPrefHeight();
   }
@@ -125,7 +161,7 @@ public abstract class HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final void setInitWidth(String prefKey)
+  private void setInitWidth(String prefKey)
   {
     initWidth = appPrefs.getDouble(prefKey, stagePane.getPrefWidth());
 
