@@ -19,7 +19,6 @@ package org.hypernomicon.util;
 
 import org.hypernomicon.App;
 import org.hypernomicon.HyperTask.HyperThread;
-import org.hypernomicon.dialogs.InternetCheckDlgCtrlr;
 import org.hypernomicon.dialogs.LockedDlgCtrlr;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
@@ -941,14 +940,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static boolean checkInternetConnection()
-  {
-    return InternetCheckDlgCtrlr.build().checkInternet("https://www.google.com/");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static void assignSB(StringBuilder sb, String s)
   {
     sb.replace(0, sb.length(), s);
@@ -957,7 +948,7 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String safeStr(String s) { return s == null ? "" : s; }
+  public static String safeStr(String s)           { return s == null ? "" : s; }
 
   public static boolean collEmpty(Collection<?> c) { return c == null ? true : c.isEmpty(); }
   public static boolean collEmpty(Map<?, ?> m)     { return m == null ? true : m.isEmpty(); }

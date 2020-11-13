@@ -41,11 +41,11 @@ public class InternetCheckDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static InternetCheckDlgCtrlr build()
+  public static boolean check()
   {
-    return create("InternetCheckDlg", appTitle, true);
+    return ((InternetCheckDlgCtrlr) create("InternetCheckDlg", appTitle, true)).checkInternet();
   }
-
+  
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -59,7 +59,7 @@ public class InternetCheckDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean checkInternet(String webAddress)
+  private boolean checkInternet()
   {
     okClicked = false;
 
@@ -68,7 +68,7 @@ public class InternetCheckDlgCtrlr extends HyperDlg
       HttpURLConnection con;
       try
       {
-        con = (HttpURLConnection) new URL(webAddress).openConnection();
+        con = (HttpURLConnection) new URL("https://www.google.com/").openConnection();
         con.connect();
 
         if (con.getResponseCode() == HttpURLConnection.HTTP_OK)

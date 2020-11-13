@@ -130,7 +130,7 @@ import javafx.util.StringConverter;
 public final class MainCtrlr
 {
   @FXML Tab tabOmniSelector;
-  @FXML TableView<HyperTableRow> tvFind;
+  @FXML private TableView<HyperTableRow> tvFind;
   @FXML private AnchorPane apFindBackground, apGoTo, apListGoTo, apStatus, midAnchorPane;
   @FXML private Button btnAdvancedSearch, btnBibMgr, btnDecrement, btnFileMgr, btnIncrement, btnMentions, btnPreviewWindow,
                        btnSave, btnDelete, btnRevert, btnCreateNew, btnBack, btnForward, btnSaveAll, btnTextSearch;
@@ -156,7 +156,8 @@ public final class MainCtrlr
   @FXML private ToolBar topToolBar;
   @FXML public Label lblStatus;
   @FXML public Menu mnuFavorites, mnuQueries;
-  @FXML public Tab tabArguments, tabDebates, tabFiles, tabInst, tabNotes, tabPersons, tabPositions, tabQueries, tabTerms, tabTree, tabWorks;
+  @FXML private Tab tabQueries;
+  @FXML public Tab tabArguments, tabDebates, tabFiles, tabInst, tabNotes, tabPersons, tabPositions, tabTerms, tabTree, tabWorks;
   @FXML public ToggleButton btnPointerLaunch;
 
   public final WindowStack windows = new WindowStack();
@@ -677,7 +678,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void btnForwardClick()
+  private void btnForwardClick()
   {
     if (btnForward.isDisabled() || cantSaveRecord()) return;
 
@@ -687,7 +688,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void btnBackClick()
+  private void btnBackClick()
   {
     if (btnBack.isDisabled() || cantSaveRecord()) return;
 
@@ -873,7 +874,7 @@ public final class MainCtrlr
 
         if (appPrefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))
         {
-          while ((result != mrIgnore) && (checkInternetConnection() == false))
+          while ((result != mrIgnore) && (InternetCheckDlgCtrlr.check() == false))
           {
             result = abortRetryIgnoreDialog("Warning: Internet connection check failed.");
 
@@ -1152,7 +1153,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void openDB(FilePath filePath)
+  private void openDB(FilePath filePath)
   {
     if (FilePath.isEmpty(filePath))
     {
@@ -1908,7 +1909,7 @@ public final class MainCtrlr
       internetNotCheckedYet = false;
 
       DialogResult result = mrRetry;
-      while ((result != mrIgnore) && (checkInternetConnection() == false))
+      while ((result != mrIgnore) && (InternetCheckDlgCtrlr.check() == false))
       {
         result = abortRetryIgnoreDialog("Warning: Internet connection check failed.");
 
@@ -1966,11 +1967,11 @@ public final class MainCtrlr
 
     return success;
   }
-
+  
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void saveHdbMRUs(List<String> mruList)
+  private void saveHdbMRUs(List<String> mruList)
   {
     mruList.removeIf(String::isBlank);
     removeDupsInStrList(mruList);
@@ -2031,7 +2032,7 @@ public final class MainCtrlr
   public TabEnum activeTabEnum()                    { return viewSequence.isEmpty() ? personTabEnum : viewSequence.tabEnumOfViewInCurrentSlot(); }
   public HyperTab<? extends HDT_Record,
                   ? extends HDT_Record> activeTab() { return viewSequence.isEmpty() ? null : viewSequence.tabOfViewInCurrentSlot(); }
-  public RecordType activeType()                    { return viewSequence.isEmpty() ? hdtPerson : viewSequence.getViewInCurrentSlot().getTabRecordType(); }
+  private RecordType activeType()                   { return viewSequence.isEmpty() ? hdtPerson : viewSequence.getViewInCurrentSlot().getTabRecordType(); }
   public HDT_Record activeRecord()                  { return viewSequence.isEmpty() ? null : activeTab().activeRecord(); }
   public HDT_Record viewRecord()                    { return viewSequence.isEmpty() ? null : activeTab().viewRecord(); }
 
