@@ -60,27 +60,7 @@
         <configuration>
           <generateBackupPoms>false</generateBackupPoms>
         </configuration>
-      </plugin>
-      
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>3.0.0</version>
-        <executions>
-          <execution>
-            <id>execution1</id> 
-            <phase>test</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target>
-                <copy file="${basedir}/lib/jxbrowser-license.jar" tofile="${basedir}/target/lib/jxbrowser-license.jar"/>
-              </target>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+      </plugin>  
       
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -119,7 +99,6 @@
               <mainClass>org.hypernomicon.Main</mainClass>
             </manifest>
             <manifestEntries>
-              <Class-Path>lib/jxbrowser-license.jar</Class-Path>
               <Build-Time>${maven.build.timestamp}</Build-Time>
               <Impl-Version>${project.version}</Impl-Version>
             </manifestEntries>

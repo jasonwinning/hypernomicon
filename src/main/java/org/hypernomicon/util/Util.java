@@ -232,10 +232,10 @@ public final class Util
   public static int parseHex(String value, int def)
   {
     if (value == null) return def;
-    
+
     if ((value.length() > 2) && ((value.startsWith("0x") || value.startsWith("0X"))))
       value = value.substring(2);
-    
+
     try { return Integer.parseInt(value, 16); }
     catch (NumberFormatException nfe) { return def; }
   }
@@ -993,7 +993,7 @@ public final class Util
 //---------------------------------------------------------------------------
 
   private static final String NORMALIZE_ID = "NFD; [:Nonspacing Mark:] Remove; NFC";
-  private static final Transliterator transliterator1 = Transliterator.getInstance("NFD; Any-Latin; NFC; " + NORMALIZE_ID),
+  private static final Transliterator transliterator1 = Transliterator.getInstance("NFD; Any-Latin; NFC; "   + NORMALIZE_ID),
                                       transliterator2 = Transliterator.getInstance("NFD; Latin-ASCII; NFC; " + NORMALIZE_ID);
   private static final Map<Character, String> charMap = new HashMap<>();
 
@@ -1475,7 +1475,7 @@ public final class Util
     int ndx = binarySearch(list, item);
     list.add(ndx >= 0 ? ndx + 1 : ~ndx, item);
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
