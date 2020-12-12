@@ -68,7 +68,7 @@ public class HyperCB implements CommitableWrapper
   private EventHandler<ActionEvent> onAction, innerOnAction;
   private boolean adjusting = false;
   public boolean somethingWasTyped, listenForActionEvents = true, dontCreateNewRecord = false, silentMode = false;
-  
+
   private List<HTCListener> listeners = new ArrayList<>();
 
   static final Map<ComboBox<HyperTableCell>, HyperCB> cbRegistry = new HashMap<>();
@@ -77,58 +77,15 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 
   public static interface HTCListener { public void changed(HyperTableCell oldValue, HyperTableCell newValue); }
-  
+
   public EventHandler<ActionEvent> getOnAction() { return onAction; }
   public void setChoicesChanged()                { populator.setChanged(null); }
   public ComboBox<HyperTableCell> getComboBox()  { return cb; }
   public void addListener(HTCListener listener)  { listeners.add(listener); }
+  public void triggerOnAction()                  { getOnAction().handle(new ActionEvent()); }
 
   @SuppressWarnings("unchecked")
   public <PopType extends Populator> PopType getPopulator() { return (PopType) populator; }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public HyperTableCell selectedHTC()
-  {
-    HyperTableCell htc = cb.getValue();
-    String str = cb.getEditor().getText();
-
-    return (htc == null) || (htc.getText().equals(str) == false) ?
-      new HyperTableCell(str, selectedType())
-    :
-      htc;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void setInnerOnAction(EventHandler<ActionEvent> onAction)
-  {
-    if (onAction == null) return;
-    innerOnAction = onAction;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void triggerOnAction()
-  {
-    getOnAction().handle(new ActionEvent());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void setOnAction(EventHandler<ActionEvent> onAction)
-  {
-    if (onAction == null) return;
-
-    if (populator instanceof VariablePopulator)
-      innerOnAction = onAction;
-    else
-      this.onAction = onAction;
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -249,6 +206,42 @@ public class HyperCB implements CommitableWrapper
   {
     if (isInTable())
       ((ComboBoxCell)(cb.getParent())).commit();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public HyperTableCell selectedHTC()
+  {
+    HyperTableCell htc = cb.getValue();
+    String str = cb.getEditor().getText();
+
+    return (htc == null) || (htc.getText().equals(str) == false) ?
+      new HyperTableCell(str, selectedType())
+    :
+      htc;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void setInnerOnAction(EventHandler<ActionEvent> onAction)
+  {
+    if (onAction != null)
+      innerOnAction = onAction;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void setOnAction(EventHandler<ActionEvent> onAction)
+  {
+    if (onAction == null) return;
+
+    if (populator instanceof VariablePopulator)
+      innerOnAction = onAction;
+    else
+      this.onAction = onAction;
   }
 
 //---------------------------------------------------------------------------
@@ -454,7 +447,7 @@ public class HyperCB implements CommitableWrapper
           {
             if (table == null)
             {
-              setChoicesChanged();            // A new record has been created so force it to repopulate
+              populate(true);                  // A new record has been created so force it to repopulate
               selectID(npdc.getPerson().getID());
             }
             else
@@ -499,9 +492,9 @@ public class HyperCB implements CommitableWrapper
   public List<HyperTableCell> populate(boolean force)
   {
     HyperTableCell cell = cb.getValue();
-    
+
     silentMode = true;
-    
+
     List<HyperTableCell> choices = populator.populate(row, force);
     cb.setItems(null);
     cb.setItems(FXCollections.observableList(choices));
@@ -510,7 +503,7 @@ public class HyperCB implements CommitableWrapper
       cb.getSelectionModel().select(cell);
 
     silentMode = false;
-    
+
     if ((choices.size() > 0) && HyperTableCell.isEmpty(cell))
     {
       ListView<HyperTableCell> lv = getCBListView(cb);
@@ -676,7 +669,7 @@ public class HyperCB implements CommitableWrapper
     {
       somethingWasTyped = false;
       selectID(typedMatch.getID());
-      getOnAction().handle(new ActionEvent());
+      triggerOnAction();
     }
   }
 

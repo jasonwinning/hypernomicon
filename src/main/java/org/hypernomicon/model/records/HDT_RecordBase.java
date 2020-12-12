@@ -91,7 +91,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final Set<Tag> getAllTags()          { return items.keySet().isEmpty() ? EnumSet.noneOf(Tag.class) : EnumSet.copyOf(items.keySet()); }
   @Override public final boolean getTagBoolean(Tag tag) { return ((HDI_OnlineBoolean)(items.get(tag))).get(); }
   @Override public final boolean hasStoredState()       { return xmlState.stored; }
-  @Override public final void updateSortKey()           { dataset.updateSortKey(makeSortKey(), id); }
+  @Override public final void updateSortKey()           { dataset.updateSortKey(this); }
   @Override public final HDI_Schema getSchema(Tag tag)  { return nullSwitch(items.get(tag), null, HDI_Base::getSchema); }
   @Override public final RecordType getType()           { return type; }
 

@@ -115,9 +115,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
     this.type = type;
   }
 
-  // This should ONLY ever be called by HDT_RecordBase.updateSortKey!!!
-  public void updateSortKey(String newKey, int id) { core.setKey(id, newKey); }
-
+  public void updateSortKey(HDT_Record record)     { core.setKey(record.getID(), record.makeSortKey()); }
   int getNextID()                                  { int id = 0; while (true) if (idAvailable(++id)) return id; }
   HDI_Schema getSchema(Tag tag)                    { return tagToSchema.get(tag); }
   Collection<HDI_Schema> getSchemas()              { return tagToSchema.values(); }

@@ -106,7 +106,7 @@
                         <MenuItem id="80" mnemonicParsing="false" onAction="#mnuFolderClick" text="Search results" />
                       <MenuItem id="70" mnemonicParsing="false" onAction="#mnuFolderClick" text="Database root folder" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <Menu mnemonicParsing="false" text="Copy to clipboard">
+                        <Menu mnemonicParsing="false" text="Copy path to clipboard">
                           <items>
                               <MenuItem id="11" mnemonicParsing="false" onAction="#mnuFolderClick" text="Papers" />
                               <MenuItem id="21" mnemonicParsing="false" onAction="#mnuFolderClick" text="Books" />
