@@ -18,6 +18,9 @@
 package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+
+import java.util.function.Predicate;
+
 import static org.hypernomicon.model.HyperDB.*;
 
 import org.hypernomicon.model.records.HDT_Record;
@@ -46,19 +49,19 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <HDT_T2 extends HDT_Record> RecordDropdownDlgCtrlr<HDT_T2> build(RecordType recordType)
+  public static <HDT_T2 extends HDT_Record> RecordDropdownDlgCtrlr<HDT_T2> build(RecordType recordType, Predicate<Integer> filter)
   {
     RecordDropdownDlgCtrlr<HDT_T2> rdd = create("RecordDropdownDlg", "Select a Term Record to Merge With", true);
-    rdd.init(recordType);
+    rdd.init(recordType, filter);
     return rdd;
   }
-
+  
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void init(RecordType recordType)
-  {
-    hcbRecord = new HyperCB(cbRecord, ctDropDownList, new StandardPopulator(recordType));
+  private void init(RecordType recordType, Predicate<Integer> filter)
+  {    
+    hcbRecord = new HyperCB(cbRecord, ctDropDownList, new StandardPopulator(recordType, filter, false));
     typeName = db.getTypeName(recordType);
   }
 

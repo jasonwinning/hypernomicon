@@ -52,13 +52,13 @@ public class RecordSelectDlgCtrlr extends HyperDlg
 
   public static RecordSelectDlgCtrlr build(Populator populator, List<HyperTableCell> list, String queryStr)
   {
-    return ((RecordSelectDlgCtrlr) create("RecordSelectDlg", "Choose a Record", true)).init(list, populator, queryStr);
+    return ((RecordSelectDlgCtrlr) create("RecordSelectDlg", "Choose a Record", true)).init(populator, list, queryStr);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private RecordSelectDlgCtrlr init(List<HyperTableCell> list, Populator populator, String queryStr)
+  private RecordSelectDlgCtrlr init(Populator populator, List<HyperTableCell> list, String queryStr)
   {
     if (collEmpty(list)) return this;
     RecordType objType = HyperTableCell.getCellType(list.get(0));

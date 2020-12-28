@@ -300,7 +300,8 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   {
     if (ui.cantSaveRecord()) return;
 
-    RecordDropdownDlgCtrlr<HDT_Term> rdd = RecordDropdownDlgCtrlr.build(hdtTerm);
+    RecordDropdownDlgCtrlr<HDT_Term> rdd = RecordDropdownDlgCtrlr.build(hdtTerm, id -> id != curTerm.getID());
+    
     if (rdd.showModal() == false) return;
 
     HDT_Term otherTerm = rdd.getRecord();
