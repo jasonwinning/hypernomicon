@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2020 Jason Winning
+ * Copyright 2015-2021 Jason Winning
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,12 +55,12 @@ public class RecordDropdownDlgCtrlr<HDT_T extends HDT_Record> extends HyperDlg
     rdd.init(recordType, filter);
     return rdd;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private void init(RecordType recordType, Predicate<Integer> filter)
-  {    
+  {
     hcbRecord = new HyperCB(cbRecord, ctDropDownList, new StandardPopulator(recordType, filter, false));
     typeName = db.getTypeName(recordType);
   }
