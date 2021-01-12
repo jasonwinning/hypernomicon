@@ -214,7 +214,7 @@ public class PictureDlgCtrlr extends HyperDlg
 
     ivPicture.setOnMouseReleased(event ->
     {
-      if (picture == null) return;
+      if ((mouseStart == null) || (picture == null)) return;
 
       mouseEnd = mouseCoordsToPercent(event.getX(), event.getY());
 
@@ -223,7 +223,7 @@ public class PictureDlgCtrlr extends HyperDlg
 
     ivPicture.setOnMouseDragged(event ->
     {
-      if (picture == null) return;
+      if ((mouseStart == null) || (picture == null)) return;
 
       mouseEnd = mouseCoordsToPercent(event.getX(), event.getY());
 

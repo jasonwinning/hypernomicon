@@ -82,7 +82,7 @@ public class HyperCB implements CommitableWrapper
   public void setChoicesChanged()                { populator.setChanged(null); }
   public ComboBox<HyperTableCell> getComboBox()  { return cb; }
   public void addListener(HTCListener listener)  { listeners.add(listener); }
-  public void triggerOnAction()                  { getOnAction().handle(new ActionEvent()); }
+  public void triggerOnAction()                  { getOnAction().handle(new ActionEvent(null, cb)); }
 
   @SuppressWarnings("unchecked")
   public <PopType extends Populator> PopType getPopulator() { return (PopType) populator; }
