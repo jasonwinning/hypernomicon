@@ -24,6 +24,7 @@ import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
@@ -75,6 +76,7 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.json.simple.parser.ParseException;
 
@@ -329,6 +331,15 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public FilePath extPath()
+  {
+    String path = appPrefs.get(PREF_KEY_EXT_FILES_1, "");
+    return path.isBlank() ? null : new FilePath(path);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @SuppressWarnings({ "unused", "unchecked" })
   public <HDT_T extends HDT_Record> Set<HDT_T> getOrphans(RelationType relType, Class<HDT_T> klazz)
   {
@@ -569,7 +580,7 @@ public final class HyperDB
     if (getLockOwner() != null)
       return false;
 
-    FilePath newRootFilePath = new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, System.getProperty("user.dir")));
+    FilePath newRootFilePath = new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, userWorkingDirectory()));
     boolean dbChanged = false;
 
     if (FilePath.isEmpty(rootFilePath) || (rootFilePath.equals(newRootFilePath) == false))
@@ -2026,6 +2037,8 @@ public final class HyperDB
       addPointerMulti(hdtWork, rtInvestigationOfWork, tagInvestigation);
       addPointerMulti(hdtWork, rtLabelOfWork, tagWorkLabel);
       addStringItem(hdtWork, tagWebURL);
+      addStringItem(hdtWork, tagStartPageNum);
+      addStringItem(hdtWork, tagEndPageNum);
       addStringItem(hdtWork, tagYear);
       addBibEntryKeyItem();
       addStringItem(hdtWork, tagMiscBib);
@@ -2392,6 +2405,14 @@ public final class HyperDB
 
       default                            : messageDialog("Internal error #59294", mtError); break;
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public FilePath resolveExtFilePath(String url)
+  {
+    return extPath().resolve(FilenameUtils.separatorsToSystem(url.substring(7)));
   }
 
 //---------------------------------------------------------------------------

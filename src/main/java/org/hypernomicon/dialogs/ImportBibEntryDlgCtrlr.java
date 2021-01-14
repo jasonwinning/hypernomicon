@@ -23,6 +23,7 @@ import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.File;
@@ -185,10 +186,10 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
                                              new FileChooser.ExtensionFilter("BibTeX File (*.bib)", "*.bib"),
                                              new FileChooser.ExtensionFilter("All Files (*.*)", "*.*"));
 
-    File dir = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, System.getProperty("user.dir")));
+    File dir = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, userWorkingDirectory()));
 
     if (dir.exists() == false)
-      dir = new File(System.getProperty("user.dir"));
+      dir = new File(userWorkingDirectory());
 
     fileChooser.setInitialDirectory(dir);
 

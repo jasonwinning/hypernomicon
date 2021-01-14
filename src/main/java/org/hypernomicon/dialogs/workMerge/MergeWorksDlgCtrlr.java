@@ -240,7 +240,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
       {
         if (singleBD != null)
         {
-          if (singleBD.fieldsAreEqual(bibFieldEnum, bd2) == false)
+          if (singleBD.fieldsAreEqual(bibFieldEnum, bd2, false) == false)
             fieldsEqual = false;
         }
         else
@@ -253,7 +253,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
       {
         if (singleBD != null)
         {
-          if (singleBD.fieldsAreEqual(bibFieldEnum, bd3) == false)
+          if (singleBD.fieldsAreEqual(bibFieldEnum, bd3, false) == false)
             fieldsEqual = false;
         }
         else
@@ -266,7 +266,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
       {
         if (singleBD != null)
         {
-          if (singleBD.fieldsAreEqual(bibFieldEnum, bd4) == false)
+          if (singleBD.fieldsAreEqual(bibFieldEnum, bd4, false) == false)
             fieldsEqual = false;
         }
         else

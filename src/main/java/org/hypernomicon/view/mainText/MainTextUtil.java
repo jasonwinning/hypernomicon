@@ -205,7 +205,7 @@ public class MainTextUtil
         if (recordType == hdtWork)
         {
           HDT_Work work = db.works.getByID(recordID);
-          previewWindow.setPreview(pvsOther, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+          previewWindow.setPreview(pvsOther, work.previewFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
         }
         else
         {
@@ -538,17 +538,17 @@ public class MainTextUtil
 //---------------------------------------------------------------------------
 
   // Returns HTML for record description that is being embedded within another record's description
-  
+
   static String getSecondaryDisplayHtml(HDT_RecordWithConnector recordWMT, MutableInt tagNdx, TextViewInfo viewInfo)
   {
     MainText mainText = recordWMT.getMainText();
     List<KeyWork> keyWorks = mainText.getKeyWorks();
     Document doc = Jsoup.parse(prepHtmlForDisplay(mainText.getHtml()));
     String embeddedHtml = doc.body().html();
-    
+
     if (collEmpty(keyWorks))
       return embeddedHtml;
-    
+
     boolean sortByName = db.prefs.getBoolean(PREF_KEY_KEY_WORK_SORT_BY_NAME, true);
 
     StringBuilder secondaryHtml = new StringBuilder("<div class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\" style=\"display: " + (sortByName ? "none" : "block") + ";\"><b>Key Works:&nbsp;</b>");
@@ -558,7 +558,7 @@ public class MainTextUtil
     appendKeyWorkSpanAndBody(recordWMT, secondaryHtml, true, tagNdx, false, viewInfo);
 
     secondaryHtml.append("</div>");
-    
+
     if ((ultraTrim(convertToSingleLine(mainText.getPlain())).length() > 0) || mainText.getHtml().contains("&lt;" + EMBEDDED_FILE_TAG + " "))
       secondaryHtml.append("<br>" + embeddedHtml);
 
@@ -818,7 +818,7 @@ public class MainTextUtil
 //---------------------------------------------------------------------------
 
   static String MARGIN_STYLE = "margin-right: 20px;";
-  
+
   public static String mainTextHeadStyleTag()
   {
     return "<style>p { margin-top: 0em; margin-bottom: 0em; } " +

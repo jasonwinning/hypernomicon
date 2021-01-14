@@ -286,6 +286,14 @@ public class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static String userWorkingDirectory()
+  {
+    return System.getProperty("user.dir");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static String hostName = null;
 
   private static String formatName(String name)

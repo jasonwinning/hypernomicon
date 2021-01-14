@@ -483,12 +483,12 @@ public class PreviewWindow extends HyperDlg
 
   // To be called only from ContentsWindow
 
-  void updatePageNumber(HDT_Work work, HDT_WorkFile workFile, int pageNum, boolean isStart)
+  void updatePageNumber(HDT_Work work, FilePath filePath, int pageNum, boolean isStart)
   {
     srcToWrapper.values().forEach(wrapper ->
     {
       if (FilePath.isEmpty(wrapper.getFilePath()) == false)
-        if (wrapper.getFilePath().equals(workFile.filePath()) && (wrapper.getRecord() == work))
+        if (wrapper.getFilePath().equals(filePath) && (wrapper.getRecord() == work))
         {
           wrapper.setWorkPageFromContentsWindow(pageNum, isStart);
 
@@ -599,7 +599,13 @@ public class PreviewWindow extends HyperDlg
         btnContents.setText("No other records...");
 
         HDT_RecordWithPath showingFile = HyperPath.getRecordFromFilePath(curWrapper().getFilePath());
-        if (showingFile.getType() == hdtWorkFile)
+
+        if (showingFile == null) // External file (specified in URL field) is being previewed
+        {
+          btnContents.setDisable(false);
+          btnContents.setText("Show contents");
+        }
+        else if (showingFile.getType() == hdtWorkFile)
         {
           HDT_WorkFile workFile = (HDT_WorkFile) showingFile;
 
@@ -660,7 +666,10 @@ public class PreviewWindow extends HyperDlg
     if ((record != null) && (record.getType() == hdtWorkFile))
       workFile = (HDT_WorkFile) record;
 
-    contentsWindow.update(workFile, pageNum, true);
+    if (workFile == null)
+      contentsWindow.update(curWrapper().getFilePath(), pageNum, true);
+    else
+      contentsWindow.update(workFile, pageNum, true);
 
     disablePreviewUpdating = false;
   }

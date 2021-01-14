@@ -633,7 +633,7 @@ public final class MainCtrlr
 
     mnuAutoImport.setSelected(appPrefs.getBoolean(PREF_KEY_AUTO_IMPORT, true));
     mnuAutoImport.setOnAction(event -> appPrefs.putBoolean(PREF_KEY_AUTO_IMPORT, mnuAutoImport.isSelected()));
-    
+
     mnuChangeID.setVisible(app.debugging());
 
 //---------------------------------------------------------------------------
@@ -969,7 +969,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 
   // Similar to PDFJSWrapper.closeWindows
-  
+
   private void closeWindows(boolean exitingApp)
   {
     tfOmniGoTo.clear();
@@ -987,7 +987,7 @@ public final class MainCtrlr
 
     if ((contentsWindow != null) && contentsWindow.getStage().isShowing())
       contentsWindow.getStage().close();
-    
+
     SymbolPickerDlgCtrlr.close();
   }
 
@@ -1161,10 +1161,10 @@ public final class MainCtrlr
 
       fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(appTitle + " files (*.hdb)", "*.hdb"));
 
-      File dir = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, System.getProperty("user.dir")));
+      File dir = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, userWorkingDirectory()));
 
       if (dir.exists() == false)
-        dir = new File(System.getProperty("user.dir"));
+        dir = new File(userWorkingDirectory());
 
       fileChooser.setInitialDirectory(dir);
 
@@ -1209,7 +1209,7 @@ public final class MainCtrlr
 
     dirChooser.setTitle("Select an empty folder in which to create database");
 
-    dirChooser.setInitialDirectory(file.exists() && file.isDirectory() ? file : new File(System.getProperty("user.dir")));
+    dirChooser.setInitialDirectory(file.exists() && file.isDirectory() ? file : new File(userWorkingDirectory()));
 
     FilePath rootPath = windows.showDirDialog(dirChooser, stage);
     if (FilePath.isEmpty(rootPath)) return;
@@ -1967,7 +1967,7 @@ public final class MainCtrlr
 
     return success;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

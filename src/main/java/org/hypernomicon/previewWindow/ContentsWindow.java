@@ -20,17 +20,20 @@ package org.hypernomicon.previewWindow;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
+import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.tabs.WorkTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -49,9 +52,10 @@ public class ContentsWindow extends HyperDlg
 {
   @FXML private TableView<HyperTableRow> tvContents;
 
-  public static final String dialogTitle = "Contents";
+  private static final String dialogTitle = "Contents";
   private HyperTable htContents;
   private HDT_WorkFile curWorkFile;
+  private FilePath curFilePath;
   private boolean mouseAlreadyHere = false;
 
   @Override protected boolean isValid() { return true; }
@@ -140,7 +144,7 @@ public class ContentsWindow extends HyperDlg
       if (Boolean.TRUE.equals(newValue) == false) return;
 
       if (!mouseAlreadyHere)
-        update(curWorkFile, previewWindow.curPage(), false);
+        update(previewWindow.curPage(), false);
 
       ui.windows.push(dialogStage);
     });
@@ -160,7 +164,7 @@ public class ContentsWindow extends HyperDlg
 
   private void setPageNum(HDT_Work work, int num, boolean isStart)
   {
-    if ((ui.activeTabEnum() == workTabEnum) && (ui.activeTab().activeRecord() == work))
+    if ((ui.activeTabEnum() == workTabEnum) && (curWorkFile != null) && (ui.activeTab().activeRecord() == work))
       ui.workHyperTab().setPageNum(curWorkFile, num, isStart);
     else
     {
@@ -170,30 +174,70 @@ public class ContentsWindow extends HyperDlg
         work.setEndPageNum(curWorkFile, num);
     }
 
-    previewWindow.updatePageNumber(work, curWorkFile, num, isStart);
+    previewWindow.updatePageNumber(work, curWorkFile != null ? curWorkFile.filePath() : curFilePath, num, isStart);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void update(HDT_WorkFile workFile, int curPage, boolean setFocus)
+  void update(HDT_WorkFile workFile, int curPage, boolean setFocus)
   {
-    Property<HyperTableRow> rowToSelect = new SimpleObjectProperty<>(null);
-
-    clear();
+    clearDisplay();
 
     if (workFile == null) return;
 
     curWorkFile = workFile;
+    curFilePath = null;
 
-    dialogStage.setTitle(dialogTitle + " - " + workFile.getPath().getNameStr());
+    update(curPage, setFocus);
+  }
 
-    List<HDT_Work> works = new ArrayList<>(workFile.works);
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void update(FilePath filePath, int curPage, boolean setFocus)
+  {
+    clearDisplay();
+
+    if (FilePath.isEmpty(filePath)) return;
+
+    curWorkFile = null;
+    curFilePath = filePath;
+
+    update(curPage, setFocus);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void update(int curPage, boolean setFocus)
+  {
+    Property<HyperTableRow> rowToSelect = new SimpleObjectProperty<>(null);
+
+    clearDisplay();
+
+    if ((curWorkFile == null) && (curFilePath == null)) return;
+
+    List<HDT_Work> works;
+
+    if (curWorkFile == null)
+    {
+      dialogStage.setTitle(dialogTitle + " - " + curFilePath.getNameOnly());
+
+      works = db.works.stream().filter(work -> work.getURL().startsWith(EXT_1))
+                               .filter(work -> db.resolveExtFilePath(work.getURL()).equals(curFilePath))
+                               .collect(Collectors.toList());
+    }
+    else
+    {
+      dialogStage.setTitle(dialogTitle + " - " + curWorkFile.getPath().getNameStr());
+      works = new ArrayList<>(curWorkFile.works);
+    }
 
     works.sort(sortBasis(work ->
     {
-      int startPage = work.getStartPageNum(workFile);
-      return startPage < 0 ? Integer.MAX_VALUE : startPage;      
+      int startPage = work.getStartPageNum(curWorkFile);
+      return startPage < 0 ? Integer.MAX_VALUE : startPage;
     }));
 
     htContents.buildRows(works, (row, work) ->
@@ -224,10 +268,10 @@ public class ContentsWindow extends HyperDlg
       row.setCellValue(2, work, title);
       row.setCellValue(3, work, year, CellSortMethod.smNumeric);
 
-      int pageNum = wtc == null ? -1 : wtc.getCurPageNum(work, workFile, true);
+      int pageNum = wtc == null ? -1 : wtc.getCurPageNum(work, curWorkFile, true);
 
       if (pageNum == -1)
-        pageNum = work.getStartPageNum(workFile);
+        pageNum = work.getStartPageNum(curWorkFile);
 
       if (pageNum > -1)
       {
@@ -237,10 +281,10 @@ public class ContentsWindow extends HyperDlg
           rowToSelect.setValue(row);
       }
 
-      pageNum = wtc == null ? -1 : wtc.getCurPageNum(work, workFile, false);
+      pageNum = wtc == null ? -1 : wtc.getCurPageNum(work, curWorkFile, false);
 
       if (pageNum == -1)
-        pageNum = work.getEndPageNum(workFile);
+        pageNum = work.getEndPageNum(curWorkFile);
 
       if (pageNum > -1)
       {
@@ -260,11 +304,20 @@ public class ContentsWindow extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear()
+  private void clearDisplay()
   {
-    curWorkFile = null;
     dialogStage.setTitle(dialogTitle);
     htContents.clear();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  void clear()
+  {
+    curWorkFile = null;
+    curFilePath = null;
+    clearDisplay();
   }
 
 //---------------------------------------------------------------------------

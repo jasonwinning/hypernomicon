@@ -43,6 +43,7 @@ import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.model.relations.ObjectGroup;
+import org.hypernomicon.util.filePath.FilePath;
 
 public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithPath, HDT_RecordWithAuthors<WorkAuthors>
 {
@@ -100,8 +101,6 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   public String getDOI()         { return getTagString(tagDOI); }
   public List<String> getISBNs() { return matchISBN(getTagString(tagISBN)); }
   public String getURL()         { return getTagString(tagWebURL); }
-  public int getStartPageNum()   { return workFiles.isEmpty() ? -1 : getStartPageNum(workFiles.get(0)); }
-  public int getEndPageNum()     { return workFiles.isEmpty() ? -1 : getEndPageNum(workFiles.get(0)); }
   public boolean canLaunch()     { return ! (getPath().isEmpty() && getURL().isEmpty()); }
 
   public void setYear(String str)        { updateTagString(tagYear, str); }
@@ -125,10 +124,67 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
   // pass -1 to clear the value
 
-  public void setStartPageNum(HDT_WorkFile workFile, int val) { db.updateNestedString(this, workFile, tagStartPageNum, val < 0 ? "" : String.valueOf(val)); }
-  public int getStartPageNum(HDT_WorkFile workFile)           { return parseInt(db.getNestedString(this, workFile, tagStartPageNum), -1); }
-  public void setEndPageNum(HDT_WorkFile workFile, int val)   { db.updateNestedString(this, workFile, tagEndPageNum, val < 0 ? "" : String.valueOf(val)); }
-  public int getEndPageNum(HDT_WorkFile workFile)             { return parseInt(db.getNestedString(this, workFile, tagEndPageNum), -1); }
+  public void setStartPageNum(HDT_WorkFile workFile, int val)
+  {
+    if (workFile == null)
+      updateTagString(tagStartPageNum, val < 0 ? "" : String.valueOf(val));
+    else
+      db.updateNestedString(this, workFile, tagStartPageNum, val < 0 ? "" : String.valueOf(val));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  // pass -1 to clear the value
+
+  public void setEndPageNum(HDT_WorkFile workFile, int val)
+  {
+    if (workFile == null)
+      updateTagString(tagEndPageNum, val < 0 ? "" : String.valueOf(val));
+    else
+      db.updateNestedString(this, workFile, tagEndPageNum, val < 0 ? "" : String.valueOf(val));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public int getStartPageNum(HDT_WorkFile workFile)
+  {
+    return  workFile == null ? getStartPageNum() : parseInt(db.getNestedString(this, workFile, tagStartPageNum), -1);
+  }
+
+  public int getEndPageNum(HDT_WorkFile workFile)
+  {
+    return workFile == null ? getEndPageNum() : parseInt(db.getNestedString(this, workFile, tagEndPageNum), -1);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public int getStartPageNum()
+  {
+    if (workFiles.isEmpty() == false)
+      return getStartPageNum(workFiles.get(0));
+
+    if (getURL().startsWith(EXT_1))
+      return parseInt(getTagString(tagStartPageNum), -1);
+
+    return -1;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public int getEndPageNum()
+  {
+    if (workFiles.isEmpty() == false)
+      return getEndPageNum(workFiles.get(0));
+
+    if (getURL().startsWith(EXT_1))
+      return parseInt(getTagString(tagEndPageNum), -1);
+
+    return -1;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -286,6 +342,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     HDT_WorkFile workFile = db.workFiles.getByID(newID);
 
     getObjList(rtWorkFileOfWork).add(workFile);
+    clearExtFilePageNums();
 
     workFile.works.forEach(work ->
     {
@@ -301,19 +358,33 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public void clearExtFilePageNums()
+  {
+    updateTagString(tagStartPageNum, "");
+    updateTagString(tagEndPageNum  , "");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public void launch(int pageNum)
   {
-    if (workFiles.isEmpty() && getURL().isEmpty()) return;
+    if (workFiles.isEmpty() && getURL().isBlank()) return;
 
     viewNow();
 
+    if (pageNum < 1) pageNum = getStartPageNum();
+
     if (getPath().isEmpty())
     {
-      openWebLink(getURL());
-      return;
+      String url = getURL();
+
+      if (url.startsWith(EXT_1))
+        launchWorkFile(db.resolveExtFilePath(url), pageNum);
+      else
+        openWebLink(url);
     }
 
-    if (pageNum < 1) pageNum = getStartPageNum();
     launchWorkFile(filePath(), pageNum);
   }
 
@@ -429,6 +500,29 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     }
 
     return new WorkBibData(this);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean canPreview()
+  {
+    return FilePath.isEmpty(previewFilePath());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public FilePath previewFilePath()
+  {
+    if (workFiles.isEmpty() == false)
+      return filePath();
+
+    String url = getURL();
+    if (url.startsWith(EXT_1))
+      return db.resolveExtFilePath(url);
+
+    return null;
   }
 
 //---------------------------------------------------------------------------

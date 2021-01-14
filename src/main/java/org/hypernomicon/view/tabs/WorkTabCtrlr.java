@@ -82,6 +82,7 @@ import java.util.function.Predicate;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import javafx.application.Platform;
@@ -105,6 +106,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.DirectoryChooser;
@@ -407,7 +410,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
       HDT_WorkFile workFile = newValue.getRecord();
       if (workFile == null)
-        previewWindow.setPreview(pvsWorkTab, curWork.filePath(), getCurPageNum(curWork, null, true), getCurPageNum(curWork, null, false), curWork);
+        previewWindow.setPreview(pvsWorkTab, curWork.previewFilePath(), getCurPageNum(curWork, null, true), getCurPageNum(curWork, null, false), curWork);
       else
         previewWindow.setPreview(pvsWorkTab, workFile.filePath(), getCurPageNum(curWork, workFile, true), getCurPageNum(curWork, workFile, false), curWork);
     });
@@ -417,7 +420,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if ((newValue == null) || (oldValue == newValue)) return;
 
       HDT_Work subWork = newValue.getRecord();
-      previewWindow.setPreview(pvsWorkTab, subWork.filePath(), subWork.getStartPageNum(), subWork.getEndPageNum(), subWork);
+      previewWindow.setPreview(pvsWorkTab, subWork.previewFilePath(), subWork.getStartPageNum(), subWork.getEndPageNum(), subWork);
     });
 
     htMiscFiles = new HyperTable(tvMiscFiles, 1, true, PREF_KEY_HT_WORK_MISC);
@@ -487,9 +490,15 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     btnUseISBN.setOnAction(event -> useISBNClick());
     btnAutofill.setOnAction(event -> btnAutofillClick());
 
-    btnLaunch.setOnAction(event -> curWork.launch(getCurPageNum(curWork, null, true)));
+    btnLaunch.setOnAction(event ->
+    {
+      if (curWork.workFiles.isEmpty())
+        urlClick();
+      else
+        curWork.launch(getCurPageNum(curWork, null, true));
+    });
 
-    btnURL.setOnAction(event -> openWebLink(tfURL.getText()));
+    btnURL.setOnAction(event -> urlClick());
 
     btnLargerWork.setOnAction(event ->
     {
@@ -522,10 +531,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         }
 
         changeToNormalMode();
-        
+
         return;
       }
-           
+
       if (oldEnumVal != wtUnenteredSet)
       {
         if (oldEnumVal != wtNone)
@@ -610,6 +619,19 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     tabGoogleBooks.setOnClosed(event -> { taGoogleBooks.clear(); googleBD  .set(null); });
 
     btnMergeBib.setOnAction(event -> btnMergeBibClick());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void urlClick()
+  {
+    String url = tfURL.getText();
+
+    if (url.startsWith(EXT_1))
+      launchWorkFile(db.resolveExtFilePath(url), curWork.getStartPageNum());
+    else
+      openWebLink(url);
   }
 
 //---------------------------------------------------------------------------
@@ -825,7 +847,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
           if (curWork.authorRecords.get(0).getLastName().length() > 0)
             tfSearchKey.setText(makeWorkSearchKey(curWork.getAuthors(), curWork.getYear(), curWork));
 
-    FilePath filePath = curWork.filePath();
+    FilePath filePath = curWork.previewFilePath();
     boolean updatePreview = true;
 
     if (curWork == lastWork)
@@ -1577,6 +1599,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         noIsbnUpdate = true;
     }
 
+    if (tfURL.getText().startsWith(EXT_1) == false)
+      curWork.clearExtFilePageNums();
+
     if (workTypeEnumVal == wtUnenteredSet)
     {
       curWork.setYear("");
@@ -2008,6 +2033,38 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     tabPane.getSelectionModel().select(tabWorkFiles);
 
     htWorkFiles.selectRowByRecord(workFile);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public boolean processDragEvent(DragEvent event)
+  {
+    if (tfURL.localToScene(tfURL.getBoundsInLocal()).contains(event.getSceneX(), event.getSceneY()) == false)
+      return false;
+
+    Dragboard board = event.getDragboard();
+    List<File> files = board.getFiles();
+    if (collEmpty(files))
+      return false;
+
+    FilePath filePath = new FilePath(files.get(0));
+    if (db.getRootPath().isSubpath(filePath))
+      return false;
+
+    FilePath extPath = db.extPath();
+    if (FilePath.isEmpty(extPath))
+    {
+      messageDialog("No external file path has been set in Settings.", mtError);
+      return true;
+    }
+
+    if (extPath.isSubpath(filePath) == false)
+      return false;
+
+    tfURL.setText(EXT_1 + FilenameUtils.separatorsToUnix(extPath.relativize(filePath).toString()));
+
+    return true;
   }
 
 //---------------------------------------------------------------------------

@@ -350,14 +350,14 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     }
 
     for (HDT_Work work : curPerson.works)
-      if (work.workFiles.isEmpty() == false)
+      if (work.canPreview())
       {
-        previewWindow.setPreview(pvsPersonTab, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+        previewWindow.setPreview(pvsPersonTab, work.previewFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
         return;
       }
 
     HDT_Work work = curPerson.works.get(0);
-    previewWindow.setPreview(pvsPersonTab, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+    previewWindow.setPreview(pvsPersonTab, work.previewFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
   }
 
 //---------------------------------------------------------------------------
@@ -667,7 +667,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   @Override protected void init()
   {
     mainText = new MainTextWrapper(apOverview);
@@ -715,7 +715,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       else if (record.getType() == hdtWork)
       {
         HDT_Work work = (HDT_Work)record;
-        previewWindow.setPreview(pvsPersonTab, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+        previewWindow.setPreview(pvsPersonTab, work.previewFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
       }
       else
         previewWindow.setPreview(pvsPersonTab, record.filePath(), record);
@@ -804,7 +804,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     tpPerson.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) ->
     {
       if (alreadyChangingTab) return;
-      
+
       if ((Instant.now().toEpochMilli() - lastArrowKey) < IGNORE_ARROW_KEYS_IN_TAB_PANE_MS) // Ignore arrow keys
       {
         alreadyChangingTab = true;
@@ -813,10 +813,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
         return;
       }
-      
+
       tpPersonChange(oldTab, newTab);
     });
-    
+
     lblORCID.setOnMouseClicked(event -> searchORCID(tfORCID.getText(), tfFirst.getText(), tfLast.getText()));
 
     btnWebSrch1.setOnAction(searchBtnEvent(PREF_KEY_PERSON_SRCH + "1"));

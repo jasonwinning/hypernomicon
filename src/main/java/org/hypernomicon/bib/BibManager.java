@@ -203,10 +203,10 @@ public class BibManager extends HyperDlg
 
     entryTable.addContextMenuItem("Launch work", HDT_Work.class, HDT_Work::canLaunch, work -> work.launch(-1));
 
-    entryTable.addContextMenuItem("Show in Preview Window", HDT_Work.class, work -> work.getPath().isNotEmpty(), work ->
+    entryTable.addContextMenuItem("Show in Preview Window", HDT_Work.class, HDT_Work::canPreview, work ->
     {
       PreviewSource src = ui.determinePreviewContext();
-      previewWindow.setPreview(src, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+      previewWindow.setPreview(src, work.previewFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
       ui.openPreviewWindow(src);
     });
 

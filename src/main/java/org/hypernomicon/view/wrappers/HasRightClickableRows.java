@@ -168,11 +168,11 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
   {
     addContextMenuItem("Launch work", HDT_Work.class, HDT_Work::canLaunch, work -> work.launch(-1));
 
-    addContextMenuItem("Show in Preview Window", HDT_Work.class, work -> work.getPath().isNotEmpty(),
+    addContextMenuItem("Show in Preview Window", HDT_Work.class, HDT_Work::canPreview,
                        work ->
                        {
                          PreviewSource src = ui.determinePreviewContext();
-                         previewWindow.setPreview(src, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+                         previewWindow.setPreview(src, work.previewFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
                          ui.openPreviewWindow(src);
                        });
 

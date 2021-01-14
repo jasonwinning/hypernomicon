@@ -39,6 +39,7 @@ import org.hypernomicon.util.json.JsonObj;
 
 import com.google.common.collect.Lists;
 
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.Util.*;
@@ -128,7 +129,10 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     setMultiStr(bfMisc, backupItem.getMultiStr(bfMisc));
     setStr(bfDOI, backupItem.getStr(bfDOI));
     setStr(bfYear, backupItem.getStr(bfYear));
-    setStr(bfURL, backupItem.getStr(bfURL));
+
+    String url = getStr(bfURL);
+    if (url.startsWith(EXT_1) == false)
+      setStr(bfURL, backupItem.getStr(bfURL));
 
     if (preMerge) return; // authors always get updated during merge
 
@@ -415,7 +419,7 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     if (authorsChanged()) return false;
 
     return Arrays.stream(BibFieldEnum.values()).allMatch(bibFieldEnum ->
-      (thisTypeHasFieldKey(bibFieldEnum) == false) || fieldsAreEqual(bibFieldEnum, backupItem));
+      (thisTypeHasFieldKey(bibFieldEnum) == false) || fieldsAreEqual(bibFieldEnum, backupItem, true));
   }
 
 //---------------------------------------------------------------------------
@@ -525,7 +529,14 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
       if (missingKeysOK || thisTypeHasFieldKey(bfDOI  )) serverItem.setStr(bfDOI, getStr(bfDOI));
       if (missingKeysOK || thisTypeHasFieldKey(bfYear )) serverItem.setStr(bfYear, getStr(bfYear));
-      if (missingKeysOK || thisTypeHasFieldKey(bfURL  )) serverItem.setStr(bfURL, getStr(bfURL));
+
+      if (missingKeysOK || thisTypeHasFieldKey(bfURL  ))
+      {
+        String url = getStr(bfURL);
+        if (url.startsWith(EXT_1) == false)
+          serverItem.setStr(bfURL, url);
+      }
+
       if (missingKeysOK || thisTypeHasFieldKey(bfISBNs)) serverItem.setMultiStr(bfISBNs, getMultiStr(bfISBNs));
       if (missingKeysOK || thisTypeHasFieldKey(bfMisc )) serverItem.setMultiStr(bfMisc, getMultiStr(bfMisc));
       if (missingKeysOK || thisTypeHasFieldKey(bfTitle)) serverItem.setTitle(getStr(bfTitle));

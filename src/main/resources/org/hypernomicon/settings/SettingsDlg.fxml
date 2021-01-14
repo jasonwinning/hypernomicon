@@ -54,7 +54,7 @@
                   <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                          <children>
-                            <GridPane prefHeight="320.0" prefWidth="887.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                            <GridPane prefHeight="374.0" prefWidth="887.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                <columnConstraints>
                                   <ColumnConstraints hgrow="ALWAYS" minWidth="0.0" prefWidth="908.0" />
                                   <ColumnConstraints hgrow="NEVER" maxWidth="31.0" minWidth="31.0" prefWidth="31.0" />
@@ -65,9 +65,11 @@
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -115,12 +117,22 @@
                                         <Button fx:id="btnPdfViewerAdvanced" layoutY="1.0" mnemonicParsing="false" prefWidth="70.0" text="Advanced" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                      </children>
                                   </AnchorPane>
-                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
-                                     <children>
-                                        <CheckBox fx:id="chkInternet" layoutY="4.0" mnemonicParsing="false" text="Check for internet connection" />
-                                     </children>
-                                  </AnchorPane>
-                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5" GridPane.rowSpan="2">
+                                    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
+                                       <children>
+                                          <Label layoutX="-2.0" text="External file path" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
+                                       </children>
+                                    </AnchorPane>
+                                    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5">
+                                       <children>
+                                          <TextField fx:id="tfExtFiles" editable="false" layoutX="-349.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="0.0" />
+                                       </children>
+                                    </AnchorPane>
+                                    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                       <children>
+                                          <Button layoutX="-9.0" layoutY="2.0" mnemonicParsing="false" onAction="#btnExtFileBrowseClick" prefWidth="32.0" text="..." AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="0.0" />
+                                       </children>
+                                    </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="6" GridPane.rowSpan="2">
                                      <children>
                                         <GridPane layoutX="32.0" layoutY="-22.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                           <columnConstraints>
@@ -149,22 +161,27 @@
                                         </GridPane>
                                      </children>
                                   </AnchorPane>
-                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="7">
-                                     <children>
-                                        <CheckBox fx:id="chkNewVersionCheck" layoutY="4.0" mnemonicParsing="false" text="Check for new application version on startup" />
-                                     </children>
-                                  </AnchorPane>
                                   <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="8">
                                      <children>
-                                        <CheckBox fx:id="chkAutoOpenPDF" layoutY="4.0" mnemonicParsing="false" text="Automatically preview selected file in Work File dialog" />
+                                        <CheckBox fx:id="chkInternet" layoutY="4.0" mnemonicParsing="false" text="Check for internet connection" />
                                      </children>
                                   </AnchorPane>
                                   <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="9">
                                      <children>
-                                        <CheckBox fx:id="chkAutoRetrieveBib" layoutY="4.0" mnemonicParsing="false" text="Automatically retrieve bibliographic info for selected file internet in Work File dialog" />
+                                        <CheckBox fx:id="chkNewVersionCheck" layoutY="4.0" mnemonicParsing="false" text="Check for new application version on startup" />
                                      </children>
                                   </AnchorPane>
                                   <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="10">
+                                     <children>
+                                        <CheckBox fx:id="chkAutoOpenPDF" layoutY="4.0" mnemonicParsing="false" text="Automatically preview selected file in Work File dialog" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="11">
+                                     <children>
+                                        <CheckBox fx:id="chkAutoRetrieveBib" layoutY="4.0" mnemonicParsing="false" text="Automatically retrieve bibliographic info for selected file internet in Work File dialog" />
+                                     </children>
+                                  </AnchorPane>
+                                  <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="12">
                                      <children>
                                         <CheckBox fx:id="chkLinuxWorkaround" layoutY="4.0" mnemonicParsing="false" text="Enable workaround for when parent windows stop being resizable" />
                                      </children>

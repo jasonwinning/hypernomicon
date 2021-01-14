@@ -396,6 +396,12 @@ public final class App extends Application
 
       if (board.hasFiles())
       {
+        if (ui.workHyperTab().processDragEvent(event))
+        {
+          event.setDropCompleted(true);
+          return;
+        }
+
         List<String> args = board.getFiles().stream().map(File::getAbsolutePath).collect(Collectors.toList());
         Platform.runLater(() -> ui.handleArgs(args));
         event.setDropCompleted(true);
@@ -441,7 +447,7 @@ public final class App extends Application
 
     forEachHyperTab(HyperTab::setDividerPositions);
 
-    bibManagerDlg = BibManager.build();    
+    bibManagerDlg = BibManager.build();
     bibManagerDlg.initBounds(PREF_KEY_BM_WINDOW_X, PREF_KEY_BM_WINDOW_Y, PREF_KEY_BM_WINDOW_HEIGHT, PREF_KEY_BM_WINDOW_WIDTH);
 
     db.addBibChangedHandler(() ->
@@ -459,7 +465,7 @@ public final class App extends Application
 
     fileManagerDlg = FileManager.build();
     fileManagerDlg.initBounds(PREF_KEY_FM_WINDOW_X, PREF_KEY_FM_WINDOW_Y, PREF_KEY_FM_WINDOW_HEIGHT, PREF_KEY_FM_WINDOW_WIDTH);
-    
+
     previewWindow = PreviewWindow.build();
     previewWindow.initBounds(PREF_KEY_PREV_WINDOW_X, PREF_KEY_PREV_WINDOW_Y, PREF_KEY_PREV_WINDOW_WIDTH, PREF_KEY_PREV_WINDOW_HEIGHT);
 

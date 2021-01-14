@@ -33,6 +33,7 @@ import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.Util;
 
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.Util.*;
@@ -164,14 +165,23 @@ public abstract class BibData
 
   // Authors have to be checked separately
 
-  public boolean fieldsAreEqual(BibFieldEnum bibFieldEnum, BibData otherBD)
+  public boolean fieldsAreEqual(BibFieldEnum bibFieldEnum, BibData otherBD, boolean ignoreExtFileURL)
   {
     if ((fieldNotEmpty(bibFieldEnum) || otherBD.fieldNotEmpty(bibFieldEnum)) == false) return true;
 
     switch (bibFieldEnum)
     {
-      case bfDOI       : case bfURL    : case bfVolume  : case bfIssue    : case bfPages : case bfEntryType :
-      case bfPublisher : case bfPubLoc : case bfEdition : case bfLanguage : case bfYear  : case bfWorkType  :
+      case bfURL :
+
+        if (ignoreExtFileURL)
+          if ((getStr(bfURL).startsWith(EXT_1) && (otherBD.getStr(bfURL).startsWith(EXT_1) == false)) ||
+              (otherBD.getStr(bfURL).startsWith(EXT_1) && (getStr(bfURL).startsWith(EXT_1) == false)))
+            return true;
+
+        // fall through
+
+      case bfDOI       : case bfVolume  : case bfIssue    : case bfPages : case bfEntryType : case bfPubLoc :
+      case bfPublisher : case bfEdition : case bfLanguage : case bfYear  : case bfWorkType  :
 
         return ultraTrim(getStr(bibFieldEnum)).equals(ultraTrim(otherBD.getStr(bibFieldEnum)));
 
@@ -307,7 +317,7 @@ public abstract class BibData
 
     if (set1.equals(set2) == false) return false;
 
-    return findFirst(set1, field -> bd1.fieldsAreEqual(field, bd2) == false) == null;
+    return findFirst(set1, field -> bd1.fieldsAreEqual(field, bd2, false) == false) == null;
   }
 
 //---------------------------------------------------------------------------

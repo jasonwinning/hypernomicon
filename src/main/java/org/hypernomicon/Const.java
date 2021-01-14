@@ -58,6 +58,7 @@ public final class Const
     PREF_KEY_HDB_MRU = "hbdMru",
     PREF_KEY_AUTO_IMPORT = "autoImport",
     PREF_KEY_IMAGE_EDITOR = "imageEditor",
+    PREF_KEY_EXT_FILES_1 = "extFiles1",
     PREF_KEY_IMAGE_EDITOR_COMMANDS = "imageEditorCommands",
     PREF_KEY_IMAGE_EDITOR_COMMAND_TYPE = "imageEditorCommandType",
     PREF_KEY_PDF_READER = "pdfReader",
@@ -257,9 +258,11 @@ public final class Const
     PREF_KEY_INST_SRCH = "instSrch",
     PREF_KEY_INST_MAP_SRCH = "instMapSrch",
     PREF_KEY_DOI_SRCH = "doiSrch",
-    PREF_KEY_ISBN_SRCH = "isbnSrch";
+    PREF_KEY_ISBN_SRCH = "isbnSrch",
 
-  public static final VersionNumber dbVersion = new VersionNumber(1, 19, 4); // 1.19.4
+    EXT_1 = "ext1://";
+
+  public static final VersionNumber dbVersion = new VersionNumber(1, 20); // 1.20
 
   // This is the minimum version that the application version is able to load
   public static final Map<VersionNumber, VersionNumber> appVersionToMinRecordsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
@@ -277,13 +280,15 @@ public final class Const
   public static final Map<VersionNumber, VersionNumber> appVersionToMaxRecordsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
 
     .put(new VersionNumber(1, 17, 5), new VersionNumber(1))
-    .put(dbVersion, new VersionNumber(1, 1))
+    .put(new VersionNumber(1, 19, 4), new VersionNumber(1, 1))
+    .put(dbVersion, new VersionNumber(1, 2))
     .build();
 
   // This is the version that the application version will actually save to
   public static final Map<VersionNumber, VersionNumber> appVersionToMaxSettingsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
 
     .put(new VersionNumber(1, 17, 5), new VersionNumber(1))
-    .put(dbVersion, new VersionNumber(1, 1))
+    .put(new VersionNumber(1, 19, 4), new VersionNumber(1, 1))
+    .put(dbVersion, new VersionNumber(1, 2))
     .build();
 }

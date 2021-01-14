@@ -326,7 +326,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           if (curResult.getType() == hdtWork)
           {
             HDT_Work work = (HDT_Work) curResult;
-            previewWindow.setPreview(pvsQueryTab, work.filePath(), work.getStartPageNum(), work.getEndPageNum(), work);
+            previewWindow.setPreview(pvsQueryTab, work.previewFilePath(), work.getStartPageNum(), work.getEndPageNum(), work);
           }
           else if (curResult.getType() == hdtMiscFile)
           {

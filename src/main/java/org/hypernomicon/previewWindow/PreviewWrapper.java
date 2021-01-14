@@ -662,7 +662,10 @@ public class PreviewWrapper
     if ((ui.activeTabEnum() == workTabEnum) && (ui.activeTab().activeRecord() == work))
       ui.workHyperTab().setPageNum(workFile, pageNum, isStart);
 
-    contentsWindow.update(workFile, pageNum, true);
+    if (workFile == null)
+      contentsWindow.update(curPrevFile.filePath, pageNum, true);
+    else
+      contentsWindow.update(workFile, pageNum, true);
 
     return true;
   }

@@ -39,6 +39,7 @@ import org.hypernomicon.bib.zotero.ZoteroOAuthApi;
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.util.CryptoUtil;
 import org.hypernomicon.util.DesktopUtil;
+import org.hypernomicon.util.filePath.FilePath;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -55,6 +56,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
@@ -62,6 +64,7 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.settings.SettingsDlgCtrlr.SettingsPage.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
@@ -79,7 +82,7 @@ public class SettingsDlgCtrlr extends HyperDlg
   @FXML private Tab tabLinkToExtBibMgr, tabComputerSpecific, tabDBSpecific, tabFolders, tabNaming, tabUnlinkFromExtBibMgr, tabWebButtons;
   @FXML TreeView<SettingsPage> treeView;
   @FXML private TabPane tpMain;
-  @FXML private TextField tfImageEditor, tfPDFReader, tfVerificationCode;
+  @FXML private TextField tfImageEditor, tfPDFReader, tfExtFiles, tfVerificationCode;
 
   private StringProperty authUrl;
   private OAuth1RequestToken requestToken;
@@ -106,10 +109,38 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  @Override protected boolean isValid() { return true; }
+
   @FXML private void btnImageEditorBrowseClick() { browseClick(dialogStage, tfImageEditor); }
   @FXML private void btnPDFReaderClick()         { browseClick(dialogStage, tfPDFReader); }
 
-  @Override protected boolean isValid() { return true; }
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnExtFileBrowseClick()
+  {
+    DirectoryChooser dirChooser = new DirectoryChooser();
+
+    FilePath startPath = new FilePath(tfExtFiles.getText());
+
+    if (FilePath.isEmpty(startPath))
+    {
+      if (db.isLoaded())
+      {
+        startPath = db.getRootPath();
+        FilePath parentPath = startPath.getParent();
+        if (FilePath.isEmpty(parentPath) == false)
+          startPath = parentPath;
+      }
+      else
+        startPath = new FilePath(userWorkingDirectory());
+    }
+
+    dirChooser.setInitialDirectory(startPath.toFile());
+    dirChooser.setTitle("Select Folder");
+
+    nullSwitch(ui.windows.showDirDialog(dirChooser, dialogStage), filePath -> tfExtFiles.setText(filePath.toString()));
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -229,6 +260,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     initAppTextField(tfImageEditor, PREF_KEY_IMAGE_EDITOR);
     initAppTextField(tfPDFReader, PREF_KEY_PDF_READER);
+    initAppTextField(tfExtFiles, PREF_KEY_EXT_FILES_1);
 
     btnImgEditorAdvanced.setOnAction(event ->
     {
@@ -494,7 +526,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     FileChooser fileChooser = new FileChooser();
 
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
-    fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
+    fileChooser.setInitialDirectory(new File(userWorkingDirectory()));
 
     nullSwitch(ui.windows.showOpenDialog(fileChooser, owner), filePath -> tf.setText(filePath.toString()));
   }

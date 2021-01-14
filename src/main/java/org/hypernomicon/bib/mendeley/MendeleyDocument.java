@@ -39,6 +39,7 @@ import org.hypernomicon.util.json.JsonObj;
 
 import com.google.common.collect.Lists;
 
+import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.Util.*;
@@ -127,7 +128,10 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
     setMultiStr(bfMisc, backupItem.getMultiStr(bfMisc));
     setStr(bfDOI, backupItem.getStr(bfDOI));
     setStr(bfYear, backupItem.getStr(bfYear));
-    setStr(bfURL, backupItem.getStr(bfURL));
+
+    String url = getStr(bfURL);
+    if (url.startsWith(EXT_1) == false)
+      setStr(bfURL, backupItem.getStr(bfURL));
 
     if (preMerge) return; // authors always get updated during merge
 
@@ -470,7 +474,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
       return (bibFieldEnum == bfYear) && backupItem.getStr(bfYear).isBlank() && (StringUtils.isNumeric(getStr(bfYear)) == false) ?
         true
       :
-        fieldsAreEqual(bibFieldEnum, backupItem);
+        fieldsAreEqual(bibFieldEnum, backupItem, true);
     });
   }
 
@@ -543,7 +547,11 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
       serverItem.setStr(bfDOI, getStr(bfDOI));
       serverItem.setStr(bfYear, getStr(bfYear));
-      serverItem.setStr(bfURL, getStr(bfURL));
+
+      String url = getStr(bfURL);
+      if (url.startsWith(EXT_1) == false)
+        serverItem.setStr(bfURL, url);
+
       serverItem.setMultiStr(bfISBNs, getMultiStr(bfISBNs));
       serverItem.setMultiStr(bfISSNs, getMultiStr(bfISSNs));
       serverItem.setMultiStr(bfMisc, getMultiStr(bfMisc));
