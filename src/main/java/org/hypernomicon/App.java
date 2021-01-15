@@ -45,13 +45,8 @@ import org.hypernomicon.view.MainCtrlr;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.tabs.HyperTab;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.ConnectException;
-import java.net.Socket;
 
 import static java.lang.management.ManagementFactory.*;
 
@@ -135,20 +130,6 @@ public final class App extends Application
     String rtArgs = getRuntimeMXBean().getInputArguments().toString();
     isDebugging = rtArgs.contains("-agentlib:jdwp") || rtArgs.contains("-Xrunjdwp");
 
-    try (Socket clientSocket = new Socket("localhost", InterProcDaemon.PORT);
-         PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-         BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())))
-    {
-      List<String> args = getParameters().getUnnamed();
-      out.println(args.size());
-      args.forEach(out::println);
-      for (String line = null; line == null; line = in.readLine());
-      Platform.exit();
-      return;
-    }
-    catch (ConnectException e) { new InterProcDaemon().start(); }
-    catch (IOException e)      { Platform.exit(); return; }
-
     BrowserPreferences.setChromiumSwitches("--disable-web-security", "--user-data-dir", "--allow-file-access-from-files", "--enable-local-file-accesses");
 
     // On Mac OS X Chromium engine must be initialized in non-UI thread.
@@ -222,7 +203,7 @@ public final class App extends Application
       if (srcPath.isBlank() == false)
       {
         FilePath hdbPath = new FilePath(srcPath).resolve(srcName);
-        if (hdbPath.exists())
+        if (hdbPath.exists() && InterProcClient.checkFolder(new FilePath(srcPath)))
           hdbExists = true;
       }
     }

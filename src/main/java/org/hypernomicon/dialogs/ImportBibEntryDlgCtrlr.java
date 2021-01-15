@@ -186,10 +186,10 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
                                              new FileChooser.ExtensionFilter("BibTeX File (*.bib)", "*.bib"),
                                              new FileChooser.ExtensionFilter("All Files (*.*)", "*.*"));
 
-    File dir = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, userWorkingDirectory()));
+    File dir = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, userWorkingDir()));
 
     if (dir.exists() == false)
-      dir = new File(userWorkingDirectory());
+      dir = new File(userWorkingDir());
 
     fileChooser.setInitialDirectory(dir);
 

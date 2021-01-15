@@ -133,7 +133,7 @@ public class SettingsDlgCtrlr extends HyperDlg
           startPath = parentPath;
       }
       else
-        startPath = new FilePath(userWorkingDirectory());
+        startPath = new FilePath(userWorkingDir());
     }
 
     dirChooser.setInitialDirectory(startPath.toFile());
@@ -526,7 +526,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     FileChooser fileChooser = new FileChooser();
 
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
-    fileChooser.setInitialDirectory(new File(userWorkingDirectory()));
+    fileChooser.setInitialDirectory(new File(userWorkingDir()));
 
     nullSwitch(ui.windows.showOpenDialog(fileChooser, owner), filePath -> tf.setText(filePath.toString()));
   }

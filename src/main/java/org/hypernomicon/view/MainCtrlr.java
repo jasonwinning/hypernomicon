@@ -35,6 +35,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import org.hypernomicon.App;
+import org.hypernomicon.InterProcClient;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibData;
@@ -1161,10 +1162,10 @@ public final class MainCtrlr
 
       fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(appTitle + " files (*.hdb)", "*.hdb"));
 
-      File dir = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, userWorkingDirectory()));
+      File dir = new File(appPrefs.get(PREF_KEY_SOURCE_PATH, userWorkingDir()));
 
       if (dir.exists() == false)
-        dir = new File(userWorkingDirectory());
+        dir = new File(userWorkingDir());
 
       fileChooser.setInitialDirectory(dir);
 
@@ -1173,21 +1174,9 @@ public final class MainCtrlr
 
     if (FilePath.isEmpty(filePath)) return;
 
-    if (db.isLoaded())
-    {
-      DialogResult result = yesNoCancelDialog("Save data to XML files?");
+    mnuCloseClick();
 
-      if (result == mrCancel) return;
-
-      if (result == mrYes)
-      {
-        if (cantSaveRecord()) return;
-        saveAllToDisk(false, false, false);
-      }
-
-      closeWindows(false);
-      clearAllTabsAndViews();
-    }
+    if (db.isLoaded()) return;
 
     appPrefs.put(PREF_KEY_SOURCE_FILENAME, filePath.getNameOnly().toString());
     appPrefs.put(PREF_KEY_SOURCE_PATH, filePath.getDirOnly().toString());
@@ -1209,7 +1198,7 @@ public final class MainCtrlr
 
     dirChooser.setTitle("Select an empty folder in which to create database");
 
-    dirChooser.setInitialDirectory(file.exists() && file.isDirectory() ? file : new File(userWorkingDirectory()));
+    dirChooser.setInitialDirectory(file.exists() && file.isDirectory() ? file : new File(userWorkingDir()));
 
     FilePath rootPath = windows.showDirDialog(dirChooser, stage);
     if (FilePath.isEmpty(rootPath)) return;
@@ -1902,6 +1891,11 @@ public final class MainCtrlr
         false
       :
         falseWithErrorMessage("Unable to load database. The file does not exist: " + hdbPath.toString());
+    }
+
+    if (InterProcClient.checkFolder(hdbPath) == false)
+    {
+      return falseWithErrorMessage("Unable to load database: Database folder(s) are already in use by another instance of " + App.appTitle);
     }
 
     if (internetNotCheckedYet && appPrefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))

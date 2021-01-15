@@ -19,19 +19,14 @@ package org.hypernomicon;
 
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.hypernomicon.HyperTask.HyperThread;
 
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 class InterProcDaemon extends HyperThread
 {
-  static final int PORT = 59346;
-
   InterProcDaemon()
   {
     super("InterProc");
@@ -43,7 +38,7 @@ class InterProcDaemon extends HyperThread
 
   @Override public void run()
   {
-    try (ServerSocket serverSocket = new ServerSocket(PORT, 1))
+    try (ServerSocket serverSocket = new ServerSocket(InterProcClient.getPortNum(), 1))
     {
       while (true)
       {
@@ -56,24 +51,17 @@ class InterProcDaemon extends HyperThread
           do { line = in.readLine(); }
           while (line == null);
 
-          int numArgs = parseInt(line, 0);
-
-          if (numArgs > 0)
+          switch (line)
           {
-            List<String> args = new ArrayList<>();
+            case InterProcClient.UPDATE_CMD :
 
-            for (int ndx = 0; ndx < numArgs; ndx++)
-            {
-              do { line = in.readLine(); }
-              while (line == null);
+              out.println(InterProcClient.getInstance());
+              break;
 
-              args.add(line);
-            }
+            default :
 
-            runInFXThread(() -> ui.handleArgs(args));
+              break;
           }
-
-          out.println("Roger; out.");
         }
       }
     }

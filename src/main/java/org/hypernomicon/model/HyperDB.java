@@ -90,6 +90,7 @@ import javafx.beans.property.SimpleObjectProperty;
 
 import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.HyperTask;
+import org.hypernomicon.InterProcClient;
 import org.hypernomicon.bib.BibCollection;
 import org.hypernomicon.bib.BibEntry;
 import org.hypernomicon.bib.LibraryWrapper;
@@ -580,13 +581,15 @@ public final class HyperDB
     if (getLockOwner() != null)
       return false;
 
-    FilePath newRootFilePath = new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, userWorkingDirectory()));
+    FilePath newRootFilePath = new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, userWorkingDir()));
     boolean dbChanged = false;
 
     if (FilePath.isEmpty(rootFilePath) || (rootFilePath.equals(newRootFilePath) == false))
       dbChanged = true;
 
     close(null);
+
+    InterProcClient.refresh(newRootFilePath);
 
     rootFilePath = newRootFilePath;
     hdbFilePath = rootFilePath.resolve(appPrefs.get(PREF_KEY_SOURCE_FILENAME, HDB_DEFAULT_FILENAME));
@@ -1596,6 +1599,7 @@ public final class HyperDB
 
     mentionsIndex.stopRebuild();
     loaded = false;
+    InterProcClient.refresh(new FilePath(""));
     clearAllDataSets(datasetsToKeep);
     cleanupRelations();
 
@@ -1708,6 +1712,7 @@ public final class HyperDB
     catch (HDB_InternalError e) { return falseWithErrorMessage(e.getMessage()); }
 
     loaded = true;
+    InterProcClient.refresh(rootFilePath);
 
     return true;
   }

@@ -110,7 +110,7 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
 
         if (firstCall)
         {
-          FilePath filePath = DesktopUtil.getHomeDir().resolve("data.csv");
+          FilePath filePath = DesktopUtil.homeDir().resolve("data.csv");
           if (filePath.exists()) try
           {
             Files.delete(filePath.toPath());
@@ -140,7 +140,7 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
 
         if (lastCall)
         {
-          FilePath filePath = DesktopUtil.getHomeDir().resolve("data.csv");
+          FilePath filePath = DesktopUtil.homeDir().resolve("data.csv");
 
           try
           {
