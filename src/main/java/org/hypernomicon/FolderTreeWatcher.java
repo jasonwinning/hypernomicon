@@ -475,12 +475,12 @@ public class FolderTreeWatcher
 
       if (sentResponse)
       {
-        if (db.getRequestMessageFilePath().exists())
+        if (db.getRequestMessageFilePath(false).exists())
           return false;
 
         sentResponse = false;
 
-        try { Files.delete(db.getResponseMessageFilePath().toPath()); } catch (IOException e) { noOp(); }
+        try { Files.delete(db.getResponseMessageFilePath(false).toPath()); } catch (IOException e) { noOp(); }
 
         if (requestType == hmtUnlockRequest)
         {
@@ -492,10 +492,10 @@ public class FolderTreeWatcher
         return true;
       }
 
-      if (db.getRequestMessageFilePath().exists() == false)
+      if (db.getRequestMessageFilePath(false).exists() == false)
         return false;
 
-      receivedMsg = InterComputerMsg.checkForMessage(db.getRequestMessageFilePath());
+      receivedMsg = InterComputerMsg.checkForMessage(db.getRequestMessageFilePath(false));
       requestType = hmtNone;
 
       if ((receivedMsg != null) && receivedMsg.getDest().equals(compName))
@@ -505,13 +505,13 @@ public class FolderTreeWatcher
       {
         case hmtEchoRequest :
 
-          new InterComputerMsg(compName, receivedMsg.getSource(), hmtEchoReply).writeToDisk();
+          new InterComputerMsg(compName, receivedMsg.getSource(), hmtEchoReply).writeToDisk(false);
           sentResponse = true;
           return true;
 
         case hmtUnlockRequest :
 
-          new InterComputerMsg(compName, receivedMsg.getSource(), hmtUnlockComplete).writeToDisk();
+          new InterComputerMsg(compName, receivedMsg.getSource(), hmtUnlockComplete).writeToDisk(false);
           sentResponse = true;
           return true;
 

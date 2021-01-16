@@ -80,7 +80,7 @@ public class LockedDlgCtrlr extends HyperDlg
       {
         if (gotResponse == false)
         {
-          receivedMsg = InterComputerMsg.checkForMessage(db.getResponseMessageFilePath());
+          receivedMsg = InterComputerMsg.checkForMessage(db.getResponseMessageFilePath(true));
 
           if (receivedMsg != null)
           {
@@ -89,19 +89,19 @@ public class LockedDlgCtrlr extends HyperDlg
               if ((sentMsg.getType() == hmtUnlockRequest) && (receivedMsg.getType() == hmtUnlockComplete))
               {
                 gotResponse = true;
-                db.getRequestMessageFilePath().deletePromptOnFail(false);
+                db.getRequestMessageFilePath(true).deletePromptOnFail(false);
               }
               else if ((sentMsg.getType() == hmtEchoRequest) && (receivedMsg.getType() == hmtEchoReply))
               {
                 gotResponse = true;
-                db.getRequestMessageFilePath().deletePromptOnFail(false);
+                db.getRequestMessageFilePath(true).deletePromptOnFail(false);
               }
             }
           }
         }
         else
         {
-          if (db.getResponseMessageFilePath().exists() == false)
+          if (db.getResponseMessageFilePath(true).exists() == false)
           {
             if (sentMsg.getType() == hmtUnlockRequest)
             {
@@ -129,75 +129,6 @@ public class LockedDlgCtrlr extends HyperDlg
     }
   }
 
-//---------------------------------------------------------------------------
-
-  @FXML @Override protected void btnCancelClick()
-  {
-    if (btnStop.isDisabled() == false)
-      btnStopClick();
-
-    super.btnCancelClick();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnTryCommClick()
-  {
-    sendMessage(hmtEchoRequest, "Trying to communicate with " + otherCompName + "...");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnStopClick()
-  {
-    stopTrying("Cancelled by user after " + String.valueOf((Instant.now().getEpochSecond() - sentTime)) + " seconds.", false);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnTryTerminateClick()
-  {
-    sendMessage(hmtUnlockRequest, "Trying to save/terminate instance on " + otherCompName + "...");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void btnOverrideClick()
-  {
-    if (btnStop.isDisabled() == false)
-      stopTrying("Cancelled by user.", false);
-
-    db.getLockFilePath().deletePromptOnFail(true);
-    db.getRequestMessageFilePath().deletePromptOnFail(true);
-    db.getResponseMessageFilePath().deletePromptOnFail(true);
-
-    okClicked = true;
-    dialogStage.close();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void sendMessage(HDB_MessageType newMsgType, String output)
-  {
-    taOutput.appendText(output + System.lineSeparator());
-
-    btnTryComm.setDisable(true);
-    btnTryTerminate.setDisable(true);
-    btnStop.setDisable(false);
-
-    InterComputerMsg sentMsg = new InterComputerMsg(DesktopUtil.getComputerName(), otherCompName, newMsgType);
-    sentMsg.writeToDisk();
-    sentTime = sentMsg.getSentTime();
-
-    thread = new MessageSenderThread(this, sentMsg);
-  }
-
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   public static LockedDlgCtrlr build(String otherCompName)
@@ -240,10 +171,79 @@ public class LockedDlgCtrlr extends HyperDlg
 
     onShown = () -> disableCache(taOutput);
 
-    db.getRequestMessageFilePath().deletePromptOnFail(true);
-    db.getResponseMessageFilePath().deletePromptOnFail(true);
+    db.getRequestMessageFilePath(true).deletePromptOnFail(true);
+    db.getResponseMessageFilePath(true).deletePromptOnFail(true);
 
     return this;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML @Override protected void btnCancelClick()
+  {
+    if (btnStop.isDisabled() == false)
+      btnStopClick();
+
+    super.btnCancelClick();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnTryCommClick()
+  {
+    sendMessage(hmtEchoRequest, "Trying to communicate with " + otherCompName + "...");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnStopClick()
+  {
+    stopTrying("Cancelled by user after " + String.valueOf((Instant.now().getEpochSecond() - sentTime)) + " seconds.", false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnTryTerminateClick()
+  {
+    sendMessage(hmtUnlockRequest, "Trying to save/terminate instance on " + otherCompName + "...");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void btnOverrideClick()
+  {
+    if (btnStop.isDisabled() == false)
+      stopTrying("Cancelled by user.", false);
+
+    db.getLockFilePath           (true).deletePromptOnFail(true);
+    db.getRequestMessageFilePath (true).deletePromptOnFail(true);
+    db.getResponseMessageFilePath(true).deletePromptOnFail(true);
+
+    okClicked = true;
+    dialogStage.close();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void sendMessage(HDB_MessageType newMsgType, String output)
+  {
+    taOutput.appendText(output + System.lineSeparator());
+
+    btnTryComm     .setDisable(true );
+    btnTryTerminate.setDisable(true );
+    btnStop        .setDisable(false);
+
+    InterComputerMsg sentMsg = new InterComputerMsg(DesktopUtil.getComputerName(), otherCompName, newMsgType);
+    sentMsg.writeToDisk(true);
+    sentTime = sentMsg.getSentTime();
+
+    thread = new MessageSenderThread(this, sentMsg);
   }
 
 //---------------------------------------------------------------------------
@@ -256,7 +256,7 @@ public class LockedDlgCtrlr extends HyperDlg
     btnOverride.setDisable(false);
     btnStop.setDisable(true);
     btnCancel.setDisable(false);
-    db.getRequestMessageFilePath().deletePromptOnFail(true);
+    db.getRequestMessageFilePath(true).deletePromptOnFail(true);
 
     thread.done = true;
 

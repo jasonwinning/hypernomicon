@@ -429,8 +429,19 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
     if (work.workFiles.isEmpty() == false)
       indicator = work.workFiles.get(0).filePath().getExtensionOnly().toLowerCase();
-    else if (safeStr(work.getURL()).length() > 0)
-      indicator = "web";
+    else
+    {
+      String url = safeStr(work.getURL());
+
+      if (url.length() > 0)
+
+      {
+        if (url.startsWith(EXT_1))
+          indicator = db.resolveExtFilePath(url).getExtensionOnly().toLowerCase();
+        else
+          indicator = "web";
+      }
+    }
 
     return indicator.isEmpty() ? str : new String(str + " (" + indicator + ")").trim();
   }

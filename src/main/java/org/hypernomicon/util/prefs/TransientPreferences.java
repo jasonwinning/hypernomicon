@@ -1,0 +1,72 @@
+/*
+ * Copyright 2015-2021 Jason Winning
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+package org.hypernomicon.util.prefs;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.prefs.AbstractPreferences;
+import java.util.prefs.BackingStoreException;
+
+class TransientPreferences extends AbstractPreferences
+{
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private Map<String, TransientPreferences> children = new LinkedHashMap<>();
+  private Map<String, String>               values   = new LinkedHashMap<>();
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public TransientPreferences(TransientPreferences parent, String name) { super(parent, name); }
+  public TransientPreferences()                                         { this(null, ""); }
+
+  @Override public boolean isUserNode()                     { return true; }
+  @Override public boolean isRemoved()                      { return super.isRemoved(); }
+  @Override protected void putSpi(String key, String value) { values.put(key, value); }
+  @Override protected String getSpi(String key)             { return values.containsKey(key) ? values.get(key) : ""; }
+  @Override protected void removeSpi(String key)            { values.remove(key); }
+
+  @Override protected void removeNodeSpi() throws BackingStoreException        { values.clear(); }
+  @Override protected String[] keysSpi() throws BackingStoreException          { return values.keySet().toArray(new String[values.size()]); }
+  @Override protected String[] childrenNamesSpi() throws BackingStoreException { return children.keySet().toArray(new String[children.size()]); }
+
+  @Override protected void syncSpi() throws BackingStoreException              { /* not used */ }
+  @Override protected void flushSpi() throws BackingStoreException             { /* not used */ }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override protected AbstractPreferences childSpi(String name)
+  {
+    TransientPreferences child = children.get(name);
+
+    if ((child == null) || child.isRemoved())
+    {
+      child = new TransientPreferences(this, name);
+      children.put(name, child);
+    }
+
+    return child;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+}

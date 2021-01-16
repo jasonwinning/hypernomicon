@@ -113,6 +113,7 @@ import org.hypernomicon.util.FilenameMap;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.VersionNumber;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.util.prefs.XmlSupport;
 import org.hypernomicon.view.HyperFavorites;
 
 //---------------------------------------------------------------------------
@@ -307,6 +308,7 @@ public final class HyperDB
     }
   }
 
+  public FilePath getHdbPath   () { return hdbFilePath; }
   public FilePath getRootPath  () { return rootFilePath; }
   public FilePath xmlPath      () { return rootFilePath.resolve(DEFAULT_XML_PATH); }
 
@@ -664,11 +666,8 @@ public final class HyperDB
     {
       try (InputStream is = new FileInputStream(xmlPath(SETTINGS_FILE_NAME).toFile()))
       {
-        prefs = Preferences.userNodeForPackage(getClass());
-        prefs.node("favorites").removeNode();
-        prefs.clear();
-        prefs.flush();
-        Preferences.importPreferences(is);
+        prefs = XmlSupport.importPreferences(is).node("org").node("hypernomicon").node("model");
+
         favorites.loadFromPrefNode();
 
         String versionStr = prefs.get(PREF_KEY_SETTINGS_VERSION, "");
@@ -762,7 +761,7 @@ public final class HyperDB
           }
         }
       }
-      catch (IOException | InvalidPreferencesFormatException | BackingStoreException e)
+      catch (IOException | InvalidPreferencesFormatException e)
       {
         throw new HyperDataException("An error occurred while attempting to read database settings: " + e.getMessage(), e);
       }
@@ -1522,14 +1521,29 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public FilePath getRequestMessageFilePath()
-  { return new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(REQUEST_MSG_FILE_NAME); }
+  public FilePath getRequestMessageFilePath(boolean useAppPrefs)
+  {
+    return useAppPrefs ?
+      new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(REQUEST_MSG_FILE_NAME)
+    :
+      db.getRootPath(REQUEST_MSG_FILE_NAME);
+  }
 
-  public FilePath getResponseMessageFilePath()
-  { return new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(RESPONSE_MSG_FILE_NAME); }
+  public FilePath getResponseMessageFilePath(boolean useAppPrefs)
+  {
+    return useAppPrefs ?
+      new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(RESPONSE_MSG_FILE_NAME)
+    :
+      db.getRootPath(RESPONSE_MSG_FILE_NAME);
+  }
 
-  public FilePath getLockFilePath()
-  { return new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(LOCK_FILE_NAME); }
+  public FilePath getLockFilePath(boolean useAppPrefs)
+  {
+    return useAppPrefs ?
+      new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, "")).resolve(LOCK_FILE_NAME)
+    :
+      db.getRootPath(LOCK_FILE_NAME);
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1548,7 +1562,7 @@ public final class HyperDB
 
   public String getLockOwner()
   {
-    FilePath filePath = getLockFilePath();
+    FilePath filePath = getLockFilePath(true);
 
     if (filePath.exists())
     {
@@ -1563,8 +1577,8 @@ public final class HyperDB
         filePath.deleteReturnsBoolean(true);
     }
 
-    getRequestMessageFilePath ().deletePromptOnFail(true);
-    getResponseMessageFilePath().deletePromptOnFail(true);
+    getRequestMessageFilePath (true).deletePromptOnFail(true);
+    getResponseMessageFilePath(true).deletePromptOnFail(true);
 
     return null;
   }
@@ -1574,7 +1588,7 @@ public final class HyperDB
 
   private boolean lock()
   {
-    lockFilePath = getLockFilePath();
+    lockFilePath = getLockFilePath(true);
 
     try { FileUtils.writeLines(lockFilePath.toFile(), singletonList(DesktopUtil.getComputerName())); }
     catch (IOException e) { return false; }
@@ -2216,9 +2230,9 @@ public final class HyperDB
         (filePath.getParent().equals(xmlPath     ) == false))   return false;
 
     if (filePath.equals(hdbFilePath) ||
-        filePath.equals(getRequestMessageFilePath()) ||
-        filePath.equals(getResponseMessageFilePath()) ||
-        filePath.equals(getLockFilePath()) ||
+        filePath.equals(getRequestMessageFilePath(false)) ||
+        filePath.equals(getResponseMessageFilePath(false)) ||
+        filePath.equals(getLockFilePath(false)) ||
         filePath.equals(xmlPath.resolve(SETTINGS_FILE_NAME     )) ||
         filePath.equals(xmlPath.resolve(PERSON_FILE_NAME       )) ||
         filePath.equals(xmlPath.resolve(PERSON_FILE_NAME       )) ||

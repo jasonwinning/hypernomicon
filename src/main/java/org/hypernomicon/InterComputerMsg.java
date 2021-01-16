@@ -59,17 +59,17 @@ public class InterComputerMsg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean writeToDisk()
+  public boolean writeToDisk(boolean getFolderFromAppPrefs)
   {
     FilePath filePath;
     List<String> s = Lists.newArrayList(source, dest);
 
     switch (type)
     {
-      case hmtEchoRequest    : s.add("echo request"   ); filePath = db.getRequestMessageFilePath (); break;
-      case hmtEchoReply      : s.add("echo reply"     ); filePath = db.getResponseMessageFilePath(); break;
-      case hmtUnlockRequest  : s.add("unlock request" ); filePath = db.getRequestMessageFilePath (); break;
-      case hmtUnlockComplete : s.add("unlock complete"); filePath = db.getResponseMessageFilePath(); break;
+      case hmtEchoRequest    : s.add("echo request"   ); filePath = db.getRequestMessageFilePath (getFolderFromAppPrefs); break;
+      case hmtEchoReply      : s.add("echo reply"     ); filePath = db.getResponseMessageFilePath(getFolderFromAppPrefs); break;
+      case hmtUnlockRequest  : s.add("unlock request" ); filePath = db.getRequestMessageFilePath (getFolderFromAppPrefs); break;
+      case hmtUnlockComplete : s.add("unlock complete"); filePath = db.getResponseMessageFilePath(getFolderFromAppPrefs); break;
       default                : return false;
     }
 

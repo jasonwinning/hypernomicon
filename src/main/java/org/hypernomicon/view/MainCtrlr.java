@@ -1136,6 +1136,9 @@ public final class MainCtrlr
   {
     if (saveAllToDisk(true, false, false) == false) return;
 
+    appPrefs.put(PREF_KEY_SOURCE_FILENAME, db.getHdbPath().getNameOnly().toString());
+    appPrefs.put(PREF_KEY_SOURCE_PATH, db.getRootPath().toString());
+
     if (loadDataFromDisk())
     {
       // Update record pointers
@@ -1954,7 +1957,7 @@ public final class MainCtrlr
       tree().expandMainBranches();
       fileManagerDlg.folderTree.expandMainBranches();
 
-      stage.setTitle(appTitle + " - " + db.getRootPath(appPrefs.get(PREF_KEY_SOURCE_FILENAME, "")));
+      stage.setTitle(appTitle + " - " + db.getHdbPath());
     }
     else
       mnuCloseClick();
