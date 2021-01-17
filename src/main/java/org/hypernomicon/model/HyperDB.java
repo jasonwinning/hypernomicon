@@ -738,7 +738,12 @@ public final class HyperDB
 
         String dbCreationDateStr = prefs.get(PREF_KEY_DB_CREATION_DATE, "");
         if (safeStr(dbCreationDateStr).length() > 0)
+        {
           dbCreationDate = parseIso8601offset(dbCreationDateStr);
+
+          if (dbCreationDate.isAfter(Instant.now())) // Creation date in template is year 9999 so it will be set
+            dbCreationDate = Instant.now();          // to the current date when loaded for the first time
+        }
 
         String bibEncApiKey = prefs.get(PREF_KEY_BIB_API_KEY, ""),
                bibUserID = prefs.get(PREF_KEY_BIB_USER_ID, ""),
