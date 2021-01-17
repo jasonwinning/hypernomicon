@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 
+import static org.hypernomicon.util.Util.*;
+
 class TransientPreferences extends AbstractPreferences
 {
 
@@ -34,21 +36,21 @@ class TransientPreferences extends AbstractPreferences
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public TransientPreferences(TransientPreferences parent, String name) { super(parent, name); }
-  public TransientPreferences()                                         { this(null, ""); }
+  TransientPreferences(TransientPreferences parent, String name) { super(parent, name); }
+  TransientPreferences()                                         { this(null, ""); }
 
   @Override public boolean isUserNode()                     { return true; }
-  @Override public boolean isRemoved()                      { return super.isRemoved(); }
+  @Override protected boolean isRemoved()                   { return super.isRemoved(); }
   @Override protected void putSpi(String key, String value) { values.put(key, value); }
-  @Override protected String getSpi(String key)             { return values.containsKey(key) ? values.get(key) : ""; }
+  @Override protected String getSpi(String key)             { return safeStr(values.get(key)); }
   @Override protected void removeSpi(String key)            { values.remove(key); }
 
-  @Override protected void removeNodeSpi() throws BackingStoreException        { values.clear(); }
-  @Override protected String[] keysSpi() throws BackingStoreException          { return values.keySet().toArray(new String[values.size()]); }
+  @Override protected void removeNodeSpi       () throws BackingStoreException { values.clear(); }
+  @Override protected String[] keysSpi         () throws BackingStoreException { return values  .keySet().toArray(new String[values  .size()]); }
   @Override protected String[] childrenNamesSpi() throws BackingStoreException { return children.keySet().toArray(new String[children.size()]); }
 
-  @Override protected void syncSpi() throws BackingStoreException              { /* not used */ }
-  @Override protected void flushSpi() throws BackingStoreException             { /* not used */ }
+  @Override protected void syncSpi             () throws BackingStoreException { /* not used */ }
+  @Override protected void flushSpi            () throws BackingStoreException { /* not used */ }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

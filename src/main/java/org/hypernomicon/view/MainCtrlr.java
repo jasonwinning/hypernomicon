@@ -344,7 +344,7 @@ public final class MainCtrlr
     mnuFindNextInName    .setOnAction(event -> tree().find(cbTreeGoTo.getEditor().getText(), true,  true ));
     mnuFindPreviousInName.setOnAction(event -> tree().find(cbTreeGoTo.getEditor().getText(), false, true ));
 
-    btnSaveAll.       setOnAction(event -> saveAllToDisk(true, true, true));
+    btnSaveAll.       setOnAction(event -> saveAllToDisk(true, true, false));
     btnDelete.        setOnAction(event -> deleteCurrentRecord(true));
     btnRevert.        setOnAction(event -> update());
     btnAdvancedSearch.setOnAction(event -> showSearch(false, null, -1, null, null, null, ""));
@@ -447,7 +447,7 @@ public final class MainCtrlr
     stage.addEventHandler(KeyEvent.KEY_PRESSED, event ->
     {
       if (keyComb.match(event) && db.isLoaded())
-        saveAllToDisk(true, true, true);
+        saveAllToDisk(true, true, false);
     });
 
 //---------------------------------------------------------------------------

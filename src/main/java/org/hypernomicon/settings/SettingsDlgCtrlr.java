@@ -465,6 +465,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     authUrl.set("");
     btnZoteroAuthorize.setSelected(false);
     btnMendeleyAuthorize.setSelected(false);
+
     OAuth1AccessToken accessToken = null;
 
     try (OAuth10aService service = ZoteroOAuthApi.service())
@@ -491,6 +492,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     SyncBibDlgCtrlr.build().sync();
 
     setUnlinkMessage();
+    tfVerificationCode.clear();
     tabLinkToExtBibMgr.setContent(apUnlinkFromExtBibMgr);
   }
 
