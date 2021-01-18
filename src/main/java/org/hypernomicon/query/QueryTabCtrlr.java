@@ -174,7 +174,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       htFields = new HyperTable(tvFields, 1, true, "");
 
-      HyperTable.loadColWidthsForTable(tvFields, PREF_KEY_HT_QUERY_FIELDS);
+      HyperTable.loadColWidthsForTable(tvFields.getColumns(), PREF_KEY_HT_QUERY_FIELDS);
 
       htFields.autoCommitListSelections = true;
 
@@ -1538,7 +1538,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     QueryView qV = findFirst(queryViews, view -> view.tab == tab);
     if (qV == null) return;
 
-    HyperTable.saveColWidthsForTable(qV.tvFields, PREF_KEY_HT_QUERY_FIELDS, false);
+    HyperTable.saveColWidthsForTable(qV.tvFields.getColumns(), PREF_KEY_HT_QUERY_FIELDS, false);
     queryViews.remove(qV);
   }
 
@@ -1567,7 +1567,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     queryViews.removeIf(queryView ->
     {
-      HyperTable.saveColWidthsForTable(queryView.tvFields, PREF_KEY_HT_QUERY_FIELDS, false);
+      HyperTable.saveColWidthsForTable(queryView.tvFields.getColumns(), PREF_KEY_HT_QUERY_FIELDS, false);
       tabPane.getTabs().remove(queryView.tab);
       return true;
     });

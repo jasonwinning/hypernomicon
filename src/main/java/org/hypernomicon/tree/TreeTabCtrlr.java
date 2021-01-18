@@ -316,6 +316,8 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     });
 
     db.addCloseDBHandler(tree::reset);
+
+    tree.loadColWidths(PREF_KEY_HT_TREE);
   }
 
 //---------------------------------------------------------------------------

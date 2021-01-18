@@ -960,6 +960,7 @@ public final class MainCtrlr
       }
 
       HyperTable.saveColWidthsToPrefs();
+      tree().saveColWidths(PREF_KEY_HT_TREE, true);
     }
 
     if (jxBrowserInitialized)

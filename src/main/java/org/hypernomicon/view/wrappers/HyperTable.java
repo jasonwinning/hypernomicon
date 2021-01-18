@@ -76,6 +76,7 @@ import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.input.KeyCode;
@@ -190,16 +191,15 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     registry.forEach((prefID, tv) -> nullSwitch(dialogs.get(prefID), dialog ->
     {
       if (dialog.shownAlready())
-        saveColWidthsForTable(tv, prefID, true);
+        saveColWidthsForTable(tv.getColumns(), prefID, true);
     }));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <RowType> void saveColWidthsForTable(TableView<RowType> tv, String prefID, boolean rescale)
+  public static <RowType> void saveColWidthsForTable(List<? extends TableColumnBase<RowType, ?>> columns, String prefID, boolean rescale)
   {
-    ObservableList<TableColumn<RowType, ?>> columns = tv.getColumns();
     int numCols = columns.size();
 
     for (int ndx = 0; ndx < numCols; ndx++)
@@ -222,9 +222,8 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <RowType> void loadColWidthsForTable(TableView<RowType> tv, String prefID)
+  public static <RowType> void loadColWidthsForTable(List<? extends TableColumnBase<RowType, ?>> columns, String prefID)
   {
-    ObservableList<TableColumn<RowType, ?>> columns = tv.getColumns();
     int numCols = columns.size();
 
     for (int ndx = 0; ndx < numCols; ndx++)
@@ -233,7 +232,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
       if (width > 0.0)
       {
-        TableColumn<RowType, ?> col = columns.get(ndx);
+        TableColumnBase<RowType, ?> col = columns.get(ndx);
 
         if (col.isResizable())
           col.setPrefWidth(width);
@@ -253,7 +252,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     if (dialog != null)
       dialogs.put(prefID, dialog);
 
-    loadColWidthsForTable(tv, prefID);
+    loadColWidthsForTable(tv.getColumns(), prefID);
   }
 
 //---------------------------------------------------------------------------

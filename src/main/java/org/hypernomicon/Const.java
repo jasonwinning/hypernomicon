@@ -127,6 +127,7 @@ public final class Const
     PREF_KEY_HT_QUERY_FIELDS = "htQueryFields",
     PREF_KEY_HT_TERM_GLOSSARIES = "htTermGlossaries",
     PREF_KEY_HT_TERM_DISPLAYERS = "htTermDisplayers",
+    PREF_KEY_HT_TREE = "htTree",
     PREF_KEY_HT_WORK_AUTHORS = "htWorkAuthors",
     PREF_KEY_HT_WORK_DLG = "htWorkDlg",
     PREF_KEY_HT_WORK_LABELS = "htWorkLabels",

@@ -38,6 +38,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet;
 import org.hypernomicon.view.MainCtrlr;
+import org.hypernomicon.view.wrappers.HyperTable;
 
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -140,6 +141,9 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   @Override public void scrollToNdx(int ndx)                             { ttv.scrollTo(ndx); }
 
   @Override public TreeRow newRow(HDT_Record record, TreeModel<TreeRow> treeModel) { return new TreeRow(record, treeModel); }
+
+  public void saveColWidths(String prefID, boolean rescale) { HyperTable.saveColWidthsForTable(ttv.getColumns(), prefID, rescale); }
+  public void loadColWidths(String prefID)                  { HyperTable.loadColWidthsForTable(ttv.getColumns(), prefID); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
