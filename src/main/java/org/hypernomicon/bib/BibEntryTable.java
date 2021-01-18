@@ -29,6 +29,8 @@ import org.hypernomicon.view.wrappers.HyperTable;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
@@ -51,6 +53,7 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 //---------------------------------------------------------------------------
 
   private final ObservableList<BibEntryRow> rows;
+  private final FilteredList<BibEntryRow> filteredRows;
   private final Map<String, BibEntryRow> keyToRow;
   private final TableView<BibEntryRow> tv;
   private boolean noRefresh = false;
@@ -69,7 +72,12 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 
     HyperTable.registerTable(tv, prefID, bibManagerDlg);
 
-    tv.setItems(rows);
+    filteredRows = new FilteredList<>(rows, row -> true);
+
+    SortedList<BibEntryRow> sortedRows = new SortedList<>(filteredRows);
+    sortedRows.comparatorProperty().bind(tv.comparatorProperty());
+
+    tv.setItems(sortedRows);
     tv.setPlaceholder(new Text("There are no entries in the current view."));
 
     TableColumn<BibEntryRow, String> tcEntryKey    = (TableColumn<BibEntryRow, String>) tv.getColumns().get(0),
@@ -88,7 +96,7 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
     tcPublishedIn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEntry().getStr(bfContainerTitle)));
 
     tcTitle.setComparator(sortBasis(str -> makeSortKeyByType(str, hdtWork)));
-    
+
     Comparator<String> cmp = (str1, str2) ->
     {
       int int1 = parseInt(str1, -1);
@@ -191,6 +199,39 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
   {
     tv.getSelectionModel().select(keyToRow.get(bibEntryKey));
     HyperTable.scrollToSelection(tv, true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void filter(String txt)
+  {
+    String text = ultraTrim(safeStr(txt).toLowerCase());
+
+    if (text.isBlank())
+    {
+      filteredRows.setPredicate(row -> true);
+      return;
+    }
+
+    if (text.contains(" ") == false)
+    {
+      filteredRows.setPredicate(row -> row.getEntry().getCBText().toLowerCase().contains(text));
+      return;
+    }
+
+    String[] strArray = text.split("\\s+");
+
+    filteredRows.setPredicate(row ->
+    {
+      String entryStr = row.getEntry().getCBText().toLowerCase();
+
+      for (String str : strArray)
+        if (entryStr.contains(str) == false)
+          return false;
+
+      return true;
+    });
   }
 
 //---------------------------------------------------------------------------

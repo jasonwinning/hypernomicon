@@ -39,6 +39,8 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.EnumHashBiMap;
 
+import org.controlsfx.control.textfield.CustomTextField;
+import org.controlsfx.control.textfield.TextFields;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.bib.CollectionTree.BibCollectionType;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
@@ -77,6 +79,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.TreeItem;
@@ -97,9 +100,10 @@ public class BibManager extends HyperDlg
   @FXML private SplitPane spMain;
   @FXML private TableView<BibEntryRow> tableView;
   @FXML private TableView<HyperTableRow> tvRelatives;
+  @FXML private TextField tfSearch;
   @FXML private TitledPane tpRelated;
   @FXML private AnchorPane apRelated;
-  @FXML private ToolBar toolBar;
+  @FXML private ToolBar toolBar, toolBar2;
   @FXML private TreeView<BibCollectionRow> treeView;
   @FXML private WebView webView;
   @FXML private ProgressBar progressBar;
@@ -113,6 +117,7 @@ public class BibManager extends HyperDlg
   private SyncTask syncTask = null;
   private String assignCaption, unassignCaption;
   private ImageView assignImg, unassignImg;
+  private CustomTextField searchField;
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
   private BibDataRetriever bibDataRetriever = null;
 
@@ -140,6 +145,8 @@ public class BibManager extends HyperDlg
   {
     entryTable = new BibEntryTable(tableView, PREF_KEY_HT_BIB_ENTRIES);
     collTree = new CollectionTree(treeView);
+
+    setupSearchField();
 
     assignCaption = btnAssign.getText();
     unassignCaption = btnUnassign.getText();
@@ -266,7 +273,10 @@ public class BibManager extends HyperDlg
       }
 
       if (newTreeItem != oldTreeItem)
+      {
+        searchField.clear();
         entryTable.update(getViewForTreeItem(newTreeItem));
+      }
     });
 
   //---------------------------------------------------------------------------
@@ -287,6 +297,26 @@ public class BibManager extends HyperDlg
     dialogStage.setOnHidden(event -> ui.windows.focusStage(ui.getStage()));
 
     return this;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void setupSearchField()
+  {
+    searchField = (CustomTextField) TextFields.createClearableTextField();
+    searchField.setPromptText("Title, Author, Year");
+    ImageView imageView = imgViewFromRelPath("resources/images/magnifier.png");
+    imageView.setFitHeight(16);
+    imageView.setPreserveRatio(true);
+    searchField.setLeft(imageView);
+
+    copyRegionLayout(tfSearch, searchField);
+
+    toolBar2.getItems().remove(tfSearch);
+    toolBar2.getItems().add(searchField);
+
+    searchField.textProperty().addListener((obs, ov, nv) -> entryTable.filter(nv));
   }
 
 //---------------------------------------------------------------------------

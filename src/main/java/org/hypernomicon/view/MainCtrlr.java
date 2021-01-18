@@ -98,6 +98,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.controlsfx.control.textfield.CustomTextField;
+import org.controlsfx.control.textfield.TextFields;
 import org.jbibtex.ParseException;
 import org.jbibtex.TokenMgrException;
 import com.google.common.collect.EnumHashBiMap;
@@ -168,6 +170,7 @@ public final class MainCtrlr
   private Stage stage;
   private HyperFavorites favorites;
   private OmniFinder omniFinder;
+  private CustomTextField ctfOmniGoTo;
   private HyperCB hcbGoTo;
   private HyperTable htFind;
   public final ComboBox<TreeRow> cbTreeGoTo = new ComboBox<>();
@@ -308,6 +311,10 @@ public final class MainCtrlr
 
     setSelectorTab(selectorTabPane.getTabs().get(selectorTabPane.getTabs().size() - 1));
 
+    ctfOmniGoTo = (CustomTextField) TextFields.createClearableTextField();
+    copyRegionLayout(tfOmniGoTo, ctfOmniGoTo);
+    addToParent(ctfOmniGoTo, removeFromParent(tfOmniGoTo));
+
     hcbGoTo = new HyperCB(cbGoTo, ctDropDown, new RecordByTypePopulator());
 
     htFind = new HyperTable(tvFind, 1, false, PREF_KEY_HT_FIND); htFind.disableRefreshAfterCellUpdate = true;
@@ -317,7 +324,7 @@ public final class MainCtrlr
     htFind.addCol(hdtNone, ctNone);
     htFind.addCol(hdtNone, ctNone);
 
-    htFind.setOnShowMore(() -> tfOmniGoToChange(tfOmniGoTo.getText(), true));
+    htFind.setOnShowMore(() -> tfOmniGoToChange(ctfOmniGoTo.getText(), true));
 
     htFind.addDefaultMenuItems();
 
@@ -389,7 +396,7 @@ public final class MainCtrlr
 
     apFindBackground.setOnMousePressed(event -> hideFindTable());
 
-    tfOmniGoTo.setOnAction(event -> htFind.doRowAction());
+    ctfOmniGoTo.setOnAction(event -> htFind.doRowAction());
 
     ttDates.setAutoHide(true);
 
@@ -489,7 +496,7 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
-    tfOmniGoTo.setOnMouseClicked(event ->
+    ctfOmniGoTo.setOnMouseClicked(event ->
     {
       if (htFind.getDataRowCount() > 0)
         showFindTable();
@@ -497,7 +504,7 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
-    tfOmniGoTo.textProperty().addListener((ob, oldValue, newValue) ->
+    ctfOmniGoTo.textProperty().addListener((ob, oldValue, newValue) ->
     {
       if ((newValue != null) && (newValue.equals(oldValue) == false))
         tfOmniGoToChange(newValue, false);
@@ -505,7 +512,7 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
-    tfOmniGoTo.setOnKeyPressed(event ->
+    ctfOmniGoTo.setOnKeyPressed(event ->
     {
       switch (event.getCode())
       {
@@ -973,7 +980,7 @@ public final class MainCtrlr
 
   private void closeWindows(boolean exitingApp)
   {
-    tfOmniGoTo.clear();
+    ctfOmniGoTo.clear();
     clearOmniFinder();
 
     if ((fileManagerDlg != null) && fileManagerDlg.getStage().isShowing())
@@ -2286,7 +2293,7 @@ public final class MainCtrlr
         mnuRecordSelect.setVisible(false);
         setAllVisible(true, mnuFindWithinAnyField, mnuFindWithinName);
 
-        tfSelector = tfOmniGoTo;
+        tfSelector = ctfOmniGoTo;
 
         btnCreateNew.setDisable((activeTabEnum == queryTabEnum) || (activeTabEnum == treeTabEnum));
 
@@ -2558,7 +2565,7 @@ public final class MainCtrlr
   public void omniFocus()
   {
     setSelectorTab(tabOmniSelector);
-    safeFocus(tfOmniGoTo);
+    safeFocus(ctfOmniGoTo);
   }
 
 //---------------------------------------------------------------------------

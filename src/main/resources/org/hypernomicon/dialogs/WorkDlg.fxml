@@ -32,6 +32,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -62,6 +63,9 @@
                      </image>
                   </ImageView>
                </graphic>
+               <tooltip>
+                  <Tooltip text="Open in external viewer" />
+               </tooltip>
             </Button>
             <Label layoutX="14.0" layoutY="39.0" text="(If this isn't done automatically) click [...] to browse to file, then click launch. The file will open." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="39.0" />
             <Label layoutX="14.0" layoutY="63.0" style="-fx-font-size: 1.65em; -fx-font-weight: bold;" text="Step 2." AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="63.0">

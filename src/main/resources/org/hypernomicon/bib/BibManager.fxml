@@ -23,6 +23,7 @@
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.control.TreeView?>
@@ -45,83 +46,92 @@
             <RowConstraints vgrow="ALWAYS" />
          </rowConstraints>
          <children>
-            <ToolBar fx:id="toolBar" prefHeight="40.0" prefWidth="200.0">
-              <items>
-                  <Button fx:id="btnDelete" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
-                     <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../resources/images/deletered.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
-                  <Button fx:id="btnSync" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
-                     <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../resources/images/refresh.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
-                  <Button fx:id="btnStop" disable="true" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
-                     <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../resources/images/cancel.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
-                  <Button fx:id="btnAssign" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" text="Assign to Work Record">
-                     <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../resources/images/paper-add.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
-                  <Button fx:id="btnUnassign" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" text="Unassign Work Record">
-                     <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../resources/images/paper-minus.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
-                  <Button fx:id="btnAutofill" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" text="Auto-Fill">
-                     <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../resources/images/wand-magic.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
-                  <Button fx:id="btnMainWindow" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
-                     <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../resources/images/switch_window.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
-                  <Button fx:id="btnPreviewWindow" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
-                     <graphic>
-                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../resources/images/view-document.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
-                  <ProgressBar fx:id="progressBar" prefHeight="18.0" prefWidth="134.0" />
-              </items>
-            </ToolBar>
+            <AnchorPane>
+               <children>
+                  <ToolBar fx:id="toolBar" prefHeight="46.0" prefWidth="1195.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="222.0" AnchorPane.topAnchor="0.0">
+                    <items>
+                        <Button fx:id="btnDelete" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
+                           <graphic>
+                              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../resources/images/deletered.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="btnSync" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
+                           <graphic>
+                              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../resources/images/refresh.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="btnStop" disable="true" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
+                           <graphic>
+                              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../resources/images/cancel.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="btnAssign" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" text="Assign to Work Record">
+                           <graphic>
+                              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../resources/images/paper-add.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="btnUnassign" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" text="Unassign Work Record">
+                           <graphic>
+                              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../resources/images/paper-minus.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="btnAutofill" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" text="Auto-Fill">
+                           <graphic>
+                              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../resources/images/wand-magic.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="btnMainWindow" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
+                           <graphic>
+                              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../resources/images/switch_window.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="btnPreviewWindow" maxHeight="36.0" minHeight="36.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="36.0">
+                           <graphic>
+                              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../resources/images/view-document.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <ProgressBar fx:id="progressBar" prefHeight="18.0" prefWidth="134.0" />
+                    </items>
+                  </ToolBar>
+                  <ToolBar fx:id="toolBar2" layoutX="1228.0" layoutY="11.0" prefHeight="46.0" prefWidth="227.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <items>
+                        <TextField fx:id="tfSearch" prefHeight="25.0" prefWidth="214.0" />
+                     </items>
+                  </ToolBar>
+               </children>
+            </AnchorPane>
             <SplitPane fx:id="spMain" dividerPositions="0.17597173144876324, 0.8056537102473498" prefHeight="160.0" prefWidth="200.0" GridPane.rowIndex="1">
               <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">

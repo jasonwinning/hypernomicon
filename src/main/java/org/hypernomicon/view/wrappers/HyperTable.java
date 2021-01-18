@@ -91,7 +91,6 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   final private TableView<HyperTableRow> tv;
   final private List<HyperTableColumn> cols = new ArrayList<>();
   final private ObservableList<HyperTableRow> rows = FXCollections.observableArrayList();
-  final private SortedList<HyperTableRow> sortedRows;
   final private FilteredList<HyperTableRow> filteredRows;
   final List<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
 
@@ -278,7 +277,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
     filteredRows = new FilteredList<>(rows, row -> true);
 
-    sortedRows = new SortedList<>(filteredRows);
+    SortedList<HyperTableRow> sortedRows = new SortedList<>(filteredRows);
     sortedRows.comparatorProperty().bind(tv.comparatorProperty());
 
     tv.setItems(sortedRows);

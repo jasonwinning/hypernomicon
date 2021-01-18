@@ -67,7 +67,7 @@ class InterProcDaemon extends HyperThread
     }
     catch (IOException e)
     {
-      messageDialog("InterProcDaemon terminated unexpectedly: " + e.getMessage(), mtError);
+      messageDialog("InterProcDaemon terminated unexpectedly: " + e.getMessage(), mtError, true);
     }
   }
 

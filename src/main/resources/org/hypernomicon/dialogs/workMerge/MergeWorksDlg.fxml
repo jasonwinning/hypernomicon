@@ -29,6 +29,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -422,6 +423,9 @@
                            </image>
                         </ImageView>
                      </graphic>
+                     <tooltip>
+                        <Tooltip text="Open this work in external viewer" />
+                     </tooltip>
                   </Button>      
                   <Button mnemonicParsing="false" onAction="#btnOkClick" prefWidth="60.0" text="OK" />
                   <Button mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" />
