@@ -85,6 +85,10 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
@@ -317,6 +321,13 @@ public class BibManager extends HyperDlg
     toolBar2.getItems().add(searchField);
 
     searchField.textProperty().addListener((obs, ov, nv) -> entryTable.filter(nv));
+
+    KeyCombination keyComb = new KeyCodeCombination(KeyCode.F, KeyCombination.SHORTCUT_DOWN);
+    dialogStage.addEventHandler(KeyEvent.KEY_PRESSED, event ->
+    {
+      if (keyComb.match(event))
+        safeFocus(searchField);
+    });
   }
 
 //---------------------------------------------------------------------------

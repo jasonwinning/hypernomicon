@@ -963,6 +963,8 @@ public final class MainCtrlr
       tree().saveColWidths(PREF_KEY_HT_TREE, true);
     }
 
+    InterProcClient.removeThisInstance();
+
     if (jxBrowserInitialized)
       Platform.runLater(previewWindow::cleanup); // This eventually closes the application main window
     else

@@ -280,7 +280,15 @@ public class DesktopUtil
 
   public static FilePath homeDir()
   {
-    return new FilePath(SystemUtils.getUserHome());
+    return new FilePath(System.getProperty("user.home"));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static FilePath tempDir()
+  {
+    return new FilePath(System.getProperty("java.io.tmpdir"));
   }
 
 //---------------------------------------------------------------------------
@@ -349,14 +357,6 @@ public class DesktopUtil
     {
       return s.hasNext() ? s.next() : "";
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static FilePath tempDir()
-  {
-    return new FilePath(System.getProperty("java.io.tmpdir"));
   }
 
 //---------------------------------------------------------------------------

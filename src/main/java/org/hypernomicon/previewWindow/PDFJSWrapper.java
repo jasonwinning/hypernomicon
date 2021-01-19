@@ -21,6 +21,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,13 +29,17 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import com.teamdev.jxbrowser.chromium.Browser;
+import com.teamdev.jxbrowser.chromium.BrowserContext;
+import com.teamdev.jxbrowser.chromium.BrowserContextParams;
 import com.teamdev.jxbrowser.chromium.BrowserCore;
+import com.teamdev.jxbrowser.chromium.BrowserException;
 import com.teamdev.jxbrowser.chromium.BrowserPreferences;
 import com.teamdev.jxbrowser.chromium.DialogParams;
 import com.teamdev.jxbrowser.chromium.JSArray;
 import com.teamdev.jxbrowser.chromium.JSFunction;
 import com.teamdev.jxbrowser.chromium.JSObject;
 import com.teamdev.jxbrowser.chromium.JSValue;
+import com.teamdev.jxbrowser.chromium.LoggerProvider;
 import com.teamdev.jxbrowser.chromium.ProtocolHandler;
 import com.teamdev.jxbrowser.chromium.ProtocolService;
 import com.teamdev.jxbrowser.chromium.URLRequest;
@@ -53,7 +58,12 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
+import static java.util.logging.Level.*;
+
+import org.apache.commons.io.FileUtils;
 import org.hypernomicon.App;
+import org.hypernomicon.InterProcClient;
+import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 
 import javafx.application.Platform;
@@ -71,6 +81,7 @@ public class PDFJSWrapper
   private int numPages = -1;
   private final JavascriptToJava javascriptToJava;
   private Browser browser = null, oldBrowser = null;
+  private static BrowserContext browserContext = null;
   private BrowserView browserView = null;
   private static String viewerHTMLStr = null;
   private static final String basePlaceholder = "<!-- base placeholder -->";
@@ -130,6 +141,43 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final String tempBrowserContextFolderName = "hnJxBrowserContext";
+
+  private static FilePath tempContextFolder()
+  {
+    FilePath filePath = null;
+
+    try { filePath = tempContextFolder(false); }
+    catch (IOException e) { noOp(); }
+
+    return filePath;
+  }
+
+  private static FilePath tempContextFolder(boolean create) throws IOException
+  {
+    FilePath filePath = DesktopUtil.tempDir().resolve(tempBrowserContextFolderName);
+
+    if (create && filePath.exists() == false)
+      Files.createDirectory(filePath.toPath());
+
+    return filePath;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void clearContextFolder()
+  {
+    FilePath filePath = tempContextFolder();
+    if (filePath.exists() == false) return;
+
+    try { FileUtils.cleanDirectory(filePath.toFile()); }
+    catch (IOException e) { noOp(); }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static void init() { init(false); }
 
   private static Browser init(boolean createBrowserInstance)
@@ -139,7 +187,29 @@ public class PDFJSWrapper
     try
     {
       if (createBrowserInstance)
-        browser = new Browser();
+      {
+        if (browserContext == null)
+        {
+          browserContext = BrowserContext.defaultContext();
+          LoggerProvider.setLevel(OFF);
+
+          try
+          {
+            browser = new Browser(browserContext);
+          }
+          catch (BrowserException e) // Exception means the default Chrome data folder is already in use. See https://jxbrowser.support.teamdev.com/support/solutions/articles/9000012878-creating-browser
+          {
+            FilePath filePath = tempContextFolder(true).resolve(InterProcClient.getInstanceID());
+            Files.createDirectory(filePath.toPath());
+            browserContext = new BrowserContext(new BrowserContextParams(filePath.toString()));
+          }
+
+          LoggerProvider.setLevel(SEVERE);
+        }
+
+        if (browser == null)
+          browser = new Browser(browserContext);
+      }
       else
         BrowserCore.initialize();
 
@@ -167,7 +237,7 @@ public class PDFJSWrapper
 //---------------------------------------------------------------------------
 
   // Similar to MainCtrlr.closeWindows
-  
+
   private static void closeWindows()
   {
     Platform.runLater(() ->
@@ -192,7 +262,11 @@ public class PDFJSWrapper
     }
 
     browser = init(true);
-    if (browser == null) return false;
+    if (browser == null)
+    {
+      dispose(oldBrowser, false);
+      return false;
+    }
 
     if (viewerHTMLStr == null)
     {
@@ -200,6 +274,7 @@ public class PDFJSWrapper
       catch (IOException e)
       {
         messageDialog("Unable to initialize preview window: Unable to read HTML file", mtError);
+        dispose(oldBrowser, false);
         closeWindows();
         jxBrowserDisabled = true;
         return false;

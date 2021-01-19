@@ -35,6 +35,7 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 
 import org.apache.commons.io.FileUtils;
+import org.hypernomicon.previewWindow.PDFJSWrapper;
 import org.hypernomicon.util.SplitString;
 import org.hypernomicon.util.filePath.FilePath;
 
@@ -95,11 +96,14 @@ public class InterProcClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static int getPortNum()          { return portNum; }
-  static AppInstance getInstance() { return new AppInstance(thisInstanceID, portNum, dbPath); }
+  static int getPortNum()              { return portNum; }
+  static AppInstance getInstance()     { return new AppInstance(thisInstanceID, portNum, dbPath); }
+  public static String getInstanceID() { return thisInstanceID; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  private static boolean firstRun = true;
 
   private static void loadFromFile()
   {
@@ -108,18 +112,26 @@ public class InterProcClient
     FilePath filePath = tempDir().resolve(new FilePath(tempFileName));
     if (filePath.exists() == false) return;
 
-    List<String> s;
+    List<String> s = null;
 
     try { s = FileUtils.readLines(filePath.toFile(), UTF_8); }
-    catch (IOException e) { return; }
+    catch (IOException e) { noOp(); }
 
-    s.forEach(line ->
+    if (collEmpty(s) == false)
     {
-      AppInstance instance = AppInstance.fromString(line);
+      s.forEach(line ->
+      {
+        AppInstance instance = AppInstance.fromString(line);
 
-      if (instance != null)
-        idToInstance.put(instance.instanceID, instance);
-    });
+        if (instance != null)
+          idToInstance.put(instance.instanceID, instance);
+      });
+    }
+
+    if (firstRun && idToInstance.isEmpty())
+      PDFJSWrapper.clearContextFolder();
+
+    firstRun = false;
   }
 
 //---------------------------------------------------------------------------
@@ -194,6 +206,16 @@ public class InterProcClient
   {
     dbPath = FilePath.isEmpty(newDbPath) ? new FilePath("") : newDbPath;
     refresh();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void removeThisInstance()
+  {
+    loadFromFile();
+    idToInstance.remove(thisInstanceID);
+    writeToFile();
   }
 
 //---------------------------------------------------------------------------
