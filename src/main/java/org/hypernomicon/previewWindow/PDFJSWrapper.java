@@ -157,7 +157,7 @@ public class PDFJSWrapper
   {
     FilePath filePath = DesktopUtil.tempDir().resolve(tempBrowserContextFolderName);
 
-    if (create && filePath.exists() == false)
+    if (create && (filePath.exists() == false))
       Files.createDirectory(filePath.toPath());
 
     return filePath;
@@ -201,6 +201,9 @@ public class PDFJSWrapper
           {
             FilePath filePath = tempContextFolder(true).resolve(InterProcClient.getInstanceID());
             Files.createDirectory(filePath.toPath());
+
+            LoggerProvider.setLevel(SEVERE);
+
             browserContext = new BrowserContext(new BrowserContextParams(filePath.toString()));
           }
 

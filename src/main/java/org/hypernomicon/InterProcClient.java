@@ -117,16 +117,13 @@ public class InterProcClient
     try { s = FileUtils.readLines(filePath.toFile(), UTF_8); }
     catch (IOException e) { noOp(); }
 
-    if (collEmpty(s) == false)
+    if (collEmpty(s) == false) s.forEach(line ->
     {
-      s.forEach(line ->
-      {
-        AppInstance instance = AppInstance.fromString(line);
+      AppInstance instance = AppInstance.fromString(line);
 
-        if (instance != null)
-          idToInstance.put(instance.instanceID, instance);
-      });
-    }
+      if (instance != null)
+        idToInstance.put(instance.instanceID, instance);
+    });
 
     if (firstRun && idToInstance.isEmpty())
       PDFJSWrapper.clearContextFolder();

@@ -85,8 +85,7 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     if (cell != null)
       cB.getSelectionModel().select(cell);
 
-    if (HyperTableCell.getCellText(cell).isBlank() || (cell.getID() > 0))
-      cB.show();
+    cB.show();
 
     runDelayedInFXThread(6, 50, () ->
     {
