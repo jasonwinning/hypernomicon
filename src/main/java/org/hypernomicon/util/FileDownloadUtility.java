@@ -207,6 +207,9 @@ public class FileDownloadUtility
         if (origFileNameStr.indexOf('&') >= 0)
           origFileNameStr = origFileNameStr.substring(0, origFileNameStr.indexOf('&'));
 
+        if (origFileNameStr.indexOf(':') >= 0)
+          origFileNameStr = origFileNameStr.endsWith(":") ? "" : origFileNameStr.substring(origFileNameStr.lastIndexOf(':') + 1);
+
         if (origFileNameStr.isEmpty())
           origFileNameStr = (assumeIsImage ? "image" : "file") + ZoteroWrapper.generateWriteToken();
 
@@ -278,7 +281,7 @@ public class FileDownloadUtility
     {
       request = RequestBuilder.get()
         .setUri(fileURL)
-        .setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:67.0) Gecko/20100101 Firefox/67.0")
+        .setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0")
         .build();
     }
     catch (Exception e)

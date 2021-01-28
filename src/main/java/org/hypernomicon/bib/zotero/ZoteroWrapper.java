@@ -58,12 +58,10 @@ import com.google.common.collect.Lists;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
-import org.hypernomicon.bib.BibEntryRow;
 import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
-import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.AsyncHttpClient.HttpRequestType;
 
@@ -808,150 +806,6 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     map.put(etWebPage, "webpage");
 
     return map;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public String getHtml(BibEntryRow row)
-  {
-    ZoteroItem item = (ZoteroItem) nullSwitch(row, null, BibEntryRow::getEntry);
-    if (item == null) return "";
-
-    JsonObj jObj  = item.exportJsonObjForUploadToServer(true),
-            jData = nullSwitch(jObj.getObj("data"), jObj);
-
-    jData.keySet().forEach(key ->
-    {
-      String fieldName = key;
-
-      switch (fieldName)
-      {
-        case "relations" : case "collections" : case "key" :
-        case "dateAdded" : case "accessDate"  : case "dateModified" : return;
-
-        case "url"  : fieldName = "URL"; break;
-
-        case "ISBN" : case "DOI" : case "ISSN" : break;
-
-        default : fieldName = camelToTitle(fieldName); break;
-      }
-
-      switch (jData.getType(key))
-      {
-        case ARRAY:
-
-          JsonArray jArr = jData.getArray(key);
-
-          if (key.equals("creators"))
-            addFieldHtml("Creators", makeCreatorsHtml(jArr));
-          else if (key.equals("tags"))
-            addFieldHtml("Tags", makeTagsHtml(jArr));
-          else
-            addFieldHtml(fieldName, makeArrayHtml(fieldName, jArr));
-
-          break;
-
-        case STRING:
-
-          addFieldHtml(fieldName, makeStringHtml(fieldName, jData.getStrSafe(key)));
-          break;
-
-        default:
-          break;
-      }
-    });
-
-    return compileHtml();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String makeStringHtml(String fieldName, String str)
-  {
-    if (str.isEmpty()) return "";
-
-    if (fieldName.equals("Item Type"))
-      str = camelToTitle(str);
-
-    if (fieldName.equals("URL"))
-      str = anchorTag(str, str);
-
-    return makeHtmlRow(fieldName, str);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String makeTagsHtml(JsonArray tagsArr)
-  {
-    List<String> list = new ArrayList<>();
-
-    tagsArr.getObjs().forEach(node -> list.add(node.getStrSafe("tag")));
-
-    return makeHtmlRows("Tags", list);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String makeCreatorsHtml(JsonArray creatorsArr)
-  {
-    StringBuilder html = new StringBuilder();
-
-    creatorsArr.getObjs().forEach(node ->
-    {
-      String type = node.getStrSafe("creatorType");
-
-      if (type.isEmpty()) return;
-
-      type = camelToTitle(type);
-      PersonName personName;
-      String firstName = ultraTrim(node.getStrSafe("firstName")),
-             lastName  = ultraTrim(node.getStrSafe("lastName" ));
-
-      if ((firstName.length() > 0) || (lastName.length() > 0))
-        personName = new PersonName(firstName, lastName);
-      else
-      {
-        personName = new PersonName(node.getStrSafe("name"));
-        if (personName.isEmpty()) return;
-      }
-
-      html.append(makeHtmlRow(type, personName.getLastFirst()));
-    });
-
-    return html.toString();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String makeArrayHtml(String fieldName, JsonArray jArr)
-  {
-    return makeHtmlRows(fieldName, Lists.newArrayList((Iterable<String>)jArr.getStrs()));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected List<String> getHtmlFieldOrder()
-  {
-    return List.of(
-
-      "Title",
-      "Item Type",
-      "Date",
-      "Creators",
-      "Publication Title",
-      "Book Title",
-      "Edition",
-      "Volume",
-      "Issue",
-      "Pages",
-      "Place",
-      "Publisher");
   }
 
 //---------------------------------------------------------------------------

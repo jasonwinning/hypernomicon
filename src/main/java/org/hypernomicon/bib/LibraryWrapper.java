@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +44,6 @@ import org.hypernomicon.util.JsonHttpClient;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
-import org.hypernomicon.view.mainText.MainTextUtil;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
@@ -98,7 +96,6 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
   public abstract void loadFromDisk(FilePath filePath) throws FileNotFoundException, IOException, ParseException;
   public abstract LibraryType type();
   public abstract EnumHashBiMap<EntryType, String> getEntryTypeMap();
-  public abstract String getHtml(BibEntryRow row);
   public abstract void safePrefs();
   public abstract String entryFileNode();
   public abstract String collectionFileNode();
@@ -118,10 +115,10 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
   protected final void clear()
   {
-    keyToAllEntry.clear();
+    keyToAllEntry  .clear();
     keyToTrashEntry.clear();
-    keyToColl.clear();
-    keyList.clear();
+    keyToColl      .clear();
+    keyList        .clear();
   }
 
   //---------------------------------------------------------------------------
@@ -153,107 +150,6 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
     nullSwitch(db.getWorkByBibEntryKey(oldKey), work -> work.setBibEntryKey(newKey));
 
     keyChangeHndlr.accept(oldKey, newKey);
-  }
-
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
-
-  protected static String anchorTag(String text, String url)
-  {
-    return "<a href=\"\" onclick=\"openURL('" + url + "'); return false;\">" + text + "</a>";
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  protected String compileHtml()
-  {
-    StringBuilder html = new StringBuilder()
-
-        .append("<html><head>" + MainTextUtil.scriptContent + "<style>")
-        .append("td.fieldName { vertical-align: text-top; text-align: right; padding-right:10px; }</style></head><body>")
-        .append("<table style=\"font-size:9pt; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,sans-serif; line-height:10pt;\">");
-
-    List<String> fieldOrder = getHtmlFieldOrder();
-
-    for (String fieldName : fieldOrder)
-    {
-      Iterator<FieldHtml> it = fieldHtmlList.iterator();
-
-      while (it.hasNext())
-      {
-        FieldHtml fieldHtml = it.next();
-
-        if (fieldHtml.fieldName.equalsIgnoreCase(fieldName))
-        {
-          html.append(fieldHtml.html);
-          it.remove();
-        }
-      }
-    }
-
-    fieldHtmlList.forEach(fieldHtml -> html.append(fieldHtml.html));
-
-    fieldHtmlList.clear();
-
-    return html.append("</table></body></html>").toString();
-  }
-
-  protected abstract List<String> getHtmlFieldOrder();
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  protected static String makeHtmlRow(String fieldName, String value)
-  {
-    return "<tr><td class=\"fieldName\">" + fieldName + "</td><td>" +
-           value +
-           "</td></tr>";
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static class FieldHtml
-  {
-    public final String fieldName;
-    public final String html;
-
-    private FieldHtml(String fieldName, String html)
-    {
-      this.fieldName = fieldName;
-      this.html = html;
-    }
-  }
-
-  private final List<FieldHtml> fieldHtmlList = new ArrayList<>();
-
-  protected void addFieldHtml(String fieldName, String html)
-  {
-    if (safeStr(html).isBlank()) return;
-
-    fieldHtmlList.add(new FieldHtml(fieldName, html));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  protected static String makeHtmlRows(String fieldName, List<String> list)
-  {
-    list.removeIf(str -> str == null);
-
-    if (list.isEmpty()) return "";
-
-    StringBuilder html = new StringBuilder("<tr><td class=\"fieldName\">" + fieldName + "</td><td>");
-
-    for (int ndx = 0; ndx < list.size(); ndx++)
-    {
-      html.append(list.get(ndx));
-      if (ndx < (list.size() - 1))
-        html.append("<br>");
-    }
-
-    return html.append("</td></tr>").toString();
   }
 
   //---------------------------------------------------------------------------

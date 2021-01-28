@@ -17,7 +17,6 @@
 
 package org.hypernomicon.bib.data;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -29,6 +28,8 @@ import java.util.regex.Pattern;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
+import org.hypernomicon.bib.reports.PlainTextReportGenerator;
+import org.hypernomicon.bib.reports.ReportGenerator;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 import org.hypernomicon.util.Util;
@@ -207,28 +208,28 @@ public abstract class BibData
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addReportStr(BibFieldEnum bibFieldEnum, List<String> list)
+  private void addStrToReport(BibFieldEnum bibFieldEnum, ReportGenerator report)
   {
-    appendToReport(bibFieldEnum.getUserFriendlyName(), getStr(bibFieldEnum), list);
+    String fieldName = bibFieldEnum.getUserFriendlyName();
+    report.addField(fieldName, report.makeRow(fieldName, getStr(bibFieldEnum)));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void addReportMultiStr(BibFieldEnum bibFieldEnum, List<String> list)
+  private void addMultiStrToReport(BibFieldEnum bibFieldEnum, ReportGenerator report)
   {
-    String line = getMultiStr(bibFieldEnum).stream().reduce((s1, s2) -> s1 + "; " + s2).orElse("");
-
-    appendToReport(bibFieldEnum.getUserFriendlyName(), line, list);
+    String fieldName = bibFieldEnum.getUserFriendlyName();
+    report.addField(fieldName, report.makeRows(fieldName, getMultiStr(bibFieldEnum)));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void appendToReport(String fieldName, String fieldVal, List<String> list)
+  private void addCreatorsToReport(BibFieldEnum bibFieldEnum, ReportGenerator report, String str)
   {
-    if (fieldVal.trim().length() > 0)
-      list.add(fieldName + ": " + fieldVal);
+    String fieldName = bibFieldEnum.getUserFriendlyName();
+    report.addField(fieldName, report.makeRow(fieldName, str));
   }
 
 //---------------------------------------------------------------------------
@@ -236,31 +237,37 @@ public abstract class BibData
 
   public String createReport()
   {
-    List<String> list = new ArrayList<>();
+    return PlainTextReportGenerator.generate(this);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void createReport(ReportGenerator report)
+  {
     BibAuthors authors = getAuthors();
 
-    addReportStr(bfTitle         , list);
-    addReportStr(bfEntryType     , list);
+    addStrToReport     (bfEntryType     , report);
+    addStrToReport     (bfTitle         , report);
+    addStrToReport     (bfYear          , report);
 
-    appendToReport(bfAuthors    .getUserFriendlyName(), authors.getStr(AuthorType.author    ), list);
-    appendToReport(bfEditors    .getUserFriendlyName(), authors.getStr(AuthorType.editor    ), list);
-    appendToReport(bfTranslators.getUserFriendlyName(), authors.getStr(AuthorType.translator), list);
+    addCreatorsToReport(bfAuthors       , report, authors.getStr(AuthorType.author    ));
+    addCreatorsToReport(bfEditors       , report, authors.getStr(AuthorType.editor    ));
+    addCreatorsToReport(bfTranslators   , report, authors.getStr(AuthorType.translator));
 
-    addReportStr(bfYear          , list);
-    addReportStr(bfDOI           , list);
-    addReportMultiStr(bfISBNs    , list);
-    addReportStr(bfURL           , list);
-    addReportStr(bfContainerTitle, list);
-    addReportStr(bfVolume        , list);
-    addReportStr(bfIssue         , list);
-    addReportStr(bfPages         , list);
-    addReportStr(bfPublisher     , list);
-    addReportStr(bfPubLoc        , list);
-    addReportStr(bfEdition       , list);
-    addReportStr(bfMisc          , list);
-    addReportMultiStr(bfISSNs    , list);
+    addStrToReport     (bfContainerTitle, report);
+    addStrToReport     (bfEdition       , report);
+    addStrToReport     (bfVolume        , report);
+    addStrToReport     (bfIssue         , report);
+    addStrToReport     (bfPages         , report);
+    addStrToReport     (bfPubLoc        , report);
+    addStrToReport     (bfPublisher     , report);
 
-    return strListToStr(list, false);
+    addStrToReport     (bfURL           , report);
+    addStrToReport     (bfDOI           , report);
+    addMultiStrToReport(bfISBNs         , report);
+    addStrToReport     (bfMisc          , report);
+    addMultiStrToReport(bfISSNs         , report);
   }
 
 //---------------------------------------------------------------------------

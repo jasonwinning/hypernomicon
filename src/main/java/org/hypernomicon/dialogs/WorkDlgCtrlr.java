@@ -538,7 +538,11 @@ public class WorkDlgCtrlr extends HyperDlg
     {
       if (row.getID(0) > 0)
       {
-        Platform.runLater(() -> row.setCheckboxValue(1, true));
+        Platform.runLater(() ->
+        {
+          row.setCheckboxValue(1, true);
+          htAuthors.refresh();
+        });
         return;
       }
       else if (cellVal.equals(HyperTableCell.falseCheckboxCell))

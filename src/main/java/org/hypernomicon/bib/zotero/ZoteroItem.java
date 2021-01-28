@@ -29,6 +29,8 @@ import org.hypernomicon.bib.BibManager.RelatedBibEntry;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
+import org.hypernomicon.bib.reports.ReportGenerator;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.WorkBibAuthors;
 import org.hypernomicon.bib.data.BibField;
@@ -663,6 +665,156 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
         break;
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void createReport(ReportGenerator report)
+  {
+    ZoteroItem.createReport(this, report);
+  }
+
+  private static void createReport(ZoteroItem item, ReportGenerator report)
+  {
+    JsonObj jObj  = item.exportJsonObjForUploadToServer(true),
+            jData = nullSwitch(jObj.getObj("data"), jObj);
+
+    jData.keySet().forEach(key ->
+    {
+      String fieldName = key;
+
+      switch (fieldName)
+      {
+        case "relations" : case "collections" : case "key" :
+        case "dateAdded" : case "accessDate"  : case "dateModified" : return;
+
+        case "url"  : fieldName = "URL"; break;
+
+        case "ISBN" : case "DOI" : case "ISSN" : break;
+
+        default : fieldName = camelToTitle(fieldName); break;
+      }
+
+      switch (jData.getType(key))
+      {
+        case ARRAY:
+
+          JsonArray jArr = jData.getArray(key);
+
+          if (key.equals("creators"))
+            report.addField("Creators", makeCreatorsReportContent(report, jArr));
+          else if (key.equals("tags"))
+            report.addField("Tags", makeTagsReportContent(report, jArr));
+          else
+            report.addField(fieldName, makeReportArray(report, fieldName, jArr));
+
+          break;
+
+        case STRING:
+
+          report.addField(fieldName, makeReportString(report, fieldName, jData.getStrSafe(key)));
+          break;
+
+        default:
+          break;
+      }
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String makeReportString(ReportGenerator report, String fieldName, String str)
+  {
+    if (str.isEmpty()) return "";
+
+    if (fieldName.equals("Item Type"))
+      str = camelToTitle(str);
+
+    if (fieldName.equals("URL"))
+      str = report.getUrlContent(str);
+
+    return report.makeRow(fieldName, str);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String makeTagsReportContent(ReportGenerator report, JsonArray tagsArr)
+  {
+    List<String> list = new ArrayList<>();
+
+    tagsArr.getObjs().forEach(node -> list.add(node.getStrSafe("tag")));
+
+    return report.makeRows("Tags", list);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String makeCreatorsReportContent(ReportGenerator report, JsonArray creatorsArr)
+  {
+    StringBuilder content = new StringBuilder();
+    boolean foundAny = false;
+
+    for (JsonObj node : creatorsArr.getObjs())
+    {
+      String type = node.getStrSafe("creatorType");
+
+      if (type.isEmpty()) continue;
+
+      type = camelToTitle(type);
+      PersonName personName;
+      String firstName = ultraTrim(node.getStrSafe("firstName")),
+             lastName  = ultraTrim(node.getStrSafe("lastName" ));
+
+      if ((firstName.length() > 0) || (lastName.length() > 0))
+        personName = new PersonName(firstName, lastName);
+      else
+      {
+        personName = new PersonName(node.getStrSafe("name"));
+        if (personName.isEmpty()) continue;
+      }
+
+      if (foundAny)
+        content.append(report.lineSeparator());
+      else
+        foundAny = true;
+
+      content.append(report.makeRow(type, personName.getLastFirst()));
+    }
+
+    return content.toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String makeReportArray(ReportGenerator report, String fieldName, JsonArray jArr)
+  {
+    return report.makeRows(fieldName, Lists.newArrayList((Iterable<String>)jArr.getStrs()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public List<String> getReportFieldOrder()
+  {
+    return List.of(
+
+      "Title",
+      "Item Type",
+      "Date",
+      "Creators",
+      "Publication Title",
+      "Book Title",
+      "Edition",
+      "Volume",
+      "Issue",
+      "Pages",
+      "Place",
+      "Publisher");
   }
 
 //---------------------------------------------------------------------------

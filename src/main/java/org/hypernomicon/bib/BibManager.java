@@ -46,6 +46,7 @@ import org.hypernomicon.bib.CollectionTree.BibCollectionType;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
 import org.hypernomicon.bib.data.BibDataRetriever;
 import org.hypernomicon.bib.data.EntryType;
+import org.hypernomicon.bib.reports.HtmlReportGenerator;
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.dialogs.SelectWorkDlgCtrlr;
 import org.hypernomicon.dialogs.workMerge.MergeWorksDlgCtrlr;
@@ -554,7 +555,7 @@ public class BibManager extends HyperDlg
     else
     {
       curRow = tableView.getSelectionModel().getSelectedItem();
-      webView.getEngine().loadContent(libraryWrapper.getHtml(curRow));
+      webView.getEngine().loadContent(HtmlReportGenerator.generate(nullSwitch(curRow, null, BibEntryRow::getEntry)));
     }
 
     List<RelatedBibEntry> list = getRelativesForRow(curRow);

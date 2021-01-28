@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hypernomicon.bib.BibEntry;
@@ -30,6 +32,8 @@ import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.authors.BibAuthor;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;
+import org.hypernomicon.bib.reports.ReportGenerator;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.bib.authors.BibAuthors;
 import org.hypernomicon.bib.authors.WorkBibAuthors;
 import org.hypernomicon.bib.data.BibField;
@@ -625,6 +629,193 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
         break;
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public void createReport(ReportGenerator report)
+  {
+    MendeleyDocument.createReport(this, report);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void createReport(MendeleyDocument document, ReportGenerator report)
+  {
+    JsonObj jObj  = document.exportJsonObjForUploadToServer();
+
+    jObj.keySet().forEach(key ->
+    {
+      String fieldName = key;
+
+      switch (fieldName)
+      {
+        case "profile_id" : case "id"       : case "created"      : case "last_modified" :
+        case "group_id"   : case "accessed" : case "citation_key" : case "folder_uuids"  :
+
+          return;
+
+        default : fieldName = formatMendeleyFieldName(fieldName); break;
+      }
+
+      switch (jObj.getType(key))
+      {
+        case OBJECT :
+
+          JsonObj idObj = jObj.getObj("identifiers");
+          idObj.keySet().forEach(idType ->
+          {
+            String typeStr;
+
+            switch (idType)
+            {
+              case "arxiv" :
+
+                typeStr = "ArXiv";
+                break;
+
+              case "doi" : case "isbn" : case "issn" : case "pmid" : case "ssrn" :
+
+                typeStr = idType.toUpperCase();
+                break;
+
+              default :
+
+                typeStr = formatMendeleyFieldName(idType);
+                break;
+            }
+
+            report.addField(typeStr, makeReportString(report, typeStr, idObj.getStrSafe(idType)));
+          });
+          break;
+
+        case ARRAY :
+
+          JsonArray jArr = jObj.getArray(key);
+
+          if (key.equals("authors") || key.equals("editors") || key.equals("translators"))
+          {
+            fieldName = formatMendeleyFieldName(key.substring(0, key.length() - 1));
+            report.addField(fieldName, makeCreatorsReportContent(report, jArr, fieldName));
+          }
+          else
+            report.addField(fieldName, makeReportArray(report, fieldName, jArr));
+
+          break;
+
+        case STRING :
+
+          report.addField(fieldName, key.equals("notes") ?
+            report.makeRows(fieldName, document.getMultiStr(bfMisc))
+          :
+            makeReportString(report, fieldName, jObj.getStrSafe(key)));
+          break;
+
+        case INTEGER :
+
+          report.addField(fieldName, makeReportString(report, fieldName, jObj.getAsStr(key)));
+          break;
+
+        default:
+          break;
+      }
+    });
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String formatMendeleyFieldName(String str)
+  {
+    return titleCase(str.replace('_', ' '));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String makeReportString(ReportGenerator report, String fieldName, String str)
+  {
+    if (str.isBlank()) return "";
+
+    if (fieldName.equals("Type"))
+      str = formatMendeleyFieldName(str);
+
+    return report.makeRow(fieldName, str);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String makeCreatorsReportContent(ReportGenerator report, JsonArray creatorsArr, String type)
+  {
+    StringBuilder content = new StringBuilder();
+    boolean foundAny = false;
+
+    for (JsonObj node : creatorsArr.getObjs())
+    {
+      PersonName personName;
+      String firstName = ultraTrim(node.getStrSafe("first_name")),
+             lastName  = ultraTrim(node.getStrSafe("last_name" ));
+
+      if ((firstName.length() > 0) || (lastName.length() > 0))
+        personName = new PersonName(firstName, lastName);
+      else
+        continue;
+
+      if (personName.isEmpty() == false)
+      {
+        if (foundAny)
+          content.append(report.lineSeparator());
+        else
+          foundAny = true;
+
+        content.append(report.makeRow(type, personName.getLastFirst()));
+      }
+    }
+
+    return content.toString();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String makeReportArray(ReportGenerator report, String fieldName, JsonArray jArr)
+  {
+    List<String> list;
+
+    if (fieldName.equalsIgnoreCase("websites"))
+    {
+      fieldName = "URL";
+      list = StreamSupport.stream(jArr.getStrs().spliterator(), false).map(report::getUrlContent).collect(Collectors.toList());
+    }
+    else
+      list = Lists.newArrayList((Iterable<String>)jArr.getStrs());
+
+    return report.makeRows(fieldName, list);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @Override public List<String> getReportFieldOrder()
+  {
+    return List.of(
+
+      "Type",
+      "Title",
+      "Year",
+      "Author",
+      "Editor",
+      "Translator",
+      "Source",
+      "Edition",
+      "Volume",
+      "Issue",
+      "Pages",
+      "City",
+      "Publisher");
   }
 
 //---------------------------------------------------------------------------

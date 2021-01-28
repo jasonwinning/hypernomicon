@@ -181,7 +181,11 @@ public class WebButton
   public WebButton next(WebButtonField field, String str)
   {
     if (field.nonblank(str))
+    {
+      str = str.replace('\u2018', '\'').replace('\u2019', '\'').replace('\u201c', '"').replace('\u201d', '"');
+
       values.put(field, str);
+    }
 
     return this;
   }

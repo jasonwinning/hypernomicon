@@ -1771,6 +1771,14 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       pdfBD.set(PDFBibData.createFromFiles(pdfFilePaths));
 
       if (pdfBD.get() == null)
+      {
+        String url = tfURL.getText();
+
+        if (url.startsWith(EXT_1))
+          pdfBD.set(PDFBibData.createFromFiles(safeListOf(db.resolveExtFilePath(url))));
+      }
+
+      if (pdfBD.get() == null)
         taPdfMetadata.setText("[No PDF file.]");
       else
         taPdfMetadata.appendText(pdfBD.get().createReport());

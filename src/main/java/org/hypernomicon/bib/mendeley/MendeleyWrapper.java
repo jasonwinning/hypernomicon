@@ -20,7 +20,6 @@ package org.hypernomicon.bib.mendeley;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.EntryType.*;
-import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.json.JsonObj.*;
@@ -43,8 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static java.nio.charset.StandardCharsets.*;
 
@@ -60,17 +57,14 @@ import org.json.simple.parser.ParseException;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import com.google.common.collect.EnumHashBiMap;
-import com.google.common.collect.Lists;
 
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.util.json.JsonArray;
 import org.hypernomicon.util.json.JsonObj;
-import org.hypernomicon.bib.BibEntryRow;
 import org.hypernomicon.bib.LibraryWrapper;
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
-import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.util.AsyncHttpClient.HttpRequestType;
 import org.hypernomicon.util.CryptoUtil;
@@ -659,183 +653,6 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     map.put(etBill, "bill");
 
     return map;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String formatMendeleyFieldName(String str)
-  {
-    return titleCase(str.replace('_', ' '));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override public String getHtml(BibEntryRow row)
-  {
-    MendeleyDocument document = (MendeleyDocument) nullSwitch(row, null, BibEntryRow::getEntry);
-    if (document == null) return "";
-
-    JsonObj jObj  = document.exportJsonObjForUploadToServer();
-
-    jObj.keySet().forEach(key ->
-    {
-      String fieldName = key;
-
-      switch (fieldName)
-      {
-        case "profile_id" : case "id"       : case "created"      : case "last_modified" :
-        case "group_id"   : case "accessed" : case "citation_key" : case "folder_uuids"  :
-
-          return;
-
-        default : fieldName = formatMendeleyFieldName(fieldName); break;
-      }
-
-      switch (jObj.getType(key))
-      {
-        case OBJECT :
-
-          JsonObj idObj = jObj.getObj("identifiers");
-          idObj.keySet().forEach(idType ->
-          {
-            String typeStr;
-
-            switch (idType)
-            {
-              case "arxiv" :
-
-                typeStr = "ArXiv";
-                break;
-
-              case "doi" : case "isbn" : case "issn" : case "pmid" : case "ssrn" :
-
-                typeStr = idType.toUpperCase();
-                break;
-
-              default :
-
-                typeStr = formatMendeleyFieldName(idType);
-                break;
-            }
-
-            addFieldHtml(typeStr, makeStringHtml(typeStr, idObj.getStrSafe(idType)));
-          });
-          break;
-
-        case ARRAY :
-
-          JsonArray jArr = jObj.getArray(key);
-
-          if (key.equals("authors") || key.equals("editors") || key.equals("translators"))
-          {
-            fieldName = formatMendeleyFieldName(key.substring(0, key.length() - 1));
-            addFieldHtml(fieldName, makeCreatorsHtml(jArr, fieldName));
-          }
-          else
-            addFieldHtml(fieldName, makeArrayHtml(fieldName, jArr));
-
-          break;
-
-        case STRING :
-
-          addFieldHtml(fieldName, key.equals("notes") ?
-            makeHtmlRows(fieldName, document.getMultiStr(bfMisc))
-          :
-            makeStringHtml(fieldName, jObj.getStrSafe(key)));
-          break;
-
-        case INTEGER :
-
-          addFieldHtml(fieldName, makeStringHtml(fieldName, jObj.getAsStr(key)));
-          break;
-
-        default:
-          break;
-      }
-    });
-
-    return compileHtml();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String makeStringHtml(String fieldName, String str)
-  {
-    if (str.isBlank()) return "";
-
-    if (fieldName.equals("Type"))
-      str = formatMendeleyFieldName(str);
-
-    return makeHtmlRow(fieldName, str);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String makeCreatorsHtml(JsonArray creatorsArr, String type)
-  {
-    StringBuilder html = new StringBuilder();
-
-    creatorsArr.getObjs().forEach(node ->
-    {
-      PersonName personName;
-      String firstName = ultraTrim(node.getStrSafe("first_name")),
-             lastName  = ultraTrim(node.getStrSafe("last_name" ));
-
-      if ((firstName.length() > 0) || (lastName.length() > 0))
-        personName = new PersonName(firstName, lastName);
-      else
-        return;
-
-      if (personName.isEmpty() == false)
-        html.append(makeHtmlRow(type, personName.getLastFirst()));
-    });
-
-    return html.toString();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static String makeArrayHtml(String fieldName, JsonArray jArr)
-  {
-    List<String> list;
-
-    if (fieldName.equalsIgnoreCase("websites"))
-    {
-      fieldName = "URL";
-      list = StreamSupport.stream(jArr.getStrs().spliterator(), false).map(str -> anchorTag(str, str)).collect(Collectors.toList());
-    }
-    else
-      list = Lists.newArrayList((Iterable<String>)jArr.getStrs());
-
-    return makeHtmlRows(fieldName, list);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @Override protected List<String> getHtmlFieldOrder()
-  {
-    return List.of(
-
-      "Type",
-      "Title",
-      "Title",
-      "Year",
-      "Author",
-      "Editor",
-      "Translator",
-      "Source",
-      "Edition",
-      "Volume",
-      "Issue",
-      "Pages",
-      "City",
-      "Publisher");
   }
 
 //---------------------------------------------------------------------------
