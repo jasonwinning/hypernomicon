@@ -108,6 +108,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.InputEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.DirectoryChooser;
@@ -619,6 +620,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     tabGoogleBooks.setOnClosed(event -> { taGoogleBooks.clear(); googleBD  .set(null); });
 
     btnMergeBib.setOnAction(event -> btnMergeBibClick());
+
+    tabPane.addEventFilter(InputEvent.ANY, event -> tabPane.requestLayout()); // Fix for https://sourceforge.net/p/hypernomicon/tickets/18/
   }
 
 //---------------------------------------------------------------------------
@@ -628,7 +631,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     String url = tfURL.getText();
 
-    if (url.startsWith(EXT_1))
+    if (url.startsWith(EXT_1) && (db.extPath() != null))
       launchWorkFile(db.resolveExtFilePath(url), curWork.getStartPageNum());
     else
       openWebLink(url);
@@ -1774,7 +1777,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       {
         String url = tfURL.getText();
 
-        if (url.startsWith(EXT_1))
+        if (url.startsWith(EXT_1) && (db.extPath() != null))
           pdfBD.set(PDFBibData.createFromFiles(safeListOf(db.resolveExtFilePath(url))));
       }
 
@@ -1885,6 +1888,14 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     List<FilePath> pdfFilePaths = curWork.workFiles.stream().filter(HDT_WorkFile::pathNotEmpty)
                                                             .map(HDT_WorkFile::filePath)
                                                             .collect(Collectors.toList());
+
+    if (collEmpty(pdfFilePaths))
+    {
+      String url = tfURL.getText();
+
+      if (url.startsWith(EXT_1) && (db.extPath() != null))
+        pdfFilePaths = safeListOf(db.resolveExtFilePath(url));
+    }
 
     BibData workBD = curWork.getBibData();
 

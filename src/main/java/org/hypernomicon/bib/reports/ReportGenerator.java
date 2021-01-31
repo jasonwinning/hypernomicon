@@ -17,7 +17,7 @@
 
 package org.hypernomicon.bib.reports;
 
-import static org.hypernomicon.util.Util.safeStr;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -66,6 +66,7 @@ public abstract class ReportGenerator
 
   String generate()
   {
+    fieldList.clear();
     bd.createReport(this);
 
     StringBuilder report = getStart();

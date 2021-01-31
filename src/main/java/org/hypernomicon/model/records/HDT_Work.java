@@ -379,7 +379,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     {
       String url = getURL();
 
-      if (url.startsWith(EXT_1))
+      if (url.startsWith(EXT_1) && (db.extPath() != null))
         launchWorkFile(db.resolveExtFilePath(url), pageNum);
       else
         openWebLink(url);
@@ -436,7 +436,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
       if (url.length() > 0)
 
       {
-        if (url.startsWith(EXT_1))
+        if (url.startsWith(EXT_1) && (db.extPath() != null))
           indicator = db.resolveExtFilePath(url).getExtensionOnly().toLowerCase();
         else
           indicator = "web";
@@ -530,7 +530,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
       return filePath();
 
     String url = getURL();
-    if (url.startsWith(EXT_1))
+    if (url.startsWith(EXT_1) && (db.extPath() != null))
       return db.resolveExtFilePath(url);
 
     return null;
