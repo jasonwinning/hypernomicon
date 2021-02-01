@@ -631,10 +631,18 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     String url = tfURL.getText();
 
-    if (url.startsWith(EXT_1) && (db.extPath() != null))
-      launchWorkFile(db.resolveExtFilePath(url), curWork.getStartPageNum());
-    else
+    if (url.startsWith(EXT_1) && (db.extPath() == null))
+    {
+      messageDialog(WorkTabCtrlr.NO_EXT_PATH_MESSAGE, mtWarning);
+      return;
+    }
+
+    FilePath filePath = db.resolveExtFilePath(url);
+
+    if (FilePath.isEmpty(filePath))
       openWebLink(url);
+    else
+      launchWorkFile(filePath, curWork.getStartPageNum());
   }
 
 //---------------------------------------------------------------------------
@@ -1177,7 +1185,15 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     HDT_Work newWork = db.createNewBlankRecord(hdtWork);
 
-    db.getObjectList(rtWorkFileOfWork, newWork, true).addAll(curWork.workFiles);
+    if (curWork.workFiles.isEmpty() == false)
+      db.getObjectList(rtWorkFileOfWork, newWork, true).addAll(curWork.workFiles);
+    else
+    {
+      String url = safeStr(curWork.getURL());
+
+      if (url.startsWith(EXT_1))
+        newWork.setURL(url);
+    }
 
     newWork.setLargerWork(curWork.getID(), false);
     newWork.setWorkType(wtChapter);
@@ -1774,12 +1790,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       pdfBD.set(PDFBibData.createFromFiles(pdfFilePaths));
 
       if (pdfBD.get() == null)
-      {
-        String url = tfURL.getText();
-
-        if (url.startsWith(EXT_1) && (db.extPath() != null))
-          pdfBD.set(PDFBibData.createFromFiles(safeListOf(db.resolveExtFilePath(url))));
-      }
+        pdfBD.set(PDFBibData.createFromFiles(safeListOf(db.resolveExtFilePath(tfURL.getText()))));
 
       if (pdfBD.get() == null)
         taPdfMetadata.setText("[No PDF file.]");
@@ -1890,12 +1901,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
                                                             .collect(Collectors.toList());
 
     if (collEmpty(pdfFilePaths))
-    {
-      String url = tfURL.getText();
-
-      if (url.startsWith(EXT_1) && (db.extPath() != null))
-        pdfFilePaths = safeListOf(db.resolveExtFilePath(url));
-    }
+      pdfFilePaths = safeListOf(db.resolveExtFilePath(tfURL.getText()));
 
     BibData workBD = curWork.getBibData();
 
@@ -2057,6 +2063,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static final String NO_EXT_PATH_MESSAGE = "No external file path has been set in Settings.";
+
   public boolean processDragEvent(DragEvent event)
   {
     if (tfURL.localToScene(tfURL.getBoundsInLocal()).contains(event.getSceneX(), event.getSceneY()) == false)
@@ -2074,7 +2082,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     FilePath extPath = db.extPath();
     if (FilePath.isEmpty(extPath))
     {
-      messageDialog("No external file path has been set in Settings.", mtError);
+      messageDialog(NO_EXT_PATH_MESSAGE, mtError);
       return true;
     }
 

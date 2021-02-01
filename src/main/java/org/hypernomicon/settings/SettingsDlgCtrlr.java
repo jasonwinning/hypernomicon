@@ -74,7 +74,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 {
   @FXML private AnchorPane apLinkToExtBibMgr, apUnlinkFromExtBibMgr;
   @FXML private ToggleButton btnZoteroAuthorize, btnMendeleyAuthorize;
-  @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced;
+  @FXML private Button btnCodePaste, btnUnlink, btnVerify, btnImgEditorAdvanced, btnPdfViewerAdvanced, btnClearExtPath;
   @FXML private CheckBox chkAutoOpenPDF, chkNewVersionCheck, chkAutoRetrieveBib, chkInternet, chkUseSentenceCase, chkLinuxWorkaround;
   @FXML private Label lblCurrentlyLinked, lblRedirect, lblStep2, lblStep2Instructions,
                       lblStep3, lblStep3Instructions, lblStep4, lblStep4Instructions;
@@ -113,6 +113,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
   @FXML private void btnImageEditorBrowseClick() { browseClick(dialogStage, tfImageEditor); }
   @FXML private void btnPDFReaderClick()         { browseClick(dialogStage, tfPDFReader); }
+  @FXML private void btnClearExtPathClick()      { tfExtFiles.clear(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

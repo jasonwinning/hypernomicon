@@ -22,6 +22,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ import org.hypernomicon.model.relations.HyperObjPointer;
 import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.tabs.WorkTabCtrlr;
 
 public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithPath, HDT_RecordWithAuthors<WorkAuthors>
 {
@@ -375,17 +377,26 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
     if (pageNum < 1) pageNum = getStartPageNum();
 
-    if (getPath().isEmpty())
+    if (getPath().isEmpty() == false)
     {
-      String url = getURL();
-
-      if (url.startsWith(EXT_1) && (db.extPath() != null))
-        launchWorkFile(db.resolveExtFilePath(url), pageNum);
-      else
-        openWebLink(url);
+      launchWorkFile(filePath(), pageNum);
+      return;
     }
 
-    launchWorkFile(filePath(), pageNum);
+    String url = getURL();
+
+    if (url.startsWith(EXT_1) && (db.extPath() == null))
+    {
+      messageDialog(WorkTabCtrlr.NO_EXT_PATH_MESSAGE, mtWarning);
+      return;
+    }
+
+    FilePath filePath = db.resolveExtFilePath(url);
+
+    if (FilePath.isEmpty(filePath))
+      openWebLink(url);
+    else
+      launchWorkFile(filePath, pageNum);
   }
 
 //---------------------------------------------------------------------------
@@ -430,18 +441,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     if (work.workFiles.isEmpty() == false)
       indicator = work.workFiles.get(0).filePath().getExtensionOnly().toLowerCase();
     else
-    {
-      String url = safeStr(work.getURL());
-
-      if (url.length() > 0)
-
-      {
-        if (url.startsWith(EXT_1) && (db.extPath() != null))
-          indicator = db.resolveExtFilePath(url).getExtensionOnly().toLowerCase();
-        else
-          indicator = "web";
-      }
-    }
+      indicator = nullSwitch(db.resolveExtFilePath(work.getURL()), "web", filePath -> filePath.getExtensionOnly().toLowerCase());
 
     return indicator.isEmpty() ? str : new String(str + " (" + indicator + ")").trim();
   }
@@ -526,14 +526,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
   public FilePath previewFilePath()
   {
-    if (workFiles.isEmpty() == false)
-      return filePath();
-
-    String url = getURL();
-    if (url.startsWith(EXT_1) && (db.extPath() != null))
-      return db.resolveExtFilePath(url);
-
-    return null;
+    return workFiles.isEmpty() ? db.resolveExtFilePath(getURL()) : filePath();
   }
 
 //---------------------------------------------------------------------------

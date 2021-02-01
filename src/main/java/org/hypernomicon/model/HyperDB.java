@@ -2436,7 +2436,12 @@ public final class HyperDB
 
   public FilePath resolveExtFilePath(String url)
   {
-    return extPath().resolve(FilenameUtils.separatorsToSystem(url.substring(7)));
+    if (url == null) return null;
+
+    if (url.startsWith(EXT_1) && (extPath() != null))
+      return extPath().resolve(FilenameUtils.separatorsToSystem(url.substring(7)));
+
+    return null;
   }
 
 //---------------------------------------------------------------------------

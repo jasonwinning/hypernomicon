@@ -186,6 +186,11 @@
                                         <CheckBox fx:id="chkLinuxWorkaround" layoutY="4.0" mnemonicParsing="false" text="Enable workaround for when parent windows stop being resizable" />
                                      </children>
                                   </AnchorPane>
+                                    <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="5">
+                                       <children>
+                                          <Button fx:id="btnClearExtPath" layoutY="1.0" mnemonicParsing="false" onAction="#btnClearExtPathClick" prefWidth="70.0" text="Clear" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                       </children>
+                                    </AnchorPane>
                                </children>
                                <padding>
                                   <Insets left="4.0" right="4.0" />
