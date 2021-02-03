@@ -37,7 +37,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="881.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.PersonTabCtrlr">
+<AnchorPane prefHeight="881.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.PersonTabCtrlr">
    <children>
       <SplitPane fx:id="spVert" dividerPositions="0.6166, 0.7998" layoutX="120.0" layoutY="96.0" orientation="VERTICAL" prefHeight="412.0" prefWidth="419.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
@@ -176,7 +176,8 @@
                                     <TableView fx:id="tvPersonDept" editable="true" prefHeight="335.0" prefWidth="540.0" BorderPane.alignment="CENTER">
                                       <columns>
                                         <TableColumn maxWidth="48.0" minWidth="48.0" prefWidth="48.0" resizable="false" sortable="false" />
-                                        <TableColumn prefWidth="180.0" sortable="false" text="Institution" />
+                                          <TableColumn maxWidth="40.0" minWidth="40.0" prefWidth="40.0" text="Past" />
+                                        <TableColumn prefWidth="249.0" sortable="false" text="Institution" />
                                           <TableColumn prefWidth="175.0" sortable="false" text="Division" />
                                       </columns>
                                        <columnResizePolicy>

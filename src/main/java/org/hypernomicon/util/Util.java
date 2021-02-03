@@ -346,14 +346,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void launchFile(FilePath filePath)
-  {
-    DesktopUtil.launchWorkFile(filePath, 1);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static DialogResult abortRetryIgnoreDialog(String msg)
   {
     return new PopupDialog(msg)

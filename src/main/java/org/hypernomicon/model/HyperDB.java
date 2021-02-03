@@ -1949,6 +1949,7 @@ public final class HyperDB
                          addTag("definition"        , tagDefinition     , "Definition");
                          addTag("text"              , tagText           , "Text");
                          addTag("active"            , tagActive         , "Active");
+                         addTag("past"              , tagPast           , "Past");
                          addTag("creation_date"     , tagCreationDate   , "Date Created");
                          addTag("modified_date"     , tagModifiedDate   , "Date Modified");
                          addTag("view_date"         , tagViewDate       , "Date Last Viewed");
@@ -2201,7 +2202,7 @@ public final class HyperDB
     tagBibEntryKey,    tagComments,     tagLargerDebate, tagListName,        tagCounterargument, tagDefinition,     tagText,         tagActive,
     tagLargerPosition, tagParentNote,   tagFolder,       tagLargerWork,      tagParentLabel,     tagParentGlossary, tagParentGroup,  tagParentFolder,
     tagCreationDate,   tagModifiedDate, tagViewDate,     tagDisplayRecord,   tagKeyWork,         tagLinkedRecord,   tagParentInst,   tagHub,
-    tagPictureFolder;
+    tagPictureFolder,  tagPast;
 
     static EnumHashBiMap<Tag, Integer> tagToNum = EnumHashBiMap.create(Tag.class);
 

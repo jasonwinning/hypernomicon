@@ -88,7 +88,7 @@ public class RenameDlgCtrlr extends HyperDlg
     {
       if (tfName.isFocused() && !tfName.getText().isEmpty())
       {
-        if ((nameType != NameType.ntRecord) && (FilenameUtils.indexOfExtension(tfName.getText()) >= 0))
+        if ((nameType != ntRecord) && (FilenameUtils.indexOfExtension(tfName.getText()) >= 0))
           tfName.selectRange(0, FilenameUtils.indexOfExtension(tfName.getText()));
         else
           tfName.selectAll();

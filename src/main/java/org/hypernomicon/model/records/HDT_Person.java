@@ -91,6 +91,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
   public PersonName getName()                              { return getName(false); }
   public String getNameLastFirst(boolean engChar)          { return getName(engChar).getLastFirst(); }
   public String getFullName(boolean engChar)               { return getName(engChar).getFull(); }
+  public boolean instIsPast(HDT_Institution inst)          { return db.getNestedBoolean(this, inst, tagPast); }
   public void setWebURL(String newStr)                     { updateTagString(tagWebURL, newStr); }
   public void setORCID(String newOrcid)                    { updateTagString(tagORCID, newOrcid); }
   public void setInstitutions(List<HDT_Institution> list)  { updateObjectsFromList(rtInstOfPerson, list); }

@@ -19,6 +19,7 @@ package org.hypernomicon.view.tabs;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
@@ -35,6 +36,7 @@ import org.hypernomicon.dialogs.NewInstDlgCtrlr;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.dialogs.PictureDlgCtrlr;
 import org.hypernomicon.dialogs.InvestigationsDlgCtrlr.InvestigationSetting;
+import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HyperPath;
@@ -44,6 +46,7 @@ import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
+import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.util.WebButton.WebButtonField;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
@@ -61,9 +64,11 @@ import static java.util.Collections.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -177,16 +182,19 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     htPersonInst.buildRows(curPerson.institutions, (row, inst) ->
     {
-      if (inst.parentInst.isNotNull())
-        row.setCellValue(1, inst.parentInst.get(), inst.parentInst.get().name());
+      row.setCheckboxValue(1, curPerson.instIsPast(inst));
 
-      row.setCellValue(2, inst, inst.name());
+      if (inst.parentInst.isNotNull())
+        row.setCellValue(2, inst.parentInst.get(), inst.parentInst.get().name());
+
+      row.setCellValue(3, inst, inst.name());
     });
 
     Set<HDT_Record> topicRecordsAdded = new HashSet<>();
 
     curPerson.works.forEach(work ->
     {
+
 // Populate the debates
 // --------------------
 
@@ -604,7 +612,11 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     curPerson.field.setID(hcbField.selectedID());
     curPerson.status.setID(hcbStatus.selectedID());
 
-    curPerson.setInstitutions(htPersonInst.saveToList(2, hdtInstitution));
+    Map<Integer, Tag> colNdxToTag = new HashMap<>();
+    colNdxToTag.put(1, tagPast);
+
+    List<ObjectGroup> tableGroups  = htPersonInst.getObjectGroupList(curPerson, rtInstOfPerson, 3, colNdxToTag);
+    curPerson.updateObjectGroups(rtInstOfPerson, tableGroups, colNdxToTag.values());
 
     mainText.save();
 
@@ -682,9 +694,10 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
       return (inst.subInstitutions.size() > 0) || inst.parentInst.isNull();
     };
 
-    htPersonInst = new HyperTable(tvPersonDept, 2, true, PREF_KEY_HT_PERSON_INST);
+    htPersonInst = new HyperTable(tvPersonDept, 3, true, PREF_KEY_HT_PERSON_INST);
 
-    htPersonInst.addActionCol(ctGoNewBtn, 1);
+    htPersonInst.addActionCol(ctGoNewBtn, 2);
+    htPersonInst.addCheckboxCol();
     htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctDropDownList, new StandardPopulator(hdtInstitution, popFilter, true), (row, cellVal, nextColNdx, nextPopulator) ->
     {
       ((SubjectPopulator)nextPopulator).setObj(row, getRecord(cellVal));
@@ -1071,11 +1084,11 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   {
     if (ui.cantSaveRecord()) return;
 
-    HDT_Institution parentInst = null, subInst = null, oldParent = row.getRecord(1);
-    if ((newName.length() > 0) && (colNdx == 1))
+    HDT_Institution parentInst = null, subInst = null, oldParent = row.getRecord(2);
+    if ((newName.length() > 0) && (colNdx == 2))
       oldParent = null;
 
-    NewInstDlgCtrlr newInstDialog = NewInstDlgCtrlr.build(oldParent, newName, colNdx == 1);
+    NewInstDlgCtrlr newInstDialog = NewInstDlgCtrlr.build(oldParent, newName, colNdx == 2);
 
     if (newInstDialog.showModal() == false) return;
 

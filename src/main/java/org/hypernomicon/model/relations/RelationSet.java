@@ -157,7 +157,10 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case rtRankOfPerson             : hasNestedItems = false; subjType = hdtPerson;        objType = hdtRank;            break;
       case rtInvestigationOfWork      : hasNestedItems = false; subjType = hdtWork;          objType = hdtInvestigation;   break;
       case rtPersonOfInv              : hasNestedItems = false; subjType = hdtInvestigation; objType = hdtPerson;          break;
-      case rtInstOfPerson             : hasNestedItems = false; subjType = hdtPerson;        objType = hdtInstitution;     break;
+      case rtInstOfPerson             : hasNestedItems = true;  subjType = hdtPerson;        objType = hdtInstitution;
+
+        addNestedItem(hdcBoolean, tagPast);                                                        break;
+
       case rtTypeOfInst               : hasNestedItems = false; subjType = hdtInstitution;   objType = hdtInstitutionType; break;
       case rtParentInstOfInst         : hasNestedItems = false; subjType = hdtInstitution;   objType = hdtInstitution;     break;
       case rtCountryOfRegion          : hasNestedItems = false; subjType = hdtRegion;        objType = hdtCountry;         break;
@@ -438,7 +441,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     List<HDT_Obj> origList = subjToObjList.get(subj);
 
     list.sort(sortBasis(og -> origList.indexOf(og.getPrimary())));
-    
+
     return list;
   }
 

@@ -17,6 +17,7 @@
 
 package org.hypernomicon.query.engines;
 
+import org.hypernomicon.model.records.HDT_Institution;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.query.sources.DatasetQuerySource;
 import org.hypernomicon.query.sources.QuerySource;
@@ -25,18 +26,24 @@ import org.hypernomicon.view.populators.VariablePopulator;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
+import static org.hypernomicon.App.app;
+import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryTabCtrlr.*;
 
 public class PersonQueryEngine extends QueryEngine<HDT_Person>
 {
 
+  private static final int QUERY_SET_DECEASED_AS_PAST = QUERY_FIRST_NDX + 1;
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
   {
-
+    if (app.debugging())
+      pop.addEntry(row, QUERY_SET_DECEASED_AS_PAST, "Set deceased people as past members of institutions");
   }
 
 //---------------------------------------------------------------------------
@@ -57,7 +64,22 @@ public class PersonQueryEngine extends QueryEngine<HDT_Person>
   {
     switch (curQuery)
     {
+      case QUERY_SET_DECEASED_AS_PAST :
 
+        if (person.status.getID() == 5)  // Deceased
+        {
+          boolean foundOne = false;
+          for (HDT_Institution inst : person.institutions)
+          {
+            if (person.instIsPast(inst) == false)
+            {
+              foundOne = true;
+              db.updateNestedBoolean(person, inst, tagPast, true);
+            }
+          }
+
+          return foundOne;
+        }
     }
 
     return false;
@@ -98,6 +120,12 @@ public class PersonQueryEngine extends QueryEngine<HDT_Person>
 
   @Override public boolean hasOperand(int query, int opNum, HyperTableCell prevOp)
   {
+    switch (query)
+    {
+      case QUERY_SET_DECEASED_AS_PAST :
+        return false;
+    }
+
     return true;
   }
 

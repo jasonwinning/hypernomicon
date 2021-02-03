@@ -1311,7 +1311,7 @@ public class FileManager extends HyperDlg
 
     if (FilePath.isEmpty(filePath) == false)
       fileTable.selectByFileName(filePath);
-    
+
     alreadyRefreshing = false;
   }
 

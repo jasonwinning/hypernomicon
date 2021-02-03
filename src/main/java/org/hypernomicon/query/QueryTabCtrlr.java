@@ -106,6 +106,7 @@ import static org.hypernomicon.query.ResultsTable.*;
 import static org.hypernomicon.query.engines.QueryEngine.QueryType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;

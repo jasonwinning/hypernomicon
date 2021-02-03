@@ -32,6 +32,7 @@ import java.util.Scanner;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
@@ -40,6 +41,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.settings.LaunchCommandsDlgCtrlr;
 import org.hypernomicon.util.filePath.FilePath;
+import org.hypernomicon.view.tabs.WorkTabCtrlr;
 
 import com.google.common.collect.Lists;
 
@@ -199,17 +201,26 @@ public class DesktopUtil
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  public static boolean openWebLink(String url)
+  public static void openWebLink(String url)
   {
     url = url.trim();
 
-    if (url.isEmpty()) return true;
+    if (url.isEmpty()) return;
+
+    if (url.startsWith(EXT_1) && (db.extPath() == null))
+    {
+      messageDialog(WorkTabCtrlr.NO_EXT_PATH_MESSAGE, mtWarning);
+      return;
+    }
 
     if (url.indexOf(":") == -1)
       url = "http://" + url;
 
     if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC)
-      return browseDesktop(url);
+    {
+      browseDesktop(url);
+      return;
+    }
 
     try
     {
@@ -217,10 +228,19 @@ public class DesktopUtil
     }
     catch (URISyntaxException e)
     {
-      return falseWithErrorMessage("An error occurred while trying to browse to: " + url + ". " + e.getMessage());
+      falseWithErrorMessage("An error occurred while trying to browse to: " + url + ". " + e.getMessage());
+      return;
     }
 
-    return openSystemSpecific(url);
+    openSystemSpecific(url);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void launchFile(FilePath filePath)
+  {
+    launchWorkFile(filePath, 1);
   }
 
 //---------------------------------------------------------------------------

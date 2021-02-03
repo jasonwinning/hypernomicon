@@ -29,7 +29,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="710.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.InstTabCtrlr">
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="710.0" prefWidth="969.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.InstTabCtrlr">
    <children>
       <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <columnConstraints>
@@ -123,6 +123,7 @@
                                   <TableColumn editable="false" prefWidth="106.0" text="Rank" />
                                     <TableColumn editable="false" prefWidth="124.0" text="Field" />
                                     <TableColumn editable="false" prefWidth="98.0" text="Division" />
+                                    <TableColumn prefWidth="40.0" text="Past" />
                                 </columns>
                               </TableView>
                            </children>

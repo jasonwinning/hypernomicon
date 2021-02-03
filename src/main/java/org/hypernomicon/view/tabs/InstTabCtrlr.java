@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.prefs.Preferences;
 
 import javafx.fxml.FXML;
@@ -135,6 +136,8 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       int instID = instList.isEmpty() ? -1 : instList.get(0).getID();
 
       row.setCellValue(3, instID, instStr, hdtInstitution);
+
+      row.setCellValue(4, instList.stream().noneMatch(Predicate.not(person::instIsPast)) ? "Past" : "", hdtPerson);
     });
 
     htPersons.getTV().getSortOrder().setAll(List.of(htPersons.getTV().getColumns().get(0)));
@@ -221,6 +224,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     htPersons.addCol(hdtRank       , ctNone);
     htPersons.addCol(hdtField      , ctNone);
     htPersons.addCol(hdtInstitution, ctNone);
+    htPersons.addCol(hdtPerson     , ctNone);
 
     hcbCountry = new HyperCB(cbCountry, ctDropDownList, new StandardPopulator(hdtCountry), true);
     hcbRegion = new HyperCB(cbRegion, ctDropDownList, new SubjectPopulator(rtCountryOfRegion, false), true);
