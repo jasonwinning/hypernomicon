@@ -35,7 +35,8 @@ import static org.hypernomicon.query.QueryTabCtrlr.*;
 public class PersonQueryEngine extends QueryEngine<HDT_Person>
 {
 
-  private static final int QUERY_SET_DECEASED_AS_PAST = QUERY_FIRST_NDX + 1;
+  private static final int QUERY_SET_DECEASED_AS_PAST = QUERY_FIRST_NDX + 1,
+                           QUERY_MULTIPLE_INST        = QUERY_FIRST_NDX + 2;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -44,6 +45,8 @@ public class PersonQueryEngine extends QueryEngine<HDT_Person>
   {
     if (app.debugging())
       pop.addEntry(row, QUERY_SET_DECEASED_AS_PAST, "Set deceased people as past members of institutions");
+
+    pop.addEntry(row, QUERY_MULTIPLE_INST, "with multiple affiliations");
   }
 
 //---------------------------------------------------------------------------
@@ -80,6 +83,12 @@ public class PersonQueryEngine extends QueryEngine<HDT_Person>
 
           return foundOne;
         }
+
+        return false;
+
+      case QUERY_MULTIPLE_INST :
+
+        return person.institutions.size() > 1;
     }
 
     return false;
@@ -123,6 +132,8 @@ public class PersonQueryEngine extends QueryEngine<HDT_Person>
     switch (query)
     {
       case QUERY_SET_DECEASED_AS_PAST :
+      case QUERY_MULTIPLE_INST :
+
         return false;
     }
 

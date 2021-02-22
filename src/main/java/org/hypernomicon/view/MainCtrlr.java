@@ -928,36 +928,16 @@ public final class MainCtrlr
       appPrefs.putBoolean(PREF_KEY_WINDOW_MAXIMIZED, maximized);
 
       if (fileManagerDlg.shownAlready())
-      {
-        appPrefs.putDouble(PREF_KEY_FM_WINDOW_X, fileManagerDlg.getStage().getX());
-        appPrefs.putDouble(PREF_KEY_FM_WINDOW_Y, fileManagerDlg.getStage().getY());
-        appPrefs.putDouble(PREF_KEY_FM_WINDOW_WIDTH, fileManagerDlg.getStage().getWidth());
-        appPrefs.putDouble(PREF_KEY_FM_WINDOW_HEIGHT, fileManagerDlg.getStage().getHeight());
-      }
+        HyperDlg.saveBoundPrefs(fileManagerDlg.getStage(), PREF_KEY_FM_WINDOW_X, PREF_KEY_FM_WINDOW_Y, PREF_KEY_FM_WINDOW_WIDTH, PREF_KEY_FM_WINDOW_HEIGHT);
 
       if (bibManagerDlg.shownAlready())
-      {
-        appPrefs.putDouble(PREF_KEY_BM_WINDOW_X, bibManagerDlg.getStage().getX());
-        appPrefs.putDouble(PREF_KEY_BM_WINDOW_Y, bibManagerDlg.getStage().getY());
-        appPrefs.putDouble(PREF_KEY_BM_WINDOW_WIDTH, bibManagerDlg.getStage().getWidth());
-        appPrefs.putDouble(PREF_KEY_BM_WINDOW_HEIGHT, bibManagerDlg.getStage().getHeight());
-      }
+        HyperDlg.saveBoundPrefs(bibManagerDlg.getStage(), PREF_KEY_BM_WINDOW_X, PREF_KEY_BM_WINDOW_Y, PREF_KEY_BM_WINDOW_WIDTH, PREF_KEY_BM_WINDOW_HEIGHT);
 
       if (previewWindow.shownAlready())
-      {
-        appPrefs.putDouble(PREF_KEY_PREV_WINDOW_X, previewWindow.getStage().getX());
-        appPrefs.putDouble(PREF_KEY_PREV_WINDOW_Y, previewWindow.getStage().getY());
-        appPrefs.putDouble(PREF_KEY_PREV_WINDOW_WIDTH, previewWindow.getStage().getWidth());
-        appPrefs.putDouble(PREF_KEY_PREV_WINDOW_HEIGHT, previewWindow.getStage().getHeight());
-      }
+        HyperDlg.saveBoundPrefs(previewWindow.getStage(), PREF_KEY_PREV_WINDOW_X, PREF_KEY_PREV_WINDOW_Y, PREF_KEY_PREV_WINDOW_WIDTH, PREF_KEY_PREV_WINDOW_HEIGHT);
 
       if (contentsWindow.shownAlready())
-      {
-        appPrefs.putDouble(PREF_KEY_CONTENTS_WINDOW_X, contentsWindow.getStage().getX());
-        appPrefs.putDouble(PREF_KEY_CONTENTS_WINDOW_Y, contentsWindow.getStage().getY());
-        appPrefs.putDouble(PREF_KEY_CONTENTS_WINDOW_WIDTH, contentsWindow.getStage().getWidth());
-        appPrefs.putDouble(PREF_KEY_CONTENTS_WINDOW_HEIGHT, contentsWindow.getStage().getHeight());
-      }
+        HyperDlg.saveBoundPrefs(contentsWindow.getStage(), PREF_KEY_CONTENTS_WINDOW_X, PREF_KEY_CONTENTS_WINDOW_Y, PREF_KEY_CONTENTS_WINDOW_WIDTH, PREF_KEY_CONTENTS_WINDOW_HEIGHT);
 
       HyperTable.saveColWidthsToPrefs();
       tree().saveColWidths(PREF_KEY_HT_TREE, true);

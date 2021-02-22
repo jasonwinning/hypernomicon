@@ -183,6 +183,17 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static final Predicate<Integer> parentPopFilter = id ->
+  {
+    HDT_Institution inst = db.institutions.getByID(id);
+    if (inst.isDeptOrFaculty() == false) return true;
+
+    return inst.parentInst.isNull() || (inst.subInstitutions.size() > 0);
+  };
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override protected void init()
   {
     htSubInst = new HyperTable(tvSubInstitutions, 0, true, PREF_KEY_HT_INST_SUB);
@@ -230,7 +241,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     hcbRegion = new HyperCB(cbRegion, ctDropDownList, new SubjectPopulator(rtCountryOfRegion, false), true);
 
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType), true);
-    hcbParentInst = new HyperCB(cbParentInst, ctDropDownList, new StandardPopulator(hdtInstitution), true);
+    hcbParentInst = new HyperCB(cbParentInst, ctDropDownList, new StandardPopulator(hdtInstitution, parentPopFilter, true), true);
 
     hcbCountry.addListener((oldValue, newValue) ->
     {

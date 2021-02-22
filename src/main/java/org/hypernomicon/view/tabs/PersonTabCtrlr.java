@@ -687,18 +687,11 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     btnNewWork.setOnAction(event -> ui.importWorkFile(curPerson, null, false));
     setToolTip(btnNewWork, "Create new work record with this person as author");
 
-    Predicate<Integer> popFilter = id ->
-    {
-      HDT_Institution inst = db.institutions.getByID(id);
-
-      return (inst.subInstitutions.size() > 0) || inst.parentInst.isNull();
-    };
-
     htPersonInst = new HyperTable(tvPersonDept, 3, true, PREF_KEY_HT_PERSON_INST);
 
     htPersonInst.addActionCol(ctGoNewBtn, 2);
     htPersonInst.addCheckboxCol();
-    htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctDropDownList, new StandardPopulator(hdtInstitution, popFilter, true), (row, cellVal, nextColNdx, nextPopulator) ->
+    htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctDropDownList, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, true), (row, cellVal, nextColNdx, nextPopulator) ->
     {
       ((SubjectPopulator)nextPopulator).setObj(row, getRecord(cellVal));
       row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));

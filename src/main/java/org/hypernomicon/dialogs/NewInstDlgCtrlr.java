@@ -17,13 +17,10 @@
 
 package org.hypernomicon.dialogs;
 
-import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
-
-import java.util.function.Predicate;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Institution;
@@ -32,6 +29,7 @@ import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.populators.SubjectPopulator;
+import org.hypernomicon.view.tabs.InstTabCtrlr;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import javafx.fxml.FXML;
@@ -61,9 +59,7 @@ public class NewInstDlgCtrlr extends HyperDlg
 
   private NewInstDlgCtrlr init(HDT_Institution parent, String newName, boolean isParent)
   {
-    Predicate<Integer> popFilter = id -> db.institutions.getByID(id).subInstitutions.size() > 0;
-
-    hcbParent = new HyperCB(cbParent, ctDropDownList, new StandardPopulator(hdtInstitution, popFilter, true));
+    hcbParent = new HyperCB(cbParent, ctDropDownList, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, true));
     hcbExisting = new HyperCB(cbExisting, ctDropDownList, new SubjectPopulator(rtParentInstOfInst, false), true);
     hcbType = new HyperCB(cbType, ctDropDownList, new StandardPopulator(hdtInstitutionType));
 
@@ -74,7 +70,7 @@ public class NewInstDlgCtrlr extends HyperDlg
       if (isEmpty(newValue) || (getCellID(oldValue) == getCellID(newValue))) return;
 
       rbExistingInst.setSelected(true);
-        
+
       ((SubjectPopulator)hcbExisting.getPopulator()).setObj(null, getRecord(newValue));
       if (getCellID(oldValue) > 0)
         hcbExisting.selectID(-1);
@@ -83,7 +79,7 @@ public class NewInstDlgCtrlr extends HyperDlg
     hcbExisting.addListener((oldValue, newValue) ->
     {
       if (isEmpty(newValue) || (getCellID(oldValue) == getCellID(newValue))) return;
-      
+
       rbExistingInst.setSelected(true);
       rbExistingDiv .setSelected(true);
     });
@@ -117,6 +113,8 @@ public class NewInstDlgCtrlr extends HyperDlg
     }
 
     hcbType.selectID(HDT_Institution.DEPARTMENT_INST_TYPE_ID);
+
+    onShown = () -> safeFocus(rbNewInst.isSelected() ? tfNewParentName : tfName);
 
     return this;
   }

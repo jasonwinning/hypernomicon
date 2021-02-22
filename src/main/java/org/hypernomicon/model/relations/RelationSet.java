@@ -241,7 +241,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public static RelationType getRelation(RecordType subjType, RecordType objType)
   {
-    return nullSwitch(typeMappings.get(subjType, objType), RelationType.rtNone);
+    return nullSwitch(typeMappings.get(subjType, objType), rtNone);
   }
 
 //---------------------------------------------------------------------------
@@ -621,7 +621,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     if (hasNestedItems)
       objectGroups.remove(subj, obj);
 
-    if ((type == RelationType.rtWorkFileOfWork) && (getSubjectCount(obj) == 0))
+    if ((type == rtWorkFileOfWork) && (getSubjectCount(obj) == 0))
       if (obj.isExpired() == false) // The obj record may have just been deleted, and the pointers are still being resolved
         db.deleteRecord(obj);
   }

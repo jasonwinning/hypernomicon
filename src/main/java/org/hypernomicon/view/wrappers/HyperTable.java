@@ -108,6 +108,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   private static final Map<String, TableView<?>> registry = new HashMap<>();
   private static final Map<String, HyperDlg> dialogs = new HashMap<>();
+  private static final Map<String, List<Double>> colWidthMap = new HashMap<>();
 
 //---------------------------------------------------------------------------
 
@@ -188,11 +189,13 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public static void saveColWidthsToPrefs()
   {
-    registry.forEach((prefID, tv) -> nullSwitch(dialogs.get(prefID), dialog ->
+    registry.forEach((prefID, tv) ->
     {
-      if (dialog.shownAlready())
+      HyperDlg dialog = dialogs.get(prefID);
+
+      if ((dialog == null) || (dialog.shownAlready()))
         saveColWidthsForTable(tv.getColumns(), prefID, true);
-    }));
+    });
   }
 
 //---------------------------------------------------------------------------
@@ -202,15 +205,30 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   {
     int numCols = columns.size();
 
+    List<Double> oldWidths = colWidthMap.get(prefID), curWidths = columns.stream()
+      .map(column -> column.getWidth())
+      .map(width -> ((width > 0.0) && rescale) ? width / displayScale : width)
+      .collect(Collectors.toList());
+
+    boolean save = false;
+
+    if ((oldWidths == null) || (oldWidths.size() != curWidths.size()))
+      save = true;
+    else
+    {
+      for (int ndx = 0; ndx < numCols; ndx++)
+        if ((curWidths.get(ndx) > 0.0) && (Math.abs(curWidths.get(ndx) - oldWidths.get(ndx)) >= 1.0))
+          save = true;
+    }
+
+    if (save == false) return;
+
     for (int ndx = 0; ndx < numCols; ndx++)
     {
-      double width = columns.get(ndx).getWidth();
+      double width = curWidths.get(ndx);
 
       if (width > 0.0)
       {
-        if (rescale)
-          width = width / displayScale;
-
         double oldWidth = appPrefs.getDouble(prefID + "ColWidth" + String.valueOf(ndx + 1), -1.0);
 
         if (Math.abs(width - oldWidth) >= 1.0)
@@ -224,11 +242,14 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public static <RowType> void loadColWidthsForTable(List<? extends TableColumnBase<RowType, ?>> columns, String prefID)
   {
+    List<Double> newWidths = new ArrayList<>();
+    colWidthMap.put(prefID, newWidths);
     int numCols = columns.size();
 
     for (int ndx = 0; ndx < numCols; ndx++)
     {
       double width = appPrefs.getDouble(prefID + "ColWidth" + String.valueOf(ndx + 1), -1.0);
+      newWidths.add(width);
 
       if (width > 0.0)
       {

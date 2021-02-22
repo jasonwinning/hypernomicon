@@ -136,9 +136,12 @@ public final class Util
 
 //---------------------------------------------------------------------------
 
+  private static final Map<String, Double> dividerMap = new HashMap<>();
+
   public static void setDividerPosition(SplitPane sp, String key, int ndx)
   {
     double pos = appPrefs.getDouble(key, -1.0);
+    dividerMap.put(key, pos);
 
     if (pos >= 0)
       sp.setDividerPosition(ndx, pos);
@@ -149,7 +152,9 @@ public final class Util
 
   public static void getDividerPosition(SplitPane sp, String key, int ndx)
   {
-    appPrefs.putDouble(key, sp.getDividerPositions()[ndx]);
+    double pos = sp.getDividerPositions()[ndx];
+    if (Double.valueOf(pos).equals(dividerMap.get(key)) == false)
+      appPrefs.putDouble(key, sp.getDividerPositions()[ndx]);
   }
 
 //---------------------------------------------------------------------------

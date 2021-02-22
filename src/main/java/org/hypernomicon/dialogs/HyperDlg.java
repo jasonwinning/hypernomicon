@@ -25,9 +25,13 @@ import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.App;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
@@ -120,53 +124,80 @@ public abstract class HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final void initBounds(String prefKeyX, String prefKeyY, String prefKeyHeight, String prefKeyWidth)
-  {
-    double val = appPrefs.getDouble(prefKeyX, -1.0);
-    if (val > 0)
-      dialogStage.setX(val);
-    
-    val = appPrefs.getDouble(prefKeyY, -1.0);
-    if (val > 0)
-      dialogStage.setY(val);
-    else if (SystemUtils.IS_OS_WINDOWS && (dialogStage.getY() < 30.0)) // Make sure Windows taskbar isn't at the top and covering the window controls
-      dialogStage.setY(30.0);
+  private static final Map<String, Bounds> boundsMap = new HashMap<>();
 
-    setInitHeight(prefKeyHeight);
-    setInitWidth(prefKeyWidth);
+  public final void initBounds(String prefKeyX, String prefKeyY, String prefKeyWidth, String prefKeyHeight)
+  {
+    double x = appPrefs.getDouble(prefKeyX, -1.0);
+    if (x > 0)
+      dialogStage.setX(x);
+
+    double y = appPrefs.getDouble(prefKeyY, -1.0);
+    if (y > 0)
+      dialogStage.setY(y);
+    else if (SystemUtils.IS_OS_WINDOWS && (dialogStage.getY() < 30.0)) // Make sure Windows taskbar isn't at the top and covering the window controls
+    {
+      y = 30.0;
+      dialogStage.setY(30.0);
+    }
+
+    double h = setInitHeight(prefKeyHeight),
+           w = setInitWidth(prefKeyWidth);
+
+    boundsMap.put(prefKeyX, new BoundingBox(x, y, w, h));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
-  private void setInitHeight(String prefKey)
+
+  public static void saveBoundPrefs(Stage stage, String prefKeyX, String prefKeyY, String prefKeyWidth, String prefKeyHeight)
+  {
+    Bounds b = new BoundingBox(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight());
+
+    if (b.equals(boundsMap.get(prefKeyX)) == false)
+    {
+      appPrefs.putDouble(prefKeyX, b.getMinX());
+      appPrefs.putDouble(prefKeyY, b.getMinY());
+      appPrefs.putDouble(prefKeyWidth, b.getWidth());
+      appPrefs.putDouble(prefKeyHeight, b.getHeight());
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private double setInitHeight(String prefKey)
   {
     double defHeight = stagePane.getPrefHeight();
     Point2D point = new Robot().getMousePosition();
     Screen screen = Screen.getScreensForRectangle(new Rectangle2D(point.getX(), point.getY(), 1, 1)).stream().findFirst().orElse(null);
-    
+
     if (screen != null)
     {
       double screenHeight = screen.getBounds().getHeight();
       if (defHeight > (screenHeight - 60.0))
         defHeight = screenHeight - 60.0;
     }
-    
+
     initHeight = appPrefs.getDouble(prefKey, defHeight);
-    
+
     if (initHeight < 350)
       initHeight = stagePane.getPrefHeight();
+
+    return initHeight;
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void setInitWidth(String prefKey)
+  private double setInitWidth(String prefKey)
   {
     initWidth = appPrefs.getDouble(prefKey, stagePane.getPrefWidth());
 
     if (initWidth < 350)
       initWidth = stagePane.getPrefWidth();
+
+    return initWidth;
   }
 
 //---------------------------------------------------------------------------

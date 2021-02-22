@@ -57,15 +57,14 @@ public final class Connector
   public String listName()                   { return record == null ? "" : record.listName(); }
   public static boolean isEmpty(Connector c) { return (c == null) || HDT_Record.isEmpty(c.getSpoke()); }
 
-  @Override public int hashCode()            { return 31 * (record == null ? 0 : record.hashCode()); }
+  @Override public int hashCode()            { return record == null ? 0 : (31 * record.hashCode()); }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
   public void modifyNow()
   {
-    if (db.runningConversion) return;
-    if (alreadyModifying) return;
+    if (db.runningConversion || alreadyModifying) return;
 
     alreadyModifying = true;
 

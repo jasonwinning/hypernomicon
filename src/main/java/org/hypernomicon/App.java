@@ -429,7 +429,7 @@ public final class App extends Application
     forEachHyperTab(HyperTab::setDividerPositions);
 
     bibManagerDlg = BibManager.build();
-    bibManagerDlg.initBounds(PREF_KEY_BM_WINDOW_X, PREF_KEY_BM_WINDOW_Y, PREF_KEY_BM_WINDOW_HEIGHT, PREF_KEY_BM_WINDOW_WIDTH);
+    bibManagerDlg.initBounds(PREF_KEY_BM_WINDOW_X, PREF_KEY_BM_WINDOW_Y, PREF_KEY_BM_WINDOW_WIDTH, PREF_KEY_BM_WINDOW_HEIGHT);
 
     db.addBibChangedHandler(() ->
     {
@@ -445,7 +445,7 @@ public final class App extends Application
     });
 
     fileManagerDlg = FileManager.build();
-    fileManagerDlg.initBounds(PREF_KEY_FM_WINDOW_X, PREF_KEY_FM_WINDOW_Y, PREF_KEY_FM_WINDOW_HEIGHT, PREF_KEY_FM_WINDOW_WIDTH);
+    fileManagerDlg.initBounds(PREF_KEY_FM_WINDOW_X, PREF_KEY_FM_WINDOW_Y, PREF_KEY_FM_WINDOW_WIDTH, PREF_KEY_FM_WINDOW_HEIGHT);
 
     previewWindow = PreviewWindow.build();
     previewWindow.initBounds(PREF_KEY_PREV_WINDOW_X, PREF_KEY_PREV_WINDOW_Y, PREF_KEY_PREV_WINDOW_WIDTH, PREF_KEY_PREV_WINDOW_HEIGHT);

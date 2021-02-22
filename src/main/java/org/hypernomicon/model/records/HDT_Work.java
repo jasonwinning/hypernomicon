@@ -440,7 +440,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
     if (work.workFiles.isEmpty() == false)
       indicator = work.workFiles.get(0).filePath().getExtensionOnly().toLowerCase();
-    else
+    else if (work.getURL().isBlank() == false)
       indicator = nullSwitch(db.resolveExtFilePath(work.getURL()), "web", filePath -> filePath.getExtensionOnly().toLowerCase());
 
     return indicator.isEmpty() ? str : new String(str + " (" + indicator + ")").trim();
@@ -518,7 +518,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
   public boolean canPreview()
   {
-    return FilePath.isEmpty(previewFilePath());
+    return FilePath.isEmpty(previewFilePath()) == false;
   }
 
 //---------------------------------------------------------------------------
