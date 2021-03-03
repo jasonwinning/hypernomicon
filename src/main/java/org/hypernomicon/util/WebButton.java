@@ -213,6 +213,10 @@ public class WebButton
 
         if (str.contains(field.key) == false) continue;
 
+        if ((field == WebButtonField.QueryTitle) || (field == WebButtonField.Title))
+          if (value.startsWith("("))
+            value = removeFirstParenthetical(value);
+
         if (field == WebButtonField.QueryTitle)
         {
           String[] array = value.split("[.;:!?()]|--");

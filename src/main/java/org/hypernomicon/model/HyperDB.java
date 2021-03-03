@@ -225,9 +225,9 @@ public final class HyperDB
   public boolean    getNestedBoolean(HDT_Record subj, HDT_Record obj, Tag tag) { return relSet(subj, obj).getNestedBoolean(subj, obj, tag); }
   public Ternary    getNestedTernary(HDT_Record subj, HDT_Record obj, Tag tag) { return relSet(subj, obj).getNestedTernary(subj, obj, tag); }
   public HDT_Record getNestedPointer(HDT_Record subj, HDT_Record obj, Tag tag) { return relSet(subj, obj).getNestedPointer(subj, obj, tag); }
-  public boolean relationHasNestedValues(RelationType relType)                 { return relationSets.get(relType).getHasNestedItems(); }
+  public boolean    relationHasNestedValues(RelationType relType)              { return relationSets.get(relType).getHasNestedItems(); }
   public HDI_Schema getNestedSchema(RelationType relType, Tag tag)             { return relationSets.get(relType).getSchema(tag); }
-  public Set<Tag> getNestedTags(RelationType relType)                          { return relationSets.get(relType).getNestedTags(); }
+  public Set<Tag>   getNestedTags(RelationType relType)                        { return relationSets.get(relType).getNestedTags(); }
 
   @SuppressWarnings("unchecked")
   private <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> RelationSet<HDT_SubjType, HDT_ObjType> relSet(HDT_SubjType subj, HDT_ObjType obj)

@@ -1799,6 +1799,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
         updateProgress(ndx++, resultRowList.size());
       }
+
       return true;
     }};
 

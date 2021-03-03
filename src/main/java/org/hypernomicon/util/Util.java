@@ -732,19 +732,19 @@ public final class Util
 
       Double val = AnchorPane.getBottomAnchor(node);
       if ((val != null) && (val.doubleValue() > 0.0))
-        AnchorPane.setBottomAnchor(node, val.doubleValue() * displayScale);
+        AnchorPane.setBottomAnchor(node, round(val.doubleValue() * displayScale));
 
       val = AnchorPane.getTopAnchor(node);
       if ((val != null) && (val.doubleValue() > 0.0))
-        AnchorPane.setTopAnchor(node, val.doubleValue() * displayScale);
+        AnchorPane.setTopAnchor(node, round(val.doubleValue() * displayScale));
 
       val = AnchorPane.getLeftAnchor(node);
       if ((val != null) && (val.doubleValue() > 0.0))
-        AnchorPane.setLeftAnchor(node, val.doubleValue() * displayScale);
+        AnchorPane.setLeftAnchor(node, round(val.doubleValue() * displayScale));
 
       val = AnchorPane.getRightAnchor(node);
       if ((val != null) && (val.doubleValue() > 0.0))
-        AnchorPane.setRightAnchor(node, val.doubleValue() * displayScale);
+        AnchorPane.setRightAnchor(node, round(val.doubleValue() * displayScale));
     }
 
     if (node instanceof TableView) ((TableView<?>)node).getColumns().forEach(column ->
@@ -771,6 +771,14 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static double round(double n)
+  {
+    return Math.round(n);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static void scalePropertiesForDPI(DoubleProperty... props)
   {
     double[] vals = new double[props.length];
@@ -782,7 +790,7 @@ public final class Util
     {
       if (vals[ndx] > 0.0)
       {
-        vals[ndx] = vals[ndx] * displayScale;
+        vals[ndx] = round(vals[ndx] * displayScale);
         props[ndx].set(vals[ndx]);
       }
     }

@@ -31,19 +31,19 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane minHeight="200.0" minWidth="300.0" prefHeight="583.0" prefWidth="1126.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.NewArgDlgCtrlr">
+<AnchorPane minHeight="200.0" minWidth="300.0" prefHeight="618.0" prefWidth="1126.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.NewArgDlgCtrlr">
    <children>
       <Label layoutX="33.0" layoutY="23.0" text="Position:" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="12.0">
       </Label>
       <Label layoutX="14.0" layoutY="34.0" prefHeight="217.0" prefWidth="66.0" text="Position description:" wrapText="true" AnchorPane.bottomAnchor="417.0" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="34.0">
       </Label>
-      <Label layoutX="12.0" layoutY="248.0" prefHeight="217.0" prefWidth="66.0" text="Name suggestions:" wrapText="true" AnchorPane.bottomAnchor="193.0" AnchorPane.leftAnchor="12.0">
+      <Label layoutX="12.0" layoutY="177.0" prefHeight="217.0" prefWidth="66.0" text="Name suggestions:" wrapText="true" AnchorPane.bottomAnchor="224.0" AnchorPane.leftAnchor="12.0">
       </Label>
       <Label layoutX="12.0" layoutY="151.0" text="Person:" AnchorPane.bottomAnchor="141.0" AnchorPane.leftAnchor="12.0">
       </Label>
       <TextField fx:id="tfPosition" editable="false" layoutX="125.0" layoutY="9.0" prefHeight="22.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="9.0" />
-      <WebView fx:id="view" layoutX="111.0" layoutY="34.0" prefHeight="217.0" prefWidth="1003.0" AnchorPane.bottomAnchor="417.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="34.0" />
-      <GridPane layoutX="111.0" layoutY="248.0" prefHeight="281.0" prefWidth="1003.0" AnchorPane.bottomAnchor="136.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0">
+      <WebView fx:id="view" AnchorPane.bottomAnchor="449.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="34.0" />
+      <GridPane layoutX="111.0" layoutY="170.0" prefHeight="281.0" prefWidth="1003.0" AnchorPane.bottomAnchor="167.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0">
         <columnConstraints>
           <ColumnConstraints hgrow="NEVER" maxWidth="21.0" minWidth="21.0" prefWidth="21.0" />
           <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" prefWidth="982.0" />
@@ -179,7 +179,7 @@
             </AnchorPane>
          </children>
       </GridPane>
-      <TitledPane animated="false" collapsible="false" focusTraversable="false" layoutX="24.0" layoutY="176.0" prefHeight="101.0" prefWidth="693.0" text="Work" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0">
+      <TitledPane animated="false" collapsible="false" focusTraversable="false" layoutX="12.0" layoutY="456.0" prefHeight="129.0" prefWidth="1102.0" text="Work" AnchorPane.bottomAnchor="33.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0">
         <content>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="106.0" prefWidth="691.0">
                <children>
@@ -188,8 +188,9 @@
                         <ToggleGroup fx:id="radioGroup" />
                      </toggleGroup></RadioButton>
                   <TextField fx:id="tfTitle" layoutX="149.4" layoutY="11.0" prefHeight="22.0" prefWidth="588.0" AnchorPane.leftAnchor="71.0" AnchorPane.rightAnchor="8.0" />
-                  <RadioButton fx:id="rbExisting" layoutX="21.8" layoutY="46.0" mnemonicParsing="false" text="Existing" toggleGroup="$radioGroup" AnchorPane.leftAnchor="6.0" />
+                  <RadioButton fx:id="rbExisting" layoutX="14.0" layoutY="46.0" mnemonicParsing="false" text="Existing" toggleGroup="$radioGroup" AnchorPane.leftAnchor="6.0" />
                   <ComboBox fx:id="cbWork" layoutX="79.0" layoutY="42.0" prefHeight="22.0" prefWidth="594.0" AnchorPane.leftAnchor="71.0" AnchorPane.rightAnchor="8.0" />
+                  <RadioButton layoutX="14.0" layoutY="80.0" mnemonicParsing="false" text="None" toggleGroup="$radioGroup" AnchorPane.leftAnchor="6.0" />
                </children>
             </AnchorPane>
         </content>
@@ -203,12 +204,12 @@
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <Button fx:id="btnOK" maxWidth="50.0" minWidth="50.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="50.0" text="OK">
+            <Button fx:id="btnOK" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnOkClick" prefWidth="60.0" text="OK">
                <GridPane.margin>
                   <Insets right="4.0" />
                </GridPane.margin>
             </Button>
-            <Button fx:id="btnCancel" maxWidth="50.0" minWidth="50.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="50.0" text="Cancel" GridPane.columnIndex="1">
+            <Button fx:id="btnCancel" maxWidth="60.0" minWidth="60.0" mnemonicParsing="false" onAction="#btnCancelClick" prefWidth="60.0" text="Cancel" GridPane.columnIndex="1">
                <GridPane.margin>
                   <Insets left="4.0" />
                </GridPane.margin>

@@ -31,6 +31,7 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.populators.HybridSubjectPopulator;
@@ -196,16 +197,20 @@ public class NewArgDlgCtrlr extends HyperDlg
       if (person != null) part1 = person.getLastName() + "'s ";
     }
 
-    String part2 = part1.isEmpty() ? "Argument " : "argument ";
+    String part2 = part1.isEmpty() ? "Argument " : "argument ",
+           positionName = position.name();
 
-    tfArgName1.setText(part1 + part2 + "for " + position.name());
-    tfArgName2.setText(part1 + part2 + "for the " + position.name());
-    tfArgName3.setText(part1 + part2 + "that " + position.name());
-    tfArgName4.setText(part1 + part2 + "for the view that " + position.name());
-    tfArgName5.setText(part1 + part2 + "against " + position.name());
-    tfArgName6.setText(part1 + part2 + "against the " + position.name());
-    tfArgName7.setText(part1 + part2 + "that it is false that " + position.name());
-    tfArgName8.setText(part1 + part2 + "against the view that " + position.name());
+    if (positionName.startsWith("The "))
+      positionName = "the " + positionName.substring(4);
+
+    tfArgName1.setText(part1 + part2 + "for "                   + positionName);
+    tfArgName2.setText(part1 + part2 + "for the "               + positionName);
+    tfArgName3.setText(part1 + part2 + "that "                  + positionName);
+    tfArgName4.setText(part1 + part2 + "for the view that "     + positionName);
+    tfArgName5.setText(part1 + part2 + "against "               + positionName);
+    tfArgName6.setText(part1 + part2 + "against the "           + positionName);
+    tfArgName7.setText(part1 + part2 + "that it is false that " + positionName);
+    tfArgName8.setText(part1 + part2 + "against the view that " + positionName);
 
     revising = false;
   }
@@ -215,8 +220,13 @@ public class NewArgDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
+    HDT_PositionVerdict verdict = hcbPositionVerdict.selectedRecord();
+
+    if (verdict == null)
+      return falseWithErrorMessage("You must select a verdict.", cbPositionVerdict);
+
     argument = db.createNewBlankRecord(hdtArgument);
-    argument.addPosition(position, hcbPositionVerdict.selectedRecord());
+    argument.addPosition(position, verdict);
 
     if      (rbArgName1.isSelected()) argument.setName(tfArgName1.getText());
     else if (rbArgName2.isSelected()) argument.setName(tfArgName2.getText());
@@ -236,8 +246,10 @@ public class NewArgDlgCtrlr extends HyperDlg
       work.setName(tfTitle.getText());
       nullSwitch(hcbPerson.selectedRecord(), person -> work.getAuthors().add((HDT_Person) person));
     }
-    else
+    else if (rbExisting.isSelected())
       work = hcbWork.selectedRecord();
+    else
+      work = null;
 
     if (work != null)
       argument.works.add(work);

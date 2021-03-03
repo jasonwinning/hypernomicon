@@ -493,19 +493,19 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
       if (tabPane.isVisible() == false) // Expand dialog vertically to reveal duplicate author tabs
       {
-        double height = 419.0 * displayScale,
+        double height = round(419.0 * displayScale),
                diff = dialogStage.getHeight() - stagePane.getHeight();
 
-         setHeights(stagePane  , height);
-         setHeights(dialogStage, height + diff);
+        setHeights(stagePane  , height);
+        setHeights(dialogStage, height + diff);
 
-         tabPane.setVisible(true);
+        tabPane.setVisible(true);
 
-         if (person == null)
-           rbCreateNoMerge.setText("Create Record Without Merging");
+        if (person == null)
+          rbCreateNoMerge.setText("Create Record Without Merging");
 
-         rbCreateNoMerge.setSelected(false);
-         rbAddNoCreate.setSelected(false);
+        rbCreateNoMerge.setSelected(false);
+        rbAddNoCreate.setSelected(false);
       }
     }
     else
