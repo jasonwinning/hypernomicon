@@ -88,6 +88,11 @@ public class MergeWorksMLCtrlr extends BibFieldRow
       ta1.setText(strListToStr(bd1.getMultiStr(bibFieldEnum), true));
       rb1.setSelected(true);
     }
+
+    ta1.textProperty().addListener((obs, ov, nv) -> rb1.setSelected(true));
+    ta2.textProperty().addListener((obs, ov, nv) -> rb2.setSelected(true));
+    ta3.textProperty().addListener((obs, ov, nv) -> rb3.setSelected(true));
+    ta4.textProperty().addListener((obs, ov, nv) -> rb4.setSelected(true));
   }
 
 //---------------------------------------------------------------------------

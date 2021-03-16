@@ -1589,7 +1589,12 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         if (workTypeEnumVal != wtUnenteredSet)
           if (tfYear.getText().equals(curWork.getYear()) == false)
             if (confirmDialog("Year has been modified. Update search key?"))
-              tfSearchKey.setText(makeWorkSearchKey(tfSearchKey.getText().replace(curWork.getYear(), tfYear.getText()), curWork));
+            {
+              if (tfSearchKey.getText().endsWith(curWork.getYear()))
+                tfSearchKey.setText(makeWorkSearchKey(tfSearchKey.getText().replace(curWork.getYear(), tfYear.getText()), curWork));
+              else
+                tfSearchKey.setText(makeWorkSearchKey(getFirstAuthorSingleName(), tfYear.getText(), curWork));
+            }
     }
 
     if (!saveSearchKey(curWork, tfSearchKey)) return false;

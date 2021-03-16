@@ -110,7 +110,12 @@ public class HDT_Argument extends HDT_RecordWithConnector
 
   public boolean isInFavor(HDT_Position position)
   {
-    return Sets.newHashSet(1, 3, 6, 17).contains(nullSwitch(getPosVerdict(position), -1, HDT_Record::getID));
+    return posVerdictIDIsInFavor(nullSwitch(getPosVerdict(position), -1, HDT_Record::getID));
+  }
+
+  public static boolean posVerdictIDIsInFavor(int id)
+  {
+    return Sets.newHashSet(1, 3, 6, 17).contains(id);
   }
 
 //---------------------------------------------------------------------------

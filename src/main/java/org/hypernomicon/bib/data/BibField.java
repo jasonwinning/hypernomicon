@@ -35,6 +35,8 @@ public class BibField
 
   public static enum BibFieldEnum
   {
+    // MergeWorksDlgCtrlr.init assumes that bfPublisher comes after bfPubLoc
+
     bfEntryType      ("Entry Type"        , bftEntryType),
     bfWorkType       ("Work Type"         , bftWorkType),
     bfAuthors        ("Authors"           , bftAuthor),

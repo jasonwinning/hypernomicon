@@ -59,8 +59,9 @@ public class NewArgDlgCtrlr extends HyperDlg
   private HDT_Position position;
   private HDT_Argument argument;
   private HyperCB hcbPerson, hcbPositionVerdict, hcbWork;
-  private boolean revising = false, changingWorkProgrammatically = false;
+  private boolean revising = false, programmaticWorkChange = false, programmaticVerdictChange = false;
   private MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
+  private String argName1 = "", argName2 = "", argName3 = "", argName4 = "", argName5 = "", argName6 = "", argName7 = "", argName8 = "";
 
   public HDT_Argument getArgument() { return argument; }
 
@@ -87,7 +88,7 @@ public class NewArgDlgCtrlr extends HyperDlg
 
     hcbWork.addListener((oldCell, newCell) ->
     {
-      if (changingWorkProgrammatically) return;
+      if (programmaticWorkChange) return;
 
       rbExisting.setSelected(true);
 
@@ -110,7 +111,7 @@ public class NewArgDlgCtrlr extends HyperDlg
         }
       }
 
-      changingWorkProgrammatically = false;
+      programmaticWorkChange = false;
     });
 
     tfTitle.setTextFormatter(WorkDlgCtrlr.titleFormatter(alreadyChangingTitle));
@@ -123,6 +124,29 @@ public class NewArgDlgCtrlr extends HyperDlg
     hcbPositionVerdict.addAndSelectEntry(db.positionVerdicts.getByID(1), HDT_Record::getCBText);
     hcbPositionVerdict.populate(false);
     hcbWork.addBlankEntry();
+
+    hcbPositionVerdict.addListener((ov, nv) ->
+    {
+      if (programmaticVerdictChange) return;
+
+      int verdictID = HyperTableCell.getCellID(nv);
+      if (verdictID < 1) return;
+
+      if (HDT_Argument.posVerdictIDIsInFavor(verdictID))
+      {
+        if      (rbArgName5.isSelected() && tfArgName5.getText().equals(argName5)) rbArgName1.setSelected(true);
+        else if (rbArgName6.isSelected() && tfArgName6.getText().equals(argName6)) rbArgName2.setSelected(true);
+        else if (rbArgName7.isSelected() && tfArgName7.getText().equals(argName7)) rbArgName3.setSelected(true);
+        else if (rbArgName8.isSelected() && tfArgName8.getText().equals(argName8)) rbArgName4.setSelected(true);
+      }
+      else
+      {
+        if      (rbArgName1.isSelected() && tfArgName1.getText().equals(argName1)) rbArgName5.setSelected(true);
+        else if (rbArgName2.isSelected() && tfArgName2.getText().equals(argName2)) rbArgName6.setSelected(true);
+        else if (rbArgName3.isSelected() && tfArgName3.getText().equals(argName3)) rbArgName7.setSelected(true);
+        else if (rbArgName4.isSelected() && tfArgName4.getText().equals(argName4)) rbArgName8.setSelected(true);
+      }
+    });
 
     tfPosition.setText(position.name());
 
@@ -137,8 +161,8 @@ public class NewArgDlgCtrlr extends HyperDlg
     tfTitle.setText(position.name() + " Argument Stem");
     alreadyChangingTitle.setFalse();
 
-    addListeners(tfArgName1, rbArgName1, true);  addListeners(tfArgName2, rbArgName2, true);
-    addListeners(tfArgName3, rbArgName3, true);  addListeners(tfArgName4, rbArgName4, true);
+    addListeners(tfArgName1, rbArgName1, true ); addListeners(tfArgName2, rbArgName2, true );
+    addListeners(tfArgName3, rbArgName3, true ); addListeners(tfArgName4, rbArgName4, true );
     addListeners(tfArgName5, rbArgName5, false); addListeners(tfArgName6, rbArgName6, false);
     addListeners(tfArgName7, rbArgName7, false); addListeners(tfArgName8, rbArgName8, false);
 
@@ -178,7 +202,11 @@ public class NewArgDlgCtrlr extends HyperDlg
   private void argNameSelect(Boolean newSelected, boolean proArg)
   {
     if ((newSelected != null) && newSelected.booleanValue())
+    {
+      programmaticVerdictChange = true;
       hcbPositionVerdict.selectID(proArg ? 1 : 2);
+      programmaticVerdictChange = false;
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -203,14 +231,14 @@ public class NewArgDlgCtrlr extends HyperDlg
     if (positionName.startsWith("The "))
       positionName = "the " + positionName.substring(4);
 
-    tfArgName1.setText(part1 + part2 + "for "                   + positionName);
-    tfArgName2.setText(part1 + part2 + "for the "               + positionName);
-    tfArgName3.setText(part1 + part2 + "that "                  + positionName);
-    tfArgName4.setText(part1 + part2 + "for the view that "     + positionName);
-    tfArgName5.setText(part1 + part2 + "against "               + positionName);
-    tfArgName6.setText(part1 + part2 + "against the "           + positionName);
-    tfArgName7.setText(part1 + part2 + "that it is false that " + positionName);
-    tfArgName8.setText(part1 + part2 + "against the view that " + positionName);
+    argName1 = part1 + part2 + "for "                   + positionName; tfArgName1.setText(argName1);
+    argName2 = part1 + part2 + "for the "               + positionName; tfArgName2.setText(argName2);
+    argName3 = part1 + part2 + "that "                  + positionName; tfArgName3.setText(argName3);
+    argName4 = part1 + part2 + "for the view that "     + positionName; tfArgName4.setText(argName4);
+    argName5 = part1 + part2 + "against "               + positionName; tfArgName5.setText(argName5);
+    argName6 = part1 + part2 + "against the "           + positionName; tfArgName6.setText(argName6);
+    argName7 = part1 + part2 + "that it is false that " + positionName; tfArgName7.setText(argName7);
+    argName8 = part1 + part2 + "against the view that " + positionName; tfArgName8.setText(argName8);
 
     revising = false;
   }

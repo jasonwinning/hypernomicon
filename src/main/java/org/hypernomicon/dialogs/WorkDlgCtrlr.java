@@ -496,9 +496,17 @@ public class WorkDlgCtrlr extends HyperDlg
 
   public static TextFormatter<?> titleFormatter(MutableBoolean alreadyChangingTitle)
   {
+    return titleFormatter(alreadyChangingTitle, null);
+  }
+
+  public static TextFormatter<?> titleFormatter(MutableBoolean alreadyChangingTitle, RadioButton rb)
+  {
     return new TextFormatter<>(change ->
     {
       if (alreadyChangingTitle.isTrue()) return change;
+
+      if ((rb != null) && ((change.getText().length() > 0) || ((change.getRangeEnd() - change.getRangeStart()) > 0)))
+        rb.setSelected(true);
 
       if (change.getText().length() > 1)
       {

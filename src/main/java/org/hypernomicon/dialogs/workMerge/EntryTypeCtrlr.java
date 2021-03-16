@@ -91,6 +91,8 @@ public class EntryTypeCtrlr extends BibFieldRow
         rb.setSelected(true);
       }
     }
+
+    cb.getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> rb.setSelected(true));
   }
 
 //---------------------------------------------------------------------------

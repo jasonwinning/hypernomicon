@@ -674,8 +674,8 @@ public final class Util
 
   public static void setHeights(Region region, Double ht)
   {
-    region.setMinHeight(ht);
-    region.setMaxHeight(ht);
+    region.setMinHeight (ht);
+    region.setMaxHeight (ht);
     region.setPrefHeight(ht);
   }
 
@@ -683,7 +683,7 @@ public final class Util
   {
     stage.setMinHeight(ht);
     stage.setMaxHeight(ht);
-    stage.setHeight(ht);
+    stage.setHeight   (ht);
   }
 
 //---------------------------------------------------------------------------
@@ -1137,22 +1137,28 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public static List<Node> getChildren(Parent parent)
+  {
+    if (parent instanceof Pane)
+      return ((Pane)parent).getChildren();
+    else if (parent instanceof ToolBar)
+      return ((ToolBar)parent).getItems();
+
+    return null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   // This function is what seems to have mostly fixed the HTML editor bugs
 
   public static Parent removeFromParent(Node node)
   {
     Parent parent = node.getParent();
+    List<Node> children = getChildren(parent);
 
-    if (parent instanceof Pane)
-    {
-      Pane pane = (Pane)parent;
-      pane.getChildren().remove(node);
-    }
-    else if (parent instanceof ToolBar)
-    {
-      ToolBar toolBar = (ToolBar)parent;
-      toolBar.getItems().remove(node);
-    }
+    if (children != null)
+      children.remove(node);
 
     return parent;
   }
@@ -1162,20 +1168,10 @@ public final class Util
 
   public static void addToParent(Node child, Parent parent)
   {
-    if (parent instanceof Pane)
-    {
-      Pane pane = (Pane)parent;
+    List<Node> children = getChildren(parent);
 
-      if (pane.getChildren().contains(child) == false)
-        pane.getChildren().add(child);
-    }
-    else if (parent instanceof ToolBar)
-    {
-      ToolBar toolBar = (ToolBar)parent;
-
-      if (toolBar.getItems().contains(child) == false)
-        toolBar.getItems().add(child);
-    }
+    if ((children != null) && (children.contains(child) == false))
+      children.add(child);
   }
 
 //---------------------------------------------------------------------------
@@ -1276,7 +1272,6 @@ public final class Util
       throw new IOException(npe);
     }
   }
-
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

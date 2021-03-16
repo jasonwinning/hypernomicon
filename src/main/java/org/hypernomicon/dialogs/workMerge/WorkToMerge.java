@@ -83,10 +83,12 @@ public class WorkToMerge
     tfTitle.setText(bibData.getStr(bfTitle));
     if (tfTitle.getText().isEmpty() == false) rbTitle.setSelected(true);
 
-    tfTitle.setTextFormatter(WorkDlgCtrlr.titleFormatter(alreadyChangingTitle));
+    tfTitle.setTextFormatter(WorkDlgCtrlr.titleFormatter(alreadyChangingTitle, rbTitle));
 
     tfYear.setText(bibData.getStr(bfYear));
     if (tfYear.getText().isEmpty() == false) rbYear.setSelected(true);
+
+    tfYear.textProperty().addListener((obs, ov, nv) -> rbYear.setSelected(true));
 
     if (bibData.getWork() != null)
       loadFromWork(bibData.getWork(), rbType);

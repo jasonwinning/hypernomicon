@@ -92,6 +92,11 @@ public class MergeWorksSLCtrlr extends BibFieldRow
       tf1.setText(bd1.getStr(bibFieldEnum));
       rb1.setSelected(true);
     }
+
+    tf1.textProperty().addListener((obs, ov, nv) -> rb1.setSelected(true));
+    tf2.textProperty().addListener((obs, ov, nv) -> rb2.setSelected(true));
+    tf3.textProperty().addListener((obs, ov, nv) -> rb3.setSelected(true));
+    tf4.textProperty().addListener((obs, ov, nv) -> rb4.setSelected(true));
   }
 
 //---------------------------------------------------------------------------

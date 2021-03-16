@@ -228,7 +228,6 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 
       int cnt = 0;
       BibData singleBD = null;
-
       boolean fieldsEqual = true;
 
       if (bd1.fieldNotEmpty(bibFieldEnum))
@@ -277,7 +276,24 @@ public class MergeWorksDlgCtrlr extends HyperDlg
       }
 
       if ((bibFieldEnum == bfMisc) || ((cnt > 0) && ((fieldsEqual == false) || (cnt < works.size()))))
+      {
+        if ((bibFieldEnum == bfPublisher) && (extraRows.containsKey(bfPubLoc) == false))
+        {
+          HDT_WorkType bookWorkType = HDT_WorkType.get(WorkTypeEnum.wtBook);
+
+          if ((bd1.fieldNotEmpty(bfPublisher) && (EntryType.toWorkType(bd1.getEntryType()) == bookWorkType)) ||
+              (bd2.fieldNotEmpty(bfPublisher) && (EntryType.toWorkType(bd2.getEntryType()) == bookWorkType)) ||
+              ((bd3 != null) && bd3.fieldNotEmpty(bfPublisher) && (EntryType.toWorkType(bd3.getEntryType()) == bookWorkType)) ||
+              ((bd4 != null) && bd4.fieldNotEmpty(bfPublisher) && (EntryType.toWorkType(bd4.getEntryType()) == bookWorkType)))
+          {
+            singleFields.remove(bfPubLoc);
+
+            addField(bfPubLoc, bd1, bd2, bd3, bd4);
+          }
+        }
+
         addField(bibFieldEnum, bd1, bd2, bd3, bd4);
+      }
       else if (singleBD != null)
       {
         BibField bibField;
@@ -288,30 +304,32 @@ public class MergeWorksDlgCtrlr extends HyperDlg
         {
           bibField = new BibField(bibFieldEnum);
           bibField.setAll(singleBD.getMultiStr(bibFieldEnum));
+          singleFields.put(bibFieldEnum, bibField);
         }
         else
         {
           bibField = new BibField(bibFieldEnum);
           bibField.setStr(singleBD.getStr(bibFieldEnum));
+          singleFields.put(bibFieldEnum, bibField);
         }
       }
-
-      hlFixCase.setOnAction(event ->
-      {
-        TextField tf;
-
-        if      (rbTitle1.isSelected()) tf = tfTitle1;
-        else if (rbTitle2.isSelected()) tf = tfTitle2;
-        else if (rbTitle3.isSelected()) tf = tfTitle3;
-        else                            tf = tfTitle4;
-
-        alreadyChangingTitle.setTrue();
-        tf.setText(HDT_Work.fixCase(tf.getText()));
-        alreadyChangingTitle.setFalse();
-      });
-
-      onShown = () -> safeFocus(rbTitle1);
     }
+
+    hlFixCase.setOnAction(event ->
+    {
+      TextField tf;
+
+      if      (rbTitle1.isSelected()) tf = tfTitle1;
+      else if (rbTitle2.isSelected()) tf = tfTitle2;
+      else if (rbTitle3.isSelected()) tf = tfTitle3;
+      else                            tf = tfTitle4;
+
+      alreadyChangingTitle.setTrue();
+      tf.setText(HDT_Work.fixCase(tf.getText()));
+      alreadyChangingTitle.setFalse();
+    });
+
+    onShown = () -> safeFocus(rbTitle1);
 
     return this;
   }
