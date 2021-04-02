@@ -511,7 +511,10 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
     EnumSet.allOf(BibFieldEnum.class).forEach(bibFieldEnum -> { switch (bibFieldEnum)
     {
       case bfDOI : case bfYear : case bfURL : case bfISBNs : case bfMisc : case bfTitle :
-        break;
+        if (missingKeysOK)
+          break;
+
+        // Else: Fall through
 
       default :
 

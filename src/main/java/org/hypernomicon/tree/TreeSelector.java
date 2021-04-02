@@ -29,7 +29,9 @@ import java.util.List;
 
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.records.HDT_Concept;
+import org.hypernomicon.model.records.HDT_Folder;
 import org.hypernomicon.model.records.HDT_Glossary;
+import org.hypernomicon.model.records.HDT_Note;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
@@ -145,49 +147,49 @@ public class TreeSelector
 
   public void attach(HDT_Record subj, HDT_Record obj)
   {
+    HDT_Folder folder = ((base != null) && (base.getType() == hdtFolder) && (subj.getType() == hdtNote) && (obj.getType() == hdtNote)) ?
+      (HDT_Folder)base
+    :
+      null;
+
     reset(subj, true);
     addTargetType(obj.getType());
-    select(obj, true);
+    if (select(obj, true) == false)
+      return;
+
+    if ((folder != null) && HDT_Note.class.cast(subj).folder.isNull())
+      ui.noteHyperTab().assignFolder(folder);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void select(HDT_Record record, boolean showErrMsg)
+  public boolean select(HDT_Record record, boolean showErrMsg)
   {
     if (base == null)
-    {
-      falseWithErrMsgCond(showErrMsg, "Internal error #91827");
-      return;
-    }
+      return falseWithErrMsgCond(showErrMsg, "Internal error #91827");
 
-    if (record == null) return;
+    if (record == null) return false;
 
     RelationType relType = getRelTypeForTargetType(record.getType());
 
     if (relType == rtNone)
-    {
-      falseWithErrMsgCond(showErrMsg, "You must select a record of type: " + getTypesStr() + ".");
-      return;
-    }
+      return falseWithErrMsgCond(showErrMsg, "You must select a record of type: " + getTypesStr() + ".");
 
     if (relType == rtUnited)
-    {
-      selectToUnite((HDT_RecordWithConnector) record, showErrMsg);
-      return;
-    }
+      return selectToUnite((HDT_RecordWithConnector) record, showErrMsg);
 
     if (relType == rtGlossaryOfConcept)
     {
       if (glossaryChecks((HDT_Glossary) record, showErrMsg) == false)
-        return;
+        return false;
 
       if (base.getType() == hdtTerm)
       {
         ui.goToRecord(base, false);
         ui.termHyperTab().addGlossary((HDT_Glossary) record);
         ui.update();
-        return;
+        return true;
       }
     }
 
@@ -198,11 +200,12 @@ public class TreeSelector
                      baseIsSubj ? new RecordTreeEdge(target, base) : new RecordTreeEdge(base, target);
 
     if (newEdge.attach(oldEdge, showErrMsg) == false)
-      return;
+      return false;
 
     target = record;
 
     ui.goToRecord(getSubj(), false);
+    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -250,13 +253,11 @@ public class TreeSelector
       if (record2.getLink().getSpoke(record1.getType()) != null)
         return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record is already connected to a " + db.getTypeName(record1.getType()) + " record.");
 
-      if (record1.getType() == hdtDebate)
-        if (record2.getLink().getSpoke(hdtPosition) != null)
-          return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record is already connected to a " + db.getTypeName(hdtPosition) + " record.");
+      if ((record1.getType() == hdtDebate) && (record2.getLink().getSpoke(hdtPosition) != null))
+        return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record is already connected to a " + db.getTypeName(hdtPosition) + " record.");
 
-      if (record1.getType() == hdtPosition)
-        if (record2.getLink().getSpoke(hdtDebate) != null)
-          return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record is already connected to a " + db.getTypeName(hdtDebate) + " record.");
+      if ((record1.getType() == hdtPosition) && (record2.getLink().getSpoke(hdtDebate) != null))
+        return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record2.getType()) + " record is already connected to a " + db.getTypeName(hdtDebate) + " record.");
 
       if (record1.isLinked())
         return falseWithErrMsgCond(showErrMsg, "Both records are already linked to other records.");
@@ -267,13 +268,11 @@ public class TreeSelector
       if (record1.getLink().getSpoke(record2.getType()) != null)
         return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " record is already connected to a " + db.getTypeName(record2.getType()) + " record.");
 
-      if (record2.getType() == hdtDebate)
-        if (record1.getLink().getSpoke(hdtPosition) != null)
-          return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " record is already connected to a " + db.getTypeName(hdtPosition) + " record.");
+      if ((record2.getType() == hdtDebate) && (record1.getLink().getSpoke(hdtPosition) != null))
+        return falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " record is already connected to a " + db.getTypeName(hdtPosition) + " record.");
 
-      if (record2.getType() == hdtPosition)
-        if (record1.getLink().getSpoke(hdtDebate) != null)
-          falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " record is already connected to a " + db.getTypeName(hdtDebate) + " record.");
+      if ((record2.getType() == hdtPosition) && (record1.getLink().getSpoke(hdtDebate) != null))
+        falseWithErrMsgCond(showErrMsg, "The selected " + db.getTypeName(record1.getType()) + " record is already connected to a " + db.getTypeName(hdtDebate) + " record.");
     }
 
     ui.uniteRecords(record1, record2, showErrMsg == false);

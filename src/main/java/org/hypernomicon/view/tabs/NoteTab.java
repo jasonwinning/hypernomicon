@@ -363,7 +363,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void assignFolder(HDT_Folder folder)
+  public void assignFolder(HDT_Folder folder)
   {
     boolean noOtherNotes = folder.notes.isEmpty();
 

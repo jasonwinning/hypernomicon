@@ -22,6 +22,7 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
+import static org.hypernomicon.bib.data.BibField.BibFieldType.*;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -296,19 +297,15 @@ public class MergeWorksDlgCtrlr extends HyperDlg
       }
       else if (singleBD != null)
       {
-        BibField bibField;
-
-        if ((bibFieldEnum == bfEntryType) || (bibFieldEnum == bfWorkType))
-          noOp();
-        else if (bibFieldEnum.isMultiLine())
+        if (bibFieldEnum.isMultiLine())
         {
-          bibField = new BibField(bibFieldEnum);
+          BibField bibField = new BibField(bibFieldEnum);
           bibField.setAll(singleBD.getMultiStr(bibFieldEnum));
           singleFields.put(bibFieldEnum, bibField);
         }
-        else
+        else if (bibFieldEnum.getType() == bftString)
         {
-          bibField = new BibField(bibFieldEnum);
+          BibField bibField = new BibField(bibFieldEnum);
           bibField.setStr(singleBD.getStr(bibFieldEnum));
           singleFields.put(bibFieldEnum, bibField);
         }
@@ -408,7 +405,7 @@ public class MergeWorksDlgCtrlr extends HyperDlg
           switch (entryType)
           {
             case etUnentered : case etOther : case etNone : entryType = null; break;
-            default: break;
+            default : break;
           }
         }
 
@@ -436,7 +433,8 @@ public class MergeWorksDlgCtrlr extends HyperDlg
 
   public void mergeInto(BibData mergedBD)
   {
-    String title;
+    String title, year;
+    List<ObjectGroup> authGroups;
     HDT_Work work = mergedBD.getWork();
     HDT_WorkType workType = getMergedWorkType();
 
@@ -445,14 +443,10 @@ public class MergeWorksDlgCtrlr extends HyperDlg
     else if (rbTitle3.isSelected()) title = tfTitle3.getText();
     else                            title = tfTitle4.getText();
 
-    String year;
-
     if      (rbYear1.isSelected()) year = tfYear1.getText();
     else if (rbYear2.isSelected()) year = tfYear2.getText();
     else if (rbYear3.isSelected()) year = tfYear3.getText();
     else                           year = tfYear4.getText();
-
-    List<ObjectGroup> authGroups;
 
     if      (rbAuthors1.isSelected()) authGroups = works.get(0).getAuthorGroups(work);
     else if (rbAuthors2.isSelected()) authGroups = works.get(1).getAuthorGroups(work);
@@ -487,23 +481,20 @@ public class MergeWorksDlgCtrlr extends HyperDlg
       BibFieldRow bibFieldRow = extraRows.get(bibFieldEnum);
 
       if (bibFieldRow != null)
-        bibFieldRow.mergeInto(mergedBD); // assign data from bibFieldRow to work and bd
-      else
       {
-        // assign data from original work/bd that had this field, if any (must have been zero or one of them)
-
-        BibField field = singleFields.get(bibFieldEnum);
-
-        if (field != null)
-        {
-          if ((bibFieldEnum == bfEntryType) || (bibFieldEnum == bfWorkType))
-            noOp();
-          else if (field.isMultiStr())
-            mergedBD.setMultiStr(bibFieldEnum, field.getMultiStr());
-          else
-            mergedBD.setStr(bibFieldEnum, field.getStr());
-        }
+        bibFieldRow.mergeInto(mergedBD); // assign data from bibFieldRow to work and bd
+        continue;
       }
+
+      // assign data from original work/bd that had this field, if any (must have been zero or one of them)
+
+      nullSwitch(singleFields.get(bibFieldEnum), field ->
+      {
+        if (bibFieldEnum.getType() == bftMultiString)
+          mergedBD.setMultiStr(bibFieldEnum, field.getMultiStr());
+        else if (bibFieldEnum.getType() == bftString)
+          mergedBD.setStr(bibFieldEnum, field.getStr());
+      });
     }
   }
 

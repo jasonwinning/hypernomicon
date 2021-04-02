@@ -33,7 +33,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -79,8 +78,6 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
   static final EnumHashBiMap<EntryType, String> entryTypeMap = initTypeMap();
 
-  private static EnumMap<EntryType, JsonObj> templates = null;
-
   private static enum MendeleyCmd
   {
     readFolders,
@@ -97,8 +94,6 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     this.accessToken = apiKey;
     this.refreshToken = refreshToken;
   }
-
-  JsonObj getTemplate(EntryType type)          { return templates.get(type); }
 
   @Override public LibraryType type()          { return LibraryType.ltMendeley; }
   @Override public void safePrefs()            { db.prefs.put(PREF_KEY_BIB_LAST_SYNC_TIME, dateTimeToIso8601(lastSyncTime)); }
