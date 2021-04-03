@@ -223,7 +223,7 @@ public final class App extends Application
       }
     }
 
-    if (hdbExists) ui.loadDB();
+    if (hdbExists) ui.loadDB(false);
     else           ui.startEmpty();
 
     if (args.size() > 0)

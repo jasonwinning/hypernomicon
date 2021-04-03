@@ -575,7 +575,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public boolean loadAllFromDisk(HyperFavorites favorites) throws HDB_InternalError
+  public boolean loadAllFromDisk(boolean creatingNew, HyperFavorites favorites) throws HDB_InternalError
   {
     if ((initialized == false) || unableToLoad)
       return false;
@@ -624,7 +624,7 @@ public final class HyperDB
 
       for (FilePath filePath : xmlFileList) totalTaskCount += filePath.size();
 
-      for (FilePath filePath : xmlFileList) loadFromXML(filePath);
+      for (FilePath filePath : xmlFileList) loadFromXML(creatingNew, filePath);
 
       return true;
     }};
@@ -674,7 +674,7 @@ public final class HyperDB
         if (versionStr.isBlank())
           throw new HyperDataException("XML settings data version number not found.");
 
-        checkVersion(new VersionNumber(versionStr), "the Settings XML file", appVersionToMinSettingsXMLVersion, appVersionToMaxSettingsXMLVersion);
+        checkVersion(creatingNew, new VersionNumber(versionStr), "the Settings XML file", appVersionToMinSettingsXMLVersion, appVersionToMaxSettingsXMLVersion);
 
         boolean writeFolderIDs = false;
 
@@ -1244,7 +1244,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void checkVersion(VersionNumber versionNumber, String dataName,
+  private void checkVersion(boolean creatingNew, VersionNumber versionNumber, String dataName,
                             Map<VersionNumber, VersionNumber> appVersionToMinVersion,
                             Map<VersionNumber, VersionNumber> appVersionToMaxVersion) throws HyperDataException
   {
@@ -1273,32 +1273,32 @@ public final class HyperDB
 
     VersionNumber savingAs = getVersionNumberSavingAs(appVersionToMaxVersion);
 
-    if (versionNumber.isLessThan(savingAs))
+    if (creatingNew || (versionNumber.isLessThan(savingAs) == false))
+      return;
+
+    if (appVersionToMinVersion == appVersionToMinRecordsXMLVersion)
     {
-      if (appVersionToMinVersion == appVersionToMinRecordsXMLVersion)
-      {
-        if (alreadyShowedUpgradeMsg) return;
-        alreadyShowedUpgradeMsg = true;
-      }
-
-      newestTooOldAppVersion = new VersionNumber(0);
-
-      for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
-      {
-        if (entry.getValue().isLessThan(savingAs))                   // Too old
-          if (entry.getKey().isGreaterThan(newestTooOldAppVersion))  // Newer than other too old ones
-            newestTooOldAppVersion = entry.getKey();
-      }
-
-      messageDialog("When you save changes, " + dataName + " will be upgraded and will no longer be compatible with " + appTitle +
-                    " v" + newestTooOldAppVersion + " or older.", mtWarning, true);
+      if (alreadyShowedUpgradeMsg) return;
+      alreadyShowedUpgradeMsg = true;
     }
+
+    newestTooOldAppVersion = new VersionNumber(0);
+
+    for (Entry<VersionNumber, VersionNumber> entry : appVersionToMaxVersion.entrySet())
+    {
+      if (entry.getValue().isLessThan(savingAs))                   // Too old
+        if (entry.getKey().isGreaterThan(newestTooOldAppVersion))  // Newer than other too old ones
+          newestTooOldAppVersion = entry.getKey();
+    }
+
+    messageDialog("When you save changes, " + dataName + " will be upgraded and will no longer be compatible with " + appTitle +
+                  " v" + newestTooOldAppVersion + " or older.", mtWarning, true);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void loadFromXML(FilePath filePath) throws HyperDataException, TerminateTaskException
+  private void loadFromXML(boolean creatingNew, FilePath filePath) throws HyperDataException, TerminateTaskException
   {
     try (InputStream in = new FileInputStream(filePath.toFile()))
     {
@@ -1309,7 +1309,7 @@ public final class HyperDB
       if (versionNumber == null)
         throw new HyperDataException("XML record data version number not found.");
 
-      checkVersion(versionNumber, "this XML record data", appVersionToMinRecordsXMLVersion, appVersionToMaxRecordsXMLVersion);
+      checkVersion(creatingNew, versionNumber, "this XML record data", appVersionToMinRecordsXMLVersion, appVersionToMaxRecordsXMLVersion);
 
       RecordState xmlRecord = getNextRecordFromXML(eventReader);
 

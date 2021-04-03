@@ -1129,7 +1129,7 @@ public final class MainCtrlr
     appPrefs.put(PREF_KEY_SOURCE_FILENAME, db.getHdbPath().getNameOnly().toString());
     appPrefs.put(PREF_KEY_SOURCE_PATH, db.getRootPath().toString());
 
-    if (loadDataFromDisk())
+    if (loadDataFromDisk(false))
     {
       // Update record pointers
       viewSequence.refreshAll();
@@ -1174,7 +1174,7 @@ public final class MainCtrlr
     appPrefs.put(PREF_KEY_SOURCE_FILENAME, filePath.getNameOnly().toString());
     appPrefs.put(PREF_KEY_SOURCE_PATH, filePath.getDirOnly().toString());
 
-    loadDB();
+    loadDB(false);
   }
 
   //---------------------------------------------------------------------------
@@ -1284,7 +1284,7 @@ public final class MainCtrlr
       appPrefs.put(PREF_KEY_SOURCE_PATH, srcFilePath.getDirOnly().toString());
     }
 
-    loadDB();
+    loadDB(true);
   }
 
 //---------------------------------------------------------------------------
@@ -1804,9 +1804,9 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void loadDB()
+  public void loadDB(boolean creatingNew)
   {
-    if (loadDataFromDisk() == false)
+    if (loadDataFromDisk(creatingNew) == false)
     {
       if (db.isLoaded() == false)
         clearAllTabsAndViews();
@@ -1859,7 +1859,7 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private boolean loadDataFromDisk()
+  private boolean loadDataFromDisk(boolean creatingNew)
   {
     if (SystemUtils.IS_OS_MAC)
       Platform.runLater(() -> adjustToolBar(0));
@@ -1917,7 +1917,7 @@ public final class MainCtrlr
 
     boolean success = false;
 
-    try { success = db.loadAllFromDisk(favorites); }
+    try { success = db.loadAllFromDisk(creatingNew, favorites); }
     catch (HDB_InternalError e)
     {
       messageDialog("Unable to load database. Reason: " + e.getMessage(), mtError);
