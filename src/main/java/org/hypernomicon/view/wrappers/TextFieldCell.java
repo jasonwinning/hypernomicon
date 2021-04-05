@@ -138,10 +138,13 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
         HyperTableCell item = getItem();
         textField.setText(item.getText());
         commitEdit(item);
+        event.consume();
       }
-
       else if (event.getCode() == KeyCode.ENTER)
+      {
         commit();
+        event.consume();
+      }
     });
 
   }
