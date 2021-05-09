@@ -83,6 +83,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
+import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import javafx.application.Platform;
@@ -105,6 +106,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -418,7 +420,6 @@ public class WorkDlgCtrlr extends HyperDlg
       removeHandler.run();
     });
 
-
     htAuthors.addChangeOrderMenuItem(true);
 
     tfTitle.textProperty().addListener((ob, oldValue, newValue) ->
@@ -488,7 +489,7 @@ public class WorkDlgCtrlr extends HyperDlg
     });
 
     tfTitle.setTextFormatter(titleFormatter(alreadyChangingTitle));
-    btnStop.setOnAction(event -> stopRetrieving());
+    changeToClearButton();
   }
 
 //---------------------------------------------------------------------------
@@ -851,7 +852,7 @@ public class WorkDlgCtrlr extends HyperDlg
     if (bibDataRetriever != null)
       bibDataRetriever.stop();
 
-    setAllVisible(false, btnStop, progressBar);
+    changeToClearButton();
   }
 
 //---------------------------------------------------------------------------
@@ -867,11 +868,11 @@ public class WorkDlgCtrlr extends HyperDlg
 
     if (doWebQuery)
     {
-      setAllVisible(true, btnStop, progressBar);
+      changeToStopButton();
 
       bibDataRetriever = new BibDataRetriever(httpClient, curBD, safeListOf(origFilePath), (pdfBD, queryBD, messageShown) ->
       {
-        setAllVisible(false, btnStop, progressBar);
+        changeToClearButton();
 
         if ((pdfBD == null) && (queryBD == null))
         {
@@ -1003,16 +1004,73 @@ public class WorkDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private void changeToStopButton()
+  {
+    ImageView imageView = imgViewFromRelPath("resources/images/cancel.png");
+    imageView.setFitHeight(16);
+    imageView.setPreserveRatio(true);
+    btnStop.setGraphic(imageView);
+
+    progressBar.setVisible(true);
+
+    btnStop.setOnAction(event -> stopRetrieving());
+    setToolTip(btnStop, "Stop retrieving");
+
+    btnStop.visibleProperty().unbind();
+    btnStop.setVisible(true);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void changeToClearButton()
+  {
+    ImageView imageView = imgViewFromRelPath("resources/images/broom.png");
+    imageView.setFitHeight(16);
+    imageView.setPreserveRatio(true);
+    btnStop.setGraphic(imageView);
+
+    progressBar.setVisible(false);
+
+    btnStop.setOnAction(event -> clearFields());
+    setToolTip(btnStop, "Clear fields");
+
+    btnStop.visibleProperty().unbind();
+    btnStop.visibleProperty().bind(lblAutoPopulated.textProperty().isNotEmpty());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void clearFields()
+  {
+    populateFieldsFromBibData(new GUIBibData(), true);
+    clearAuthors(htAuthors);
+    lblAutoPopulated.setText("");
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void clearAuthors(HyperTable htAuthors)
+  {
+    htAuthors.clear();
+    htAuthors.getPopulator(0).populate(null, false);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private void industryIdClick(boolean crossref, String doi, String isbn)
   {
     stopRetrieving();
 
     lblAutoPopulated.setText("");
-    setAllVisible(true, btnStop, progressBar);
+    changeToStopButton();
 
     Consumer<BibData> doneHndlr = queryBD ->
     {
-      setAllVisible(false, btnStop, progressBar);
+      changeToClearButton();
 
       if (queryBD == null)
       {
@@ -1084,8 +1142,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     bibAuthors.getListsForWorkMerge(nameList, personList, nameToEd, nameToTr, destWork);
 
-    htAuthors.clear();
-    htAuthors.getPopulator(0).populate(null, false);
+    clearAuthors(htAuthors);
 
     for (int ndx = 0; ndx < nameList.size(); ndx++)
     {

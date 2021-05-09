@@ -55,19 +55,21 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
   private boolean limitToChoices;
   private HyperTableCell startValue;
 
+//---------------------------------------------------------------------------
+
   public AutoCompleteCB(HyperCB newHCB, boolean limitToChoices)
   {
     this.limitToChoices = limitToChoices;
 
-    cb = newHCB.getComboBox();
     hcb = newHCB;
+    cb = hcb.getComboBox();
 
     cb.setEditable(true);
 
     // add a focus listener such that if not in focus, reset the filtered typed keys
     cb.getEditor().focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      newHCB.somethingWasTyped = false;
+      hcb.somethingWasTyped = false;
 
       if (Boolean.TRUE.equals(newValue))
         startValue = hcb.selectedHTC();
@@ -77,7 +79,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
     cb.setOnMouseClicked(event ->
     {
-      newHCB.somethingWasTyped = false;
+      hcb.somethingWasTyped = false;
       selectClosestResultBasedOnTextFieldValue(true, true);
     });
 
@@ -89,17 +91,14 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
     cb.setOnAction(event ->
     {
-      if (hcb.listenForActionEvents == false) return;
+      if ((hcb.listenForActionEvents == false) || (hcb.somethingWasTyped == false))
+        return;
 
       hcb.listenForActionEvents = false;
-
-      if (hcb.somethingWasTyped)
-      {
-        hcb.getOnAction().handle(event);
-        hcb.somethingWasTyped = false;
-      }
-
+      hcb.getOnAction().handle(event);
       hcb.listenForActionEvents = true;
+
+      hcb.somethingWasTyped = false;
     });
   }
 
@@ -108,10 +107,12 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 
   @Override public void handle(KeyEvent event)
   {
-    if (event.isControlDown()             || event.getCode() == KeyCode.BACK_SPACE ||
-        event.getCode() == KeyCode.RIGHT  || event.getCode() == KeyCode.LEFT       ||
-        event.getCode() == KeyCode.DELETE || event.getCode() == KeyCode.HOME       ||
-        event.getCode() == KeyCode.END    || event.getCode() == KeyCode.TAB)
+    KeyCode keyCode = event.getCode();
+
+    if (event.isControlDown()     || keyCode == KeyCode.BACK_SPACE ||
+        keyCode == KeyCode.RIGHT  || keyCode == KeyCode.LEFT       ||
+        keyCode == KeyCode.DELETE || keyCode == KeyCode.HOME       ||
+        keyCode == KeyCode.END    || keyCode == KeyCode.TAB)
     {
       hcb.typedMatch = null;
       return;

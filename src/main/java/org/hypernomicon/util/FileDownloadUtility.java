@@ -160,7 +160,6 @@ public class FileDownloadUtility
     {
       String contentType = "";
       MutableInt contentLength = new MutableInt(-1);
-      FilePath saveFilePath;
 
       int statusCode = response.getStatusLine().getStatusCode();
       String reasonPhrase = response.getStatusLine().getReasonPhrase();
@@ -173,9 +172,7 @@ public class FileDownloadUtility
 
       HttpEntity entity = response.getEntity();
 
-      Header[] headers = response.getAllHeaders();
-
-      for (Header header : headers)
+      for (Header header : response.getAllHeaders())
       {
         switch (HttpHeader.get(header))
         {
@@ -247,7 +244,7 @@ public class FileDownloadUtility
       }
       else
       {
-        saveFilePath = dirPath.resolve(fileNameStr.isEmpty() ? fileName.toString() : fileNameStr);
+        FilePath saveFilePath = dirPath.resolve(fileNameStr.isEmpty() ? fileName.toString() : fileNameStr);
 
         // opens input stream from the HTTP connection
         // opens an output stream to save into file

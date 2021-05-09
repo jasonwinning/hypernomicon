@@ -101,11 +101,11 @@ public class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String imgDataURIbyRecordType (RecordType type      ) { return imgDataURI(imgRelPathByType(type  )); }
-  public static String imgDataURIbyRecord     (HDT_Record     record) { return imgDataURI(imgRelPath      (record)); }
+  public static String imgDataURIbyRecordType (RecordType type  ) { return imgDataURI(imgRelPathByType(type  )); }
+  public static String imgDataURIbyRecord     (HDT_Record record) { return imgDataURI(imgRelPath      (record)); }
 
-  public static ImageView imgViewForRecordType(RecordType type      ) { return imgViewFromRelPath(imgRelPathByType(type  )); }
-  public static ImageView imgViewForRecord    (HDT_Record     record) { return imgViewFromRelPath(imgRelPath      (record)); }
+  public static ImageView imgViewForRecordType(RecordType type  ) { return imgViewFromRelPath(imgRelPathByType(type  )); }
+  public static ImageView imgViewForRecord    (HDT_Record record) { return imgViewFromRelPath(imgRelPath      (record)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

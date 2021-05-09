@@ -41,8 +41,8 @@ import javafx.scene.input.KeyCode;
 
 public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> implements CommitableWrapper
 {
-  private ComboBox<HyperTableCell> cB;
-  private HyperCB hCB;
+  private ComboBox<HyperTableCell> cb;
+  private HyperCB hcb;
   private HyperCtrlType ctrlType;
   private final Populator populator;
   private final EventHandler<ActionEvent> onAction;
@@ -75,24 +75,24 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
     super.startEdit();
     createComboBox();
 
-    hCB.populate(false);
+    hcb.populate(false);
 
     HyperTableCell cell = getItem();
 
-    cB.setValue(cell);
-    setGraphic(cB);
+    cb.setValue(cell);
+    setGraphic(cb);
 
     if (cell != null)
-      cB.getSelectionModel().select(cell);
+      cb.getSelectionModel().select(cell);
 
-    cB.show();
+    cb.show();
 
     runDelayedInFXThread(6, 50, () ->
     {
-      cB.requestFocus();
-      AutoCompleteCB.scrollToValue(cB);
+      cb.requestFocus();
+      AutoCompleteCB.scrollToValue(cb);
 
-      cB.getEditor().selectAll();
+      cb.getEditor().selectAll();
     });
   }
 
@@ -106,8 +106,8 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 
     HyperTableRow row = getTableRow().getItem();
 
-    if (hCB.somethingWasTyped && (hCB.typedMatch != null))
-      newValue = hCB.typedMatch;
+    if (hcb.somethingWasTyped && (hcb.typedMatch != null))
+      newValue = hcb.typedMatch;
 
     row.setCellValue(getTableView().getColumns().indexOf(getTableColumn()), newValue);
   }
@@ -129,11 +129,11 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 
     if (isEditing())
     {
-      if (hCB != null)
-        hCB.populate(false);
+      if (hcb != null)
+        hcb.populate(false);
 
       setText(null);
-      setGraphic(cB);
+      setGraphic(cb);
     }
     else
     {
@@ -148,36 +148,37 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 
   private void createComboBox()
   {
-    cB = new ComboBox<>();
-    cB.setMaxWidth(Double.MAX_VALUE);
-    cB.setPrefWidth(getWidth() - getGraphicTextGap() * 2);
+    cb = new ComboBox<>();
+    cb.setMaxWidth(Double.MAX_VALUE);
+    cb.setPrefWidth(getWidth() - getGraphicTextGap() * 2);
 
-    setHeights(cB, 18.0 * displayScale);
+    setHeights(cb, 18.0 * displayScale);
 
     HyperTableRow row = getTableRow().getItem();
 
     if (populator.getValueType() == cvtVaries)
       ctrlType = ((VariablePopulator)populator).getRestricted(row) ? ctDropDownList : ctDropDown;
 
-    hCB = new HyperCB(cB, ctrlType, populator, row, false, table);
+    hcb = new HyperCB(cb, ctrlType, populator, row, false, table);
 
-    hCB.dontCreateNewRecord = dontCreateNewRecord.booleanValue();
+    hcb.dontCreateNewRecord = dontCreateNewRecord.booleanValue();
 
-    hCB.setOnAction(onAction);
+    hcb.setOnAction(onAction);
 
-    cB.focusedProperty().addListener((ob, oldValue, newValue) ->
+    cb.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (!cB.isFocused())
+      if (!cb.isFocused())
         commit();
     });
 
-    cB.setOnKeyPressed(event ->
+    cb.setOnKeyPressed(event ->
     {
       if (event.getCode() == KeyCode.ESCAPE)
       {
         HyperTableCell item = getItem();
-        hCB.selectID(item.getID());
+        hcb.selectID(item.getID());
         commitEdit(item);
+        event.consume();
       }
     });
   }
@@ -198,8 +199,8 @@ public class ComboBoxCell extends TableCell<HyperTableRow, HyperTableCell> imple
 
   @Override public void commit()
   {
-    if (getGraphic() == cB)
-      commitEdit(hCB.selectedHTC());
+    if (getGraphic() == cb)
+      commitEdit(hcb.selectedHTC());
   }
 
 //---------------------------------------------------------------------------

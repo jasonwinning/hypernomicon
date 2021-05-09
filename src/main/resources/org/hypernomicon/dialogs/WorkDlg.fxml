@@ -38,7 +38,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane minHeight="300.0" minWidth="300.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.WorkDlgCtrlr">
+<AnchorPane minHeight="300.0" minWidth="300.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.WorkDlgCtrlr">
    <children>
       <AnchorPane fx:id="apMain" minHeight="300.0" minWidth="300.0" prefHeight="680.0" prefWidth="917.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -114,13 +114,13 @@
                </graphic>
             </SplitMenuButton>
             <TextField fx:id="tfDOI" layoutX="235.0" layoutY="268.0" prefHeight="22.0" prefWidth="166.0" AnchorPane.leftAnchor="235.0" AnchorPane.topAnchor="268.0" />
-            <Label fx:id="lblAutoPopulated" alignment="CENTER_RIGHT" layoutX="407.0" layoutY="272.0" prefHeight="17.0" prefWidth="492.0" text="Data has been auto-populated from PDF." textFill="RED" AnchorPane.leftAnchor="407.0" AnchorPane.rightAnchor="18.0" AnchorPane.topAnchor="272.0">
+            <Label fx:id="lblAutoPopulated" alignment="CENTER_RIGHT" layoutX="407.0" layoutY="272.0" prefHeight="17.0" prefWidth="463.0" text="Data has been auto-populated from PDF." textFill="RED" AnchorPane.leftAnchor="407.0" AnchorPane.rightAnchor="47.0" AnchorPane.topAnchor="272.0">
                <font>
                   <Font name="System Bold" size="12.0" />
                </font>
             </Label>
             <ProgressBar fx:id="progressBar" layoutX="666.0" layoutY="275.0" prefWidth="200.0" visible="false" AnchorPane.rightAnchor="51.0" AnchorPane.topAnchor="275.0" />
-            <Button fx:id="btnStop" layoutX="873.0" layoutY="271.0" mnemonicParsing="false" prefHeight="22.0" visible="false" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="271.0">
+            <Button fx:id="btnStop" layoutX="873.0" layoutY="271.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="5.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="271.0">
                <graphic>
                   <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
                      <image>

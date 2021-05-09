@@ -80,6 +80,13 @@ public class WorkToMerge
     htAuthors.addCheckboxCol();
     htAuthors.addCheckboxCol();
 
+    htAuthors.addRemoveMenuItem();
+    htAuthors.addChangeOrderMenuItem(true);
+
+    htAuthors.addContextMenuItem("Remove this row",
+      row -> (row.getText(1).length() > 0) && (row.getID(1) < 1),
+      htAuthors::removeRow);
+
     tfTitle.setText(bibData.getStr(bfTitle));
     if (tfTitle.getText().isEmpty() == false) rbTitle.setSelected(true);
 
