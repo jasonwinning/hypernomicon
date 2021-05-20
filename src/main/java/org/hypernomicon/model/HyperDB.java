@@ -153,16 +153,14 @@ public final class HyperDB
   private Preferences appPrefs;
   private LibraryWrapper<? extends BibEntry, ? extends BibCollection> bibLibrary = null;
   private FolderTreeWatcher folderTreeWatcher;
-  private FilePath lockFilePath = null;
   private DialogResult deleteFileAnswer;
   HyperTask task;
   long totalTaskCount, curTaskCount;
-  private boolean alreadyShowedUpgradeMsg;
-  private FilePath rootFilePath, hdbFilePath;
+  private FilePath rootFilePath, hdbFilePath, lockFilePath = null;
   private Instant dbCreationDate;
 
-  private boolean loaded       = false, deletionInProgress = false, pointerResolutionInProgress     = false, resolveAgain = false,
-                  unableToLoad = false, initialized        = false, startMentionsRebuildAfterDelete = false;
+  private boolean loaded       = false, resolveAgain = false, pointerResolutionInProgress     = false, deletionInProgress      = false,
+                  unableToLoad = false, initialized  = false, startMentionsRebuildAfterDelete = false, alreadyShowedUpgradeMsg = false;
 
   public boolean runningConversion     = false, // suppresses "modified date" updating
                  viewTestingInProgress = false; // suppresses "view date" updating
@@ -467,9 +465,6 @@ public final class HyperDB
     if (bibLibraryIsLinked())
       bibLibrary.saveToDisk();
 
-    List<String> filenameList = new ArrayList<>();
-    List<StringBuilder> xmlList = Lists.newArrayList(new StringBuilder());
-
     task = new HyperTask("SaveAllToDisk") { @Override protected Boolean call() throws Exception
     {
       updateMessage("Saving to XML files...");
@@ -494,6 +489,9 @@ public final class HyperDB
 
       try
       {
+        List<String> filenameList = new ArrayList<>();
+        List<StringBuilder> xmlList = Lists.newArrayList(new StringBuilder());
+
         writeDatasetToXML(xmlList, hdtPersonStatus);    writeDatasetToXML(xmlList, hdtRank);            writeDatasetToXML(xmlList, hdtField);
         writeDatasetToXML(xmlList, hdtSubfield);        writeDatasetToXML(xmlList, hdtWorkType);        writeDatasetToXML(xmlList, hdtFileType);
         writeDatasetToXML(xmlList, hdtCountry);         writeDatasetToXML(xmlList, hdtRegion);          writeDatasetToXML(xmlList, hdtPositionVerdict);
@@ -745,10 +743,10 @@ public final class HyperDB
             dbCreationDate = Instant.now();          // to the current date when loaded for the first time
         }
 
-        String bibEncApiKey = prefs.get(PREF_KEY_BIB_API_KEY, ""),
-               bibUserID = prefs.get(PREF_KEY_BIB_USER_ID, ""),
-               bibTypeDescriptor = prefs.get(PREF_KEY_BIB_LIBRARY_TYPE, ""),
-               bibEncAccessToken = prefs.get(PREF_KEY_BIB_ACCESS_TOKEN, ""),
+        String bibEncApiKey       = prefs.get(PREF_KEY_BIB_API_KEY      , ""),
+               bibUserID          = prefs.get(PREF_KEY_BIB_USER_ID      , ""),
+               bibTypeDescriptor  = prefs.get(PREF_KEY_BIB_LIBRARY_TYPE , ""),
+               bibEncAccessToken  = prefs.get(PREF_KEY_BIB_ACCESS_TOKEN , ""),
                bibEncRefreshToken = prefs.get(PREF_KEY_BIB_REFRESH_TOKEN, "");
 
         if ((((bibEncApiKey.length() > 0) && (bibUserID.length() > 0)) || ((bibEncAccessToken.length() > 0) && (bibEncRefreshToken.length() > 0))) &&
@@ -1059,8 +1057,7 @@ public final class HyperDB
     }
     catch (HubChangedException e)
     {
-      String msg = "Internal error #42837";
-      throw new HyperDataException(msg, e);
+      throw new HyperDataException("Internal error #42837", e);
     }
   }
 
@@ -1470,8 +1467,7 @@ public final class HyperDB
       {
         case XMLStreamConstants.START_ELEMENT :
 
-          String msg = "Too many nested elements in XML";
-          throw new HyperDataException(msg);
+          throw new HyperDataException("Too many nested elements in XML");
 
         case XMLStreamConstants.END_ELEMENT :
 
@@ -2145,10 +2141,10 @@ public final class HyperDB
   private void addConnectorItem(RecordType type,                  Tag... tags) throws HDB_InternalError { addItem(type, hdcConnector    , rtNone, tags); }
   private void addAuthorsItem  (RecordType type, RelationType rt             ) throws HDB_InternalError { addItem(type, hdcAuthors      , rt    , tagAuthor); }
 
-  private void addBibEntryKeyItem() throws HDB_InternalError { addItem(hdtWork,   hdcBibEntryKey, rtNone,         tagBibEntryKey           ); }
+  private void addBibEntryKeyItem() throws HDB_InternalError { addItem(hdtWork,   hdcBibEntryKey, rtNone, tagBibEntryKey           ); }
 
-  private void addPersonNameItem () throws HDB_InternalError { addItem(hdtPerson, hdcPersonName,  rtNone,         tagFirstName, tagLastName); }
-  private void addHubSpokesItem  () throws HDB_InternalError { addItem(hdtHub,    hdcHubSpokes,   rtNone,         tagLinkedRecord          ); }
+  private void addPersonNameItem () throws HDB_InternalError { addItem(hdtPerson, hdcPersonName,  rtNone, tagFirstName, tagLastName); }
+  private void addHubSpokesItem  () throws HDB_InternalError { addItem(hdtHub,    hdcHubSpokes,   rtNone, tagLinkedRecord          ); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -2335,10 +2331,7 @@ public final class HyperDB
         set.remove(record);
     }
 
-    RelationChangeHandler handler = keyWorkHandlers.get(record.getType());
-
-    if (handler != null)
-      runInFXThread(() -> handler.handle(keyWorkRecord, record, affirm));
+    nullSwitch(keyWorkHandlers.get(record.getType()), handler -> runInFXThread(() -> handler.handle(keyWorkRecord, record, affirm)));
   }
 
 //---------------------------------------------------------------------------

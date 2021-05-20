@@ -99,7 +99,7 @@ import javafx.util.StringConverter;
 
 public class BibManager extends HyperDlg
 {
-  @FXML private Button btnCreateNew, btnAutofill, btnAssign, btnUnassign, btnDelete, btnMainWindow, btnPreviewWindow, btnStop, btnSync, btnUpdateRelatives;
+  @FXML private Button btnCreateNew, btnAutofill, btnViewOnWeb, btnAssign, btnUnassign, btnDelete, btnMainWindow, btnPreviewWindow, btnStop, btnSync, btnUpdateRelatives;
   @FXML private ComboBox<EntryType> cbNewType;
   @FXML private Label lblSelect;
   @FXML private SplitPane spMain;
@@ -131,9 +131,11 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override protected boolean isValid() { return true; }
+  @Override protected boolean isValid()  { return true; }
 
-  private void hideBottomControls()     { setAllVisible(false, lblSelect, btnCreateNew, cbNewType); }
+  private void hideBottomControls()      { setAllVisible(false, lblSelect, btnCreateNew, cbNewType); }
+  private void viewOnWeb()               { viewOnWeb(tableView.getSelectionModel().getSelectedItem().getEntry()); }
+  private void viewOnWeb(BibEntry entry) { DesktopUtil.openWebLink(entry.getEntryURL()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -165,9 +167,11 @@ public class BibManager extends HyperDlg
     btnSync.setOnAction(event -> sync());
     btnStop.setOnAction(event -> stop());
     btnAutofill.setOnAction(event -> autofill());
+    btnViewOnWeb.setOnAction(event -> viewOnWeb());
 
     setToolTip(btnMainWindow, "Return to main application window");
-    setToolTip(btnAutofill,   MainCtrlr.AUTOFILL_TOOLTIP);
+    setToolTip(btnAutofill, MainCtrlr.AUTOFILL_TOOLTIP);
+    setToolTip(btnViewOnWeb, "View this entry on the web");
 
     btnUpdateRelatives.disableProperty().bind(btnStop.disabledProperty().not());
 
@@ -206,7 +210,7 @@ public class BibManager extends HyperDlg
 
     tableView.getSelectionModel().selectedItemProperty().addListener((ob, ov, nv) -> refresh());
 
-    entryTable.addContextMenuItem("View this entry on the web", row -> row.getURL().length() > 0, row -> DesktopUtil.openWebLink(row.getURL()));
+    entryTable.addContextMenuItem("View this entry on the web", row -> row.getURL().length() > 0, row -> viewOnWeb(row.getEntry()));
 
     entryTable.addContextMenuItem("Go to work record", HDT_Work.class, work -> ui.goToRecord(work, true));
 
@@ -840,8 +844,9 @@ public class BibManager extends HyperDlg
 
     BibEntryRow row = tableView.getSelectionModel().getSelectedItem();
 
-    btnAssign  .setDisable(row == null);
-    btnAutofill.setDisable(row == null);
+    btnAssign   .setDisable(row == null);
+    btnAutofill .setDisable(row == null);
+    btnViewOnWeb.setDisable((row == null) || row.getURL().isBlank());
 
     if ((row == null) || (row.getWork() == null))
     {
