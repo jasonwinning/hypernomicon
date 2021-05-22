@@ -38,6 +38,7 @@ import org.hypernomicon.model.SearchKeys.SearchKeyword;
 
 public interface HDT_Record
 {
+  int keyNdx();
   int getID();
   RecordType getType();
   void assignID() throws HDB_InternalError;

@@ -84,6 +84,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final boolean hasMainText()          { return this instanceof HDT_RecordWithConnector; }
   @Override public final boolean hasDesc()              { return this instanceof HDT_RecordWithDescription; }
   @Override public final int getID()                    { return id; }
+  @Override public final int keyNdx()                   { return db.records(type).getKeyNdxByID(id); }
   @Override public final void viewNow()                 { if (db.viewTestingInProgress == false) viewDate = Instant.now(); }
   @Override public final String getSortKeyAttr()        { return sortKeyAttr; }
   @Override public final String getSortKey()            { return dataset.getKeyByID(id); }
