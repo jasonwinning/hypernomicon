@@ -216,9 +216,13 @@ public class SearchResultFileList
           }
         }
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
-        errList.add("Error: Unable to copy \"" + filePath + "\". Reason: " + e.getMessage());
+        String msg = e.getMessage();
+        if (String.valueOf(msg).equals("null"))
+          msg = e.getClass().getName();
+
+        errList.add("Error: Unable to copy \"" + filePath + "\". Reason: " + msg);
       }
     }
   }

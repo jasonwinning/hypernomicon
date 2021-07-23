@@ -455,7 +455,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   public void selectRecord(HDT_Record record, boolean useViewInfo)
   {
     this.useViewInfo = useViewInfo;
-    tree.selectRecord(record, record == null ? 0 : db.records(record.getType()).getKeyNdxByID(record.getID()), false);
+    tree.selectRecord(record, record == null ? 0 : record.keyNdx(), false);
     this.useViewInfo = false;
   }
 

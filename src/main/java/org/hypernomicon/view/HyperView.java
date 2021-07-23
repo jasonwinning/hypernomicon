@@ -65,9 +65,9 @@ public class HyperView<HDT_CT extends HDT_Record>
     if (record == null)
       tabRecordKeyNdx = 0;
     else if (record.getType() == hdtConcept)
-      tabRecordKeyNdx = db.terms.getKeyNdxByID(((HDT_Concept)record).term.getID());
+      tabRecordKeyNdx = ((HDT_Concept)record).term.get().keyNdx();
     else
-      tabRecordKeyNdx = db.records(record.getType()).getKeyNdxByID(record.getID());
+      tabRecordKeyNdx = record.keyNdx();
 
     this.tabEnum = tabEnum;
     this.textInfo = textInfo;

@@ -132,6 +132,11 @@
   
   <repositories>
     <repository>
+      <id>central</id>
+      <name>Maven Central</name>
+      <url>https://repo1.maven.org/maven2</url>
+    </repository>
+    <repository>
       <id>com.teamdev</id>
       <url>http://maven.teamdev.com/repository/products</url>
     </repository>
@@ -185,12 +190,12 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>30.0-jre</version>
+      <version>30.1.1-jre</version>
     </dependency>
     <dependency>
       <groupId>org.jbibtex</groupId>
       <artifactId>jbibtex</artifactId>
-      <version>1.0.17</version>
+      <version>1.0.18</version>
     </dependency>
     <dependency>
       <groupId>org.jsoup</groupId>
@@ -200,17 +205,17 @@
     <dependency>
       <groupId>com.ibm.icu</groupId>
       <artifactId>icu4j</artifactId>
-      <version>67.1</version>
+      <version>69.1</version>
     </dependency>
     <dependency>
       <groupId>com.github.scribejava</groupId>
       <artifactId>scribejava-httpclient-apache</artifactId>
-      <version>7.1.1</version>
+      <version>8.3.1</version>
     </dependency>   
     <dependency>
       <groupId>com.adobe.xmp</groupId>
       <artifactId>xmpcore</artifactId>
-      <version>6.1.10</version>
+      <version>6.1.11</version>
     </dependency>    
     <dependency>
       <groupId>com.googlecode.json-simple</groupId>
@@ -220,32 +225,32 @@
     <dependency>
       <groupId>org.apache.pdfbox</groupId>
       <artifactId>pdfbox</artifactId>
-      <version>2.0.21</version>
+      <version>2.0.24</version>
     </dependency>
     <dependency>
       <groupId>org.apache.tika</groupId>
       <artifactId>tika-core</artifactId>
-      <version>1.24.1</version>
+      <version>1.26</version>
     </dependency>
     <dependency>
       <groupId>org.controlsfx</groupId>
       <artifactId>controlsfx</artifactId>
-      <version>11.0.2</version>
+      <version>11.1.0</version>
     </dependency>	
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.11</version>
+      <version>3.12.0</version>
     </dependency>	
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.8.0</version>
+      <version>2.9.0</version>
     </dependency>	
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
-      <version>2.13.3</version>
+      <version>2.14.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -255,7 +260,7 @@
     <dependency>
       <groupId>org.zwobble.mammoth</groupId>
       <artifactId>mammoth</artifactId>
-      <version>1.4.1</version>
+      <version>1.4.2</version>
     </dependency>
     
   </dependencies>

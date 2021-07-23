@@ -127,7 +127,10 @@ public abstract class BibData
 
   public boolean fieldNotEmpty(BibFieldEnum bibFieldEnum)
   {
-    return bibFieldEnum.isMultiLine() ? getMultiStr(bibFieldEnum).size() > 0 : getStr(bibFieldEnum).length() > 0;
+    if (bibFieldEnum.isMultiLine())     
+      return getMultiStr(bibFieldEnum).stream().allMatch(String::isBlank) == false;
+    
+    return getStr(bibFieldEnum).length() > 0;
   }
 
 //---------------------------------------------------------------------------

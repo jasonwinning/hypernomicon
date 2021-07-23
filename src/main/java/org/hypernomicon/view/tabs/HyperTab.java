@@ -97,8 +97,9 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   public void rescale()                    { return; }
   public int recordCount()                 { return db.records(type()).size(); }
   public final int activeID()              { return nullSwitch(activeRecord(), -1, HDT_Record::getID); }
+  public int recordNdx()                   { return recordCount() < 1 ? -1 : nullSwitch(activeRecord(), -1, HDT_Record::keyNdx); }
   public final HyperView<HDT_CT> getView() { return view; }
-  public final HDT_CT viewRecord()         { return getView().getViewRecord(); }
+  public final HDT_CT viewRecord()         { return view.getViewRecord(); }
   public final Tab getTab()                { return tab; }
   public final TabEnum getTabEnum()        { return tabEnum; }
   void updateWebButtons(Preferences node)  { return; }
@@ -239,18 +240,6 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
       default :
         return (HDT_RT) viewRecord;
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public int recordNdx()
-  {
-    if ((recordCount() < 1) || (activeRecord() == null))
-      return -1;
-
-    HDT_RT record = activeRecord();
-    return db.records(record.getType()).getKeyNdxByID(record.getID());
   }
 
 //---------------------------------------------------------------------------

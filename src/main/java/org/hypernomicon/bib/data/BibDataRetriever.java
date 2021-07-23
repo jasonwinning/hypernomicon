@@ -73,7 +73,7 @@ public class BibDataRetriever
 
       if (BibData.isEmpty(pdfBD))
         pdfBD = null;
-      else if (workBD == null)
+      else if ((workBD == null) || (((workBD instanceof WorkBibData) == false) && BibData.isEmpty(workBD)))
         workBD = pdfBD;
     }
     catch (IOException e)
@@ -271,11 +271,10 @@ public class BibDataRetriever
       //     if there are 1 or more ISBNs
       //       if can use existing ISBNs to get bib info
       //         exit
-
-      List<String> isbns = null;
+      
       if (queryGoogle && ((workTypeEnum == wtNone) || (workTypeEnum == wtBook)))
       {
-        isbns = workBD == null ? null : workBD.getMultiStr(bfISBNs);
+        List<String> isbns = workBD == null ? null : workBD.getMultiStr(bfISBNs);
         if (collEmpty(isbns) == false)
         {
           if (stopped) return;
@@ -296,11 +295,10 @@ public class BibDataRetriever
       //       if PDF bib info has ISBN(s)
       //         if can use existing ISBNs to get bib info
       //           exit
-
-      List<String> isbns = null;
+      
       if (queryGoogle && ((workTypeEnum == wtNone) || (workTypeEnum == wtBook)))
       {
-        isbns = pdfBD == null ? null : pdfBD.getMultiStr(bfISBNs);
+        List<String> isbns = pdfBD == null ? null : pdfBD.getMultiStr(bfISBNs);
         if (collEmpty(isbns) == false)
         {
           if (stopped) return;

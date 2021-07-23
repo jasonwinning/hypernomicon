@@ -233,11 +233,8 @@ public final class MainCtrlr
 
     stage.focusedProperty().addListener((ob, oldValue, newValue) ->
     {
-      if (windows.getCyclingFocus()) return;
-
-      if (Boolean.TRUE.equals(newValue) == false) return;
-
-      windows.push(stage);
+      if ((windows.getCyclingFocus() == false) && Boolean.TRUE.equals(newValue))
+        windows.push(stage);
     });
 
     stage.widthProperty().addListener((ob, oldValue, newValue) ->
@@ -279,10 +276,10 @@ public final class MainCtrlr
     ttDates = new Tooltip(NO_DATES_TOOLTIP);
     ttDates.setStyle("-fx-font-size: 14px;");
 
-    PersonTabCtrlr   .addHyperTab(personTabEnum, tabPersons, "view/tabs/PersonTab");
-    InstTabCtrlr     .addHyperTab(instTabEnum  , tabInst   , "view/tabs/InstTab");
-    WorkTabCtrlr     .addHyperTab(workTabEnum  , tabWorks  , "view/tabs/WorkTab");
-    FileTabCtrlr     .addHyperTab(fileTabEnum  , tabFiles  , "view/tabs/FileTab");
+    PersonTabCtrlr.addHyperTab(personTabEnum, tabPersons, "view/tabs/PersonTab");
+    InstTabCtrlr  .addHyperTab(instTabEnum  , tabInst   , "view/tabs/InstTab");
+    WorkTabCtrlr  .addHyperTab(workTabEnum  , tabWorks  , "view/tabs/WorkTab");
+    FileTabCtrlr  .addHyperTab(fileTabEnum  , tabFiles  , "view/tabs/FileTab");
 
     DebateTab  .create();
     PositionTab.create();
@@ -290,19 +287,19 @@ public final class MainCtrlr
     NoteTab    .create();
     TermTab    .create();
 
-    QueryTabCtrlr    .addHyperTab(queryTabEnum , tabQueries, "query/QueryTab");
-    TreeTabCtrlr     .addHyperTab(treeTabEnum  , tabTree   , "tree/TreeTab");
+    QueryTabCtrlr .addHyperTab(queryTabEnum , tabQueries, "query/QueryTab");
+    TreeTabCtrlr  .addHyperTab(treeTabEnum  , tabTree   , "tree/TreeTab");
 
     addSelectorTab(omniTabEnum);
     addSelectorTab(listTabEnum);
 
-    chbBack = new ClickHoldButton(btnBack, Side.TOP);
+    chbBack    = new ClickHoldButton(btnBack   , Side.TOP);
     chbForward = new ClickHoldButton(btnForward, Side.TOP);
 
     setToolTip(btnBack   , "Click to go back, hold to see history"   );
     setToolTip(btnForward, "Click to go forward, hold to see history");
 
-    chbBack   .setOnAction(event -> btnBackClick());
+    chbBack   .setOnAction(event -> btnBackClick   ());
     chbForward.setOnAction(event -> btnForwardClick());
 
     viewSequence = new HyperViewSequence(tabPane, chbForward, chbBack);
@@ -560,40 +557,21 @@ public final class MainCtrlr
     tfRecord.setOnAction(event ->
     {
       if ((activeTabEnum() == treeTabEnum) || (activeTabEnum() == queryTabEnum)) return;
-      if (activeRecord() == null)
+      
+      HDT_Record record = activeRecord();
+      if (record == null)
       {
         tfRecord.setText("");
         return;
       }
 
       RecordType type = activeType();
+      int newRecordNdx = parseInt(tfRecord.getText(), 0) - 1;
 
-      int curRecordNdx = db.records(type).getKeyNdxByID(activeRecord().getID()),
-          newRecordNdx = parseInt(tfRecord.getText(), 0) - 1;
-
-      if ((newRecordNdx != curRecordNdx) && (newRecordNdx >= 0) && (newRecordNdx < db.records(type).size()))
+      if ((newRecordNdx != record.keyNdx()) && (newRecordNdx >= 0) && (newRecordNdx < db.records(type).size()))
         goToRecord(db.records(type).getByKeyNdx(newRecordNdx), true);
       else
         tfRecord.setText("");
-    });
-
-//---------------------------------------------------------------------------
-
-    btnPreviewWindow.setOnAction(event ->
-    {
-      PreviewSource src = determinePreviewContext();
-
-      if (activeTabEnum() == fileTabEnum)
-      {
-        HDT_MiscFile miscFile = (HDT_MiscFile) activeRecord();
-
-        if (miscFile == null)
-          previewWindow.clearPreview(src);
-        else
-          previewWindow.setPreview(src, miscFile.filePath(), miscFile);
-      }
-
-      openPreviewWindow(src);
     });
 
 //---------------------------------------------------------------------------
@@ -615,6 +593,25 @@ public final class MainCtrlr
         goToRecord(db.records(activeType()).getByID(newRecordID), true);
       else
         tfID.setText(String.valueOf(activeRecord().getID()));
+    });
+    
+//---------------------------------------------------------------------------
+
+    btnPreviewWindow.setOnAction(event ->
+    {
+      PreviewSource src = determinePreviewContext();
+
+      if (activeTabEnum() == fileTabEnum)
+      {
+        HDT_MiscFile miscFile = (HDT_MiscFile) activeRecord();
+
+        if (miscFile == null)
+          previewWindow.clearPreview(src);
+        else
+          previewWindow.setPreview(src, miscFile.filePath(), miscFile);
+      }
+
+      openPreviewWindow(src);
     });
 
 //---------------------------------------------------------------------------
@@ -1177,7 +1174,7 @@ public final class MainCtrlr
     loadDB(false);
   }
 
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @FXML private void mnuNewDatabaseClick()
@@ -2473,7 +2470,7 @@ public final class MainCtrlr
 
     HyperDataset<? extends HDT_Record>.CoreAccessor records = db.records(activeType());
 
-    int ndx = records.getKeyNdxByID(activeRecord().getID()) + (increment ? 1 : -1);
+    int ndx = activeRecord().keyNdx() + (increment ? 1 : -1);
     if ((ndx >= 0) && (ndx < records.size()))
       goToRecord(records.getByKeyNdx(ndx), true);
   }
