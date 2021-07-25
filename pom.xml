@@ -4,10 +4,11 @@
   <groupId>org.hypernomicon</groupId>
   <artifactId>hypernomicon</artifactId>
   <packaging>jar</packaging>
-  <version>1.21.1</version>
+  <version>1.21.2</version>
   <name>Hypernomicon</name>
   <url>http://hypernomicon.org</url>
   <inceptionYear>2012</inceptionYear>
+  
   <developers>
     <developer>
       <name>Jason Winning</name>
@@ -15,6 +16,14 @@
       <url>http://jasonwinning.com/</url>
     </developer>
   </developers>
+  
+  <properties>
+    <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss z</maven.build.timestamp.format>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <mainClass>org.hypernomicon.Main</mainClass>
+    <maven.compiler.release>11</maven.compiler.release>
+    <javafx.version>16</javafx.version>
+  </properties>
   
   <build>
     <resources>
@@ -67,7 +76,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
         <configuration>
-          <release>11</release>
+          <release>${maven.compiler.release}</release>
         </configuration>
       </plugin>
       
@@ -123,18 +132,12 @@
       </plugin>
     </plugins>
   </build>
-  
-  <properties>
-    <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss z</maven.build.timestamp.format>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <mainClass>org.hypernomicon.Main</mainClass>
-  </properties>
-  
+   
   <repositories>
     <repository>
       <id>central</id>
       <name>Maven Central</name>
-      <url>https://repo1.maven.org/maven2</url>
+      <url>https://repo.maven.apache.org/maven2</url>
     </repository>
     <repository>
       <id>com.teamdev</id>
@@ -144,42 +147,43 @@
   
   <dependencies>
     <dependency>
-      <groupId>javax.xml.bind</groupId>
-      <artifactId>jaxb-api</artifactId>
-      <version>2.4.0-b180830.0359</version>
-    </dependency>
-    <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
-      <version>15.0.1</version>
+      <version>${javafx.version}</version>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-fxml</artifactId>
-      <version>15.0.1</version>
+      <version>${javafx.version}</version>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-web</artifactId>
-      <version>15.0.1</version>
+      <version>${javafx.version}</version>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-graphics</artifactId>
-      <version>15.0.1</version>
+      <version>${javafx.version}</version>
       <classifier>win</classifier>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-graphics</artifactId>
-      <version>15.0.1</version>
+      <version>${javafx.version}</version>
       <classifier>linux</classifier>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-graphics</artifactId>
-      <version>15.0.1</version>
+      <version>${javafx.version}</version>
       <classifier>mac</classifier>
+    </dependency>
+    
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.4.0-b180830.0359</version>
     </dependency>
     <dependency>
       <groupId>com.teamdev.jxbrowser</groupId>

@@ -17,7 +17,35 @@
 
 package org.hypernomicon;
 
+import java.io.PrintStream;
+
+import static java.nio.charset.StandardCharsets.*;
+
 public class Main
 {
-  public static void main(String[] args) { javafx.application.Application.launch(App.class, args); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static void main(String[] args)
+  {
+    System.setErr(new PrintStream(System.out)
+    {
+      @Override public void write(byte[] buf, int off, int len)
+      {
+        // This is a cleaner solution than an error-prone practice of always having to include JVM module-path arguments
+        // pointing to exact file location of JavaFX modules, or simply setting the classpath as the module path (which
+        // causes errors). As far as I can tell, no harm is actually done by loading the JavaFX classes from the classpath.
+
+        if (! (new String(buf, UTF_8).contains("Unsupported JavaFX configuration: classes were loaded from 'unnamed module")))
+          super.write(buf, off, len);
+      }
+    });
+
+    javafx.application.Application.launch(App.class, args);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }
