@@ -467,7 +467,6 @@ public class BibManager extends HyperDlg
       pdfFilePaths = entry.getWork().workFiles.stream().filter(HDT_WorkFile::pathNotEmpty)
                                                        .map(HDT_WorkFile::filePath)
                                                        .collect(Collectors.toList());
-
       if (collEmpty(pdfFilePaths))
         pdfFilePaths = safeListOf(db.resolveExtFilePath(entry.getWork().getURL()));
     }

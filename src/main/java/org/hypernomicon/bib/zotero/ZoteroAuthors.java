@@ -128,9 +128,7 @@ public class ZoteroAuthors extends BibAuthors
     JsonObj creatorObj = new JsonObj();
     creatorObj.put("creatorType", aTypeStr);
 
-    String firstName = removeAllParentheticals(bibAuthor.getGiven());
-
-    creatorObj.put("firstName", firstName);
+    creatorObj.put("firstName", removeAllParentheticals(bibAuthor.getGiven()));
     creatorObj.put("lastName", bibAuthor.getFamily());
 
     // Now the new author should be inserted before the authors that don't map to a Hypernomicon author type

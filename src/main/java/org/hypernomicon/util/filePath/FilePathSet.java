@@ -109,10 +109,7 @@ public class FilePathSet implements Set<FilePath>
     Set<FilePath> set = nameToPaths.get(nameStr);
 
     if (set == null)
-    {
-      set = Sets.newConcurrentHashSet();
-      nameToPaths.put(nameStr, set);
-    }
+      nameToPaths.put(nameStr, set = Sets.newConcurrentHashSet());
 
     return set.add(filePath);
   }

@@ -137,10 +137,7 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
       {
         Map<Tag, HDI_OfflineBase> tagToNestedItem = val.objIDtoMaps.get(objRecord.getID());
         if (tagToNestedItem == null)
-        {
-          tagToNestedItem = new LinkedHashMap<>();
-          val.objIDtoMaps.put(objRecord.getID(), tagToNestedItem);
-        }
+          val.objIDtoMaps.put(objRecord.getID(), tagToNestedItem = new LinkedHashMap<>());
 
         db.saveNestedValuesToOfflineMap(record, objRecord, tagToNestedItem, val.recordState);
       }

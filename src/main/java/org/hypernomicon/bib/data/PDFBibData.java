@@ -173,10 +173,7 @@ public class PDFBibData extends BibDataStandalone
       Map<String, XMPNode> nameToChild;
 
       if (prefixToNameToChild.containsKey(parts.prefix) == false)
-      {
-        nameToChild = new LinkedHashMap<>();
-        prefixToNameToChild.put(parts.prefix, nameToChild);
-      }
+        prefixToNameToChild.put(parts.prefix, nameToChild = new LinkedHashMap<>());
       else
         nameToChild = prefixToNameToChild.get(parts.prefix);
 
@@ -186,8 +183,7 @@ public class PDFBibData extends BibDataStandalone
         return;
       }
 
-      XMPNode child = new XMPNode(xmpMeta, this, targetInfo);
-      nameToChild.put(parts.name, child);
+      nameToChild.put(parts.name, new XMPNode(xmpMeta, this, targetInfo));
     }
 
   //---------------------------------------------------------------------------

@@ -217,7 +217,7 @@ public final class App extends Application
       if (filePath.getExtensionOnly().equalsIgnoreCase("hdb"))
       {
         appPrefs.put(PREF_KEY_SOURCE_FILENAME, filePath.getNameOnly().toString());
-        appPrefs.put(PREF_KEY_SOURCE_PATH, filePath.getDirOnly().toString());
+        appPrefs.put(PREF_KEY_SOURCE_PATH    , filePath.getDirOnly ().toString());
         hdbExists = true;
         args.remove(0);
       }

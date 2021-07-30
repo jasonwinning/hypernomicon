@@ -207,10 +207,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
         JsonObj idObj = jObj.getObj("identifiers");
 
         if (idObj == null)
-        {
-          idObj = new JsonObj();
-          jObj.put("identifiers", idObj);
-        }
+          jObj.put("identifiers", idObj = new JsonObj());
 
         if (safeStr(newStr).isBlank())
           idObj.putNull("doi");
@@ -402,10 +399,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
         JsonObj idObj = jObj.getObj("identifiers");
 
         if (idObj == null)
-        {
-          idObj = new JsonObj();
-          jObj.put("identifiers", idObj);
-        }
+          jObj.put("identifiers", idObj = new JsonObj());
 
         if (newStr.isEmpty())
           idObj.remove(fieldKey);
@@ -591,10 +585,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
         JsonArray jsonArr = dest.jObj.getArray("editors");
         if (jsonArr == null)
-        {
-          jsonArr = new JsonArray();
-          dest.jObj.put("editors", jsonArr);
-        }
+          dest.jObj.put("editors", jsonArr = new JsonArray());
 
         jsonArr.clear();
 
@@ -602,9 +593,7 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
         {
           JsonObj personObj = new JsonObj();
 
-          String firstName = removeAllParentheticals(editor.getGiven());
-
-          personObj.put("first_name", firstName);
+          personObj.put("first_name", removeAllParentheticals(editor.getGiven()));
           personObj.put("last_name", editor.getFamily());
 
           jsonArr.add(personObj);

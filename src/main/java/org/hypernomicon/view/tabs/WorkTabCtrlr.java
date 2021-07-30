@@ -1904,7 +1904,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     List<FilePath> pdfFilePaths = curWork.workFiles.stream().filter(HDT_WorkFile::pathNotEmpty)
                                                             .map(HDT_WorkFile::filePath)
                                                             .collect(Collectors.toList());
-
     if (collEmpty(pdfFilePaths))
       pdfFilePaths = safeListOf(db.resolveExtFilePath(tfURL.getText()));
 

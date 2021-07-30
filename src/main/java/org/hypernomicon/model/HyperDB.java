@@ -1068,10 +1068,7 @@ public final class HyperDB
   {
     Set<HyperPath> set = filenameMap.get(rootFilePath.getNameOnly().toString());
     if (set == null)
-    {
-      set = Sets.newConcurrentHashSet();
-      filenameMap.put(rootFilePath.getNameOnly().toString(), set);
-    }
+      filenameMap.put(rootFilePath.getNameOnly().toString(), set = Sets.newConcurrentHashSet());
 
     set.add(getRootFolder().getPath());
   }
@@ -2320,10 +2317,7 @@ public final class HyperDB
       if (affirm)
       {
         if (set == null)
-        {
-          set = new HashSet<>();
-          keyWorkIndex.put(keyWorkRecord, set);
-        }
+          keyWorkIndex.put(keyWorkRecord, set = new HashSet<>());
 
         set.add(record);
       }

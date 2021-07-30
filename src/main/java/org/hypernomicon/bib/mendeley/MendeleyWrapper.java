@@ -459,10 +459,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
             MendeleyDocument document = keyToAllEntry.get(entryKey);
 
             if (document == null)
-            {
-              document = new MendeleyDocument(MendeleyWrapper.this, jObj, false);
-              keyToAllEntry.put(entryKey, document);
-            }
+              keyToAllEntry.put(entryKey, new MendeleyDocument(MendeleyWrapper.this, jObj, false));
             else
               document.update(jObj, true, false);
           });
@@ -543,8 +540,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
           if (folder == null)
           {
-            folder = new MendeleyFolder(jObj);
-            keyToColl.put(collKey, folder);
+            keyToColl.put(collKey, new MendeleyFolder(jObj));
             changed = true;
           }
           else

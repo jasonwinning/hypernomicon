@@ -374,10 +374,7 @@ public class HyperPath
       newFileName = newFileName.getNameOnly();
       Set<HyperPath> set = db.filenameMap.get(newFileName.toString());
       if (set == null)
-      {
-        set = Sets.newConcurrentHashSet();
-        db.filenameMap.put(newFileName.toString(), set);
-      }
+        db.filenameMap.put(newFileName.toString(), set = Sets.newConcurrentHashSet());
 
       set.add(this);
     }

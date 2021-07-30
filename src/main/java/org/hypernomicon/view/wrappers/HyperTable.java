@@ -206,7 +206,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     int numCols = columns.size();
 
     List<Double> oldWidths = colWidthMap.get(prefID), curWidths = columns.stream()
-      .map(column -> column.getWidth())
+      .map(TableColumnBase::getWidth)
       .map(width -> ((width > 0.0) && rescale) ? width / displayScale : width)
       .collect(Collectors.toList());
 

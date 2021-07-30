@@ -94,9 +94,9 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
   {
     strToItemType = new HashMap<>();
 
-    strToItemType.put(DI_TYPE_DESC, diDescription);
-    strToItemType.put(DI_TYPE_RECORD, diRecord);
-    strToItemType.put(DI_TYPE_KEY_WORKS, diKeyWorks);
+    strToItemType.put(DI_TYPE_DESC     , diDescription);
+    strToItemType.put(DI_TYPE_RECORD   , diRecord     );
+    strToItemType.put(DI_TYPE_KEY_WORKS, diKeyWorks   );
   }
 
 //---------------------------------------------------------------------------
@@ -129,10 +129,7 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
         {
           Set<Integer> idSet = usedKeyWorks.get(objType);
           if (idSet == null)
-          {
-            idSet = new HashSet<>();
-            usedKeyWorks.put(objType, idSet);
-          }
+            usedKeyWorks.put(objType, idSet = new HashSet<>());
 
           if (idSet.contains(objID) == false)
           {

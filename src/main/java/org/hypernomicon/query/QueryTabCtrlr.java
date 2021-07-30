@@ -179,8 +179,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       htFields.autoCommitListSelections = true;
 
-      Populator queryTypePopulator = Populator.create(cvtQueryType, EnumSet.allOf(QueryType.class)
-        .stream()
+      Populator queryTypePopulator = Populator.create(cvtQueryType, EnumSet.allOf(QueryType.class).stream()
         .map(queryType -> new HyperTableCell(queryType.getCode(), queryType.getCaption(), queryType.getRecordType()))
         .collect(Collectors.toList()));
 

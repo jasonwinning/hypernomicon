@@ -98,10 +98,7 @@ public class FilenameMap<T> implements Map<String, T>
 
     List<String> list = lowerToList.get(strKey.toLowerCase());
     if (list == null)
-    {
-      list = new ArrayList<>();
-      lowerToList.put(strKey.toLowerCase(), list);
-    }
+      lowerToList.put(strKey.toLowerCase(), list = new ArrayList<>());
 
     String realKey = findKey(strKey);
 

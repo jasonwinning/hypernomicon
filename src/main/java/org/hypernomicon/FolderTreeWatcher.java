@@ -172,10 +172,7 @@ public class FolderTreeWatcher
             HDT_Folder folder = watchKeyToDir.get(watchKey);
 
             if (folder == null)
-            {
-              folder = HyperPath.getFolderFromFilePath(new FilePath((Path)watchKey.watchable()), false);
-              watchKeyToDir.put(watchKey, folder);
-            }
+              watchKeyToDir.put(watchKey, folder = HyperPath.getFolderFromFilePath(new FilePath((Path)watchKey.watchable()), false));
 
             if (folder.getID() > 0)
             {

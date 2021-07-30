@@ -557,7 +557,7 @@ public final class MainCtrlr
     tfRecord.setOnAction(event ->
     {
       if ((activeTabEnum() == treeTabEnum) || (activeTabEnum() == queryTabEnum)) return;
-      
+
       HDT_Record record = activeRecord();
       if (record == null)
       {
@@ -594,7 +594,7 @@ public final class MainCtrlr
       else
         tfID.setText(String.valueOf(activeRecord().getID()));
     });
-    
+
 //---------------------------------------------------------------------------
 
     btnPreviewWindow.setOnAction(event ->
@@ -1169,7 +1169,7 @@ public final class MainCtrlr
     if (db.isLoaded()) return;
 
     appPrefs.put(PREF_KEY_SOURCE_FILENAME, filePath.getNameOnly().toString());
-    appPrefs.put(PREF_KEY_SOURCE_PATH, filePath.getDirOnly().toString());
+    appPrefs.put(PREF_KEY_SOURCE_PATH    , filePath.getDirOnly ().toString());
 
     loadDB(false);
   }
@@ -1278,7 +1278,7 @@ public final class MainCtrlr
       }
 
       appPrefs.put(PREF_KEY_SOURCE_FILENAME, srcFilePath.getNameOnly().toString());
-      appPrefs.put(PREF_KEY_SOURCE_PATH, srcFilePath.getDirOnly().toString());
+      appPrefs.put(PREF_KEY_SOURCE_PATH    , srcFilePath.getDirOnly ().toString());
     }
 
     loadDB(true);

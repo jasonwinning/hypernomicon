@@ -181,10 +181,7 @@ public class CollectionTree
     {
       BibCollectionRow childRow = keyToRow.get(childKey);
       if (childRow == null)
-      {
-        childRow = new BibCollectionRow(childColl);
-        keyToRow.put(childKey, childRow);
-      }
+        keyToRow.put(childKey, childRow = new BibCollectionRow(childColl));
 
       String parentKey = childColl.getParentKey();
       if (parentKey == null)
@@ -195,11 +192,9 @@ public class CollectionTree
       {
         BibCollection parentColl = keyToColl.get(parentKey);
         BibCollectionRow parentRow = keyToRow.get(parentKey);
+
         if (parentRow == null)
-        {
-          parentRow = new BibCollectionRow(parentColl);
-          keyToRow.put(parentKey, parentRow);
-        }
+          keyToRow.put(parentKey, parentRow = new BibCollectionRow(parentColl));
 
         insertTreeItem(parentRow.getTreeItem().getChildren(), childRow);
       }

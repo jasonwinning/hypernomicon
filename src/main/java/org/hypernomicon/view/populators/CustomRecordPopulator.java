@@ -59,10 +59,9 @@ public class CustomRecordPopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    return handler.handle(row, force).stream()
-                                     .filter(record -> filter == null ? true : filter.test(record.getID()))
-                                     .map(record -> new HyperTableCell(record, record.getCBText()))
-                                     .collect(Collectors.toList());
+    return handler.handle(row, force).stream().filter(record -> filter == null ? true : filter.test(record.getID()))
+                                              .map(record -> new HyperTableCell(record, record.getCBText()))
+                                              .collect(Collectors.toList());
   }
 
 //---------------------------------------------------------------------------

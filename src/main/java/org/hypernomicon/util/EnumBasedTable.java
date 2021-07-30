@@ -54,19 +54,13 @@ public class EnumBasedTable<R extends Enum<R>, C extends Enum<C>, V>
 
     EnumMap<C, V> columnToValue = rowToColumnToValue.get(row);
     if (columnToValue == null)
-    {
-      columnToValue = new EnumMap<>(columnType);
-      rowToColumnToValue.put(row, columnToValue);
-    }
+      rowToColumnToValue.put(row, columnToValue = new EnumMap<>(columnType));
 
     columnToValue.put(column, newValue);
 
     EnumMap<R, V> rowToValue = columnToRowToValue.get(column);
     if (rowToValue == null)
-    {
-      rowToValue = new EnumMap<>(rowType);
-      columnToRowToValue.put(column, rowToValue);
-    }
+      columnToRowToValue.put(column, rowToValue = new EnumMap<>(rowType));
 
     rowToValue.put(row, newValue);
 

@@ -52,9 +52,8 @@ public class ExternalColumnPopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    return table.getSelByCol(colNdx).stream()
-                                    .filter(cell -> filter == null ? true : filter.test(cell.getID()))
-                                    .collect(Collectors.toList());
+    return table.getSelByCol(colNdx).stream().filter(cell -> filter == null ? true : filter.test(cell.getID()))
+                                             .collect(Collectors.toList());
   }
 
 //---------------------------------------------------------------------------

@@ -1025,11 +1025,7 @@ public final class Util
         s = charMap.get(c);
 
         if (s == null)
-        {
-          s = transliterator2.transliterate(transliterator1.transliterate(String.valueOf(c)));
-
-          charMap.put(c, s);
-        }
+          charMap.put(c, s = transliterator2.transliterate(transliterator1.transliterate(String.valueOf(c))));
       }
 
       output.append(s);

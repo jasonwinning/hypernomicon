@@ -83,7 +83,7 @@ public class CrossrefBibData extends BibDataStandalone
       if (jsonArray.size() == 0)
         return null;
 
-      if (jsonArray.size() == 1)
+      if ((jsonArray.size() == 1) || safeStr(title).isBlank())
         return new CrossrefBibData(jsonArray.getObj(0), queryDoi);
     }
     catch (NullPointerException | IndexOutOfBoundsException e)

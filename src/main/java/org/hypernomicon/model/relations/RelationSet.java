@@ -201,10 +201,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     {
       Set<RelationSet<? extends HDT_Record, ? extends HDT_Record>> relSets = orphanTypeToRelSets.get(subjType);
       if (relSets == null)
-      {
-        relSets = new HashSet<>();
-        orphanTypeToRelSets.put(subjType, relSets);
-      }
+        orphanTypeToRelSets.put(subjType, relSets = new HashSet<>());
 
       relSets.add(this);
     }
@@ -457,8 +454,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     if (items == null)
     {
       if (noCreate) return null;
-      items = new LinkedHashMap<>();
-      objectGroups.put(subj, obj, items);
+      objectGroups.put(subj, obj, items = new LinkedHashMap<>());
     }
 
     if (items.containsKey(tag)) return (HDI_Online) items.get(tag);
@@ -849,12 +845,10 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   private void addNestedItem(HyperDataCategory dataCat, Tag tag, RecordType targetType) throws HDB_InternalError
   {
-    HDI_Schema schema = new HDI_Schema(dataCat, type, tag);
-
     if (tagToSchema.containsKey(tag))
       throw new HDB_InternalError(98925);
 
-    tagToSchema.put(tag, schema);
+    tagToSchema.put(tag, new HDI_Schema(dataCat, type, tag));
 
     if (dataCat == hdcNestedPointer)
       tagToTargetType.put(tag, targetType);
