@@ -91,12 +91,12 @@ public final class MainTextWrapper
   {
     this.parentPane = parentPane;
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
-  public boolean isEditing()         { return showing && editing; }
-  public WebEngine getEditorEngine() { return editCtrlr == null ? null : editCtrlr.getEngine(); }
+
+  boolean isEditing()         { return showing && editing; }
+  WebEngine getEditorEngine() { return editCtrlr == null ? null : editCtrlr.getEngine(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -182,7 +182,7 @@ public final class MainTextWrapper
 
     Document doc = makeDocLinksExternal(Jsoup.parse(htmlToUse.replace("contenteditable=\"true\"", "contenteditable=\"false\"")));
 
-    addLinks(doc.body(), recordToHilite);
+    addLinks(new HtmlTextNodeList(doc.body()), recordToHilite);
 
     weToUse.loadContent(doc.html().replace("</head>", headContent));
   }
@@ -214,10 +214,9 @@ public final class MainTextWrapper
     {
       keyWorks = new ArrayList<>();
       html = editCtrlr.getHtmlAndKeyWorks(keyWorks);
-
       displayItems = new ArrayList<>(editCtrlr.getDisplayItems());
 
-      setCompleteHtml();
+      renderCompleteHtml();
     }
 
     showing = false;
@@ -366,7 +365,7 @@ public final class MainTextWrapper
     html = mainText.getHtml();
     keyWorks = mainText.getKeyWorks();
 
-    setCompleteHtml();
+    renderCompleteHtml();
 
     edited = false;
 
@@ -479,13 +478,9 @@ public final class MainTextWrapper
 
   private static final String KEYWORKS_DIVIT_ID = "keyWorks";
 
-  private void setCompleteHtml()
+  private void renderCompleteHtml()
   {
-    HDT_WorkLabel curLabel = getLabelOfRecord(curRecord);
     Document doc = Jsoup.parse(prepHtmlForDisplay(html));
-    StringBuilder innerHtml = new StringBuilder("");
-    MutableBoolean firstOpen = new MutableBoolean(false);
-    int keyWorksSize = getNestedKeyWorkCount(curRecord, keyWorks);
 
     Element styleTag = doc.head().getElementsByTag("style").stream().findFirst().orElse(null);
     if ((styleTag != null) && (styleTag.outerHtml().contains("margin-right") == false))
@@ -493,14 +488,15 @@ public final class MainTextWrapper
       doc.getElementsByTag("style").forEach(Element::remove);
       styleTag = null;
     }
-    
+
     if (styleTag == null)
       doc.head().prepend(mainTextHeadStyleTag());
 
-    if (doc.body().text().trim().isEmpty())
-      firstOpen.setTrue();
-
+    MutableBoolean firstOpen = new MutableBoolean(doc.body().text().trim().isEmpty());
+    StringBuilder innerHtml = new StringBuilder("");
     MutableInt tagNdx = new MutableInt(0);
+    HDT_WorkLabel curLabel = getLabelOfRecord(curRecord);
+    int keyWorksSize = getNestedKeyWorkCount(curRecord, keyWorks);
 
     displayItems.forEach(item ->
     {
@@ -508,82 +504,14 @@ public final class MainTextWrapper
       {
         case diDescription:
 
-          StringBuilder relRecordsHtml = new StringBuilder();
-          if (curRecord.getType() == hdtConcept)
-          {
-            List<HDT_Concept> concepts = getRelatedConcepts(curRecord.getLink());
-
-            concepts.forEach(concept ->
-            {
-              relRecordsHtml.append(relRecordsHtml.length() == 0 ? "<b hypncon-no-links=true>Related concepts: </b>" : "; ");
-              relRecordsHtml.append(getGoToRecordAnchor(concept, "", concept.getExtendedName()));
-            });
-          }
-          else
-          {
-            Set<Connector> displayers = curRecord.getMainText().getDisplayers();
-
-            displayers.removeIf(displayer -> displayerIsAlreadyShowing(displayer.getSpoke()));
-
-            displayers.forEach(displayer ->
-            {
-              relRecordsHtml.append(relRecordsHtml.length() == 0 ? "<b hypncon-no-links=true>Displayers: </b>" : "; ");
-              relRecordsHtml.append(getGoToRecordAnchor(displayer.getSpoke(), "", displayer.getSpoke().getCBText()));
-            });
-          }
-
-          String plainText = doc.body().text().trim();
-
-          if ((relRecordsHtml.length() > 0) || (plainText.length() > 0))
-          {
-            if (innerHtml.length() > 0)
-              innerHtml.append("<br>");
-
-            if (relRecordsHtml.length() > 0)
-            {
-              innerHtml.append(relRecordsHtml + "<br>");
-
-              if (plainText.length() > 0) innerHtml.append("<br>");
-            }
-
-            if (plainText.length() > 0)
-              innerHtml.append(doc.body().html());
-          }
-
+          renderDescription(innerHtml, doc);
           break;
 
         case diKeyWorks:
 
           if (keyWorksSize > 0)
           {
-            boolean sortByName = db.prefs.getBoolean(PREF_KEY_KEY_WORK_SORT_BY_NAME, true);
-
-            if (innerHtml.length() > 0)
-              innerHtml.append("<br>");
-
-            innerHtml.append(detailsTag(KEYWORKS_DIVIT_ID, viewInfo, true) + "<summary><b>Key Works</b>&nbsp;")
-                     .append("<a hypncon=\"true\" href=\"\" title=\"Turn key work details on/off\" onclick=\"javascript:callToJava(" + String.valueOf(JS_EVENT_DETAILED_KEY_WORKS) + "); return false;\"><img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/key-work-details.png") + "\"></img></a>")
-                     .append("<span style=\"display: " + (sortByName ? "inline" : "none") + ";\" class=\"" + ALPHA_SORTED_OUTER_CLASS + "\"><a hypncon=\"true\" title=\"Sort by year\" href=\"\" onclick=\"javascript:switchTo19(); return false;\"><img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/sort_19.png") + "\"></img></a></span>")
-                     .append("<span style=\"display: " + (sortByName ? "none" : "inline") + ";\" class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\"><a hypncon=\"true\" title=\"Sort alphabetically\" href=\"\" onclick=\"javascript:switchToAZ(); return false;\"><img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/sort_az.png") + "\"></img></a></span>")
-                     .append("</summary><br><div class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\" style=\"margin-left: 3.5em; display: " + (sortByName ? "none" : "block") + ";\">");
-            appendKeyWorkSpanAndBody(curRecord, innerHtml, false, tagNdx, true, viewInfo);
-
-            if ((curLabel != null) && (curLabel.subLabels.isEmpty() == false))
-            {
-              if (keyWorks.size() > 0) innerHtml.append("<br>");
-              appendSubLabelsKeyWorkBody(curLabel, innerHtml, false, tagNdx, viewInfo, "num" + makeElementID(curLabel));
-            }
-
-            innerHtml.append("</div><div class=\"" + ALPHA_SORTED_OUTER_CLASS + "\" style=\"margin-left: 3.5em; display: " + (sortByName ? "block" : "none") + ";\">");
-            appendKeyWorkSpanAndBody(curRecord, innerHtml, true, tagNdx, true, viewInfo);
-
-            if ((curLabel != null) && (curLabel.subLabels.isEmpty() == false))
-            {
-              if (keyWorks.size() > 0) innerHtml.append("<br>");
-              appendSubLabelsKeyWorkBody(curLabel, innerHtml, true, tagNdx, viewInfo, "alp" + makeElementID(curLabel));
-            }
-
-            innerHtml.append("</div></details>");
+            renderKeyWorks(innerHtml, tagNdx, curLabel);
           }
           else
           {
@@ -626,6 +554,90 @@ public final class MainTextWrapper
 
     doc.body().html(innerHtml.toString());
     completeHtml = doc.html();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void renderDescription(StringBuilder innerHtml, Document doc)
+  {
+    StringBuilder relRecordsHtml = new StringBuilder();
+    if (curRecord.getType() == hdtConcept)
+    {
+      List<HDT_Concept> concepts = getRelatedConcepts(curRecord.getLink());
+
+      concepts.forEach(concept ->
+      {
+        relRecordsHtml.append(relRecordsHtml.length() == 0 ? "<b " + NO_LINKS_ATTR + "=true>Related concepts: </b>" : "; ");
+        relRecordsHtml.append(getGoToRecordAnchor(concept, "", concept.getExtendedName()));
+      });
+    }
+    else
+    {
+      Set<Connector> displayers = curRecord.getMainText().getDisplayers();
+
+      displayers.removeIf(displayer -> displayerIsAlreadyShowing(displayer.getSpoke()));
+
+      displayers.forEach(displayer ->
+      {
+        relRecordsHtml.append(relRecordsHtml.length() == 0 ? "<b " + NO_LINKS_ATTR + "=true>Displayers: </b>" : "; ");
+        relRecordsHtml.append(getGoToRecordAnchor(displayer.getSpoke(), "", displayer.getSpoke().getCBText()));
+      });
+    }
+
+    String plainText = doc.body().text().trim();
+
+    if ((relRecordsHtml.length() > 0) || (plainText.length() > 0))
+    {
+      if (innerHtml.length() > 0)
+        innerHtml.append("<br>");
+
+      if (relRecordsHtml.length() > 0)
+      {
+        innerHtml.append(relRecordsHtml + "<br>");
+
+        if (plainText.length() > 0) innerHtml.append("<br>");
+      }
+
+      if (plainText.length() > 0)
+        innerHtml.append(doc.body().html());
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void renderKeyWorks(final StringBuilder innerHtml, final MutableInt tagNdx, final HDT_WorkLabel curLabel)
+  {
+
+    boolean sortByName = db.prefs.getBoolean(PREF_KEY_KEY_WORK_SORT_BY_NAME, true);
+
+    if (innerHtml.length() > 0)
+      innerHtml.append("<br>");
+
+    innerHtml.append(detailsTag(KEYWORKS_DIVIT_ID, viewInfo, true) + "<summary><b>Key Works</b>&nbsp;")
+             .append("<a hypncon=\"true\" href=\"\" title=\"Turn key work details on/off\" onclick=\"javascript:callToJava(" + String.valueOf(JS_EVENT_DETAILED_KEY_WORKS) + "); return false;\"><img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/key-work-details.png") + "\"></img></a>")
+             .append("<span style=\"display: " + (sortByName ? "inline" : "none") + ";\" class=\"" + ALPHA_SORTED_OUTER_CLASS + "\"><a hypncon=\"true\" title=\"Sort by year\" href=\"\" onclick=\"javascript:switchTo19(); return false;\"><img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/sort_19.png") + "\"></img></a></span>")
+             .append("<span style=\"display: " + (sortByName ? "none" : "inline") + ";\" class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\"><a hypncon=\"true\" title=\"Sort alphabetically\" href=\"\" onclick=\"javascript:switchToAZ(); return false;\"><img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/sort_az.png") + "\"></img></a></span>")
+             .append("</summary><br><div class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\" style=\"margin-left: 3.5em; display: " + (sortByName ? "none" : "block") + ";\">");
+    appendKeyWorkSpanAndBody(curRecord, innerHtml, false, tagNdx, true, viewInfo);
+
+    if ((curLabel != null) && (curLabel.subLabels.isEmpty() == false))
+    {
+      if (keyWorks.size() > 0) innerHtml.append("<br>");
+      appendSubLabelsKeyWorkBody(curLabel, innerHtml, false, tagNdx, viewInfo, "num" + makeElementID(curLabel));
+    }
+
+    innerHtml.append("</div><div class=\"" + ALPHA_SORTED_OUTER_CLASS + "\" style=\"margin-left: 3.5em; display: " + (sortByName ? "block" : "none") + ";\">");
+    appendKeyWorkSpanAndBody(curRecord, innerHtml, true, tagNdx, true, viewInfo);
+
+    if ((curLabel != null) && (curLabel.subLabels.isEmpty() == false))
+    {
+      if (keyWorks.size() > 0) innerHtml.append("<br>");
+      appendSubLabelsKeyWorkBody(curLabel, innerHtml, true, tagNdx, viewInfo, "alp" + makeElementID(curLabel));
+    }
+
+    innerHtml.append("</div></details>");
   }
 
 //---------------------------------------------------------------------------

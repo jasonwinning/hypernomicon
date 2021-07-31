@@ -54,6 +54,7 @@ import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.HDT_WorkLabel;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.HyperView.TextViewInfo;
+import org.hypernomicon.view.mainText.HtmlTextNodeList.HtmlTextNode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
@@ -77,7 +78,8 @@ public class MainTextUtil
                              scriptContent,
                              EMBEDDED_FILE_TAG = "misc-file";
 
-  static final String         ALPHA_SORTED_OUTER_CLASS   = "sortedKeyWorksAZ",
+  static final String         NO_LINKS_ATTR              = "hypncon-no-links",
+                              ALPHA_SORTED_OUTER_CLASS   = "sortedKeyWorksAZ",
                               NUMERIC_SORTED_OUTER_CLASS = "sortedKeyWorks19";
   private static final String ALPHA_SORTED_INNER_CLASS   = "keyWorksSpanAZ",
                               NUMERIC_SORTED_INNER_CLASS = "keyWorksSpan19",
@@ -285,88 +287,84 @@ public class MainTextUtil
 
   private static enum LinkKind { none, web, keyword }
 
-  static void addLinks(Element element, HDT_Record recordToHilite)
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static void addLinks(HtmlTextNodeList nodes, HDT_Record recordToHilite)
   {
-    if (element.tagName().equalsIgnoreCase("summary") || // Don't create any keyword links within collapsible headings
-        element.tagName().equalsIgnoreCase("a")       || // Don't create any keyword links within anchor tags (they already link to somewhere)
-        element.hasAttr("hypncon-no-links"))
-      return;
+    String entirePlainText = nodes.toString();
+    list.generate(entirePlainText);
 
-    for (int nodeNdx = 0; nodeNdx < element.textNodes().size(); nodeNdx++)
+    int linkNdx = 0;        // index of the current keyword link
+
+    KeywordLink link = linkNdx >= list.getLinks().size() ? null : list.getLinks().get(linkNdx);
+
+    for (int curMatchNdx = 0; curMatchNdx < entirePlainText.length();)
     {
-      TextNode textNode = element.textNodes().get(nodeNdx);
+      LinkKind kind = LinkKind.none;
 
-      String oldStr = textNode.getWholeText();
-      list.generate(oldStr);
+      if (safeSubstring(entirePlainText, curMatchNdx, curMatchNdx + 4).toLowerCase().equals("http"))
+        kind = LinkKind.web;
+      else if ((link != null) && (curMatchNdx == link.offset))
+        kind = LinkKind.keyword;
 
-      int linkNdx = 0,        // index of the current keyword link
-          curNodeTextNdx = 0; // character position, in the original text of the current element, where the current TextNode starts
-
-      KeywordLink link = linkNdx >= list.getLinks().size() ? null : list.getLinks().get(linkNdx);
-
-      for (int oldNdx = 0; oldNdx < oldStr.length();)
+      if (kind != LinkKind.none) // Got a match
       {
-        LinkKind kind = LinkKind.none;
+        int linkTextLen;
 
-        if (safeSubstring(oldStr, oldNdx, oldNdx + 4).toLowerCase().equals("http"))
-          kind = LinkKind.web;
-        else if ((link != null) && (oldNdx == link.offset))
-          kind = LinkKind.keyword;
+        linkTextLen = kind == LinkKind.web ? getWebLinkLen(curMatchNdx, entirePlainText) : link.length;
 
-        if (kind != LinkKind.none)
+        for (HtmlTextNode node : nodes.getLinkNodes(curMatchNdx, curMatchNdx + linkTextLen)) // 1. Get list of node objects corresponding to matching text
         {
-          textNode = textNode.splitText(oldNdx - curNodeTextNdx);  // 1. Set textNode reference equal to the text node that will be after the link
-          curNodeTextNdx = oldNdx;
-          nodeNdx++;
-          String displayText, newStr = textNode.getWholeText();    // 2. Get the text of the link plus the next text node
-          int linkTextLen;
+          TextNode textNode = node.getTextNode(); // 2. For each node object in list:
+
+          if (curMatchNdx > node.getStartNdx()) // 3. split the textnode if match start ndx does not match start ndx of text in textnode
+            textNode = node.updateStartNdx(curMatchNdx, true);
+
+          String displayText = safeSubstring(node.getText(), 0, linkTextLen);
 
           if (kind == LinkKind.web)
           {
-            linkTextLen = getWebLinkLen(newStr);    // 3. Get end offset into newStr for the part that will be converted to a link
-            displayText = safeSubstring(newStr, 0, linkTextLen);
             textNode.before("<a href=\"\" onclick=\"openURL('" + displayText + "'); return false;\">" + displayText + "</a>"); // 4. Insert anchor
           }
           else
           {
-            linkTextLen = link.length;              // 3. Get end offset into newStr for the part that will be converted to a link
-            displayText = safeSubstring(newStr, 0, linkTextLen);
             String style = link.key.record.equals(recordToHilite) ? "background-color: pink;" : "";
 
             textNode.before(getKeywordLink(displayText, link, style));  // 4. Insert anchor
           }
 
-          oldNdx = oldNdx + linkTextLen;                                        // 5. Update oldNdx
-          textNode.text(safeSubstring(newStr, linkTextLen, newStr.length()));   // 6. Remove link text from next text node
-          curNodeTextNdx = curNodeTextNdx + linkTextLen;                        // 7. Update index of current text node
+          int offset = displayText.length();
+          node.updateStartNdx(curMatchNdx + offset, false);
+          textNode.text(node.getText()); // 5. Remove link text from text node
 
-          if (kind == LinkKind.keyword)
-          {
-            linkNdx++;
-            link = linkNdx >= list.getLinks().size() ? null : list.getLinks().get(linkNdx);
-          }
+          curMatchNdx += offset; // 6. Update oldNdx
+          linkTextLen -= offset; // 7. Reduce amount of text that still needs to be turned into a link
         }
 
-        else // there was no link this time
+        if (kind == LinkKind.keyword)
         {
-          oldNdx++;
+          linkNdx++;
+          link = linkNdx >= list.getLinks().size() ? null : list.getLinks().get(linkNdx);
         }
       }
+      else // there was no link this time
+      {
+        curMatchNdx++;
+      }
     }
-
-    element.children().forEach(child -> addLinks(child, recordToHilite));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static int getWebLinkLen(String text)
+  private static int getWebLinkLen(int startNdx, String text)
   {
-    int ndx = 0;
+    int ndx = startNdx;
 
     while ((ndx < text.length()) && charIsPartOfWebLink(text, ndx)) ndx++;
 
-    return ndx;
+    return ndx - startNdx;
   }
 
 //---------------------------------------------------------------------------
@@ -602,7 +600,7 @@ public class MainTextUtil
 
           authorBibStr = work.getShortAuthorsStr(true);
           if (authorBibStr.length() > 0)
-            innerHtml.append("&nbsp;<span hypncon-no-links=true>" + authorBibStr + "</span>");
+            innerHtml.append("&nbsp;<span " + NO_LINKS_ATTR + "=true>" + authorBibStr + "</span>");
 
           if (work.getYear().length() > 0)
             innerHtml.append("&nbsp;(" + work.getYear() + ")");
@@ -617,7 +615,7 @@ public class MainTextUtil
 
           authorBibStr = miscFile.getShortAuthorsStr(true);
           if (authorBibStr.length() > 0)
-            innerHtml.append("&nbsp;<span hypncon-no-links=true>" + authorBibStr + "</span>");
+            innerHtml.append("&nbsp;<span " + NO_LINKS_ATTR + "=true>" + authorBibStr + "</span>");
 
           innerHtml.append("&nbsp;" + getGoToRecordAnchor(miscFile, "", miscFile.name()) + "&nbsp;")
                    .append("<a hypncon=\"true\" href=\"\" title=\"Jump to this record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(miscFile) + "); return false;\">" + "<img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/view-form.png") + "\"></img></a>");
@@ -819,7 +817,7 @@ public class MainTextUtil
 
   static String MARGIN_STYLE = "margin-right: 20px;";
 
-  public static String mainTextHeadStyleTag()
+  static String mainTextHeadStyleTag()
   {
     return "<style>p { margin-top: 0em; margin-bottom: 0em; } " +
            "body { " + MARGIN_STYLE + " font-family: arial; font-size: 10pt; } </style>";
@@ -878,7 +876,7 @@ public class MainTextUtil
     return prepHtmlForDisplay(str, false);
   }
 
-  static String prepHtmlForDisplay(String str, boolean forEditor)
+  private static String prepHtmlForDisplay(String str, boolean forEditor)
   {
     if (str.indexOf("</html>") > -1)
     {
