@@ -80,7 +80,7 @@ See also the list of [contributors](https://github.com/jasonwinning/hypernomicon
 
 ## License
 
-This project is licensed under the Apache 2.0 License + Commons Clause 1.0 - see the [LICENSE](http://htmlpreview.github.com/?https://github.com/jasonwinning/hypernomicon/blob/master/LICENSE.html) file for details.
+This project is licensed under the Apache 2.0 License + Commons Clause 1.0 - see the [LICENSE](http://htmlpreview.github.io/?https://github.com/jasonwinning/hypernomicon/blob/master/LICENSE.html) file for details.
 
 Hypernomicon is a non-commercial product and will always be free to use.
 
