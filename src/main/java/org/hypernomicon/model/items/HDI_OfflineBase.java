@@ -18,7 +18,7 @@
 package org.hypernomicon.model.items;
 
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.model.records.RecordType.hdtNone;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.Map;

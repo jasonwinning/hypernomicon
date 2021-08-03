@@ -17,7 +17,7 @@
 
 package org.hypernomicon;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.charset.StandardCharsets.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;

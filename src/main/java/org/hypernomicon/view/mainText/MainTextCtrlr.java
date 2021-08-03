@@ -157,7 +157,7 @@ public class MainTextCtrlr
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   void init()
   {
     final WebView webview = getWebView();
@@ -297,9 +297,9 @@ public class MainTextCtrlr
     he.setOnMouseClicked (Event::consume);
     he.setOnMousePressed (Event::consume);
     he.setOnMouseReleased(Event::consume);
-    
+
     // The next 2 event filters address buggy HTMLEditor handling of ctrl-B, ctrl-I, and ctrl-U
-    
+
     he.addEventFilter(KeyEvent.KEY_PRESSED, event ->
     {
       if (event.isControlDown() || event.isMetaDown())
@@ -313,7 +313,7 @@ public class MainTextCtrlr
           else if (event.getCode() == KeyCode.B)
           {
             String selText = (String) getEngine().executeScript("window.getSelection().rangeCount < 1 ? \"\" : window.getSelection().getRangeAt(0).toString()");
-            
+
             if (selText.isEmpty())
             {
               KeyEvent ke = new KeyEvent(event.getSource(), webview, KeyEvent.KEY_RELEASED, event.getCharacter(), event.getText(), event.getCode(), event.isShiftDown(), event.isControlDown(), event.isAltDown(), event.isMetaDown());
@@ -322,14 +322,14 @@ public class MainTextCtrlr
               webview.fireEvent(ke);
             }
           }
-          
+
           ignoreKeyEvent = true;
         }
       }
     });
-    
+
     he.addEventFilter(KeyEvent.KEY_RELEASED, event ->
-    {     
+    {
       if (event.isControlDown() || event.isMetaDown())
       {
         if (((event.getCode() == KeyCode.B) && (boldEvents.contains(event) == false)) ||
@@ -337,12 +337,12 @@ public class MainTextCtrlr
             (event.getCode() == KeyCode.U))
         {
           event.consume();
-          
+
           ignoreKeyEvent = false;
         }
       }
     });
-    
+
     ToolBar bar = (ToolBar) he.lookup(".top-toolbar");
 
     MenuItem menuItem0 = new MenuItem("Paste");
@@ -380,7 +380,7 @@ public class MainTextCtrlr
       hsPane.show(Side.RIGHT, true);
       runDelayedInFXThread(5, 100, cbType::requestFocus);
     });
-    
+
     Button btnSubscript = new Button("", imgViewFromRelPath("resources/images/text_subscript.png"));
     setToolTip(btnSubscript, "Toggle subscript for selected text");
     btnSubscript.setOnAction(event -> getEngine().executeScript("document.execCommand('subscript', false, '');"));
@@ -585,19 +585,19 @@ public class MainTextCtrlr
       miscFile.setName(fdc.tfRecordName.getText());
       HyperTableCell cell = fdc.cbType.getValue();
       int fileTypeID = HyperTableCell.getCellID(cell);
-      
+
       if ((fileTypeID < 1) && (HyperTableCell.getCellText(cell).length() > 0))
       {
         HDT_FileType fileType = db.createNewBlankRecord(hdtFileType);
         fileTypeID = fileType.getID();
         fileType.setName(HyperTableCell.getCellText(cell));
       }
-      
+
       miscFile.fileType.setID(fileTypeID);
     }
 
     WebEngine engine = getEngine();
-    
+
     Accessor.getPageFor(engine).executeCommand(Command.INSERT_NEW_LINE.getCommand(), null);
 
     String imageTag = "<" + EMBEDDED_FILE_TAG + " id=\"" + miscFile.getID() + "\" width=\"300px\"/>";
@@ -678,7 +678,7 @@ public class MainTextCtrlr
     String kwText = extractTextFromHTML(subDoc.html());
     list.generate(kwText);
 
-    list.getLinks().forEach(link ->
+    list.forEach(link ->
     {
       HDT_Record record = link.key.record;
 
@@ -766,7 +766,7 @@ public class MainTextCtrlr
 
     if (html.contains("body { font-family"))
       html = html.replace("body { font-family", "body { " + MARGIN_STYLE + " font-family");
-    
+
     he.setHtmlText(disableLinks(html));
     taKeyWorks.setText(keyWorksText);
 

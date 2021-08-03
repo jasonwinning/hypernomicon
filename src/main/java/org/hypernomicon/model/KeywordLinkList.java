@@ -18,41 +18,29 @@
 package org.hypernomicon.model;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 
+import com.google.common.collect.Iterators;
+
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.util.Util.*;
 
-public final class KeywordLinkList
+public final class KeywordLinkList implements Iterable<KeywordLink>
 {
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static final class KeywordLink
-  {
-    public final int offset, length;
-    public final SearchKeyword key;
-
-  //---------------------------------------------------------------------------
-
-    public KeywordLink(int offset, int length, SearchKeyword key)
-    {
-      this.offset = offset;
-      this.length = length;
-      this.key = key;
-    }
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private final List<KeywordLink> keywordLinks = new ArrayList<>();
 
-  public List<KeywordLink> getLinks() { return Collections.unmodifiableList(keywordLinks); }
+  public int size()                   { return keywordLinks.size(); }
+  public KeywordLink get(int ndx)     { return keywordLinks.get(ndx); }
   public void generate(String text)   { generate(text, false, null); }
+
+  @Override public Iterator<KeywordLink> iterator() { return Iterators.unmodifiableIterator(keywordLinks.iterator()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -20,8 +20,7 @@ package org.hypernomicon.query.engines;
 import static org.hypernomicon.App.app;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.query.QueryTabCtrlr.QUERY_FIRST_NDX;
-import static org.hypernomicon.query.QueryTabCtrlr.curQuery;
+import static org.hypernomicon.query.QueryTabCtrlr.*;
 
 import java.util.HashMap;
 import java.util.HashSet;

@@ -27,7 +27,7 @@ import org.hypernomicon.view.wrappers.HyperTableRow;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.query.QueryTabCtrlr.*;
 import static org.hypernomicon.util.MediaUtil.*;
-import static org.hypernomicon.App.*;
+import static org.hypernomicon.App.app;
 
 import java.io.IOException;
 import java.nio.file.Files;

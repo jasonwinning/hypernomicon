@@ -25,12 +25,13 @@ import java.util.Set;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.hypernomicon.App;
 import org.hypernomicon.model.HyperDB;
-import org.hypernomicon.model.KeywordLinkList.KeywordLink;
+import org.hypernomicon.model.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.Connector;
 import org.hypernomicon.model.items.KeyWork;
@@ -41,7 +42,6 @@ import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 
-import static org.apache.commons.text.StringEscapeUtils.escapeEcmaScript;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
@@ -297,7 +297,7 @@ public final class MainTextWrapper
 
   public static void hiliteText(String string, WebEngine weToUse)
   {
-    string = escapeEcmaScript(string);
+    string = StringEscapeUtils.escapeEcmaScript(string);
 
     weToUse.executeScript(jQueryContents.toString() + System.lineSeparator() + jHiliteContents.toString());
     weToUse.executeScript("$('body').removeHighlight().highlight('" + string + "')");

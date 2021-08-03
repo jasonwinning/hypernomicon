@@ -163,7 +163,7 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
         for (String str : list)
         {
           linkList.generate(str.toLowerCase(), true, dummySearchKeys);
-          if (linkList.getLinks().size() > 0) add = true;
+          if (linkList.size() > 0) add = true;
         }
 
         if (lastCall)
@@ -274,8 +274,8 @@ public class AllQueryEngine extends QueryEngine<HDT_Record>
           @Override protected void runFilter()
           {
             linkList.generate(getCellText(op1));
-            if (linkList.getLinks().size() > 0)
-              list.add(linkList.getLinks().get(0).key.record);
+            if (linkList.size() > 0)
+              list.add(linkList.get(0).key.record);
           }
         };
 

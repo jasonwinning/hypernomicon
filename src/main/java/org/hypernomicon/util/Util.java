@@ -38,7 +38,6 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.Constructor;
 
 import static java.nio.charset.StandardCharsets.*;
-import static java.util.Collections.binarySearch;
 
 import java.net.URL;
 import java.net.URLDecoder;
@@ -51,6 +50,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1459,7 +1459,7 @@ public final class Util
 
   public static <T> void addToSortedList(List<T> list, T item, Comparator<? super T> comp)
   {
-    int ndx = binarySearch(list, item, comp);
+    int ndx = Collections.binarySearch(list, item, comp);
     list.add(ndx >= 0 ? ndx + 1 : ~ndx, item);
   }
 
@@ -1468,7 +1468,7 @@ public final class Util
 
   public static <T extends Comparable<? super T>> void addToSortedList(List<T> list, T item)
   {
-    int ndx = binarySearch(list, item);
+    int ndx = Collections.binarySearch(list, item);
     list.add(ndx >= 0 ? ndx + 1 : ~ndx, item);
   }
 

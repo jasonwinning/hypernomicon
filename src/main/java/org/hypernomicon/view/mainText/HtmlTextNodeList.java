@@ -37,7 +37,7 @@ public class HtmlTextNodeList
 
   static class HtmlTextNode
   {
-    private int startNdx, len;
+    private int startNdx, endNdx;
     private String text;
     private TextNode textNode;
 
@@ -48,7 +48,7 @@ public class HtmlTextNodeList
       this.text = text;
       this.textNode = textNode;
       this.startNdx = startNdx;
-      len = text.length();
+      endNdx = startNdx + text.length();
     }
 
     public String getText()       { return text; }
@@ -66,7 +66,6 @@ public class HtmlTextNodeList
 
       text = text.substring(offset);
       startNdx = newStartNdx;
-      len -= offset;
 
       return textNode;
     }
@@ -75,7 +74,7 @@ public class HtmlTextNodeList
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final List<HtmlTextNode> nodes;
+  private final List<HtmlTextNode> nodes = new ArrayList<>();
   private final StringBuilder plainText;
 
   @Override public String toString() { return plainText.toString(); }
@@ -85,14 +84,9 @@ public class HtmlTextNodeList
 
   HtmlTextNodeList(Element element)
   {
-    nodes = new ArrayList<>();
-    plainText = new StringBuilder();
+    plainText = new StringBuilder(element.wholeText());
 
-    MutableInt textNdx = new MutableInt(0);
-
-    assignSB(plainText, element.wholeText());
-
-    addNodes(element, textNdx, false);
+    addNodes(element, new MutableInt(0), false);
   }
 
 //---------------------------------------------------------------------------
@@ -115,11 +109,11 @@ public class HtmlTextNodeList
 
           if (skip)
           {
-            plainText.replace(node.startNdx, node.startNdx + node.len, "");
+            plainText.replace(node.startNdx, node.endNdx, "");
           }
           else
           {
-            textNdx.setValue(node.startNdx + node.len);
+            textNdx.setValue(node.endNdx);
             nodes.add(node);
           }
         }
@@ -150,7 +144,7 @@ public class HtmlTextNodeList
     {
       if (node.startNdx >= endNdx) break;
 
-      if (startNdx < (node.startNdx + node.len))
+      if (startNdx < node.endNdx)
         linkNodes.add(node);
     }
 

@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.dialogs.RecordSelectDlgCtrlr;
 import org.hypernomicon.dialogs.ValueSelectDlgCtrlr;
-import org.hypernomicon.model.KeywordLinkList.KeywordLink;
+import org.hypernomicon.model.KeywordLink;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.records.HDT_Record;
@@ -341,9 +341,9 @@ public class HyperCB implements CommitableWrapper
 
             if (added == false)
             {
-              if (AllQueryEngine.linkList.getLinks().size() > 0)
+              if (AllQueryEngine.linkList.size() > 0)
               {
-                for (KeywordLink keyLink : AllQueryEngine.linkList.getLinks())
+                for (KeywordLink keyLink : AllQueryEngine.linkList)
                   if (keyLink.key.record == record)
                   {
                     cells.add(cell);

@@ -29,6 +29,7 @@ import java.util.Arrays;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.mime.MimeTypeException;
 import org.hypernomicon.App;
@@ -49,13 +50,13 @@ public class MediaUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static TikaConfig tika;
+  private static TikaConfig tikaConfig;
 
 //---------------------------------------------------------------------------
 
   public static void init()
   {
-    tika = TikaConfig.getDefaultConfig();
+    tikaConfig = TikaConfig.getDefaultConfig();
   }
 
 //---------------------------------------------------------------------------
@@ -66,11 +67,11 @@ public class MediaUtil
     if (FilePath.isEmpty(filePath)) return MediaType.OCTET_STREAM;
 
     Metadata metadata = new Metadata();
-    metadata.set(Metadata.RESOURCE_NAME_KEY, filePath.toString());
+    metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, filePath.toString());
 
     try (TikaInputStream stream = TikaInputStream.get(filePath.toPath()))
     {
-      return tika.getDetector().detect(stream, metadata);
+      return tikaConfig.getDetector().detect(stream, metadata);
     }
     catch (IOException e)
     {
@@ -120,7 +121,7 @@ public class MediaUtil
 
   static String getContentTypeExtension(String contentType)
   {
-    try { return tika.getMimeRepository().forName(contentType).getExtension(); }
+    try { return tikaConfig.getMimeRepository().forName(contentType).getExtension(); }
     catch (MimeTypeException e) { return ""; }
   }
 

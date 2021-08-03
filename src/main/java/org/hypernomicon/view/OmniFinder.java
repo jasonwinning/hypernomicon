@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.hypernomicon.HyperTask.HyperThread;
-import org.hypernomicon.model.KeywordLinkList.KeywordLink;
+import org.hypernomicon.model.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.StrongLink;
@@ -290,13 +290,13 @@ public class OmniFinder
 
         case tierAuthorKeyword:
 
-          if (AllQueryEngine.linkList.getLinks().size() > 0)
+          if (AllQueryEngine.linkList.size() > 0)
           {
             if (person == null)
               person = author.getPerson();
 
             if (person != null)
-              for (KeywordLink keyLink : AllQueryEngine.linkList.getLinks())
+              for (KeywordLink keyLink : AllQueryEngine.linkList)
                 if (keyLink.key.record == person)
                   return true;
           }
@@ -360,9 +360,9 @@ public class OmniFinder
 
         case tierKeyword:
 
-          if (AllQueryEngine.linkList.getLinks().size() > 0)
+          if (AllQueryEngine.linkList.size() > 0)
           {
-            for (KeywordLink keyLink : AllQueryEngine.linkList.getLinks())
+            for (KeywordLink keyLink : AllQueryEngine.linkList)
               if (keyLink.key.record == record)
                 return true;
           }

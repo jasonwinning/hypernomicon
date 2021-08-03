@@ -20,7 +20,7 @@ package org.hypernomicon.view.mainText;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.model.KeywordLinkList.charIsPartOfWebLink;
+import static org.hypernomicon.model.KeywordLinkList.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.util.Util.*;
@@ -39,7 +39,7 @@ import static org.apache.commons.text.StringEscapeUtils.*;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.hypernomicon.model.KeywordLinkList;
-import org.hypernomicon.model.KeywordLinkList.KeywordLink;
+import org.hypernomicon.model.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.KeyWork;
 import org.hypernomicon.model.items.MainText;
@@ -297,7 +297,7 @@ public class MainTextUtil
 
     int linkNdx = 0;        // index of the current keyword link
 
-    KeywordLink link = linkNdx >= list.getLinks().size() ? null : list.getLinks().get(linkNdx);
+    KeywordLink link = linkNdx >= list.size() ? null : list.get(linkNdx);
 
     for (int curMatchNdx = 0; curMatchNdx < entirePlainText.length();)
     {
@@ -310,9 +310,7 @@ public class MainTextUtil
 
       if (kind != LinkKind.none) // Got a match
       {
-        int linkTextLen;
-
-        linkTextLen = kind == LinkKind.web ? getWebLinkLen(curMatchNdx, entirePlainText) : link.length;
+        int linkTextLen = kind == LinkKind.web ? getWebLinkLen(curMatchNdx, entirePlainText) : link.length;
 
         for (HtmlTextNode node : nodes.getLinkNodes(curMatchNdx, curMatchNdx + linkTextLen)) // 1. Get list of node objects corresponding to matching text
         {
@@ -345,7 +343,7 @@ public class MainTextUtil
         if (kind == LinkKind.keyword)
         {
           linkNdx++;
-          link = linkNdx >= list.getLinks().size() ? null : list.getLinks().get(linkNdx);
+          link = linkNdx >= list.size() ? null : list.get(linkNdx);
         }
       }
       else // there was no link this time

@@ -18,7 +18,7 @@
 package org.hypernomicon.query;
 
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.model.HyperDB.Tag.tagNone;
+import static org.hypernomicon.model.HyperDB.Tag.*;
 
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.relations.RelationSet.RelationType;

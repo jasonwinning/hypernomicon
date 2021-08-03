@@ -18,7 +18,7 @@
 package org.hypernomicon.bib.zotero;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.App.*;
+import static org.hypernomicon.App.app;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.Util.*;

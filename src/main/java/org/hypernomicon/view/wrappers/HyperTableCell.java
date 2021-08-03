@@ -18,7 +18,7 @@
 package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.model.records.HDT_RecordBase.makeSortKeyByType;
+import static org.hypernomicon.model.records.HDT_RecordBase.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod.*;
 import static org.hypernomicon.util.Util.*;

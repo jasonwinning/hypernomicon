@@ -17,7 +17,7 @@
 
 package org.hypernomicon.query.reports;
 
-import static org.hypernomicon.query.QueryTabCtrlr.QUERY_FIRST_NDX;
+import static org.hypernomicon.query.QueryTabCtrlr.*;
 
 import java.util.List;
 

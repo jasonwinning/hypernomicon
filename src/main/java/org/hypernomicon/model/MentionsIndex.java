@@ -142,7 +142,7 @@ class MentionsIndex
     strList.forEach(str ->
     {
       linkList.generate(str.toLowerCase());
-      linkList.getLinks().forEach(link -> mentionedAnywhereToMentioners.addForward(link.key.record, record));
+      linkList.forEach(link -> mentionedAnywhereToMentioners.addForward(link.key.record, record));
     });
 
     if (record.hasMainText())
@@ -168,7 +168,7 @@ class MentionsIndex
       if (plainText.length() > 0)
       {
         linkList.generate(plainText);
-        linkList.getLinks().forEach(link -> mentionedInDescToMentioners.addForward(link.key.record, record));
+        linkList.forEach(link -> mentionedInDescToMentioners.addForward(link.key.record, record));
       }
 
       mainText.getDisplayItemsUnmod().forEach(displayItem ->
