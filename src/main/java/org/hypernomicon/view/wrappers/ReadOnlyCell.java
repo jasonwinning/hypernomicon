@@ -33,19 +33,17 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
 {
   private final boolean incremental;
   private final HyperTable table;
-  private final HyperTableColumn col;
   public static final int INCREMENTAL_ROWS = 20;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ReadOnlyCell(HyperTable table, HyperTableColumn col, boolean incremental)
+  ReadOnlyCell(HyperTable table, boolean incremental)
   {
     super();
 
     this.incremental = incremental;
     this.table = table;
-    this.col = col;
 
     setOnMouseClicked(mouseEvent -> nullSwitch(getItem(), cellItem -> nullSwitch(cellItem.getRecord(), (HDT_Record record) ->
     {
@@ -81,7 +79,7 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
       return;
     }
 
-    if (incremental && (col.wasMoreButtonClicked() == false))
+    if (incremental)
     {
       HyperTableRow row = getTableRow().getItem();
 
@@ -102,7 +100,11 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
         cellButton.setOnAction(event ->
         {
           if (table.onShowMore != null)
+          {
+            table.getTV().requestFocus();
+
             table.onShowMore.run();
+          }
         });
 
         setGraphic(cellButton);

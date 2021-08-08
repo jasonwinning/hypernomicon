@@ -912,7 +912,7 @@ public final class MainCtrlr
       bibManagerDlg.getDividerPositions();
 
       boolean iconified = stage.isIconified(), fullScreen = stage.isFullScreen(),
-              maximized = Environment.isMac() ? this.maximized : stage.isMaximized(); // stage.maximized is never changed from true to false on Mac OS X. JDK-8087618
+              maximized = Environment.isMac() ? this.maximized : stage.isMaximized(); // stage.maximized is never changed from true to false on Mac OS. JDK-8087618
 
       if (fullScreen || maximized) iconified = false; // This has to be done due to bug JDK-8087997
 

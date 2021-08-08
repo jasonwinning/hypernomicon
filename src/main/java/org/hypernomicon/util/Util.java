@@ -42,6 +42,7 @@ import static java.nio.charset.StandardCharsets.*;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -115,6 +116,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import com.google.common.escape.Escaper;
+import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.Transliterator;
 
 import static com.google.common.xml.XmlEscapers.*;
@@ -1684,6 +1686,45 @@ public final class Util
   public static void setToolTip(Control ctrl, String str)
   {
     ctrl.setTooltip(safeStr(str).isBlank() ? null : new Tooltip(str));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static Charset detectCharset(byte[] byteData)
+  {
+    CharsetDetector detector = new CharsetDetector();
+
+    detector.setText(byteData);
+
+    return Charset.forName(detector.detect().getName());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static Charset detectCharset(InputStream streamData)
+  {
+    CharsetDetector detector = new CharsetDetector();
+
+    try
+    {
+      detector.setText(streamData);
+    }
+    catch (IOException e)
+    {
+      return null;
+    }
+
+    return Charset.forName(detector.detect().getName());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String byteBufferToString(byte[] buf)
+  {
+    return new String(buf, detectCharset(buf));
   }
 
 //---------------------------------------------------------------------------

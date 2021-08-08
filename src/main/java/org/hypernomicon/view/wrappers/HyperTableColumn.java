@@ -70,11 +70,9 @@ public class HyperTableColumn
                                dontCreateNewRecord = new MutableBoolean(false);
 
   public Function<HyperTableRow, String> textHndlr = null;
-  private boolean moreButtonClicked = false;
 
 //---------------------------------------------------------------------------
 
-  boolean wasMoreButtonClicked()                     { return moreButtonClicked; }
   public HyperCtrlType getCtrlType()                 { return ctrlType; }
   public int getColNdx()                             { return colNdx; }
   public String getHeader()                          { return tc.getText(); }
@@ -169,7 +167,7 @@ public class HyperTableColumn
 
         tc.setEditable(false);
         tc.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
-        tc.setCellFactory(tableCol -> new ReadOnlyCell(table, this, false));
+        tc.setCellFactory(tableCol -> new ReadOnlyCell(table, false));
 
         break;
 
@@ -213,7 +211,7 @@ public class HyperTableColumn
 
         tc.setEditable(false);
         tc.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
-        tc.setCellFactory(tableCol -> new ReadOnlyCell(table, this, true));
+        tc.setCellFactory(tableCol -> new ReadOnlyCell(table, true));
 
         break;
 
@@ -260,8 +258,6 @@ public class HyperTableColumn
   {
     if (populator != null)
       populator.clear();
-
-    moreButtonClicked = false;
   }
 
 //---------------------------------------------------------------------------

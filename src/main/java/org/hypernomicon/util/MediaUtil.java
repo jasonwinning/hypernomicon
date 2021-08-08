@@ -22,8 +22,6 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import org.apache.tika.config.TikaConfig;
@@ -39,8 +37,6 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.util.filePath.FilePath;
-
-import com.ibm.icu.text.CharsetDetector;
 
 import javafx.scene.image.ImageView;
 
@@ -265,37 +261,6 @@ public class MediaUtil
       case hdtFolder        : return "resources/images/folder.png";
       default               : return "";
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static Charset detectCharset(byte[] byteData)
-  {
-    CharsetDetector detector = new CharsetDetector();
-
-    detector.setText(byteData);
-
-    return Charset.forName(detector.detect().getName());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static Charset detectCharset(InputStream streamData)
-  {
-    CharsetDetector detector = new CharsetDetector();
-
-    try
-    {
-      detector.setText(streamData);
-    }
-    catch (IOException e)
-    {
-      return null;
-    }
-
-    return Charset.forName(detector.detect().getName());
   }
 
 //---------------------------------------------------------------------------
