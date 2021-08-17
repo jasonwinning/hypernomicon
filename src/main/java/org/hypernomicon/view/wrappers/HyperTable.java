@@ -337,6 +337,14 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public HyperTableCell selectedCell()
+  {
+    return nullSwitch(tv.getSelectionModel().getSelectedItem(), null, HyperTableRow::getCell);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public HyperTableRow selectRow(int ndx)
   {
     return selectRow(rows.get(ndx));

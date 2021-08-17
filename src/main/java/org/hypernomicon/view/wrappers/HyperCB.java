@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.dialogs.RecordSelectDlgCtrlr;
 import org.hypernomicon.dialogs.ValueSelectDlgCtrlr;
@@ -52,7 +53,6 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListView;
 import javafx.util.StringConverter;
 
 //---------------------------------------------------------------------------
@@ -83,6 +83,10 @@ public class HyperCB implements CommitableWrapper
   public ComboBox<HyperTableCell> getComboBox()  { return cb; }
   public void addListener(HTCListener listener)  { listeners.add(listener); }
   public void triggerOnAction()                  { getOnAction().handle(new ActionEvent(null, cb)); }
+  private boolean isInTable()                    { return cb == null ? false : cb.getParent() instanceof ComboBoxCell; }
+  public void addBlankEntry()                    { addEntry(-1, "", false); }
+
+  public void setInnerOnAction(EventHandler<ActionEvent> onAction) { if (onAction != null) innerOnAction = onAction; }
 
   @SuppressWarnings("unchecked")
   public <PopType extends Populator> PopType getPopulator() { return (PopType) populator; }
@@ -120,8 +124,24 @@ public class HyperCB implements CommitableWrapper
     if (addToRegistry)
       cbRegistry.put(cb, this);
 
-    // When user hits enter, if no record is selected, try to find record with name containing what was typed
-    onAction = event -> cbOnAction(event, table);
+  //---------------------------------------------------------------------------
+
+    onAction = event ->
+    {
+      if (somethingWasTyped && (HyperTableCell.getCellID(typedMatch) >= 1))
+      {
+        select(typedMatch);
+      }
+      else
+      {
+        String str = convertToEnglishChars(cb.getEditor().getText()).trim().toLowerCase();
+
+        if (str.length() > 0)
+          nullSwitch(selectedCellByText(str, table), this::select);
+      }
+
+      endEditModeIfInTable(event);
+    };
 
   //---------------------------------------------------------------------------
 
@@ -176,10 +196,8 @@ public class HyperCB implements CommitableWrapper
       if (adjusting || (preShowingValue == null) || (table == null) || (table.autoCommitListSelections == false)) return;
 
       String newText = HyperTableCell.getCellText(cb.getValue());
-      if (newText.isEmpty()) return;
-
-      if (newText.equals(HyperTableCell.getCellText(preShowingValue)) == false)
-        endEditModeIfInTable();
+      if (! (newText.isEmpty() || newText.equals(HyperTableCell.getCellText(preShowingValue))))
+        endEditModeIfInTable(null);
     });
 
   //---------------------------------------------------------------------------
@@ -189,23 +207,6 @@ public class HyperCB implements CommitableWrapper
       if (silentMode == false)
         listeners.forEach(listener -> listener.changed(oldValue, newValue));
     });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private boolean isInTable()
-  {
-    return cb == null ? false : cb.getParent() instanceof ComboBoxCell;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void endEditModeIfInTable()
-  {
-    if (isInTable())
-      ((ComboBoxCell)(cb.getParent())).commit();
   }
 
 //---------------------------------------------------------------------------
@@ -225,15 +226,6 @@ public class HyperCB implements CommitableWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setInnerOnAction(EventHandler<ActionEvent> onAction)
-  {
-    if (onAction != null)
-      innerOnAction = onAction;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   void setOnAction(EventHandler<ActionEvent> onAction)
   {
     if (onAction == null) return;
@@ -242,248 +234,6 @@ public class HyperCB implements CommitableWrapper
       innerOnAction = onAction;
     else
       this.onAction = onAction;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private void cbOnAction(ActionEvent event, HyperTable table)
-  {
-    int colNdx = -1;
-
-    if (table != null)
-    {
-      if (cb.getParent() instanceof ComboBoxCell)
-      {
-        ComboBoxCell cbc = (ComboBoxCell)cb.getParent();
-        colNdx = table.getTV().getColumns().indexOf(cbc.getTableColumn());
-      }
-    }
-
-    if ((HyperTableCell.getCellID(typedMatch) < 1) || (somethingWasTyped == false))
-    {
-      String str = convertToEnglishChars(cb.getEditor().getText()).trim().toLowerCase();
-
-      if (str.length() > 0)
-      {
-        if (collEmpty(cb.getItems()))
-        {
-          if (innerOnAction != null) innerOnAction.handle(event); // activates the "Execute" button in the queries hyperTab
-          return;
-        }
-
-        List<HyperTableCell> cells = new ArrayList<>();
-        boolean alreadyParsedName = false, atLeastOneRealMatch = (populator.getRecordType(row) != hdtPerson) || dontCreateNewRecord,
-                containsNum = Pattern.compile("\\d").matcher(str).find();
-        PersonName personName = null;
-
-        AllQueryEngine.linkList.generate(str);
-
-        for (HyperTableCell cell : cb.getItems())
-        {
-          HDT_Record record = HyperTableCell.getRecord(cell);
-          boolean added = false, match = (record != null) && record.getNameEngChar().toLowerCase().equals(str);
-
-          if (cell.getText().toLowerCase().equals(str) || match)
-          {
-            cb.getSelectionModel().select(cell);
-            cb.setValue(cell);
-            endEditModeIfInTable();
-
-            if (innerOnAction != null) innerOnAction.handle(event);  // activates the "Execute" button in the queries hyperTab
-            return;
-          }
-
-          if (record != null)
-          {
-            String key = record.getSearchKey();
-
-            if (key.toLowerCase().contains(str))
-            {
-              cells.add(cell);
-              atLeastOneRealMatch = true;
-              added = true;
-            }
-
-            if ((added == false) && (record.getType() == hdtWork) && (containsNum == false))
-            {
-              HDT_Work work = (HDT_Work) record;
-
-              if (alreadyParsedName == false)
-              {
-                personName = new PersonName(str).toLowerCase();
-                alreadyParsedName = true;
-              }
-
-              for (Author author : work.getAuthors())
-              {
-                if (personName.getFirst().length() > 0)
-                {
-                  if (author.getFirstName(true).toLowerCase().contains(personName.getFirst()) ||
-                      author.getLastName(true).toLowerCase().contains(personName.getFirst()))
-                  {
-                    cells.add(cell);
-                    added = true;
-                  }
-                }
-
-                if (personName.getLast().length() > 0)
-                {
-                  if (author.getFirstName(true).toLowerCase().contains(personName.getLast()) ||
-                      author.getLastName(true).toLowerCase().contains(personName.getLast()))
-                  {
-                    cells.add(cell);
-                    added = true;
-                  }
-                }
-              }
-            }
-
-            if (added == false)
-            {
-              if (AllQueryEngine.linkList.size() > 0)
-              {
-                for (KeywordLink keyLink : AllQueryEngine.linkList)
-                  if (keyLink.key.record == record)
-                  {
-                    cells.add(cell);
-                    added = true;
-                  }
-              }
-            }
-
-            if (added == false)
-            {
-              if (record.getNameEngChar().trim().toLowerCase().contains(str))
-              {
-                cells.add(cell);
-                atLeastOneRealMatch = true;
-                added = true;
-              }
-            }
-          }
-
-          if (added == false)
-            if (cell.getText().toLowerCase().contains(str))
-            {
-              if ((cell.getType() != hdtPerson) || (record != null)) // Don't use non-record author partial matches
-              {
-                cells.add(cell);
-                atLeastOneRealMatch = true;
-              }
-            }
-        }
-
-        // There was no exact match
-
-        HyperTableCell target = null;
-
-        if ((cells.size() > 1) && atLeastOneRealMatch)
-        {
-          if (populator.getValueType() == CellValueType.cvtRecord)
-          {
-            RecordSelectDlgCtrlr ctrlr = RecordSelectDlgCtrlr.build(populator, cells, convertToEnglishChars(cb.getEditor().getText()).trim());
-
-            if (ctrlr.showModal())
-            {
-              int id = ctrlr.getRecord().getID();
-              selectID(id);
-
-              if (table != null)
-                table.selectID(colNdx, row, id);
-            }
-            else
-              return;
-          }
-          else
-          {
-            ValueSelectDlgCtrlr ctrlr = ValueSelectDlgCtrlr.build(cells);
-
-            if (ctrlr.showModal())
-            {
-              target = ctrlr.listView.getSelectionModel().getSelectedItem();
-              select(target);
-
-              if (table != null)
-                row.setCellValue(colNdx, target);
-            }
-            else
-              return;
-          }
-        }
-        else if ((cells.size() == 1) && atLeastOneRealMatch)
-        {
-          target = cells.get(0);
-
-          if (HyperTableCell.getCellID(target) > 0)
-          {
-            selectID(HyperTableCell.getCellID(target));
-            endEditModeIfInTable();
-            if (innerOnAction != null) innerOnAction.handle(event);
-
-            return;
-          }
-        }
-        else if ((populator.getRecordType(row) == hdtPerson) && (dontCreateNewRecord == false))
-        {
-          HDT_Person otherPerson = HDT_Person.lookUpByName(new PersonName(cb.getEditor().getText()));
-
-          if (otherPerson != null)
-          {
-            for (HyperTableCell cell : cb.getItems())
-              if (cell.getID() == otherPerson.getID())
-              {
-                selectID(otherPerson.getID());
-                endEditModeIfInTable();
-                if (innerOnAction != null) innerOnAction.handle(event);
-
-                return;
-              }
-          }
-
-          NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.build(table == null, cb.getEditor().getText(), null);
-
-          if (npdc.showModal())
-          {
-            if (table == null)
-            {
-              populate(true);                  // A new record has been created so force it to repopulate
-              selectID(npdc.getPerson().getID());
-            }
-            else
-            {
-              Populator pop = table.getPopulator(colNdx);
-
-              if (npdc.getPerson() != null)    // By the time we get back here, the ComboBox is gone
-              {                                // and the table is already out of edit mode
-                pop.setChanged(row);           // A new record has been created so force it to repopulate
-                table.selectID(colNdx, row, npdc.getPerson().getID());
-              }
-              else
-              {
-                pop.populate(row, false);
-                row.setCellValue(colNdx, pop.addEntry(row, npdc.getNameLastFirst()));
-
-                table.cancelEditing(); // For some reason in this case the keystroke event from earlier causes
-              }                        // the table to enter edit mode again
-            }
-          }
-        }
-        else if ((populator.getRecordType(row) == hdtInstitution) && (dontCreateNewRecord == false))
-        {
-          ui.personHyperTab().newInstClick(row, cb.getEditor().getText(), colNdx);
-        }
-      }
-    }
-    else
-    {
-      cb.getSelectionModel().select(typedMatch);
-      cb.setValue(typedMatch);
-    }
-
-    endEditModeIfInTable();
-
-    if (innerOnAction != null) innerOnAction.handle(event);
   }
 
 //---------------------------------------------------------------------------
@@ -498,25 +248,15 @@ public class HyperCB implements CommitableWrapper
     List<HyperTableCell> choices = populator.populate(row, force);
     cb.setItems(null);
     cb.setItems(FXCollections.observableList(choices));
-    cb.setValue(cell);
-    if (cell != null)
-      cb.getSelectionModel().select(cell);
+    select(cell);
 
     silentMode = false;
 
     if ((choices.size() > 0) && HyperTableCell.isEmpty(cell))
-    {
-      ListView<HyperTableCell> lv = getCBListView(cb);
-      if (lv != null) lv.scrollTo(0);
-    }
+      nullSwitch(getCBListView(cb), lv -> lv.scrollTo(0));
 
     return choices;
   }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public void addBlankEntry() { addEntry(-1, "", false); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -565,10 +305,7 @@ public class HyperCB implements CommitableWrapper
   {
     HyperTableCell cell = populator.addEntry(row, id, text);
     if (select && (id > 0))
-    {
-      cb.setValue(cell);
-      cb.getSelectionModel().select(cell);
-    }
+      select(cell);
   }
 
 //---------------------------------------------------------------------------
@@ -630,8 +367,12 @@ public class HyperCB implements CommitableWrapper
 
   public void select(HyperTableCell cell)
   {
-    cb.getSelectionModel().select(cell);
     cb.setValue(cell);
+
+    if (cell == null)
+      cb.getSelectionModel().clearSelection();
+    else
+      cb.getSelectionModel().select(cell);
   }
 
 //---------------------------------------------------------------------------
@@ -639,11 +380,7 @@ public class HyperCB implements CommitableWrapper
 
   public void selectID(int objID)
   {
-    nullSwitch(populator.getChoiceByID(row, objID), choice ->
-    {
-      cb.getSelectionModel().select(choice);
-      cb.setValue(choice);
-    });
+    nullSwitch(populator.getChoiceByID(row, objID), this::select);
   }
 
 //---------------------------------------------------------------------------
@@ -653,11 +390,7 @@ public class HyperCB implements CommitableWrapper
   {
     populate(false);
 
-    nullSwitch(findFirst(cb.getItems(), choice -> choice.getType() == objType), choice ->
-    {
-      cb.getSelectionModel().select(choice);
-      cb.setValue(choice);
-    });
+    nullSwitch(findFirst(cb.getItems(), choice -> choice.getType() == objType), this::select);
   }
 
 //---------------------------------------------------------------------------
@@ -671,6 +404,200 @@ public class HyperCB implements CommitableWrapper
       selectID(typedMatch.getID());
       triggerOnAction();
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void endEditModeIfInTable(ActionEvent event)
+  {
+    if (isInTable()) ComboBoxCell.class.cast(cb.getParent()).commit();
+
+    if ((event != null) && (innerOnAction != null))
+      innerOnAction.handle(event);  // activates the "Execute" button in the queries hyperTab
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private HyperTableCell selectedCellByText(String str, HyperTable table)
+  {
+    List<HyperTableCell> cells = new ArrayList<>();
+    MutableBoolean atLeastOneStrongMatch = new MutableBoolean((populator.getRecordType(row) != hdtPerson) || dontCreateNewRecord);
+
+    HyperTableCell selection = selectedCellOrCells(cells, str, atLeastOneStrongMatch);
+    if (selection != null)
+      return selection;
+
+    int colNdx = (table != null) && (cb.getParent() instanceof ComboBoxCell) ?
+      table.getTV().getColumns().indexOf(((ComboBoxCell)cb.getParent()).getTableColumn())
+    :
+      -1;
+
+    // There was no exact match
+
+    if (atLeastOneStrongMatch.isTrue())
+    {
+      if (cells.size() > 1)
+      {
+        if (populator.getValueType() == CellValueType.cvtRecord)
+        {
+          RecordSelectDlgCtrlr ctrlr = RecordSelectDlgCtrlr.build(populator, cells, convertToEnglishChars(cb.getEditor().getText()).trim());
+          selection = ctrlr.showModal() ? ctrlr.selectedCell() : null;
+        }
+        else
+        {
+          ValueSelectDlgCtrlr ctrlr = ValueSelectDlgCtrlr.build(cells);
+          selection = ctrlr.showModal() ? ctrlr.listView.getSelectionModel().getSelectedItem() : null;
+        }
+
+        if ((table != null) && (selection != null))  // By the time we get back here, the ComboBox is gone
+          row.setCellValue(colNdx, selection);       // and the table is already out of edit mode
+
+        return selection;
+      }
+      else if (cells.size() == 1)
+      {
+        selection = cells.get(0);
+
+        if (HyperTableCell.getCellID(selection) > 0)
+          return selection;
+      }
+    }
+
+    if (dontCreateNewRecord == false)
+    {
+      switch (populator.getRecordType(row))
+      {
+        case hdtPerson :
+
+          HDT_Person otherPerson = HDT_Person.lookUpByName(new PersonName(cb.getEditor().getText()));
+
+          if (otherPerson != null)
+            for (HyperTableCell cell : cb.getItems())
+              if (cell.getID() == otherPerson.getID())
+                return cell;
+
+          NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.build(table == null, cb.getEditor().getText(), null);
+
+          if (npdc.showModal())
+          {
+            if (table == null)
+            {
+              populate(true);                  // A new record has been created so force it to repopulate
+              return populator.getChoiceByID(row, npdc.getPerson().getID());
+            }
+            else
+            {
+              Populator pop = table.getPopulator(colNdx);
+
+              if (npdc.getPerson() != null)    // By the time we get back here, the ComboBox is gone
+              {                                // and the table is already out of edit mode
+                pop.setChanged(row);           // A new record has been created so force it to repopulate
+                table.selectID(colNdx, row, npdc.getPerson().getID());
+              }
+              else
+              {
+                pop.populate(row, false);
+                row.setCellValue(colNdx, pop.addEntry(row, npdc.getNameLastFirst()));
+
+                table.cancelEditing(); // For some reason in this case the keystroke event from earlier causes
+              }                        // the table to enter edit mode again
+            }
+          }
+
+          break;
+
+        case hdtInstitution :
+
+          ui.personHyperTab().newInstClick(row, cb.getEditor().getText(), colNdx);
+          break;
+
+        default: break;
+      }
+    }
+
+    return null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private HyperTableCell selectedCellOrCells(List<HyperTableCell> cells, String str, MutableBoolean atLeastOneStrongMatch)
+  {
+    boolean containsNum = Pattern.compile("\\d").matcher(str).find();
+    PersonName personName = null;
+
+    AllQueryEngine.linkList.generate(str);
+
+    cbItemsLoop: for (HyperTableCell cell : cb.getItems())
+    {
+      HDT_Record record = HyperTableCell.getRecord(cell);
+      String lcCellText = cell.getText().toLowerCase();
+
+      if (lcCellText.equals(str) || ((record != null) && record.getNameEngChar().toLowerCase().equals(str)))
+        return cell;
+
+      if (record != null)
+      {
+        if (record.getSearchKey().toLowerCase().contains(str))
+        {
+          cells.add(cell);
+          atLeastOneStrongMatch.setTrue();
+          continue cbItemsLoop;
+        }
+
+        if ((record.getType() == hdtWork) && (containsNum == false))
+        {
+          if (personName == null)
+            personName = new PersonName(str).toLowerCase();
+
+          for (Author author : ((HDT_Work)record).getAuthors())
+          {
+            if ((personName.getFirst().length() > 0) &&
+                (author.getFirstName(true).toLowerCase().contains(personName.getFirst()) ||
+                 author.getLastName (true).toLowerCase().contains(personName.getFirst())))
+              {
+                cells.add(cell);
+                continue cbItemsLoop;
+              }
+
+            if ((personName.getLast().length() > 0) &&
+                (author.getFirstName(true).toLowerCase().contains(personName.getLast()) ||
+                 author.getLastName (true).toLowerCase().contains(personName.getLast())))
+              {
+                cells.add(cell);
+                continue cbItemsLoop;
+              }
+          }
+        }
+
+        if (AllQueryEngine.linkList.size() > 0)
+          for (KeywordLink keyLink : AllQueryEngine.linkList)
+            if (keyLink.key.record == record)
+            {
+              cells.add(cell);
+              continue cbItemsLoop;
+            }
+
+        if (record.getNameEngChar().trim().toLowerCase().contains(str))
+        {
+          cells.add(cell);
+          atLeastOneStrongMatch.setTrue();
+          continue cbItemsLoop;
+        }
+      }
+
+      if (lcCellText.contains(str) &&
+          ((cell.getType() != hdtPerson) || (record != null))) // Don't use non-record author partial matches
+      {
+        cells.add(cell);
+        atLeastOneStrongMatch.setTrue();
+        continue cbItemsLoop;
+      }
+    }
+
+    return null;
   }
 
 //---------------------------------------------------------------------------

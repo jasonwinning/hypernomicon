@@ -164,26 +164,28 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
   {
     Set<HDT_Record> output = new HashSet<>();
     Set<StrongLink> usedLinks = new HashSet<>();
+    StrongLink thisLink = curNote.getLink();
 
     mentioners.forEach(mentioner ->
     {
+      if (mentioner.equals(curNote)) return;
+
       StrongLink link = HDT_RecordWithConnector.class.cast(mentioner).getLink();
 
-      if (link != null)
+      if (link == null)
       {
-        if (usedLinks.contains(link)) return;
-
-        usedLinks.add(link);
-
-        if      (link.getDebate  () != null) output.add(link.getDebate  ());
-        else if (link.getPosition() != null) output.add(link.getPosition());
-        else if (link.getConcept () != null) output.add(link.getConcept ());
-        else                                 output.add(link.getNote    ());
-
+        output.add(mentioner);
         return;
       }
 
-      output.add(mentioner);
+      if ((link == thisLink) || usedLinks.contains(link)) return;
+
+      usedLinks.add(link);
+
+      if      (link.getDebate  () != null) output.add(link.getDebate  ());
+      else if (link.getPosition() != null) output.add(link.getPosition());
+      else if (link.getConcept () != null) output.add(link.getConcept ());
+      else                                 output.add(link.getNote    ());
     });
 
     return output;
@@ -240,7 +242,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     setToolTip(btnCreateFolder, "Create a new folder and assign it to this note");
 
     BorderPane.setMargin(btnBrowse, new Insets(0, 2, 0, 0));
-    BorderPane.setMargin(tfFolder, new Insets(0, 4, 0, 4));
+    BorderPane.setMargin(tfFolder , new Insets(0, 4, 0, 4));
 
     bp = new BorderPane();
     bp.setLeft(btnFolder);
@@ -352,12 +354,9 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     HDT_Folder folder = HyperPath.getFolderFromFilePath(filePath, true);
 
     if (folder == null)
-    {
       messageDialog("You must choose a subfolder of the main database folder.", mtError);
-      return;
-    }
-
-    assignFolder(folder);
+    else
+      assignFolder(folder);
   }
 
 //---------------------------------------------------------------------------
@@ -394,7 +393,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     if (curNote == null)
       bp.setLeft(btnFolder);
 
-    tabSubnotes.setText(subnotesTabTitle);
+    tabSubnotes  .setText(subnotesTabTitle  );
     tabMentioners.setText(mentionersTabTitle);
   }
 
@@ -441,7 +440,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override public void setDividerPositions()
   {
-    setDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_TOP_VERT, 0);
+    setDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_TOP_VERT   , 0);
     setDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_BOTTOM_VERT, 1);
   }
 
@@ -450,7 +449,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override public void getDividerPositions()
   {
-    getDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_TOP_VERT, 0);
+    getDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_TOP_VERT   , 0);
     getDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_BOTTOM_VERT, 1);
   }
 

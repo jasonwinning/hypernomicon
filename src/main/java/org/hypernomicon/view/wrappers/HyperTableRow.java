@@ -44,6 +44,7 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 //---------------------------------------------------------------------------
 
   public HyperTableCell getCell(int ndx)      { return cells.get(ndx); }
+  public HyperTableCell getCell()             { return cells.get(table.getMainColNdx()); }
   public int getID(int ndx)                   { return cells.size() > ndx ? HyperTableCell.getCellID  (cells.get(ndx)) : -1; }
   public String getText(int ndx)              { return cells.size() > ndx ? HyperTableCell.getCellText(cells.get(ndx)) : ""; }
   public RecordType getType(int ndx)          { return cells.size() > ndx ? HyperTableCell.getCellType(cells.get(ndx)) : hdtNone; }
@@ -52,8 +53,8 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
   @Override public RecordType getRecordType() { return getType(table.getMainColNdx()); }
   @Override public int getRecordID()          { return getID(table.getMainColNdx()); }
 
-  @Override public <HDT_T extends HDT_Record> HDT_T getRecord() { return HyperTableCell.getRecord(cells.get(table.getMainColNdx())); }
-  public <HDT_T extends HDT_Record> HDT_T getRecord(int ndx)    { return HyperTableCell.getRecord(cells.get(ndx)); }
+  @Override public <HDT_T extends HDT_Record> HDT_T getRecord() { return HyperTableCell.getRecord(getCell()); }
+  public <HDT_T extends HDT_Record> HDT_T getRecord(int ndx)    { return HyperTableCell.getRecord(getCell(ndx)); }
 
 //---------------------------------------------------------------------------
 
@@ -135,23 +136,23 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 
     Populator populator = col.getPopulator();
 
-    if (populator != null)
+    if ((populator != null) &&
+        ((col.getCtrlType() == ctDropDownList) ||
+         (((populator.getValueType() == cvtVaries) && ((VariablePopulator)populator).getRestricted(this)))))
     {
-      if (((populator.getValueType() == cvtVaries) && ((VariablePopulator)populator).getRestricted(this)) || (col.getCtrlType() == ctDropDownList))
-      {
-        HyperTableCell matchedCell = populator.match(this, newCell);
+      HyperTableCell matchedCell = populator.match(this, newCell);
 
-        if (matchedCell != null)
-          newCell = matchedCell;
-        else if (HyperTableCell.getCellText(newCell).length() > 0)
-        {
-          if (isNotCheckBox) table.refresh();
-          return false;
-        }
+      if (matchedCell != null)
+        newCell = matchedCell;
+      else if (HyperTableCell.getCellText(newCell).length() > 0)
+      {
+        if (isNotCheckBox) table.refresh();
+        return false;
       }
     }
 
     cells.set(colNdx, newCell);
+
     if (table.getCanAddRows() && (table.getTV().getItems().get(table.getTV().getItems().size() - 1) == this))
       table.newRow(false);
 
@@ -160,13 +161,11 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 
     if (col.updateHandler != null)
     {
-      Populator nextPop = null;
-      if (table.getColumns().size() > (colNdx + 1))
-        nextPop = populators.get(colNdx + 1);
+      boolean isNotLastColumn = table.getColumns().size() > (colNdx + 1);
 
-      col.updateHandler.handle(this, newCell, colNdx + 1, nextPop);
+      col.updateHandler.handle(this, newCell, colNdx + 1, isNotLastColumn ? populators.get(colNdx + 1) : null);
 
-      if ((table.getColumns().size() > (colNdx + 1)) && isNotCheckBox)
+      if (isNotLastColumn && isNotCheckBox)
         table.refresh();
     }
 

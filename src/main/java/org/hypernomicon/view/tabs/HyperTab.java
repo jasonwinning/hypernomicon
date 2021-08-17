@@ -287,7 +287,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 
   static void updateWebButtons(Preferences node, String prefKey, int numDef, Button btn, SplitMenuButton smb, String toolTipPrefix,
-                                      Function<String, EventHandler<ActionEvent>> eventHndlr)
+                               Function<String, EventHandler<ActionEvent>> eventHndlr)
   {
     int count = node.getInt(prefKey + "Count", numDef);
 

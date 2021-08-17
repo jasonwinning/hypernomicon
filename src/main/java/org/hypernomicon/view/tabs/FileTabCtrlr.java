@@ -148,10 +148,8 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     if (curMiscFile == null) return;
 
-    if (work == null)
-      htAuthors.buildRows(curMiscFile.authorRecords(), (row, author) -> row.setCellValue(1, author, author.getCBText()));
-    else
-      htAuthors.buildRows(work.authorRecords, (row, author) -> row.setCellValue(1, author, author.getCBText()));
+    htAuthors.buildRows(work == null ? curMiscFile.authorRecords() : work.authorRecords,
+      (row, author) -> row.setCellValue(1, author, author.getCBText()));
   }
 
 //---------------------------------------------------------------------------

@@ -81,6 +81,7 @@ public class HyperTableColumn
   void setNumeric(boolean newVal)                    { isNumeric.setValue(newVal); }
   public void setDontCreateNewRecord(boolean newVal) { dontCreateNewRecord.setValue(newVal); }
   void setTooltip(ButtonAction ba, String text)      { tooltips.put(ba, text); }
+  void clear()                                       { if (populator != null) populator.clear(); }
 
   @SuppressWarnings("unchecked") <PopType extends Populator> PopType getPopulator()     { return (PopType) populator; }
 
@@ -249,15 +250,6 @@ public class HyperTableColumn
       default :
         break;
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  void clear()
-  {
-    if (populator != null)
-      populator.clear();
   }
 
 //---------------------------------------------------------------------------

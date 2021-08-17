@@ -73,6 +73,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -415,20 +416,11 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   {
     if (topicRecordsAdded.contains(argument)) return false;
 
-    List<HDT_Position> positions = new ArrayList<>();
-
     if (argument.positions.size() > 0)
     {
-      argument.positions.forEach(position ->
-      {
-        if (argument.isInFavor(position))
-          positions.add(position);
-      });
+      List<HDT_Position> positions = argument.positions.stream().filter(argument::isInFavor).collect(Collectors.toList());
 
-      if (positions.isEmpty())
-        positions.addAll(argument.positions);
-
-      htArguments.buildRows(positions, (row, position) ->
+      htArguments.buildRows(positions.isEmpty() ? argument.positions : positions, (row, position) ->
       {
         addPosToTopicTable(position, row, otherToAdd);
         posToAdd.remove(position);
