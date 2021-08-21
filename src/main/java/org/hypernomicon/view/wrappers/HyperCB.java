@@ -443,7 +443,7 @@ public class HyperCB implements CommitableWrapper
         if (populator.getValueType() == CellValueType.cvtRecord)
         {
           RecordSelectDlgCtrlr ctrlr = RecordSelectDlgCtrlr.build(populator, cells, convertToEnglishChars(cb.getEditor().getText()).trim());
-          selection = ctrlr.showModal() ? ctrlr.selectedCell() : null;
+          selection = ctrlr.showModal() ? populator.getChoiceByID(row, ctrlr.getRecord().getID()) : null;
         }
         else
         {

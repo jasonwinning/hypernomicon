@@ -24,37 +24,57 @@ import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.query.ResultsTable.ResultColumn;
 
+import javafx.scene.control.TableView;
+
 public final class ColumnGroupItem
 {
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  ColumnGroupItem(Tag tag)
-  {
-    this.tag = tag;
-    caption = db.getTagHeader(tag);
-    relType = RelationType.rtNone;
-  }
-
-  ColumnGroupItem(String caption)
-  {
-    tag = tagNone;
-    this.caption = caption;
-    relType = RelationType.rtNone;
-  }
-
-  ColumnGroupItem(RelationType relType)
-  {
-    this.relType = relType;
-    tag = relType.getSubjTag();
-    caption = relType.getSubjTitle();
-  }
-
   final Tag tag;
   final RelationType relType; // If relType != rtNone, then this is a column showing subjects for the row record (the object)
   final String caption;
   ResultColumn<? extends Comparable<?>> col;
+
+  static final double RESULT_COL_MAX_WIDTH = 400.0;
+
+  //---------------------------------------------------------------------------
+
+  // Constructor for all and only items in the general column group
+
+  ColumnGroupItem(ResultColumn<? extends Comparable<?>> col, TableView<ResultsRow> tv, int colNdx)
+  {
+    tag = tagNone;
+    relType = RelationType.rtNone;
+
+    this.col = col;
+    caption = col.getText();
+    col.setMaxWidth(RESULT_COL_MAX_WIDTH);
+
+    if (colNdx < 0)
+      tv.getColumns().add(col);
+    else
+      tv.getColumns().add(colNdx, col);
+  }
+
+  //---------------------------------------------------------------------------
+
+  ColumnGroupItem(Tag tag)
+  {
+    this.tag = tag;
+    relType = RelationType.rtNone;
+    caption = db.getTagHeader(tag);
+  }
+
+  //---------------------------------------------------------------------------
+
+  ColumnGroupItem(RelationType relType)
+  {
+    tag = relType.getSubjTag();
+    this.relType = relType;
+    caption = relType.getSubjTitle();
+  }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------

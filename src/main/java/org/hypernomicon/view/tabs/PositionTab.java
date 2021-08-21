@@ -131,7 +131,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
       row.setCellValue(1, subPos, subPos.getCBText());
 
       String authStr = Authors.getShortAuthorsStr(subPos.getPeople().stream().map(ArgumentAuthor::getAuthObj)
-                                                                             .collect(ImmutableSet.toImmutableSet()), true, true);
+                                                                             .collect(ImmutableSet.toImmutableSet()), true, true, false);
       PositionSource ps = subPos.getWorkWithAuthor();
       if (ps != null)
         row.setCellValue(2, ps.author, authStr);

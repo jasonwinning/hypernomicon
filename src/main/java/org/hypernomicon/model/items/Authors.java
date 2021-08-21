@@ -73,31 +73,37 @@ public abstract class Authors implements Iterable<Author>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String getShortAuthorsStr(Collection<Author> authors, boolean sort, boolean fullNameIfSingleton)
+  public static String getShortAuthorsStr(Collection<Author> authors, boolean sort, boolean fullNameIfSingleton, boolean includeEds)
   {
-    return getAuthorsStr(authors, ',', true, true, sort, fullNameIfSingleton);
+    return getAuthorsStr(authors, ',', true, true, sort, fullNameIfSingleton, includeEds);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String getLongAuthorsStr(Collection<Author> authors, boolean fullNameIfSingleton)
+  public static String getLongAuthorsStr(Collection<Author> authors, boolean fullNameIfSingleton, boolean includeEds)
   {
-    return getAuthorsStr(authors, ';', false, false, false, fullNameIfSingleton);
+    return getAuthorsStr(authors, ';', false, false, false, fullNameIfSingleton, includeEds);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getAuthorsStr(Collection<Author> authorCol, char delimiter, boolean amp, boolean firstInitials, boolean sort, boolean fullNameIfSingleton)
+  private static String getAuthorsStr(Collection<Author> authorCol, char delimiter, boolean amp, boolean firstInitials,
+                                      boolean sort, boolean fullNameIfSingleton, boolean includeEds)
   {
     if (authorCol.isEmpty())
       return "";
 
     List<Author> authors = new ArrayList<>(authorCol);
 
+    String eds = "";
+
+    if (includeEds && authorCol.stream().allMatch(Author::getIsEditor))
+      eds = authorCol.size() > 1 ? " (Eds.)" : " (Ed.)";
+
     if (authors.size() == 1)
-      return firstInitials && (fullNameIfSingleton == false) ? authors.get(0).getBibName() : authors.get(0).getNameLastFirst();
+      return (firstInitials && (fullNameIfSingleton == false) ? authors.get(0).getBibName() : authors.get(0).getNameLastFirst()) + eds;
 
     if (sort)
       authors.sort(null);
@@ -121,7 +127,7 @@ public abstract class Authors implements Iterable<Author>
     if (num < authors.size())
       peopleStr = peopleStr + " et al.";
 
-    return peopleStr;
+    return peopleStr + eds;
   }
 
   //---------------------------------------------------------------------------

@@ -20,6 +20,7 @@ package org.hypernomicon.query;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Function;
 
@@ -150,8 +151,6 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
     return new ResultCellValue<>(str, strToComp).getObservable();
   }
 
-  private static final double RESULT_COL_MAX_WIDTH = 400.0;
-
   void reset()
   {
     tv.getColumns().clear();
@@ -159,50 +158,25 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
     colGroups.clear();
 
     datesAdded = false;
-    generalGroup = new ColumnGroup("General");
-    ColumnGroupItem item;
 
-    colGroups.add(generalGroup);
+    colGroups.add(generalGroup = new ColumnGroup());
 
-    ResultColumn<Integer> intCol;
-    ResultColumn<String> strCol;
-
-    intCol = new ResultColumn<>("ID");
+    ResultColumn<Integer> intCol = new ResultColumn<>("ID");
     intCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordIDStr(), str -> Integer.valueOf(parseInt(str, -1))));
-    intCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
-    tv.getColumns().add(intCol);
+    generalGroup.items.add(new ColumnGroupItem(intCol, tv, -1));
 
-    item = new ColumnGroupItem("ID");
-    generalGroup.items.add(item);
-    item.col = intCol;
-
-    strCol = new ResultColumn<>("Name");
+    ResultColumn<String> strCol = new ResultColumn<>("Name");
     strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordName(), str -> makeSortKeyByType(str, hdtWork)));
-    strCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
-    tv.getColumns().add(strCol);
-
-    item = new ColumnGroupItem("Name");
-    generalGroup.items.add(item);
-    item.col = strCol;
+    generalGroup.items.add(new ColumnGroupItem(strCol, tv, -1));
 
     strCol = new ResultColumn<>("Type");
     strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordTypeStr(), str -> str.trim().toLowerCase()));
-    strCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
-    tv.getColumns().add(strCol);
-
-    item = new ColumnGroupItem("Type");
-    generalGroup.items.add(item);
-    item.col = strCol;
+    generalGroup.items.add(new ColumnGroupItem(strCol, tv, -1));
 
     strCol = new ResultColumn<>("Search Key");
     strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getSearchKey(), str -> str.trim().toLowerCase()));
-    strCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
-    tv.getColumns().add(strCol);
     strCol.setVisible(false);
-
-    item = new ColumnGroupItem("Search Key");
-    generalGroup.items.add(item);
-    item.col = strCol;
+    generalGroup.items.add(new ColumnGroupItem(strCol, tv, -1));
 
     strCol = new ResultColumn<>("Sort Key");
     strCol.setCellValueFactory(cellData ->
@@ -211,13 +185,8 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
       return new ResultCellValue<>(sortKey, sortKey).getObservable();
     });
 
-    strCol.setMaxWidth(RESULT_COL_MAX_WIDTH);
-    tv.getColumns().add(strCol);
     strCol.setVisible(false);
-
-    item = new ColumnGroupItem("Sort Key");
-    generalGroup.items.add(item);
-    item.col = strCol;
+    generalGroup.items.add(new ColumnGroupItem(strCol, tv, -1));
 
     if (commencedAddingButton) return;
 
@@ -267,11 +236,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
     ResultColumn<Instant> col = new ResultColumn<>(header);
     col.setCellValueFactory(cellData -> cellData.getValue().getDateCellValue(dateTag).getObservable());
-    tv.getColumns().add(col);
-
-    ColumnGroupItem item = new ColumnGroupItem(header);
-    generalGroup.items.add(item);
-    item.col = col;
+    generalGroup.items.add(new ColumnGroupItem(col, tv, firstNonGeneralColumnNdx()));
   }
 
 //---------------------------------------------------------------------------
@@ -293,9 +258,9 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ResultColumn<String> addNonGeneralColumn(EnumMap<RecordType, ColumnGroupItem> map)
+  ResultColumn<String> addNonGeneralColumn(EnumMap<RecordType, ColumnGroupItem> recordTypeToItem)
   {
-    ColumnGroupItem firstItem = map.entrySet().iterator().next().getValue();
+    ColumnGroupItem firstItem = recordTypeToItem.entrySet().iterator().next().getValue();
 
     ResultColumn<String> col = new ResultColumn<>(firstItem.caption);
 
@@ -305,7 +270,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
       str -> str.trim().toLowerCase();
 
     boolean visible = false;
-    for (ColumnGroupItem item : map.values())
+    for (ColumnGroupItem item : recordTypeToItem.values())
       if (item.relType == RelationType.rtNone)
         visible = true;
 
@@ -318,7 +283,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
       if (record != null)
       {
-        ColumnGroupItem item = map.get(record.getType());
+        ColumnGroupItem item = recordTypeToItem.get(record.getType());
 
         if (item != null)
         {
@@ -337,11 +302,33 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
       return getCustomCellValue(str, strToComp);
     });
 
-    col.setMaxWidth(RESULT_COL_MAX_WIDTH);
+    col.setMaxWidth(ColumnGroupItem.RESULT_COL_MAX_WIDTH);
 
-    tv.getColumns().add(col);
+    if (EnumSet.of(tagAuthor, tagYear, tagWorkType).contains(firstItem.tag))
+      tv.getColumns().add(firstNonGeneralColumnNdx(), col);
+    else
+      tv.getColumns().add(col);
 
     return col;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private int firstNonGeneralColumnNdx()
+  {
+    List<TableColumn<ResultsRow, ?>> columns = tv.getColumns();
+    int numColumns = columns.size();
+
+    for (int ndx = 0; ndx < numColumns; ndx++)
+    {
+      TableColumn<ResultsRow, ?> col = columns.get(ndx);
+
+      if (generalGroup.items.stream().noneMatch(item -> item.col == col))
+        return ndx;
+    }
+
+    return numColumns;
   }
 
 //---------------------------------------------------------------------------

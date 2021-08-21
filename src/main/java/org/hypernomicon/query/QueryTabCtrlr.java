@@ -20,7 +20,6 @@ package org.hypernomicon.query;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
@@ -91,9 +90,6 @@ import org.hypernomicon.view.tabs.HyperTab;
 import org.hypernomicon.view.wrappers.*;
 import org.hypernomicon.view.wrappers.CheckBoxOrCommandListCell.CheckBoxOrCommand;
 
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.SetMultimap;
-
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
@@ -127,7 +123,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     private ReportTable reportTable;
 
     public final List<ResultsRow> resultsBackingList = new ArrayList<>();
-    private SetMultimap<RecordType, ColumnGroupItem> recordTypeToColumnGroupItems;
+    private final Map<RecordType, ColumnGroup> recordTypeToColumnGroup = new LinkedHashMap<>();
 
     private Tab tab;
     private QueryFavorite fav = null;
@@ -282,7 +278,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       });
 
       resultsTable.reset();
-      recordTypeToColumnGroupItems = LinkedHashMultimap.create();
+      recordTypeToColumnGroup.clear();
       resultsBackingList.clear();
 
       switchToRecordMode();
@@ -294,7 +290,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    public void refreshView()
+    public void refreshView(boolean refreshTable)
     {
       if (inRecordMode)
         refreshView(tvResults.getSelectionModel().getSelectedIndex());
@@ -305,6 +301,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         ui.updateBottomPanel(false);
       }
 
+      if (refreshTable) tvResults.refresh();
       tabPane.requestLayout();
     }
 
@@ -512,7 +509,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           row.setCellValue(colNdx, queryRow.cells[colNdx].clone());
       });
 
-      refreshView();
+      refreshView(false);
       htFields.selectRow(0);
 
       disableAutoShowDropdownList = false;
@@ -740,7 +737,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         boolean firstCall = true;
         HDT_Record record;
 
-        recordTypeToColumnGroupItems = LinkedHashMultimap.create();
+        recordTypeToColumnGroup.clear();
         resultsBackingList.clear();
 
         updateMessage("Running query...");
@@ -801,23 +798,23 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       Platform.runLater(() -> resultsTable.getTV().setItems(FXCollections.observableList(resultsBackingList)));
 
-      recordTypeToColumnGroupItems.keySet().forEach(recordType -> addColumns(recordType, recordTypeToColumnGroupItems.get(recordType)));
+      recordTypeToColumnGroup.forEach(this::addColumns);
 
       if (showDesc)
         chkShowDesc.setSelected(true);
 
-      curQV.refreshView();
+      curQV.refreshView(false);
       return true;
     }
 
     //---------------------------------------------------------------------------
     //---------------------------------------------------------------------------
 
-    private void addColumns(RecordType recordType, Collection<ColumnGroupItem> items)
+    private void addColumns(RecordType recordType, ColumnGroup group)
     {
       EnumMap<RecordType, ColumnGroupItem> map;
 
-      for (ColumnGroupItem item : items)
+      for (ColumnGroupItem item : group.items)
       {
         if (item.tag == tagName) continue;
 
@@ -857,7 +854,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       RecordType recordType = record.getType();
 
-      if (recordTypeToColumnGroupItems.containsKey(recordType) == false)
+      if (recordTypeToColumnGroup.containsKey(recordType) == false)
       {
         if (recordType.getDisregardDates() == false)
           resultsTable.addDateColumns();
@@ -866,10 +863,10 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         removeAll(tags, tagHub, tagPictureCrop);
 
         ColumnGroup colGroup = new ColumnGroup(recordType, tags);
-        recordTypeToColumnGroupItems.putAll(recordType, colGroup.items);
+        recordTypeToColumnGroup.put(recordType, colGroup);
 
         if (addToObsList)
-          addColumns(recordType, colGroup.items);
+          addColumns(recordType, colGroup);
 
         colGroups.add(colGroup);
       }
@@ -877,7 +874,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (addToObsList)
       {
         resultsTable.getTV().getItems().add(new ResultsRow(record));
-        refreshView();
+        refreshView(false);
       }
       else
         resultsBackingList.add(new ResultsRow(record));
@@ -1354,7 +1351,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   public void btnExecuteClick()                     { curQV.btnExecuteClick(true); }   // if any of the queries are unfiltered, they
                                                                                        // will all be treated as unfiltered
   @Override protected RecordType type()             { return hdtNone; }
-  @Override public boolean update()                 { curQV.refreshView(); return true; }
+  @Override public boolean update()                 { curQV.refreshView(true); return true; }
   @Override public void setRecord(HDT_Record rec)   { if (curQV != null) curQV.setRecord(rec); }
   @Override public int recordCount()                { return results().size(); }
   @Override public TextViewInfo mainTextInfo()      { return new TextViewInfo(MainTextUtil.webEngineScrollPos(webView.getEngine())); }
@@ -1527,7 +1524,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     removeFromParent(webView);
     curQV.apDescription.getChildren().setAll(webView);
 
-    qV.refreshView();
+    qV.refreshView(true);
   }
 
 //---------------------------------------------------------------------------

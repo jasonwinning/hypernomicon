@@ -42,6 +42,14 @@ public final class ColumnGroup
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
+  ColumnGroup()
+  {
+    recordType = hdtNone;
+    caption = "General";
+  }
+
+  //---------------------------------------------------------------------------
+
   ColumnGroup(RecordType recordType, Set<Tag> tags)
   {
     this.recordType = recordType;
@@ -52,12 +60,7 @@ public final class ColumnGroup
     RelationSet.getRelationsForObjType(recordType).forEach(relType -> items.add(new ColumnGroupItem(relType)));
   }
 
-  ColumnGroup(String caption)
-  {
-    this.caption = caption;
-    recordType = hdtNone;
-  }
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
-  //---------------------------------------------------------------------------
-  //---------------------------------------------------------------------------
 }

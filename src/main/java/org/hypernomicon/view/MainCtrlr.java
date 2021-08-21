@@ -2298,6 +2298,8 @@ public final class MainCtrlr
         break;
     }
 
+    setToolTip(btnCreateNew, "Create a new " + db.getTypeName(selectorType()) + " record");
+
     hideFindTable();
 
     if (setFocus && (tfSelector != null)) Platform.runLater(() ->
@@ -2353,10 +2355,15 @@ public final class MainCtrlr
     if (activeTabEnum == queryTabEnum)
     {
       btnSave.setText("Accept Edits");
-      btnRevert.setText("Revert");
-      btnDelete.setDisable(activeRec == null);
 
-      disableAll(btnSave, btnRevert, btnIncrement, btnDecrement);
+      btnRevert.setDisable(false);
+      btnRevert.setText("Refresh");
+      setToolTip(btnRevert, "Refresh data in table. This does not re-run the query.");
+
+      btnDelete.setDisable(activeRec == null);
+      setToolTip(btnDelete, "Delete selected record");
+
+      disableAll(btnSave, btnIncrement, btnDecrement);
     }
 
   //---------------------------------------------------------------------------
@@ -2376,12 +2383,16 @@ public final class MainCtrlr
         btnSave.setText(TREE_SELECT_BTN_CAPTION);
       }
 
+      setToolTip(btnSave, "");
+
       btnRevert.setDisable(false);
       btnRevert.setText("Refresh");
+      setToolTip(btnRevert, "Refresh data in tree");
 
       disableAllIff(count < 1, btnIncrement, btnDecrement);
 
       btnDelete.setDisable(activeRec == null);
+      setToolTip(btnDelete, "Delete selected record");
     }
 
   //---------------------------------------------------------------------------
@@ -2394,9 +2405,13 @@ public final class MainCtrlr
                                           hdtPerson,   hdtPosition, hdtTerm,     hdtWork).contains(activeType()) == false);
 
       btnSave.setText("Accept Edits");
+      setToolTip(btnSave, "Commit changes made while this tab has been active to the record. Does not save changes to database XML files.");
 
       disableAllIff(activeRec == null, btnDelete, btnSave, btnRevert);
+      setToolTip(btnDelete, "Delete this record");
+
       btnRevert.setText("Revert");
+      setToolTip(btnRevert, "Revert changes made while this tab has been active and since Accept Edits was last pressed");
 
 //      btnRevert.setDisable(changed == false);
 

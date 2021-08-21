@@ -77,7 +77,7 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
     htPositions.buildRows(curDebate.positions, (row, position) ->
     {
       String authStr = Authors.getShortAuthorsStr(position.getPeople().stream().map(ArgumentAuthor::getAuthObj)
-                                                                               .collect(ImmutableSet.toImmutableSet()), true, true);
+                                                                               .collect(ImmutableSet.toImmutableSet()), true, true, false);
       PositionSource ps = position.getWorkWithAuthor();
       if (ps != null)
         row.setCellValue(1, ps.author, authStr);

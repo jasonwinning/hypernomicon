@@ -247,7 +247,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
                 authorID = author.getPerson().getID();
             }
 
-          row.setCellValue(5, authorID, Authors.getShortAuthorsStr(authors, false, true), hdtPerson);
+          row.setCellValue(5, authorID, Authors.getShortAuthorsStr(authors, false, true, true), hdtPerson);
         }
       }
     });

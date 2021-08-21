@@ -45,7 +45,6 @@ public class RecordSelectDlgCtrlr extends HyperDlg
   private OmniFinder omniFinder;
   private HyperTable htFind;
 
-  public HyperTableCell selectedCell()                { return htFind.selectedCell(); }
   public <HDT_T extends HDT_Record> HDT_T getRecord() { return htFind.selectedRecord(); }
 
 //---------------------------------------------------------------------------
