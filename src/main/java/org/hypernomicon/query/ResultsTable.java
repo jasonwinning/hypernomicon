@@ -163,20 +163,20 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
     ResultColumn<Integer> intCol = new ResultColumn<>("ID");
     intCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordIDStr(), str -> Integer.valueOf(parseInt(str, -1))));
-    generalGroup.items.add(new ColumnGroupItem(intCol, tv, -1));
+    generalGroup.add(new ColumnGroupItem(intCol, tv, -1));
 
     ResultColumn<String> strCol = new ResultColumn<>("Name");
     strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordName(), str -> makeSortKeyByType(str, hdtWork)));
-    generalGroup.items.add(new ColumnGroupItem(strCol, tv, -1));
+    generalGroup.add(new ColumnGroupItem(strCol, tv, -1));
 
     strCol = new ResultColumn<>("Type");
     strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordTypeStr(), str -> str.trim().toLowerCase()));
-    generalGroup.items.add(new ColumnGroupItem(strCol, tv, -1));
+    generalGroup.add(new ColumnGroupItem(strCol, tv, -1));
 
     strCol = new ResultColumn<>("Search Key");
     strCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getSearchKey(), str -> str.trim().toLowerCase()));
     strCol.setVisible(false);
-    generalGroup.items.add(new ColumnGroupItem(strCol, tv, -1));
+    generalGroup.add(new ColumnGroupItem(strCol, tv, -1));
 
     strCol = new ResultColumn<>("Sort Key");
     strCol.setCellValueFactory(cellData ->
@@ -186,7 +186,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
     });
 
     strCol.setVisible(false);
-    generalGroup.items.add(new ColumnGroupItem(strCol, tv, -1));
+    generalGroup.add(new ColumnGroupItem(strCol, tv, -1));
 
     if (commencedAddingButton) return;
 
@@ -236,7 +236,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
     ResultColumn<Instant> col = new ResultColumn<>(header);
     col.setCellValueFactory(cellData -> cellData.getValue().getDateCellValue(dateTag).getObservable());
-    generalGroup.items.add(new ColumnGroupItem(col, tv, firstNonGeneralColumnNdx()));
+    generalGroup.add(new ColumnGroupItem(col, tv, firstNonGeneralColumnNdx()));
   }
 
 //---------------------------------------------------------------------------
@@ -324,7 +324,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
     {
       TableColumn<ResultsRow, ?> col = columns.get(ndx);
 
-      if (generalGroup.items.stream().noneMatch(item -> item.col == col))
+      if (generalGroup.stream().noneMatch(item -> item.col == col))
         return ndx;
     }
 

@@ -667,17 +667,10 @@ public class MainTextUtil
   private static String getAnchorForUnitable(HDT_RecordWithConnector uRecord)
   {
     StrongLink link = uRecord.getLink();
-    String recordName;
+    if (link != null)
+      uRecord = ui.getSpokeToGoTo(link);
 
-    if (link != null) uRecord = ui.getSpokeToGoTo(link);
-
-    if (uRecord.getType() == hdtConcept)
-    {
-      HDT_Concept concept = (HDT_Concept) uRecord;
-      recordName = concept.getExtendedName();
-    }
-    else
-      recordName = uRecord.name();
+    String recordName = uRecord.getType() == hdtConcept ? ((HDT_Concept) uRecord).getExtendedName() : uRecord.name();
 
     return getKeywordLink(recordName, new KeywordLink(0, uRecord.name().length(), new SearchKeyword(uRecord.name(), uRecord)), "text-decoration: none;");
   }
@@ -794,32 +787,25 @@ public class MainTextUtil
 
   private static String convertPlainMainTextToHtml(String input)
   {
-    String output = "<html dir=\"ltr\"><head>" + mainTextHeadStyleTag() + "</head><body contenteditable=\"true\"><p><font face=\"Arial\" size=\"2\">";
-
-    input = trimLines(input);
-
-    input = input.replace("\t", "<span class=\"Apple-tab-span\" style=\"white-space:pre\"> </span>");
+    input = trimLines(input).replace("\t", "<span class=\"Apple-tab-span\" style=\"white-space:pre\"> </span>");
 
     while (input.contains("\n\n"))
       input = input.replace("\n\n", "\n<br>\n");
 
-    input = input.replace("\n", "</font></p><p><font face=\"Arial\" size=\"2\">");
-
-    output = output + input + "</font></p></body></html>";
-
-    return output;
+    return "<html dir=\"ltr\"><head>" +
+           STYLE_TAG +
+           "</head><body contenteditable=\"true\"><p><font face=\"Arial\" size=\"2\">" +
+           input.replace("\n", "</font></p><p><font face=\"Arial\" size=\"2\">") +
+           "</font></p></body></html>";
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static String MARGIN_STYLE = "margin-right: 20px;";
+  static String MARGIN_STYLE = "margin-right: 20px;",
 
-  static String mainTextHeadStyleTag()
-  {
-    return "<style>p { margin-top: 0em; margin-bottom: 0em; } " +
-           "body { " + MARGIN_STYLE + " font-family: arial; font-size: 10pt; } </style>";
-  }
+                STYLE_TAG = "<style>p { margin-top: 0em; margin-bottom: 0em; } " +
+                            "body { " + MARGIN_STYLE + " font-family: arial; font-size: 10pt; } </style>";
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -941,9 +927,7 @@ public class MainTextUtil
     doc.getElementsByTag("script").forEach(Element::remove);
     doc.getElementsByAttributeValue("id", "key_works").forEach(Element::remove);
 
-    editorHtml = doc.html();
-
-    return editorHtml.replace("a { pointer-events: none; }", "");
+    return doc.html().replace("a { pointer-events: none; }", "");
   }
 
 //---------------------------------------------------------------------------

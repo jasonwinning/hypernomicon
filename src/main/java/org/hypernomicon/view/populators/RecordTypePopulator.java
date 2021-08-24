@@ -35,7 +35,7 @@ public class RecordTypePopulator extends Populator
 {
   private Set<RecordType> types;
   private boolean changed = true;
-  final List<HyperTableCell> choices = new ArrayList<>();
+  private final List<HyperTableCell> choices = new ArrayList<>();
 
   public RecordTypePopulator()                           { this(null); }
   public RecordTypePopulator(Set<RecordType> set)        { setTypes(set); }

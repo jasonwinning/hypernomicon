@@ -85,7 +85,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 
     for (ColumnGroup group : colGroups)
     {
-      if (group.items.isEmpty()) continue;
+      if (group.isEmpty()) continue;
 
       posY += typeMargin;
       TypeCheckBox chkType = new TypeCheckBox(group.caption);
@@ -106,7 +106,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 
           colGroups.forEach(grp ->
           {
-            if (grp.items.isEmpty()) return;
+            if (grp.isEmpty()) return;
 
             TypeCheckBox tcb = grp.checkBox;
             tcb.setSelected(true);
@@ -131,7 +131,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
 
           colGroups.forEach(grp ->
           {
-            if (grp.items.isEmpty()) return;
+            if (grp.isEmpty()) return;
 
             TypeCheckBox tcb = grp.checkBox;
             tcb.setSelected(false);
@@ -166,7 +166,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
       });
 
 
-      for (ColumnGroupItem item : group.items)
+      for (ColumnGroupItem item : group)
       {
         if (item.col != null)
         {

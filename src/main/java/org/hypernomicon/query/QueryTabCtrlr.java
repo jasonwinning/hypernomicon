@@ -814,7 +814,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       EnumMap<RecordType, ColumnGroupItem> map;
 
-      for (ColumnGroupItem item : group.items)
+      for (ColumnGroupItem item : group)
       {
         if (item.tag == tagName) continue;
 
@@ -822,7 +822,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         map = new EnumMap<>(RecordType.class);
         map.put(recordType, item);
 
-        for (ColumnGroup grp : colGroups) for (ColumnGroupItem otherItem : grp.items)
+        for (ColumnGroup grp : colGroups) for (ColumnGroupItem otherItem : grp)
           if ((item.tag != tagNone) && (item.tag == otherItem.tag))
           {
             map.put(grp.recordType, otherItem);

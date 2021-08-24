@@ -21,6 +21,7 @@ import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.records.RecordType.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -29,14 +30,16 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet;
 import org.hypernomicon.query.SelectColumnsDlgCtrlr.TypeCheckBox;
 
-public final class ColumnGroup
+import com.google.common.collect.ForwardingCollection;
+
+public final class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
 {
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
   final RecordType recordType;
   final String caption;
-  final List<ColumnGroupItem> items = new ArrayList<>();
+  private final List<ColumnGroupItem> items = new ArrayList<>();
   TypeCheckBox checkBox;
 
   //---------------------------------------------------------------------------
@@ -59,6 +62,11 @@ public final class ColumnGroup
 
     RelationSet.getRelationsForObjType(recordType).forEach(relType -> items.add(new ColumnGroupItem(relType)));
   }
+
+  //---------------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+
+  @Override protected Collection<ColumnGroupItem> delegate() { return items; }
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------

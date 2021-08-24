@@ -490,7 +490,7 @@ public final class MainTextWrapper
     }
 
     if (styleTag == null)
-      doc.head().prepend(mainTextHeadStyleTag());
+      doc.head().prepend(STYLE_TAG);
 
     MutableBoolean firstOpen = new MutableBoolean(doc.body().text().trim().isEmpty());
     StringBuilder innerHtml = new StringBuilder("");

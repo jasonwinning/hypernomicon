@@ -34,7 +34,7 @@ public class TagItemPopulator extends Populator
 {
   private final Set<Tag> tags;
   private final RecordType recordType;
-  final List<HyperTableCell> choices;
+  private final List<HyperTableCell> choices;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
