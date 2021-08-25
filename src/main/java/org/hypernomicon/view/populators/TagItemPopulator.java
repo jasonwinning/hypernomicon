@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
@@ -42,10 +41,7 @@ public class TagItemPopulator extends Populator
   public TagItemPopulator(RecordType recordType)
   {
     this.recordType = recordType;
-    tags = db.getTagsByRecordType(recordType);
-
-    tags.remove(Tag.tagHub);
-
+    tags = db.getTagsByRecordType(recordType, true);
     choices = new ArrayList<>();
   }
 

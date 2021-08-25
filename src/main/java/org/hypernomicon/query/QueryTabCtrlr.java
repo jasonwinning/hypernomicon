@@ -860,7 +860,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           resultsTable.addDateColumns();
 
         Set<Tag> tags = record.getAllTags();
-        removeAll(tags, tagHub, tagPictureCrop);
+        removeAll(tags, tagHub, tagPictureCrop, tagMainText);
 
         ColumnGroup colGroup = new ColumnGroup(recordType, tags);
         recordTypeToColumnGroup.put(recordType, colGroup);
@@ -1679,7 +1679,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
               default :
 
-                String tagStrVal = record.getResultTextForTag(tag);
+                String tagStrVal = record.resultTextForTag(tag);
                 if (tagStrVal.isEmpty()) return false;
 
                 return tagStrVal.trim().equalsIgnoreCase(getCellText(param3).trim()) == (getCellID(param2) == EQUAL_TO_OPERAND_ID);
@@ -1690,7 +1690,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
             String val3 = getCellText(param3).trim();
             if (val3.isEmpty()) return false;
 
-            String tagStrVal = record.getResultTextForTag(tag).toLowerCase().trim();
+            String tagStrVal = record.resultTextForTag(tag).toLowerCase().trim();
 
             return tagStrVal.contains(val3.toLowerCase()) == (getCellID(param2) == CONTAINS_OPERAND_ID);
 
@@ -1708,7 +1708,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
               default :
 
-                return (record.getResultTextForTag(tag).length() > 0) == (getCellID(param2) == IS_NOT_EMPTY_OPERAND_ID);
+                return (record.resultTextForTag(tag).length() > 0) == (getCellID(param2) == IS_NOT_EMPTY_OPERAND_ID);
             }
         }
 

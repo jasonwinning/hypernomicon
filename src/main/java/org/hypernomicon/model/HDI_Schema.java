@@ -18,6 +18,7 @@
 package org.hypernomicon.model;
 
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 
 import java.util.List;
@@ -27,7 +28,10 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
 
+import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
+
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 public final class HDI_Schema
 {
@@ -52,7 +56,13 @@ public final class HDI_Schema
 
   public HDI_Schema(HyperDataCategory category, RelationType relType, Tag... tags)
   {
-    this.tags = ImmutableList.copyOf(tags);
+    Builder<Tag> builder = ImmutableList.builder();
+    builder.add(tags);
+
+    if (category == hdcConnector)
+      builder.add(tagMainText);
+
+    this.tags = builder.build();
     this.category = category;
     this.relType = relType;
   }

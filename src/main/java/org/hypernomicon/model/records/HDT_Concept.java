@@ -54,7 +54,7 @@ public class HDT_Concept extends HDT_RecordWithConnector
   @Override public String getCBText()                  { return getExtendedName(); }
   @Override public String getXMLObjectName()           { return getExtendedName(); }
   @Override public String getNameEngChar()             { return term.get().getNameEngChar(); }
-  @Override public String getFirstActiveKeyWord()      { return term.get().getFirstActiveKeyWord(); }
+  @Override public String firstActiveKeyWord()         { return term.get().firstActiveKeyWord(); }
   @Override public void setName(String str)            { term.get().setName(str); }
   @Override public String listName()                   { return name(); }
   @Override public boolean isUnitable()                { return true; }

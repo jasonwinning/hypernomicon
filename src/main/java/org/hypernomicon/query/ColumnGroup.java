@@ -18,6 +18,7 @@
 package org.hypernomicon.query;
 
 import static org.hypernomicon.model.HyperDB.db;
+import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 
 import java.util.ArrayList;
@@ -58,7 +59,13 @@ public final class ColumnGroup extends ForwardingCollection<ColumnGroupItem>
     this.recordType = recordType;
     caption = db.getTypeName(recordType);
 
-    tags.forEach(tag -> items.add(new ColumnGroupItem(tag)));
+    tags.forEach(tag ->
+    {
+      if (db.mainTextTagForRecordType(recordType) == tag)
+        items.add(new ColumnGroupItem(tagMainText));
+      else
+        items.add(new ColumnGroupItem(tag));
+    });
 
     RelationSet.getRelationsForObjType(recordType).forEach(relType -> items.add(new ColumnGroupItem(relType)));
   }

@@ -173,6 +173,7 @@ public final class HyperDB
   public boolean resolvingPointers()                            { return pointerResolutionInProgress; }
   public int getNextID(RecordType type)                         { return datasets.get(type).getNextID(); }
   public boolean idAvailable(RecordType type, int id)           { return datasets.get(type).idAvailable(id); }
+  public Tag mainTextTagForRecordType(RecordType type)          { return nullSwitch(datasets.get(type), null, HyperDataset::getMainTextTag); }
   public String getTypeTagStr(RecordType type)                  { return typeToTagStr.get(type); }
   public RecordType parseTypeTagStr(String tag)                 { return typeToTagStr.inverse().getOrDefault(tag, hdtNone); }
   public boolean isLoaded()                                     { return loaded; }
@@ -186,7 +187,7 @@ public final class HyperDB
   public List<HDT_Record> getInitialNavList()                   { return unmodifiableList(initialNavList); }
   public String getSearchKey(HDT_Record record)                 { return searchKeys.getStringForRecord(record); }
   public SearchKeyword getKeyByKeyword(String keyword)          { return searchKeys.getKeywordObjByKeywordStr(keyword); }
-  public String getFirstActiveKeyWord(HDT_Record record)        { return searchKeys.getFirstActiveKeyword(record); }
+  public String firstActiveKeyWord(HDT_Record record)           { return searchKeys.firstActiveKeyword(record); }
   public List<SearchKeyword> getKeysByPrefix(String prefix)     { return searchKeys.getKeywordsByPrefix(prefix); }
   public List<SearchKeyword> getKeysByRecord(HDT_Record record) { return searchKeys.getKeysByRecord(record); }
   public HDT_Work getWorkByBibEntryKey(String key)              { return bibEntryKeyToWork.get(key); }
@@ -1749,16 +1750,14 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Set<Tag> getTagsByRecordType(RecordType recordType)
+  public Set<Tag> getTagsByRecordType(RecordType recordType, boolean substituteMainText)
   {
     EnumSet<Tag> tags = EnumSet.noneOf(Tag.class);
 
     if (datasets.containsKey(recordType))
-      tags.addAll(datasets.get(recordType).getTags());
+      tags.addAll(datasets.get(recordType).getTags(false, substituteMainText));
     else
-      datasets.values().forEach(dataset -> tags.addAll(dataset.getTags()));
-
-    tags.remove(tagHub);
+      datasets.values().forEach(dataset -> tags.addAll(dataset.getTags(false, substituteMainText)));
 
     return tags;
   }
@@ -1925,6 +1924,7 @@ public final class HyperDB
                          addTag("city"              , tagCity           , "City");
                          addTag("abbreviation"      , tagAbbreviation   , "Abbreviation");
                          addTag("description"       , tagDescription    , "Description");
+                         addTag("main_text"         , tagMainText       , "Description");
                          addTag("title"             , tagTitle          , "Title");
                          addTag("file_name"         , tagFileName       , "Filename");
                          addTag("year"              , tagYear           , "Year");
@@ -2120,7 +2120,7 @@ public final class HyperDB
       }
 
       types.add(recordType);
-      datasets.get(recordType).addSchema(schema, tags);
+      datasets.get(recordType).addSchema(schema);
     }
   }
 
@@ -2195,7 +2195,7 @@ public final class HyperDB
     tagBibEntryKey,    tagComments,     tagLargerDebate, tagListName,        tagCounterargument, tagDefinition,     tagText,         tagActive,
     tagLargerPosition, tagParentNote,   tagFolder,       tagLargerWork,      tagParentLabel,     tagParentGlossary, tagParentGroup,  tagParentFolder,
     tagCreationDate,   tagModifiedDate, tagViewDate,     tagDisplayRecord,   tagKeyWork,         tagLinkedRecord,   tagParentInst,   tagHub,
-    tagPictureFolder,  tagPast;
+    tagPictureFolder,  tagPast,         tagMainText;
 
     static EnumHashBiMap<Tag, Integer> tagToNum = EnumHashBiMap.create(Tag.class);
 

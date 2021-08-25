@@ -203,7 +203,7 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  String getFirstActiveKeyword(HDT_Record record)
+  String firstActiveKeyword(HDT_Record record)
   {
     Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.get(record);
     if (keywordStrToKeywordObj == null) return "";

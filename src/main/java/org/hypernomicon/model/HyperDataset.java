@@ -18,7 +18,9 @@
 package org.hypernomicon.model;
 
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.Exceptions.*;
@@ -36,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class HyperDataset<HDT_DT extends HDT_Record>
@@ -104,6 +107,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
   private final RecordType type;
   private final List<HDT_DT> needIDs = new ArrayList<>();
   private final Map<Tag, HDI_Schema> tagToSchema = new LinkedHashMap<>();
+  private Tag mainTextTag = null;
   private boolean online = false;
   private HDT_Record recordToAssign = null;
   private int idToAssign = -1;
@@ -119,7 +123,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
   int getNextID()                                  { int id = 0; while (true) if (idAvailable(++id)) return id; }
   HDI_Schema getSchema(Tag tag)                    { return tagToSchema.get(tag); }
   Collection<HDI_Schema> getSchemas()              { return tagToSchema.values(); }
-  Set<Tag> getTags()                               { return tagToSchema.keySet(); }
+  Tag getMainTextTag()                             { return mainTextTag; }
   void resolvePointers() throws HDB_InternalError  { core.resolvePointers(); }
   CoreAccessor getAccessor()                       { return new CoreAccessor(core); }
   boolean idAvailable(int id)                      { return isUnstoredRecord(id, type) ? false : core.containsID(id) == false; }
@@ -300,15 +304,38 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void addSchema(HDI_Schema schema, Tag[] tags) throws HDB_InternalError
+  void addSchema(HDI_Schema schema) throws HDB_InternalError
   {
-    for (Tag tag : tags)
+    for (Tag tag : schema.getTags())
     {
       if (tagToSchema.containsKey(tag))
         throw new HDB_InternalError(98921);
 
-      tagToSchema.put(tag, schema);
+      if (tag != tagMainText)
+        tagToSchema.put(tag, schema);
+
+      if (schema.getCategory() == hdcConnector)
+      {
+        switch (tag)
+        {
+          case tagMainText : case tagDisplayRecord : case tagKeyWork : case tagHub :
+            break;
+
+          default :
+            mainTextTag = tag;
+        }
+      }
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  Set<Tag> getTags(boolean includeHub, boolean substituteMainText)
+  {
+    return tagToSchema.keySet().stream().filter(tag -> includeHub || (tag != tagHub))
+                                        .map(tag -> substituteMainText && (tag == mainTextTag) ? tagMainText : tag)
+                                        .collect(Collectors.toSet());
   }
 
 //---------------------------------------------------------------------------

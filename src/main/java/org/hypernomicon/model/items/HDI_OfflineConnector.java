@@ -204,6 +204,10 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 
         break;
 
+      case tagMainText :
+
+        break;
+
       default :
 
         writeStringTag(xml, tag, htmlText);

@@ -295,7 +295,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
                                                                   .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
           }
           else
-            str = record.getResultTextForTag(item.tag);
+            str = record.resultTextForTag(item.tag);
         }
       }
 
@@ -304,7 +304,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
     col.setMaxWidth(ColumnGroupItem.RESULT_COL_MAX_WIDTH);
 
-    if (EnumSet.of(tagAuthor, tagYear, tagWorkType).contains(firstItem.tag))
+    if (EnumSet.of(tagAuthor, tagYear, tagWorkType, tagMainText).contains(firstItem.tag))
       tv.getColumns().add(firstNonGeneralColumnNdx(), col);
     else
       tv.getColumns().add(col);

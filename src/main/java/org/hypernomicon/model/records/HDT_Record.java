@@ -57,7 +57,7 @@ public interface HDT_Record
   Instant getCreationDate();
 
   HDI_Schema getSchema(Tag tag);
-  String getResultTextForTag(Tag tag);
+  String resultTextForTag(Tag tag);
   boolean getTagBoolean(Tag tag);
   Set<Tag> getAllTags();
   boolean isUnitable();
@@ -80,7 +80,7 @@ public interface HDT_Record
   String makeSortKey();
   String getSortKeyAttr();
   String getSearchKey();
-  String getFirstActiveKeyWord();
+  String firstActiveKeyWord();
   void setSearchKey(String newKey) throws SearchKeyException;
   void setSearchKey(String newKey, boolean noMod, boolean dontRebuildMentions) throws SearchKeyException;
 

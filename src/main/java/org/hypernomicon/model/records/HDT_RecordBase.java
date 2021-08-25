@@ -105,7 +105,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public boolean isUnitable()                 { return false; }
   @Override public String getSearchKey()                { return db.getSearchKey(this); }
   @Override public List<SearchKeyword> getSearchKeys()  { return db.getKeysByRecord(this); }
-  @Override public String getFirstActiveKeyWord()       { return db.getFirstActiveKeyWord(this); }
+  @Override public String firstActiveKeyWord()          { return db.firstActiveKeyWord(this); }
 
   @Override public final void writeStoredStateToXML(StringBuilder xml)        { xmlState.writeToXML(xml); }
   @Override public void setSearchKey(String newKey) throws SearchKeyException { setSearchKey(newKey, false, false); }
@@ -294,7 +294,7 @@ public abstract class HDT_RecordBase implements HDT_Record
     {
       Tag tag = backupEntry.getKey();
 
-      if (tag == tagHub) continue; // handle hub after loop ends
+      if ((tag == tagMainText) || (tag == tagHub)) continue; // handle hub after loop ends
 
       HDI_OnlineBase liveValue = items.get(tag);
       if ((liveValue.getCategory() == hdcConnector) && (hubID > 0)) // Correct data will be in hub's record state,
@@ -564,7 +564,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public final String getResultTextForTag(Tag tag)
+  @Override public final String resultTextForTag(Tag tag)
   {
     return (tag == nameTag) || (tag == tagName) ?
       listName()
