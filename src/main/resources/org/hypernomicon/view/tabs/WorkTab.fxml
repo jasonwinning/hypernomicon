@@ -40,11 +40,12 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.WorkTabCtrlr">
+<GridPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.WorkTabCtrlr">
   <columnConstraints>
     <ColumnConstraints hgrow="NEVER" maxWidth="53.0" minWidth="53.0" prefWidth="53.0" />
       <ColumnConstraints hgrow="SOMETIMES" />
-      <ColumnConstraints hgrow="SOMETIMES" percentWidth="42.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="70.0" minWidth="70.0" prefWidth="70.0" />
+      <ColumnConstraints hgrow="SOMETIMES" percentWidth="40.0" />
   </columnConstraints>
   <rowConstraints>
     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
@@ -77,7 +78,20 @@
             <TextField fx:id="tfTitle" layoutX="39.0" layoutY="5.0" maxHeight="22.0" prefHeight="22.0" prefWidth="563.0" AnchorPane.leftAnchor="38.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
          </children>
       </AnchorPane>
-      <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
+      <AnchorPane GridPane.columnIndex="2" GridPane.rowSpan="2">
+         <children>
+            <Button fx:id="btnTopAutofill" contentDisplay="TOP" mnemonicParsing="false" text="Auto-Fill" wrapText="true" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
+               <graphic>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../../resources/images/wand-magic.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
+         </children>
+      </AnchorPane>
+      <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3">
          <children>
             <Label fx:id="lblSearchKey" layoutY="9.0" text="Search key:" underline="true" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="9.0">
                <cursor>
@@ -92,17 +106,17 @@
       <AnchorPane fx:id="apLowerMid" GridPane.columnIndex="1" GridPane.rowIndex="1">
          <children>
             <Label layoutX="58.0" layoutY="7.0" text="Type:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0" />
-            <ComboBox fx:id="cbType" layoutX="38.0" layoutY="5.0" prefHeight="22.0" prefWidth="126.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0" />
+            <ComboBox fx:id="cbType" layoutX="38.0" layoutY="5.0" prefHeight="22.0" prefWidth="126.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0" />
             <Label layoutX="171.0" layoutY="9.0" text="Year:" AnchorPane.leftAnchor="171.0" AnchorPane.topAnchor="9.0" />
-            <TextField fx:id="tfYear" layoutX="205.0" layoutY="5.0" prefHeight="22.0" prefWidth="40.0" text="2222" AnchorPane.leftAnchor="205.0" AnchorPane.topAnchor="5.0" />
-            <Button fx:id="btnLargerWork" layoutX="253.0" layoutY="4.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="83.0" text="Larger Work:" AnchorPane.topAnchor="5.0" />
-            <ComboBox fx:id="cbLargerWork" layoutX="333.0" layoutY="5.0" prefHeight="22.0" prefWidth="320.0" AnchorPane.leftAnchor="339.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+            <TextField fx:id="tfYear" layoutX="205.0" layoutY="5.0" prefHeight="22.0" prefWidth="40.0" text="2222" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="205.0" AnchorPane.topAnchor="5.0" />
+            <Button fx:id="btnLargerWork" layoutX="253.0" layoutY="4.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="83.0" text="Larger Work:" AnchorPane.bottomAnchor="1.0" AnchorPane.topAnchor="5.0" />
+            <ComboBox fx:id="cbLargerWork" layoutX="333.0" layoutY="5.0" prefHeight="22.0" prefWidth="320.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="339.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
          </children>
       </AnchorPane>
-      <AnchorPane fx:id="apLowerRight" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+      <AnchorPane fx:id="apLowerRight" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
          <children>
-            <Button fx:id="btnURL" mnemonicParsing="false" prefHeight="22.0" prefWidth="50.0" text="URL:" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="5.0" />
-            <TextField fx:id="tfURL" layoutX="55.0" prefHeight="22.0" prefWidth="435.0" AnchorPane.leftAnchor="55.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+            <Button fx:id="btnURL" mnemonicParsing="false" prefHeight="22.0" prefWidth="50.0" text="URL:" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="2.0" AnchorPane.topAnchor="5.0" />
+            <TextField fx:id="tfURL" layoutX="55.0" prefHeight="22.0" prefWidth="435.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="55.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
          </children>
       </AnchorPane>
       <SplitPane fx:id="spVert" dividerPositions="0.25338753387533874, 0.7642276422764228" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">

@@ -120,7 +120,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 {
   @FXML private AnchorPane apDescription, apLowerMid, apLowerRight;
   @FXML private Button btnBibManager, btnLargerWork, btnLaunch, btnMergeBib, btnNewChapter, btnURL,
-                       btnStop, btnTree, btnUseDOI, btnUseISBN, btnWebSrch1, btnWebSrch2, btnAutofill;
+                       btnStop, btnTree, btnUseDOI, btnUseISBN, btnWebSrch1, btnWebSrch2, btnAutofill, btnTopAutofill;
   @FXML private ComboBox<HyperTableCell> cbLargerWork, cbType;
   @FXML private Label lblSearchKey, lblTitle;
   @FXML private MenuItem mnuCrossref, mnuFindDOIonCrossref, mnuFindISBNonGoogleBooks, mnuGoogle, mnuShowMetadata, mnuStoreMetadata;
@@ -194,6 +194,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "WorldCat");
     setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Google Scholar");
     setToolTip(btnAutofill, MainCtrlr.AUTOFILL_TOOLTIP);
+    setToolTip(btnTopAutofill, MainCtrlr.AUTOFILL_TOOLTIP);
 
     ui.setSearchKeyToolTip(tfSearchKey);
 
@@ -490,6 +491,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     btnUseDOI.setOnAction(event -> useDOIClick());
     btnUseISBN.setOnAction(event -> useISBNClick());
     btnAutofill.setOnAction(event -> btnAutofillClick());
+    btnTopAutofill.setOnAction(event -> btnAutofillClick());
 
     btnLaunch.setOnAction(event ->
     {
@@ -1909,6 +1911,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     BibData workBD = curWork.getBibData();
 
+    tabPane.getSelectionModel().select(tabBibDetails);
     setAllVisible(true, btnStop, progressBar);
 
     bibDataRetriever = new BibDataRetriever(httpClient, workBD, pdfFilePaths, (pdfBD, queryBD, messageShown) ->
