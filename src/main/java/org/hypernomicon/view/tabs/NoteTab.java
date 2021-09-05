@@ -409,7 +409,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     curNote.setParentNotes(htParents.saveToList(2, hdtNote));
 
-    ui.attachOrphansToRoots();
+    db.attachOrphansToRoots();
 
     return true;
   }

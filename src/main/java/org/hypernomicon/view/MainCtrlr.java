@@ -21,7 +21,6 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 import static org.hypernomicon.query.QueryTabCtrlr.*;
 import static org.hypernomicon.query.engines.AllQueryEngine.*;
@@ -93,7 +92,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -1129,10 +1127,10 @@ public final class MainCtrlr
     if (loadDataFromDisk(false))
     {
       // Update record pointers
-      viewSequence.refreshAll();
+      viewSequence.refreshRecordPtrs();
 
       // Update record pointers
-      forEachHyperTab(HyperTab::refresh);
+      forEachHyperTab(HyperTab::refreshRecordPtr);
 
       if (activeTabEnum() == queryTabEnum)
         activeTab().clear();
@@ -2312,26 +2310,6 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void attachOrphansToRoots()
-  {
-    Set<HDT_Position> orphans = db.getOrphans(rtParentPosOfPos, HDT_Position.class);
-
-    db.getOrphans(rtDebateOfPosition, HDT_Position.class).forEach(position ->
-    {
-      if (orphans.contains(position))
-        position.debates.add(db.debates.getByID(1));
-    });
-
-    db.getOrphans(rtParentDebateOfDebate    , HDT_Debate     .class).forEach(debate   -> debate  .largerDebates   .add(db.debates     .getByID(1)));
-    db.getOrphans(rtParentNoteOfNote        , HDT_Note       .class).forEach(note     -> note    .parentNotes     .add(db.notes       .getByID(1)));
-    db.getOrphans(rtParentLabelOfLabel      , HDT_WorkLabel  .class).forEach(label    -> label   .parentLabels    .add(db.workLabels  .getByID(1)));
-    db.getOrphans(rtParentGroupOfGroup      , HDT_PersonGroup.class).forEach(group    -> group   .parentGroups    .add(db.personGroups.getByID(1)));
-    db.getOrphans(rtParentGlossaryOfGlossary, HDT_Glossary   .class).forEach(glossary -> glossary.parentGlossaries.add(db.glossaries  .getByID(1)));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public void updateBottomPanel(boolean refreshDropDown)
   {
     ttDates.setText(NO_DATES_TOOLTIP);
@@ -2344,7 +2322,7 @@ public final class MainCtrlr
     HDT_Record activeRec = activeRecord();
     TabEnum activeTabEnum = activeTabEnum();
 
-    attachOrphansToRoots();
+    db.attachOrphansToRoots();
 
     btnTextSearch.setDisable(false);
 

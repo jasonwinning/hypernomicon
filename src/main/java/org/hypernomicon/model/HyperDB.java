@@ -343,9 +343,29 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 
   @SuppressWarnings({ "unused", "unchecked" })
-  public <HDT_T extends HDT_Record> Set<HDT_T> getOrphans(RelationType relType, Class<HDT_T> klazz)
+  private <HDT_T extends HDT_Record> Set<HDT_T> getOrphans(RelationType relType, Class<HDT_T> klazz)
   {
     return (Set<HDT_T>) relationSets.get(relType).getOrphans();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void attachOrphansToRoots()
+  {
+    Set<HDT_Position> orphans = getOrphans(rtParentPosOfPos, HDT_Position.class);
+
+    getOrphans(rtDebateOfPosition, HDT_Position.class).forEach(position ->
+    {
+      if (orphans.contains(position))
+        position.debates.add(debates.getByID(1));
+    });
+
+    getOrphans(rtParentDebateOfDebate    , HDT_Debate     .class).forEach(debate   -> debate  .largerDebates   .add(debates     .getByID(1)));
+    getOrphans(rtParentNoteOfNote        , HDT_Note       .class).forEach(note     -> note    .parentNotes     .add(notes       .getByID(1)));
+    getOrphans(rtParentLabelOfLabel      , HDT_WorkLabel  .class).forEach(label    -> label   .parentLabels    .add(workLabels  .getByID(1)));
+    getOrphans(rtParentGroupOfGroup      , HDT_PersonGroup.class).forEach(group    -> group   .parentGroups    .add(personGroups.getByID(1)));
+    getOrphans(rtParentGlossaryOfGlossary, HDT_Glossary   .class).forEach(glossary -> glossary.parentGlossaries.add(glossaries  .getByID(1)));
   }
 
 //---------------------------------------------------------------------------

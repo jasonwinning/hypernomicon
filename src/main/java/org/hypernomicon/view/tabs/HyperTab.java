@@ -247,11 +247,11 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
   // Update record pointers after saving/reloading database
 
-  public void refresh()
+  public void refreshRecordPtr()
   {
     nullSwitch(getView(), view ->
     {
-      view.refresh();
+      view.refreshRecordPtr();
       nullSwitch(view.getViewRecord(), this::setRecord);
     });
   }

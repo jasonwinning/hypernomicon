@@ -18,7 +18,6 @@
 package org.hypernomicon.tree;
 
 import static org.hypernomicon.model.HyperDB.db;
-import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
@@ -203,7 +202,7 @@ public class RecordTreeEdge
     if (doDetach)
     {
       detach();
-      ui.attachOrphansToRoots();
+      db.attachOrphansToRoots();
     }
 
     return true;

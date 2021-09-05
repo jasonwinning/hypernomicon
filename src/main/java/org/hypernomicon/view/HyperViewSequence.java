@@ -69,7 +69,7 @@ public class HyperViewSequence
       if (event.getCode().isArrowKey())
         lastArrowKey = Instant.now().toEpochMilli();
     });
-    
+
     tabPane.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) ->
     {
       if ((db.isLoaded() == false) || alreadyChangingTab) return;
@@ -103,10 +103,10 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void refreshAll()
+  void refreshRecordPtrs()
   {
     // Update record pointers after saving/reloading database
-    slots.forEach(HyperView::refresh);
+    slots.forEach(HyperView::refreshRecordPtr);
   }
 
 //---------------------------------------------------------------------------
@@ -381,6 +381,7 @@ public class HyperViewSequence
         if (work.workType.isNotNull())
           typeName = work.workType.get().listName();
       }
+
       item = new MenuItem(beforePart + typeName + ": " + record.getCBText());
     }
 

@@ -143,7 +143,7 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
     curDebate.setLargerDebates(htParents.saveToList(2, hdtDebate));
 
-    ui.attachOrphansToRoots();
+    db.attachOrphansToRoots();
 
     return true;
   }

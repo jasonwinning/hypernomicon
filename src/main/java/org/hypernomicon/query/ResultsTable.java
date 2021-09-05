@@ -130,7 +130,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
           nullSwitch(row.getItem(), rowItem -> ui.goToRecord(rowItem.getRecord(), false));
       });
 
-      row.itemProperty().addListener((ob, oldValue, newValue) -> row.setContextMenu(newValue == null ? null : createContextMenu(newValue)));
+      row.itemProperty().addListener((ob, ov, nv) -> row.setContextMenu(createContextMenu(nv)));
 
       return row;
     });
@@ -139,7 +139,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
     addContextMenuItem("Remove from query results", HDT_Record.class, record ->
     {
-      new ArrayList<>(tv.getSelectionModel().getSelectedItems()).forEach(tv.getItems()::remove);
+      tv.getItems().removeAll(new ArrayList<>(tv.getSelectionModel().getSelectedItems()));
     });
   }
 
@@ -232,9 +232,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
   private void addDateColumn(Tag dateTag)
   {
-    String header = db.getTagHeader(dateTag);
-
-    ResultColumn<Instant> col = new ResultColumn<>(header);
+    ResultColumn<Instant> col = new ResultColumn<>(db.getTagHeader(dateTag));
     col.setCellValueFactory(cellData -> cellData.getValue().getDateCellValue(dateTag).getObservable());
     generalGroup.add(new ColumnGroupItem(col, tv, firstNonGeneralColumnNdx()));
   }

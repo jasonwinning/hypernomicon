@@ -318,7 +318,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     {
       TableRow<HyperTableRow> row = new TableRow<>();
 
-      row.itemProperty().addListener((ob, oldValue, newValue) -> row.setContextMenu(newValue == null ? null : createContextMenu(newValue)));
+      row.itemProperty().addListener((ob, ov, nv) -> row.setContextMenu(createContextMenu(nv)));
 
       return row;
     });

@@ -245,7 +245,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
     curPosition.setLargerPositions(htParents.saveToList(3, hdtPosition));
     curPosition.setDebates(htParents.saveToList(3, hdtDebate));
 
-    ui.attachOrphansToRoots();
+    db.attachOrphansToRoots();
 
     return true;
   }

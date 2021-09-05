@@ -389,7 +389,7 @@ public class FileManager extends HyperDlg
 
       row.itemProperty().addListener((ob, oldValue, newValue) ->
       {
-        row.setContextMenu(newValue == null ? null : fileTable.createContextMenu(newValue, fileTable.getContextMenuSchemata()));
+        row.setContextMenu(fileTable.createContextMenu(newValue, fileTable.getContextMenuSchemata()));
       });
 
       return row;

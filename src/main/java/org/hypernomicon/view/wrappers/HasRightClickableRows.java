@@ -69,6 +69,8 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 
   final public ContextMenu createContextMenu(RowType row, List<MenuItemSchema<? extends HDT_Record, RowType>> schemata)
   {
+    if (row == null) return null;
+
     boolean noneVisible = true;
     ContextMenu rowMenu = new ContextMenu();
 

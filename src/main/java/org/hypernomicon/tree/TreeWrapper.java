@@ -124,7 +124,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
         else
           nullSwitch(nv.treeItem, treeItem -> treeItem.expandedProperty().addListener((ob1, ov1, nv1) -> ttv.refresh()));
 
-        row.setContextMenu(nullSwitch(nv, null, this::createContextMenu));
+        row.setContextMenu(createContextMenu(nv));
       });
 
       return row;
