@@ -27,8 +27,6 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -85,7 +83,6 @@ public class InterProcClient
 
   private static final String tempFileName = "hypernomiconInstances.tmp",
                               thisInstanceID = randomAlphanumericStr(8);
-  private static final int LOWEST_PORT = 59346;
   static final String UPDATE_CMD = "update";
 
   private static int portNum = -1;
@@ -96,8 +93,7 @@ public class InterProcClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static int getPortNum()              { return portNum; }
-  static AppInstance getInstance()     { return new AppInstance(thisInstanceID, portNum, dbPath); }
+  static void setPortNum(int portNum)  { InterProcClient.portNum = portNum; }
   public static String getInstanceID() { return thisInstanceID; }
 
 //---------------------------------------------------------------------------
@@ -138,11 +134,7 @@ public class InterProcClient
   {
     FilePath filePath = tempDir().resolve(new FilePath(tempFileName));
 
-    if (daemon == null)
-    {
-      daemon = new InterProcDaemon();
-      daemon.start();
-    }
+    startDaemonIfNotStartedYet();
 
     try
     {
@@ -152,6 +144,18 @@ public class InterProcClient
     {
       messageDialog("Unable to write to temporary file: " + e.getMessage(), mtError);
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static void startDaemonIfNotStartedYet()
+  {
+    if (daemon != null)
+      return;
+
+    daemon = new InterProcDaemon();
+    daemon.start();
   }
 
 //---------------------------------------------------------------------------
@@ -181,17 +185,6 @@ public class InterProcClient
       }
       catch (IOException e) { noOp(); }
     });
-
-    if (portNum < 1)
-    {
-      portNum = LOWEST_PORT;
-
-      Set<Integer> ports = idToInstance.values().stream().map(instance -> instance.portNum)
-                                                         .collect(Collectors.toSet());
-
-      while (ports.contains(portNum))
-        portNum++;
-    }
 
     idToInstance.put(thisInstanceID, getInstance());
   }
@@ -243,6 +236,19 @@ public class InterProcClient
     }
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  static AppInstance getInstance()
+  {
+    startDaemonIfNotStartedYet();
+
+    while (portNum < 0)
+      sleepForMillis(50);
+
+    return new AppInstance(thisInstanceID, portNum, dbPath);
   }
 
 //---------------------------------------------------------------------------

@@ -38,8 +38,10 @@ class InterProcDaemon extends HyperThread
 
   @Override public void run()
   {
-    try (ServerSocket serverSocket = new ServerSocket(InterProcClient.getPortNum(), 1))
+    try (ServerSocket serverSocket = new ServerSocket(0, 1))
     {
+      InterProcClient.setPortNum(serverSocket.getLocalPort());
+
       while (true)
       {
         try (Socket clientSocket = serverSocket.accept();  // Wait for a connection
