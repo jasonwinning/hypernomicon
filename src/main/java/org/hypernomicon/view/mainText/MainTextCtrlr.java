@@ -34,13 +34,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import com.google.common.collect.EvictingQueue;
 import com.sun.javafx.webkit.Accessor;
 
 import org.hypernomicon.dialogs.FileDlgCtrlr;
@@ -95,6 +93,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
 import javafx.scene.robot.Robot;
 import javafx.scene.web.HTMLEditor;
+import javafx.scene.web.HTMLEditorSkin;
 import javafx.scene.web.HTMLEditorSkin.Command;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -114,7 +113,6 @@ public class MainTextCtrlr
   private HDT_RecordWithConnector curRecord;
   private BooleanProperty prop = null;
   private boolean ignoreKeyEvent = false;
-  private Queue<KeyEvent> boldEvents = EvictingQueue.create(50);
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -316,10 +314,8 @@ public class MainTextCtrlr
 
             if (selText.isEmpty())
             {
-              KeyEvent ke = new KeyEvent(event.getSource(), webview, KeyEvent.KEY_RELEASED, event.getCharacter(), event.getText(), event.getCode(), event.isShiftDown(), event.isControlDown(), event.isAltDown(), event.isMetaDown());
+              ((HTMLEditorSkin)he.getSkin()).performCommand(Command.BOLD);
               event.consume();
-              boldEvents.add(ke);
-              webview.fireEvent(ke);
             }
           }
 
@@ -332,7 +328,7 @@ public class MainTextCtrlr
     {
       if (event.isControlDown() || event.isMetaDown())
       {
-        if (((event.getCode() == KeyCode.B) && (boldEvents.contains(event) == false)) ||
+        if ((event.getCode() == KeyCode.B) ||
             (event.getCode() == KeyCode.I) ||
             (event.getCode() == KeyCode.U))
         {
