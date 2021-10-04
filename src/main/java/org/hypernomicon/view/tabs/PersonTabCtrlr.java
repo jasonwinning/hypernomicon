@@ -683,11 +683,13 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     htPersonInst.addActionCol(ctGoNewBtn, 2);
     htPersonInst.addCheckboxCol();
+
     htPersonInst.addColAltPopulatorWithUpdateHandler(hdtInstitution, ctDropDownList, new StandardPopulator(hdtInstitution, InstTabCtrlr.parentPopFilter, true), (row, cellVal, nextColNdx, nextPopulator) ->
     {
       ((SubjectPopulator)nextPopulator).setObj(row, getRecord(cellVal));
       row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));
     });
+
     htPersonInst.addColAltPopulator(hdtInstitution, ctDropDownList, new SubjectPopulator(rtParentInstOfInst, true, true));
 
     htPersonInst.addRemoveMenuItem();

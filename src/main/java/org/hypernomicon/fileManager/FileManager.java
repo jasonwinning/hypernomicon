@@ -1001,9 +1001,11 @@ public class FileManager extends HyperDlg
 
       if (rowInfo.related)
       {
-        String confirmMsg = "The file \"" + hyperPath.getNameStr() + "\" ";
+        RecordType recordType = hyperPath.getRecord().getType();
 
-        switch (hyperPath.getRecord().getType())
+        String confirmMsg = "The " + (recordType == hdtFolder ? "folder" : "file") + " \"" + hyperPath.getNameStr() + "\" ";
+
+        switch (recordType)
         {
           case hdtPerson   : confirmMsg += "is assigned as a picture file for a person record. Delete it anyway?"; break;
           case hdtMiscFile : confirmMsg += "is assigned to a misc. file record. Okay to delete the file as well as the associated record?"; break;

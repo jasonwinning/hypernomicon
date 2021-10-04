@@ -454,26 +454,6 @@ public final class MainCtrlr
 
 //---------------------------------------------------------------------------
 
-    db.addDeleteHandler(record ->
-    {
-      if ((record.getType() == hdtPerson) && (personHyperTab().activeRecord() == record))
-        personHyperTab().curPicture = null;  // User has already been asked if they want to delete the picture; don't ask again
-
-      queryHyperTab().queryViews.forEach(qv -> qv.resultsTable.getTV().getItems().removeIf(row -> row.getRecord() == record));
-
-      int ndx = favorites.indexOfRecord(record);
-
-      if (ndx > -1)
-      {
-        mnuFavorites.getItems().remove(ndx);
-        updateFavorites();
-      }
-
-      viewSequence.removeRecord(record);
-    });
-
-//---------------------------------------------------------------------------
-
     selectorTabPane.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) ->
     {
       if ((newTab == null) || (oldTab == newTab)) return;
@@ -646,6 +626,67 @@ public final class MainCtrlr
       shutDown(true, true, true);
       event.consume();
     });
+
+//---------------------------------------------------------------------------
+
+    db.addDeleteHandler(record ->
+    {
+      // When changing this handler, changes may need to be made to
+      // mnuChangeIDClick() as well
+
+      if ((record.getType() == hdtPerson) && (personHyperTab().activeRecord() == record))
+        personHyperTab().curPicture = null;  // User has already been asked if they want to delete the picture; don't ask again
+
+      queryHyperTab().queryViews.forEach(qv -> qv.resultsTable.getTV().getItems().removeIf(row -> row.getRecord() == record));
+
+      int ndx = favorites.indexOfRecord(record);
+
+      if (ndx > -1)
+      {
+        mnuFavorites.getItems().remove(ndx);
+        updateFavorites();
+      }
+
+      htFind.removeRowsIf(row -> row.getRecord() == record);
+      viewSequence.removeRecord(record);
+    });
+
+//---------------------------------------------------------------------------
+
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @FXML private void mnuChangeIDClick()
+  {
+    // When changing this function, changes may need to be made to
+    // the delete handler as well
+
+    if (db.isLoaded() == false)
+    {
+      messageDialog("No database is currently loaded.", mtError);
+      return;
+    }
+
+    if (cantSaveRecord()) return;
+
+    ChangeIDDlgCtrlr ctrlr = ChangeIDDlgCtrlr.build();
+
+    if (ctrlr.showModal() == false) return;
+
+    RecordType changedType = ctrlr.hcbRecord.selectedType();
+    int oldID = parseInt(ctrlr.tfOldID.getText(), -100),
+        newID = parseInt(ctrlr.tfNewID.getText(), -1);
+
+    queryHyperTab().queryViews.forEach(qv -> qv.resultsTable.getTV().refresh());
+    htFind.changeIDs(changedType, oldID, newID);
+
+    db.rebuildMentions();
+
+    favorites.changeRecordID(changedType, oldID, newID);
+
+    update();
   }
 
 //---------------------------------------------------------------------------
@@ -1442,35 +1483,6 @@ public final class MainCtrlr
       });
     }
     catch (DirectoryIteratorException | IOException ex) { noOp(); }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @FXML private void mnuChangeIDClick()
-  {
-    if (db.isLoaded() == false)
-    {
-      messageDialog("No database is currently loaded.", mtError);
-      return;
-    }
-
-    if (cantSaveRecord()) return;
-
-    ChangeIDDlgCtrlr ctrlr = ChangeIDDlgCtrlr.build();
-
-    if (ctrlr.showModal())
-    {
-      RecordType changedType = ctrlr.hcbRecord.selectedType();
-      int oldID = parseInt(ctrlr.tfOldID.getText(), -100),
-          newID = parseInt(ctrlr.tfNewID.getText(), -1);
-
-      db.rebuildMentions();
-
-      favorites.changeRecordID(changedType, oldID, newID);
-
-      update();
-    }
   }
 
 //---------------------------------------------------------------------------

@@ -131,6 +131,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public int getDataRowCount()                                     { return canAddRows ? Math.max(rows.size() - 1, 0) : rows.size(); }
   public void addRefreshHandler(Runnable hndlr)                    { refreshHandler = hndlr; }
   public HyperTableRow selectRowByRecord(HDT_Record record)        { return nullSwitch(getRowByRecord(record), null, this::selectRow); }
+  public boolean removeRowsIf(Predicate<HyperTableRow> filter)     { return rows.removeIf(filter); }
 
   @SuppressWarnings("unused")
   public <HDT_T extends HDT_Record> void setDblClickHandler(Class<HDT_T> klass, Consumer<HDT_T> hndlr) { dblClickHandler = hndlr; }
@@ -910,6 +911,15 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     }
 
     return 0.0;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void changeIDs(RecordType changedType, int oldID, int newID)
+  {
+    getDataRows().forEach(row -> row.changeIDs(changedType, oldID, newID));
+    refresh();
   }
 
 //---------------------------------------------------------------------------

@@ -175,4 +175,19 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public void changeIDs(RecordType changedType, int oldID, int newID)
+  {
+    int colCount = cells.size();
+
+    for (int colNdx = 0; colNdx < colCount; colNdx++)
+    {
+      HyperTableCell cell = cells.get(colNdx);
+      if ((HyperTableCell.getCellID(cell) == oldID) && (HyperTableCell.getCellType(cell) == changedType))
+        cells.set(colNdx, new HyperTableCell(newID, cell.getText(), changedType));
+    }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }
