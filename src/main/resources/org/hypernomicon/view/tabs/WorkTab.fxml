@@ -75,7 +75,9 @@
                <cursor>
                   <Cursor fx:constant="HAND" />
                </cursor></Label>
-            <TextField fx:id="tfTitle" layoutX="39.0" layoutY="5.0" maxHeight="22.0" prefHeight="22.0" prefWidth="563.0" AnchorPane.leftAnchor="38.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+            <TextField fx:id="tfTitle" layoutX="39.0" layoutY="5.0" maxHeight="25.0" prefHeight="25.0" prefWidth="389.0" AnchorPane.leftAnchor="38.0" AnchorPane.rightAnchor="170.0" AnchorPane.topAnchor="5.0" />
+            <Label layoutX="435.0" layoutY="9.0" text="Type:" AnchorPane.rightAnchor="133.0" AnchorPane.topAnchor="9.0" />
+            <ComboBox fx:id="cbType" layoutX="468.0" layoutY="5.0" prefHeight="22.0" prefWidth="126.0" AnchorPane.bottomAnchor="1.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
          </children>
       </AnchorPane>
       <AnchorPane GridPane.columnIndex="2" GridPane.rowSpan="2">
@@ -105,12 +107,10 @@
       </AnchorPane>
       <AnchorPane fx:id="apLowerMid" GridPane.columnIndex="1" GridPane.rowIndex="1">
          <children>
-            <Label layoutX="58.0" layoutY="7.0" text="Type:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0" />
-            <ComboBox fx:id="cbType" layoutX="38.0" layoutY="5.0" prefHeight="22.0" prefWidth="126.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0" />
-            <Label layoutX="171.0" layoutY="9.0" text="Year:" AnchorPane.leftAnchor="171.0" AnchorPane.topAnchor="9.0" />
-            <TextField fx:id="tfYear" layoutX="205.0" layoutY="5.0" prefHeight="22.0" prefWidth="40.0" text="2222" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="205.0" AnchorPane.topAnchor="5.0" />
-            <Button fx:id="btnLargerWork" layoutX="253.0" layoutY="4.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="83.0" text="Larger Work:" AnchorPane.bottomAnchor="1.0" AnchorPane.topAnchor="5.0" />
-            <ComboBox fx:id="cbLargerWork" layoutX="333.0" layoutY="5.0" prefHeight="22.0" prefWidth="320.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="339.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+            <Label layoutX="4.0" layoutY="9.0" text="Year:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="9.0" />
+            <TextField fx:id="tfYear" layoutX="38.0" layoutY="5.0" prefHeight="22.0" prefWidth="40.0" text="2222" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="38.0" AnchorPane.topAnchor="5.0" />
+            <Button fx:id="btnLargerWork" layoutX="84.0" layoutY="5.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="83.0" text="Larger Work:" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="84.0" AnchorPane.topAnchor="5.0" />
+            <ComboBox fx:id="cbLargerWork" layoutX="182.0" layoutY="5.0" prefHeight="25.0" prefWidth="413.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="169.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
          </children>
       </AnchorPane>
       <AnchorPane fx:id="apLowerRight" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="1">

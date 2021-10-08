@@ -328,12 +328,12 @@
                   <SplitMenuButton fx:id="btnGoTo" layoutX="1.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="55.0" AnchorPane.leftAnchor="35.0" AnchorPane.topAnchor="5.0">
                    <items>
                       <MenuItem fx:id="mnuRecordSelect" mnemonicParsing="false" text="Go to Record" />
-                      <MenuItem fx:id="mnuFindWithinName" mnemonicParsing="false" text="Find Within Name" />
-                        <MenuItem fx:id="mnuFindWithinAnyField" mnemonicParsing="false" text="Find Within Any Field" />
-                        <MenuItem fx:id="mnuFindNextInName" mnemonicParsing="false" text="Find Next in Name" />
-                        <MenuItem fx:id="mnuFindPreviousInName" mnemonicParsing="false" text="Find Previous in Name" />
-                        <MenuItem fx:id="mnuFindNextAll" mnemonicParsing="false" text="Find Next in Name or Description" />
-                        <MenuItem fx:id="mnuFindPreviousAll" mnemonicParsing="false" text="Find Previous in Name or Description" />
+                      <MenuItem fx:id="mnuFindWithinName" mnemonicParsing="false" text="Find records with name containing this text" />
+                        <MenuItem fx:id="mnuFindWithinAnyField" mnemonicParsing="false" text="Find records with any field containing this text" />
+                        <MenuItem fx:id="mnuFindNextInName" mnemonicParsing="false" text="Find next match in record name" />
+                        <MenuItem fx:id="mnuFindPreviousInName" mnemonicParsing="false" text="Find previous match in record name" />
+                        <MenuItem fx:id="mnuFindNextAll" mnemonicParsing="false" text="Find next match in record name or description" />
+                        <MenuItem fx:id="mnuFindPreviousAll" mnemonicParsing="false" text="Find previous match in record name or description" />
                     </items>
                      <graphic>
                         <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">

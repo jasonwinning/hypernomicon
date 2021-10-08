@@ -382,7 +382,7 @@ public final class MainCtrlr
     btnIncrement.setOnAction(event -> incDecClick(true));
     btnDecrement.setOnAction(event -> incDecClick(false));
 
-    setToolTip(btnTextSearch    , "Search within description");
+    setToolTip(btnTextSearch    , "Search within description of record currently showing");
     setToolTip(btnAdvancedSearch, "Start a new search in Queries tab");
     setToolTip(btnPreviewWindow , "Open Preview Window");
     setToolTip(btnBibMgr        , "Open Bibliography Manager Window");
@@ -391,7 +391,7 @@ public final class MainCtrlr
 
     apFindBackground.setOnMousePressed(event -> hideFindTable());
 
-    ctfOmniGoTo.setOnAction(event -> htFind.doRowAction());
+    ctfOmniGoTo.setOnAction(event -> recordLookup());
 
     ttDates.setAutoHide(true);
 
@@ -829,11 +829,7 @@ public final class MainCtrlr
   {
     if (selectorTabEnum() != listTabEnum)
     {
-      hcbGoTo.triggerOnAction();
-
-      if (hcbGoTo.selectedID() > 0)
-        recordLookup();
-
+      recordLookup();
       return;
     }
 
@@ -2445,6 +2441,12 @@ public final class MainCtrlr
 
   private void recordLookup()
   {
+    if (selectorTabEnum() == omniTabEnum)
+    {
+      htFind.doRowAction();
+      return;
+    }
+
     int nextID = hcbGoTo.somethingWasTyped ? HyperTableCell.getCellID(hcbGoTo.typedMatch) : -1;
 
     if (nextID < 1)
