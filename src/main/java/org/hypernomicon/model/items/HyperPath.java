@@ -387,13 +387,16 @@ public class HyperPath
     if (FilePath.isEmpty(fileName))
       return;
 
-    // now remove duplicates
+    // now remove duplicates; for this to work, folder records have to be brought online first
+
+    HDT_Folder parent = parentFolder();
 
     db.filenameMap.get(fileName.getNameOnly().toString()).removeIf(path ->
     {
-      return (path.isNotEmpty() &&
-              path.filePath().equals(filePath()) && // for this to work, folder records have to be brought online first
-              (path != this));
+      if ((path == this) || path.isEmpty()) return false;
+
+      HDT_Folder otherParent = path.parentFolder();
+      return otherParent == null ? false : parent == otherParent;
     });
   }
 
