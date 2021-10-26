@@ -295,9 +295,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htInvestigations.addChangeOrderMenuItem(true);
     htInvestigations.addRefreshHandler(tabPane::requestLayout);
 
-    htArguments = new HyperTable(tvArguments, 2, false, PREF_KEY_HT_WORK_ARG);
+    htArguments = new HyperTable(tvArguments, 3, false, PREF_KEY_HT_WORK_ARG);
 
-    htArguments.addCol(hdtPosition, ctNone);
+    htArguments.addIconCol();
+    htArguments.addCol(hdtNone, ctNone);
     htArguments.addCol(hdtNone, ctNone);      // record type = hdtNone so that the column will sort purely based on displayed text
     htArguments.addCol(hdtArgument, ctNone);
 
@@ -814,12 +815,21 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       if (arg.positions.size() > 0)
       {
         HDT_Position position = arg.positions.get(0);
-        row.setCellValue(0, position, position.listName());
+        row.setCellValue(0, position, "");
+        row.setCellValue(1, position, position.listName());
 
-        nullSwitch(arg.getPosVerdict(position), verdict -> row.setCellValue(1, verdict, verdict.listName()));
+        nullSwitch(arg.getPosVerdict(position), verdict -> row.setCellValue(2, verdict, verdict.listName()));
+      }
+      else if (arg.counteredArgs.size() > 0)
+      {
+        HDT_Argument countered = arg.counteredArgs.get(0);
+        row.setCellValue(0, countered, "");
+        row.setCellValue(1, countered, countered.listName());
+
+        nullSwitch(arg.getArgVerdict(countered), verdict -> row.setCellValue(2, verdict, verdict.listName()));
       }
 
-      row.setCellValue(2, arg, arg.listName());
+      row.setCellValue(3, arg, arg.listName());
     });
 
   // Populate work files
@@ -1396,36 +1406,36 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   {
     disableAll(btnUseDOI, btnUseISBN, btnMergeBib);
 
-    tfYear.setText("");
-
-    taMiscBib.clear();
-    taEntry.clear();
-    disableCache(taMiscBib);
-    disableCache(taEntry);
-    pdfBD.set(null);
-    crossrefBD.set(null);
-    googleBD.set(null);
-
-    tpBib.getTabs().removeAll(tabEntry, tabCrossref, tabPdfMetadata, tabGoogleBooks);
-    taCrossref.clear();
+    taMiscBib    .clear();
+    taEntry      .clear();
+    taCrossref   .clear();
     taPdfMetadata.clear();
     taGoogleBooks.clear();
-    disableCache(taCrossref);
+
+    disableCache(taMiscBib    );
+    disableCache(taEntry      );
+    disableCache(taCrossref   );
     disableCache(taPdfMetadata);
     disableCache(taGoogleBooks);
 
-    stopRetrieving();
+    pdfBD     .set(null);
+    crossrefBD.set(null);
+    googleBD  .set(null);
 
-    tfDOI.setText("");
-    htISBN.clear();
+    tpBib.getTabs().removeAll(tabEntry, tabCrossref, tabPdfMetadata, tabGoogleBooks);
+
+    stopRetrieving();
 
     alreadyChangingTitle.setTrue();
     tfTitle.setText("");
     alreadyChangingTitle.setFalse();
 
+    tfDOI      .setText("");
+    tfYear     .setText("");
     tfSearchKey.setText("");
-    tfURL.setText("");
+    tfURL      .setText("");
 
+    htISBN          .clear();
     htAuthors       .clear();
     htLabels        .clear();
     htSubworks      .clear();
@@ -1437,7 +1447,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     tabPane.getTabs().forEach(tab -> tab.setText(tabCaptions.get(tab)));
 
-    hcbType.clear();
+    hcbType      .clear();
     hcbLargerWork.clear();
 
     mainText.clear(true);

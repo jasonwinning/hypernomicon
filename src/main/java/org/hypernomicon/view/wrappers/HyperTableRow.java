@@ -89,10 +89,9 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
 
   @Override <HDT_T extends HDT_Record> HDT_T getRecordByType(RecordType type)
   {
-    return type == hdtNone ?
-      getRecord()
-    :
-      findFirst(cells, cell -> HyperTableCell.getCellType(cell) == type, cell -> HyperTableCell.getRecord(cell));
+    HDT_T record = super.getRecordByType(type);
+
+    return record != null ? record : findFirst(cells, cell -> HyperTableCell.getCellType(cell) == type, cell -> HyperTableCell.getRecord(cell));
   }
 
 //---------------------------------------------------------------------------

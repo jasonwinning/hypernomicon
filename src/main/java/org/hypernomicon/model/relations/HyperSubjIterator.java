@@ -40,7 +40,7 @@ public class HyperSubjIterator<HDT_SubjType extends HDT_Record, HDT_ObjType exte
 //---------------------------------------------------------------------------
 
   @Override public boolean hasNext() { return nextNdx < list.size(); }
-  @Override public void remove()     { throw new UnsupportedOperationException(modErrMsg); }
+  @Override public void remove()     { throw uoe(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

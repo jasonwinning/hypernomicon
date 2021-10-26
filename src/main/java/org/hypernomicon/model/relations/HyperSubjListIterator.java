@@ -45,9 +45,9 @@ public class HyperSubjListIterator<HDT_SubjType extends HDT_Record, HDT_ObjType 
   @Override public int nextIndex()       { return nextNdx; }
   @Override public int previousIndex()   { return nextNdx - 1; }
 
-  @Override public void remove()            { throw new UnsupportedOperationException(modErrMsg); }
-  @Override public void set(HDT_SubjType e) { throw new UnsupportedOperationException(modErrMsg); }
-  @Override public void add(HDT_SubjType e) { throw new UnsupportedOperationException(modErrMsg); }
+  @Override public void remove()            { throw uoe(); }
+  @Override public void set(HDT_SubjType e) { throw uoe(); }
+  @Override public void add(HDT_SubjType e) { throw uoe(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

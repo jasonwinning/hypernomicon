@@ -30,8 +30,6 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
   final RelationSet<HDT_SubjType, HDT_ObjType> relSet;
   final HDT_ObjType obj;
 
-  static final String modErrMsg = "Internal error: An attempt was made to modify a subject list.";
-
   public HyperSubjList(RelationSet<HDT_SubjType, HDT_ObjType> relSet, HDT_ObjType obj)
   {
     this.relSet = relSet;
@@ -40,6 +38,8 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+  static UnsupportedOperationException uoe() { return new UnsupportedOperationException("Internal error: An attempt was made to modify a subject list."); }
 
   @Override public int size()                                             { return relSet.getSubjectCount(obj); }
   @Override public boolean isEmpty()                                      { return size() == 0; }
@@ -51,16 +51,16 @@ public class HyperSubjList<HDT_SubjType extends HDT_Record, HDT_ObjType extends 
   @Override public ListIterator<HDT_SubjType> listIterator(int index)     { return new HyperSubjListIterator<>(this, index); }
   @Override public int hashCode()                                         { return super.hashCode(); }
 
-  @Override public boolean add(HDT_SubjType subj)                                  { throw new UnsupportedOperationException(modErrMsg); }
-  @Override public boolean remove(Object o)                                        { throw new UnsupportedOperationException(modErrMsg); }
-  @Override public void clear()                                                    { throw new UnsupportedOperationException(modErrMsg); }
-  @Override public boolean addAll(Collection<? extends HDT_SubjType> c)            { throw new UnsupportedOperationException(modErrMsg); }
-  @Override public boolean addAll(int index, Collection<? extends HDT_SubjType> c) { throw new UnsupportedOperationException(modErrMsg); }
-  @Override public boolean removeAll(Collection<?> c)                              { throw new UnsupportedOperationException(modErrMsg); }
-  @Override public boolean retainAll(Collection<?> c)                              { throw new UnsupportedOperationException(modErrMsg); }
-  @Override public HDT_SubjType set(int index, HDT_SubjType element)               { throw new UnsupportedOperationException(modErrMsg); }
-  @Override public void add(int index, HDT_SubjType subj)                          { throw new UnsupportedOperationException(modErrMsg); }
-  @Override public HDT_SubjType remove(int index)                                  { throw new UnsupportedOperationException(modErrMsg); }
+  @Override public boolean add(HDT_SubjType subj)                                  { throw uoe(); }
+  @Override public boolean remove(Object o)                                        { throw uoe(); }
+  @Override public void clear()                                                    { throw uoe(); }
+  @Override public boolean addAll(Collection<? extends HDT_SubjType> c)            { throw uoe(); }
+  @Override public boolean addAll(int index, Collection<? extends HDT_SubjType> c) { throw uoe(); }
+  @Override public boolean removeAll(Collection<?> c)                              { throw uoe(); }
+  @Override public boolean retainAll(Collection<?> c)                              { throw uoe(); }
+  @Override public HDT_SubjType set(int index, HDT_SubjType element)               { throw uoe(); }
+  @Override public void add(int index, HDT_SubjType subj)                          { throw uoe(); }
+  @Override public HDT_SubjType remove(int index)                                  { throw uoe(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

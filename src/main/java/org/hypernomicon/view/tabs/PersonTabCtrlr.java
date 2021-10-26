@@ -502,12 +502,12 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     alreadyChangingName = true;
 
     tfFirst.clear();
-    tfLast.clear();
+    tfLast .clear();
 
     alreadyChangingName = false;
 
-    tfWebsite.clear();
-    tfORCID.clear();
+    tfWebsite  .clear();
+    tfORCID    .clear();
     tfSearchKey.clear();
 
     if (db.isLoaded() && (FilePath.isEmpty(curPicture) == false) && curPicture.exists() && HyperPath.getHyperPathSetForFilePath(curPicture).isEmpty())
@@ -518,16 +518,16 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     viewPort = null;
     lblPicture.setVisible(true);
 
-    hcbRank.clear();
-    hcbStatus.clear();
-    hcbField.clear();
+    hcbRank    .clear();
+    hcbStatus  .clear();
+    hcbField   .clear();
     hcbSubfield.clear();
 
     mainText.clear(true);
 
     htPersonInst.clear();
-    htWorks.clearKeepSortOrder();
-    htArguments.clear();
+    htWorks     .clearKeepSortOrder();
+    htArguments .clear();
 
     invViews.removeIf(iV ->
     {

@@ -39,15 +39,17 @@ import org.apache.commons.io.FileUtils;
 import org.hypernomicon.bib.data.PDFBibData;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.query.sources.DatasetQuerySource;
 import org.hypernomicon.query.sources.QuerySource;
 
 public class WorkQueryEngine extends QueryEngine<HDT_Work>
 {
-  private static final int QUERY_LIKELY_EDITED_VOLS = QUERY_FIRST_NDX + 1,
-                           QUERY_4_OR_MORE_AUTHORS  = QUERY_FIRST_NDX + 2,
-                           QUERY_ANALYZE_METADATA   = QUERY_FIRST_NDX + 3;
+  private static final int QUERY_LIKELY_EDITED_VOLS        = QUERY_FIRST_NDX + 1,
+                           QUERY_4_OR_MORE_AUTHORS         = QUERY_FIRST_NDX + 2,
+                           QUERY_ANALYZE_METADATA          = QUERY_FIRST_NDX + 3,
+                           QUERY_WORK_NEEDING_PAGE_NUMBERS = QUERY_FIRST_NDX + 4;
 
   private static List<String> csvFile;
 
@@ -56,8 +58,9 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
 
   @Override public void addQueries(QueryPopulator pop, HyperTableRow row)
   {
-    pop.addEntry(row, QUERY_LIKELY_EDITED_VOLS, "likely edited volumes");
-    pop.addEntry(row, QUERY_4_OR_MORE_AUTHORS, "with 4 or more authors");
+    pop.addEntry(row, QUERY_LIKELY_EDITED_VOLS,        "likely edited volumes");
+    pop.addEntry(row, QUERY_4_OR_MORE_AUTHORS,         "with 4 or more authors");
+    pop.addEntry(row, QUERY_WORK_NEEDING_PAGE_NUMBERS, "in a PDF with one or more other works, missing page number(s)");
 
     if (app.debugging())
       pop.addEntry(row, QUERY_ANALYZE_METADATA, "analyze pdf metadata");
@@ -105,6 +108,17 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
       case QUERY_4_OR_MORE_AUTHORS :
 
         return work.authorRecords.size() >= 4;
+
+      case QUERY_WORK_NEEDING_PAGE_NUMBERS :
+
+        for (HDT_WorkFile workFile : work.workFiles)
+          if ((workFile.works.size() > 1) && workFile.filePath().getExtensionOnly().toLowerCase().equals("pdf"))
+            if ((work.getStartPageNum(workFile) == -1) || (work.getEndPageNum(workFile) == -1))
+              for (HDT_Work otherWork : workFile.works)
+                if ((otherWork != work) && (otherWork.largerWork.get() != work))
+                  return true;
+
+        return false;
 
       case QUERY_ANALYZE_METADATA :
 
@@ -195,9 +209,10 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
   {
     switch (query)
     {
-      case QUERY_LIKELY_EDITED_VOLS :
-      case QUERY_4_OR_MORE_AUTHORS  :
-      case QUERY_ANALYZE_METADATA   :
+      case QUERY_LIKELY_EDITED_VOLS        :
+      case QUERY_4_OR_MORE_AUTHORS         :
+      case QUERY_ANALYZE_METADATA          :
+      case QUERY_WORK_NEEDING_PAGE_NUMBERS :
         return false;
     }
 
