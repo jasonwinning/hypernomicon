@@ -70,7 +70,8 @@ public final class Author implements Cloneable, Comparable<Author>
   public String getFirstName(boolean engChar)     { return getName(engChar).getFirst(); }
   public String getNameLastFirst(boolean engChar) { return getName(engChar).getLastFirst(); }
   public String getFullName(boolean engChar)      { return getName(engChar).getFull(); }
-  public String singleName()                      { return getName().getSingle(); }
+  public String singleName()                      { return singleName(false); }
+  public String singleName(boolean engChar)       { return getName(engChar).getSingle(); }
   public String getNameLastFirst()                { return getNameLastFirst(false); }
   public HDT_Person getPerson()                   { return person; }
   public HDT_Work getWork()                       { return work; }

@@ -72,6 +72,7 @@ public class OmniFinder
   {
     tierExactName,
     tierKeywordStart,
+    tierAuthorYear,
     tierNameStartExact,
     tierAuthorExact,
     tierAuthorStartExact,
@@ -107,6 +108,7 @@ public class OmniFinder
     tierToTypeSet.put(tierExactName       , typeSet);
     tierToTypeSet.put(tierNameStartExact  , typeSet);
     tierToTypeSet.put(tierAuthorExact     , authoredSet);
+    tierToTypeSet.put(tierAuthorYear      , authoredSet);
     tierToTypeSet.put(tierAuthorStartExact, authoredSet);
     tierToTypeSet.put(tierKeyword         , typeSet);
     tierToTypeSet.put(tierAuthorKeyword   , authoredSet);
@@ -263,7 +265,7 @@ public class OmniFinder
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    private boolean authorMatch(Author author, HDT_Person person, TierEnum tier)
+    private boolean authorMatch(Author author, HDT_Person person, String year, TierEnum tier)
     {
       String listName, fullName = "";
 
@@ -285,6 +287,20 @@ public class OmniFinder
           else                fullName = person.getFullName(true).toLowerCase().trim();
 
           if (removeFirstParenthetical(fullName).equals(queryLC)) return true;
+
+          break;
+
+        case tierAuthorYear:
+
+          String singleName = author != null ?
+            author.singleName(true).toLowerCase().trim()
+          :
+            person.getName(true).getSingle().toLowerCase().trim();
+
+          if (year.isBlank() == false)
+            singleName = singleName + " " + year;
+
+          if (removeFirstParenthetical(singleName).equals(queryLC)) return true;
 
           break;
 
@@ -337,24 +353,26 @@ public class OmniFinder
 
           return true;
 
-        case tierAuthorContains: case tierAuthorExact: case tierAuthorKeyword: case tierAuthorStartExact:
+        case tierAuthorContains: case tierAuthorExact: case tierAuthorYear: case tierAuthorKeyword: case tierAuthorStartExact:
 
           if (record.getType() == hdtWork)
           {
-            for (Author author : ((HDT_Work)record).getAuthors())
-              if (authorMatch(author, null, curTier)) return true;
+            HDT_Work work = (HDT_Work)record;
+
+            for (Author author : work.getAuthors())
+              if (authorMatch(author, null, work.getYear(), curTier)) return true;
           }
           else if (record.getType() == hdtMiscFile)
           {
             for (HDT_Person author : ((HDT_MiscFile)record).authorRecords())
-              if (authorMatch(null, author, curTier)) return true;
+              if (authorMatch(null, author, "", curTier)) return true;
           }
           return false;
 
         case tierExactName:
 
           return record.getType() == hdtPerson ?
-            authorMatch(null, (HDT_Person)record, tierAuthorExact)
+            authorMatch(null, (HDT_Person)record, "", tierAuthorExact)
           :
             record.getNameEngChar().toLowerCase().equals(queryLC);
 
@@ -375,14 +393,14 @@ public class OmniFinder
         case tierNameContains:
 
           return record.getType() == hdtPerson ?
-            authorMatch(null, (HDT_Person)record, tierAuthorContains)
+            authorMatch(null, (HDT_Person)record, "", tierAuthorContains)
           :
             record.getNameEngChar().toLowerCase().contains(queryLC);
 
         case tierNameStartExact:
 
           return record.getType() == hdtPerson ?
-            authorMatch(null, (HDT_Person)record, tierAuthorStartExact)
+            authorMatch(null, (HDT_Person)record, "", tierAuthorStartExact)
           :
             record.getNameEngChar().toLowerCase().startsWith(queryLC);
 
