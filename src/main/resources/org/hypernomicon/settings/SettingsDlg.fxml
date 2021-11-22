@@ -178,7 +178,7 @@
                                   </AnchorPane>
                                   <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="11">
                                      <children>
-                                        <CheckBox fx:id="chkAutoRetrieveBib" layoutY="4.0" mnemonicParsing="false" text="Automatically retrieve bibliographic info for selected file internet in Work File dialog" />
+                                        <CheckBox fx:id="chkAutoRetrieveBib" layoutY="4.0" mnemonicParsing="false" text="Automatically retrieve bibliographic info for selected file from internet in Work File dialog" />
                                      </children>
                                   </AnchorPane>
                                   <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="12">

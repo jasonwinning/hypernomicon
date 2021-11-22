@@ -26,15 +26,19 @@ import static org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod.*;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hypernomicon.HyperTask.HyperThread;
+import org.hypernomicon.dialogs.NewPersonDlgCtrlr.PersonForDupCheck;
 import org.hypernomicon.model.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
-import org.hypernomicon.model.items.Author;
+import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.query.engines.AllQueryEngine;
@@ -71,12 +75,14 @@ public class OmniFinder
   protected enum TierEnum
   {
     tierExactName,
-    tierKeywordStart,
     tierAuthorYear,
+    tierPersonMatch,
+    tierPersonMatchStart,
+    tierAuthorMatch,
+    tierAuthorMatchStart,
     tierNameStartExact,
-    tierAuthorExact,
-    tierAuthorStartExact,
     tierKeyword,
+    tierKeywordStart,
     tierAuthorKeyword,
     tierNameContains,
     tierAuthorContains,
@@ -85,7 +91,7 @@ public class OmniFinder
 
   private static final int ROWS_TO_SHOW = 25;
 
-  public OmniFinder(HyperTable htFind) { this(htFind, hdtNone, true); }
+  OmniFinder(HyperTable htFind) { this(htFind, hdtNone, true); }
 
   public OmniFinder(HyperTable htFind, RecordType typeFilter, boolean incremental)
   {
@@ -107,9 +113,11 @@ public class OmniFinder
 
     tierToTypeSet.put(tierExactName       , typeSet);
     tierToTypeSet.put(tierNameStartExact  , typeSet);
-    tierToTypeSet.put(tierAuthorExact     , authoredSet);
+    tierToTypeSet.put(tierAuthorMatch     , authoredSet);
     tierToTypeSet.put(tierAuthorYear      , authoredSet);
-    tierToTypeSet.put(tierAuthorStartExact, authoredSet);
+    tierToTypeSet.put(tierAuthorMatchStart, authoredSet);
+    tierToTypeSet.put(tierPersonMatch     , ImmutableSet.of(hdtPerson));
+    tierToTypeSet.put(tierPersonMatchStart, ImmutableSet.of(hdtPerson));
     tierToTypeSet.put(tierKeyword         , typeSet);
     tierToTypeSet.put(tierAuthorKeyword   , authoredSet);
     tierToTypeSet.put(tierKeywordContains , typeSet);
@@ -140,13 +148,15 @@ public class OmniFinder
     private TierEnum curTier;
     private boolean done = false, lastShowingMore, firstBuffer = true;
     private String lastQuery = "", queryLC;
+    private Map<HDT_Record, List<PersonForDupCheck>> recordToPersonList;
+    private PersonForDupCheck queryPerson;
     private Iterator<TierEnum> tierIt;
     private Iterator<? extends HDT_Record> recordIt;
     private Iterator<RecordType> typeIt;
-    int rowNdx = 0, runLaters = 0;
-    long startTime, nextInterval;
+    private int rowNdx = 0, runLaters = 0;
+    private long startTime, nextInterval;
 
-    FinderThread(HyperTable htFind)
+    private FinderThread(HyperTable htFind)
     {
       super("OmniFinder");
 
@@ -163,6 +173,8 @@ public class OmniFinder
     {
       lastQuery = query;
       queryLC = convertToEnglishChars(query).toLowerCase().trim();
+      queryPerson = new PersonForDupCheck(new PersonName(queryLC).toLowerCase(), null);
+      recordToPersonList = new HashMap<>();
       lastShowingMore = showingMore;
       buffer.clear();
       firstBuffer = true;
@@ -265,40 +277,25 @@ public class OmniFinder
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    private boolean authorMatch(Author author, HDT_Person person, String year, TierEnum tier)
+    private boolean authorMatch(PersonForDupCheck otherPerson, String year, TierEnum tier)
     {
-      String listName, fullName = "";
-
-      if (author != null) listName = author.getNameLastFirst(true).toLowerCase().trim();
-      else                listName = person.getNameLastFirst(true).toLowerCase().trim();
+      String listName = otherPerson.getAuthor().getNameLastFirst(true).toLowerCase().trim();
 
       switch (tier)
       {
         case tierAuthorContains:
 
-          if (listName.contains(queryLC)) return true;
-          break;
+          return listName.contains(queryLC);
 
-        case tierAuthorExact:
+        case tierAuthorMatch: case tierPersonMatch:
 
-          if (listName.equals(queryLC)) return true;
-
-          if (author != null) fullName = author.getFullName(true).toLowerCase().trim();
-          else                fullName = person.getFullName(true).toLowerCase().trim();
-
-          if (removeFirstParenthetical(fullName).equals(queryLC)) return true;
-
-          break;
+          return queryPerson.matches(otherPerson);
 
         case tierAuthorYear:
 
-          String singleName = author != null ?
-            author.singleName(true).toLowerCase().trim()
-          :
-            person.getName(true).getSingle().toLowerCase().trim();
+          if (year.isBlank()) return false;
 
-          if (year.isBlank() == false)
-            singleName = singleName + " " + year;
+          String singleName = otherPerson.getAuthor().singleName(true).toLowerCase().trim() + " " + year;
 
           if (removeFirstParenthetical(singleName).equals(queryLC)) return true;
 
@@ -308,26 +305,18 @@ public class OmniFinder
 
           if (AllQueryEngine.linkList.size() > 0)
           {
-            if (person == null)
-              person = author.getPerson();
+            HDT_Person otherPersonRecord = otherPerson.getPerson();
 
-            if (person != null)
+            if (otherPersonRecord != null)
               for (KeywordLink keyLink : AllQueryEngine.linkList)
-                if (keyLink.key.record == person)
+                if (keyLink.key.record == otherPersonRecord)
                   return true;
           }
           break;
 
-        case tierAuthorStartExact:
+        case tierAuthorMatchStart: case tierPersonMatchStart:
 
-          if (listName.startsWith(queryLC)) return true;
-
-          if (author != null) fullName = author.getFullName(true).toLowerCase().trim();
-          else                fullName = person.getFullName(true).toLowerCase().trim();
-
-          if (fullName.startsWith(queryLC)) return true;
-
-          break;
+          return otherPerson.startsWith(queryPerson.getName().getFull());
 
         default: break;
       }
@@ -353,26 +342,28 @@ public class OmniFinder
 
           return true;
 
-        case tierAuthorContains: case tierAuthorExact: case tierAuthorYear: case tierAuthorKeyword: case tierAuthorStartExact:
+        case tierAuthorContains: case tierAuthorMatch: case tierAuthorYear: case tierAuthorKeyword: case tierAuthorMatchStart:
 
           if (record.getType() == hdtWork)
           {
-            HDT_Work work = (HDT_Work)record;
-
-            for (Author author : work.getAuthors())
-              if (authorMatch(author, null, work.getYear(), curTier)) return true;
+            for (PersonForDupCheck otherPerson : getPersonList(record))
+              if (authorMatch(otherPerson, ((HDT_Work)record).getYear(), curTier)) return true;
           }
           else if (record.getType() == hdtMiscFile)
           {
-            for (HDT_Person author : ((HDT_MiscFile)record).authorRecords())
-              if (authorMatch(null, author, "", curTier)) return true;
+            for (PersonForDupCheck otherPerson : getPersonList(record))
+              if (authorMatch(otherPerson, "", curTier)) return true;
           }
           return false;
+
+        case tierPersonMatch:
+
+          return authorMatch(getPersonList(record).get(0), "", curTier);
 
         case tierExactName:
 
           return record.getType() == hdtPerson ?
-            authorMatch(null, (HDT_Person)record, "", tierAuthorExact)
+            false
           :
             record.getNameEngChar().toLowerCase().equals(queryLC);
 
@@ -393,14 +384,18 @@ public class OmniFinder
         case tierNameContains:
 
           return record.getType() == hdtPerson ?
-            authorMatch(null, (HDT_Person)record, "", tierAuthorContains)
+            authorMatch(getPersonList(record).get(0), "", tierAuthorContains)
           :
             record.getNameEngChar().toLowerCase().contains(queryLC);
+
+        case tierPersonMatchStart:
+
+          return authorMatch(getPersonList(record).get(0), "", curTier);
 
         case tierNameStartExact:
 
           return record.getType() == hdtPerson ?
-            authorMatch(null, (HDT_Person)record, "", tierAuthorStartExact)
+            false
           :
             record.getNameEngChar().toLowerCase().startsWith(queryLC);
 
@@ -546,7 +541,7 @@ public class OmniFinder
         else
           htFind.setDataRows(curRows);
 
-        if (finalShowingMore && incremental)
+        if (finalShowingMore && incremental && (htFind.getDataRowCount() >= ROWS_TO_SHOW))
         {
           htFind.selectRow(ROWS_TO_SHOW - 1);
           htFind.refresh();
@@ -603,8 +598,65 @@ public class OmniFinder
           nextInterval = 100;
         }
 
-        if (!done && isMatch(record))
+        if ((!done) && isMatch(record))
           done = addRecord(record);
+      }
+    }
+
+    //---------------------------------------------------------------------------
+    //---------------------------------------------------------------------------
+
+    private List<PersonForDupCheck> getPersonList(HDT_Record record)
+    {
+      List<PersonForDupCheck> personList = null;
+
+      switch (record.getType())
+      {
+        case hdtPerson :
+
+          switch (curTier)
+          {
+            case tierPersonMatch: case tierPersonMatchStart: case tierNameContains:
+              personList = recordToPersonList.get(record);
+              if (personList == null)
+                recordToPersonList.put(record, personList = List.of(new PersonForDupCheck((HDT_Person)record)));
+
+              return personList;
+
+            default : return null;
+          }
+
+        case hdtWork :
+
+          switch (curTier)
+          {
+            case tierAuthorContains: case tierAuthorMatch: case tierAuthorYear: case tierAuthorKeyword: case tierAuthorMatchStart:
+              personList = recordToPersonList.get(record);
+              if (personList == null)
+                recordToPersonList.put(record, personList = ((HDT_Work)record).getAuthors().stream().map(PersonForDupCheck::new).collect(Collectors.toList()));
+
+              return personList;
+
+            default : return null;
+          }
+
+        case hdtMiscFile :
+
+          switch (curTier)
+          {
+            case tierAuthorContains: case tierAuthorMatch: case tierAuthorYear: case tierAuthorKeyword: case tierAuthorMatchStart:
+              personList = recordToPersonList.get(record);
+              if (personList == null)
+                recordToPersonList.put(record, personList = ((HDT_MiscFile)record).getAuthors().stream().map(PersonForDupCheck::new).collect(Collectors.toList()));
+
+              return personList;
+
+            default : return null;
+          }
+
+        default :
+
+          return null;
       }
     }
   }

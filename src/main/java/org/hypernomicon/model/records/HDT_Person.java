@@ -94,7 +94,6 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
   public boolean instIsPast(HDT_Institution inst)          { return db.getNestedBoolean(this, inst, tagPast); }
   public void setWebURL(String newStr)                     { updateTagString(tagWebURL, newStr); }
   public void setORCID(String newOrcid)                    { updateTagString(tagORCID, newOrcid); }
-  public void setInstitutions(List<HDT_Institution> list)  { updateObjectsFromList(rtInstOfPerson, list); }
   void setFirstNameInternal(String newStr, boolean update) { setNameInternal(getLastName() + "|" + newStr.replace("|", ""), update); }
   void setLastNameInternal(String newStr, boolean update)  { setNameInternal(newStr.replace("|", "") + "|" + getFirstName(), update); }
 
@@ -130,7 +129,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
     return s.substring(0, s.indexOf('|'));
   }
 
-  public String getLastNameEngChar()
+  private String getLastNameEngChar()
   {
     String s = getNameEngChar();
     return s.substring(0, s.indexOf('|'));
@@ -233,6 +232,17 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
     {
       if (newKey.isEmpty() == false)
         keys.put(lowerCase ? newKey.toLowerCase() : newKey, newUseForDupCheck);
+    }
+
+  //---------------------------------------------------------------------------
+
+    public boolean startsWith(String str)
+    {
+      for (String key : keys.keySet())
+        if (key.replaceAll("[.,;]", "").startsWith(str))
+          return true;
+
+      return false;
     }
   }
 

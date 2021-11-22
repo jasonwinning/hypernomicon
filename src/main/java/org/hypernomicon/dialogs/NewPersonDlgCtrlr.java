@@ -302,9 +302,15 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
   //---------------------------------------------------------------------------
 
-    public HDT_Person getPerson() { return nullSwitch(author, null, Author::getPerson); }
-    public Author getAuthor()     { return author; }
-    public PersonName getName()   { return name; }
+    public HDT_Person getPerson()         { return nullSwitch(author, null, Author::getPerson); }
+    public Author getAuthor()             { return author; }
+    public PersonName getName()           { return name; }
+    public boolean startsWith(String str) { return keySetNoNicknames.startsWith(str.replaceAll("[.,;]", "")); }
+
+    public boolean matches(PersonForDupCheck person2)
+    {
+      return keySetNoNicknames.isSubsetOf(person2.keySet) || person2.keySetNoNicknames.isSubsetOf(keySet);
+    }
   }
 
 //---------------------------------------------------------------------------
@@ -384,8 +390,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
         isMatch = true;
       }
-      else if (person1.keySetNoNicknames.isSubsetOf(person2.keySet) ||
-               person2.keySetNoNicknames.isSubsetOf(person1.keySet))
+      else if (person1.matches(person2))
         isMatch = true;
 
       if (isMatch)
