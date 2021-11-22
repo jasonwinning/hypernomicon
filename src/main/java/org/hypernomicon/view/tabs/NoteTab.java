@@ -150,10 +150,10 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     tabMentioners.setText(mentionersTabTitle + " (" + mentioners.size() + ")");
 
-    if (curNote.subNotes.isEmpty() && (htMentioners.getDataRowCount() > 0))
+    if (curNote.subNotes.isEmpty() && (htMentioners.dataRowCount() > 0))
       tabPane.getSelectionModel().select(tabMentioners);
 
-    if ((curNote.subNotes.size() > 0) && (htMentioners.getDataRowCount() == 0))
+    if ((curNote.subNotes.size() > 0) && (htMentioners.dataRowCount() == 0))
       tabPane.getSelectionModel().select(tabSubnotes);
   }
 

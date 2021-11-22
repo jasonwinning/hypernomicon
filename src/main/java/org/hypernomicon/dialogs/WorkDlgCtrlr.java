@@ -251,7 +251,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     boolean atLeastOneInFilename = false;
 
-    for (HyperTableRow origRow : ui.workHyperTab().htAuthors.getDataRows())
+    for (HyperTableRow origRow : ui.workHyperTab().htAuthors.dataRows())
     {
       int authID = origRow.getID(1);
       String authName = origRow.getText(1);
@@ -355,12 +355,12 @@ public class WorkDlgCtrlr extends HyperDlg
       if (HyperTableCell.getCellID(cellVal) > 0)
         row.setCheckboxValue(1, true);
 
-      if (htAuthors.getDataRowCount() == 1)
+      if (htAuthors.dataRowCount() == 1)
         row.setCheckboxValue(2, true);
       else if (HyperTableCell.getCellID(cellVal) > 0)
       {
         boolean useInFilename = true, keepGoing = true;
-        Iterator<HyperTableRow> it = htAuthors.getDataRows().iterator();
+        Iterator<HyperTableRow> it = htAuthors.dataRows().iterator();
 
         while (it.hasNext() && keepGoing && useInFilename)
         {
@@ -373,7 +373,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
         if (useInFilename)
         {
-          htAuthors.getDataRows().forEach(loopRow -> loopRow.setCheckboxValue(2, false));
+          htAuthors.dataRows().forEach(loopRow -> loopRow.setCheckboxValue(2, false));
           row.setCheckboxValue(2, true);
         }
       }
@@ -393,11 +393,11 @@ public class WorkDlgCtrlr extends HyperDlg
 
     Runnable removeHandler = () ->
     {
-      if (htAuthors.getDataRowCount() == 0) return;
+      if (htAuthors.dataRowCount() == 0) return;
 
       HyperTableRow firstRecordRow = null;
 
-      for (HyperTableRow row : htAuthors.getDataRows())
+      for (HyperTableRow row : htAuthors.dataRows())
       {
         if (row.getCheckboxValue(2))
           return;
@@ -667,7 +667,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     List<FileNameAuthor> authors = new ArrayList<>();
 
-    htAuthors.getDataRows().forEach(row ->
+    htAuthors.dataRows().forEach(row ->
     {
       if ((row.getRecord() != null) || (row.getText(0).length() > 0))
         if (row.getCheckboxValue(2))

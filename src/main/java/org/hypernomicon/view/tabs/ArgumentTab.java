@@ -163,7 +163,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
   void updateArgCounts()
   {
-    lowerCtrlr.tabWhereMade.setText("Where made (" + htWhereMade.getDataRowCount() + ")");
+    lowerCtrlr.tabWhereMade.setText("Where made (" + htWhereMade.dataRowCount() + ")");
   }
 
 //---------------------------------------------------------------------------
@@ -322,7 +322,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 
     if (!ctrlr.saveToRecord(curArgument)) return false;
 
-    for (HyperTableRow row : htParents.getDataRows())
+    for (HyperTableRow row : htParents.dataRows())
     {
       if ((row.getID(3) > 0) && (row.getID(4) < 1))
         okToSave = false;

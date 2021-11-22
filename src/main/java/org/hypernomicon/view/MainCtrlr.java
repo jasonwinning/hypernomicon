@@ -473,7 +473,7 @@ public final class MainCtrlr
 
     ctfOmniGoTo.setOnMouseClicked(event ->
     {
-      if (htFind.getDataRowCount() > 0)
+      if (htFind.dataRowCount() > 0)
         showFindTable();
     });
 

@@ -456,7 +456,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         fav.name = ctrlr.getNewName();
         fav.autoexec = ctrlr.getAutoExec();
 
-        htFields.getDataRows().forEach(row ->
+        htFields.dataRows().forEach(row ->
         {
           QueryRow queryRow = new QueryRow();
 
@@ -520,7 +520,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     private void setCaption()
     {
-      htFields.getDataRows().forEach(row ->
+      htFields.dataRows().forEach(row ->
       {
         for (int colNdx = 1; colNdx <= 4; colNdx++)
         {
@@ -609,7 +609,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     private boolean btnExecuteClick(boolean setCaption)
     {
-      for (HyperTableRow row : htFields.getDataRows())
+      for (HyperTableRow row : htFields.dataRows())
       {
         if (QueryType.codeToVal(row.getID(0)) == QueryType.qtReport)
         {
@@ -626,7 +626,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       boolean needMentionsIndex = false, showDesc = false;
 
-      for (HyperTableRow row : htFields.getDataRows())
+      for (HyperTableRow row : htFields.dataRows())
       {
         int query = row.getID(1);
         if (query < 0) continue;
@@ -663,7 +663,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       boolean hasFiltered = false, hasUnfiltered = false;
       EnumSet<RecordType> unfilteredTypes = EnumSet.noneOf(RecordType.class);
 
-      for (HyperTableRow row : htFields.getDataRows())
+      for (HyperTableRow row : htFields.dataRows())
       {
         QuerySource source = getSource(row);
 
@@ -950,7 +950,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     private HDT_Record getRecordToHilite()
     {
-      for (HyperTableRow row : htFields.getDataRows())
+      for (HyperTableRow row : htFields.dataRows())
       {
         if (row.getID(0) == QueryType.qtAllRecords.getCode())
         {
@@ -976,7 +976,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     private String getTextToHilite()
     {
-      for (HyperTableRow row : htFields.getDataRows())
+      for (HyperTableRow row : htFields.dataRows())
       {
         if (row.getID(1) > -1)
         {

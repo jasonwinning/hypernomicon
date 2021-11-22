@@ -1372,7 +1372,7 @@ public class FileManager extends HyperDlg
   {
     HyperTableRow rowToPick = null;
 
-    for (HyperTableRow row : recordTable.getDataRows())
+    for (HyperTableRow row : recordTable.dataRows())
     {
       HDT_Record record = row.getRecord();
       if (record == null) continue;

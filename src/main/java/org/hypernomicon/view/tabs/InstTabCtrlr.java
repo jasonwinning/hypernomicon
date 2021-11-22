@@ -344,7 +344,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     curInst.instType.setID(hcbType.selectedID());
     curInst.parentInst.setID(hcbParentInst.selectedID());
 
-    htSubInst.getDataRows().forEach(row ->
+    htSubInst.dataRows().forEach(row ->
     {
       int subInstID = row.getID(0);
 

@@ -142,7 +142,7 @@ public class WebButtonTable extends WebButtonCtrl
   @Override void saveToPrefNode(Preferences node)
   {
     int ndx = 0, customNdx = 0;
-    for (HyperTableRow row : ht.getDataRows())
+    for (HyperTableRow row : ht.dataRows())
     {
       WebButton webBtn = getWebButton(row);
       if (webBtn != null)

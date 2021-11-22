@@ -55,7 +55,7 @@ class TextFieldCell extends TableCell<HyperTableRow, HyperTableCell> implements 
     if (isEmpty())
       return;
 
-    if (canEditIfEmpty.isFalse() && (table.getDataRowCount() <= getTableRow().getIndex()))
+    if (canEditIfEmpty.isFalse() && (table.dataRowCount() <= getTableRow().getIndex()))
       return;
 
     super.startEdit();

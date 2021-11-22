@@ -687,11 +687,9 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     if (workFile == null)
       workFile = curWork.workFiles.get(0);
 
-    for (HyperTableRow row : htWorkFiles.getDataRows())
-    {
+    for (HyperTableRow row : htWorkFiles.dataRows())
       if (workFile == row.getRecord())
         return Math.max(-1, parseInt(row.getText(isStart ? 3 : 4), -1));
-    }
 
     return -1;
   }
@@ -705,7 +703,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     String str = val < 0 ? "" : String.valueOf(val);
 
-    htWorkFiles.getDataRows().forEach(row ->
+    htWorkFiles.dataRows().forEach(row ->
     {
       if (workFile == row.getRecord())
         row.setCellValue(isStart ? 3 : 4, workFile, str);
@@ -1614,7 +1612,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     curWork.setName(tfTitle.getText());
     curWork.workType.setID(hcbType.selectedID());
 
-    htWorkFiles.getDataRows().forEach(row -> nullSwitch((HDT_WorkFile)row.getRecord(), file ->
+    htWorkFiles.dataRows().forEach(row -> nullSwitch((HDT_WorkFile)row.getRecord(), file ->
     {
       file.setAnnotated(row.getCheckboxValue(1));
       curWork.setStartPageNum(file, parseInt(row.getText(3), -1));

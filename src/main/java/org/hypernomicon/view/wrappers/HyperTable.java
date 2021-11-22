@@ -126,9 +126,9 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   int getMainColNdx()                                              { return mainCol; }
   public void setTooltip(int colNdx, ButtonAction ba, String text) { cols.get(colNdx).setTooltip(ba, text); }
   public void removeRow(HyperTableRow row)                         { rows.remove(row); }
-  public Iterable<HyperTableRow> getDataRows()                     { return new DataRowIterator(); }
+  public Iterable<HyperTableRow> dataRows()                        { return new DataRowIterator(); }
   public Stream<HyperTableRow> dataRowStream()                     { return StreamSupport.stream(new DataRowIterator().spliterator(), false); }
-  public int getDataRowCount()                                     { return canAddRows ? Math.max(rows.size() - 1, 0) : rows.size(); }
+  public int dataRowCount()                                        { return canAddRows ? Math.max(rows.size() - 1, 0) : rows.size(); }
   public void addRefreshHandler(Runnable hndlr)                    { refreshHandler = hndlr; }
   public HyperTableRow selectRowByRecord(HDT_Record record)        { return nullSwitch(getRowByRecord(record), null, this::selectRow); }
   public boolean removeRowsIf(Predicate<HyperTableRow> filter)     { return rows.removeIf(filter); }
@@ -142,7 +142,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   private class DataRowIterator implements Iterable<HyperTableRow>, Iterator<HyperTableRow>
   {
     private int nextNdx = 0;
-    final private int dataRowCnt = getDataRowCount();
+    final private int dataRowCnt = dataRowCount();
     final private Iterator<HyperTableRow> rowIt = rows.iterator();
 
     @Override public Iterator<HyperTableRow> iterator() { return this; }
@@ -510,7 +510,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     HyperTableRow row = new HyperTableRow(cols.size(), this);
 
     if (dataRow && canAddRows)
-      rows.add(getDataRowCount(), row);
+      rows.add(dataRowCount(), row);
     else
       rows.add(row);
 
@@ -535,7 +535,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public void addDataRows(List<HyperTableRow> newRows)
   {
     if (canAddRows)
-      rows.addAll(getDataRowCount(), newRows);
+      rows.addAll(dataRowCount(), newRows);
     else
       rows.addAll(newRows);
   }
@@ -672,7 +672,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
       row ->
       {
         if ((row.getRecord() == null) && row.getText(mainCol).isEmpty()) return false;
-        if (getDataRowCount() < 2) return false;
+        if (dataRowCount() < 2) return false;
         return (onlyIfCanAddRows == false) || canAddRows;
       },
 
@@ -918,7 +918,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   public void changeIDs(RecordType changedType, int oldID, int newID)
   {
-    getDataRows().forEach(row -> row.changeIDs(changedType, oldID, newID));
+    dataRows().forEach(row -> row.changeIDs(changedType, oldID, newID));
     refresh();
   }
 

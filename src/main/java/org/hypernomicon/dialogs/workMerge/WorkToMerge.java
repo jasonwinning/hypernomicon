@@ -102,7 +102,7 @@ public class WorkToMerge
     else
       loadFromBibData(rbType, destWork);
 
-    if (htAuthors.getDataRowCount() > 0)
+    if (htAuthors.dataRowCount() > 0)
       rbAuthors.setSelected(true);
   }
 

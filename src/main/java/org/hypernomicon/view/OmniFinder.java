@@ -41,6 +41,7 @@ import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 import org.hypernomicon.query.engines.AllQueryEngine;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -65,12 +66,12 @@ public class OmniFinder
   private String query = "";
   private Iterator<HDT_Record> source = null;
   private FinderThread finderThread = null;
-  private boolean stopRequested = false, stopped = true, showingMore = false, incremental = true;
+  private boolean stopRequested = false, showingMore = false, incremental = true;
   private RecordType typeFilter;
   public Runnable doneHndlr = null;
 
   public boolean noResults()  { return collEmpty(records); }
-  private boolean isRunning() { return stopped ? false : nullSwitch(finderThread, false, FinderThread::isAlive); }
+  private boolean isRunning() { return nullSwitch(finderThread, false, FinderThread::isAlive); }
 
   protected enum TierEnum
   {
@@ -312,6 +313,7 @@ public class OmniFinder
                 if (keyLink.key.record == otherPersonRecord)
                   return true;
           }
+
           break;
 
         case tierAuthorMatchStart: case tierPersonMatchStart:
@@ -370,11 +372,10 @@ public class OmniFinder
         case tierKeyword:
 
           if (AllQueryEngine.linkList.size() > 0)
-          {
             for (KeywordLink keyLink : AllQueryEngine.linkList)
               if (keyLink.key.record == record)
                 return true;
-          }
+
           return false;
 
         case tierKeywordContains:
@@ -412,10 +413,8 @@ public class OmniFinder
       records.add(record);
 
       if (showingMore == false)
-      {
         if ((buffer.size() + rowNdx) >= ROWS_TO_SHOW) // rowNdx should be the number of rows currently in the
           return true;                                // table if the buffer has already been purged at least once
-      }
 
       return false;
     }
@@ -541,7 +540,7 @@ public class OmniFinder
         else
           htFind.setDataRows(curRows);
 
-        if (finalShowingMore && incremental && (htFind.getDataRowCount() >= ROWS_TO_SHOW))
+        if (finalShowingMore && incremental && (htFind.dataRowCount() >= ROWS_TO_SHOW))
         {
           htFind.selectRow(ROWS_TO_SHOW - 1);
           htFind.refresh();
@@ -608,8 +607,6 @@ public class OmniFinder
 
     private List<PersonForDupCheck> getPersonList(HDT_Record record)
     {
-      List<PersonForDupCheck> personList = null;
-
       switch (record.getType())
       {
         case hdtPerson :
@@ -617,7 +614,7 @@ public class OmniFinder
           switch (curTier)
           {
             case tierPersonMatch: case tierPersonMatchStart: case tierNameContains:
-              personList = recordToPersonList.get(record);
+              List<PersonForDupCheck> personList = recordToPersonList.get(record);
               if (personList == null)
                 recordToPersonList.put(record, personList = List.of(new PersonForDupCheck((HDT_Person)record)));
 
@@ -626,37 +623,21 @@ public class OmniFinder
             default : return null;
           }
 
-        case hdtWork :
+        case hdtWork : case hdtMiscFile :
 
           switch (curTier)
           {
             case tierAuthorContains: case tierAuthorMatch: case tierAuthorYear: case tierAuthorKeyword: case tierAuthorMatchStart:
-              personList = recordToPersonList.get(record);
+              List<PersonForDupCheck> personList = recordToPersonList.get(record);
               if (personList == null)
-                recordToPersonList.put(record, personList = ((HDT_Work)record).getAuthors().stream().map(PersonForDupCheck::new).collect(Collectors.toList()));
+                recordToPersonList.put(record, personList = ((HDT_RecordWithAuthors<?>)record).getAuthors().stream().map(PersonForDupCheck::new).collect(Collectors.toList()));
 
               return personList;
 
             default : return null;
           }
 
-        case hdtMiscFile :
-
-          switch (curTier)
-          {
-            case tierAuthorContains: case tierAuthorMatch: case tierAuthorYear: case tierAuthorKeyword: case tierAuthorMatchStart:
-              personList = recordToPersonList.get(record);
-              if (personList == null)
-                recordToPersonList.put(record, personList = ((HDT_MiscFile)record).getAuthors().stream().map(PersonForDupCheck::new).collect(Collectors.toList()));
-
-              return personList;
-
-            default : return null;
-          }
-
-        default :
-
-          return null;
+        default : return null;
       }
     }
   }
@@ -674,8 +655,6 @@ public class OmniFinder
     this.showingMore = showingMore;
 
     finderThread = new FinderThread(htFind);
-
-    stopped = false;
   }
 
 //---------------------------------------------------------------------------
@@ -683,17 +662,10 @@ public class OmniFinder
 
   public void setQueryAndStart(String query, boolean showingMore)
   {
-    boolean newThread = false;
+    boolean newThread = isRunning() == false;
 
-    if (finderThread == null)
-    {
-      newThread = true;
-    }
-    else if (finderThread.isAlive() == false)
-    {
+    if ((finderThread != null) && newThread)
       stop();
-      newThread = true;
-    }
 
     this.query = query;
     this.source = null;
@@ -701,8 +673,6 @@ public class OmniFinder
 
     if (newThread)
       finderThread = new FinderThread(htFind);
-
-    stopped = false;
   }
 
 //---------------------------------------------------------------------------
@@ -712,7 +682,7 @@ public class OmniFinder
   {
     boolean wasRunning = isRunning();
 
-    if ((finderThread != null) && finderThread.isAlive())
+    if (wasRunning)
     {
       stopRequested = true;
 
