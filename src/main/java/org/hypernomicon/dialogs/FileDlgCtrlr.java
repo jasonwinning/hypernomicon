@@ -302,9 +302,8 @@ public class FileDlgCtrlr extends HyperDlg
   {
     FileChooser fileChooser = new FileChooser();
 
-    if (recordType == hdtWorkFile)
-      if (EnumSet.of(wtBook, wtChapter, wtThesis, wtNone, wtPaper).contains(curWork.getWorkTypeEnum()))
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Adobe PDF file (*.pdf)", "*.pdf"));
+    if ((recordType == hdtWorkFile) && EnumSet.of(wtBook, wtChapter, wtThesis, wtNone, wtPaper).contains(curWork.getWorkTypeEnum()))
+      fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Adobe PDF file (*.pdf)", "*.pdf"));
 
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
     fileChooser.setInitialDirectory(db.unenteredPath().toFile());

@@ -24,6 +24,8 @@ import static org.hypernomicon.util.DesktopUtil.*;
 
 import java.util.List;
 
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
@@ -31,7 +33,7 @@ import javafx.scene.layout.AnchorPane;
 
 public class WelcomeDlgCtrlr extends HyperDlg
 {
-  @FXML private Button btnNew, btnClose;
+  @FXML private Button btnNew, btnOpen, btnClose;
   @FXML private Hyperlink linkIntroVideo, linkFileMgmtVideo, linkRefMgmtVideo, linkForums, linkWiki, linkNews, linkMore;
   @FXML private AnchorPane apRecent;
 
@@ -61,11 +63,14 @@ public class WelcomeDlgCtrlr extends HyperDlg
       btnOkClick();
     });
 
-    linkMore.setOnAction(event ->
+    EventHandler<ActionEvent> openHndlr = event ->
     {
       openClicked = true;
       btnOkClick();
-    });
+    };
+
+    btnOpen .setOnAction(openHndlr);
+    linkMore.setOnAction(openHndlr);
 
     linkIntroVideo   .setOnAction(event -> openWebLink("http://hypernomicon.org/support.html"));
     linkFileMgmtVideo.setOnAction(event -> openWebLink("http://hypernomicon.org/support.html"));

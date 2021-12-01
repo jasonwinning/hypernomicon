@@ -24,7 +24,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 
-<AnchorPane id="SpecialUI" maxHeight="314.0" minHeight="314.0" minWidth="778.0" prefHeight="314.0" styleClass="anchor-pane" stylesheets="@welcome.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.WelcomeDlgCtrlr">
+<AnchorPane id="SpecialUI" maxHeight="314.0" minHeight="314.0" minWidth="778.0" prefHeight="314.0" styleClass="anchor-pane" stylesheets="@welcome.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.WelcomeDlgCtrlr">
    <children>
       <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <center>
@@ -35,8 +35,8 @@
                         <Image url="@../resources/images/logobig.png" />
                      </image>
                   </ImageView>
-                  <Button fx:id="btnNew" layoutX="144.0" layoutY="33.0" mnemonicParsing="false" prefHeight="51.0" prefWidth="162.0" text="Start a new database" wrapText="true" />
-                  <Button fx:id="btnClose" layoutX="144.0" layoutY="94.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="51.0" prefWidth="162.0" text="Close this Window" />
+                  <Button fx:id="btnNew" layoutX="144.0" layoutY="33.0" mnemonicParsing="false" prefHeight="33.0" prefWidth="162.0" text="Start a new database" wrapText="true" />
+                  <Button fx:id="btnClose" layoutX="144.0" layoutY="111.0" mnemonicParsing="false" onAction="#btnCancelClick" prefHeight="33.0" prefWidth="162.0" text="Close this Window" />
                   <TitledPane animated="false" collapsible="false" layoutX="340.0" layoutY="33.0" prefHeight="112.0" prefWidth="398.0" text="Open recent">
                     <content>
                       <AnchorPane fx:id="apRecent" minHeight="0.0" minWidth="0.0" prefHeight="85.0" prefWidth="267.0">
@@ -68,6 +68,7 @@
                         </AnchorPane>
                     </content>
                   </TitledPane>
+                  <Button fx:id="btnOpen" layoutX="144.0" layoutY="72.0" mnemonicParsing="false" prefHeight="33.0" prefWidth="162.0" text="Open existing database" />
                </children>
             </AnchorPane>
          </center>
