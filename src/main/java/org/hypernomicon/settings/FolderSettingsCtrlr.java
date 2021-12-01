@@ -31,6 +31,7 @@ import org.hypernomicon.util.filePath.FilePath;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Window;
@@ -42,6 +43,7 @@ public class FolderSettingsCtrlr implements SettingsControl
 {
   @FXML private TextField tfPapers, tfBooks, tfUnentered, tfPictures, tfTopical, tfMiscFiles, tfResults;
   @FXML private Button btnPapers, btnBooks, btnUnentered, btnPictures, btnTopical, btnMiscFiles, btnResults;
+  @FXML private RadioButton rbPapers, rbBooks;
 
   private Window owner;
 
@@ -66,6 +68,10 @@ public class FolderSettingsCtrlr implements SettingsControl
     initRow(PREF_KEY_UNENTERED_FOLDER_ID , tfUnentered, btnUnentered);
     initRow(PREF_KEY_MISC_FILES_FOLDER_ID, tfMiscFiles, btnMiscFiles);
     initRow(PREF_KEY_TOPICAL_FOLDER_ID   , tfTopical  , btnTopical  );
+
+    rbBooks.setSelected(db.prefs.getBoolean(PREF_KEY_THESIS_FOLDER_IS_BOOKS, false));
+
+    rbBooks.selectedProperty().addListener((obs, ov, nv) -> db.prefs.putBoolean(PREF_KEY_THESIS_FOLDER_IS_BOOKS, nv.booleanValue()));
   }
 
 //---------------------------------------------------------------------------

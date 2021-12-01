@@ -219,6 +219,7 @@ public class MediaUtil
           case wtNone         : return "resources/images/unknown.png";
           case wtPaper        : return "resources/images/paper.png";
           case wtRecording    : return "resources/images/recording.png";
+          case wtThesis       : return "resources/images/thesis.png";
           case wtWebPage      : return "resources/images/text-html.png";
           case wtUnenteredSet : return "resources/images/inbox-document-text.png";
           default             : return "resources/images/unknown.png";

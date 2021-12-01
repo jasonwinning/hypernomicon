@@ -24,17 +24,18 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
-import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.populators.StandardPopulator;
 import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 
 import java.io.IOException;
+import java.util.EnumSet;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -302,20 +303,8 @@ public class FileDlgCtrlr extends HyperDlg
     FileChooser fileChooser = new FileChooser();
 
     if (recordType == hdtWorkFile)
-    {
-      WorkTypeEnum enumVal = curWork.getWorkTypeEnum();
-
-      switch (enumVal)
-      {
-        case wtBook: case wtChapter: case wtNone: case wtPaper:
-
-          fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Adobe PDF file (*.pdf)", "*.pdf"));
-          break;
-
-        default :
-          break;
-      }
-    }
+      if (EnumSet.of(wtBook, wtChapter, wtThesis, wtNone, wtPaper).contains(curWork.getWorkTypeEnum()))
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Adobe PDF file (*.pdf)", "*.pdf"));
 
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
     fileChooser.setInitialDirectory(db.unenteredPath().toFile());

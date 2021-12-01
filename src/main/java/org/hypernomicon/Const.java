@@ -74,6 +74,7 @@ public final class Const
     PREF_KEY_UNENTERED_FOLDER_ID = "unenteredFolderID",
     PREF_KEY_MISC_FILES_FOLDER_ID = "miscFilesFolderID",
     PREF_KEY_TOPICAL_FOLDER_ID = "topicalFolderID",
+    PREF_KEY_THESIS_FOLDER_IS_BOOKS = "thesisFolderIsBooks",
 
     PREF_KEY_RECORD_TYPE = "typeID",
     PREF_KEY_DISPLAY_RECORD_TYPE = "displayTypeID",
@@ -263,7 +264,7 @@ public final class Const
 
     EXT_1 = "ext1://";
 
-  public static final VersionNumber dbVersion = new VersionNumber(1, 22, 1); // 1.22.1
+  public static final VersionNumber dbVersion = new VersionNumber(1, 22, 2); // 1.22.2
 
   // This is the minimum version that the application version is able to load
   public static final Map<VersionNumber, VersionNumber> appVersionToMinRecordsXMLVersion = new ImmutableMap.Builder<VersionNumber, VersionNumber>()
@@ -283,7 +284,8 @@ public final class Const
     .put(new VersionNumber(1, 17, 5), new VersionNumber(1))
     .put(new VersionNumber(1, 19, 4), new VersionNumber(1, 1))
     .put(new VersionNumber(1, 20   ), new VersionNumber(1, 2))
-    .put(dbVersion, new VersionNumber(1, 3))
+    .put(new VersionNumber(1, 22, 1), new VersionNumber(1, 3))
+    .put(dbVersion, new VersionNumber(1, 4))
     .build();
 
   // This is the version that the application version will actually save to
@@ -291,6 +293,7 @@ public final class Const
 
     .put(new VersionNumber(1, 17, 5), new VersionNumber(1))
     .put(new VersionNumber(1, 19, 4), new VersionNumber(1, 1))
-    .put(dbVersion, new VersionNumber(1, 2))
+    .put(new VersionNumber(1, 22, 1), new VersionNumber(1, 2))
+    .put(dbVersion, new VersionNumber(1, 3))
     .build();
 }

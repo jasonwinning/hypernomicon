@@ -467,7 +467,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
         disableAll(tfFileTitle, tfNewFile, tfDest, btnDest, chkSetDefault, tfYear, chkKeepFilenameUnchanged, btnRegenerateFilename, rbMove, rbCopy, rbCurrent);
       }
-      else if (workTypeEnumVal != wtNone)
+      else if (HyperTableCell.getCellID(newValue) > 0)
       {
         enableAll(tfFileTitle, tfDest, btnDest, chkSetDefault, tfYear, chkKeepFilenameUnchanged, btnRegenerateFilename, rbMove, rbCopy);
 
@@ -746,7 +746,7 @@ public class WorkDlgCtrlr extends HyperDlg
   {
     FileChooser fileChooser = new FileChooser();
 
-    if (EnumSet.of(wtBook, wtChapter, wtNone, wtPaper).contains(curWork.getWorkTypeEnum()))
+    if (EnumSet.of(wtBook, wtChapter, wtThesis, wtNone, wtPaper).contains(curWork.getWorkTypeEnum()))
       fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Adobe PDF file (*.pdf)", "*.pdf"));
 
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All files (*.*)", "*.*"));
@@ -987,10 +987,16 @@ public class WorkDlgCtrlr extends HyperDlg
 
           if (hcbType.selectedRecord() == null)
           {
-            if (mwd.getEntryType() == EntryType.etBook)
-              hcbType.selectID(HDT_WorkType.get(wtBook).getID());
-            else if (mwd.getEntryType() == EntryType.etJournalArticle)
-              hcbType.selectID(HDT_WorkType.get(wtPaper).getID());
+            switch (mwd.getEntryType())
+            {
+              case etBook : hcbType.selectID(HDT_WorkType.getIDbyEnum(wtBook)); break;
+
+              case etJournalArticle : hcbType.selectID(HDT_WorkType.getIDbyEnum(wtPaper)); break;
+
+              case etThesis : case etMastersThesis : case etDoctoralThesis : hcbType.selectID(HDT_WorkType.getIDbyEnum(wtThesis)); break;
+
+              default : break;
+            }
           }
         }
       }

@@ -21,6 +21,7 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
+import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
@@ -633,6 +634,7 @@ public final class HyperDB
     }
 
     alreadyShowedUpgradeMsg = false;
+    MutableBoolean needToAddThesisWorkType = new MutableBoolean();
 
     task = new HyperTask("LoadDatabase") { @Override protected Boolean call() throws Exception
     {
@@ -643,7 +645,7 @@ public final class HyperDB
 
       for (FilePath filePath : xmlFileList) totalTaskCount += filePath.size();
 
-      for (FilePath filePath : xmlFileList) loadFromXML(creatingNew, filePath);
+      for (FilePath filePath : xmlFileList) loadFromXML(creatingNew, filePath, needToAddThesisWorkType);
 
       return true;
     }};
@@ -788,6 +790,22 @@ public final class HyperDB
       catch (IOException | InvalidPreferencesFormatException e)
       {
         throw new HyperDataException("An error occurred while attempting to read database settings: " + e.getMessage(), e);
+      }
+
+      if (needToAddThesisWorkType.isTrue())
+      {
+        int thesisID = HDT_WorkType.getIDbyEnum(wtThesis);
+
+        nullSwitch(db.records(hdtWorkType).getByID(thesisID), (HDT_Record record) -> record.changeID(datasets.get(hdtWorkType).getNextID()));
+
+        try
+        {
+          createNewRecordFromState(new RecordState(hdtWorkType, thesisID, "Thesis", "Thesis", "", ""), true);
+        }
+        catch (Exception e)
+        {
+          throw new HyperDataException("Internal error while creating thesis work type record: " + e.getMessage(), e);
+        }
       }
     }
     catch (HyperDataException e)
@@ -1313,7 +1331,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void loadFromXML(boolean creatingNew, FilePath filePath) throws HyperDataException, TerminateTaskException
+  private void loadFromXML(boolean creatingNew, FilePath filePath, MutableBoolean needToAddThesisWorkType) throws HyperDataException, TerminateTaskException
   {
     try (InputStream in = new FileInputStream(filePath.toFile()))
     {
@@ -1408,6 +1426,9 @@ public final class HyperDB
 
         if (noInnerTags)
           xmlRecord.loadItemFromXML(tagNone, nodeText, hdtNone, -1, null);
+
+        if ((xmlRecord.type == hdtWorkType) && versionNumber.isLessThanOrEqualTo(new VersionNumber(1, 3)))
+          needToAddThesisWorkType.setTrue();
 
         try
         {
@@ -2414,6 +2435,7 @@ public final class HyperDB
       case wtBook    :
       case wtChapter : return booksFolder;
       case wtPaper   : return papersFolder;
+      case wtThesis  : return db.prefs.getBoolean(PREF_KEY_THESIS_FOLDER_IS_BOOKS, false) ? booksFolder : papersFolder;
       default        : return miscFilesFolder;
     }
   }

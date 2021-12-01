@@ -20,6 +20,7 @@ package org.hypernomicon.tree;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
@@ -91,30 +92,17 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 
     treeItem.setGraphic(getGraphic());
 
-    String typeName;
-
-    if (getRecordType() != hdtWork)
+    if (getRecordType() == hdtWork)
     {
-      typeName = db.getTypeName(record.getType());
-      if (record.isUnitable() && ((HDT_RecordWithConnector)record).isLinked())
-        typeName = typeName + " (linked)";
-
-      return typeName;
+      HDT_Work work = (HDT_Work)record;
+      return HDT_Work.addFileIndicator(nullSwitch(work.workType.get(), "Work", HDT_WorkType::name), work);
     }
 
-    HDT_Work work = (HDT_Work)record;
+    String typeName = db.getTypeName(record.getType());
+    if (record.isUnitable() && ((HDT_RecordWithConnector)record).isLinked())
+      typeName = typeName + " (linked)";
 
-    switch (HDT_WorkType.getEnumVal(work.workType.get()))
-    {
-      case wtPaper     : typeName = "Paper"   ; break;
-      case wtBook      : typeName = "Book"    ; break;
-      case wtChapter   : typeName = "Chapter" ; break;
-      case wtRecording : typeName = "Lecture" ; break;
-      case wtWebPage   : typeName = "Web Page"; break;
-      default          : typeName = "Work";
-    }
-
-    return HDT_Work.addFileIndicator(typeName, work);
+    return typeName;
   }
 
 //---------------------------------------------------------------------------

@@ -124,7 +124,7 @@ public class SimpleRecordTypes
 
   public static enum WorkTypeEnum
   {
-    wtNone, wtPaper, wtBook, wtWebPage, wtChapter, wtRecording, wtUnenteredSet
+    wtNone, wtPaper, wtBook, wtWebPage, wtChapter, wtRecording, wtUnenteredSet, wtThesis
   }
 
 //---------------------------------------------------------------------------
@@ -139,7 +139,7 @@ public class SimpleRecordTypes
       EnumHashBiMap<WorkTypeEnum, Integer> map = EnumHashBiMap.create(WorkTypeEnum.class);
 
       map.put(wtNone   , -1); map.put(wtPaper    , 1); map.put(wtBook        , 2); map.put(wtWebPage, 3);
-      map.put(wtChapter,  4); map.put(wtRecording, 5); map.put(wtUnenteredSet, 6);
+      map.put(wtChapter,  4); map.put(wtRecording, 5); map.put(wtUnenteredSet, 6); map.put(wtThesis , 7);
 
       return map;
     }
@@ -150,6 +150,7 @@ public class SimpleRecordTypes
 
     public static WorkTypeEnum getEnumVal(HDT_WorkType wt)   { return wt == null ? wtNone : workTypeIDToEnumVal(wt.getID()); }
     public static HDT_WorkType get(WorkTypeEnum enumVal)     { return db.workTypes.getByID(enumMap.get(enumVal)); }
+    public static int getIDbyEnum(WorkTypeEnum enumVal)      { return enumMap.get(enumVal); }
     public static WorkTypeEnum workTypeIDToEnumVal(int wtID) { return enumMap.inverse().getOrDefault(wtID, wtNone); }
   }
 

@@ -4,7 +4,7 @@
   <groupId>org.hypernomicon</groupId>
   <artifactId>hypernomicon</artifactId>
   <packaging>jar</packaging>
-  <version>1.22.1</version>
+  <version>1.22.2</version>
   <name>Hypernomicon</name>
   <url>http://hypernomicon.org</url>
   <inceptionYear>2012</inceptionYear>

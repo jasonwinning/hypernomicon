@@ -127,9 +127,9 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
   void resolvePointers() throws HDB_InternalError  { core.resolvePointers(); }
   CoreAccessor getAccessor()                       { return new CoreAccessor(core); }
   boolean idAvailable(int id)                      { return isUnstoredRecord(id, type) ? false : core.containsID(id) == false; }
-
-  public void changeRecordID(int oldID, int newID) { core.changeRecordID(oldID, newID); }
   public String getKeyByID(int id)                 { return core.getKeyByID(id); }
+
+  public void changeRecordID(int oldID, int newID) throws HDB_InternalError { core.changeRecordID(oldID, newID); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -125,6 +125,10 @@ public enum EntryType
 
         return HDT_WorkType.get(WorkTypeEnum.wtPaper);
 
+      case etThesis : case etDoctoralThesis : case etMastersThesis :
+
+        return HDT_WorkType.get(WorkTypeEnum.wtThesis);
+
       default : break;
     }
 
@@ -134,7 +138,7 @@ public enum EntryType
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected static EntryType fromWorkType(WorkTypeEnum workTypeEnum)
+  public static EntryType fromWorkType(WorkTypeEnum workTypeEnum)
   {
     switch (workTypeEnum)
     {
@@ -143,6 +147,7 @@ public enum EntryType
       case wtNone         : return etUnentered;
       case wtPaper        : return etJournalArticle;
       case wtRecording    : return etAudiovisualMaterial;
+      case wtThesis       : return etThesis;
       case wtUnenteredSet : return etNone;
       case wtWebPage      : return etWebPage;
 

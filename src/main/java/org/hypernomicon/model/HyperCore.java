@@ -113,10 +113,13 @@ final class HyperCore<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void changeRecordID(int oldID, int newID)
+  void changeRecordID(int oldID, int newID) throws HDB_InternalError
   {
     HDT_DT record = getRecordByID(oldID);
     String key = getKeyByID(oldID);
+
+    if (record.getID() != newID)          // The record ID should have been changed to the new one already
+      throw new HDB_InternalError(35468); // This function should only be called from HDT_Record.changeID
 
     remove(oldID);
     add(newID, key, record);

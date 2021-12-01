@@ -20,6 +20,7 @@ package org.hypernomicon.bib;
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
@@ -33,6 +34,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -54,6 +56,7 @@ import org.hypernomicon.model.Exceptions.HyperDataException;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_WorkFile;
+import org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum;
 import org.hypernomicon.model.relations.HyperSubjList;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.util.AsyncHttpClient;
@@ -183,14 +186,13 @@ public class BibManager extends HyperDlg
 
         if (newValue != null)
         {
-          switch (newValue.getWorkTypeEnum())
-          {
-            case wtBook    : cbNewType.getSelectionModel().select(EntryType.etBook          ); break;
-            case wtChapter : cbNewType.getSelectionModel().select(EntryType.etBookChapter   ); break;
-            case wtPaper   : cbNewType.getSelectionModel().select(EntryType.etJournalArticle); break;
-            case wtWebPage : cbNewType.getSelectionModel().select(EntryType.etWebPage       ); break;
+          WorkTypeEnum workTypeEnum = newValue.getWorkTypeEnum();
 
-            default        : break;
+          if (EnumSet.of(wtBook, wtChapter, wtThesis, wtWebPage, wtPaper).contains(workTypeEnum))
+          {
+            EntryType entryType = EntryType.fromWorkType(workTypeEnum);
+            if (libraryWrapper.getEntryTypeMap().containsKey(entryType))
+              cbNewType.getSelectionModel().select(EntryType.fromWorkType(workTypeEnum));
           }
         }
       }

@@ -245,7 +245,8 @@ public abstract class HDT_RecordBase implements HDT_Record
 
     int oldID = id;
     id = newID;
-    dataset.changeRecordID(oldID, newID);
+
+    try { dataset.changeRecordID(oldID, newID); } catch (HDB_InternalError e) { }
 
     return true;
   }
