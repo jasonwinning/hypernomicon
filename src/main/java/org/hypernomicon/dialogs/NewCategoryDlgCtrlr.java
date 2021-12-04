@@ -47,15 +47,15 @@ public class NewCategoryDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewCategoryDlgCtrlr build(RecordType recordType)
+  public static NewCategoryDlgCtrlr build(RecordType recordType, boolean canChangeType)
   {
-    return ((NewCategoryDlgCtrlr) create("NewCategoryDlg", "New Category", true)).init(recordType);
+    return ((NewCategoryDlgCtrlr) create("NewCategoryDlg", "New Category", true)).init(recordType, canChangeType);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private NewCategoryDlgCtrlr init(RecordType recordType)
+  private NewCategoryDlgCtrlr init(RecordType recordType, boolean canChangeType)
   {
     typePopulator = new RecordTypePopulator(EnumSet.of(hdtField, hdtCountry, hdtRank, hdtPersonStatus));
     hcbRecordType = new HyperCB(cbRecordType, ctDropDownList, typePopulator);
@@ -94,6 +94,8 @@ public class NewCategoryDlgCtrlr extends HyperDlg
     });
 
     hcbRecordType.selectType(recordType);
+
+    cbRecordType.setDisable(!canChangeType);
 
     return this;
   }

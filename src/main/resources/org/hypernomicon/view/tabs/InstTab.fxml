@@ -29,7 +29,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="710.0" prefWidth="969.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.InstTabCtrlr">
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="710.0" prefWidth="969.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.InstTabCtrlr">
    <children>
       <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <columnConstraints>
@@ -78,13 +78,14 @@
                         <AnchorPane prefHeight="200.0" prefWidth="200.0">
                            <children>
                               <Label text="Country:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
-                              <ComboBox fx:id="cbCountry" prefWidth="228.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                              <ComboBox fx:id="cbCountry" layoutX="92.0" prefHeight="25.0" prefWidth="205.0" AnchorPane.leftAnchor="92.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
+                              <Button fx:id="btnNewCountry" layoutX="36.0" layoutY="2.0" mnemonicParsing="false" prefWidth="40.0" text="New" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="3.0" />
                            </children>
                         </AnchorPane>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
                            <children>
                               <Label text="State/Region:" AnchorPane.leftAnchor="4.0" AnchorPane.topAnchor="7.0" />
-                              <Button fx:id="btnNewRegion" layoutX="78.0" layoutY="3.0" mnemonicParsing="false" text="New" AnchorPane.leftAnchor="78.0" AnchorPane.topAnchor="3.0" />
+                              <Button fx:id="btnNewRegion" layoutX="78.0" layoutY="3.0" mnemonicParsing="false" prefWidth="40.0" text="New" AnchorPane.leftAnchor="78.0" AnchorPane.topAnchor="3.0" />
                               <ComboBox fx:id="cbRegion" layoutX="118.0" prefWidth="155.0" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="3.0" />
                            </children>
                         </AnchorPane>

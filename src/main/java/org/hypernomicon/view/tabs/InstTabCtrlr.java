@@ -65,7 +65,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
   private HDT_Institution curInst;
 
   @FXML private TextField tfCity, tfName, tfURL;
-  @FXML private Button btnURL, btnParent, btnNewRegion;
+  @FXML private Button btnURL, btnParent, btnNewRegion, btnNewCountry;
   @FXML private ComboBox<HyperTableCell> cbType, cbParentInst, cbRegion, cbCountry;
   @FXML private TableView<HyperTableRow> tvSubInstitutions, tvPersons;
   @FXML private SplitPane spHoriz;
@@ -253,6 +253,15 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
         if (getCellID(oldValue) > 0)
           hcbRegion.selectID(-1);
       }
+    });
+
+    btnNewCountry.setOnAction(event ->
+    {
+      HDT_Country country = ui.mnuNewCategoryClick(hdtCountry, false, false);
+      if (country == null) return;
+
+      hcbCountry.populate(true);
+      hcbCountry.selectID(country.getID());
     });
 
     btnNewRegion.setOnAction(event ->

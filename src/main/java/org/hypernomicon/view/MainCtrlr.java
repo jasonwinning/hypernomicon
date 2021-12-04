@@ -1484,35 +1484,38 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FXML private void mnuNewFieldClick       () { mnuNewCategoryClick(hdtField       ); }
-  @FXML private void mnuNewRankClick        () { mnuNewCategoryClick(hdtRank        ); }
-  @FXML private void mnuNewCountryClick     () { mnuNewCategoryClick(hdtCountry     ); }
-  @FXML private void mnuNewPersonStatusClick() { mnuNewCategoryClick(hdtPersonStatus); }
+  @FXML private void mnuNewFieldClick       () { mnuNewCategoryClick(hdtField       , true, true); }
+  @FXML private void mnuNewRankClick        () { mnuNewCategoryClick(hdtRank        , true, true); }
+  @FXML private void mnuNewCountryClick     () { mnuNewCategoryClick(hdtCountry     , true, true); }
+  @FXML private void mnuNewPersonStatusClick() { mnuNewCategoryClick(hdtPersonStatus, true, true); }
 
-  private void mnuNewCategoryClick(RecordType type)
+  public <T extends HDT_RecordBase> T mnuNewCategoryClick(RecordType type, boolean canChangeType, boolean save)
   {
     if (db.isLoaded() == false)
     {
       messageDialog("No database is currently loaded.", mtError);
-      return;
+      return null;
     }
 
-    if (cantSaveRecord()) return;
+    if (save && cantSaveRecord()) return null;
 
-    NewCategoryDlgCtrlr ctrlr = NewCategoryDlgCtrlr.build(type);
+    NewCategoryDlgCtrlr ctrlr = NewCategoryDlgCtrlr.build(type, canChangeType);
 
-    if (ctrlr.showModal() == false) return;
+    if (ctrlr.showModal() == false) return null;
 
     int id = parseInt(ctrlr.tfNewID.getText(), -1);
     type = ctrlr.hcbRecordType.selectedType();
 
     RecordState recordState = new RecordState(type, id, ctrlr.tfNewKey.getText(), "", "", "");
+    T newRecord = null;
 
-    try { db.createNewRecordFromState(recordState, true); } catch (Exception e) { noOp(); }
+    try { newRecord = db.createNewRecordFromState(recordState, true); } catch (Exception e) { noOp(); }
 
-    db.records(type).getByID(id).setName(ctrlr.tfNewName.getText());
+    newRecord.setName(ctrlr.tfNewName.getText());
 
-    update();
+    if (save) update();
+
+    return newRecord;
   }
 
 //---------------------------------------------------------------------------
