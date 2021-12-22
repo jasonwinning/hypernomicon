@@ -27,6 +27,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.util.List;
 
 import org.hypernomicon.model.HyperDataset;
@@ -244,7 +245,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
   {
     boolean restartWatcher = folderTreeWatcher.stop();
 
-    FilePath childFilePath = filePath().resolve(folderName);
+    FilePath childFilePath = filePath().resolve(ultraTrim(folderName));
     HDT_Folder childFolder = null;
 
     try
@@ -256,7 +257,7 @@ public class HDT_Folder extends HDT_RecordBase implements HDT_RecordWithPath
     {
       messageDialog("Unable to create the folder: A file with that name already exists.", mtError);
     }
-    catch (IOException e)
+    catch (IOException | InvalidPathException e)
     {
       messageDialog("Unable to create the folder: " + e.getMessage(), mtError);
     }

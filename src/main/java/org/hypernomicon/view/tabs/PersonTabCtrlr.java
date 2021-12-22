@@ -125,7 +125,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
   private HyperTable htPersonInst, htWorks, htArguments;
   private MainTextWrapper mainText;
-  public FilePath curPicture = null;
+  private FilePath curPicture = null;
   private Rectangle2D viewPort = null;
   private HDT_Person lastPerson = null;
 
@@ -135,6 +135,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   private long lastArrowKey = 0;
   private boolean alreadyChangingName = false, alreadyChangingTab = false;
 
+  public FilePath getCurPicture() { return curPicture; }
+  
   @Override public String recordName()               { return new PersonName(tfFirst.getText(), tfLast.getText()).getLastFirst(); }
   @Override protected RecordType type()              { return hdtPerson; }
   @Override public void enable(boolean enabled)      { ui.tabPersons.getContent().setDisable(enabled == false); }
@@ -510,10 +512,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     tfORCID    .clear();
     tfSearchKey.clear();
 
-    if (db.isLoaded() && (FilePath.isEmpty(curPicture) == false) && curPicture.exists() && HyperPath.getHyperPathSetForFilePath(curPicture).isEmpty())
-      db.fileNoLongerInUse(curPicture);
-
-    curPicture = null;
+    assignPicture(null, true);
     ivPerson.setImage(null);
     viewPort = null;
     lblPicture.setVisible(true);
@@ -537,6 +536,23 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     if ((curPerson != lastPerson) || (curPerson == null))
       htWorks.getTV().getSortOrder().clear();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void assignPicture(FilePath newPicture, boolean promptToDelete)
+  {
+    if (promptToDelete                           && 
+        db.isLoaded()                            && 
+        (FilePath.isEmpty(curPicture) == false)  && 
+        (curPicture.equals(newPicture) == false) && 
+        curPicture.exists()                      && 
+        HyperPath.getHyperPathSetForFilePath(curPicture).isEmpty())
+      
+      db.fileNoLongerInUse(curPicture);
+    
+    curPicture = newPicture;
   }
 
 //---------------------------------------------------------------------------

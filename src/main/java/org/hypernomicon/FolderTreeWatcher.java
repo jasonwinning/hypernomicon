@@ -466,10 +466,7 @@ public class FolderTreeWatcher
   //---------------------------------------------------------------------------
 
     private boolean handleInterComputerMessage()
-    {
-      String compName = DesktopUtil.getComputerName();
-      InterComputerMsg receivedMsg;
-
+    {    
       if (sentResponse)
       {
         if (db.getRequestMessageFilePath(false).exists())
@@ -492,9 +489,10 @@ public class FolderTreeWatcher
       if (db.getRequestMessageFilePath(false).exists() == false)
         return false;
 
-      receivedMsg = InterComputerMsg.checkForMessage(db.getRequestMessageFilePath(false));
+      InterComputerMsg receivedMsg = InterComputerMsg.checkForMessage(db.getRequestMessageFilePath(false));
       requestType = hmtNone;
-
+      String compName = DesktopUtil.getComputerName();
+      
       if ((receivedMsg != null) && receivedMsg.getDest().equals(compName))
         requestType = receivedMsg.getType();
 

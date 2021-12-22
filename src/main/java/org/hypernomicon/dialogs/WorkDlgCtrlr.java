@@ -676,7 +676,7 @@ public class WorkDlgCtrlr extends HyperDlg
 
     fileName = HDT_WorkFile.makeFileName(authors, year, tfFileTitle.getText(), ext);
 
-    if (fileName.isEmpty())
+    if (fileName.isBlank())
     {
       tfNewFile.setText("");
       return;
@@ -704,7 +704,7 @@ public class WorkDlgCtrlr extends HyperDlg
       }
     }
 
-    tfNewFile.setText(newFileName.trim());
+    tfNewFile.setText(ultraTrim(newFileName));
   }
 
 //---------------------------------------------------------------------------
@@ -1280,7 +1280,7 @@ public class WorkDlgCtrlr extends HyperDlg
     }
 
     if (chkKeepFilenameUnchanged.isSelected() == false)
-      if ((tfOrigFile.getText().length() > 0) && tfNewFile.getText().isEmpty())
+      if ((tfOrigFile.getText().length() > 0) && tfNewFile.getText().isBlank())
         return falseWithWarningMessage("Enter destination file name.", tfNewFile);
 
     if (hcbType.selectedID() < 1)
@@ -1299,12 +1299,12 @@ public class WorkDlgCtrlr extends HyperDlg
       (chkKeepFilenameUnchanged.isSelected() ?
         origFilePath
       :
-        origFilePath.getDirOnly().resolve(tfNewFile.getText()))
+        origFilePath.getDirOnly().resolve(ultraTrim(tfNewFile.getText())))
     :
       (chkKeepFilenameUnchanged.isSelected() ?
         destFolder.get().filePath().resolve(origFilePath.getNameOnly())
       :
-        destFolder.get().filePath().resolve(tfNewFile.getText()));
+        destFolder.get().filePath().resolve(ultraTrim(tfNewFile.getText())));
 
     HDT_RecordWithPath existingFile = HyperPath.getRecordFromFilePath(newFilePath);
 

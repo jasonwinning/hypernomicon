@@ -635,7 +635,7 @@ public final class MainCtrlr
       // mnuChangeIDClick() as well
 
       if ((record.getType() == hdtPerson) && (personHyperTab().activeRecord() == record))
-        personHyperTab().curPicture = null;  // User has already been asked if they want to delete the picture; don't ask again
+        personHyperTab().assignPicture(null, false);  // User has already been asked if they want to delete the picture; don't ask again
 
       queryHyperTab().queryViews.forEach(qv -> qv.resultsTable.getTV().getItems().removeIf(row -> row.getRecord() == record));
 
@@ -1242,6 +1242,7 @@ public final class MainCtrlr
     }
 
     if (cantSaveRecord()) return;
+    personHyperTab().assignPicture(null, true);
 
     if (db.isLoaded())
     {
@@ -1267,7 +1268,6 @@ public final class MainCtrlr
         return;
       }
 
-      personHyperTab().curPicture = null;
       clearAllTabsAndViews();
 
       saveAllToDisk(false, false, false);

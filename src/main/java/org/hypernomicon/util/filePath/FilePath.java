@@ -111,7 +111,7 @@ public class FilePath implements Comparable<FilePath>
   public FilePath resolve(FilePath relativeFilePath) { return new FilePath(toPath().resolve(relativeFilePath.toPath())); }
 
   // this = base, parameter = relative, output = resolved
-  public FilePath resolve(String relativeStr) { return new FilePath(toPath().resolve(Paths.get(relativeStr))); }
+  public FilePath resolve(String relativeStr) { return new FilePath(toPath().resolve(Paths.get(relativeStr.trim()))); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
