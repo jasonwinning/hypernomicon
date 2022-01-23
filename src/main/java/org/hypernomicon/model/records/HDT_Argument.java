@@ -62,6 +62,10 @@ public class HDT_Argument extends HDT_RecordWithConnector
 
   public void setWorks(List<HDT_Work> list) { updateObjectsFromList(rtWorkOfArgument, list); }
 
+  public static int truePositionVerdictID  = 1,
+                    falsePositionVerdictID = 2,
+                    failsArgumentVerdictID = 101;
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

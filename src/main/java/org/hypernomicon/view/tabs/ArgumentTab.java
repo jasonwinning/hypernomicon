@@ -28,7 +28,7 @@ import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.App;
-import org.hypernomicon.model.Exceptions.RelationCycleException;
+import org.hypernomicon.dialogs.NewArgDlgCtrlr;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.ObjectGroup;
@@ -365,11 +365,15 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
     {
       case hdtArgument :
 
-        HDT_Argument counterArg = db.createNewBlankRecord(hdtArgument);
-        try { counterArg.addCounteredArg(curArgument, null); } catch (RelationCycleException e) { noOp(); }
-        curArgument.positions.forEach(position -> counterArg.addPosition(position, null));
-        ui.goToRecord(counterArg, false);
-        lowerCtrlr.tabPane.getSelectionModel().select(lowerCtrlr.tabWhereMade);
+        NewArgDlgCtrlr newArgDialog = NewArgDlgCtrlr.build(curArgument);
+
+        if (newArgDialog.showModal())
+        {
+          ui.goToRecord(newArgDialog.getArgument(), false);
+
+          lowerCtrlr.tabPane.getSelectionModel().select(lowerCtrlr.tabWhereMade);
+        }
+
         break;
 
       case hdtWork :

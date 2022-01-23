@@ -31,17 +31,17 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane minHeight="200.0" minWidth="300.0" prefHeight="618.0" prefWidth="1126.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.NewArgDlgCtrlr">
+<AnchorPane minHeight="200.0" minWidth="300.0" prefHeight="618.0" prefWidth="1126.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.dialogs.NewArgDlgCtrlr">
    <children>
-      <Label layoutX="33.0" layoutY="23.0" text="Position:" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="12.0">
+      <Label fx:id="lblTargetName" layoutX="33.0" layoutY="23.0" text="Position:" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="12.0">
       </Label>
-      <Label layoutX="14.0" layoutY="34.0" prefHeight="217.0" prefWidth="66.0" text="Position description:" wrapText="true" AnchorPane.bottomAnchor="417.0" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="34.0">
+      <Label fx:id="lblTargetDesc" layoutX="14.0" layoutY="34.0" prefHeight="217.0" prefWidth="66.0" text="Position description:" wrapText="true" AnchorPane.bottomAnchor="449.0" AnchorPane.leftAnchor="12.0" AnchorPane.topAnchor="34.0">
       </Label>
       <Label layoutX="12.0" layoutY="177.0" prefHeight="217.0" prefWidth="66.0" text="Name suggestions:" wrapText="true" AnchorPane.bottomAnchor="224.0" AnchorPane.leftAnchor="12.0">
       </Label>
       <Label layoutX="12.0" layoutY="151.0" text="Person:" AnchorPane.bottomAnchor="141.0" AnchorPane.leftAnchor="12.0">
       </Label>
-      <TextField fx:id="tfPosition" editable="false" layoutX="125.0" layoutY="9.0" prefHeight="22.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="9.0" />
+      <TextField fx:id="tfTargetName" editable="false" layoutX="125.0" layoutY="9.0" prefHeight="22.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="9.0" />
       <WebView fx:id="view" AnchorPane.bottomAnchor="449.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="34.0" />
       <GridPane layoutX="111.0" layoutY="170.0" prefHeight="281.0" prefWidth="1003.0" AnchorPane.bottomAnchor="167.0" AnchorPane.leftAnchor="111.0" AnchorPane.rightAnchor="12.0">
         <columnConstraints>
@@ -170,7 +170,7 @@
                            <children>
                               <Label layoutY="4.0" text="Argues that:" AnchorPane.leftAnchor="6.0">
                   </Label>
-                              <ComboBox fx:id="cbPositionVerdict" layoutX="74.0" prefHeight="22.0" prefWidth="150.0" AnchorPane.leftAnchor="74.0" AnchorPane.rightAnchor="0.0" />
+                              <ComboBox fx:id="cbVerdict" layoutX="74.0" prefHeight="22.0" prefWidth="150.0" AnchorPane.leftAnchor="74.0" AnchorPane.rightAnchor="0.0" />
                            </children>
                         </AnchorPane>
                      </children>

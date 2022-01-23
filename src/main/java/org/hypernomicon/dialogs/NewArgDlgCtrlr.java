@@ -24,13 +24,17 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.HDT_Argument;
 import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Position;
 import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextWrapper;
@@ -43,6 +47,7 @@ import org.hypernomicon.view.wrappers.HyperTableCell;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.CheckBox;
@@ -51,14 +56,15 @@ import javafx.scene.web.WebView;
 public class NewArgDlgCtrlr extends HyperDlg
 {
   @FXML private CheckBox chkIncludeAuth;
-  @FXML private ComboBox<HyperTableCell> cbPerson, cbPositionVerdict, cbWork;
+  @FXML private ComboBox<HyperTableCell> cbPerson, cbVerdict, cbWork;
+  @FXML private Label lblTargetName, lblTargetDesc;
   @FXML private RadioButton rbArgName1, rbArgName2, rbArgName3, rbArgName4, rbArgName5, rbArgName6, rbArgName7, rbArgName8, rbExisting, rbNew;
-  @FXML private TextField tfArgName1, tfArgName2, tfArgName3, tfArgName4, tfArgName5, tfArgName6, tfArgName7, tfArgName8, tfPosition, tfTitle;
+  @FXML private TextField tfArgName1, tfArgName2, tfArgName3, tfArgName4, tfArgName5, tfArgName6, tfArgName7, tfArgName8, tfTargetName, tfTitle;
   @FXML private WebView view;
 
-  private HDT_Position position;
+  private HDT_RecordWithConnector target;
   private HDT_Argument argument;
-  private HyperCB hcbPerson, hcbPositionVerdict, hcbWork;
+  private HyperCB hcbPerson, hcbVerdict, hcbWork;
   private boolean revising = false, programmaticWorkChange = false, programmaticVerdictChange = false;
   private MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
   private String argName1 = "", argName2 = "", argName3 = "", argName4 = "", argName5 = "", argName6 = "", argName7 = "", argName8 = "";
@@ -68,20 +74,26 @@ public class NewArgDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static NewArgDlgCtrlr build(HDT_Position curPosition)
+  public static NewArgDlgCtrlr build(HDT_Position position)
   {
-    return ((NewArgDlgCtrlr) create("NewArgDlg", "New Argument", true)).init(curPosition);
+    return ((NewArgDlgCtrlr) create("NewArgDlg", "New Argument", true)).init(position);
+  }
+
+  public static NewArgDlgCtrlr build(HDT_Argument counteredArg)
+  {
+    return ((NewArgDlgCtrlr) create("NewArgDlg", "New Counterargument", true)).init(counteredArg);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private NewArgDlgCtrlr init(HDT_Position position)
+  private NewArgDlgCtrlr init(HDT_RecordWithConnector target)
   {
-    this.position = position;
+    this.target = target;
+    RecordType verdictType = target.getType() == hdtPosition ? hdtPositionVerdict : hdtArgumentVerdict;
 
     hcbPerson = new HyperCB(cbPerson, ctDropDownList, new StandardPopulator(hdtPerson));
-    hcbPositionVerdict = new HyperCB(cbPositionVerdict, ctDropDownList, new StandardPopulator(hdtPositionVerdict));
+    hcbVerdict = new HyperCB(cbVerdict, ctDropDownList, new StandardPopulator(verdictType));
     hcbWork = new HyperCB(cbWork, ctDropDownList, new HybridSubjectPopulator(rtAuthorOfWork));
 
     rbArgName1.setSelected(true);
@@ -114,6 +126,10 @@ public class NewArgDlgCtrlr extends HyperDlg
       programmaticWorkChange = false;
     });
 
+    String noun = target.getType() == hdtPosition ? "Position" : "Target argument";
+    lblTargetName.setText(noun + ":");
+    lblTargetDesc.setText(noun + " description:");
+
     tfTitle.setTextFormatter(WorkDlgCtrlr.titleFormatter(alreadyChangingTitle));
 
     tfTitle.textProperty().addListener((ob, oldText, newText) -> rbNew.setSelected(true));
@@ -121,18 +137,20 @@ public class NewArgDlgCtrlr extends HyperDlg
     chkIncludeAuth.selectedProperty().addListener((ob, oldSelected, newSelected) -> reviseSuggestions());
 
     hcbPerson.addBlankEntry();
-    hcbPositionVerdict.addAndSelectEntry(db.positionVerdicts.getByID(1), HDT_Record::getCBText);
-    hcbPositionVerdict.populate(false);
+
+    int verdictID = verdictType == hdtPositionVerdict ? HDT_Argument.truePositionVerdictID : HDT_Argument.failsArgumentVerdictID;
+    hcbVerdict.addAndSelectEntry(db.records(verdictType).getByID(verdictID), HDT_Record::getCBText);
+    hcbVerdict.populate(false);
     hcbWork.addBlankEntry();
 
-    hcbPositionVerdict.addListener((ov, nv) ->
+    if (verdictType == hdtPositionVerdict) hcbVerdict.addListener((ov, nv) ->
     {
       if (programmaticVerdictChange) return;
 
-      int verdictID = HyperTableCell.getCellID(nv);
-      if (verdictID < 1) return;
+      int posVerdictID = HyperTableCell.getCellID(nv);
+      if (posVerdictID < 1) return;
 
-      if (HDT_Argument.posVerdictIDIsInFavor(verdictID))
+      if (HDT_Argument.posVerdictIDIsInFavor(posVerdictID))
       {
         if      (rbArgName5.isSelected() && tfArgName5.getText().equals(argName5)) rbArgName1.setSelected(true);
         else if (rbArgName6.isSelected() && tfArgName6.getText().equals(argName6)) rbArgName2.setSelected(true);
@@ -148,9 +166,9 @@ public class NewArgDlgCtrlr extends HyperDlg
       }
     });
 
-    tfPosition.setText(position.name());
+    tfTargetName.setText(target.name());
 
-    MainTextWrapper.setReadOnlyHTML(position.getMainText().getHtml(), view.getEngine(), new TextViewInfo(), null);
+    MainTextWrapper.setReadOnlyHTML(target.getMainText().getHtml(), view.getEngine(), new TextViewInfo(), null);
 
     reviseSuggestions();
 
@@ -158,7 +176,7 @@ public class NewArgDlgCtrlr extends HyperDlg
     rbNew.setSelected(true);
 
     alreadyChangingTitle.setTrue();
-    tfTitle.setText(position.name() + " Argument Stem");
+    tfTitle.setText(target.name() + (target.getType() == hdtPosition ? " Argument Stem" : " Counterargument Stem"));
     alreadyChangingTitle.setFalse();
 
     addListeners(tfArgName1, rbArgName1, true ); addListeners(tfArgName2, rbArgName2, true );
@@ -201,10 +219,13 @@ public class NewArgDlgCtrlr extends HyperDlg
 
   private void argNameSelect(Boolean newSelected, boolean proArg)
   {
+    if (target.getType() != hdtPosition)
+      return;
+
     if ((newSelected != null) && newSelected.booleanValue())
     {
       programmaticVerdictChange = true;
-      hcbPositionVerdict.selectID(proArg ? 1 : 2);
+      hcbVerdict.selectID(proArg ? HDT_Argument.truePositionVerdictID : HDT_Argument.falsePositionVerdictID);
       programmaticVerdictChange = false;
     }
   }
@@ -225,20 +246,42 @@ public class NewArgDlgCtrlr extends HyperDlg
       if (person != null) part1 = person.getLastName() + "'s ";
     }
 
-    String part2 = part1.isEmpty() ? "Argument " : "argument ",
-           positionName = position.name();
+    String targetName = target.name();
+    if (targetName.startsWith("The "))
+      targetName = "the " + targetName.substring(4);
 
-    if (positionName.startsWith("The "))
-      positionName = "the " + positionName.substring(4);
+    if (target.getType() == hdtPosition)
+    {
+      String part2 = part1.isEmpty() ? "Argument " : "argument ";
 
-    argName1 = part1 + part2 + "for "                   + positionName; tfArgName1.setText(argName1);
-    argName2 = part1 + part2 + "for the "               + positionName; tfArgName2.setText(argName2);
-    argName3 = part1 + part2 + "that "                  + positionName; tfArgName3.setText(argName3);
-    argName4 = part1 + part2 + "for the view that "     + positionName; tfArgName4.setText(argName4);
-    argName5 = part1 + part2 + "against "               + positionName; tfArgName5.setText(argName5);
-    argName6 = part1 + part2 + "against the "           + positionName; tfArgName6.setText(argName6);
-    argName7 = part1 + part2 + "that it is false that " + positionName; tfArgName7.setText(argName7);
-    argName8 = part1 + part2 + "against the view that " + positionName; tfArgName8.setText(argName8);
+      argName1 = part1 + part2 + "for "                   + targetName; tfArgName1.setText(argName1);
+      argName2 = part1 + part2 + "for the "               + targetName; tfArgName2.setText(argName2);
+      argName3 = part1 + part2 + "that "                  + targetName; tfArgName3.setText(argName3);
+      argName4 = part1 + part2 + "for the view that "     + targetName; tfArgName4.setText(argName4);
+      argName5 = part1 + part2 + "against "               + targetName; tfArgName5.setText(argName5);
+      argName6 = part1 + part2 + "against the "           + targetName; tfArgName6.setText(argName6);
+      argName7 = part1 + part2 + "that it is false that " + targetName; tfArgName7.setText(argName7);
+      argName8 = part1 + part2 + "against the view that " + targetName; tfArgName8.setText(argName8);
+    }
+    else
+    {
+      String part2 = part1.isEmpty() ? "Counterargument " : "counterargument ";
+
+      argName1 = part1 + part2 + "against "                + targetName; tfArgName1.setText(argName1);
+      argName2 = part1 + part2 + "against the "            + targetName; tfArgName2.setText(argName2);
+      argName3 = part1 + part2 + "against the claim that " + targetName; tfArgName3.setText(argName3);
+
+      part2 = part1.isEmpty() ? "Response " : "response ";
+
+      argName4 = part1 + part2 + "to "     + targetName; tfArgName4.setText(argName4);
+      argName5 = part1 + part2 + "to the " + targetName; tfArgName5.setText(argName5);
+
+      part2 = part1.isEmpty() ? "Objection " : "objection ";
+
+      argName6 = part1 + part2 + "to "                + targetName; tfArgName6.setText(argName6);
+      argName7 = part1 + part2 + "to the "            + targetName; tfArgName7.setText(argName7);
+      argName8 = part1 + part2 + "to the claim that " + targetName; tfArgName8.setText(argName8);
+    }
 
     revising = false;
   }
@@ -248,13 +291,22 @@ public class NewArgDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    HDT_PositionVerdict verdict = hcbPositionVerdict.selectedRecord();
+    HDT_Record verdict = hcbVerdict.selectedRecord();
 
     if (verdict == null)
-      return falseWithErrorMessage("You must select a verdict.", cbPositionVerdict);
+      return falseWithErrorMessage("You must select a verdict.", cbVerdict);
 
     argument = db.createNewBlankRecord(hdtArgument);
-    argument.addPosition(position, verdict);
+
+    if (verdict.getType() == hdtPositionVerdict)
+      argument.addPosition((HDT_Position)target, (HDT_PositionVerdict)verdict);
+    else
+    {
+      HDT_Argument counteredArg = (HDT_Argument)target;
+
+      try { argument.addCounteredArg(counteredArg, (HDT_ArgumentVerdict)verdict); } catch (RelationCycleException e) { noOp(); }
+      counteredArg.positions.forEach(position -> argument.addPosition(position, null));
+    }
 
     if      (rbArgName1.isSelected()) argument.setName(tfArgName1.getText());
     else if (rbArgName2.isSelected()) argument.setName(tfArgName2.getText());
