@@ -43,7 +43,7 @@ import static org.hypernomicon.FolderTreeWatcher.*;
 public class LockedDlgCtrlr extends HyperDlg
 {
   private static MessageSenderThread thread = null;
-  private String otherCompName;
+  private String otherCompName, otherHostName;
   private long sentTime;
 
   @FXML private Button btnTryComm, btnTryTerminate, btnStop, btnOverride, btnCancel;
@@ -167,7 +167,18 @@ public class LockedDlgCtrlr extends HyperDlg
   private LockedDlgCtrlr init(String otherCompName)
   {
     this.otherCompName = otherCompName;
-    taOutput.appendText("Database locked by computer " + otherCompName + System.lineSeparator());
+
+    if (otherCompName.indexOf("::::") >= 0)
+    {
+      this.otherHostName = otherCompName.substring(0, otherCompName.indexOf("::::"));
+
+      if (otherHostName.isBlank())
+        otherHostName = otherCompName.substring(otherCompName.indexOf("::::") + 4);
+    }
+    else
+      this.otherHostName = otherCompName;
+
+    taOutput.appendText("Database locked by computer " + otherHostName + System.lineSeparator());
 
     onShown = () -> disableCache(taOutput);
 
@@ -193,7 +204,7 @@ public class LockedDlgCtrlr extends HyperDlg
 
   @FXML private void btnTryCommClick()
   {
-    sendMessage(hmtEchoRequest, "Trying to communicate with " + otherCompName + "...");
+    sendMessage(hmtEchoRequest, "Trying to communicate with " + otherHostName + "...");
   }
 
 //---------------------------------------------------------------------------
@@ -209,7 +220,7 @@ public class LockedDlgCtrlr extends HyperDlg
 
   @FXML private void btnTryTerminateClick()
   {
-    sendMessage(hmtUnlockRequest, "Trying to save/terminate instance on " + otherCompName + "...");
+    sendMessage(hmtUnlockRequest, "Trying to save/terminate instance on " + otherHostName + "...");
   }
 
 //---------------------------------------------------------------------------

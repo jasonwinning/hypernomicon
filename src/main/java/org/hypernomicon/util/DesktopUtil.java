@@ -322,7 +322,7 @@ public class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String hostName = null;
+  private static String computerName = null;
 
   private static String formatName(String name)
   {
@@ -331,9 +331,41 @@ public class DesktopUtil
 
   public static String getComputerName()
   {
-    if (hostName != null) return hostName;
+    if (computerName != null) return computerName;
 
-    hostName = formatName(SystemUtils.getHostName());
+    String uuid = "", hostName = getHostName();
+
+    try
+    {
+      String output;
+
+      if (SystemUtils.IS_OS_WINDOWS)
+      {
+        output = execReadToString("wmic csproduct get UUID");
+        uuid = output.substring(output.indexOf("\n"), output.length()).trim();
+      }
+      else if (SystemUtils.IS_OS_MAC)
+      {
+        output = execReadToString("system_profiler SPHardwareDataType | awk '/UUID/ { print $3; }'");
+        uuid = output.substring(output.indexOf("UUID: "), output.length()).replace("UUID: ", "");
+      }
+      else if (SystemUtils.IS_OS_LINUX)
+      {
+        output = execReadToString("cat /etc/machine-id");
+        uuid = output.trim();
+      }
+    }
+    catch (IOException | InterruptedException e) { noOp(); }
+
+    return computerName = (safeStr(uuid).isBlank() ? hostName : (hostName.replace("::::", "") + "::::" + uuid.toLowerCase()));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static String getHostName()
+  {
+    String hostName = formatName(SystemUtils.getHostName());
     if (hostName.length() > 0) return hostName;
 
     hostName = formatName(System.getenv("HOSTNAME"));
@@ -347,7 +379,7 @@ public class DesktopUtil
       hostName = formatName(execReadToString("hostname"));
       if (hostName.length() > 0) return hostName;
     }
-    catch (IOException e) { noOp(); }
+    catch (IOException | InterruptedException e) { noOp(); }
 
     if (SystemUtils.IS_OS_WINDOWS == false) try
     {
@@ -371,12 +403,25 @@ public class DesktopUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String execReadToString(String execCommand) throws IOException
+  public static String execReadToString(String execCommand) throws IOException, InterruptedException
   {
-    try (Scanner s = new Scanner(Runtime.getRuntime().exec(execCommand).getInputStream()).useDelimiter("\\A"))
+    Process process = Runtime.getRuntime().exec(execCommand);
+    String output = "";
+
+    try (Scanner s = new Scanner(process.getInputStream()).useDelimiter("\\A"))
     {
-      return s.hasNext() ? s.next() : "";
+      if (s.hasNext())
+      {
+        output = s.next();
+
+        while (s.hasNext())
+          s.next();
+      }
     }
+
+    process.waitFor();
+
+    return output;
   }
 
 //---------------------------------------------------------------------------
