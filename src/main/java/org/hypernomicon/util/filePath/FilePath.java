@@ -48,6 +48,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.hypernomicon.App;
 import org.hypernomicon.fileManager.FileManager;
 
 public class FilePath implements Comparable<FilePath>
@@ -306,7 +307,7 @@ public class FilePath implements Comparable<FilePath>
         if (errStr.length() > 0)
         {
           if (errStr.toLowerCase().contains("denied") || errStr.toLowerCase().contains("access"))
-            errStr = errStr + "\n\nIt may work to restart Hypernomicon and try again.";
+            errStr = errStr + "\n\nIt may work to restart " + App.appTitle + " and try again.";
 
           throw new IOException(errStr);
         }
@@ -348,7 +349,7 @@ public class FilePath implements Comparable<FilePath>
         if (errStr.length() > 0)
         {
           if (errStr.toLowerCase().contains("denied"))
-            errStr = errStr + "\n\nIt may work to restart Hypernomicon and try again.";
+            errStr = errStr + "\n\nIt may work to restart " + App.appTitle + " and try again.";
 
           throw new IOException(errStr);
         }

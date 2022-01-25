@@ -32,13 +32,16 @@ import static org.hypernomicon.model.relations.RelationSet.*;
 
 import static java.util.Collections.*;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.security.DigestInputStream;
+import java.security.DigestOutputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.Instant;
@@ -76,6 +79,7 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -89,6 +93,7 @@ import com.google.common.collect.Sets;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
+import org.hypernomicon.App;
 import org.hypernomicon.FolderTreeWatcher;
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.InterProcClient;
@@ -147,6 +152,7 @@ public final class HyperDB
   final private Map<HDT_RecordWithPath, Set<HDT_RecordWithConnector>> keyWorkIndex = new HashMap<>();
   final private BidiOneToManyMainTextMap displayedAtIndex = new BidiOneToManyMainTextMap();
   final private Map<String, HDT_Work> bibEntryKeyToWork = new HashMap<>();
+  final private Map<String, String> xmlChecksums = new HashMap<>();
 
   final public FilenameMap<Set<HyperPath>> filenameMap = new FilenameMap<>();
 
@@ -484,6 +490,25 @@ public final class HyperDB
   {
     if (loaded == false) return false;
 
+    for (Entry<String, String> entry : xmlChecksums.entrySet())
+    {
+      String hex = "";
+
+      try (InputStream is = Files.newInputStream(xmlPath(entry.getKey()).toPath()))
+      {
+        hex = DigestUtils.md5Hex(is);
+      }
+      catch (IOException e) { noOp(); }
+
+      if (hex.equalsIgnoreCase(entry.getValue()) == false)
+      {
+        if (confirmDialog("Changes have been made to the XML files from outside of this instance of " + App.appTitle + ". Overwrite these changes?"))
+          break;
+        else
+          return false;
+      }
+    }
+
     if (bibLibraryIsLinked())
       bibLibrary.saveToDisk();
 
@@ -539,7 +564,7 @@ public final class HyperDB
         writeDatasetToXML(xmlList, hdtHub);             finalizeXMLFile(xmlList, filenameList, HUB_FILE_NAME);
 
         for (int ndx = 0; ndx < filenameList.size(); ndx++)
-          saveStringBuilderToFile(xmlList.get(ndx), xmlPath(filenameList.get(ndx)));
+          xmlChecksums.put(filenameList.get(ndx), saveStringBuilderToFile(xmlList.get(ndx), xmlPath(filenameList.get(ndx))));
       }
       catch (IOException | HDB_InternalError e)
       {
@@ -552,7 +577,10 @@ public final class HyperDB
 
     if (!HyperTask.performTaskWithProgressDialog(task)) return false;
 
-    try (FileOutputStream out = new FileOutputStream(xmlPath(SETTINGS_FILE_NAME).toFile()))
+    MessageDigest md = newMessageDigest();
+
+    try (OutputStream os = Files.newOutputStream(xmlPath(SETTINGS_FILE_NAME).toPath());
+         DigestOutputStream dos = new DigestOutputStream(os, md))
     {
       favorites.saveToPrefNode();
 
@@ -560,13 +588,17 @@ public final class HyperDB
 
       prefs.put(PREF_KEY_DB_CREATION_DATE, dateTimeToIso8601offset(dbCreationDate));
 
-      prefs.exportSubtree(out);
+      prefs.exportSubtree(dos);
     }
     catch (IOException | BackingStoreException e)
     {
       messageDialog("An error occurred while attempting to save database options to " + SETTINGS_FILE_NAME +
                     ". Record data has been saved to XML files, however." + System.lineSeparator() + e.getMessage(), mtError);
+
+      return true;
     }
+
+    xmlChecksums.put(SETTINGS_FILE_NAME, digestHexStr(md));
 
     return true;
   }
@@ -685,9 +717,14 @@ public final class HyperDB
 
     try
     {
-      try (InputStream is = new FileInputStream(xmlPath(SETTINGS_FILE_NAME).toFile()))
+      MessageDigest md = newMessageDigest();
+
+      try (InputStream is = Files.newInputStream(xmlPath(SETTINGS_FILE_NAME).toPath());
+           DigestInputStream dis = new DigestInputStream(is, md))
       {
-        prefs = XmlSupport.importPreferences(is).node("org").node("hypernomicon").node("model");
+        prefs = XmlSupport.importPreferences(dis).node("org").node("hypernomicon").node("model");
+
+        xmlChecksums.put(SETTINGS_FILE_NAME, digestHexStr(md));
 
         favorites.loadFromPrefNode();
 
@@ -1333,9 +1370,12 @@ public final class HyperDB
 
   private void loadFromXML(boolean creatingNew, FilePath filePath, MutableBoolean needToAddThesisWorkType) throws HyperDataException, TerminateTaskException
   {
-    try (InputStream in = new FileInputStream(filePath.toFile()))
+    MessageDigest md = newMessageDigest();
+
+    try (InputStream is = Files.newInputStream(filePath.toPath());
+         DigestInputStream dis = new DigestInputStream(is, md))
     {
-      XMLEventReader eventReader = XMLInputFactory.newInstance().createXMLEventReader(in);
+      XMLEventReader eventReader = XMLInputFactory.newInstance().createXMLEventReader(dis);
 
       VersionNumber versionNumber = getVersionNumberFromXML(eventReader);
 
@@ -1457,6 +1497,8 @@ public final class HyperDB
     {
       throw new HyperDataException("Internal error #42837", e);
     }
+
+    xmlChecksums.put(filePath.getNameOnly().toString(), digestHexStr(md));
   }
 
 //---------------------------------------------------------------------------
@@ -1662,6 +1704,7 @@ public final class HyperDB
     keyWorkIndex     .clear();
     displayedAtIndex .clear();
     bibEntryKeyToWork.clear();
+    xmlChecksums     .clear();
 
     if (bibLibrary != null)
     {

@@ -18,9 +18,10 @@
 package org.hypernomicon.util;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -79,10 +80,10 @@ public class FileDownloadUtility
 
     public void saveToFile(FilePath saveFilePath) throws FileNotFoundException, IOException
     {
-      try (FileOutputStream outputStream = new FileOutputStream(saveFilePath.toFile()))
+      try (OutputStream os = Files.newOutputStream(saveFilePath.toPath()))
       {
         for (int bufferNdx = 0; bufferNdx < buffers.size(); bufferNdx++)
-          outputStream.write(buffers.get(bufferNdx), 0, lengths.get(bufferNdx));
+          os.write(buffers.get(bufferNdx), 0, lengths.get(bufferNdx));
       }
     }
 
@@ -250,15 +251,13 @@ public class FileDownloadUtility
         // opens an output stream to save into file
 
         try (InputStream inputStream = entity.getContent();
-             FileOutputStream outputStream = new FileOutputStream(saveFilePath.toFile()))
+             OutputStream outputStream = Files.newOutputStream(saveFilePath.toPath()))
         {
           int bytesRead = -1;
           byte[] byteBuffer = new byte[BUFFER_SIZE];
 
           while ((bytesRead = inputStream.read(byteBuffer)) != -1)
-          {
             outputStream.write(byteBuffer, 0, bytesRead);
-          }
 
           runInFXThread(() -> successHndlr.accept(null));
         }

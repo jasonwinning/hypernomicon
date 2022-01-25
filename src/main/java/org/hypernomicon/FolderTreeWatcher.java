@@ -257,7 +257,7 @@ public class FolderTreeWatcher
     {
       return "A file that is in use by the database, \"" + filePath.getNameOnly() +
              "\", has been deleted or moved from outside the program. This may or may not cause a data integrity problem. " +
-             "Changes to database files should be made using the Hypernomicon File Manager instead.";
+             "Changes to database files should be made using the " + App.appTitle + " File Manager instead.";
     }
 
     //---------------------------------------------------------------------------
@@ -266,7 +266,7 @@ public class FolderTreeWatcher
     private String changedFolderMsg()
     {
       return "There has been a change to a folder that is in use by the database. " +
-             "This may or may not cause a data integrity problem. Changes to database folders should be made using the Hypernomicon File Manager instead.";
+             "This may or may not cause a data integrity problem. Changes to database folders should be made using the " + App.appTitle + " File Manager instead.";
     }
 
     //---------------------------------------------------------------------------
@@ -466,7 +466,7 @@ public class FolderTreeWatcher
   //---------------------------------------------------------------------------
 
     private boolean handleInterComputerMessage()
-    {    
+    {
       if (sentResponse)
       {
         if (db.getRequestMessageFilePath(false).exists())
@@ -492,7 +492,7 @@ public class FolderTreeWatcher
       InterComputerMsg receivedMsg = InterComputerMsg.checkForMessage(db.getRequestMessageFilePath(false));
       requestType = hmtNone;
       String compName = DesktopUtil.getComputerName();
-      
+
       if ((receivedMsg != null) && receivedMsg.getDest().equals(compName))
         requestType = receivedMsg.getType();
 

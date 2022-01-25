@@ -24,13 +24,13 @@ import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.json.JsonObj.*;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -600,7 +600,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
     JsonObj jMainObj = null;
     clear();
 
-    try (InputStream in = new FileInputStream(filePath.toFile()))
+    try (InputStream in = Files.newInputStream(filePath.toPath()))
     {
       jMainObj = parseJsonObj(new InputStreamReader(in, UTF_8));
     }

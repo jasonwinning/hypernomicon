@@ -30,10 +30,10 @@ import static org.hypernomicon.util.PopupDialog.DialogResult.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.io.BufferedReader;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Constructor;
 
@@ -43,6 +43,10 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.security.DigestOutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -111,6 +115,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -580,12 +585,16 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void saveStringBuilderToFile(StringBuilder sb, FilePath filePath) throws IOException
+  public static String saveStringBuilderToFile(StringBuilder sb, FilePath filePath) throws IOException
   {
     int bufLen = 65536;
     char[] charArray = new char[bufLen];
 
-    try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(filePath.toFile()), UTF_8))
+    MessageDigest md = newMessageDigest();
+
+    try (OutputStream os = Files.newOutputStream(filePath.toPath());
+         DigestOutputStream dos = new DigestOutputStream(os, md);
+         OutputStreamWriter writer = new OutputStreamWriter(dos, UTF_8))
     {
       for (int offsetIntoSB = 0; offsetIntoSB < sb.length(); offsetIntoSB += bufLen)
       {
@@ -594,6 +603,24 @@ public final class Util
         writer.write(charArray, 0, bufLen);
       }
     }
+
+    return digestHexStr(md);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String digestHexStr(MessageDigest md)
+  {
+    return Hex.encodeHexString(md.digest());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static MessageDigest newMessageDigest()
+  {
+    try { return MessageDigest.getInstance("MD5"); } catch (NoSuchAlgorithmException e) { return null; }
   }
 
 //---------------------------------------------------------------------------

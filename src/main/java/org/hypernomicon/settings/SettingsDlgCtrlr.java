@@ -385,7 +385,7 @@ public class SettingsDlgCtrlr extends HyperDlg
   {
     try
     {
-      lblStep2Instructions.setText("Click link to open web site where you will authorize Hypernomicon to access your " +
+      lblStep2Instructions.setText("Click link to open web site where you will authorize " + App.appTitle + " to access your " +
                                    libType.getUserFriendlyName() + " account and get verification code.");
 
       if (libType == LibraryType.ltZotero)
@@ -513,7 +513,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     String typeName = db.getBibLibrary().type().getUserFriendlyName();
 
     if (confirmDialog("Do you really want to unlink your " + typeName + " account?" + System.lineSeparator() +
-                      "All associations between Hypernomicon records and " + typeName + " entries will be erased." + System.lineSeparator() +
+                      "All associations between " + App.appTitle + " records and " + typeName + " entries will be erased." + System.lineSeparator() +
                       "This process cannot be undone.") == false)
       return;
 

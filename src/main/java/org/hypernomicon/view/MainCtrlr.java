@@ -79,7 +79,6 @@ import org.hypernomicon.view.wrappers.*;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
@@ -1133,16 +1132,17 @@ public final class MainCtrlr
 
       boolean watcherWasRunning = folderTreeWatcher.stop();
 
-      db.saveAllToDisk(favorites);
+      boolean rv = db.saveAllToDisk(favorites);
 
       if (restartWatcher && watcherWasRunning)
         folderTreeWatcher.createNewWatcherAndStart();
 
       if (updateUI) update();
 
-      lblStatus.setText("Database last saved to XML files: " + timeToUserReadableStr(LocalDateTime.now()));
+      if (rv)
+        lblStatus.setText("Database last saved to XML files: " + timeToUserReadableStr(LocalDateTime.now()));
 
-      return true;
+      return rv;
     }
     catch (Throwable e)
     {
@@ -1296,7 +1296,7 @@ public final class MainCtrlr
             if (filePath.getExtensionOnly().equals("hdb"))
               srcFilePath = filePath;
 
-            try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath.toFile()), buffer.length))
+            try (BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(filePath.toPath()), buffer.length))
             {
               while ((size = zis.read(buffer, 0, buffer.length)) != -1)
                 bos.write(buffer, 0, size);
