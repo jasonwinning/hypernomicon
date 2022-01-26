@@ -922,7 +922,8 @@ public final class MainCtrlr
           }
         }
 
-        saveAllToDisk(false, false, false);
+        if (saveAllToDisk(false, false, false) == false)
+          return;
       }
 
       shuttingDown = true;
