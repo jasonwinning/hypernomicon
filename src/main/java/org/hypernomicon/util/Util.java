@@ -1454,9 +1454,8 @@ public final class Util
       if (list.isEmpty()) return list;
     }
 
-    if (emptiesOK) return list;
-
-    list.removeIf(s -> ultraTrim(s).isBlank());
+    if (emptiesOK == false)
+      list.removeIf(s -> ultraTrim(s).isBlank());
 
     return list;
   }

@@ -43,7 +43,6 @@ import org.hypernomicon.model.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.KeyWork;
 import org.hypernomicon.model.items.MainText;
-import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.HDT_Hub;
@@ -376,7 +375,7 @@ public class MainTextUtil
 
     if (record.getType() == hdtHub)
     {
-      record = ui.getSpokeToGoTo(HDT_Hub.class.cast(record).getLink());
+      record = ui.getSpokeToGoTo((HDT_Hub)record);
 
       if (record == null)
       {
@@ -665,9 +664,7 @@ public class MainTextUtil
 
   private static String getAnchorForUnitable(HDT_RecordWithConnector uRecord)
   {
-    StrongLink link = uRecord.getLink();
-    if (link != null)
-      uRecord = ui.getSpokeToGoTo(link);
+    uRecord = ui.getSpokeToGoTo(uRecord);
 
     String recordName = uRecord.getType() == hdtConcept ? ((HDT_Concept) uRecord).getExtendedName() : uRecord.name();
 

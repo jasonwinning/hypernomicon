@@ -233,7 +233,7 @@ public class BibManager extends HyperDlg
 
     htRelatives = new HyperTable(tvRelatives, 2, false, "");
     htRelatives.addCol(hdtWork, ctNone);
-    htRelatives.addCol(hdtWork, ctIcon);
+    htRelatives.addIconCol();
     htRelatives.addCol(hdtWork, ctNone);
     htRelatives.setDblClickHandler(HDT_Work.class, this::goToWork);
 

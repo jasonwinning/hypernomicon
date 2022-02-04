@@ -35,7 +35,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<SplitPane fx:id="spBottomVert" dividerPositions="0.7655086848635235" orientation="VERTICAL" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.FileTabCtrlr">
+<SplitPane fx:id="spBottomVert" dividerPositions="0.7655086848635235" orientation="VERTICAL" prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.FileTabCtrlr">
    <items>
       <GridPane>
          <columnConstraints>
@@ -161,8 +161,8 @@
                      <children>
                         <TableView fx:id="tvKeyMentions" maxHeight="-Infinity" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <columns>
-                              <TableColumn maxWidth="200.0" minWidth="200.0" prefWidth="200.0" text="Record Type" />
-                              <TableColumn prefWidth="202.0" text="Record Name" />
+                              <TableColumn maxWidth="200.0" minWidth="69.0" prefWidth="69.0" text="Type" />
+                              <TableColumn prefWidth="629.0" text="Record Name" />
                               <TableColumn prefWidth="766.0" text="Description" />
                            </columns>
                            <columnResizePolicy>

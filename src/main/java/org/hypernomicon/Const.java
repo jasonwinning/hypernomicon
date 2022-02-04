@@ -182,6 +182,7 @@ public final class Const
     PREF_KEY_WORK_MID_VERT       = "workMidVert",
     PREF_KEY_WORK_BOTTOM_VERT    = "workBottomVert",
     PREF_KEY_WORK_RIGHT_HORIZ    = "workRightHoriz",
+    PREF_KEY_WORK_BOTTOM_HORIZ   = "workBottomHoriz",
     PREF_KEY_FILE_BOTTOM_VERT    = "fileBottomVert",
     PREF_KEY_FILE_RIGHT_HORIZ    = "fileRightHoriz",
     PREF_KEY_FILE_RIGHT_VERT     = "fileRightVert",

@@ -40,7 +40,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.WorkTabCtrlr">
+<GridPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.WorkTabCtrlr">
   <columnConstraints>
     <ColumnConstraints hgrow="NEVER" maxWidth="53.0" minWidth="53.0" prefWidth="53.0" />
       <ColumnConstraints hgrow="SOMETIMES" />
@@ -362,47 +362,49 @@
                   </SplitPane>
                </children>
             </AnchorPane>
-            <TabPane fx:id="lowerTabPane">
-               <tabs>
-                  <Tab fx:id="tabArguments" closable="false" text="Arguments">
-                     <content>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
-                           <children>
-                              <TableView fx:id="tvArguments" layoutX="503.0" layoutY="-24.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                <columns>
-                                    <TableColumn maxWidth="40.0" minWidth="40.0" prefWidth="40.0" />
-                                  <TableColumn prefWidth="197.0" text="Target" />
-                                  <TableColumn prefWidth="202.0" text="Verdict" />
-                                    <TableColumn prefWidth="766.0" text="Argument name" />
-                                </columns>
-                                 <columnResizePolicy>
-                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                 </columnResizePolicy>
-                              </TableView>
-                           </children>
-                        </AnchorPane>
-                     </content>
-                  </Tab>
-                  <Tab fx:id="tabKeyMentions" closable="false" text="Records listing this as a Key Work">
-                    <content>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                           <children>
-                              <TableView fx:id="tvKeyMentions" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                 <columns>
-                                    <TableColumn maxWidth="200.0" minWidth="200.0" prefWidth="200.0" text="Record Type" />
-                                    <TableColumn prefWidth="202.0" text="Record Name" />
-                                    <TableColumn prefWidth="766.0" text="Description" />
-                                 </columns>
-                                 <columnResizePolicy>
-                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                 </columnResizePolicy>
-                              </TableView>
-                           </children>
-                        </AnchorPane>
-                    </content>
-                  </Tab>
-               </tabs>
-            </TabPane>
+            <SplitPane fx:id="spMentioners" dividerPositions="0.5">
+               <items>
+                  <TabPane fx:id="tpArguments">
+                     <tabs>
+                        <Tab fx:id="tabArguments" closable="false" text="Arguments">
+                           <content>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                                 <children>
+                                    <TableView fx:id="tvArguments" layoutX="503.0" layoutY="-24.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                      <columns>
+                                          <TableColumn maxWidth="40.0" minWidth="40.0" prefWidth="40.0" />
+                                        <TableColumn prefWidth="197.0" text="Target" />
+                                        <TableColumn prefWidth="202.0" text="Verdict" />
+                                          <TableColumn prefWidth="300.0" text="Argument name" />
+                                      </columns>
+                                    </TableView>
+                                 </children>
+                              </AnchorPane>
+                           </content>
+                        </Tab>
+                     </tabs>
+                  </TabPane>
+                  <TabPane fx:id="tpKeyMentions" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE">
+                    <tabs>
+                        <Tab fx:id="tabKeyMentions" closable="false" text="Records listing this as a Key Work">
+                          <content>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <children>
+                                    <TableView fx:id="tvKeyMentions" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <columns>
+                                          <TableColumn prefWidth="62.0" text="Type" />
+                                          <TableColumn prefWidth="246.0" text="Record Name" />
+                                          <TableColumn prefWidth="300.0" text="Description" />
+                                       </columns>
+                                    </TableView>
+                                 </children>
+                              </AnchorPane>
+                          </content>
+                        </Tab>
+                    </tabs>
+                  </TabPane>
+               </items>
+            </SplitPane>
         </items>
       </SplitPane>
    </children>

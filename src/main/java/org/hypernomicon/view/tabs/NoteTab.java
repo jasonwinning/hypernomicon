@@ -280,7 +280,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     htMentioners = new HyperTable(ctrlr.tvRightChildren, 1, false, PREF_KEY_HT_NOTE_MENTIONERS);
 
-    htMentioners.addCol(hdtNone, ctIcon);
+    htMentioners.addIconCol();
     htMentioners.addCol(hdtNone, ctNone);
     htMentioners.addCol(hdtNone, ctNone);
 

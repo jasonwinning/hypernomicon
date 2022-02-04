@@ -202,7 +202,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 
     htKeyMentioners.addDefaultMenuItems();
 
-    htKeyMentioners.addCol(hdtNone, ctNone);
+    htKeyMentioners.addIconCol();
     htKeyMentioners.addCol(hdtNone, ctNone);
     htKeyMentioners.addCol(hdtNone, ctNone);
 

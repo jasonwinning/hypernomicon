@@ -36,7 +36,6 @@ import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
@@ -126,10 +125,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   @FXML private MenuItem mnuCrossref, mnuFindDOIonCrossref, mnuFindISBNonGoogleBooks, mnuGoogle, mnuShowMetadata, mnuStoreMetadata;
   @FXML private ProgressBar progressBar;
   @FXML private SplitMenuButton btnDOI, smbWebSrch1;
-  @FXML private SplitPane spHoriz1, spHoriz2, spVert;
+  @FXML private SplitPane spHoriz1, spHoriz2, spVert, spMentioners;
   @FXML private Tab tabArguments, tabBibDetails, tabCrossref, tabGoogleBooks, tabInvestigations, tabKeyMentions,
                     tabEntry, tabMiscBib, tabMiscFiles, tabPdfMetadata, tabSubworks, tabWorkFiles;
-  @FXML private TabPane lowerTabPane, tabPane, tpBib;
+  @FXML private TabPane tabPane, tpBib, tpArguments, tpKeyMentions;
   @FXML private TableView<HyperTableRow> tvArguments, tvAuthors, tvISBN, tvInvestigations, tvKeyMentions,
                                          tvLabels, tvMiscFiles, tvSubworks, tvWorkFiles;
   @FXML private TextArea taEntry, taCrossref, taGoogleBooks, taMiscBib, taPdfMetadata;
@@ -185,11 +184,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     mainText = new MainTextWrapper(apDescription);
 
     tabPane.setStyle("-fx-open-tab-animation: NONE; -fx-close-tab-animation: NONE;");
-    tpBib.setStyle("-fx-open-tab-animation: NONE; -fx-close-tab-animation: NONE;");
+    tpBib  .setStyle("-fx-open-tab-animation: NONE; -fx-close-tab-animation: NONE;");
 
-    tabPane.getTabs().forEach(tab -> tabCaptions.put(tab, tab.getText()));
-
-    lowerTabPane.getTabs().forEach(tab -> tabCaptions.put(tab, tab.getText()));
+    tabPane      .getTabs().forEach(tab -> tabCaptions.put(tab, tab.getText()));
+    tpArguments  .getTabs().forEach(tab -> tabCaptions.put(tab, tab.getText()));
+    tpKeyMentions.getTabs().forEach(tab -> tabCaptions.put(tab, tab.getText()));
 
     setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "WorldCat");
     setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Google Scholar");
@@ -275,7 +274,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     htKeyMentioners = new HyperTable(tvKeyMentions, 1, false, PREF_KEY_HT_WORK_MENTIONERS);
 
-    htKeyMentioners.addCol(hdtNone, ctNone);
+    htKeyMentioners.addIconCol();
     htKeyMentioners.addCol(hdtNone, ctNone);
     htKeyMentioners.addCol(hdtNone, ctNone);
 
@@ -900,8 +899,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
             updatePreview = false;
     }
 
-    lowerTabPane.getSelectionModel().select((argCnt > 0) || (mentionerCnt == 0) ? tabArguments : tabKeyMentions);
-
     if (curWork.getBibEntryKey().length() > 0)
     {
       ImageView iv = imgViewFromRelPath("resources/images/card-catalog.png");
@@ -981,29 +978,11 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
     table.buildRows(set, (row, mentioner) ->
     {
-      String typeStr = "", name;
-
       if (mentioner.getType() == hdtHub)
-      {
-        StrongLink link = ((HDT_Hub)mentioner).getLink();
-        if (link.getDebate  () != null) typeStr += (typeStr.isEmpty() ? "" : ", ") + db.getTypeName(hdtDebate);
-        if (link.getPosition() != null) typeStr += (typeStr.isEmpty() ? "" : ", ") + db.getTypeName(hdtPosition);
-        if (link.getNote    () != null) typeStr += (typeStr.isEmpty() ? "" : ", ") + db.getTypeName(hdtNote);
-        if (link.getConcept () != null) typeStr += (typeStr.isEmpty() ? "" : ", ") + db.getTypeName(hdtTerm);
+        mentioner = ui.getSpokeToGoTo(mentioner);
 
-        if      (link.getConcept () != null) name = link.getConcept ().getCBText();
-        else if (link.getDebate  () != null) name = link.getDebate  ().getCBText();
-        else if (link.getPosition() != null) name = link.getPosition().getCBText();
-        else                                 name = link.getNote    ().getCBText();
-      }
-      else
-      {
-        typeStr = db.getTypeName(mentioner.getType());
-        name = mentioner.getCBText();
-      }
-
-      row.setCellValue(0, mentioner, typeStr);
-      row.setCellValue(1, mentioner, name);
+      row.setCellValue(0, mentioner, "");
+      row.setCellValue(1, mentioner, mentioner.getCBText());
       row.setCellValue(2, mentioner, mentioner.getMainText().getPlainForDisplay());
     });
 
@@ -2004,6 +1983,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     setDividerPosition(spVert, PREF_KEY_WORK_MID_VERT, 0);
     setDividerPosition(spVert, PREF_KEY_WORK_BOTTOM_VERT, 1);
     setDividerPosition(spHoriz1, PREF_KEY_WORK_RIGHT_HORIZ, 0);
+    getDividerPosition(spMentioners, PREF_KEY_WORK_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------
@@ -2014,6 +1994,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     getDividerPosition(spVert, PREF_KEY_WORK_MID_VERT, 0);
     getDividerPosition(spVert, PREF_KEY_WORK_BOTTOM_VERT, 1);
     getDividerPosition(spHoriz1, PREF_KEY_WORK_RIGHT_HORIZ, 0);
+    getDividerPosition(spMentioners, PREF_KEY_WORK_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------

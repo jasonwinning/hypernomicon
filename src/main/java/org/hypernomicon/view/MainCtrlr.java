@@ -1447,10 +1447,15 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private int origFolderMenuItemCount = -1;
+
   private void updateTopicalFolders()
   {
-    while (mnuFolders.getItems().size() > 10) // Clear the topical folder items that currently exist
-      mnuFolders.getItems().remove(10);
+    if (origFolderMenuItemCount < 0)
+      origFolderMenuItemCount = mnuFolders.getItems().size();
+
+    while (mnuFolders.getItems().size() > origFolderMenuItemCount) // Clear the topical folder items that currently exist
+      mnuFolders.getItems().remove(origFolderMenuItemCount);
 
     if (db.isLoaded() == false)
     {
@@ -2053,15 +2058,22 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public HDT_RecordWithConnector getSpokeToGoTo(HDT_RecordWithConnector uRecord)
+  {
+    StrongLink link = uRecord.getLink();
+
+    return link == null ? uRecord : getSpokeToGoTo(link);
+  }
+
   public HDT_RecordWithConnector getSpokeToGoTo(StrongLink link)
   {
     if (link == null) return null;
 
-    HDT_RecordWithConnector spoke = link.getConcept();
-    if (spoke == null)      spoke = link.getDebate();
+    HDT_RecordWithConnector spoke = link.getConcept ();
+    if (spoke == null)      spoke = link.getDebate  ();
     if (spoke == null)      spoke = link.getPosition();
-    if (spoke == null)      spoke = link.getNote();
-    if (spoke == null)      spoke = link.getLabel();
+    if (spoke == null)      spoke = link.getNote    ();
+    if (spoke == null)      spoke = link.getLabel   ();
 
     return spoke;
   }
@@ -2081,7 +2093,7 @@ public final class MainCtrlr
     {
       case hdtHub :
 
-        record = getSpokeToGoTo(((HDT_Hub)record).getLink());
+        record = getSpokeToGoTo((HDT_Hub)record);
         if (record == null) return;
         break;
 

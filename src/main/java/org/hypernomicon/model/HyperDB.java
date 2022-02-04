@@ -2312,28 +2312,25 @@ public final class HyperDB
     if ((filePath.getParent().equals(rootFilePath) == false) &&
         (filePath.getParent().equals(xmlPath     ) == false))   return false;
 
-    if (filePath.equals(hdbFilePath) ||
-        filePath.equals(getRequestMessageFilePath(false)) ||
-        filePath.equals(getResponseMessageFilePath(false)) ||
-        filePath.equals(getLockFilePath(false)) ||
-        filePath.equals(xmlPath.resolve(SETTINGS_FILE_NAME     )) ||
-        filePath.equals(xmlPath.resolve(PERSON_FILE_NAME       )) ||
-        filePath.equals(xmlPath.resolve(PERSON_FILE_NAME       )) ||
-        filePath.equals(xmlPath.resolve(OTHER_FILE_NAME        )) ||
-        filePath.equals(xmlPath.resolve(INSTITUTION_FILE_NAME  )) ||
-        filePath.equals(xmlPath.resolve(INVESTIGATION_FILE_NAME)) ||
-        filePath.equals(xmlPath.resolve(DEBATE_FILE_NAME       )) ||
-        filePath.equals(xmlPath.resolve(ARGUMENT_FILE_NAME     )) ||
-        filePath.equals(xmlPath.resolve(POSITION_FILE_NAME     )) ||
-        filePath.equals(xmlPath.resolve(WORK_FILE_NAME         )) ||
-        filePath.equals(xmlPath.resolve(TERM_FILE_NAME         )) ||
-        filePath.equals(xmlPath.resolve(FILE_FILE_NAME         )) ||
-        filePath.equals(xmlPath.resolve(NOTE_FILE_NAME         )) ||
-        filePath.equals(xmlPath.resolve(HUB_FILE_NAME          )) ||
-        filePath.equals(xmlPath.resolve(BIB_FILE_NAME          )))
-      return true;
-
-    return false;
+    return filePath.equals(hdbFilePath) ||
+           filePath.equals(getRequestMessageFilePath(false)) ||
+           filePath.equals(getResponseMessageFilePath(false)) ||
+           filePath.equals(getLockFilePath(false)) ||
+           filePath.equals(xmlPath.resolve(SETTINGS_FILE_NAME     )) ||
+           filePath.equals(xmlPath.resolve(PERSON_FILE_NAME       )) ||
+           filePath.equals(xmlPath.resolve(PERSON_FILE_NAME       )) ||
+           filePath.equals(xmlPath.resolve(OTHER_FILE_NAME        )) ||
+           filePath.equals(xmlPath.resolve(INSTITUTION_FILE_NAME  )) ||
+           filePath.equals(xmlPath.resolve(INVESTIGATION_FILE_NAME)) ||
+           filePath.equals(xmlPath.resolve(DEBATE_FILE_NAME       )) ||
+           filePath.equals(xmlPath.resolve(ARGUMENT_FILE_NAME     )) ||
+           filePath.equals(xmlPath.resolve(POSITION_FILE_NAME     )) ||
+           filePath.equals(xmlPath.resolve(WORK_FILE_NAME         )) ||
+           filePath.equals(xmlPath.resolve(TERM_FILE_NAME         )) ||
+           filePath.equals(xmlPath.resolve(FILE_FILE_NAME         )) ||
+           filePath.equals(xmlPath.resolve(NOTE_FILE_NAME         )) ||
+           filePath.equals(xmlPath.resolve(HUB_FILE_NAME          )) ||
+           filePath.equals(xmlPath.resolve(BIB_FILE_NAME          ));
   }
 
 //---------------------------------------------------------------------------

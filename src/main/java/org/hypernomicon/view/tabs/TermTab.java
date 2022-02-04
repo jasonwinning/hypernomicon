@@ -192,7 +192,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
       if (event.getCode().isArrowKey())
         lastArrowKey = Instant.now().toEpochMilli();
     });
-    
+
     tpConcepts.getSelectionModel().selectedItemProperty().addListener((ob, oldTab, newTab) ->
     {
       if (alreadyChangingTab) return;
@@ -243,7 +243,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
     htDisplayers = new HyperTable(ctrlr.tvRightChildren, 1, false, PREF_KEY_HT_TERM_DISPLAYERS);
 
-    htDisplayers.addCol(hdtNone, ctIcon);
+    htDisplayers.addIconCol();
     htDisplayers.addCol(hdtNone, ctNone);
     htDisplayers.addCol(hdtNone, ctNone);
 
@@ -301,7 +301,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     if (ui.cantSaveRecord()) return;
 
     RecordDropdownDlgCtrlr<HDT_Term> rdd = RecordDropdownDlgCtrlr.build(hdtTerm, id -> id != curTerm.getID());
-    
+
     if (rdd.showModal() == false) return;
 
     HDT_Term otherTerm = rdd.getRecord();

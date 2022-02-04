@@ -239,15 +239,14 @@ public class StrongLink
 
     firstSpoke.link = null;
     firstSpoke.mainText = new MainText(hub.getMainText(), firstSpoke);
+    numSpokes--;
 
     // Done disconnecting, now need to disconnect other connector if only one left
 
-    if (numSpokes > 2)  return true;
-    if (numSpokes == 2) return disconnectRecord(otherSpoke.getType(), deleteHub);
+    if (numSpokes == 1) return disconnectRecord(otherSpoke.getType(), deleteHub);
 
-    // Hub now has no more spokes, must be sacrificed
-
-    if (deleteHub) db.deleteRecord(hub);
+    if (deleteHub && (numSpokes == 0))
+      db.deleteRecord(hub);  // Hub now has no more spokes, must be sacrificed
 
     return true;
   }
