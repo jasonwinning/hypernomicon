@@ -27,8 +27,8 @@ import java.util.Set;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.Exceptions.HubChangedException;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
+import org.hypernomicon.model.Exceptions.RestoreException;
 import org.hypernomicon.model.Exceptions.SearchKeyException;
 import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
@@ -43,10 +43,10 @@ public interface HDT_Record
   RecordType getType();
   void assignID() throws HDB_InternalError;
 
-  void bringStoredCopyOnline(boolean dontRebuildMentions) throws RelationCycleException, SearchKeyException, HubChangedException;
+  void bringStoredCopyOnline(boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException, HDB_InternalError;
   boolean hasStoredState();
   RecordState getRecordStateBackup();
-  void restoreTo(RecordState backupState, boolean dontRebuildMentions) throws RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException;
+  void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, HDB_InternalError, SearchKeyException, RestoreException;
   void saveToStoredState() throws HDB_InternalError;
   void writeStoredStateToXML(StringBuilder xml);
 
@@ -82,7 +82,7 @@ public interface HDT_Record
   String getSearchKey();
   String firstActiveKeyWord();
   void setSearchKey(String newKey) throws SearchKeyException;
-  void setSearchKey(String newKey, boolean noMod, boolean dontRebuildMentions) throws SearchKeyException;
+  void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions) throws SearchKeyException;
 
   void resolvePointers() throws HDB_InternalError;
   void updateSortKey();

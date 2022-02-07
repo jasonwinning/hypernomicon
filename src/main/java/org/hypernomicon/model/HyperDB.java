@@ -201,8 +201,8 @@ public final class HyperDB
   public boolean reindexingMentioners()                         { return mentionsIndex.isRebuilding(); }
   public BibEntry getBibEntryByKey(String key)                  { return bibLibrary.getEntryByKey(key); }
 
-  public void setSearchKey(HDT_Record record, String newKey, boolean noMod, boolean dontRebuildMentions) throws SearchKeyException
-  { searchKeys.setSearchKey(record, newKey, noMod, dontRebuildMentions); }
+  public void setSearchKey(HDT_Record record, String newKey, boolean noMod, boolean rebuildMentions) throws SearchKeyException
+  { searchKeys.setSearchKey(record, newKey, noMod, rebuildMentions); }
 
   public LibraryWrapper<? extends BibEntry, ? extends BibCollection> getBibLibrary()        { return bibLibrary; }
   public List<Consumer<HDT_Record>> getRecordDeleteHandlers()                               { return unmodifiableList(recordDeleteHandlers); }
@@ -1093,10 +1093,18 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void resolvePointers() throws HDB_InternalError
+  public void resolvePointers() throws HDB_InternalError
   {
     if (pointerResolutionInProgress)
       throw new HDB_InternalError(78382);
+
+    boolean startMentionsRebuild = false;
+
+    if (mentionsIndex.isRebuilding())
+    {
+      startMentionsRebuild = true;
+      mentionsIndex.stopRebuild();
+    }
 
     pointerResolutionInProgress = true;
 
@@ -1112,6 +1120,9 @@ public final class HyperDB
     finally
     {
       pointerResolutionInProgress = false;
+
+      if (startMentionsRebuild)
+        rebuildMentions();
     }
   }
 
@@ -1131,7 +1142,7 @@ public final class HyperDB
     {
       throw new HyperDataException(e);
     }
-    catch (HubChangedException e)
+    catch (RestoreException e)
     {
       throw new HyperDataException("Internal error #42837", e);
     }
@@ -1242,7 +1253,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public <T extends HDT_RecordBase> T createNewRecordFromState(RecordState recordState, boolean bringOnline) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException
+  public <T extends HDT_RecordBase> T createNewRecordFromState(RecordState recordState, boolean bringOnline) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, RestoreException
   {
     return (T) datasets.get(recordState.type).createNewRecord(recordState, bringOnline);
   }
@@ -1263,7 +1274,7 @@ public final class HyperDB
     {
       messageDialog(e.getMessage(), mtError);
     }
-    catch (DuplicateRecordException | RelationCycleException | SearchKeyException | HubChangedException e) { noOp(); }
+    catch (DuplicateRecordException | RelationCycleException | SearchKeyException | RestoreException e) { noOp(); }
 
     return null;
   }
@@ -1493,7 +1504,7 @@ public final class HyperDB
     {
       throw new HyperDataException("File: " + filePath + System.lineSeparator() + e.getMessage(), e);
     }
-    catch (HubChangedException e)
+    catch (RestoreException e)
     {
       throw new HyperDataException("Internal error #42837", e);
     }
@@ -1748,7 +1759,7 @@ public final class HyperDB
 
       dbCloseHandlers.forEach(Runnable::run);
 
-    } catch (DuplicateRecordException | RelationCycleException | SearchKeyException | HubChangedException e) { noOp(); }
+    } catch (DuplicateRecordException | RelationCycleException | SearchKeyException | RestoreException e) { noOp(); }
   }
 
 //---------------------------------------------------------------------------
@@ -1800,7 +1811,7 @@ public final class HyperDB
       createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 6, folderMap       , PREF_KEY_UNENTERED_FOLDER_ID );
       createSpecialFolderRecord(DEFAULT_XML_FOLDER_ID + 7, folderMap       , PREF_KEY_RESULTS_FOLDER_ID   );
     }
-    catch(RelationCycleException | DuplicateRecordException | HDB_InternalError | SearchKeyException | HubChangedException e)
+    catch(RelationCycleException | DuplicateRecordException | HDB_InternalError | SearchKeyException | RestoreException e)
     {
       return falseWithErrorMessage("Unable to create folder records for new database.");
     }
@@ -1817,12 +1828,12 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void createSpecialFolderRecord(int id, Map<String, String> folderMap, String prefKey) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException
+  private void createSpecialFolderRecord(int id, Map<String, String> folderMap, String prefKey) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, RestoreException
   {
     createSpecialFolderRecord(id, folderMap.get(prefKey), prefKey);
   }
 
-  private void createSpecialFolderRecord(int id, String name, String prefKey) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException
+  private void createSpecialFolderRecord(int id, String name, String prefKey) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, RestoreException
   {
     RecordState recordState = new RecordState(hdtFolder, id, "", "", "", "");
     HDI_OfflinePath.class.cast(recordState.items.get(tagFileName)).setFileName(name);

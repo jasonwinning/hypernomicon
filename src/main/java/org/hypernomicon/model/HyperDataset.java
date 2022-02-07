@@ -159,7 +159,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void bringAllRecordsOnline() throws RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException, TerminateTaskException
+  void bringAllRecordsOnline() throws RelationCycleException, HDB_InternalError, SearchKeyException, RestoreException, TerminateTaskException
   {
     if (online) throw new HDB_InternalError(89842);
 
@@ -167,7 +167,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
     {
       if (db.task.isCancelled()) throw new TerminateTaskException();
 
-      record.bringStoredCopyOnline(true);
+      record.bringStoredCopyOnline(false);
       db.addToInitialNavList(record);
 
       if ((++db.curTaskCount % 10) == 0)
@@ -215,7 +215,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  HDT_DT createNewRecord(RecordState recordState, boolean bringOnline) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, HubChangedException
+  HDT_DT createNewRecord(RecordState recordState, boolean bringOnline) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, RestoreException
   {
     if (bringOnline)
     {
@@ -243,7 +243,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
       add(record);
 
     if (bringOnline)
-      record.bringStoredCopyOnline(true);
+      record.bringStoredCopyOnline(false);
 
     return record;
   }

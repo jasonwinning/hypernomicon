@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
+import org.hypernomicon.model.Exceptions.ConceptChangedException;
 import org.hypernomicon.model.HyperDataset;
+import org.hypernomicon.model.items.HDI_OfflinePointerMulti;
 import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
 import org.hypernomicon.model.relations.HyperObjList;
@@ -107,6 +109,18 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
     concept.glossary.set(glossary);
 
     return term;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void throwExceptionIfConceptIDsChanged(RecordState backupState) throws ConceptChangedException
+  {
+    List<Integer> offlineIDs = ((HDI_OfflinePointerMulti)(backupState.items.get(tagConcept))).getObjIDs(),
+                  onlineIDs = concepts.stream().map(HDT_Record::getID).collect(Collectors.toList());
+
+    if ((offlineIDs.containsAll(onlineIDs) && onlineIDs.containsAll(offlineIDs)) == false)
+      throw new ConceptChangedException();
   }
 
 //---------------------------------------------------------------------------

@@ -49,6 +49,7 @@ import org.hypernomicon.model.records.HDT_Hub;
 import org.hypernomicon.model.records.HDT_MiscFile;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.HDT_WorkLabel;
 import org.hypernomicon.util.filePath.FilePath;
@@ -568,13 +569,7 @@ public class MainTextUtil
     MutableBoolean firstOne = new MutableBoolean(true);
 
     if (sortByName)
-      sortedKeys.sort(sortBasis(keyWork ->
-      {
-        return keyWork.getRecordType() == hdtWork ?
-          HDT_Work.class.cast(keyWork.getRecord()).getShortAuthorsStr(true)
-        :
-          HDT_MiscFile.class.cast(keyWork.getRecord()).getShortAuthorsStr(true);
-      }));
+      sortedKeys.sort(sortBasis(keyWork -> ((HDT_RecordWithAuthors<?>)(keyWork.getRecord())).getShortAuthorsStr(true)));
     else
       sortedKeys.sort(null);
 

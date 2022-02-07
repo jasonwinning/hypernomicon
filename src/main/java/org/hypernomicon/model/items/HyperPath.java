@@ -217,7 +217,7 @@ public class HyperPath
     {
       newFolder = db.createNewRecordFromState(recordState, true);
     }
-    catch (DuplicateRecordException | RelationCycleException | SearchKeyException | HubChangedException e)
+    catch (DuplicateRecordException | RelationCycleException | SearchKeyException | RestoreException e)
     {
       noOp();
     }

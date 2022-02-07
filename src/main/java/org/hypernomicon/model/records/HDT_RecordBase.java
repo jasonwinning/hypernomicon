@@ -108,10 +108,10 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public String firstActiveKeyWord()          { return db.firstActiveKeyWord(this); }
 
   @Override public final void writeStoredStateToXML(StringBuilder xml)        { xmlState.writeToXML(xml); }
-  @Override public void setSearchKey(String newKey) throws SearchKeyException { setSearchKey(newKey, false, false); }
+  @Override public void setSearchKey(String newKey) throws SearchKeyException { setSearchKey(newKey, false, true); }
 
-  @Override public void setSearchKey(String newKey, boolean noMod, boolean dontRebuildMentions) throws SearchKeyException
-  { db.setSearchKey(this, newKey, noMod, dontRebuildMentions); }
+  @Override public void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions) throws SearchKeyException
+  { db.setSearchKey(this, newKey, noMod, rebuildMentions); }
 
   @SuppressWarnings("unchecked")
   protected final <HDT_SubjType extends HDT_Record, HDT_ObjType extends HDT_Record> HyperObjList<HDT_SubjType, HDT_ObjType> getObjList(RelationType relType)
@@ -254,27 +254,35 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void bringStoredCopyOnline(boolean dontRebuildMentions) throws RelationCycleException, SearchKeyException, HubChangedException
+  @Override public void bringStoredCopyOnline(boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException, HDB_InternalError
   {
-    restoreTo(xmlState, dontRebuildMentions);
+    restoreTo(xmlState, rebuildMentions);
+    if (rebuildMentions)
+      db.resolvePointers();
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @Override @SuppressWarnings({ "unchecked", "rawtypes" })
-  public final void restoreTo(RecordState backupState, boolean dontRebuildMentions) throws RelationCycleException, SearchKeyException, HubChangedException
+  public final void restoreTo(RecordState backupState, boolean rebuildMentions) throws RelationCycleException, SearchKeyException, RestoreException
   {
-    if (online && isUnitable())
+    if (online)
     {
-      HDT_RecordWithConnector uRecord = (HDT_RecordWithConnector)this;
-      int curHubID = -1;
+      if (isUnitable())
+      {
+        HDT_RecordWithConnector uRecord = (HDT_RecordWithConnector)this;
+        int curHubID = -1;
 
-      if (uRecord.getHub() != null)
-        curHubID = uRecord.getHub().getID();
+        if (uRecord.getHub() != null)
+          curHubID = uRecord.getHub().getID();
 
-      if (curHubID != ((HDI_OfflineConnector)(backupState.items.get(tagHub))).getHubID())
-        throw new HubChangedException(curHubID >= 1);
+        if (curHubID != ((HDI_OfflineConnector)(backupState.items.get(tagHub))).getHubID())
+          throw new HubChangedException(curHubID >= 1);
+      }
+
+      if (this.getType() == hdtTerm)
+        HDT_Term.class.cast(this).throwExceptionIfConceptIDsChanged(backupState);
     }
 
     online = true;
@@ -317,7 +325,7 @@ public abstract class HDT_RecordBase implements HDT_Record
                     // See HDI_OnlineConnector constructor
       ((HDT_RecordWithConnector)this).connector.initFromHub(db.hubs.getByID(hubID));
 
-    setSearchKey(backupState.searchKey, true, dontRebuildMentions);
+    setSearchKey(backupState.searchKey, true, rebuildMentions);
   }
 
 //---------------------------------------------------------------------------

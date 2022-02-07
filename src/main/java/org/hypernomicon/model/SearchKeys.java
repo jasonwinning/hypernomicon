@@ -131,7 +131,7 @@ public final class SearchKeys
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setSearchKey(HDT_Record record, String newKey, boolean noMod, boolean dontRebuildMentions) throws SearchKeyException
+  public void setSearchKey(HDT_Record record, String newKey, boolean noMod, boolean rebuildMentions) throws SearchKeyException
   {
     newKey = prepSearchKey(newKey);
 
@@ -176,7 +176,7 @@ public final class SearchKeys
     if (noMod == false)
       record.modifyNow();
 
-    if (dontRebuildMentions == false)
+    if (rebuildMentions)
       db.rebuildMentions();
   }
 

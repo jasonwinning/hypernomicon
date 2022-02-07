@@ -155,7 +155,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
 
     try
     {
-      term.setSearchKey(tfSearchKey.getText(), true, false);
+      term.setSearchKey(tfSearchKey.getText(), true, true);
     }
     catch (SearchKeyException e)
     {

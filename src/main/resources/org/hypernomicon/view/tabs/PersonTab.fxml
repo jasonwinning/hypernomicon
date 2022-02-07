@@ -37,7 +37,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane prefHeight="881.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.PersonTabCtrlr">
+<AnchorPane prefHeight="881.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hypernomicon.view.tabs.PersonTabCtrlr">
    <children>
       <SplitPane fx:id="spVert" dividerPositions="0.6166, 0.7998" layoutX="120.0" layoutY="96.0" orientation="VERTICAL" prefHeight="412.0" prefWidth="419.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
@@ -215,7 +215,7 @@
                       <TableColumn text="Year" />
                       <TableColumn prefWidth="189.0" text="Work Type" />
                         <TableColumn editable="false" maxWidth="41.0" minWidth="41.0" prefWidth="41.0" resizable="false" text="Ed/Tr" />
-                        <TableColumn prefWidth="266.0" text="Investigation" />
+                        <TableColumn prefWidth="266.0" text="Investigation (click to edit)" />
                         <TableColumn prefWidth="372.0" text="Title" />
                         <TableColumn prefWidth="141.0" text="Coauthor(s)" />
                     </columns>

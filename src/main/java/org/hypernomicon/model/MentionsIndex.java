@@ -214,7 +214,7 @@ class MentionsIndex
 
   boolean isRebuilding()
   {
-    return nullSwitch(thread, false, Thread::isAlive);
+    return (thread != null) && thread.isAlive();
   }
 
 //---------------------------------------------------------------------------
@@ -311,11 +311,11 @@ class MentionsIndex
 
   void stopRebuild()
   {
-    if ((thread != null) && thread.isAlive())
-    {
-      stopRequested = true;
-      try { thread.join(); } catch (InterruptedException e) { noOp(); }
-    }
+    if (isRebuilding() == false)
+      return;
+
+    stopRequested = true;
+    try { thread.join(); } catch (InterruptedException e) { noOp(); }
   }
 
 //---------------------------------------------------------------------------

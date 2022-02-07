@@ -1741,9 +1741,9 @@ public final class MainCtrlr
       return falseWithErrorMessage("No record is currently selected.");
 
     if (record.hasStoredState() == false)
-      return falseWithErrorMessage("Unable to revert: the record may not have been previously saved to disk.");
+      return falseWithErrorMessage("Unable to revert: the record may not have been previously saved to XML.");
 
-    if (confirmDialog("Are you sure you want to revert this record to the last version saved to disk?") == false) return false;
+    if (confirmDialog("Are you sure you want to revert this record to the last version saved to XML?") == false) return false;
 
     HDT_Record viewRecord = viewRecord();
 
@@ -1770,16 +1770,16 @@ public final class MainCtrlr
     try
     {
       if (hub != null)
-        hub.bringStoredCopyOnline(false);
+        hub.bringStoredCopyOnline(true);
 
-      record.bringStoredCopyOnline(false);
+      record.bringStoredCopyOnline(true);
     }
     catch (RelationCycleException e)
     {
       messageDialog("Unable to revert " + recordStr + ": Records would be organized in a cycle as a result.", mtError);
       success = false;
     }
-    catch (HubChangedException | SearchKeyException e)
+    catch (RestoreException | SearchKeyException | HDB_InternalError e)
     {
       messageDialog("Unable to revert " + recordStr + ": " + e.getMessage(), mtError);
       success = false;
@@ -1790,11 +1790,11 @@ public final class MainCtrlr
     try
     {
       if (hub != null)
-        hub.restoreTo(hubState, false);
+        hub.restoreTo(hubState, true);
 
-      record.restoreTo(backupState, false);
+      record.restoreTo(backupState, true);
     }
-    catch (RelationCycleException | SearchKeyException | HubChangedException e) { noOp(); }
+    catch (RelationCycleException | SearchKeyException | RestoreException e) { noOp(); }
     catch (HDB_InternalError e)
     {
       messageDialog("Unable to restore " + recordStr + " to pre-reverting state: " + e.getMessage(), mtError);

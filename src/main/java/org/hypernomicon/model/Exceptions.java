@@ -86,7 +86,17 @@ public class Exceptions
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static class HubChangedException extends Exception
+  public static class RestoreException extends Exception { public RestoreException(String msg) { super(msg); } }
+
+  public static class ConceptChangedException extends RestoreException
+  {
+    public ConceptChangedException()
+    {
+      super("The set of concept records linked to this term record has changed.");
+    }
+  }
+
+  public static class HubChangedException extends RestoreException
   {
     public HubChangedException(boolean formerlyUnlinked)
     {
