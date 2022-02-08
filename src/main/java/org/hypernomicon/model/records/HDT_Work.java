@@ -543,7 +543,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
   public Stream<HDT_Investigation> investigationStream()
   {
-    return db.keyWorkMentionerStream(this).filter(record -> record.getType() == hdtInvestigation).map(record -> (HDT_Investigation)record);
+    return db.keyWorkMentionerStream(this).filter(record -> record.getType() == hdtInvestigation).map(HDT_Investigation.class::cast);
   }
 
 //---------------------------------------------------------------------------

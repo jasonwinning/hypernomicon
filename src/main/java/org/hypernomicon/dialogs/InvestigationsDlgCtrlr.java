@@ -25,6 +25,8 @@ import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.tabs.PersonTabCtrlr.InvestigationView;
 
+import static org.hypernomicon.util.Util.*;
+
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -44,15 +46,17 @@ public class InvestigationsDlgCtrlr extends HyperDlg
   public static class InvestigationSetting
   {
     private final SimpleBooleanProperty selected;
-    public HDT_Investigation inv;
+    private final String name;
+    public final HDT_Investigation inv;
 
-    public InvestigationSetting(boolean selected, HDT_Investigation inv)
+    public InvestigationSetting(boolean selected, HDT_Investigation inv, String name)
     {
       this.selected = new SimpleBooleanProperty(selected);
       this.inv = inv;
+      this.name = name;
     }
 
-    @Override public String toString()              { return inv.getCBText(); }
+    @Override public String toString()              { return name; }
 
     public boolean getSelected()                    { return selected.get(); }
     public SimpleBooleanProperty selectedProperty() { return selected; }
@@ -84,7 +88,11 @@ public class InvestigationsDlgCtrlr extends HyperDlg
     final ObservableList<InvestigationSetting> data = FXCollections.observableArrayList();
     Set<HDT_Investigation> investigations = work.investigationSet();
 
-    curPerson.investigations.forEach(inv -> data.add(new InvestigationSetting(investigations.contains(inv), inv)));
+    curPerson.investigations.forEach(inv ->
+    {
+      String name = findFirst(invViews, invView -> invView.record == inv, invView -> invView.tfName.getText());
+      data.add(new InvestigationSetting(investigations.contains(inv), inv, name));
+    });
 
     listView.setItems(data);
     listView.setCellFactory(CheckBoxListCell.forListView(InvestigationSetting::selectedProperty));

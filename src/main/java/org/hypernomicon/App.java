@@ -306,7 +306,7 @@ public final class App extends Application
       if (testMainTextEditing)
       {
         MainTextWrapper mainText = record.getType() == hdtInvestigation ?
-          ui.personHyperTab().getInvMainTextWrapper(record.getID())
+          ui.personHyperTab().getInvMainTextWrapper((HDT_Investigation)record)
         :
           ui.activeTab().mainTextWrapper();
 

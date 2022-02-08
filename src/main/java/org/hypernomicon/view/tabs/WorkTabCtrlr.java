@@ -73,6 +73,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -80,6 +81,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -945,12 +947,16 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   static int populateDisplayersAndKeyMentioners(HDT_RecordWithPath record, HyperTable table)
   {
-    Set<HDT_RecordWithConnector> set = db.keyWorkMentionerSet(record);
+    Set<HDT_RecordWithConnector> set = new LinkedHashSet<>(), invSet = new LinkedHashSet<>();
+
+    Stream<HDT_RecordWithConnector> stream = db.keyWorkMentionerStream(record);
 
     if (record.hasMainText())
-      db.getDisplayers(((HDT_RecordWithConnector)record).getMainText()).stream().map(MainText::getRecord).forEach(set::add);
+      stream = Stream.concat(stream, db.getDisplayers(((HDT_RecordWithConnector)record).getMainText()).stream().map(MainText::getRecord));
 
-    table.buildRows(set, (row, mentioner) ->
+    stream.forEach(mentioner -> (mentioner.getType() == hdtInvestigation ? invSet : set).add(mentioner));
+
+    table.buildRows(Stream.concat(invSet.stream(), set.stream()), (row, mentioner) ->
     {
       if (mentioner.getType() == hdtHub)
         mentioner = ui.spokeToGoTo(mentioner);
@@ -960,7 +966,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       row.setCellValue(2, mentioner, mentioner.getMainText().getPlainForDisplay());
     });
 
-    return set.size();
+    return set.size() + invSet.size();
   }
 
 //---------------------------------------------------------------------------
@@ -1955,7 +1961,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     setDividerPosition(spVert, PREF_KEY_WORK_MID_VERT, 0);
     setDividerPosition(spVert, PREF_KEY_WORK_BOTTOM_VERT, 1);
     setDividerPosition(spHoriz1, PREF_KEY_WORK_RIGHT_HORIZ, 0);
-    getDividerPosition(spMentioners, PREF_KEY_WORK_BOTTOM_HORIZ, 0);
+    setDividerPosition(spMentioners, PREF_KEY_WORK_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------

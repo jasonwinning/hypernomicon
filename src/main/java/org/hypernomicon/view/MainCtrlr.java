@@ -2158,7 +2158,7 @@ public final class MainCtrlr
     viewSequence.saveViewFromUItoSlotAdvanceCursorAndLoadNewViewToUI(new HyperView<>(record));
 
     if (inv != null)
-      personHyperTab().showInvestigation(inv.getID());
+      personHyperTab().showInvestigation(inv);
     else if (workFile != null)
       workHyperTab().showWorkFile(workFile);
   }

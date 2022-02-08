@@ -573,7 +573,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     for (InvestigationView iV : invViews)
     {
-      HDT_Investigation inv = db.investigations.getByID(iV.id);
+      HDT_Investigation inv = iV.record;
 
       try
       {
@@ -600,7 +600,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     new ArrayList<>(curPerson.investigations).forEach(inv ->
     {
-      if (invViews.stream().noneMatch(iV -> iV.id == inv.getID()))
+      if (invViews.stream().noneMatch(iV -> iV.record == inv))
         db.deleteRecord(inv);
     });
 
@@ -947,10 +947,20 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
   public class InvestigationView
   {
-    private int id;
-    private TextField tfName, tfSearchKey;
-    private MainTextWrapper textWrapper;
-    private Tab tab;
+    public InvestigationView(HDT_Investigation record, TextField tfName, TextField tfSearchKey, MainTextWrapper textWrapper, Tab tab)
+    {
+      this.record = record;
+      this.tfName = tfName;
+      this.tfSearchKey = tfSearchKey;
+      this.textWrapper = textWrapper;
+      this.tab = tab;
+    }
+
+    public final HDT_Investigation record;
+    public final TextField tfName;
+    private final TextField tfSearchKey;
+    private final MainTextWrapper textWrapper;
+    private final Tab tab;
   }
 
 //---------------------------------------------------------------------------
@@ -962,7 +972,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     InvestigationView view = findFirst(invViews, iV -> iV.tab.equals(tab));
 
-    if ((view == null) || (view.id < 1))
+    if ((view == null) || (view.record == null))
       return;
 
     event.consume();
@@ -981,23 +991,17 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
   private InvestigationView addInvView(HDT_Investigation inv)
   {
-    InvestigationView iV = new InvestigationView();
-
-    iV.id = inv.getID();
-    String newName = inv.listName(),
-           newSearchKey = inv.getSearchKey();
-
-    iV.tab = new Tab();
-    iV.tfName = new TextField(newName);
-    iV.tab.setText(newName);
-    iV.tfSearchKey = new TextField(newSearchKey);
-
-    ui.setSearchKeyToolTip(iV.tfSearchKey);
-
-    iV.tab.setOnCloseRequest(this::deleteInvestigation);
-
     BorderPane bPane = new BorderPane();
     AnchorPane aPane = new AnchorPane();
+    String newName = inv.listName();
+
+    InvestigationView iV = new InvestigationView(inv, new TextField(newName), new TextField(inv.getSearchKey()),
+                                                 new MainTextWrapper(aPane), new Tab());
+
+    iV.tab.setText(newName);
+    iV.tab.setOnCloseRequest(this::deleteInvestigation);
+
+    ui.setSearchKeyToolTip(iV.tfSearchKey);
 
     GridPane gPane = new GridPane();
     gPane.add(new Label("Investigation name:"), 0, 0); // column=2 row=1
@@ -1016,7 +1020,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     gPane.setHgap(3);
 
-    iV.textWrapper = new MainTextWrapper(aPane);
     bPane.setCenter(aPane);
 
     iV.textWrapper.loadFromRecord(inv, false, new TextViewInfo());
@@ -1063,11 +1066,11 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     InvestigationView iV = findFirst(invViews, view -> view.tab == newValue);
     if (iV == null) return;
 
-    if (iV.id < 1)
+    if (iV.record == null)
       htWorks.clearFilter();
     else
     {
-      final HDT_Investigation inv = db.investigations.getByID(iV.id);
+      final HDT_Investigation inv = iV.record;
 
       htWorks.setFilter(row ->
       {
@@ -1077,7 +1080,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
         return HDT_Work.class.cast(record).investigationSet().contains(inv);
       });
 
-      db.investigations.getByID(iV.id).viewNow();
+      inv.viewNow();
     }
 
     iV.textWrapper.showReadOnly();
@@ -1136,9 +1139,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void showInvestigation(int id)
+  public void showInvestigation(HDT_Investigation inv)
   {
-    nullSwitch(findFirst(invViews, iV -> iV.id == id), iV ->
+    nullSwitch(findFirst(invViews, iV -> iV.record == inv), iV ->
     {
       tpPerson.getSelectionModel().select(iV.tab);
       safeFocus(iV.tfName);
@@ -1148,9 +1151,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public MainTextWrapper getInvMainTextWrapper(int id)
+  public MainTextWrapper getInvMainTextWrapper(HDT_Investigation inv)
   {
-    return findFirst(invViews, iV -> iV.id == id, iV -> iV.textWrapper);
+    return findFirst(invViews, iV -> iV.record == inv, iV -> iV.textWrapper);
   }
 
 //---------------------------------------------------------------------------
