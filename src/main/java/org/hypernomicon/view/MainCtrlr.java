@@ -2058,14 +2058,14 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_RecordWithConnector getSpokeToGoTo(HDT_RecordWithConnector uRecord)
+  public HDT_RecordWithConnector spokeToGoTo(HDT_RecordWithConnector uRecord)
   {
     StrongLink link = uRecord.getLink();
 
-    return link == null ? uRecord : getSpokeToGoTo(link);
+    return link == null ? uRecord : spokeToGoTo(link);
   }
 
-  public HDT_RecordWithConnector getSpokeToGoTo(StrongLink link)
+  public HDT_RecordWithConnector spokeToGoTo(StrongLink link)
   {
     if (link == null) return null;
 
@@ -2093,7 +2093,7 @@ public final class MainCtrlr
     {
       case hdtHub :
 
-        record = getSpokeToGoTo((HDT_Hub)record);
+        record = spokeToGoTo((HDT_Hub)record);
         if (record == null) return;
         break;
 
@@ -2112,7 +2112,7 @@ public final class MainCtrlr
           return;
         }
 
-        record = getSpokeToGoTo(link);
+        record = spokeToGoTo(link);
         break;
 
       case hdtFolder :

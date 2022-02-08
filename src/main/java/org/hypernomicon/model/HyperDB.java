@@ -65,6 +65,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.InvalidPreferencesFormatException;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.*;
 
@@ -87,7 +88,9 @@ import org.json.simple.parser.ParseException;
 
 import com.google.common.collect.EnumBiMap;
 import com.google.common.collect.EnumHashBiMap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
 import javafx.beans.property.ObjectProperty;
@@ -153,6 +156,7 @@ public final class HyperDB
   final private BidiOneToManyMainTextMap displayedAtIndex = new BidiOneToManyMainTextMap();
   final private Map<String, HDT_Work> bibEntryKeyToWork = new HashMap<>();
   final private Map<String, String> xmlChecksums = new HashMap<>();
+  final private SetMultimap<Integer, Integer> workIDtoInvIDs = LinkedHashMultimap.create(); // For backwards compatibility with records XML version 1.4
 
   final public FilenameMap<Set<HyperPath>> filenameMap = new FilenameMap<>();
 
@@ -666,7 +670,7 @@ public final class HyperDB
     }
 
     alreadyShowedUpgradeMsg = false;
-    MutableBoolean needToAddThesisWorkType = new MutableBoolean();
+    MutableBoolean needToAddThesisWorkType = new MutableBoolean(); // Backwards compatibility with records XML version 1.3
 
     task = new HyperTask("LoadDatabase") { @Override protected Boolean call() throws Exception
     {
@@ -829,6 +833,9 @@ public final class HyperDB
         throw new HyperDataException("An error occurred while attempting to read database settings: " + e.getMessage(), e);
       }
 
+      if (workIDtoInvIDs.isEmpty() == false)
+        doInvestigationConversion();
+
       if (needToAddThesisWorkType.isTrue())
       {
         int thesisID = HDT_WorkType.getIDbyEnum(wtThesis);
@@ -872,6 +879,25 @@ public final class HyperDB
     lock();
 
     return true;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void doInvestigationConversion() // Backwards compatibility with records XML version 1.4
+  {
+    runningConversion = true;
+
+    for (Entry<Integer, Collection<Integer>> entry : workIDtoInvIDs.asMap().entrySet())
+    {
+      List<HDT_Investigation> invList = entry.getValue().stream().map(id -> investigations.getByID(id)).collect(Collectors.toList());
+
+      invList.forEach(inv -> inv.getMainText().addKeyworksIfNotPresent());
+
+      works.getByID(entry.getKey()).setInvestigations(invList);
+    }
+
+    runningConversion = false;
   }
 
 //---------------------------------------------------------------------------
@@ -1453,7 +1479,12 @@ public final class HyperDB
                     case tagModifiedDate : xmlRecord.modifiedDate = parseIso8601offset(nodeText); break;
                     case tagViewDate     : xmlRecord.viewDate =     parseIso8601offset(nodeText); break;
 
-                    default              : xmlRecord.loadItemFromXML(tag, nodeText, objType, objID, nestedItems);
+                    default              :
+
+                      if ((tag == tagInvestigation) && (xmlRecord.type == hdtWork))
+                        workIDtoInvIDs.put(xmlRecord.id, objID);
+                      else
+                        xmlRecord.loadItemFromXML(tag, nodeText, objType, objID, nestedItems);
                   }
                 }
                 catch (DateTimeParseException e)
@@ -1716,6 +1747,7 @@ public final class HyperDB
     displayedAtIndex .clear();
     bibEntryKeyToWork.clear();
     xmlChecksums     .clear();
+    workIDtoInvIDs   .clear();
 
     if (bibLibrary != null)
     {
@@ -2147,7 +2179,6 @@ public final class HyperDB
       addPointerSingle(hdtWork, rtParentWorkOfWork, tagLargerWork);
       addPointerMulti(hdtWork, rtWorkFileOfWork, tagWorkFile);
       addAuthorsItem(hdtWork, rtAuthorOfWork);
-      addPointerMulti(hdtWork, rtInvestigationOfWork, tagInvestigation);
       addPointerMulti(hdtWork, rtLabelOfWork, tagWorkLabel);
       addStringItem(hdtWork, tagWebURL);
       addStringItem(hdtWork, tagStartPageNum);
@@ -2450,12 +2481,19 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Set<HDT_RecordWithConnector> getKeyWorkMentioners(HDT_RecordWithPath record)
+  public Stream<HDT_RecordWithConnector> keyWorkMentionerStream(HDT_RecordWithPath record)
   {
     return nullSwitch(keyWorkIndex.get(record),
-                      new HashSet<>(),
-                      set -> set.stream().map(mentioner -> mentioner.isLinked() ? mentioner.getHub() : mentioner)
-                                         .collect(Collectors.toCollection(HashSet::new)));
+                      Stream.empty(),
+                      set -> set.stream().map(mentioner -> mentioner.isLinked() ? mentioner.getHub() : mentioner));
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public Set<HDT_RecordWithConnector> keyWorkMentionerSet(HDT_RecordWithPath record)
+  {
+    return keyWorkMentionerStream(record).collect(Collectors.toCollection(HashSet::new));
   }
 
 //---------------------------------------------------------------------------

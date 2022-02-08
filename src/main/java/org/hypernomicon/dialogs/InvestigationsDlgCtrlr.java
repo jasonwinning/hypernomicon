@@ -17,9 +17,13 @@
 
 package org.hypernomicon.dialogs;
 
+import java.util.List;
+import java.util.Set;
+
 import org.hypernomicon.model.records.HDT_Investigation;
 import org.hypernomicon.model.records.HDT_Person;
 import org.hypernomicon.model.records.HDT_Work;
+import org.hypernomicon.view.tabs.PersonTabCtrlr.InvestigationView;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
@@ -67,19 +71,20 @@ public class InvestigationsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static InvestigationsDlgCtrlr build(HDT_Work work, HDT_Person curPerson)
+  public static InvestigationsDlgCtrlr build(HDT_Work work, List<InvestigationView> invViews, HDT_Person curPerson)
   {
-    return ((InvestigationsDlgCtrlr) create("InvestigationsDlg", "Assign Investigations - " + work.name(), true)).init(work, curPerson);
+    return ((InvestigationsDlgCtrlr) create("InvestigationsDlg", "Assign Investigations - " + work.name(), true)).init(work, invViews, curPerson);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private InvestigationsDlgCtrlr init(HDT_Work work, HDT_Person curPerson)
+  private InvestigationsDlgCtrlr init(HDT_Work work, List<InvestigationView> invViews, HDT_Person curPerson)
   {
     final ObservableList<InvestigationSetting> data = FXCollections.observableArrayList();
+    Set<HDT_Investigation> investigations = work.investigationSet();
 
-    curPerson.investigations.forEach(inv -> data.add(new InvestigationSetting(work.investigations.contains(inv), inv)));
+    curPerson.investigations.forEach(inv -> data.add(new InvestigationSetting(investigations.contains(inv), inv)));
 
     listView.setItems(data);
     listView.setCellFactory(CheckBoxListCell.forListView(InvestigationSetting::selectedProperty));

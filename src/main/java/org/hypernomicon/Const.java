@@ -134,7 +134,6 @@ public final class Const
     PREF_KEY_HT_WORK_LABELS = "htWorkLabels",
     PREF_KEY_HT_WORK_SUB = "htWorkSub",
     PREF_KEY_HT_WORK_MENTIONERS = "htWorkMentioners",
-    PREF_KEY_HT_WORK_INV = "htWorkInv",
     PREF_KEY_HT_WORK_ARG = "htWorkArg",
     PREF_KEY_HT_WORK_FILES = "htWorkFiles",
     PREF_KEY_HT_WORK_MISC = "htWorkMisc",

@@ -155,7 +155,6 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       case rtSubfieldOfPerson         : hasNestedItems = false; subjType = hdtPerson;        objType = hdtSubfield;        break;
       case rtFieldOfSubfield          : hasNestedItems = false; subjType = hdtSubfield;      objType = hdtField;           break;
       case rtRankOfPerson             : hasNestedItems = false; subjType = hdtPerson;        objType = hdtRank;            break;
-      case rtInvestigationOfWork      : hasNestedItems = false; subjType = hdtWork;          objType = hdtInvestigation;   break;
       case rtPersonOfInv              : hasNestedItems = false; subjType = hdtInvestigation; objType = hdtPerson;          break;
       case rtInstOfPerson             : hasNestedItems = true;  subjType = hdtPerson;        objType = hdtInstitution;
 
@@ -770,7 +769,6 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     rtDebateOfPosition        (23, tagPosition            , "Position(s) under this debate"),
     rtParentPosOfPos          (24, "Sub-Position(s)"      , "Position(s) under this parent position"),
     rtPositionOfArgument      (25, tagArgument            , "Argument(s) concerning this position"),
-    rtInvestigationOfWork     (26, tagWork                , "Work(s) in this investigation"),
     rtPersonOfInv             (27, tagInvestigation       , "Investigation(s) by this person"),
     rtPictureFolderOfPerson   (28, tagPerson              , "Person(s) with pictures in this folder"),
     rtCountryOfRegion         (29, tagRegion              , "States/regions in this country"),

@@ -20,21 +20,28 @@ package org.hypernomicon.model.records;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
+import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.WorkBibData;
 import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.HyperPath;
+import org.hypernomicon.model.items.KeyWork;
+import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
@@ -52,7 +59,6 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   private final WorkAuthors authors;
 
   public final List<HDT_Person> authorRecords;
-  public final HyperObjList<HDT_Work, HDT_Investigation> investigations;
   public final HyperObjList<HDT_Work, HDT_WorkLabel> labels;
   public final List<HDT_WorkFile> workFiles;
   public final HyperSubjList<HDT_Work, HDT_Work> subWorks;
@@ -72,7 +78,6 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     authors = new WorkAuthors(getObjList(rtAuthorOfWork), this);
 
     authorRecords = Collections.unmodifiableList(getObjList(rtAuthorOfWork));
-    investigations = getObjList(rtInvestigationOfWork);
     labels = getObjList(rtLabelOfWork);
     workFiles = Collections.unmodifiableList(getObjList(rtWorkFileOfWork));
 
@@ -84,7 +89,6 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     largerWork = getObjPointer(rtParentWorkOfWork);
   }
 
-  public void setInvestigations(List<HDT_Investigation> list) { updateObjectsFromList(rtInvestigationOfWork, list); }
   public void setWorkLabels(List<HDT_WorkLabel> list)         { updateObjectsFromList(rtLabelOfWork, list); }
 
   public WorkTypeEnum getWorkTypeEnum()     { return HDT_WorkType.workTypeIDToEnumVal(workType.getID()); }
@@ -424,9 +428,9 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
   public String getInvText(HDT_Person person)
   {
-    return investigations.stream().filter(inv -> inv.person.get() == person)
-                                  .map(HDT_Investigation::listName)
-                                  .reduce((s1, s2) -> s1 + ", " + s2).orElse("");
+    return investigationStream().filter(inv -> inv.person.get() == person)
+                                .map(HDT_Investigation::listName)
+                                .reduce((s1, s2) -> s1 + ", " + s2).orElse("");
   }
 
 //---------------------------------------------------------------------------
@@ -527,6 +531,49 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
   public FilePath previewFilePath()
   {
     return workFiles.isEmpty() ? db.resolveExtFilePath(getURL()) : filePath();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public Set<HDT_Investigation> investigationSet()
+  {
+    return investigationStream().collect(Collectors.toSet());
+  }
+
+  public Stream<HDT_Investigation> investigationStream()
+  {
+    return db.keyWorkMentionerStream(this).filter(record -> record.getType() == hdtInvestigation).map(record -> (HDT_Investigation)record);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void setInvestigations(Collection<HDT_Investigation> newCol)
+  {
+    Collection<HDT_Investigation> oldCol = investigationSet();
+
+    oldCol.forEach(inv ->
+    {
+      if (newCol.contains(inv)) return;
+
+      MainText mainText = inv.getMainText();
+      List<KeyWork> keyWorks = mainText.getKeyWorksCopy();
+
+      keyWorks.removeIf(keyWork -> keyWork.getRecord() == this);
+      mainText.setKeyWorksFromList(keyWorks);
+    });
+
+    newCol.forEach(inv ->
+    {
+      if (oldCol.contains(inv)) return;
+
+      MainText mainText = inv.getMainText();
+      List<KeyWork> keyWorks = mainText.getKeyWorksCopy();
+
+      keyWorks.add(new KeyWork(this));
+      mainText.setKeyWorksFromList(keyWorks);
+    });
   }
 
 //---------------------------------------------------------------------------

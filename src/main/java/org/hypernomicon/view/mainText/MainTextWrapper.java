@@ -363,7 +363,7 @@ public final class MainTextWrapper
     }
 
     html = mainText.getHtml();
-    keyWorks = mainText.getKeyWorks();
+    keyWorks = mainText.getKeyWorksUnmod();
 
     renderCompleteHtml();
 
@@ -396,7 +396,7 @@ public final class MainTextWrapper
     if (parentLabel == null) return keyWorkCount;
 
     for (HDT_WorkLabel label : parentLabel.subLabels)
-      keyWorkCount += getNestedKeyWorkCount(label, label.getMainText().getKeyWorks());
+      keyWorkCount += getNestedKeyWorkCount(label, label.getMainText().getKeyWorksUnmod());
 
     return keyWorkCount;
   }
@@ -509,16 +509,19 @@ public final class MainTextWrapper
 
         case diKeyWorks:
 
-          if (keyWorksSize > 0)
+          if (curRecord.getType() != hdtInvestigation)
           {
-            renderKeyWorks(innerHtml, tagNdx, curLabel);
-          }
-          else
-          {
-            if (viewInfo.openDivits == null)
-              viewInfo.openDivits = new HashSet<>();
+            if (keyWorksSize > 0)
+            {
+              renderKeyWorks(innerHtml, tagNdx, curLabel);
+            }
+            else
+            {
+              if (viewInfo.openDivits == null)
+                viewInfo.openDivits = new HashSet<>();
 
-            viewInfo.openDivits.add(KEYWORKS_DIVIT_ID); // make sure keyworks divit becomes open once a keywork is added
+              viewInfo.openDivits.add(KEYWORKS_DIVIT_ID); // make sure keyworks divit becomes open once a keywork is added
+            }
           }
 
           break;
@@ -724,14 +727,14 @@ public final class MainTextWrapper
     {
       keyWorks = new ArrayList<>();
       curRecord.getMainText().setHtml(editCtrlr.getHtmlAndKeyWorks(keyWorks));
-      curRecord.getMainText().setKeyWorksFromList(keyWorks, true);
+      if (curRecord.getType() != hdtInvestigation) curRecord.getMainText().setKeyWorksFromList(keyWorks);
       curRecord.getMainText().setDisplayItemsFromList(editCtrlr.getDisplayItems());
     }
     else
     {
       curRecord.getMainText().setHtml(html);
       curRecord.getMainText().setDisplayItemsFromList(displayItems);
-      curRecord.getMainText().setKeyWorksFromList(keyWorks, true);
+      if (curRecord.getType() != hdtInvestigation) curRecord.getMainText().setKeyWorksFromList(keyWorks);
     }
   }
 

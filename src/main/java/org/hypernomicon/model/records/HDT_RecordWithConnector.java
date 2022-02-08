@@ -82,7 +82,7 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
       if (cnt == 2) expiringHub = true;
     }
 
-    for (KeyWork keyWork : getMainText().getKeyWorks())
+    for (KeyWork keyWork : getMainText().getKeyWorksUnmod())
     {
       if (expiringHub) db.handleKeyWork(hub, keyWork.getRecord(), false); // hub is also getting deleted after this; go ahead and remove it from index
       db.handleKeyWork(this, keyWork.getRecord(), false);

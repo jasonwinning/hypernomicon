@@ -94,8 +94,9 @@ public class MainText
   public String getPlain()                        { return plainText; }
   private boolean hasKeyWork(HDT_Record rec)      { return getKeyWork(rec) != null; }
   public List<DisplayItem> getDisplayItemsUnmod() { return Collections.unmodifiableList(displayItems); }
-  public List<KeyWork> getKeyWorks()              { return Collections.unmodifiableList(keyWorks); }
   public List<DisplayItem> getDisplayItemsCopy()  { return new ArrayList<>(displayItems); }
+  public List<KeyWork> getKeyWorksUnmod()         { return Collections.unmodifiableList(keyWorks); }
+  public List<KeyWork> getKeyWorksCopy()          { return new ArrayList<>(keyWorks); }
   void expire()                                   { removeKeyWorks(false); }
 
 //---------------------------------------------------------------------------
@@ -121,7 +122,7 @@ public class MainText
 
   public String getPlainForDisplay()
   {
-    String keyWorksStr = getKeyWorksString();
+    String keyWorksStr = getRecord().getType() == hdtInvestigation ? "" : getKeyWorksString();
 
     return ultraTrim(plainText + (keyWorksStr.isEmpty() ? "" : " Key works: " + keyWorksStr));
   }
@@ -371,7 +372,7 @@ public class MainText
   {
     switch (type)
     {
-      case hdtWork : case hdtMiscFile : case hdtInvestigation : case hdtArgument :
+      case hdtWork : case hdtMiscFile : case hdtArgument :
         return false;
 
       default :
@@ -389,7 +390,9 @@ public class MainText
 
   public static void addDefaultItemsToList(HDT_RecordWithConnector record, List<DisplayItem> displayItems)
   {
-    if (typeHasKeyWorks(record.getType()))
+    RecordType recordType = record.getType();
+
+    if (typeHasKeyWorks(recordType))
       displayItems.add(new MainText.DisplayItem(diKeyWorks));
 
     displayItems.add(new MainText.DisplayItem(diDescription));
@@ -455,7 +458,7 @@ public class MainText
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void setKeyWorksFromList(List<KeyWork> src, boolean refreshSubjects)
+  public void setKeyWorksFromList(List<KeyWork> src)
   {
     boolean modify = false;
     Iterator<KeyWork> it = keyWorks.iterator();
@@ -465,7 +468,7 @@ public class MainText
       KeyWork keyWork = it.next();
       if (src.contains(keyWork) == false)
       {
-        if (refreshSubjects) runKeyWorkHandler(keyWork.getRecord(), false);
+        runKeyWorkHandler(keyWork.getRecord(), false);
         it.remove();
         modify = true;
       }
@@ -478,7 +481,7 @@ public class MainText
       KeyWork keyWork = it.next();
       if (keyWorks.contains(keyWork) == false)
       {
-        if (refreshSubjects) runKeyWorkHandler(keyWork.getRecord(), true);
+        runKeyWorkHandler(keyWork.getRecord(), true);
         keyWorks.add(keyWork);
         modify = true;
       }
@@ -489,8 +492,7 @@ public class MainText
     if (modify)
       connector.modifyNow();
 
-    if (refreshSubjects)
-      nullSwitch(connector.getLink(), link -> nullSwitch(link.getLabel(), HDT_WorkLabel::refreshSubjects));
+    nullSwitch(connector.getLink(), link -> nullSwitch(link.getLabel(), HDT_WorkLabel::refreshSubjects));
   }
 
 //---------------------------------------------------------------------------
@@ -519,6 +521,21 @@ public class MainText
     });
 
     return displayerConns;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void addKeyworksIfNotPresent()
+  {
+    boolean hasKeyworks = false;
+
+    for (DisplayItem displayItem : displayItems)
+      if (displayItem.type == diKeyWorks)
+        hasKeyworks = true;
+
+    if (hasKeyworks == false)
+      displayItems.add(new DisplayItem(diKeyWorks));
   }
 
 //---------------------------------------------------------------------------

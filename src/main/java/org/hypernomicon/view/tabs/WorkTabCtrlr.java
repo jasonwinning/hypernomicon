@@ -126,16 +126,16 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   @FXML private ProgressBar progressBar;
   @FXML private SplitMenuButton btnDOI, smbWebSrch1;
   @FXML private SplitPane spHoriz1, spHoriz2, spVert, spMentioners;
-  @FXML private Tab tabArguments, tabBibDetails, tabCrossref, tabGoogleBooks, tabInvestigations, tabKeyMentions,
+  @FXML private Tab tabArguments, tabBibDetails, tabCrossref, tabGoogleBooks, tabKeyMentions,
                     tabEntry, tabMiscBib, tabMiscFiles, tabPdfMetadata, tabSubworks, tabWorkFiles;
   @FXML private TabPane tabPane, tpBib, tpArguments, tpKeyMentions;
-  @FXML private TableView<HyperTableRow> tvArguments, tvAuthors, tvISBN, tvInvestigations, tvKeyMentions,
+  @FXML private TableView<HyperTableRow> tvArguments, tvAuthors, tvISBN, tvKeyMentions,
                                          tvLabels, tvMiscFiles, tvSubworks, tvWorkFiles;
   @FXML private TextArea taEntry, taCrossref, taGoogleBooks, taMiscBib, taPdfMetadata;
   @FXML private TextField tfDOI, tfURL, tfSearchKey, tfTitle;
   @FXML public TextField tfYear;
 
-  private HyperTable htLabels, htSubworks, htInvestigations, htArguments, htMiscFiles, htWorkFiles, htKeyMentioners, htISBN;
+  private HyperTable htLabels, htSubworks, htArguments, htMiscFiles, htWorkFiles, htKeyMentioners, htISBN;
   private HyperCB hcbLargerWork;
   private MainTextWrapper mainText;
   private final Map<Tab, String> tabCaptions = new HashMap<>();
@@ -279,20 +279,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htKeyMentioners.addCol(hdtNone, ctNone);
 
     htKeyMentioners.addDefaultMenuItems();
-
-    htInvestigations = new HyperTable(tvInvestigations, 2, true, PREF_KEY_HT_WORK_INV);
-
-    htInvestigations.addActionCol(ctGoBtn, 2);
-    htInvestigations.addColAltPopulatorWithUpdateHandler(hdtPerson, ctDropDownList, new ExternalColumnPopulator(htAuthors, 1), (row, cellVal, nextColNdx, nextPopulator) ->
-    {
-      ((SubjectPopulator)nextPopulator).setObj(row, HyperTableCell.getRecord(cellVal));
-      row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));
-    });
-    htInvestigations.addColAltPopulator(hdtInvestigation, ctDropDownList, new SubjectPopulator(rtPersonOfInv, true));
-
-    htInvestigations.addRemoveMenuItem();
-    htInvestigations.addChangeOrderMenuItem(true);
-    htInvestigations.addRefreshHandler(tabPane::requestLayout);
 
     htArguments = new HyperTable(tvArguments, 3, false, PREF_KEY_HT_WORK_ARG);
 
@@ -775,14 +761,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       row.setCheckboxValue(3, author.getIsTrans());
     });
 
-    htInvestigations.buildRows(curWork.investigations, (row, inv) ->
-    {
-      if (inv.person.isNotNull())
-        row.setCellValue(1, inv.person.get(), inv.person.get().listName());
-
-      row.setCellValue(2, inv, inv.listName());
-    });
-
   // Populate Labels
   // ------------------
 
@@ -847,16 +825,14 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   // Other stuff
   // -----------
 
-    int invCnt      = curWork.investigations.size(),
-        subworkCnt  = curWork.subWorks      .size(),
-        argCnt      = curWork.arguments     .size(),
-        miscFileCnt = curWork.miscFiles     .size(),
-        workFileCnt = curWork.workFiles     .size();
+    int subworkCnt  = curWork.subWorks .size(),
+        argCnt      = curWork.arguments.size(),
+        miscFileCnt = curWork.miscFiles.size(),
+        workFileCnt = curWork.workFiles.size();
 
     setTabCaption(tabWorkFiles     , workFileCnt);
     setTabCaption(tabSubworks      , subworkCnt);
     setTabCaption(tabMiscFiles     , miscFileCnt);
-    setTabCaption(tabInvestigations, invCnt);
     setTabCaption(tabArguments     , argCnt);
     setTabCaption(tabKeyMentions   , mentionerCnt);
 
@@ -888,8 +864,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
         tabPane.getSelectionModel().select(tabWorkFiles);
       else if (miscFileCnt > 0)
         tabPane.getSelectionModel().select(tabMiscFiles);
-      else if (invCnt > 0)
-        tabPane.getSelectionModel().select(tabInvestigations);
       else if (tabPane.getSelectionModel().getSelectedItem() != tabBibDetails)
         tabPane.getSelectionModel().select(tabWorkFiles);
 
@@ -971,7 +945,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 
   static int populateDisplayersAndKeyMentioners(HDT_RecordWithPath record, HyperTable table)
   {
-    Set<HDT_RecordWithConnector> set = db.getKeyWorkMentioners(record);
+    Set<HDT_RecordWithConnector> set = db.keyWorkMentionerSet(record);
 
     if (record.hasMainText())
       db.getDisplayers(((HDT_RecordWithConnector)record).getMainText()).stream().map(MainText::getRecord).forEach(set::add);
@@ -979,7 +953,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     table.buildRows(set, (row, mentioner) ->
     {
       if (mentioner.getType() == hdtHub)
-        mentioner = ui.getSpokeToGoTo(mentioner);
+        mentioner = ui.spokeToGoTo(mentioner);
 
       row.setCellValue(0, mentioner, "");
       row.setCellValue(1, mentioner, mentioner.getCBText());
@@ -1416,7 +1390,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     htAuthors       .clear();
     htLabels        .clear();
     htSubworks      .clear();
-    htInvestigations.clear();
     htArguments     .clear();
     htMiscFiles     .clear();
     htWorkFiles     .clearKeepSortOrder();
@@ -1637,7 +1610,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     mainText.save();
 
     curWork.setAuthors(getAuthorGroups());
-    curWork.setInvestigations(htInvestigations.saveToList(2, hdtInvestigation));
     curWork.setWorkLabels(htLabels.saveToList(2, hdtWorkLabel));
 
     return true;

@@ -136,7 +136,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   private boolean alreadyChangingName = false, alreadyChangingTab = false;
 
   public FilePath getCurPicture() { return curPicture; }
-  
+
   @Override public String recordName()               { return new PersonName(tfFirst.getText(), tfLast.getText()).getLastFirst(); }
   @Override protected RecordType type()              { return hdtPerson; }
   @Override public void enable(boolean enabled)      { ui.tabPersons.getContent().setDisable(enabled == false); }
@@ -231,7 +231,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
         row.setCellValue(2, work, roleText);
 
-        row.setCellValue(3, work.investigations.isEmpty() ? -1 : work.investigations.get(0).getID(), work.getInvText(curPerson), hdtInvestigation);
+        HDT_Investigation inv = work.investigationStream().findFirst().orElse(null);
+        row.setCellValue(3, inv == null ? -1 : inv.getID(), work.getInvText(curPerson), hdtInvestigation);
 
         row.setCellValue(4, work, work.name());
 
@@ -385,9 +386,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     if      (mentioned.getType() == hdtWork    ) HDT_Work    .class.cast(mentioned).labels.forEach(consumer);
     else if (mentioned.getType() == hdtMiscFile) HDT_MiscFile.class.cast(mentioned).labels.forEach(consumer);
 
-    Set<HDT_RecordWithConnector> mentioners = db.getKeyWorkMentioners(mentioned);
-
-    mentioners.forEach(mentioner ->
+    db.keyWorkMentionerStream(mentioned).forEach(mentioner ->
     {
       StrongLink link = mentioner.getLink();
 
@@ -543,15 +542,15 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
   public void assignPicture(FilePath newPicture, boolean promptToDelete)
   {
-    if (promptToDelete                           && 
-        db.isLoaded()                            && 
-        (FilePath.isEmpty(curPicture) == false)  && 
-        (curPicture.equals(newPicture) == false) && 
-        curPicture.exists()                      && 
+    if (promptToDelete                           &&
+        db.isLoaded()                            &&
+        (FilePath.isEmpty(curPicture) == false)  &&
+        (curPicture.equals(newPicture) == false) &&
+        curPicture.exists()                      &&
         HyperPath.getHyperPathSetForFilePath(curPicture).isEmpty())
-      
+
       db.fileNoLongerInUse(curPicture);
-    
+
     curPicture = newPicture;
   }
 
@@ -912,37 +911,41 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     HDT_Work work = row.getRecord();
 
-    InvestigationsDlgCtrlr dlg = InvestigationsDlgCtrlr.build(work, curPerson);
+    InvestigationsDlgCtrlr dlg = InvestigationsDlgCtrlr.build(work, invViews, curPerson);
 
     if (dlg.showModal() == false)
       return;
 
+    List<HDT_Investigation> investigations = new ArrayList<>(work.investigationSet());
+
     for (InvestigationSetting is : dlg.listView.getItems())
       if (is.getSelected())
       {
-        if (work.investigations.contains(is.inv) == false)
-          work.investigations.add(is.inv);
+        if (investigations.contains(is.inv) == false)
+          investigations.add(is.inv);
       }
       else
-        work.investigations.remove(is.inv);
+        investigations.remove(is.inv);
 
     if (dlg.hasNew())
     {
       HDT_Investigation inv = db.createNewBlankRecord(hdtInvestigation);
       inv.person.set(curPerson);
       inv.setName(dlg.newName());
-      work.investigations.add(inv);
+      investigations.add(inv);
       addInvView(inv);
     }
 
-    HyperTableCell newValue = new HyperTableCell(work.investigations.isEmpty() ? -1 : work.investigations.get(0).getID(), work.getInvText(curPerson), hdtInvestigation);
+    work.setInvestigations(investigations);
+
+    HyperTableCell newValue = new HyperTableCell(investigations.isEmpty() ? -1 : investigations.get(0).getID(), work.getInvText(curPerson), hdtInvestigation);
     row.setCellValue(3, newValue);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  class InvestigationView
+  public class InvestigationView
   {
     private int id;
     private TextField tfName, tfSearchKey;
@@ -1071,7 +1074,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
         HDT_Record record = row.getRecord();
         if ((record == null) || (record.getType() != hdtWork)) return false;
 
-        return HDT_Work.class.cast(record).investigations.contains(inv);
+        return HDT_Work.class.cast(record).investigationSet().contains(inv);
       });
 
       db.investigations.getByID(iV.id).viewNow();

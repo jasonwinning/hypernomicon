@@ -76,7 +76,7 @@ public class HDT_WorkLabel extends HDT_RecordWithConnector
   // Changes subjects, leaves key works alone
   public void refreshSubjects()
   {
-    getMainText().getKeyWorks().forEach(keyWork ->
+    getMainText().getKeyWorksUnmod().forEach(keyWork ->
     {
       if (keyWork.getRecordType() == hdtWork)
       {

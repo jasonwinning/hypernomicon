@@ -54,7 +54,7 @@ public class HDT_Hub extends HDT_RecordWithConnector
 
   @Override public void expire()
   {
-    getMainText().getKeyWorks().forEach(keyWork -> db.handleKeyWork(this, keyWork.getRecord(), false));
+    getMainText().getKeyWorksUnmod().forEach(keyWork -> db.handleKeyWork(this, keyWork.getRecord(), false));
 
     super.expire();
   }

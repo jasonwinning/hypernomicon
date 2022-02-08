@@ -180,7 +180,7 @@ class MentionsIndex
         }
         else if (displayItem.type == diKeyWorks)
         {
-          mainText.getKeyWorks().forEach(keyWork ->
+          mainText.getKeyWorksUnmod().forEach(keyWork ->
           {
             HDT_RecordWithPath keyWorkRecord = keyWork.getRecord();
 

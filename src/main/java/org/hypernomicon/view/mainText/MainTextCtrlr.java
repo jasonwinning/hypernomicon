@@ -415,12 +415,12 @@ public class MainTextCtrlr
     if (ui.cantSaveRecord()) return;
 
     RecordType keyType = hcbKeyType.selectedType();
-    List<KeyWork> keyWorks = new ArrayList<>(curRecord.getMainText().getKeyWorks());
+    List<KeyWork> keyWorks = new ArrayList<>(curRecord.getMainText().getKeyWorksUnmod());
 
     HDT_RecordWithPath keyRecord = db.createNewBlankRecord(keyType);
     keyWorks.add(new KeyWork(keyRecord));
 
-    curRecord.getMainText().setKeyWorksFromList(keyWorks, true);
+    curRecord.getMainText().setKeyWorksFromList(keyWorks);
     ui.goToRecord(keyRecord, false);
 
     if (keyType == hdtWork)
@@ -707,7 +707,7 @@ public class MainTextCtrlr
   void setFromMainText(MainText mainText)
   {
     if (mainText != null)
-      set(mainText.getRecord(), mainText.getHtml(), mainText.getDisplayItemsCopy(), mainText.getKeyWorks());
+      set(mainText.getRecord(), mainText.getHtml(), mainText.getDisplayItemsCopy(), mainText.getKeyWorksUnmod());
     else
       clearDisplayItems();
   }
@@ -735,7 +735,7 @@ public class MainTextCtrlr
 
     clearDisplayItems();
 
-    if ((keyWorks != null) && MainText.typeHasKeyWorks(record.getType()))
+    if ((keyWorks != null) && (record.getType() != hdtInvestigation) && MainText.typeHasKeyWorks(record.getType()))
     {
       if (borderPane.getTop() == null)
         borderPane.setTop(tpKeyWorks);

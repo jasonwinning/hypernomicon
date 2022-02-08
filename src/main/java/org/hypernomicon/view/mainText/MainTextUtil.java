@@ -376,7 +376,7 @@ public class MainTextUtil
 
     if (record.getType() == hdtHub)
     {
-      record = ui.getSpokeToGoTo((HDT_Hub)record);
+      record = ui.spokeToGoTo((HDT_Hub)record);
 
       if (record == null)
       {
@@ -491,9 +491,9 @@ public class MainTextUtil
       StringBuilder innerHtml = new StringBuilder();
 
       if (detailed)
-        appendDetailedKeyWorkBody(record.getMainText().getKeyWorks(), innerHtml, sortByName, span.hasClass(TOPMOST_CLASS));
+        appendDetailedKeyWorkBody(record.getMainText().getKeyWorksUnmod(), innerHtml, sortByName, span.hasClass(TOPMOST_CLASS));
       else
-        appendKeyWorkBody(record.getMainText().getKeyWorks(), innerHtml, sortByName);
+        appendKeyWorkBody(record.getMainText().getKeyWorksUnmod(), innerHtml, sortByName);
 
       weToUse.executeScript("document.getElementById(\"" + span.id() + "\").innerHTML = \"" + escapeEcmaScript(innerHtml.toString()) + "\";");
     });
@@ -506,7 +506,7 @@ public class MainTextUtil
   {
     innerHtml.append(keyWorkSpanElement(recordWMT, tagNdx, sortByName, topmost));
 
-    List<KeyWork> keyWorks = recordWMT.getMainText().getKeyWorks();
+    List<KeyWork> keyWorks = recordWMT.getMainText().getKeyWorksUnmod();
 
     if (viewInfo.detailedWorks)
       appendDetailedKeyWorkBody(keyWorks, innerHtml, sortByName, topmost);
@@ -537,7 +537,7 @@ public class MainTextUtil
   static String getSecondaryDisplayHtml(HDT_RecordWithConnector recordWMT, MutableInt tagNdx, TextViewInfo viewInfo)
   {
     MainText mainText = recordWMT.getMainText();
-    List<KeyWork> keyWorks = mainText.getKeyWorks();
+    List<KeyWork> keyWorks = mainText.getKeyWorksUnmod();
     Document doc = Jsoup.parse(prepHtmlForDisplay(mainText.getHtml()));
     String embeddedHtml = doc.body().html();
 
@@ -659,7 +659,7 @@ public class MainTextUtil
 
   private static String getAnchorForUnitable(HDT_RecordWithConnector uRecord)
   {
-    uRecord = ui.getSpokeToGoTo(uRecord);
+    uRecord = ui.spokeToGoTo(uRecord);
 
     String recordName = uRecord.getType() == hdtConcept ? ((HDT_Concept) uRecord).getExtendedName() : uRecord.name();
 
