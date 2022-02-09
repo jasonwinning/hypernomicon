@@ -40,9 +40,7 @@ import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
@@ -269,25 +267,12 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
  // Add topic records to be populated to sets
  // -----------------------------------------
 
-    Set<MainText> displayers = db.getDisplayers(curPerson.getMainText());
-    LinkedHashSet<HDT_Argument> argsToAdd = new LinkedHashSet<>();
-    LinkedHashSet<HDT_Position> posToAdd = new LinkedHashSet<>();
-    LinkedHashSet<HDT_Record> otherToAdd = new LinkedHashSet<>();
+    LinkedHashSet<HDT_Argument> argsToAdd  = new LinkedHashSet<>();
+    LinkedHashSet<HDT_Position> posToAdd   = new LinkedHashSet<>();
+    LinkedHashSet<HDT_Record>   otherToAdd = new LinkedHashSet<>();
 
-    displayers.forEach(displayerText ->
+    db.displayerStream(curPerson).forEach(displayer ->
     {
-      HDT_RecordWithConnector displayer = displayerText.getRecord();
-
-      if (displayer.getType() == hdtHub)
-      {
-        StrongLink link = HDT_Hub.class.cast(displayer).getLink();
-
-        if      (link.getDebate  () != null) displayer = link.getDebate();
-        else if (link.getPosition() != null) displayer = link.getPosition();
-        else if (link.getConcept () != null) displayer = link.getConcept();
-        else                                 displayer = link.getNote();
-      }
-
       if (topicRecordsAdded.contains(displayer) == false)
       {
         switch (displayer.getType())
@@ -388,16 +373,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
     db.keyWorkMentionerStream(mentioned).forEach(mentioner ->
     {
-      StrongLink link = mentioner.getLink();
-
-      if (link != null)
-      {
-        if      (link.getDebate  () != null) mentioner = link.getDebate();
-        else if (link.getPosition() != null) mentioner = link.getPosition();
-        else if (link.getConcept () != null) mentioner = link.getConcept();
-        else                                 mentioner = link.getNote();
-      }
-
       if (topicRecordsAdded.contains(mentioner) == false)
       {
         switch (mentioner.getType())
@@ -947,7 +922,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
   public class InvestigationView
   {
-    public InvestigationView(HDT_Investigation record, TextField tfName, TextField tfSearchKey, MainTextWrapper textWrapper, Tab tab)
+    private InvestigationView(HDT_Investigation record, TextField tfName, TextField tfSearchKey, MainTextWrapper textWrapper, Tab tab)
     {
       this.record = record;
       this.tfName = tfName;

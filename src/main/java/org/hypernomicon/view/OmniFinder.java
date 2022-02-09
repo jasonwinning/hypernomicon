@@ -39,7 +39,6 @@ import org.hypernomicon.dialogs.NewPersonDlgCtrlr.PersonForDupCheck;
 import org.hypernomicon.model.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.PersonName;
-import org.hypernomicon.model.items.StrongLink;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithAuthors;
 import org.hypernomicon.query.engines.AllQueryEngine;
@@ -264,15 +263,7 @@ public class OmniFinder
 
     private HDT_Record getResultRecord(HDT_Record input)
     {
-      if (input.getType() != hdtHub)
-        return input;
-
-      StrongLink link = ((HDT_Hub)input).getLink();
-
-      if (link.getDebate  () != null) return link.getDebate  ();
-      if (link.getPosition() != null) return link.getPosition();
-      if (link.getNote    () != null) return link.getNote    ();
-      return link.getConcept();
+      return input.getType() != hdtHub ? input : ((HDT_Hub)input).mainSpoke(true);
     }
 
   //---------------------------------------------------------------------------

@@ -164,11 +164,11 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   private void populateDisplayers()
   {
-    htDisplayers.buildRows(curConcept.getMainText().getDisplayers(), (row, displayer) ->
+    htDisplayers.buildRows(db.displayerStream(curConcept), (row, displayer) ->
     {
-      row.setCellValue(0, displayer.getSpoke(), "");
-      row.setCellValue(1, displayer.getSpoke(), displayer.getSpoke().getCBText());
-      row.setCellValue(2, displayer.getSpoke(), displayer.getMainText().getPlainForDisplay());
+      row.setCellValue(0, displayer, "");
+      row.setCellValue(1, displayer, displayer.getCBText());
+      row.setCellValue(2, displayer, displayer.getMainText().getPlainForDisplay());
     });
   }
 

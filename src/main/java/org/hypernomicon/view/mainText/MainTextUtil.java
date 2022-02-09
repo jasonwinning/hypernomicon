@@ -376,7 +376,7 @@ public class MainTextUtil
 
     if (record.getType() == hdtHub)
     {
-      record = ui.spokeToGoTo((HDT_Hub)record);
+      record = ((HDT_Hub)record).mainSpoke();
 
       if (record == null)
       {
@@ -659,7 +659,7 @@ public class MainTextUtil
 
   private static String getAnchorForUnitable(HDT_RecordWithConnector uRecord)
   {
-    uRecord = ui.spokeToGoTo(uRecord);
+    uRecord = uRecord.mainSpoke();
 
     String recordName = uRecord.getType() == hdtConcept ? ((HDT_Concept) uRecord).getExtendedName() : uRecord.name();
 

@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.function.Predicate;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -33,7 +33,6 @@ import org.hypernomicon.App;
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.KeywordLink;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
-import org.hypernomicon.model.items.Connector;
 import org.hypernomicon.model.items.KeyWork;
 import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.MainText.DisplayItem;
@@ -577,14 +576,10 @@ public final class MainTextWrapper
     }
     else
     {
-      Set<Connector> displayers = curRecord.getMainText().getDisplayers();
-
-      displayers.removeIf(displayer -> displayerIsAlreadyShowing(displayer.getSpoke()));
-
-      displayers.forEach(displayer ->
+      db.displayerStream(curRecord).filter(Predicate.not(this::displayerIsAlreadyShowing)).forEach(displayer ->
       {
         relRecordsHtml.append(relRecordsHtml.length() == 0 ? "<b " + NO_LINKS_ATTR + "=true>Displayers: </b>" : "; ");
-        relRecordsHtml.append(getGoToRecordAnchor(displayer.getSpoke(), "", displayer.getSpoke().getCBText()));
+        relRecordsHtml.append(getGoToRecordAnchor(displayer, "", displayer.getCBText()));
       });
     }
 

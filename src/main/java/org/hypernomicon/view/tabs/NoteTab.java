@@ -182,10 +182,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
       usedLinks.add(link);
 
-      if      (link.getDebate  () != null) output.add(link.getDebate  ());
-      else if (link.getPosition() != null) output.add(link.getPosition());
-      else if (link.getConcept () != null) output.add(link.getConcept ());
-      else                                 output.add(link.getNote    ());
+      output.add(link.mainSpoke());
     });
 
     return output;

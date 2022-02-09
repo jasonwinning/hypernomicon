@@ -34,7 +34,6 @@ import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.items.HyperPath;
-import org.hypernomicon.model.items.MainText;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.WorkAuthors;
 import org.hypernomicon.model.records.*;
@@ -952,15 +951,12 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     Stream<HDT_RecordWithConnector> stream = db.keyWorkMentionerStream(record);
 
     if (record.hasMainText())
-      stream = Stream.concat(stream, db.getDisplayers(((HDT_RecordWithConnector)record).getMainText()).stream().map(MainText::getRecord));
+      stream = Stream.concat(stream, db.displayerStream((HDT_RecordWithConnector)record));
 
     stream.forEach(mentioner -> (mentioner.getType() == hdtInvestigation ? invSet : set).add(mentioner));
 
     table.buildRows(Stream.concat(invSet.stream(), set.stream()), (row, mentioner) ->
     {
-      if (mentioner.getType() == hdtHub)
-        mentioner = ui.spokeToGoTo(mentioner);
-
       row.setCellValue(0, mentioner, "");
       row.setCellValue(1, mentioner, mentioner.getCBText());
       row.setCellValue(2, mentioner, mentioner.getMainText().getPlainForDisplay());

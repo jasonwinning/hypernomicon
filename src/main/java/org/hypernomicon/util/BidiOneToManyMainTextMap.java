@@ -20,6 +20,8 @@ package org.hypernomicon.util;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
+
 import com.google.common.collect.Sets;
 import org.hypernomicon.model.items.MainText;
 
@@ -36,8 +38,8 @@ public class BidiOneToManyMainTextMap
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void clear()                                       { forwardMap.clear(); reverseMap.clear(); }
-  public Set<MainText> getForwardSet(MainText fromMainText) { return getSet(forwardMap, fromMainText); }
+  public void clear()                                             { forwardMap.clear(); reverseMap.clear(); }
+  public Stream<MainText> getForwardStream(MainText fromMainText) { return getSet(forwardMap, fromMainText).stream(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

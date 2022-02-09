@@ -19,6 +19,7 @@ package org.hypernomicon.model.records;
 
 import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
 import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
 
@@ -51,13 +52,19 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
 
 //---------------------------------------------------------------------------
 
-  @Override public final MainText getDesc() { return connector.getMainText(); }
-  public MainText getMainText()             { return connector.getMainText(); }
-  public void initConnector()               { if (connector == null) connector = new Connector(this); }
-  public StrongLink getLink()     { return connector.getLink(); }
-  public HDT_Hub getHub()         { return connector.getHub(); }
-  public boolean isLinked()       { return connector.isLinked(); }
-  public Connector getConnector() { return connector; }
+  @Override public final MainText getDesc()  { return connector.getMainText(); }
+  public MainText getMainText()              { return connector.getMainText(); }
+  public void initConnector()                { if (connector == null) connector = new Connector(this); }
+  public StrongLink getLink()                { return connector.getLink(); }
+  public HDT_Hub getHub()                    { return connector.getHub(); }
+  public boolean isLinked()                  { return connector.isLinked(); }
+  public Connector getConnector()            { return connector; }
+  public HDT_RecordWithConnector mainSpoke() { return nullSwitch(getLink(), this, link -> link.mainSpoke(false)); }
+
+  public HDT_RecordWithConnector mainSpoke(boolean prioritizeNoteOverConcept)
+  {
+    return nullSwitch(getLink(), this, link -> link.mainSpoke(prioritizeNoteOverConcept));
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

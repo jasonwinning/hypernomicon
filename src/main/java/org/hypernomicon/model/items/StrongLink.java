@@ -104,6 +104,42 @@ public class StrongLink
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public HDT_RecordWithConnector mainSpoke()
+  {
+    return mainSpoke(false);
+  }
+
+  public HDT_RecordWithConnector mainSpoke(boolean prioritizeNoteOverConcept)
+  {
+    HDT_RecordWithConnector spoke = getDebate();
+    if (spoke != null) return spoke;
+
+    spoke = getPosition();
+    if (spoke != null) return spoke;
+
+    if (prioritizeNoteOverConcept)
+    {
+      spoke = getNote();
+      if (spoke != null) return spoke;
+
+      spoke = getConcept();
+      if (spoke != null) return spoke;
+    }
+    else
+    {
+      spoke = getConcept();
+      if (spoke != null) return spoke;
+
+      spoke = getNote();
+      if (spoke != null) return spoke;
+    }
+
+    return getLabel();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static boolean connectRecords(Connector spoke1, Connector spoke2, String newDesc)
   {
     if ((spoke1.getType() == hdtPosition) && (spoke2.getType() == hdtDebate))  // Sanity checks

@@ -61,6 +61,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.InvalidPreferencesFormatException;
 import java.util.prefs.Preferences;
@@ -265,7 +266,7 @@ public final class HyperDB
   public <HDT_ObjType extends HDT_Record, HDT_SubjType extends HDT_Record> HyperSubjPointer<HDT_SubjType, HDT_ObjType> getSubjPointer(RelationType relType, HDT_ObjType obj)
   { return new HyperSubjPointer<>(relSet(relType), obj); }
 
-  public RecordType getNestedTargetType(RelationType relType, Tag mainTag)
+  RecordType getNestedTargetType(RelationType relType, Tag mainTag)
   { return relationSets.get(relType).getTargetType(mainTag); }
 
   public <HDT_SubjType extends HDT_Record> List<ObjectGroup> getObjectGroupList(RelationType relType, HDT_SubjType subj, Collection<Tag> tags)
@@ -2465,17 +2466,14 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Set<MainText> getDisplayers(MainText displayed)
+  public Stream<HDT_RecordWithConnector> displayerStream(HDT_RecordWithConnector displayed)
   {
-    Set<MainText> set = displayedAtIndex.getForwardSet(displayed);
-
-    set.removeIf(mainText ->
+    return displayedAtIndex.getForwardStream(displayed.getMainText()).filter(Predicate.not(mainText ->
     {
       HDT_RecordWithConnector record = mainText.getRecord();
       return HDT_Record.isEmpty(record) || (record.getMainText() != mainText);
-    });
 
-    return unmodifiableSet(set);
+    })).map(displayerText -> displayerText.getRecord().mainSpoke());
   }
 
 //---------------------------------------------------------------------------
@@ -2485,15 +2483,7 @@ public final class HyperDB
   {
     return nullSwitch(keyWorkIndex.get(record),
                       Stream.empty(),
-                      set -> set.stream().map(mentioner -> mentioner.isLinked() ? mentioner.getHub() : mentioner));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public Set<HDT_RecordWithConnector> keyWorkMentionerSet(HDT_RecordWithPath record)
-  {
-    return keyWorkMentionerStream(record).collect(Collectors.toCollection(HashSet::new));
+                      set -> set.stream().map(mentioner -> mentioner.mainSpoke()));
   }
 
 //---------------------------------------------------------------------------

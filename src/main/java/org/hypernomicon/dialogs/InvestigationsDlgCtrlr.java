@@ -49,17 +49,17 @@ public class InvestigationsDlgCtrlr extends HyperDlg
     private final String name;
     public final HDT_Investigation inv;
 
-    public InvestigationSetting(boolean selected, HDT_Investigation inv, String name)
+    private InvestigationSetting(boolean selected, HDT_Investigation inv, String name)
     {
       this.selected = new SimpleBooleanProperty(selected);
       this.inv = inv;
       this.name = name;
     }
 
-    @Override public String toString()              { return name; }
+    @Override public String toString()               { return name; }
 
-    public boolean getSelected()                    { return selected.get(); }
-    public SimpleBooleanProperty selectedProperty() { return selected; }
+    public boolean getSelected()                     { return selected.get(); }
+    private SimpleBooleanProperty selectedProperty() { return selected; }
   }
 
 //---------------------------------------------------------------------------

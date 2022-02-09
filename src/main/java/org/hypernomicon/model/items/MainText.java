@@ -26,7 +26,6 @@ import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -493,34 +492,6 @@ public class MainText
       connector.modifyNow();
 
     nullSwitch(connector.getLink(), link -> nullSwitch(link.getLabel(), HDT_WorkLabel::refreshSubjects));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public Set<Connector> getDisplayers()
-  {
-    Set<MainText> displayers = db.getDisplayers(this);
-    Set<Connector> displayerConns = new HashSet<>();
-
-    displayers.forEach(displayerText ->
-    {
-      Connector displayer = displayerText.connector;
-
-      if (displayer.getType() == hdtHub)
-      {
-        StrongLink link = displayer.getLink();
-
-        if      (link.getDebate  () != null) displayer = link.getSpoke(hdtDebate  );
-        else if (link.getPosition() != null) displayer = link.getSpoke(hdtPosition);
-        else if (link.getConcept () != null) displayer = link.getSpoke(hdtConcept );
-        else                                 displayer = link.getSpoke(hdtNote    );
-      }
-
-      displayerConns.add(displayer);
-    });
-
-    return displayerConns;
   }
 
 //---------------------------------------------------------------------------
