@@ -102,7 +102,9 @@ public class HDI_OnlinePointerSingle extends HDI_OnlineBase<HDI_OfflinePointerSi
   {
     HyperObjList<HDT_Record, HDT_Record> objList = db.getObjectList(relType, record, false);
 
-    return objList.isEmpty() ? "" : objList.get(0).listName();
+    if (objList.isEmpty()) return "";
+
+    return db.getObjType(relType) == RecordType.hdtWork ? objList.get(0).getCBText() : objList.get(0).listName();
   }
 
 //---------------------------------------------------------------------------

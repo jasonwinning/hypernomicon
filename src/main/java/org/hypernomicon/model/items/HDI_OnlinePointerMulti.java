@@ -30,6 +30,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.HyperDB.Tag;
@@ -116,10 +119,17 @@ public class HDI_OnlinePointerMulti extends HDI_OnlineBase<HDI_OfflinePointerMul
 
   @Override public String getResultTextForTag(Tag tag)
   {
-    return db.getObjectList(relType, record, false).stream().map(HDT_Record::listName)
-                                                            .filter(oneStr -> oneStr.length() > 0)
-                                                            .limit(20)
-                                                            .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
+    return recordStreamResultText(db.getObjType(relType), db.getObjectList(relType, record, false).stream());
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String recordStreamResultText(RecordType objType, Stream<HDT_Record> stream)
+  {
+    Function<? super HDT_Record, String> strFunction = objType == RecordType.hdtWork ? HDT_Record::getCBText : HDT_Record::listName;
+
+    return stream.map(strFunction).filter(Predicate.not(String::isBlank)).limit(20).reduce((s1, s2) -> s1 + "; " + s2).orElse("");
   }
 
 //---------------------------------------------------------------------------

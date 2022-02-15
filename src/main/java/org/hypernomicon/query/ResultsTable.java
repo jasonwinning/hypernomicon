@@ -26,6 +26,7 @@ import java.util.function.Function;
 
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.model.HyperDB.Tag;
+import org.hypernomicon.model.items.HDI_OnlinePointerMulti;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -285,15 +286,10 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
 
         if (item != null)
         {
-          if (item.relType != RelationType.rtNone)
-          {
-            str = db.getSubjectList(item.relType, record).stream().map(HDT_Record::listName)
-                                                                  .filter(oneStr -> oneStr.length() > 0)
-                                                                  .limit(20)
-                                                                  .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
-          }
-          else
-            str = record.resultTextForTag(item.tag);
+          str = item.relType != RelationType.rtNone ?
+            HDI_OnlinePointerMulti.recordStreamResultText(db.getObjType(item.relType), db.getSubjectList(item.relType, record).stream())
+          :
+            record.resultTextForTag(item.tag);
         }
       }
 

@@ -266,7 +266,7 @@ public class CrossrefBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getQueryUrl(String title, String yearStr, BibAuthors authors, String doi)
+  private static String getQueryUrl(String title, String yearStr, BibAuthors authors, boolean engCharForAuthors, String doi)
   {
     String url = "https://api.crossref.org/works", auths = "", eds = "";
 
@@ -284,7 +284,10 @@ public class CrossrefBibData extends BibDataStandalone
         boolean ed = author.getType() == AuthorType.editor,
                 tr = author.getType() == AuthorType.translator;
 
-        String name = author.getName().toEngChar().getLast();
+        String name = engCharForAuthors ?
+          author.getName().toEngChar().getLast()
+        :
+          author.getName().getLast();
 
         if (ed)
           eds = eds + " " + name;
@@ -293,7 +296,8 @@ public class CrossrefBibData extends BibDataStandalone
       }
     }
 
-    if (auths.isEmpty()) auths = eds;
+    auths = ultraTrim(auths);
+    if (auths.isBlank()) auths = ultraTrim(eds);
 
     title = convertToEnglishChars(title).trim();
     title = title.replace(":", "");
@@ -331,8 +335,14 @@ public class CrossrefBibData extends BibDataStandalone
     doHttpRequest(httpClient, null, null, false, null, doi, alreadyCheckedIDs, successHndlr, failHndlr);
   }
 
-  static void doHttpRequest(AsyncHttpClient httpClient, String title, String yearStr, boolean isPaper, BibAuthors authors, String doi,
-                            Set<String> alreadyCheckedIDs, Consumer<BibData> successHndlr, Consumer<Exception> failHndlr)
+  static void doHttpRequest(AsyncHttpClient httpClient, String title, String yearStr, boolean isPaper, BibAuthors authors,
+                            String doi, Set<String> alreadyCheckedIDs, Consumer<BibData> successHndlr, Consumer<Exception> failHndlr)
+  {
+    doHttpRequest(httpClient, title, yearStr, isPaper, authors, true, doi, alreadyCheckedIDs, successHndlr, failHndlr);
+  }
+
+  private static void doHttpRequest(AsyncHttpClient httpClient, String title, String yearStr, boolean isPaper, BibAuthors authors, boolean engCharForAuthors,
+                            String doi, Set<String> alreadyCheckedIDs, Consumer<BibData> successHndlr, Consumer<Exception> failHndlr)
   {
     if ((doi.length() > 0) && alreadyCheckedIDs.contains(doi.toLowerCase()))
     {
@@ -342,9 +352,15 @@ public class CrossrefBibData extends BibDataStandalone
 
     alreadyCheckedIDs.add(doi.toLowerCase());
 
-    JsonHttpClient.getObjAsync(CrossrefBibData.getQueryUrl(title, yearStr, authors, doi), httpClient, jsonObj ->
+    JsonHttpClient.getObjAsync(CrossrefBibData.getQueryUrl(title, yearStr, authors, engCharForAuthors, doi), httpClient, jsonObj ->
     {
       BibData bd = CrossrefBibData.createFromJSON(jsonObj, title, yearStr, isPaper, doi);
+
+      if ((bd == null) && engCharForAuthors && (authors != null) && authors.notAllEngCharLastNames())
+      {
+        doHttpRequest(httpClient, title, yearStr, isPaper, authors, false, doi, alreadyCheckedIDs, successHndlr, failHndlr);
+        return;
+      }
 
       successHndlr.accept(bd);
 

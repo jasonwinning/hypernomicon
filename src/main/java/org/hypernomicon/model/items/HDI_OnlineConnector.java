@@ -18,6 +18,7 @@
 package org.hypernomicon.model.items;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
@@ -215,7 +216,12 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
     switch (tag)
     {
       case tagDisplayRecord : return connector.getMainText().getDisplayItemsString();
-      case tagKeyWork       : return connector.getMainText().getKeyWorksString();
+      case tagKeyWork       :
+
+        return connector.getMainText().keyWorks.stream().map(keyWork -> keyWork.getRecord().getCBText())
+                                                        .filter(Predicate.not(String::isBlank))
+                                                        .limit(20)
+                                                        .reduce((s1, s2) -> s1 + "; " + s2).orElse("");
       case tagHub           : return "";
       default               : return connector.getMainText().getPlain();
     }

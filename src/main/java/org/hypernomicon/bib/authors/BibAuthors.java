@@ -307,4 +307,16 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public boolean notAllEngCharLastNames()
+  {
+    for (BibAuthor author : this)
+      if (author.getName().toEngChar().getLast().equals(author.getName().getLast()) == false)
+        return true;
+
+    return false;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
 }

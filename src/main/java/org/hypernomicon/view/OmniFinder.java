@@ -103,8 +103,8 @@ public class OmniFinder
     if (typeFilter == hdtNone)
       typeSet = ImmutableSet.of
       (
-        hdtTerm,      hdtPosition,    hdtDebate, hdtPerson,    hdtPersonGroup, hdtWork,
-        hdtWorkLabel, hdtMiscFile,    hdtNote,   hdtGlossary,  hdtArgument,    hdtInstitution, hdtInvestigation
+        hdtTerm, hdtInvestigation, hdtPosition, hdtDebate, hdtPerson,   hdtPersonGroup,
+        hdtWork, hdtWorkLabel,     hdtMiscFile, hdtNote,   hdtGlossary, hdtArgument,    hdtInstitution
       );
     else
       typeSet = ImmutableSet.of(typeFilter);
@@ -474,6 +474,16 @@ public class OmniFinder
             }
             else
               cells.set(3, new HyperTableCell(authorRecords.get(0), miscFile.getShortAuthorsStr(true), smTextSimple));
+
+            break;
+
+          case hdtInvestigation :
+
+            HDT_Investigation inv = (HDT_Investigation) record;
+            HDT_Person person = inv.person.get();
+
+            cells.set(2, new HyperTableCell(inv, "", smNumeric));
+            cells.set(3, new HyperTableCell(person, person.getCBText(), smTextSimple));
 
             break;
 

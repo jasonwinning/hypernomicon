@@ -200,7 +200,10 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
       case tagKeyWork :
 
         keyWorks.forEach(keyWork ->
-          writePointerTag(xml, tag, keyWork.getRecordID(), keyWork.getRecordType(), keyWork.getSearchKey(false)));
+        {
+          String text = recordState.type == hdtInvestigation ? keyWork.getRecord().getCBText() : keyWork.getSearchKey(false);
+          writePointerTag(xml, tag, keyWork.getRecordID(), keyWork.getRecordType(), text);
+        });
 
         break;
 
