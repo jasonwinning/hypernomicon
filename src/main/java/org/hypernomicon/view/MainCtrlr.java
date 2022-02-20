@@ -31,6 +31,7 @@ import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.view.wrappers.UIUtil.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import org.hypernomicon.App;
@@ -133,7 +134,7 @@ public final class MainCtrlr
   @FXML private TableView<HyperTableRow> tvFind;
   @FXML private AnchorPane apFindBackground, apGoTo, apListGoTo, apStatus, midAnchorPane;
   @FXML private Button btnAdvancedSearch, btnBibMgr, btnDecrement, btnFileMgr, btnIncrement, btnMentions, btnPreviewWindow,
-                       btnSave, btnDelete, btnRevert, btnCreateNew, btnBack, btnForward, btnSaveAll, btnTextSearch;
+                       btnSave, btnDelete, btnRevert, btnBack, btnForward, btnSaveAll, btnTextSearch;
   @FXML private CheckMenuItem mnuAutoImport;
   @FXML private ComboBox<HyperTableCell> cbGoTo;
   @FXML private GridPane gpBottom;
@@ -146,9 +147,10 @@ public final class MainCtrlr
                          mnuFindPreviousAll, mnuFindPreviousInName, mnuFindWithinAnyField, mnuFindWithinName, mnuImportBibClipboard,
                          mnuImportBibFile, mnuNewCountry, mnuNewDatabase, mnuNewField, mnuNewPersonStatus, mnuNewRank, mnuVideos,
                          mnuRecordSelect, mnuRevertToDiskCopy, mnuSaveReloadAll, mnuToggleFavorite, mnuImportWork, mnuImportFile;
+  @FXML private MenuButton mbCreateNew;
   @FXML private ProgressBar progressBar;
   @FXML private SeparatorMenuItem mnuBibImportSeparator;
-  @FXML private SplitMenuButton btnGoTo;
+  @FXML private SplitMenuButton btnGoTo, btnCreateNew;
   @FXML private Tab tabViewSelector;
   @FXML private TabPane selectorTabPane, tabPane;
   @FXML private TextField tfID, tfOmniGoTo, tfRecord;
@@ -173,6 +175,7 @@ public final class MainCtrlr
   public final ComboBox<TreeRow> cbTreeGoTo = new ComboBox<>();
   private ComboBox<ResultsRow> cbResultGoTo = null;
   private ClickHoldButton chbBack, chbForward;
+  private CreateMenuItems createMenuItems;
   private TextField tfSelector = null;
   public final TreeSelector treeSelector = new TreeSelector();
 
@@ -215,6 +218,48 @@ public final class MainCtrlr
   public TermTab        termHyperTab    () { return getHyperTab(termTabEnum    ); }
   public QueryTabCtrlr  queryHyperTab   () { return getHyperTab(queryTabEnum   ); }
   public TreeTabCtrlr   treeHyperTab    () { return getHyperTab(treeTabEnum    ); }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static class CreateMenuItems
+  {
+    private final List<MenuItem> list1, list2;
+
+    private CreateMenuItems(MenuButton mb, SplitMenuButton smb)
+    {
+      list1 = mb.getItems();
+      list2 = smb.getItems();
+
+      list1.clear();
+      list2.clear();
+    }
+
+    public void add(MenuItem menuItem)
+    {
+      list1.add(menuItem);
+      list2.add(copyOf(menuItem));
+    }
+
+    public void addSeparator()
+    {
+      list1.add(new SeparatorMenuItem());
+      list2.add(new SeparatorMenuItem());
+    }
+
+    public void clear()
+    {
+      SeparatorMenuItem sepItem = (SeparatorMenuItem) findFirst(list1, item -> item instanceof SeparatorMenuItem);
+      if (sepItem == null) return;
+      int ndx = list1.indexOf(sepItem);
+
+      while (list1.size() > ndx)
+      {
+        list1.remove(ndx);
+        list2.remove(ndx);
+      }
+    }
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -430,6 +475,28 @@ public final class MainCtrlr
           adjustToolBar(newValue.doubleValue());
       });
     }
+
+//---------------------------------------------------------------------------
+
+    createMenuItems = new CreateMenuItems(mbCreateNew, btnCreateNew);
+
+    repositionPopupListWorkaround(btnCreateNew);
+    repositionPopupListWorkaround(mbCreateNew);
+
+    mbCreateNew.disableProperty().bind(btnCreateNew.disabledProperty());
+    mbCreateNew.visibleProperty().bind(btnCreateNew.visibleProperty().not());
+
+    setToolTip(mbCreateNew, "Create a new record");
+
+    tabPane.getTabs().forEach(tab ->
+    {
+      RecordType type = getRecordTypeByTabEnum(getHyperTabByTab(tab).getTabEnum());
+      if (type == hdtNone) return;
+
+      MenuItem menuItem = new MenuItem(db.getTypeName(type));
+      menuItem.setOnAction(event -> createNew(type));
+      createMenuItems.add(menuItem);
+    });
 
 //---------------------------------------------------------------------------
 
@@ -1336,9 +1403,18 @@ public final class MainCtrlr
 
   @FXML private void btnCreateClick()
   {
-    if (cantSaveRecord()) return;
+    if (activeTabEnum() == treeTabEnum)
+      treeHyperTab().getCreateMenuItems().get(0).fire();
+    else
+      createNew(activeType());
+  }
 
-    RecordType type = selectorType();
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void createNew(RecordType type)
+  {
+    if (cantSaveRecord()) return;
 
     goToRecord(type == hdtTerm ?
       HDT_Term.create(db.glossaries.getByID(1))
@@ -2263,8 +2339,6 @@ public final class MainCtrlr
           tfSelector = cbTreeGoTo.getEditor();
         }
 
-        btnCreateNew.setDisable(true);
-
         break;
 
       case omniTabEnum :
@@ -2273,8 +2347,6 @@ public final class MainCtrlr
         setAllVisible(true, mnuFindWithinAnyField, mnuFindWithinName);
 
         tfSelector = ctfOmniGoTo;
-
-        btnCreateNew.setDisable((activeTabEnum == queryTabEnum) || (activeTabEnum == treeTabEnum));
 
         break;
 
@@ -2286,7 +2358,6 @@ public final class MainCtrlr
         hcbGoTo.clear();
         RecordByTypePopulator.class.cast(hcbGoTo.getPopulator()).setRecordType(Populator.dummyRow, selectorType());
         if (cbGoTo.isEditable() == false) cbGoTo.setEditable(true);
-        btnCreateNew.setDisable(false);
 
         if (count > 0)
         {
@@ -2296,8 +2367,6 @@ public final class MainCtrlr
 
         break;
     }
-
-    setToolTip(btnCreateNew, "Create a new " + db.getTypeName(selectorType()) + " record");
 
     hideFindTable();
 
@@ -2327,6 +2396,8 @@ public final class MainCtrlr
 
     btnTextSearch.setDisable(false);
 
+    createMenuItems.clear();
+
   //---------------------------------------------------------------------------
   // Query-specific stuff
   //---------------------------------------------------------------------------
@@ -2341,6 +2412,8 @@ public final class MainCtrlr
 
       btnDelete.setDisable(activeRec == null);
       setToolTip(btnDelete, "Delete selected record");
+
+      btnCreateNew.setVisible(false);
 
       disableAll(btnSave, btnIncrement, btnDecrement);
     }
@@ -2372,6 +2445,17 @@ public final class MainCtrlr
 
       btnDelete.setDisable(activeRec == null);
       setToolTip(btnDelete, "Delete selected record");
+
+      List<MenuItem> menuItems = treeHyperTab().getCreateMenuItems();
+      btnCreateNew.setVisible(menuItems.size() > 0);
+
+      if (menuItems.size() > 0)
+      {
+        setToolTip(btnCreateNew, menuItems.get(0).getText());
+
+        createMenuItems.addSeparator();
+        menuItems.forEach(createMenuItems::add);
+      }
     }
 
   //---------------------------------------------------------------------------
@@ -2393,6 +2477,9 @@ public final class MainCtrlr
       setToolTip(btnRevert, "Revert changes made while this tab has been active and since Accept Edits was last pressed");
 
 //      btnRevert.setDisable(changed == false);
+
+      btnCreateNew.setVisible(true);
+      setToolTip(btnCreateNew, "Create a new " + db.getTypeName(getRecordTypeByTabEnum(activeTabEnum)) + " record");
 
       btnDecrement.setDisable((count == 0) || (ndx == 0));
       btnIncrement.setDisable((count == 0) || (ndx == (count - 1)));

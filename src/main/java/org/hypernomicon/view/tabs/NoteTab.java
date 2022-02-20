@@ -23,9 +23,8 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitMenuButton;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -70,8 +69,6 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
   final private Button btnBrowse = new Button("..."), btnCreateFolder = new Button("Create Folder");
   final private TextField tfFolder = new TextField();
   private BorderPane bp;
-  private TabPane tabPane;
-  private Tab tabSubnotes, tabMentioners;
   private HyperTable htParents, htSubnotes, htMentioners;
   private FilePath folderPath;
   private HDT_Note curNote;
@@ -114,8 +111,6 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
       row.setCellValue(3, subNote, subNote.getFolderStr());
     });
 
-    tabSubnotes.setText(subnotesTabTitle + " (" + curNote.subNotes.size() + ")");
-
     updateMentioners();
 
     return true;
@@ -127,7 +122,6 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
   private void updateMentioners()
   {
     htMentioners.clear();
-    tabMentioners.setText(mentionersTabTitle);
 
     if ((db.isLoaded() == false) || (curNote == null)) return;
 
@@ -147,14 +141,6 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
       if (mentioner.hasDesc())
         row.setCellValue(2, mentioner, HDT_RecordWithDescription.class.cast(mentioner).getDesc().getPlainForDisplay());
     });
-
-    tabMentioners.setText(mentionersTabTitle + " (" + mentioners.size() + ")");
-
-    if (curNote.subNotes.isEmpty() && (htMentioners.dataRowCount() > 0))
-      tabPane.getSelectionModel().select(tabMentioners);
-
-    if ((curNote.subNotes.size() > 0) && (htMentioners.dataRowCount() == 0))
-      tabPane.getSelectionModel().select(tabSubnotes);
   }
 
 //---------------------------------------------------------------------------
@@ -206,20 +192,15 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     ctrlr.init(hdtNote, this);
     ctrlr.tvParents.getColumns().remove(2);
 
-    tabSubnotes = new Tab("Sub-Notes", ctrlr.tvLeftChildren);
-    tabMentioners = new Tab("Mentioners", ctrlr.tvRightChildren);
-    tabPane = new TabPane(tabSubnotes, tabMentioners);
-
-    setAnchors(tabPane, 0.0, 0.0, 0.0, 0.0);
-
-    ctrlr.apLowerPane.getChildren().setAll(tabPane);
+    ctrlr.tvLeftChildren .setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+    ctrlr.tvRightChildren.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 
     ctrlr.tvLeftChildren.getColumns().get(1).setText("Sub-Notes Under This Note");
     ctrlr.tvLeftChildren.getColumns().get(2).setText("Text");
     ctrlr.tvLeftChildren.getColumns().add(new TableColumn<HyperTableRow, HyperTableCell>("Folder"));
 
     ctrlr.tvRightChildren.getColumns().get(0).setText("Type");
-    ctrlr.tvRightChildren.getColumns().get(1).setText("Name of Record");
+    ctrlr.tvRightChildren.getColumns().get(1).setText("Name of Record Linking to This Note");
     ctrlr.tvRightChildren.getColumns().add(new TableColumn<HyperTableRow, HyperTableCell>("Description"));
 
     ctrlr.spMain.setDividerPosition(1, 0.8);
@@ -389,13 +370,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
     if (curNote == null)
       bp.setLeft(btnFolder);
-
-    tabSubnotes  .setText(subnotesTabTitle  );
-    tabMentioners.setText(mentionersTabTitle);
   }
-
-  private static final String subnotesTabTitle   = "Sub-Notes",
-                              mentionersTabTitle = "Records linking to here";
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -437,8 +412,9 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override public void setDividerPositions()
   {
-    setDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_TOP_VERT   , 0);
-    setDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_BOTTOM_VERT, 1);
+    setDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_TOP_VERT        , 0);
+    setDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_BOTTOM_VERT     , 1);
+    setDividerPosition(ctrlr.spChildren, PREF_KEY_NOTE_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------
@@ -446,8 +422,9 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 
   @Override public void getDividerPositions()
   {
-    getDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_TOP_VERT   , 0);
-    getDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_BOTTOM_VERT, 1);
+    getDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_TOP_VERT        , 0);
+    getDividerPosition(ctrlr.spMain, PREF_KEY_NOTE_BOTTOM_VERT     , 1);
+    getDividerPosition(ctrlr.spChildren, PREF_KEY_NOTE_BOTTOM_HORIZ, 0);
   }
 
 //---------------------------------------------------------------------------

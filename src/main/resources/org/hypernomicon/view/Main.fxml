@@ -23,6 +23,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.Separator?>
@@ -72,11 +73,11 @@
                 <Menu mnemonicParsing="false" text="Tools">
                   <items>
                         <MenuItem fx:id="mnuChangeID" mnemonicParsing="false" onAction="#mnuChangeIDClick" text="Change record ID..." />
-                        <Menu mnemonicParsing="false" text="Create new">
+                        <Menu mnemonicParsing="false" text="Create new category record...">
                           <items>
-                              <MenuItem fx:id="mnuNewField" mnemonicParsing="false" onAction="#mnuNewFieldClick" text="Field" />
+                              <MenuItem fx:id="mnuNewField" mnemonicParsing="false" onAction="#mnuNewFieldClick" text="Academic Field" />
                               <MenuItem fx:id="mnuNewCountry" mnemonicParsing="false" onAction="#mnuNewCountryClick" text="Country" />
-                              <MenuItem fx:id="mnuNewRank" mnemonicParsing="false" onAction="#mnuNewRankClick" text="Rank" />
+                              <MenuItem fx:id="mnuNewRank" mnemonicParsing="false" onAction="#mnuNewRankClick" text="Academic Rank" />
                             <MenuItem fx:id="mnuNewPersonStatus" mnemonicParsing="false" onAction="#mnuNewPersonStatusClick" text="Person Status" />
                           </items>
                         </Menu>
@@ -221,7 +222,7 @@
                   </TabPane>
                   <AnchorPane fx:id="apFindBackground" mouseTransparent="true">
                      <children>
-                        <GridPane layoutX="336.0" layoutY="270.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="336.0" AnchorPane.rightAnchor="268.0" AnchorPane.topAnchor="0.0">
+                        <GridPane layoutX="336.0" layoutY="270.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="336.0" AnchorPane.rightAnchor="288.0" AnchorPane.topAnchor="0.0">
                            <columnConstraints>
                               <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
                            </columnConstraints>
@@ -255,7 +256,7 @@
          <columnConstraints>
             <ColumnConstraints hgrow="NEVER" maxWidth="336.0" minWidth="336.0" prefWidth="336.0" />
             <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="40.0" />
-            <ColumnConstraints hgrow="NEVER" maxWidth="268.0" minWidth="268.0" prefWidth="268.0" />
+            <ColumnConstraints hgrow="NEVER" maxWidth="288.0" minWidth="288.0" prefWidth="288.0" />
          </columnConstraints>
          <rowConstraints>
             <RowConstraints maxHeight="28.0" minHeight="10.0" vgrow="SOMETIMES" />
@@ -384,10 +385,21 @@
             </AnchorPane>
             <AnchorPane GridPane.columnIndex="2">
                <children>
-                  <Button fx:id="btnSave" layoutX="7.0" layoutY="5.0" mnemonicParsing="false" onAction="#btnSaveClick" prefHeight="24.0" prefWidth="78.0" text="Accept Edits" AnchorPane.rightAnchor="188.0" AnchorPane.topAnchor="5.0" />
-                  <Button fx:id="btnRevert" layoutX="84.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="53.0" text="Refresh" AnchorPane.rightAnchor="131.0" AnchorPane.topAnchor="5.0" />
-                  <Button fx:id="btnDelete" layoutX="108.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="48.0" text="Delete" AnchorPane.rightAnchor="79.0" AnchorPane.topAnchor="5.0" />
-                  <Button fx:id="btnCreateNew" layoutX="165.0" layoutY="5.0" mnemonicParsing="false" onAction="#btnCreateClick" prefHeight="24.0" prefWidth="73.0" text="Create New" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0" />
+                  <Button fx:id="btnSave" layoutX="9.0" layoutY="5.0" mnemonicParsing="false" onAction="#btnSaveClick" prefHeight="24.0" prefWidth="78.0" text="Accept Edits" AnchorPane.rightAnchor="208.0" AnchorPane.topAnchor="5.0" />
+                  <Button fx:id="btnRevert" layoutX="91.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="53.0" text="Refresh" AnchorPane.rightAnchor="151.0" AnchorPane.topAnchor="5.0" />
+                  <Button fx:id="btnDelete" layoutX="148.0" layoutY="5.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="48.0" text="Delete" AnchorPane.rightAnchor="99.0" AnchorPane.topAnchor="5.0" />
+                  <SplitMenuButton fx:id="btnCreateNew" layoutX="165.0" layoutY="5.0" mnemonicParsing="false" onAction="#btnCreateClick" popupSide="TOP" prefHeight="24.0" prefWidth="93.0" text="Create New" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
+                    <items>
+                      <MenuItem mnemonicParsing="false" text="Action 1" />
+                      <MenuItem mnemonicParsing="false" text="Action 2" />
+                    </items>
+                  </SplitMenuButton>
+                  <MenuButton fx:id="mbCreateNew" layoutX="165.0" layoutY="5.0" mnemonicParsing="false" popupSide="TOP" prefHeight="24.0" prefWidth="93.0" text="Create New" visible="false" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="5.0">
+                    <items>
+                      <MenuItem mnemonicParsing="false" text="Action 1" />
+                      <MenuItem mnemonicParsing="false" text="Action 2" />
+                    </items>
+                  </MenuButton>
                </children>
             </AnchorPane>
             <AnchorPane fx:id="apStatus" mouseTransparent="true" prefHeight="24.0" prefWidth="1253.0" GridPane.columnSpan="2" GridPane.rowIndex="1">

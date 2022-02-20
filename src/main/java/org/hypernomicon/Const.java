@@ -195,6 +195,7 @@ public final class Const
     PREF_KEY_ARG_BOTTOM_VERT     = "argBottomVert",
     PREF_KEY_NOTE_TOP_VERT       = "noteTopVert",
     PREF_KEY_NOTE_BOTTOM_VERT    = "noteBottomVert",
+    PREF_KEY_NOTE_BOTTOM_HORIZ   = "noteBottomHoriz",
     PREF_KEY_TERM_TOP_VERT       = "termTopVert",
     PREF_KEY_TERM_BOTTOM_VERT    = "termBottomVert",
     PREF_KEY_MGR_MAIN_HORIZ      = "mgrMainHoriz",

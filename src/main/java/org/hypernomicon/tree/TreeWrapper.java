@@ -288,7 +288,6 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
       }
 
     } while (item != firstItem);
-
   }
 
 //---------------------------------------------------------------------------

@@ -365,15 +365,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
     {
       case hdtArgument :
 
-        NewArgDlgCtrlr newArgDialog = NewArgDlgCtrlr.build(curArgument);
-
-        if (newArgDialog.showModal())
-        {
-          ui.goToRecord(newArgDialog.getArgument(), false);
-
-          lowerCtrlr.tabPane.getSelectionModel().select(lowerCtrlr.tabWhereMade);
-        }
-
+        newCounterargumentClick(curArgument);
         break;
 
       case hdtWork :
@@ -387,6 +379,20 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
       default:
         break;
     }
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void newCounterargumentClick(HDT_Argument target)
+  {
+    NewArgDlgCtrlr newArgDialog = NewArgDlgCtrlr.build(target);
+
+    if (newArgDialog.showModal() == false) return;
+
+    ui.goToRecord(newArgDialog.getArgument(), false);
+
+    lowerCtrlr.tabPane.getSelectionModel().select(lowerCtrlr.tabWhereMade);
   }
 
 //---------------------------------------------------------------------------

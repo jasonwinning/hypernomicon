@@ -127,9 +127,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   @FXML private ProgressBar progressBar;
   @FXML private SplitMenuButton btnDOI, smbWebSrch1;
   @FXML private SplitPane spHoriz1, spHoriz2, spVert, spMentioners;
-  @FXML private Tab tabArguments, tabBibDetails, tabCrossref, tabGoogleBooks, tabKeyMentions,
-                    tabEntry, tabMiscBib, tabMiscFiles, tabPdfMetadata, tabSubworks, tabWorkFiles;
-  @FXML private TabPane tabPane, tpBib, tpArguments, tpKeyMentions;
+  @FXML private Tab tabBibDetails, tabCrossref, tabGoogleBooks, tabEntry, tabMiscBib, tabMiscFiles, tabPdfMetadata, tabSubworks, tabWorkFiles;
+  @FXML private TabPane tabPane, tpBib;
   @FXML private TableView<HyperTableRow> tvArguments, tvAuthors, tvISBN, tvKeyMentions,
                                          tvLabels, tvMiscFiles, tvSubworks, tvWorkFiles;
   @FXML private TextArea taEntry, taCrossref, taGoogleBooks, taMiscBib, taPdfMetadata;
@@ -187,9 +186,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     tabPane.setStyle("-fx-open-tab-animation: NONE; -fx-close-tab-animation: NONE;");
     tpBib  .setStyle("-fx-open-tab-animation: NONE; -fx-close-tab-animation: NONE;");
 
-    tabPane      .getTabs().forEach(tab -> tabCaptions.put(tab, tab.getText()));
-    tpArguments  .getTabs().forEach(tab -> tabCaptions.put(tab, tab.getText()));
-    tpKeyMentions.getTabs().forEach(tab -> tabCaptions.put(tab, tab.getText()));
+    tabPane.getTabs().forEach(tab -> tabCaptions.put(tab, tab.getText()));
 
     setToolTip(btnWebSrch1, TOOLTIP_PREFIX + "WorldCat");
     setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Google Scholar");
@@ -821,21 +818,18 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   // Populate key mentioners
   // -----------------------
 
-    int mentionerCnt = populateDisplayersAndKeyMentioners(curWork, htKeyMentioners);
+    populateDisplayersAndKeyMentioners(curWork, htKeyMentioners);
 
   // Other stuff
   // -----------
 
     int subworkCnt  = curWork.subWorks .size(),
-        argCnt      = curWork.arguments.size(),
         miscFileCnt = curWork.miscFiles.size(),
         workFileCnt = curWork.workFiles.size();
 
     setTabCaption(tabWorkFiles     , workFileCnt);
     setTabCaption(tabSubworks      , subworkCnt);
     setTabCaption(tabMiscFiles     , miscFileCnt);
-    setTabCaption(tabArguments     , argCnt);
-    setTabCaption(tabKeyMentions   , mentionerCnt);
 
     tfSearchKey.setText(curWork.getSearchKey());
     if (tfSearchKey.getText().isEmpty())
@@ -944,7 +938,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static int populateDisplayersAndKeyMentioners(HDT_RecordWithPath record, HyperTable table)
+  static void populateDisplayersAndKeyMentioners(HDT_RecordWithPath record, HyperTable table)
   {
     Set<HDT_RecordWithConnector> set = new LinkedHashSet<>(), invSet = new LinkedHashSet<>();
 
@@ -961,8 +955,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       row.setCellValue(1, mentioner, mentioner.getCBText());
       row.setCellValue(2, mentioner, mentioner.getMainText().getPlainForDisplay());
     });
-
-    return set.size() + invSet.size();
   }
 
 //---------------------------------------------------------------------------

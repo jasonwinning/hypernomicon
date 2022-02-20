@@ -31,7 +31,7 @@ public final class MenuItemSchema<HDT_T extends HDT_Record, RowType extends Abst
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final private RecordType recordType;
+  final public RecordType recordType;
   final private Predicate<HDT_T> condRecordHandler;
   final private Consumer<HDT_T> recordHandler;
   final private Predicate<RowType> condRowHandler;

@@ -268,7 +268,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
       case hdtArgument :
 
-        newArgumentClick();
+        newArgumentClick(curPosition);
         break;
 
       default:
@@ -279,9 +279,9 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void newArgumentClick()
+  public void newArgumentClick(HDT_Position target)
   {
-    NewArgDlgCtrlr newArgDialog = NewArgDlgCtrlr.build(curPosition);
+    NewArgDlgCtrlr newArgDialog = NewArgDlgCtrlr.build(target);
 
     if (newArgDialog.showModal())
       ui.goToRecord(newArgDialog.getArgument(), false);

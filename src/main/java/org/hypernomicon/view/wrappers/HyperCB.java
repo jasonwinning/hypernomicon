@@ -48,6 +48,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.view.wrappers.UIUtil.*;
 
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -66,7 +67,7 @@ public class HyperCB implements CommitableWrapper
   public HyperTableCell typedMatch;
   private HyperTableCell preShowingValue;
   private EventHandler<ActionEvent> onAction, innerOnAction;
-  private boolean adjusting = false;
+  private MutableBoolean adjusting;
   public boolean somethingWasTyped, listenForActionEvents = true, dontCreateNewRecord = false, silentMode = false;
 
   private List<HTCListener> listeners = new ArrayList<>();
@@ -177,23 +178,13 @@ public class HyperCB implements CommitableWrapper
 
   //---------------------------------------------------------------------------
 
-    cb.setOnShown(event ->               // This is a workaround for the fact that sometimes, when you show
-    {                                    // the popup list from a combox box that is inside a tableview, the popup list
-      if (adjusting) return;             // initially is covering the cb's editor.
-
-      adjusting = true;
-
-      cb.hide();
-      cb.show();
-
-      adjusting = false;
-    });
+    adjusting = repositionPopupListWorkaround(cb);
 
   //---------------------------------------------------------------------------
 
     cb.setOnHidden(event ->
     {
-      if (adjusting || (preShowingValue == null) || (table == null) || (table.autoCommitListSelections == false)) return;
+      if (adjusting.isTrue() || (preShowingValue == null) || (table == null) || (table.autoCommitListSelections == false)) return;
 
       String newText = HyperTableCell.getCellText(cb.getValue());
       if (! (newText.isEmpty() || newText.equals(HyperTableCell.getCellText(preShowingValue))))

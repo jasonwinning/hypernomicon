@@ -153,27 +153,19 @@
             </SplitPane>
          </children>
       </GridPane>
-      <TabPane>
-         <tabs>
-            <Tab closable="false" text="Records listing this under Key Works">
-               <content>
-                  <AnchorPane>
-                     <children>
-                        <TableView fx:id="tvKeyMentions" maxHeight="-Infinity" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                           <columns>
-                              <TableColumn maxWidth="200.0" minWidth="69.0" prefWidth="69.0" text="Type" />
-                              <TableColumn prefWidth="629.0" text="Record Name" />
-                              <TableColumn prefWidth="766.0" text="Description" />
-                           </columns>
-                           <columnResizePolicy>
-                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                           </columnResizePolicy>
-                        </TableView>
-                     </children>
-                  </AnchorPane>
-               </content>
-            </Tab>
-         </tabs>
-      </TabPane>
+      <AnchorPane>
+         <children>
+            <TableView fx:id="tvKeyMentions" maxHeight="-Infinity" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+               <columns>
+                  <TableColumn maxWidth="200.0" minWidth="69.0" prefWidth="69.0" text="Type" />
+                  <TableColumn prefWidth="629.0" text="Record Listing This Under Key Works" />
+                  <TableColumn prefWidth="766.0" text="Description" />
+               </columns>
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy>
+            </TableView>
+         </children>
+      </AnchorPane>
    </items>
 </SplitPane>

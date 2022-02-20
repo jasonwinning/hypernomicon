@@ -20,6 +20,7 @@ package org.hypernomicon.view.wrappers;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.view.wrappers.UIUtil.*;
 
 import java.util.List;
 
@@ -29,7 +30,6 @@ import javafx.geometry.Side;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBoxBase;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
@@ -38,7 +38,7 @@ import javafx.scene.layout.Pane;
 
 public class ClickHoldButton
 {
-  private boolean mouseDown = false, adjusting = false;
+  private boolean mouseDown = false;
   private EventHandler<ActionEvent> hndlr = null;
   private final MenuButton btnMenu;
   private final Button btn;
@@ -74,17 +74,7 @@ public class ClickHoldButton
 
     getMenu().clear();
 
-    btnMenu.addEventFilter(ComboBoxBase.ON_SHOWN, event ->  //////////////
-    {                                                       //
-      if (adjusting) return;                                //
-                                                            // This is a workaround for the
-      adjusting = true;                                     // fact that sometimes, when you show the
-                                                            // popup list for a control, the popup list
-      btnMenu.hide();                                       // appears in the wrong place
-      btnMenu.show();                                       //
-                                                            //
-      adjusting = false;                                    //
-    });                                                     //////////////
+    repositionPopupListWorkaround(btnMenu);
 
     btn.setOnAction(event ->
     {

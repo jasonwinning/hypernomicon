@@ -17,7 +17,9 @@
 
 package org.hypernomicon.tree;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.controlsfx.control.MasterDetailPane;
 import org.hypernomicon.dialogs.RenameDlgCtrlr;
@@ -28,6 +30,10 @@ import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.mainText.MainTextWrapper;
 import org.hypernomicon.view.tabs.HyperTab;
+import org.hypernomicon.view.wrappers.MenuItemSchema;
+
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.SetMultimap;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.Const.*;
@@ -45,6 +51,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
@@ -62,6 +69,8 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @FXML private MasterDetailPane spMain;
   @FXML private CheckBox chkShowDesc;
   @FXML private WebView webView;
+
+  final private SetMultimap<RecordType, MenuItemSchema<? extends HDT_Record, TreeRow>> recordTypeToSchemas = LinkedHashMultimap.create();
 
   private TreeModel<TreeRow> debateTree, termTree, labelTree, noteTree;
   private boolean useViewInfo = false;
@@ -150,41 +159,41 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       glossary -> db.isLoaded(),
       this::renameRecord);
 
-    tree.addContextMenuItem("New label under this record...", HDT_WorkLabel.class,
+    addCreateNewSchema(tree.addContextMenuItem("Create new sub-label under this label", HDT_WorkLabel.class,
       label -> db.isLoaded(),
-      this::createLabel);
+      this::createLabel));
 
-    tree.addContextMenuItem("New debate under this debate...", HDT_Debate.class,
+    addCreateNewSchema(tree.addContextMenuItem("Create new position under this debate", HDT_Debate.class,
+        debate -> db.isLoaded(),
+        debate -> createChild(debate, rtDebateOfPosition)));
+
+    addCreateNewSchema(tree.addContextMenuItem("Create new sub-debate under this debate", HDT_Debate.class,
       debate -> db.isLoaded(),
-      debate -> createChild(debate, rtParentDebateOfDebate));
+      debate -> createChild(debate, rtParentDebateOfDebate)));
 
-    tree.addContextMenuItem("New position under this debate...", HDT_Debate.class,
-      debate -> db.isLoaded(),
-      debate -> createChild(debate, rtDebateOfPosition));
+    addCreateNewSchema(tree.addContextMenuItem("Create new argument for/against this position", HDT_Position.class,
+        pos -> db.isLoaded(),
+        pos -> ui.positionHyperTab().newArgumentClick(pos)));
 
-    tree.addContextMenuItem("New position under this position...", HDT_Position.class,
+    addCreateNewSchema(tree.addContextMenuItem("Create new position under this position", HDT_Position.class,
       pos -> db.isLoaded(),
-      pos -> createChild(pos, rtParentPosOfPos));
+      pos -> createChild(pos, rtParentPosOfPos)));
 
-    tree.addContextMenuItem("New argument under this position...", HDT_Position.class,
-      pos -> db.isLoaded(),
-      pos -> createChild(pos, rtPositionOfArgument));
-
-    tree.addContextMenuItem("New counterargument under this argument...", HDT_Argument.class,
+    addCreateNewSchema(tree.addContextMenuItem("Create new counterargument to this argument", HDT_Argument.class,
       arg -> db.isLoaded(),
-      arg -> createChild(arg, rtCounterOfArgument));
+      arg -> ui.argumentHyperTab().newCounterargumentClick(arg)));
 
-    tree.addContextMenuItem("New note under this note...", HDT_Note.class,
+    addCreateNewSchema(tree.addContextMenuItem("Create new note under this note", HDT_Note.class,
       note -> db.isLoaded(),
-      note -> createChild(note, rtParentNoteOfNote));
+      note -> createChild(note, rtParentNoteOfNote)));
 
-    tree.addContextMenuItem("New term in this glossary...", HDT_Glossary.class,
+    addCreateNewSchema(tree.addContextMenuItem("Create new term in this glossary", HDT_Glossary.class,
       glossary -> db.isLoaded(),
-      glossary -> createTerm(glossary));
+      glossary -> createTerm(glossary)));
 
-    tree.addContextMenuItem("New glossary under this glossary...", HDT_Glossary.class,
+    addCreateNewSchema(tree.addContextMenuItem("Create new glossary under this glossary", HDT_Glossary.class,
       glossary -> db.isLoaded(),
-      this::createGlossary);
+      this::createGlossary));
 
     tree.addDefaultMenuItems();
 
@@ -318,6 +327,38 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     db.addCloseDBHandler(tree::reset);
 
     tree.loadColWidths(PREF_KEY_HT_TREE);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public List<MenuItem> getCreateMenuItems()
+  {
+    List<MenuItem> items = new ArrayList<>();
+    TreeRow row = nullSwitch(tree.selectedItem(), null, TreeItem<TreeRow>::getValue);
+    if (row == null) return items;
+
+    Set<MenuItemSchema<? extends HDT_Record, TreeRow>> schemas = recordTypeToSchemas.get(row.getRecordType());
+    if (schemas == null) return items;
+
+    schemas.forEach(schema ->
+    {
+      if (schema.testWhetherToShow(row) == false) return;
+
+      MenuItem menuItem = new MenuItem(schema.getCaption());
+      menuItem.setOnAction(event -> schema.doAction(row));
+      items.add(menuItem);
+    });
+
+    return items;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private void addCreateNewSchema(MenuItemSchema<? extends HDT_Record, TreeRow> schema)
+  {
+    recordTypeToSchemas.put(schema.recordType, schema);
   }
 
 //---------------------------------------------------------------------------
