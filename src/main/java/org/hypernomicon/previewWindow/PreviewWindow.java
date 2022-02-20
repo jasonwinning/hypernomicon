@@ -18,9 +18,9 @@
 package org.hypernomicon.previewWindow;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.previewWindow.PreviewWindow.PreviewSource.*;
 
@@ -41,6 +41,7 @@ import org.hypernomicon.model.records.HDT_WorkFile;
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 import org.hypernomicon.view.wrappers.ClickHoldButton;
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;

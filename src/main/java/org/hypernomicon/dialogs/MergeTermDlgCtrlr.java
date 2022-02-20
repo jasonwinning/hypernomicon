@@ -18,8 +18,8 @@
 package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import org.hypernomicon.model.records.HDT_Term;
 import javafx.fxml.FXML;

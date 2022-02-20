@@ -17,20 +17,18 @@
 
 package org.hypernomicon.dialogs;
 
+import org.hypernomicon.model.records.HDT_Record;
+import org.hypernomicon.model.records.RecordType;
+import org.hypernomicon.view.populators.StandardPopulator;
+import org.hypernomicon.view.wrappers.HyperCB;
+import org.hypernomicon.view.wrappers.HyperTableCell;
+
+import static org.hypernomicon.model.HyperDB.*;
+import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.function.Predicate;
 
-import static org.hypernomicon.model.HyperDB.*;
-
-import org.hypernomicon.model.records.HDT_Record;
-import org.hypernomicon.model.records.RecordType;
-
-import static org.hypernomicon.util.Util.*;
-
-import org.hypernomicon.view.populators.StandardPopulator;
-import org.hypernomicon.view.wrappers.HyperCB;
-import org.hypernomicon.view.wrappers.HyperTableCell;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 

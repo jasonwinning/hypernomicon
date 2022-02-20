@@ -17,13 +17,13 @@
 
 package org.hypernomicon;
 
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
+
 import java.io.*;
 import java.net.*;
 
 import org.hypernomicon.HyperTask.HyperThread;
-
-import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 class InterProcDaemon extends HyperThread
 {

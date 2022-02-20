@@ -34,8 +34,9 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldType.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 public abstract class BibDataStandalone extends BibData
 {

@@ -21,8 +21,9 @@ import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.util.List;
 import java.util.Set;

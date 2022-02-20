@@ -19,8 +19,9 @@ package org.hypernomicon.bib.data;
 
 import static org.hypernomicon.bib.data.BibField.BibFieldEnum.*;
 import static org.hypernomicon.model.records.SimpleRecordTypes.WorkTypeEnum.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -271,7 +272,7 @@ public class BibDataRetriever
       //     if there are 1 or more ISBNs
       //       if can use existing ISBNs to get bib info
       //         exit
-      
+
       if (queryGoogle && ((workTypeEnum == wtNone) || (workTypeEnum == wtBook)))
       {
         List<String> isbns = workBD == null ? null : workBD.getMultiStr(bfISBNs);
@@ -295,7 +296,7 @@ public class BibDataRetriever
       //       if PDF bib info has ISBN(s)
       //         if can use existing ISBNs to get bib info
       //           exit
-      
+
       if (queryGoogle && ((workTypeEnum == wtNone) || (workTypeEnum == wtBook)))
       {
         List<String> isbns = pdfBD == null ? null : pdfBD.getMultiStr(bfISBNs);

@@ -20,14 +20,7 @@ package org.hypernomicon.util;
 import org.hypernomicon.App;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.dialogs.LockedDlgCtrlr;
-import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.util.filePath.FilePath;
-import org.hypernomicon.view.WindowStack;
-
-import static org.hypernomicon.App.*;
-import static org.hypernomicon.Const.*;
-import static org.hypernomicon.util.PopupDialog.DialogResult.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,7 +28,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.Constructor;
 
 import static java.nio.charset.StandardCharsets.*;
 
@@ -64,7 +56,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -80,44 +71,13 @@ import java.util.stream.StreamSupport;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.beans.property.DoubleProperty;
-import javafx.event.EventTarget;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Control;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ToolBar;
-import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
-import javafx.stage.Screen;
-import javafx.stage.Stage;
-import javafx.stage.Window;
 import javafx.util.Duration;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import com.google.common.escape.Escaper;
@@ -126,9 +86,6 @@ import com.ibm.icu.text.Transliterator;
 
 import static com.google.common.xml.XmlEscapers.*;
 import static com.google.common.html.HtmlEscapers.*;
-
-import javafx.scene.control.skin.ComboBoxListViewSkin;
-import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 //---------------------------------------------------------------------------
 
@@ -140,29 +97,6 @@ public final class Util
   public static final Escaper htmlEscaper         = htmlEscaper(),
                               xmlContentEscaper   = xmlContentEscaper(),
                               xmlAttributeEscaper = xmlAttributeEscaper();
-
-//---------------------------------------------------------------------------
-
-  private static final Map<String, Double> dividerMap = new HashMap<>();
-
-  public static void setDividerPosition(SplitPane sp, String key, int ndx)
-  {
-    double pos = appPrefs.getDouble(key, -1.0);
-    dividerMap.put(key, pos);
-
-    if (pos >= 0)
-      sp.setDividerPosition(ndx, pos);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void getDividerPosition(SplitPane sp, String key, int ndx)
-  {
-    double pos = sp.getDividerPositions()[ndx];
-    if (Double.valueOf(pos).equals(dividerMap.get(key)) == false)
-      appPrefs.putDouble(key, sp.getDividerPositions()[ndx]);
-  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -358,181 +292,9 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static DialogResult abortRetryIgnoreDialog(String msg)
-  {
-    return new PopupDialog(msg)
-
-      .addButton("Abort" , mrAbort)
-      .addButton("Retry" , mrRetry)
-      .addButton("Ignore", mrIgnore)
-
-      .showModal();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static DialogResult yesNoCancelDialog(String msg)
-  {
-    return new PopupDialog(msg)
-
-      .addButton("Yes"   , mrYes)
-      .addButton("No"    , mrNo)
-      .addButton("Cancel", mrCancel)
-
-      .showModal();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static DialogResult seriesConfirmDialog(String msg)
-  {
-    return new PopupDialog(msg)
-
-      .addButton("Yes"       , mrYes)
-      .addButton("No"        , mrNo)
-      .addButton("Yes to all", mrYesToAll)
-      .addButton("No to all" , mrNoToAll)
-
-      .showModal();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static boolean confirmDialog(String msg)
-  {
-    return new PopupDialog(msg)
-
-      .addButton("Yes", mrYes)
-      .addButton("No" , mrNo)
-
-      .showModal() == mrYes;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static boolean falseWithErrMsgCond(boolean showErrMsg, String errMsg)
-  {
-    return showErrMsg ? falseWithErrorMessage(errMsg) : false;
-  }
-
-  public static boolean falseWithErrorMessage  (String msg                  ) { return falseWithMessage(msg, mtError      , null       ); }
-  public static boolean falseWithErrorMessage  (String msg, Node nodeToFocus) { return falseWithMessage(msg, mtError      , nodeToFocus); }
-  public static boolean falseWithWarningMessage(String msg                  ) { return falseWithMessage(msg, mtWarning    , null       ); }
-  public static boolean falseWithWarningMessage(String msg, Node nodeToFocus) { return falseWithMessage(msg, mtWarning    , nodeToFocus); }
-  public static boolean falseWithInfoMessage   (String msg                  ) { return falseWithMessage(msg, mtInformation, null       ); }
-  public static boolean falseWithInfoMessage   (String msg, Node nodeToFocus) { return falseWithMessage(msg, mtInformation, nodeToFocus); }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static boolean falseWithMessage(String msg, MessageDialogType mt, Node nodeToFocus)
-  {
-    messageDialog(msg, mt);
-    if (nodeToFocus != null) safeFocus(nodeToFocus);
-    return false;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static enum MessageDialogType { mtWarning, mtError, mtInformation }
-
-  public static void messageDialog(String msg, MessageDialogType mt)
-  {
-    messageDialog(msg, mt, false);
-  }
-
-  public static void messageDialog(String msg, MessageDialogType mt, boolean wait)
-  {
-    if (wait) messageDialogShowing = true;
-
-    runInFXThread(() ->
-    {
-      Alert alert = null;
-
-      messageDialogShowing = true;
-
-      switch (mt)
-      {
-        case mtWarning :
-          alert = new Alert(AlertType.WARNING);
-          alert.setHeaderText("Warning");
-          break;
-
-        case mtError :
-          alert = new Alert(AlertType.ERROR);
-          alert.setHeaderText("Error");
-          break;
-
-        case mtInformation :
-          alert = new Alert(AlertType.INFORMATION);
-          alert.setHeaderText("Information");
-          break;
-
-        default:
-
-          return;
-      }
-
-      alert.setTitle(appTitle);
-      alert.setContentText(msg);
-
-      showAndWait(alert);
-      messageDialogShowing = false;
-    });
-
-    while (wait && messageDialogShowing)
-      sleepForMillis(50);
-  }
-
-  private static boolean messageDialogShowing = false;
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static void showStackTrace(Throwable e)
   {
     LockedDlgCtrlr.build("Error", e).showModal();
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  static ButtonType showAndWait(Alert dlg)
-  {
-    WindowStack windowStack = ui == null ? null : ui.windows;
-
-    if (windowStack != null)
-      windowStack.push(dlg);
-
-    if (SystemUtils.IS_OS_LINUX)
-    {
-      DialogPane dlgPane = dlg.getDialogPane();
-
-      dlgPane.setMinSize (800, 400);
-      dlgPane.setMaxSize (800, 400);
-      dlgPane.setPrefSize(800, 400);
-    }
-
-    if (windowStack != null)
-    {
-      Stage owner = windowStack.getOutermostStage();
-      if ((owner != null) && (owner.isShowing() == false))
-        owner = null;
-
-      dlg.initOwner(owner);
-    }
-
-    Optional<ButtonType> result = dlg.showAndWait();
-
-    if (windowStack != null)
-      windowStack.pop();
-
-    return result.orElse(null);
   }
 
 //---------------------------------------------------------------------------
@@ -667,162 +429,9 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // copies node1 to node2
-
-  public static void copyRegionLayout(Region node1, Region node2)
-  {
-    setAnchors(node2, AnchorPane.getTopAnchor (node1), AnchorPane.getBottomAnchor(node1),
-                      AnchorPane.getLeftAnchor(node1), AnchorPane.getRightAnchor (node1));
-
-    GridPane.setColumnIndex(node2, GridPane.getColumnIndex(node1));
-    GridPane.setColumnSpan (node2, GridPane.getColumnSpan (node1));
-    GridPane.setRowIndex   (node2, GridPane.getRowIndex   (node1));
-    GridPane.setRowSpan    (node2, GridPane.getRowSpan    (node1));
-
-    node2.setLayoutX(node1.getLayoutX());
-    node2.setLayoutY(node1.getLayoutY());
-
-    node2.setMinSize (node1.getMinWidth (), node1.getMinHeight ());
-    node2.setMaxSize (node1.getMaxWidth (), node1.getMaxHeight ());
-    node2.setPrefSize(node1.getPrefWidth(), node1.getPrefHeight());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void setAnchors(Node node, Double top, Double bottom, Double left, Double right)
-  {
-    AnchorPane.setTopAnchor   (node, top   );
-    AnchorPane.setBottomAnchor(node, bottom);
-    AnchorPane.setLeftAnchor  (node, left  );
-    AnchorPane.setRightAnchor (node, right );
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void setHeights(Region region, Double ht)
-  {
-    region.setMinHeight (ht);
-    region.setMaxHeight (ht);
-    region.setPrefHeight(ht);
-  }
-
-  public static void setHeights(Stage stage, Double ht)
-  {
-    stage.setMinHeight(ht);
-    stage.setMaxHeight(ht);
-    stage.setHeight   (ht);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void safeFocus(Node node)
-  {
-    if (node.isDisabled() == false)
-      runInFXThread(node::requestFocus);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void scaleNodeForDPI(Node node)
-  {
-    boolean childrenOnly = false;
-
-    if (node == null) return;
-
-    if (node.getId() != null)
-    {
-      if (node.getId().equals("noScale"))
-        return;
-
-      if (node.getId().equals("childrenOnly"))
-        childrenOnly = true;
-    }
-
-    if (childrenOnly == false)
-    {
-      if (node instanceof Region)
-      {
-        Region region = (Region)node;
-
-        scalePropertiesForDPI(region.prefHeightProperty(), region.prefWidthProperty(),
-                              region.maxHeightProperty() , region.maxWidthProperty(),
-                              region.minHeightProperty() , region.minWidthProperty());
-      }
-
-      if (((node instanceof javafx.scene.shape.Path) == false) &&
-          ((node instanceof javafx.scene.text.Text) == false))
-      {
-        scalePropertiesForDPI(node.layoutXProperty(), node.layoutYProperty());
-      }
-
-      Double val = AnchorPane.getBottomAnchor(node);
-      if ((val != null) && (val.doubleValue() > 0.0))
-        AnchorPane.setBottomAnchor(node, round(val.doubleValue() * displayScale));
-
-      val = AnchorPane.getTopAnchor(node);
-      if ((val != null) && (val.doubleValue() > 0.0))
-        AnchorPane.setTopAnchor(node, round(val.doubleValue() * displayScale));
-
-      val = AnchorPane.getLeftAnchor(node);
-      if ((val != null) && (val.doubleValue() > 0.0))
-        AnchorPane.setLeftAnchor(node, round(val.doubleValue() * displayScale));
-
-      val = AnchorPane.getRightAnchor(node);
-      if ((val != null) && (val.doubleValue() > 0.0))
-        AnchorPane.setRightAnchor(node, round(val.doubleValue() * displayScale));
-    }
-
-    if (node instanceof TableView) ((TableView<?>)node).getColumns().forEach(column ->
-      scalePropertiesForDPI(column.maxWidthProperty(), column.minWidthProperty(), column.prefWidthProperty()));
-
-    if (node instanceof GridPane)
-    {
-      GridPane gridPane = (GridPane)node;
-
-      gridPane.getColumnConstraints().forEach(cc -> scalePropertiesForDPI(cc.maxWidthProperty(), cc.minWidthProperty(), cc.prefWidthProperty()));
-      gridPane.getRowConstraints().forEach(rc -> scalePropertiesForDPI(rc.maxHeightProperty(), rc.minHeightProperty(), rc.prefHeightProperty()));
-    }
-
-    if (node instanceof ToolBar)
-      ((ToolBar)node).getItems().forEach(Util::scaleNodeForDPI);
-    else if (node instanceof TitledPane)
-      scaleNodeForDPI(((TitledPane)node).getContent());
-    else if (node instanceof TabPane)
-      ((TabPane)node).getTabs().forEach(tab -> scaleNodeForDPI(tab.getContent()));
-    else if (node instanceof Parent)
-      ((Parent)node).getChildrenUnmodifiable().forEach(Util::scaleNodeForDPI);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static double round(double n)
   {
     return Math.round(n);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static void scalePropertiesForDPI(DoubleProperty... props)
-  {
-    double[] vals = new double[props.length];
-
-    for (int ndx = 0; ndx < props.length; ndx++)
-      vals[ndx] = props[ndx].get();
-
-    for (int ndx = 0; ndx < props.length; ndx++)
-    {
-      if (vals[ndx] > 0.0)
-      {
-        vals[ndx] = round(vals[ndx] * displayScale);
-        props[ndx].set(vals[ndx]);
-      }
-    }
   }
 
 //---------------------------------------------------------------------------
@@ -1069,16 +678,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void setFontSize(Node node)
-  {
-    double fontSize = appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
-    if (fontSize >= 1)
-      node.setStyle("-fx-font-size: " + fontSize + "px;");
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static String manifestValue(String key)
   {
     Class<App> theClass = App.class;
@@ -1100,45 +699,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  // The hacky nature of this function is due to the fact that the webview context menu is not publicly accessible
-  // See https://bugs.openjdk.java.net/browse/JDK-8090931
-
-  public static void setHTMLContextMenu(MenuItem... items)
-  {
-    Parent parent = nullSwitch(nullSwitch(findFirst(Window.getWindows(), window -> window instanceof ContextMenu),
-                                          null, Window::getScene), null, Scene::getRoot);
-    if (parent == null) return;
-
-    List<Node> rootChildren = parent.getChildrenUnmodifiable();
-    if (rootChildren.isEmpty()) return;
-
-    Node contextMenuContent = nullSwitch(rootChildren.get(0).lookup(".context-menu"), null,
-                                         bridge -> ((Parent)bridge).getChildrenUnmodifiable().get(0));
-
-    if (contextMenuContent == null) return;
-
-    try
-    {
-      Class<? extends Object> contextMenuContentClass = Class.forName("com.sun.javafx.scene.control.ContextMenuContent"),
-                              menuItemContainerClass  = Class.forName("com.sun.javafx.scene.control.ContextMenuContent$MenuItemContainer");
-
-      Constructor<?> ctor = menuItemContainerClass.getDeclaredConstructor(contextMenuContentClass, MenuItem.class);
-
-      List<Node> list = ((VBox)(contextMenuContentClass.getMethod("getItemsContainer").invoke(contextMenuContent))).getChildren();
-
-      list.clear();
-      for (MenuItem item : items)
-        list.add((Node) ctor.newInstance(contextMenuContent, item));
-    }
-    catch (Exception e)
-    {
-      e.printStackTrace();
-    }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static boolean isStringUrl(String selText)
   {
     return (selText.indexOf("www.") > -1) || (selText.indexOf("http") > -1) ||
@@ -1148,55 +708,6 @@ public final class Util
            (selText.indexOf(".gov") > -1) || (selText.indexOf("://")  > -1) ||
 
            (selText.matches(".*\\w/\\w.*") && selText.matches(".*\\.[a-zA-Z].*"));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  @SuppressWarnings("unchecked")
-  public static <T> ListView<T> getCBListView(ComboBox<T> cb)
-  {
-    return nullSwitch((ComboBoxListViewSkin<T>)cb.getSkin(), null, skin -> (ListView<T>) skin.getPopupContent());
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static List<Node> getChildren(Parent parent)
-  {
-    if (parent instanceof Pane)
-      return ((Pane)parent).getChildren();
-    else if (parent instanceof ToolBar)
-      return ((ToolBar)parent).getItems();
-
-    return null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  // This function is what seems to have mostly fixed the HTML editor bugs
-
-  public static Parent removeFromParent(Node node)
-  {
-    Parent parent = node.getParent();
-    List<Node> children = getChildren(parent);
-
-    if (children != null)
-      children.remove(node);
-
-    return parent;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void addToParent(Node child, Parent parent)
-  {
-    List<Node> children = getChildren(parent);
-
-    if ((children != null) && (children.contains(child) == false))
-      children.add(child);
   }
 
 //---------------------------------------------------------------------------
@@ -1301,51 +812,6 @@ public final class Util
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void ensureVisible(Stage stage, double defaultW, double defaultH)
-  {
-    if (Environment.isMac() == false) stage.setMaximized(false); // On Mac, this makes the window disappear
-
-    stage.setFullScreen(false);
-    stage.setIconified(false);
-
-    stage.setX(Math.max(stage.getX(), 0.0));
-    stage.setY(Math.max(stage.getY(), 0.0));
-
-    if (stage.getWidth() < 250) stage.setWidth(defaultW);
-    if (stage.getHeight() < 75) stage.setHeight(defaultH);
-
-    double minX = Double.MAX_VALUE, minY = minX, maxX = Double.NEGATIVE_INFINITY, maxY = maxX;
-
-    for (Screen screen : Screen.getScreens())
-    {
-      Rectangle2D bounds = screen.getBounds();
-
-      minX = Math.min(minX, bounds.getMinX());
-      minY = Math.min(minY, bounds.getMinY());
-      maxX = Math.max(maxX, bounds.getMaxX());
-      maxY = Math.max(maxY, bounds.getMaxY());
-    }
-
-    stage.setX(Math.min(stage.getX(), maxX - 50.0));
-    stage.setY(Math.min(stage.getY(), maxY - 50.0));
-    stage.setWidth(Math.min(stage.getWidth(), maxX - 100.0));
-    stage.setHeight(Math.min(stage.getHeight(), maxY - 100.0));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void disableCache(Node node)
-  {
-    node.setCache(false);
-
-    if (node instanceof Parent)
-      ((Parent)node).getChildrenUnmodifiable().forEach(Util::disableCache);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public static <T>      void nullSwitch(T  obj,         Consumer<T>      ex) { if (obj != null)           ex.accept(obj); }
   public static <T>      T    nullSwitch(T  obj, T  def                     ) { return obj == null ? def : obj           ; }
   public static <T1, T2> T1   nullSwitch(T2 obj, T1 def, Function<T2, T1> ex) { return obj == null ? def : ex.apply(obj) ; }
@@ -1376,52 +842,6 @@ public final class Util
   public static <T> T findFirst(Iterable<T> iterable, Predicate<T> pred)
   {
     return StreamSupport.stream(iterable.spliterator(), false).filter(pred).findFirst().orElse(null);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void deleteGridPaneRow(GridPane grid, final int rowNdx)
-  {
-    Set<Node> deleteNodes = new HashSet<>();
-
-    grid.getChildren().forEach(child ->
-    {
-      int r = nullSwitch(GridPane.getRowIndex(child), 0);
-
-      if (r > rowNdx)
-        GridPane.setRowIndex(child, r - 1);
-      else if (r == rowNdx)
-        deleteNodes.add(child);
-    });
-
-    // remove nodes from row
-    grid.getChildren().removeAll(deleteNodes);
-
-    grid.getRowConstraints().remove(rowNdx);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void deleteGridPaneColumn(GridPane grid, final int columnNdx)
-  {
-    Set<Node> deleteNodes = new HashSet<>();
-
-    grid.getChildren().forEach(child ->
-    {
-      int c = nullSwitch(GridPane.getColumnIndex(child), 0);
-
-      if (c > columnNdx)
-        GridPane.setColumnIndex(child, c - 1);
-      else if (c == columnNdx)
-        deleteNodes.add(child);
-    });
-
-    // remove nodes from column
-    grid.getChildren().removeAll(deleteNodes);
-
-    grid.getColumnConstraints().remove(columnNdx);
   }
 
 //---------------------------------------------------------------------------
@@ -1506,35 +926,6 @@ public final class Util
   public static <T, R extends Comparable<R>> Comparator<T> sortBasis(Function<T, R> function)
   {
     return (o1, o2) -> function.apply(o1).compareTo(function.apply(o2));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void enableAllIff (boolean enable,  EventTarget... targets) { disableAllIff(enable == false, targets); }
-  public static void enableAll    (                 EventTarget... targets) { disableAllIff(false          , targets); }
-  public static void disableAll   (                 EventTarget... targets) { disableAllIff(true           , targets); }
-
-  public static void disableAllIff(boolean disable, EventTarget... targets)
-  {
-    List.of(targets).forEach(target ->
-    {
-      if      (target instanceof Node    ) ((Node    )target).setDisable(disable);
-      else if (target instanceof Tab     ) ((Tab     )target).setDisable(disable);
-      else if (target instanceof MenuItem) ((MenuItem)target).setDisable(disable);
-    });
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void setAllVisible(boolean visible, EventTarget... targets)
-  {
-    List.of(targets).forEach(target ->
-    {
-      if      (target instanceof Node    ) ((Node    )target).setVisible(visible);
-      else if (target instanceof MenuItem) ((MenuItem)target).setVisible(visible);
-    });
   }
 
 //---------------------------------------------------------------------------
@@ -1704,14 +1095,6 @@ public final class Util
       if ((sum1 > 0) && (sum2 > 0) && ((sum1 % 11) == 0) && ((sum2 % 11) == 0) && (list.contains(found) == false))
         list.add(found);
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static void setToolTip(Control ctrl, String str)
-  {
-    ctrl.setTooltip(safeStr(str).isBlank() ? null : new Tooltip(str));
   }
 
 //---------------------------------------------------------------------------

@@ -17,7 +17,7 @@
 
 package org.hypernomicon.query;
 
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.UIUtil.*;
 
 import org.hypernomicon.dialogs.HyperDlg;
 

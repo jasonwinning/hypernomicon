@@ -21,7 +21,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.UIUtil.*;
+
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;

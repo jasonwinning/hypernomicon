@@ -22,8 +22,9 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.dialogs.RenameDlgCtrlr.NameType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -66,6 +67,7 @@ import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 import org.hypernomicon.view.wrappers.MenuItemSchema;
 import org.hypernomicon.view.wrappers.ReadOnlyCell;
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;

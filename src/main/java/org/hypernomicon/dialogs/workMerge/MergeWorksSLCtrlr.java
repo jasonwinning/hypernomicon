@@ -17,7 +17,7 @@
 
 package org.hypernomicon.dialogs.workMerge;
 
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.UIUtil.*;
 
 import org.hypernomicon.bib.data.BibData;
 import org.hypernomicon.bib.data.BibField.BibFieldEnum;

@@ -18,9 +18,9 @@
 package org.hypernomicon.view.wrappers;
 
 import static org.hypernomicon.Const.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
-import static org.hypernomicon.view.wrappers.UIUtil.*;
 
 import java.util.List;
 

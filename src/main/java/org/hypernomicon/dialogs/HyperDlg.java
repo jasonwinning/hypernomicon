@@ -18,8 +18,9 @@
 package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.App.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.App;

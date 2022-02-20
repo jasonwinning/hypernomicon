@@ -26,7 +26,7 @@ import javafx.scene.control.MenuItem;
 import javafx.util.Callback;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.view.HyperFavorites.*;
 
 import java.util.List;

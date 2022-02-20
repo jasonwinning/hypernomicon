@@ -17,8 +17,8 @@
 
 package org.hypernomicon.util;
 
-import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;

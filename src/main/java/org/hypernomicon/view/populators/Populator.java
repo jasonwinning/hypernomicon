@@ -18,8 +18,9 @@
 package org.hypernomicon.view.populators;
 
 import static org.hypernomicon.model.records.RecordType.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 
 import java.util.Arrays;
 import java.util.List;

@@ -20,8 +20,8 @@ package org.hypernomicon.model;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 @SuppressWarnings("serial")
 public class Exceptions

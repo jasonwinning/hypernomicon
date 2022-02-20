@@ -19,7 +19,8 @@ package org.hypernomicon.util.filePath;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.io.File;

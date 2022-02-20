@@ -18,8 +18,9 @@
 package org.hypernomicon.fileManager;
 
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.App.*;
 
 import java.io.IOException;

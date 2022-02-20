@@ -19,7 +19,7 @@ package org.hypernomicon.tree;
 
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.UIUtil.*;
 
 import java.util.Iterator;
 import java.util.Set;

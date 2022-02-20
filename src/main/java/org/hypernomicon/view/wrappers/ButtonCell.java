@@ -30,6 +30,7 @@ import org.hypernomicon.util.DesktopUtil;
 
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.UIUtil.*;
 
 //---------------------------------------------------------------------------
 

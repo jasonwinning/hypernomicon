@@ -29,8 +29,9 @@ import java.util.List;
 import java.util.Map;
 
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.util.DesktopUtil.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import org.apache.commons.io.FileUtils;
 import org.hypernomicon.previewWindow.PDFJSWrapper;

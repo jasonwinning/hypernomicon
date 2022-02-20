@@ -17,7 +17,7 @@
 
 package org.hypernomicon.view.wrappers;
 
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;

@@ -25,6 +25,7 @@ import java.util.List;
 
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.PopupDialog.DialogResult.*;
+import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.apache.commons.lang3.StringUtils;

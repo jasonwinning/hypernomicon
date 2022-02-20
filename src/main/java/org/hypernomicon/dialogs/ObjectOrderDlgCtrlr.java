@@ -17,10 +17,10 @@
 
 package org.hypernomicon.dialogs;
 
+import static org.hypernomicon.util.UIUtil.*;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;

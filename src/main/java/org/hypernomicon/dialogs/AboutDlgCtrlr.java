@@ -24,11 +24,11 @@ import javafx.scene.control.TabPane;
 import javafx.scene.text.Font;
 import javafx.scene.web.WebView;
 
+import static org.hypernomicon.App.*;
+import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.text.DecimalFormat;
-
-import static org.hypernomicon.App.*;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.hypernomicon.query.engines.QueryEngine.QueryType;

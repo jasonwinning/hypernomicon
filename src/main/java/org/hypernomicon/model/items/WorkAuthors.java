@@ -20,9 +20,9 @@ package org.hypernomicon.model.items;
 import static org.hypernomicon.model.HyperDB.db;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
-
 import static java.util.Objects.*;
 
 import java.util.ArrayList;

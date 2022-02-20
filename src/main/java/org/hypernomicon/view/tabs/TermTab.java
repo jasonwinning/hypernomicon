@@ -35,8 +35,9 @@ import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.io.IOException;
@@ -313,7 +314,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     for (HDT_Glossary glossary : curTerm.getGlossaries())
       if (otherGlossaries.contains(glossary))
       {
-        messageDialog("Both terms already have definitions for glossary \"" + glossary.name() + "\"", MessageDialogType.mtError);
+        messageDialog("Both terms already have definitions for glossary \"" + glossary.name() + "\"", mtError);
         return;
       }
 

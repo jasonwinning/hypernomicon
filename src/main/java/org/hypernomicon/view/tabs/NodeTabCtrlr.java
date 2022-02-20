@@ -28,8 +28,8 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.util.prefs.Preferences;
 
@@ -139,7 +139,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
     setToolTip(btnWebSrch3, TOOLTIP_PREFIX + "Internet Encyclopedia of Philosophy");
     setToolTip(btnWebSrch2, TOOLTIP_PREFIX + "Stanford Encyclopedia of Philosophy");
     setToolTip(btnWebSrch4, TOOLTIP_PREFIX + "Wikipedia");
-    
+
     ui.setSearchKeyToolTip(tfSearchKey);
 
     double fontSize = appPrefs.getDouble(PREF_KEY_FONT_SIZE, DEFAULT_FONT_SIZE);

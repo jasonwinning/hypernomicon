@@ -17,10 +17,10 @@
 
 package org.hypernomicon.settings;
 
+import static org.hypernomicon.util.UIUtil.*;
+
 import java.util.EnumMap;
 import java.util.EnumSet;
-
-import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.util.WebButton.UrlPattern;
 import org.hypernomicon.util.WebButton.WebButtonField;

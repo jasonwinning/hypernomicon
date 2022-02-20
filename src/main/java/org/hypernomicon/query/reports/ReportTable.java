@@ -17,13 +17,14 @@
 
 package org.hypernomicon.query.reports;
 
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.UIUtil.*;
 
 import java.util.List;
 
 import org.hypernomicon.query.QueryTabCtrlr.QueryView;
-import org.hypernomicon.util.Util;
+import org.hypernomicon.util.UIUtil;
 import org.hypernomicon.view.wrappers.HyperTableRow;
+
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Label;
@@ -73,7 +74,7 @@ public class ReportTable
 
   public void removeFromParent()
   {
-    Util.removeFromParent(tv);
+    UIUtil.removeFromParent(tv);
   }
 
 //---------------------------------------------------------------------------

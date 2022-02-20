@@ -18,7 +18,7 @@
 package org.hypernomicon.dialogs;
 
 import static org.hypernomicon.dialogs.RenameDlgCtrlr.NameType.*;
-import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.UIUtil.*;
 
 import org.apache.commons.io.FilenameUtils;
 

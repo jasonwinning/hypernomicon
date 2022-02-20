@@ -23,8 +23,9 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import static org.hypernomicon.util.UIUtil.*;
+import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
-import static org.hypernomicon.util.Util.MessageDialogType.*;
 import static org.hypernomicon.bib.data.BibField.BibFieldType.*;
 
 public class BibField
