@@ -42,9 +42,11 @@ import org.hypernomicon.util.filePath.FilePath;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 
-public class FileDownloadUtility
+public final class FileDownloadUtility
 {
   private static final int BUFFER_SIZE = 4096;
+
+  private FileDownloadUtility() { throw new UnsupportedOperationException(); }
 
   public static class Buffer extends InputStream
   {

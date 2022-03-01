@@ -98,6 +98,8 @@ public final class Util
                               xmlContentEscaper   = xmlContentEscaper(),
                               xmlAttributeEscaper = xmlAttributeEscaper();
 
+  private Util() { throw new UnsupportedOperationException(); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

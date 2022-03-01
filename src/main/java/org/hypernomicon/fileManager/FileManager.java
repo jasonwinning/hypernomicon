@@ -315,7 +315,7 @@ public class FileManager extends HyperDlg
 
   private void initContainers()
   {
-    fileTable = new FileTable(fileTV, PREF_KEY_HT_MGR_FILES);
+    fileTable = new FileTable(fileTV, PREF_KEY_HT_MGR_FILES, this);
     folderTree = new FolderTreeWrapper(treeView, fileTable);
 
     folderTree.getTreeModel().addParentChildRelation(rtParentFolderOfFolder, true);

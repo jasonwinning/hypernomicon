@@ -86,7 +86,7 @@ public class ContentsWindow extends HyperDlg
 
       int pageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
 
-      nullSwitch(row.getRecord(), work -> setPageNum((HDT_Work)work, pageNum, true));
+      nullSwitch(row.getRecord(), (HDT_Work work) -> setPageNum(work, pageNum, true));
     });
 
     htContents.addCustomActionCol(4, "Go", (row, colNdx) ->
@@ -112,7 +112,7 @@ public class ContentsWindow extends HyperDlg
 
       int pageNum = parseInt(HyperTableCell.getCellText(cellVal), -1);
 
-      nullSwitch(row.getRecord(), work -> setPageNum((HDT_Work) work, pageNum, false));
+      nullSwitch(row.getRecord(), (HDT_Work work) -> setPageNum(work, pageNum, false));
     });
 
     htContents.addCustomActionCol(7, "Go", (row, colNdx) ->

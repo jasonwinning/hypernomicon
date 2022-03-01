@@ -71,8 +71,10 @@ import javafx.scene.web.WebView;
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 
-public class MainTextUtil
+public final class MainTextUtil
 {
+  private MainTextUtil() { throw new UnsupportedOperationException(); }
+
   private static final KeywordLinkList list = new KeywordLinkList();
 
   public static final String headContent,
@@ -570,7 +572,7 @@ public class MainTextUtil
     MutableBoolean firstOne = new MutableBoolean(true);
 
     if (sortByName)
-      sortedKeys.sort(sortBasis(keyWork -> ((HDT_RecordWithAuthors<?>)(keyWork.getRecord())).getShortAuthorsStr(true)));
+      sortedKeys.sort(sortBasis(keyWork -> ((HDT_RecordWithAuthors<?>)keyWork.getRecord()).getShortAuthorsStr(true)));
     else
       sortedKeys.sort(null);
 

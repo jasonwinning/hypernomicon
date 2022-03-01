@@ -44,6 +44,7 @@ import com.google.common.collect.EnumHashBiMap;
 
 import org.controlsfx.control.textfield.CustomTextField;
 import org.controlsfx.control.textfield.TextFields;
+
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.bib.CollectionTree.BibCollectionType;
 import org.hypernomicon.bib.LibraryWrapper.SyncTask;
@@ -154,7 +155,7 @@ public class BibManager extends HyperDlg
 
   private BibManager init()
   {
-    entryTable = new BibEntryTable(tableView, PREF_KEY_HT_BIB_ENTRIES);
+    entryTable = new BibEntryTable(tableView, PREF_KEY_HT_BIB_ENTRIES, this);
     collTree = new CollectionTree(treeView);
 
     setupSearchField();

@@ -91,7 +91,7 @@ public abstract class HDT_RecordBase implements HDT_Record
   @Override public final String getSortKey()            { return dataset.getKeyByID(id); }
   @Override public final boolean isExpired()            { return expired; }
   @Override public final Set<Tag> getAllTags()          { return items.keySet().isEmpty() ? EnumSet.noneOf(Tag.class) : EnumSet.copyOf(items.keySet()); }
-  @Override public final boolean getTagBoolean(Tag tag) { return ((HDI_OnlineBoolean)(items.get(tag))).get(); }
+  @Override public final boolean getTagBoolean(Tag tag) { return ((HDI_OnlineBoolean)items.get(tag)).get(); }
   @Override public final boolean hasStoredState()       { return xmlState.stored; }
   @Override public final void updateSortKey()           { dataset.updateSortKey(this); }
   @Override public final HDI_Schema getSchema(Tag tag)  { return nullSwitch(items.get(tag), null, HDI_Base::getSchema); }
@@ -278,7 +278,7 @@ public abstract class HDT_RecordBase implements HDT_Record
         if (uRecord.getHub() != null)
           curHubID = uRecord.getHub().getID();
 
-        if (curHubID != ((HDI_OfflineConnector)(backupState.items.get(tagHub))).getHubID())
+        if (curHubID != ((HDI_OfflineConnector)backupState.items.get(tagHub)).getHubID())
           throw new HubChangedException(curHubID >= 1);
       }
 
@@ -390,7 +390,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final void updateBibEntryKey(String val) // No need to change modified date for record
   {
-    ((HDI_OnlineBibEntryKey)(items.get(tagBibEntryKey))).set(val);
+    ((HDI_OnlineBibEntryKey)items.get(tagBibEntryKey)).set(val);
   }
 
 //---------------------------------------------------------------------------
@@ -401,7 +401,7 @@ public abstract class HDT_RecordBase implements HDT_Record
     if (tag == nameTag)
       setNameInternal(val, true);
     else
-      ((HDI_OnlineString)(items.get(tag))).set(updateString(getTagString(tag), val));
+      ((HDI_OnlineString)items.get(tag)).set(updateString(getTagString(tag), val));
   }
 
 //---------------------------------------------------------------------------
@@ -409,7 +409,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final String getBibEntryKeyString()
   {
-    return ((HDI_OnlineBibEntryKey)(items.get(tagBibEntryKey))).get();
+    return ((HDI_OnlineBibEntryKey)items.get(tagBibEntryKey)).get();
   }
 
 //---------------------------------------------------------------------------
@@ -417,7 +417,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final String getTagString(Tag tag)
   {
-    return tag == nameTag ? name.get() : ((HDI_OnlineString)(items.get(tag))).get();
+    return tag == nameTag ? name.get() : ((HDI_OnlineString)items.get(tag)).get();
   }
 
 //---------------------------------------------------------------------------
@@ -425,7 +425,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 
   protected final void updateTagBoolean(Tag tag, boolean val)
   {
-    HDI_OnlineBoolean item = (HDI_OnlineBoolean)(items.get(tag));
+    HDI_OnlineBoolean item = (HDI_OnlineBoolean)items.get(tag);
 
     if (item.get() == val) return;
 

@@ -26,7 +26,8 @@
  *
  *
  *
- * Copyright (c) 2013, ControlsFX
+ *
+ * Copyright (c) 2014, 2015, 2018 ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,6 +62,8 @@ import javafx.animation.Timeline;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableMap;
 import javafx.event.EventHandler;
 import javafx.geometry.Side;
 import javafx.scene.Node;
@@ -71,6 +74,8 @@ import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
 public class HiddenSidesPaneSkin extends SkinBase<HiddenSidesPane> {
+
+    private static final String SHOW = "showPane";
 
     private final StackPane stackPane;
     private final EventHandler<MouseEvent> exitedHandler;
@@ -154,6 +159,9 @@ public class HiddenSidesPaneSkin extends SkinBase<HiddenSidesPane> {
 
         pane.pinnedSideProperty().addListener(
                 observable -> show(getSkinnable().getPinnedSide(), false));
+        final ObservableMap<Object, Object> properties = pane.getProperties();
+        properties.remove(SHOW);
+        properties.addListener(propertiesMapListener);
 
         Rectangle clip = new Rectangle();
         clip.setX(0);
@@ -163,6 +171,19 @@ public class HiddenSidesPaneSkin extends SkinBase<HiddenSidesPane> {
 
         getSkinnable().setClip(clip);
     }
+
+    private final MapChangeListener<Object, Object> propertiesMapListener = c -> {
+        if (c.wasAdded() && SHOW.equals(c.getKey())) {
+            Object value = c.getValueAdded();
+            if (value == null) {
+                hide();
+            }
+            else if (value instanceof Side) {
+                show((Side)value, false);
+            }
+            getSkinnable().getProperties().remove(SHOW);
+        }
+    };
 
     private boolean isMouseMovedOutsideSides(MouseEvent event) {
         if (getSkinnable().getLeft() != null

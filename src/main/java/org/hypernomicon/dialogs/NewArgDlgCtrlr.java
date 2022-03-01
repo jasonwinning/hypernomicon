@@ -325,7 +325,7 @@ public class NewArgDlgCtrlr extends HyperDlg
       work = db.createNewBlankRecord(hdtWork);
 
       work.setName(tfTitle.getText());
-      nullSwitch(hcbPerson.selectedRecord(), person -> work.getAuthors().add((HDT_Person) person));
+      nullSwitch(hcbPerson.selectedRecord(), (HDT_Person person) -> work.getAuthors().add(person));
     }
     else if (rbExisting.isSelected())
       work = hcbWork.selectedRecord();

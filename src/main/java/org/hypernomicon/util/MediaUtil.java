@@ -40,13 +40,15 @@ import org.hypernomicon.util.filePath.FilePath;
 
 import javafx.scene.image.ImageView;
 
-public class MediaUtil
+public final class MediaUtil
 {
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   private static TikaConfig tikaConfig;
+
+  private MediaUtil() { throw new UnsupportedOperationException(); }
 
 //---------------------------------------------------------------------------
 

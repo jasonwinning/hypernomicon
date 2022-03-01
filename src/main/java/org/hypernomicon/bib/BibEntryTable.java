@@ -64,13 +64,13 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked") BibEntryTable(TableView<BibEntryRow> tv, String prefID)
+  @SuppressWarnings("unchecked") BibEntryTable(TableView<BibEntryRow> tv, String prefID, BibManager dlg)
   {
     this.tv = tv;
     rows = FXCollections.observableArrayList();
     keyToRow = new HashMap<>();
 
-    HyperTable.registerTable(tv, prefID, bibManagerDlg);
+    HyperTable.registerTable(tv, prefID, dlg);
 
     filteredRows = new FilteredList<>(rows, row -> true);
 

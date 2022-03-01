@@ -27,6 +27,8 @@ import javafx.scene.input.DataFormat;
 
 public final class Const
 {
+  private Const() { throw new UnsupportedOperationException(); }
+
   public static final DataFormat HYPERNOMICON_DATA_FORMAT = new DataFormat("application/Hypernomicon");
 
   public static final double

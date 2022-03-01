@@ -61,6 +61,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.TreeTableView;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.scene.layout.AnchorPane;
@@ -72,10 +73,12 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
-public class UIUtil
+public final class UIUtil
 {
 
 //---------------------------------------------------------------------------
+
+  private UIUtil() { throw new UnsupportedOperationException(); }
 
   private static final Map<String, Double> dividerMap = new HashMap<>();
 
@@ -363,7 +366,7 @@ public class UIUtil
 
       Constructor<?> ctor = menuItemContainerClass.getDeclaredConstructor(contextMenuContentClass, MenuItem.class);
 
-      List<Node> list = ((VBox)(contextMenuContentClass.getMethod("getItemsContainer").invoke(contextMenuContent))).getChildren();
+      List<Node> list = ((VBox)contextMenuContentClass.getMethod("getItemsContainer").invoke(contextMenuContent)).getChildren();
 
       list.clear();
       for (MenuItem item : items)
@@ -497,18 +500,20 @@ public class UIUtil
         AnchorPane.setRightAnchor(node, round(val.doubleValue() * displayScale));
     }
 
-    if (node instanceof TableView) ((TableView<?>)node).getColumns().forEach(column ->
-      scalePropertiesForDPI(column.maxWidthProperty(), column.minWidthProperty(), column.prefWidthProperty()));
-
     if (node instanceof GridPane)
     {
       GridPane gridPane = (GridPane)node;
 
-      gridPane.getColumnConstraints().forEach(cc -> scalePropertiesForDPI(cc.maxWidthProperty(), cc.minWidthProperty(), cc.prefWidthProperty()));
-      gridPane.getRowConstraints().forEach(rc -> scalePropertiesForDPI(rc.maxHeightProperty(), rc.minHeightProperty(), rc.prefHeightProperty()));
+      gridPane.getColumnConstraints().forEach(cc -> scalePropertiesForDPI(cc.maxWidthProperty (), cc.minWidthProperty (), cc.prefWidthProperty ()));
+      gridPane.getRowConstraints   ().forEach(rc -> scalePropertiesForDPI(rc.maxHeightProperty(), rc.minHeightProperty(), rc.prefHeightProperty()));
     }
 
-    if (node instanceof ToolBar)
+    if ((node instanceof TreeTableView) || (node instanceof TableView))
+    {
+      (node instanceof TreeTableView ? ((TreeTableView<?>)node).getColumns() : ((TableView<?>)node).getColumns()).forEach(column ->
+        scalePropertiesForDPI(column.maxWidthProperty(), column.minWidthProperty(), column.prefWidthProperty()));
+    }
+    else if (node instanceof ToolBar)
       ((ToolBar)node).getItems().forEach(UIUtil::scaleNodeForDPI);
     else if (node instanceof TitledPane)
       scaleNodeForDPI(((TitledPane)node).getContent());

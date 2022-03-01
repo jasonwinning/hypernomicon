@@ -75,7 +75,7 @@ public class GoogleBibData extends BibDataStandalone
         GoogleBibData curBD = new GoogleBibData(curObj, queryIsbn);
         String curTitle = HDT_RecordBase.makeSortKeyByType(curBD.getStr(bfTitle), hdtWork);
         int len = Math.min(title.length(), curTitle.length());
-        double curDist = (double)(alg.apply(safeSubstring(title, 0, len), safeSubstring(curTitle, 0, len))) / (double)len;
+        double curDist = (double)alg.apply(safeSubstring(title, 0, len), safeSubstring(curTitle, 0, len)) / (double)len;
 
         if (curDist < bestDist)
         {

@@ -126,7 +126,7 @@ public class CrossrefBibData extends BibDataStandalone
 
       curTitle = HDT_RecordBase.makeSortKeyByType(curTitle, hdtWork);
       int len = Math.min(title.length(), curTitle.length());
-      double curDist = (double)(alg.apply(safeSubstring(title, 0, len), safeSubstring(curTitle, 0, len))) / (double)len;
+      double curDist = (double)alg.apply(safeSubstring(title, 0, len), safeSubstring(curTitle, 0, len)) / (double)len;
 
       if (curDist < bestDist)
       {

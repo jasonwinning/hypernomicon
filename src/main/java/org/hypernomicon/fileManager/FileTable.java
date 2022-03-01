@@ -102,6 +102,7 @@ public class FileTable extends DragNDropContainer<FileRow>
 
 //---------------------------------------------------------------------------
 
+  private final FileManager dlg;
   private final TableView<FileRow> fileTV;
   private final ObservableList<FileRow> rows;
   List<MarkedRowInfo> draggingRows;
@@ -113,15 +114,16 @@ public class FileTable extends DragNDropContainer<FileRow>
 
   private boolean refreshing = false;
 
-  @SuppressWarnings("unchecked") FileTable(TableView<FileRow> fileTV, String prefID)
+  @SuppressWarnings("unchecked") FileTable(TableView<FileRow> fileTV, String prefID, FileManager dlg)
   {
     super(fileTV);
 
+    this.dlg = dlg;
     this.fileTV = fileTV;
     rows = FXCollections.observableArrayList();
 
     if (prefID.length() > 0)
-      HyperTable.registerTable(fileTV, prefID, fileManagerDlg);
+      HyperTable.registerTable(fileTV, prefID, dlg);
 
     fileTV.setItems(rows);
     fileTV.setPlaceholder(new Text("This folder is empty."));
@@ -130,7 +132,7 @@ public class FileTable extends DragNDropContainer<FileRow>
     {
       if (refreshing) return;
       refreshing = true;
-      fileManagerDlg.refresh();
+      dlg.refresh();
       refreshing = false;
     });
 
@@ -248,7 +250,7 @@ public class FileTable extends DragNDropContainer<FileRow>
 
   @Override public void startDrag(FileRow fileRow)
   {
-    draggingRows = fileManagerDlg.getMarkedRows(fileRow);
+    draggingRows = dlg.getMarkedRows(fileRow);
   }
 
 //---------------------------------------------------------------------------
@@ -277,7 +279,7 @@ public class FileTable extends DragNDropContainer<FileRow>
 
     if (draggingRows == null) return false;
     if ((targetRow == null) || (targetRow.isDirectory() == false))
-      targetRow = fileManagerDlg.getFolderRow();
+      targetRow = dlg.getFolderRow();
 
     if (targetRow == null) return false;
 
@@ -308,9 +310,9 @@ public class FileTable extends DragNDropContainer<FileRow>
 
     boolean copying = (result == mrCopy);
 
-    if (!fileManagerDlg.moveCopy(draggingRows, copying, true)) return;
+    if (!dlg.moveCopy(draggingRows, copying, true)) return;
 
-    fileManagerDlg.paste(targetRow, copying, true);
+    dlg.paste(targetRow, copying, true);
   }
 
 //---------------------------------------------------------------------------

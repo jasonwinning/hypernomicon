@@ -194,7 +194,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     {
       HyperDlg dialog = dialogs.get(prefID);
 
-      if ((dialog == null) || (dialog.shownAlready()))
+      if ((dialog == null) || dialog.shownAlready())
         saveColWidthsForTable(tv.getColumns(), prefID, true);
     });
   }

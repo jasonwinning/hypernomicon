@@ -18,9 +18,6 @@
 package org.hypernomicon.view.wrappers;
 
 import org.hypernomicon.util.Util;
-
-import javafx.scene.control.skin.ComboBoxListViewSkin;
-
 import org.hypernomicon.view.wrappers.CheckBoxOrCommandListCell.CheckBoxOrCommand;
 
 import javafx.beans.property.BooleanProperty;
@@ -32,6 +29,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.Skin;
+import javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.util.StringConverter;
 
 public class CheckBoxOrCommandListCell extends ListCell<CheckBoxOrCommand>
