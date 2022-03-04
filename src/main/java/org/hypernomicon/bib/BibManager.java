@@ -37,8 +37,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.google.common.collect.EnumHashBiMap;
 
@@ -788,19 +789,21 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Set<? extends BibEntry> getViewForTreeItem(TreeItem<BibCollectionRow> item)
+  private Stream<? extends BibEntry> getViewForTreeItem(TreeItem<BibCollectionRow> item)
   {
     BibCollectionRow row = nullSwitch(item, null, TreeItem::getValue);
     BibCollectionType type = nullSwitch(row, null, BibCollectionRow::getType);
 
-    if (type == null) return Collections.emptySet();
+    if (type == null) return Stream.empty();
 
     switch (type)
     {
-      case bctAll   : return libraryWrapper.getNonTrashEntries();
-      case bctTrash : return libraryWrapper.getTrash();
-      case bctUser  : return libraryWrapper.getCollectionEntries(row.getKey());
-      default       : return libraryWrapper.getUnsorted();
+      case bctAll           : return libraryWrapper.getNonTrashEntries();
+      case bctAllAssigned   : return libraryWrapper.getNonTrashEntries().filter(BibEntry::linkedToWork);
+      case bctAllUnassigned : return libraryWrapper.getNonTrashEntries().filter(Predicate.not(BibEntry::linkedToWork));
+      case bctTrash         : return libraryWrapper.getTrash().stream();
+      case bctUser          : return libraryWrapper.getCollectionEntries(row.getKey());
+      default               : return libraryWrapper.getUnsorted();
     }
   }
 

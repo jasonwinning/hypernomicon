@@ -21,8 +21,6 @@ import org.hypernomicon.view.HyperView.TextViewInfo;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
-import com.google.common.collect.ImmutableSet;
-
 import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.Const.*;
@@ -76,8 +74,7 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
     htPositions.buildRows(curDebate.positions, (row, position) ->
     {
-      String authStr = Authors.getShortAuthorsStr(position.getPeople().stream().map(ArgumentAuthor::getAuthObj)
-                                                                               .collect(ImmutableSet.toImmutableSet()), true, true, false);
+      String authStr = Authors.getShortAuthorsStr(position.getPeople().stream().map(ArgumentAuthor::getAuthObj), true, true, false);
       PositionSource ps = position.getWorkWithAuthor();
       if (ps != null)
         row.setCellValue(1, ps.author, authStr);

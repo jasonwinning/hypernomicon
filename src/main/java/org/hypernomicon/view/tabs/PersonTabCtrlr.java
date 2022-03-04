@@ -249,7 +249,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
                 authorID = author.getPerson().getID();
             }
 
-          row.setCellValue(5, authorID, Authors.getShortAuthorsStr(authors, false, true, true), hdtPerson);
+          row.setCellValue(5, authorID, Authors.getShortAuthorsStr(authors.stream(), false, true, true), hdtPerson);
         }
       }
     });
@@ -272,7 +272,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     LinkedHashSet<HDT_Position> posToAdd   = new LinkedHashSet<>();
     LinkedHashSet<HDT_Record>   otherToAdd = new LinkedHashSet<>();
 
-    db.displayerStream(curPerson).forEach(displayer ->
+    db.displayerStream(curPerson).forEachOrdered(displayer ->
     {
       if (topicRecordsAdded.contains(displayer) == false)
       {
@@ -372,7 +372,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     if      (mentioned.getType() == hdtWork    ) HDT_Work    .class.cast(mentioned).labels.forEach(consumer);
     else if (mentioned.getType() == hdtMiscFile) HDT_MiscFile.class.cast(mentioned).labels.forEach(consumer);
 
-    db.keyWorkMentionerStream(mentioned).forEach(mentioner ->
+    db.keyWorkMentionerStream(mentioned).forEachOrdered(mentioner ->
     {
       if (topicRecordsAdded.contains(mentioner) == false)
       {
@@ -892,7 +892,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     if (dlg.showModal() == false)
       return;
 
-    List<HDT_Investigation> investigations = new ArrayList<>(work.investigationSet());
+    List<HDT_Investigation> investigations = work.investigationStream().collect(Collectors.toCollection(ArrayList::new));
 
     for (InvestigationSetting is : dlg.listView.getItems())
       if (is.getSelected())

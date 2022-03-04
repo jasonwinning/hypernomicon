@@ -31,12 +31,12 @@ import static org.hypernomicon.util.Util.*;
 
 public class CollectionTree
 {
-  static enum BibCollectionType { bctAll, bctUnsorted, bctTrash, bctUser }
+  static enum BibCollectionType { bctAll, bctAllAssigned, bctAllUnassigned, bctUnsorted, bctTrash, bctUser }
 
   private final TreeView<BibCollectionRow> treeView;
   private final Map<String, BibCollectionRow> keyToRow;
 
-  private BibCollectionRow treeRowAllEntries, treeRowUnsorted, treeRowTrash;
+  private BibCollectionRow treeRowAllEntries, treeRowAllAssigned, treeRowAllUnassigned, treeRowUnsorted, treeRowTrash;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -93,12 +93,16 @@ public class CollectionTree
     treeView.setShowRoot(false);
 
     treeRowAllEntries = new BibCollectionRow(bctAll);
+    treeRowAllAssigned = new BibCollectionRow(bctAllAssigned);
+    treeRowAllUnassigned = new BibCollectionRow(bctAllUnassigned);
     treeRowUnsorted = new BibCollectionRow(bctUnsorted);
     treeRowTrash = new BibCollectionRow(bctTrash);
 
     List<TreeItem<BibCollectionRow>> children = root.getChildren();
 
     children.add(treeRowAllEntries.getTreeItem());
+    children.add(treeRowAllAssigned.getTreeItem());
+    children.add(treeRowAllUnassigned.getTreeItem());
     children.add(treeRowUnsorted.getTreeItem());
     children.add(treeRowTrash.getTreeItem());
   }

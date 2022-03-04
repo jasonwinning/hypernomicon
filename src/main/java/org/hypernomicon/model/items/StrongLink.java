@@ -26,12 +26,10 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
+import java.util.stream.Stream;
 
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.records.*;
-
-import com.google.common.collect.ImmutableSet;
 
 public class StrongLink
 {
@@ -78,11 +76,10 @@ public class StrongLink
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Set<Connector> getSpokes()
+  public Stream<Connector> getSpokes()
   {
-    return EnumSet.of(hdtDebate, hdtPosition, hdtConcept, hdtNote, hdtWorkLabel).stream().map(this::getSpoke)
-                                                                                         .filter(Objects::nonNull)
-                                                                                         .collect(ImmutableSet.toImmutableSet());
+    return List.of(hdtDebate, hdtPosition, hdtConcept, hdtNote, hdtWorkLabel).stream().map(this::getSpoke)
+                                                                                      .filter(Objects::nonNull);
   }
 
 //---------------------------------------------------------------------------

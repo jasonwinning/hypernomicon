@@ -168,7 +168,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   @Override public MainTextWrapper mainTextWrapper() { return mainText; }
 
   private List<Author> getAuthorsFromUI()      { return WorkAuthors.getListFromObjectGroups(getAuthorGroups(), curWork); }
-  public String getShortAuthorsStr()           { return Authors.getShortAuthorsStr(getAuthorsFromUI(), false, true, true); }
+  public String getShortAuthorsStr()           { return Authors.getShortAuthorsStr(getAuthorsFromUI().stream(), false, true, true); }
   private List<ObjectGroup> getAuthorGroups()  { return htAuthors.getAuthorGroups(curWork, 1, -1, 2, 3); }
   private void lblSearchKeyClick()             { tfSearchKey.setText(makeWorkSearchKey(getAuthorsFromUI(), tfYear.getText(), curWork)); }
   public String getTitle()                     { return tfTitle.getText(); }
@@ -948,7 +948,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     if (record.hasMainText())
       stream = Stream.concat(stream, db.displayerStream((HDT_RecordWithConnector)record));
 
-    stream.forEach(mentioner -> (mentioner.getType() == hdtInvestigation ? invSet : set).add(mentioner));
+    stream.forEachOrdered(mentioner -> (mentioner.getType() == hdtInvestigation ? invSet : set).add(mentioner));
 
     table.buildRows(Stream.concat(invSet.stream(), set.stream()), (row, mentioner) ->
     {

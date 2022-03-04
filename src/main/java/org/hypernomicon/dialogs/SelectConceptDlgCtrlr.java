@@ -82,7 +82,7 @@ public class SelectConceptDlgCtrlr extends HyperDlg
       {
         List<HDT_Glossary> termGlossaries = term.getGlossaries();
 
-        db.glossaries.stream().filter(Predicate.not(termGlossaries::contains)).forEach(glossaries::add);
+        db.glossaries.stream().filter(Predicate.not(termGlossaries::contains)).forEachOrdered(glossaries::add);
       }
 
       return glossaries;

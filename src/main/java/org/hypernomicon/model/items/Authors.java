@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -73,7 +74,7 @@ public abstract class Authors implements Iterable<Author>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String getShortAuthorsStr(Collection<Author> authors, boolean sort, boolean fullNameIfSingleton, boolean includeEds)
+  public static String getShortAuthorsStr(Stream<Author> authors, boolean sort, boolean fullNameIfSingleton, boolean includeEds)
   {
     return getAuthorsStr(authors, ',', true, true, sort, fullNameIfSingleton, includeEds);
   }
@@ -81,7 +82,7 @@ public abstract class Authors implements Iterable<Author>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String getLongAuthorsStr(Collection<Author> authors, boolean fullNameIfSingleton, boolean includeEds)
+  public static String getLongAuthorsStr(Stream<Author> authors, boolean fullNameIfSingleton, boolean includeEds)
   {
     return getAuthorsStr(authors, ';', false, false, false, fullNameIfSingleton, includeEds);
   }
@@ -89,18 +90,19 @@ public abstract class Authors implements Iterable<Author>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static String getAuthorsStr(Collection<Author> authorCol, char delimiter, boolean amp, boolean firstInitials,
+  private static String getAuthorsStr(Stream<Author> authorStream, char delimiter, boolean amp, boolean firstInitials,
                                       boolean sort, boolean fullNameIfSingleton, boolean includeEds)
   {
-    if (authorCol.isEmpty())
+    List<Author> authors = authorStream.collect(Collectors.toCollection(ArrayList::new));
+
+    if (authors.isEmpty())
       return "";
 
-    List<Author> authors = new ArrayList<>(authorCol);
 
     String eds = "";
 
-    if (includeEds && authorCol.stream().allMatch(Author::getIsEditor))
-      eds = authorCol.size() > 1 ? " (Eds.)" : " (Ed.)";
+    if (includeEds && authors.stream().allMatch(Author::getIsEditor))
+      eds = authors.size() > 1 ? " (Eds.)" : " (Ed.)";
 
     if (authors.size() == 1)
       return (firstInitials && (fullNameIfSingleton == false) ? authors.get(0).getBibName() : authors.get(0).getNameLastFirst()) + eds;

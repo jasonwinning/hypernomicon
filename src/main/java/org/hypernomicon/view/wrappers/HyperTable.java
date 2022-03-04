@@ -161,8 +161,8 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   @FunctionalInterface public static interface RowBuilder<T> { void buildRow(HyperTableRow row, T object); }
 
-  public <T> void buildRows(Iterable<T> objs, RowBuilder<T> bldr) { objs.forEach(obj -> bldr.buildRow(newDataRow(), obj)); }
-  public <T> void buildRows(Stream<T>   objs, RowBuilder<T> bldr) { objs.forEach(obj -> bldr.buildRow(newDataRow(), obj)); }
+  public <T> void buildRows(Iterable<T> objs, RowBuilder<T> bldr) { objs.forEach       (obj -> bldr.buildRow(newDataRow(), obj)); }
+  public <T> void buildRows(Stream<T>   objs, RowBuilder<T> bldr) { objs.forEachOrdered(obj -> bldr.buildRow(newDataRow(), obj)); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

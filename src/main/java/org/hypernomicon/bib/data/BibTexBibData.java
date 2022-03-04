@@ -48,7 +48,7 @@ public class BibTexBibData extends BibDataStandalone
 
   private void addBibTexAuthor(String val, AuthorType authorType)
   {
-    Arrays.stream(val.split("\n")).forEach(auth ->
+    Arrays.stream(val.split("\n")).forEachOrdered(auth ->
     {
       if (auth.startsWith("and "))
         auth = auth.substring(4);

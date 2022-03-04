@@ -208,9 +208,9 @@ public class SelectWorkDlgCtrlr extends HyperDlg
       if (workBibEntryKey.isBlank() == false)
         return Lists.newArrayList(db.getBibEntryByKey(workBibEntryKey));
 
-      return db.getBibLibrary().getNonTrashEntries().stream().filter(entry -> entry.linkedToWork() == false)
-                                                             .sorted(BibEntry.comparator())
-                                                             .collect(Collectors.toCollection(ArrayList::new));
+      return db.getBibLibrary().getNonTrashEntries().filter(entry -> entry.linkedToWork() == false)
+                                                    .sorted(BibEntry.comparator())
+                                                    .collect(Collectors.toCollection(ArrayList::new));
     }));
 
     btnCreateNew.setOnAction(event ->

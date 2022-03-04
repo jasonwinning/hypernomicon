@@ -47,8 +47,8 @@ public class SimpleRecordTypes
   {
     AuthorsType getAuthors();
 
-    default public String getShortAuthorsStr(boolean fnis) { return Authors.getShortAuthorsStr(getAuthors().asCollection(), false, fnis, true); }
-    default public String getLongAuthorsStr (boolean fnis) { return Authors.getLongAuthorsStr (getAuthors().asCollection(),        fnis, true); }
+    default public String getShortAuthorsStr(boolean fnis) { return Authors.getShortAuthorsStr(getAuthors().stream(), false, fnis, true); }
+    default public String getLongAuthorsStr (boolean fnis) { return Authors.getLongAuthorsStr (getAuthors().stream(),        fnis, true); }
   }
 
   public interface HDT_RecordWithPath extends HDT_Record

@@ -644,7 +644,7 @@ public final class MainTextUtil
     if (addSpace) innerHtml.append("&nbsp;"); // Seems to be an inconsistency in how img tags (and spans with images)
                                               // are handled by the rendering engine; in a <summary> tag, there is no space after images
 
-    nullSwitch(label.getLink(), link -> link.getSpokes().forEach(spoke ->
+    nullSwitch(label.getLink(), link -> link.getSpokes().forEachOrdered(spoke ->
     {
       if (spoke.getType() == hdtWorkLabel) return;
 

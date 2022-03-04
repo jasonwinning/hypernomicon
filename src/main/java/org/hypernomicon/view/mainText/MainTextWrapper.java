@@ -409,7 +409,7 @@ public final class MainTextWrapper
     List<HDT_Concept> concepts = new ArrayList<>();
     if (link == null) return concepts;
 
-    link.getSpokes().forEach(spoke -> { switch (spoke.getType())
+    link.getSpokes().forEachOrdered(spoke -> { switch (spoke.getType())
     {
       case hdtDebate :
 
@@ -577,7 +577,7 @@ public final class MainTextWrapper
     }
     else
     {
-      db.displayerStream(curRecord).filter(Predicate.not(this::displayerIsAlreadyShowing)).forEach(displayer ->
+      db.displayerStream(curRecord).filter(Predicate.not(this::displayerIsAlreadyShowing)).forEachOrdered(displayer ->
       {
         relRecordsHtml.append(relRecordsHtml.length() == 0 ? "<b " + NO_LINKS_ATTR + "=true>Displayers: </b>" : "; ");
         relRecordsHtml.append(getGoToRecordAnchor(displayer, "", displayer.getCBText()));

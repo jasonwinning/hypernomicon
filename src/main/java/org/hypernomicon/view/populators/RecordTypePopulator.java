@@ -18,6 +18,7 @@
 package org.hypernomicon.view.populators;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -38,14 +39,33 @@ public class RecordTypePopulator extends Populator
   private final List<HyperTableCell> choices = new ArrayList<>();
 
   public RecordTypePopulator()                           { this(null); }
-  public RecordTypePopulator(Set<RecordType> set)        { setTypes(set); }
+  public RecordTypePopulator(Collection<RecordType> set) { setTypes(set); }
 
   public Set<RecordType> getTypes()                      { return types; }
-  public void setTypes(Set<RecordType> set)              { types = set; changed = true; }
 
   @Override public boolean hasChanged(HyperTableRow row) { return changed; }
   @Override public void setChanged(HyperTableRow row)    { changed = true; }
   @Override public CellValueType getValueType()          { return cvtRecordType; }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void setTypes(Collection<RecordType> collection)
+  {
+    if (collection == null)
+      types = EnumSet.noneOf(RecordType.class);
+    else if (collection instanceof Set)
+      types = (Set<RecordType>)collection;
+    else
+      types = EnumSet.copyOf(collection);
+
+    if (types.isEmpty())
+      for (RecordType type : RecordType.values())
+        if ((type != hdtNone) && (type != hdtAuxiliary))
+          types.add(type);
+
+    changed = true;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -55,16 +75,6 @@ public class RecordTypePopulator extends Populator
     if ((force == false) && (changed == false)) return choices;
 
     choices.clear();
-
-    if (types == null)
-      types = EnumSet.noneOf(RecordType.class);
-
-    if (types.isEmpty())
-    {
-      for (RecordType type : RecordType.values())
-        if ((type != hdtNone) && (type != hdtAuxiliary))
-          types.add(type);
-    }
 
     types.forEach(type ->
     {

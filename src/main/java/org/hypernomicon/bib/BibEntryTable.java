@@ -21,6 +21,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hypernomicon.bib.data.EntryType;
 import org.hypernomicon.view.wrappers.HasRightClickableRows;
@@ -148,12 +150,16 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void refresh(Set<? extends BibEntry> entries)
+  void refresh(Stream<? extends BibEntry> entries)
   {
     if (noRefresh) return;
 
-    entries.forEach(entry ->
+    Set<BibEntry> entriesToRemove = rows.stream().map(BibEntryRow::getEntry).collect(Collectors.toSet());
+
+    entries.forEachOrdered(entry ->
     {
+      entriesToRemove.remove(entry);
+
       if (entry.getEntryType() != EntryType.etOther)
         if (keyToRow.containsKey(entry.getKey()) == false)
         {
@@ -163,26 +169,26 @@ public class BibEntryTable extends HasRightClickableRows<BibEntryRow>
         }
     });
 
+    if (entriesToRemove.isEmpty()) return;
+
     rows.removeIf(row ->
     {
-      if (entries.contains(row.getEntry()) == false)
-      {
-        keyToRow.remove(row.getEntry().getKey());
-        return true;
-      }
+      if (entriesToRemove.contains(row.getEntry()) == false)
+        return false;
 
-      return false;
+      keyToRow.remove(row.getEntry().getKey());
+      return true;
     });
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void update(Set<? extends BibEntry> entries)
+  void update(Stream<? extends BibEntry> entries)
   {
     clear();
 
-    entries.forEach(entry ->
+    entries.forEachOrdered(entry ->
     {
       if (entry.getEntryType() == EntryType.etOther) return;
 

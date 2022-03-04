@@ -100,7 +100,7 @@ public enum EntryType
   {
     nameToType = new HashMap<>();
     Arrays.stream(values()).filter(et -> et.userFriendlyName.length() > 0)
-                           .forEach(et -> nameToType.put(et.userFriendlyName, et));
+                           .forEachOrdered(et -> nameToType.put(et.userFriendlyName, et));
   }
 
   public String getUserFriendlyName()      { return userFriendlyName; }

@@ -2468,13 +2468,13 @@ public final class MainCtrlr
                                           hdtPerson,   hdtPosition, hdtTerm,     hdtWork).contains(activeType()) == false);
 
       btnSave.setText("Accept Edits");
-      setToolTip(btnSave, "Commit changes made while this tab has been active to the record. Does not save changes to database XML files.");
+      setToolTip(btnSave, "Commit changes made while this record has been showing. Does not save changes to database XML files.");
 
       disableAllIff(activeRec == null, btnDelete, btnSave, btnRevert);
       setToolTip(btnDelete, "Delete this record");
 
       btnRevert.setText("Revert");
-      setToolTip(btnRevert, "Revert changes made while this tab has been active and since Accept Edits was last pressed");
+      setToolTip(btnRevert, "Revert changes made while this record has been showing and since Accept Edits was last pressed");
 
 //      btnRevert.setDisable(changed == false);
 

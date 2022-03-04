@@ -29,12 +29,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.apache.http.client.methods.HttpUriRequest;
 import org.json.simple.parser.ParseException;
 
 import com.google.common.collect.EnumHashBiMap;
-import com.google.common.collect.ImmutableSet;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.bib.data.EntryType;
@@ -208,25 +208,23 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Set<BibEntry_T> getCollectionEntries(String collKey)
+  public Stream<BibEntry_T> getCollectionEntries(String collKey)
   {
-    return getNonTrashEntries().stream().filter(item -> item.getCollKeys(false).contains(collKey))
-                                        .collect(ImmutableSet.toImmutableSet());
+    return getNonTrashEntries().filter(item -> item.getCollKeys(false).contains(collKey));
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Set<BibEntry_T> getNonTrashEntries()
+  public Stream<BibEntry_T> getNonTrashEntries()
   {
-    return keyToAllEntry.values().stream().filter(item -> keyToTrashEntry.containsKey(item.getKey()) == false)
-                                          .collect(ImmutableSet.toImmutableSet());
+    return keyToAllEntry.values().stream().filter(item -> keyToTrashEntry.containsKey(item.getKey()) == false);
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public Set<BibEntry_T> getUnsorted()
+  public Stream<BibEntry_T> getUnsorted()
   {
     Predicate<BibEntry_T> predicate = item ->
     {
@@ -236,7 +234,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
         item.getCollKeys(true).stream().noneMatch(keyToColl::containsKey);
     };
 
-    return keyToAllEntry.values().stream().filter(predicate).collect(ImmutableSet.toImmutableSet());
+    return keyToAllEntry.values().stream().filter(predicate);
   }
 
 //---------------------------------------------------------------------------
@@ -283,7 +281,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
       JsonObj jMainObj = new JsonObj();
       JsonArray jArr = new JsonArray();
 
-      for (BibEntry_T entry : getNonTrashEntries())
+      for (BibEntry_T entry : (Iterable<BibEntry_T>)getNonTrashEntries()::iterator)
         entry.saveToDisk(jArr);
 
       jMainObj.put(entryFileNode(), jArr);

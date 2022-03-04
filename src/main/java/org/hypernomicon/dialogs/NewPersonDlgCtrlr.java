@@ -340,7 +340,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
         list.add(personForDupCheck);
     }));
 
-    db.persons.stream().filter(person -> person.works.isEmpty()).map(PersonForDupCheck::new).forEach(personForDupCheck ->
+    db.persons.stream().filter(person -> person.works.isEmpty()).map(PersonForDupCheck::new).forEachOrdered(personForDupCheck ->
     {
       if (personForDupCheck.fullLCNameEngChar.length() > 0)
         list.add(personForDupCheck);

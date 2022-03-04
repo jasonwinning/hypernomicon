@@ -450,7 +450,7 @@ public class PDFBibData extends BibDataStandalone
     extractDOIandISBNs(docInfo.getTrapped ());
 
     docInfo.getMetadataKeys().stream().filter(key -> key.toLowerCase().contains("journaldoi") == false)
-                                      .forEach(key -> extractDOIandISBNs(docInfo.getCustomMetadataValue(key)));
+                                      .forEachOrdered(key -> extractDOIandISBNs(docInfo.getCustomMetadataValue(key)));
   }
 
 //---------------------------------------------------------------------------
@@ -546,7 +546,7 @@ public class PDFBibData extends BibDataStandalone
         if (isbns.isEmpty() && (goodPdfBD == null))
           goodPdfBD = lastPdfBD;
 
-        curIsbns.stream().filter(Predicate.not(isbns::contains)).forEach(isbns::add);
+        curIsbns.stream().filter(Predicate.not(isbns::contains)).forEachOrdered(isbns::add);
       }
     }
 

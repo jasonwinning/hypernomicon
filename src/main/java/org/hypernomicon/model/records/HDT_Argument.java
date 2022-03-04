@@ -34,7 +34,6 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_ArgumentVerdict;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_PositionVerdict;
 import org.hypernomicon.model.relations.HyperObjList;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 //---------------------------------------------------------------------------
@@ -192,11 +191,10 @@ public class HDT_Argument extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public ImmutableSet<ArgumentAuthor> getPeople()
+  public Stream<ArgumentAuthor> getPeople()
   {
     return works.stream().map(work -> work.getAuthors().stream().map(ArgumentAuthor::new))
-                         .reduce(Stream::concat).orElse(Stream.empty())
-                         .collect(ImmutableSet.toImmutableSet());
+                         .reduce(Stream::concat).orElse(Stream.empty());
   }
 
 //---------------------------------------------------------------------------

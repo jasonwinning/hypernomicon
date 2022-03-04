@@ -359,7 +359,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
     });
 
     subWorks.stream().filter(childWork -> childWork.workFiles.isEmpty())
-                     .forEach(childWork -> childWork.addWorkFile(newID));
+                     .forEachOrdered(childWork -> childWork.addWorkFile(newID));
   }
 
 //---------------------------------------------------------------------------
