@@ -165,16 +165,20 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       this::createLabel));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new position under this debate", HDT_Debate.class,
-        debate -> db.isLoaded(),
-        debate -> createChild(debate, rtDebateOfPosition)));
+      debate -> db.isLoaded(),
+      debate -> createChild(debate, rtParentDebateOfPos)));
+
+    addCreateNewSchema(tree.addContextMenuItem("Create new debate under this position", HDT_Position.class,
+      pos -> db.isLoaded(),
+      pos -> createChild(pos, rtParentPosOfDebate)));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new sub-debate under this debate", HDT_Debate.class,
       debate -> db.isLoaded(),
       debate -> createChild(debate, rtParentDebateOfDebate)));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new argument for/against this position", HDT_Position.class,
-        pos -> db.isLoaded(),
-        pos -> ui.positionHyperTab().newArgumentClick(pos)));
+      pos -> db.isLoaded(),
+      pos -> ui.positionHyperTab().newArgumentClick(pos)));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new position under this position", HDT_Position.class,
       pos -> db.isLoaded(),
@@ -303,7 +307,8 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     debateTree.addKeyWorkRelation(hdtPosition, true);
 
     debateTree.addParentChildRelation(rtParentDebateOfDebate, true);
-    debateTree.addParentChildRelation(rtDebateOfPosition, true);
+    debateTree.addParentChildRelation(rtParentDebateOfPos, true);
+    debateTree.addParentChildRelation(rtParentPosOfDebate, true);
     debateTree.addParentChildRelation(rtParentPosOfPos, true);
     debateTree.addParentChildRelation(rtPositionOfArgument, true);
     debateTree.addParentChildRelation(rtCounterOfArgument, true);

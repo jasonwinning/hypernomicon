@@ -167,7 +167,13 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
   {
     super.updateItem(c, empty);
 
-    if (empty) return;
+    if (empty)
+    {
+      setText(null);
+      setGraphic(null);
+      setTooltip(null);
+      return;
+    }
 
     setGraphic(btn);
     btn.setDisable(false);

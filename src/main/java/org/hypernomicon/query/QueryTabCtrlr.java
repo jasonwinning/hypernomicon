@@ -1023,20 +1023,20 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
         case QUERY_WHERE_RELATIVE :
 
-          if ((valueType != cvtRelation) || (vp1.getPopulator(row).getRecordType(row) != row.getType(0)))
+          if ((valueType != cvtRelation) || (vp1.getPopulator(row).getRecordType(row) != row.getRecordType(0)))
           {
             clearOperands(row, 1);
-            vp1.setPopulator(row, new RelationPopulator(row.getType(0)));
+            vp1.setPopulator(row, new RelationPopulator(row.getRecordType(0)));
           }
 
           return true;
 
         case QUERY_WHERE_FIELD :
 
-          if ((valueType != cvtTagItem) || (vp1.getPopulator(row).getRecordType(null) != row.getType(0)))
+          if ((valueType != cvtTagItem) || (vp1.getPopulator(row).getRecordType(null) != row.getRecordType(0)))
           {
             clearOperands(row, 1);
-            vp1.setPopulator(row, new TagItemPopulator(row.getType(0)));
+            vp1.setPopulator(row, new TagItemPopulator(row.getRecordType(0)));
           }
 
           return true;
@@ -1111,7 +1111,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       {
         case QUERY_WHERE_RELATIVE :
 
-          objType = row.getType(0);
+          objType = row.getRecordType(0);
           relType = RelationType.codeToVal(row.getID(2));
 
           switch (row.getID(3))
@@ -1129,7 +1129,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
         case QUERY_WHERE_FIELD :
 
-          recordType = row.getType(0);
+          recordType = row.getRecordType(0);
           HyperDataCategory cat = hdcString;
           boolean catSet = false;
 

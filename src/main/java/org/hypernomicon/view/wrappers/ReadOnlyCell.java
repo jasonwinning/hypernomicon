@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 
 import org.hypernomicon.model.records.HDT_Record;
 
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
 import javafx.scene.input.MouseButton;
@@ -34,17 +35,21 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
 {
   private final boolean incremental;
   private final HyperTable table;
+  private final CustomAddNewGraphicProvider graphicProvider;
   public static final int INCREMENTAL_ROWS = 20;
 
+  @FunctionalInterface public static interface CustomAddNewGraphicProvider { Node provide(HyperTableRow row); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  ReadOnlyCell(HyperTable table, boolean incremental)
+  ReadOnlyCell(HyperTable table, boolean incremental, CustomAddNewGraphicProvider graphicProvider)
   {
     super();
 
     this.incremental = incremental;
     this.table = table;
+    this.graphicProvider = graphicProvider;
 
     setOnMouseClicked(mouseEvent -> nullSwitch(getItem(), cellItem -> nullSwitch(cellItem.getRecord(), (HDT_Record record) ->
     {
@@ -80,38 +85,43 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
       return;
     }
 
-    if (incremental)
+    HyperTableRow row = getTableRow().getItem();
+
+    if (row == null)
     {
-      HyperTableRow row = getTableRow().getItem();
+      setText("");
+      setGraphic(null);
+      setTooltip(null);
+      return;
+    }
 
-      if (row == null)
+    if (incremental && (HyperTableCell.getCellType(cell) == hdtAuxiliary))
+    {
+      setText("");
+      setTooltip(null);
+      Button cellButton = HyperTableColumn.makeButton(this);
+      cellButton.setText("Show more");
+      cellButton.setOnAction(event ->
       {
-        setText("");
-        setGraphic(null);
-        setTooltip(null);
-        return;
-      }
-
-      if (HyperTableCell.getCellType(cell) == hdtAuxiliary)
-      {
-        setText("");
-        setTooltip(null);
-        Button cellButton = HyperTableColumn.makeButton(this);
-        cellButton.setText("Show more");
-        cellButton.setOnAction(event ->
+        if (table.onShowMore != null)
         {
-          if (table.onShowMore != null)
-          {
-            table.getTV().requestFocus();
+          table.getTV().requestFocus();
 
-            table.onShowMore.run();
-          }
-        });
+          table.onShowMore.run();
+        }
+      });
 
-        setGraphic(cellButton);
-        table.showMoreRow = row;
-        return;
-      }
+      setGraphic(cellButton);
+      table.showMoreRow = row;
+      return;
+    }
+
+    if ((cell.getRecord() == null) && (graphicProvider != null))
+    {
+      setText("");
+      setTooltip(null);
+      setGraphic(graphicProvider.provide(row));
+      return;
     }
 
     String text = HyperTableCell.getCellText(cell);

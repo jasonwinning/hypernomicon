@@ -43,13 +43,15 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.TableColumn;
+import javafx.scene.layout.HBox;
 
 //---------------------------------------------------------------------------
 
 public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 {
-  private HyperTable htParents, htArguments, htSubpositions;
+  private HyperTable htParents, htArguments, htRightChildren;
   private HDT_Position curPosition;
 
   @Override protected RecordType type()             { return hdtPosition; }
@@ -75,8 +77,8 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
     ctrlr.update(curPosition);
 
- // Select parent records in ComboBoxes
- // -----------------------------------
+ // Populate parent records
+ // -----------------------
 
     htParents.buildRows(curPosition.largerPositions, (row, otherPos) ->
     {
@@ -84,14 +86,14 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
       row.setCellValue(3, otherPos, otherPos.listName());
     });
 
-    htParents.buildRows(curPosition.debates, (row, debate) ->
+    htParents.buildRows(curPosition.largerDebates, (row, debate) ->
     {
       row.setCellValue(2, db.getTypeName(hdtDebate), hdtDebate);
       row.setCellValue(3, debate, debate.listName());
     });
 
-// Populate arguments
-// ------------------
+ // Populate arguments
+ // ------------------
 
     htArguments.buildRows(curPosition.arguments, (row, argument) ->
     {
@@ -121,19 +123,26 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
       row.setCellValue(5, argument, argument.listName());
     });
 
- // Populate subpositions
- // ---------------------
+ // Populate sub-positions and sub-debates
+ // --------------------------------------
 
-    htSubpositions.buildRows(curPosition.subPositions, (row, subPos) ->
+    htRightChildren.buildRows(curPosition.subPositions, (row, subPos) ->
     {
-      row.setCellValue(1, subPos, subPos.getCBText());
+      row.setCellValue(1, subPos, "");
+      row.setCellValue(2, subPos, subPos.getCBText());
 
       String authStr = Authors.getShortAuthorsStr(subPos.getPeople().stream().map(ArgumentAuthor::getAuthObj), true, true, false);
       PositionSource ps = subPos.getWorkWithAuthor();
       if (ps != null)
-        row.setCellValue(2, ps.author, authStr);
+        row.setCellValue(3, ps.author, authStr);
       else
-        row.setCellValue(2, authStr, hdtPerson);
+        row.setCellValue(3, authStr, hdtPerson);
+    });
+
+    htRightChildren.buildRows(curPosition.subDebates, (row, subDebate) ->
+    {
+      row.setCellValue(1, subDebate, "");
+      row.setCellValue(2, subDebate, subDebate.getCBText());
     });
 
     return true;
@@ -159,7 +168,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
     cols = ctrlr.tvRightChildren.getColumns();
 
-    cols.add(1, new TableColumn<HyperTableRow, HyperTableCell>("Sub-Position Name"));
+    cols.add(1, new TableColumn<HyperTableRow, HyperTableCell>("Sub-Position/Debate Name"));
     cols.get(2).setText("Person");
 
     htParents = new HyperTable(ctrlr.tvParents, 3, true, PREF_KEY_HT_POS_PARENTS);
@@ -193,14 +202,32 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
     htArguments.addCol(hdtWork           , ctNone);
     htArguments.addCol(hdtArgument       , ctNone);
 
-    htSubpositions = new HyperTable(ctrlr.tvRightChildren, 1, true, PREF_KEY_HT_POS_SUB);
+    TableColumn<HyperTableRow, HyperTableCell> col = new TableColumn<>();
+    ctrlr.tvRightChildren.getColumns().add(1, col);
+    col.setMinWidth(25.0);
+    col.setPrefWidth(45.0);
+    col.setMaxWidth(45.0);
 
-    htSubpositions.addActionCol(ctGoNewBtn, 1);
-    htSubpositions.addCol(hdtPosition, ctNone);
-    htSubpositions.addCol(hdtPerson  , ctNone);
+    htRightChildren = new HyperTable(ctrlr.tvRightChildren, 2, true, PREF_KEY_HT_POS_SUB);
+
+    htRightChildren.addActionCol(ctGoBtn, 2);
+    htRightChildren.addIconCol();
+    htRightChildren.addReadOnlyColWithCustomGraphic(hdtNone, row ->
+    {
+      Hyperlink hLink1 = new Hyperlink("Add new position");
+      hLink1.setVisited(true);
+      hLink1.setOnAction(event -> newClick(hdtPosition, row));
+      Hyperlink hLink2 = new Hyperlink("Add new debate");
+      hLink2.setVisited(true);
+      hLink2.setOnAction(event -> newClick(hdtDebate, row));
+
+      return new HBox(hLink1, hLink2);
+    });
+
+    htRightChildren.addCol(hdtPerson  , ctNone);
 
     initArgContextMenu();
-    ui.initPositionContextMenu(htSubpositions);
+    ui.initPositionContextMenu(htRightChildren);
   }
 
 //---------------------------------------------------------------------------
@@ -229,7 +256,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 
     htParents.clear();
     htArguments.clear();
-    htSubpositions.clear();
+    htRightChildren.clear();
   }
 
 //---------------------------------------------------------------------------
@@ -240,7 +267,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
     if (!ctrlr.saveToRecord(curPosition)) return false;
 
     curPosition.setLargerPositions(htParents.saveToList(3, hdtPosition));
-    curPosition.setDebates(htParents.saveToList(3, hdtDebate));
+    curPosition.setLargerDebates  (htParents.saveToList(3, hdtDebate  ));
 
     db.attachOrphansToRoots();
 
@@ -261,6 +288,13 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
         HDT_Position newPos = db.createNewBlankRecord(hdtPosition);
         newPos.largerPositions.add(curPosition);
         ui.goToRecord(newPos, false);
+        break;
+
+      case hdtDebate :
+
+        HDT_Debate newDebate = db.createNewBlankRecord(hdtDebate);
+        newDebate.largerPositions.add(curPosition);
+        ui.goToRecord(newDebate, false);
         break;
 
       case hdtArgument :

@@ -36,6 +36,7 @@ import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.wrappers.HyperTable.CellUpdateHandler;
+import org.hypernomicon.view.wrappers.ReadOnlyCell.CustomAddNewGraphicProvider;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 
@@ -89,27 +90,32 @@ public class HyperTableColumn
 //---------------------------------------------------------------------------
 
   HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol) {
-    this(table, objType, ctrlType, populator, targetCol, null, null, null, null); }
+    this(table, objType, ctrlType, populator, targetCol, null, null, null, null, null); }
 
   HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, EventHandler<ActionEvent> onAction) {
-    this(table, objType, ctrlType, populator, targetCol, null, onAction, null, null); }
+    this(table, objType, ctrlType, populator, targetCol, null, onAction, null, null, null); }
 
   HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, CellUpdateHandler updateHandler) {
-    this(table, objType, ctrlType, populator, targetCol, null, null, updateHandler, null); }
+    this(table, objType, ctrlType, populator, targetCol, null, null, updateHandler, null, null); }
 
   HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol,
-                          EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler) {
-    this(table, objType, ctrlType, populator, targetCol, null, onAction, updateHandler, null); }
+                   EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler) {
+    this(table, objType, ctrlType, populator, targetCol, null, onAction, updateHandler, null, null); }
 
   HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol, ButtonCellHandler btnHandler, String btnCaption) {
-    this(table, objType, ctrlType, populator, targetCol, btnHandler, null, null, btnCaption); }
+    this(table, objType, ctrlType, populator, targetCol, btnHandler, null, null, btnCaption, null); }
+
+  HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol,
+                   CustomAddNewGraphicProvider graphicProvider) {
+    this(table, objType, ctrlType, populator, targetCol, null, null, null, null, graphicProvider); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
   private HyperTableColumn(HyperTable table, RecordType objType, HyperCtrlType ctrlType, Populator populator, int targetCol,
-                           ButtonCellHandler btnHandler, EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler, String btnCaption)
+                           ButtonCellHandler btnHandler, EventHandler<ActionEvent> onAction, CellUpdateHandler updateHandler, String btnCaption,
+                           CustomAddNewGraphicProvider graphicProvider)
   {
     this.ctrlType = ctrlType;
     this.populator = populator;
@@ -169,7 +175,7 @@ public class HyperTableColumn
 
         tc.setEditable(false);
         tc.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
-        tc.setCellFactory(tableCol -> new ReadOnlyCell(table, false));
+        tc.setCellFactory(tableCol -> new ReadOnlyCell(table, false, graphicProvider));
 
         break;
 
@@ -213,7 +219,7 @@ public class HyperTableColumn
 
         tc.setEditable(false);
         tc.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
-        tc.setCellFactory(tableCol -> new ReadOnlyCell(table, true));
+        tc.setCellFactory(tableCol -> new ReadOnlyCell(table, true, graphicProvider));
 
         break;
 

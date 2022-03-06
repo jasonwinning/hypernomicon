@@ -416,17 +416,18 @@ public final class MainTextWrapper
         HDT_Debate debate = link.getDebate();
 
         addLinkedTerms(debate.largerDebates, concepts);
-        addLinkedTerms(debate.subDebates, concepts);
-        addLinkedTerms(debate.positions, concepts);
+        addLinkedTerms(debate.subDebates   , concepts);
+        addLinkedTerms(debate.subPositions , concepts);
         break;
 
       case hdtPosition :
 
         HDT_Position position = link.getPosition();
 
-        addLinkedTerms(position.debates, concepts);
+        addLinkedTerms(position.largerDebates  , concepts);
         addLinkedTerms(position.largerPositions, concepts);
-        addLinkedTerms(position.subPositions, concepts);
+        addLinkedTerms(position.subPositions   , concepts);
+        addLinkedTerms(position.subDebates     , concepts);
         break;
 
       case hdtNote :
@@ -434,7 +435,7 @@ public final class MainTextWrapper
         HDT_Note note = link.getNote();
 
         addLinkedTerms(note.parentNotes, concepts);
-        addLinkedTerms(note.subNotes, concepts);
+        addLinkedTerms(note.subNotes   , concepts);
         break;
 
       case hdtWorkLabel :
@@ -442,7 +443,7 @@ public final class MainTextWrapper
         HDT_WorkLabel label = link.getLabel();
 
         addLinkedTerms(label.parentLabels, concepts);
-        addLinkedTerms(label.subLabels, concepts);
+        addLinkedTerms(label.subLabels   , concepts);
         break;
 
       default :
@@ -659,12 +660,12 @@ public final class MainTextWrapper
       case hdtPosition :
 
         HDT_Position position = (HDT_Position) curRecord;
-        return position.subPositions.contains(displayer) || position.arguments.contains(displayer);
+        return position.subPositions.contains(displayer) || position.subDebates.contains(displayer) || position.arguments.contains(displayer);
 
       case hdtDebate :
 
         HDT_Debate debate = (HDT_Debate) curRecord;
-        return debate.positions.contains(displayer) || debate.subDebates.contains(displayer);
+        return debate.subPositions.contains(displayer) || debate.subDebates.contains(displayer);
 
       case hdtArgument :
 

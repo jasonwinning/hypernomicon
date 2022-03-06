@@ -135,8 +135,8 @@ public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements 
 
         HDT_Position position = (HDT_Position) this;
 
-        if (position.debates.isEmpty() == false)
-          parent = position.debates.get(0);
+        if (position.largerDebates.isEmpty() == false)
+          parent = position.largerDebates.get(0);
         else if (position.largerPositions.isEmpty() == false)
           parent = position.largerPositions.get(0);
 

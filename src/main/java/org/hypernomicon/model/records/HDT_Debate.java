@@ -27,7 +27,7 @@ import org.hypernomicon.model.HyperDataset;
 public class HDT_Debate extends HDT_RecordWithConnector
 {
   public final List<HDT_Debate> largerDebates, subDebates;
-  public final List<HDT_Position> positions;
+  public final List<HDT_Position> largerPositions, subPositions;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -36,10 +36,11 @@ public class HDT_Debate extends HDT_RecordWithConnector
   {
     super(xmlState, dataset, tagName);
 
-    largerDebates = getObjList(rtParentDebateOfDebate);
+    largerDebates   = getObjList(rtParentDebateOfDebate);
+    largerPositions = getObjList(rtParentPosOfDebate   );
 
-    subDebates = getSubjList(rtParentDebateOfDebate);
-    positions = getSubjList(rtDebateOfPosition);
+    subDebates   = getSubjList(rtParentDebateOfDebate);
+    subPositions = getSubjList(rtParentDebateOfPos   );
   }
 
 //---------------------------------------------------------------------------
@@ -48,10 +49,10 @@ public class HDT_Debate extends HDT_RecordWithConnector
   @Override public String listName()    { return name(); }
   @Override public boolean isUnitable() { return true; }
 
-  public void setLargerDebates(List<HDT_Debate> list) { updateObjectsFromList(rtParentDebateOfDebate, list); }
+  public void setLargerDebates  (List<HDT_Debate> list) { updateObjectsFromList(rtParentDebateOfDebate, list); }
+  public void setLargerPositions(List<HDT_Debate> list) { updateObjectsFromList(rtParentPosOfDebate   , list); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-
 
 }

@@ -28,7 +28,7 @@ import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
 
 public class HDT_Position extends HDT_RecordWithConnector
 {
-  public final List<HDT_Debate> debates;
+  public final List<HDT_Debate> largerDebates, subDebates;
   public final List<HDT_Position> largerPositions, subPositions;
   public final List<HDT_Argument> arguments;
 
@@ -39,11 +39,12 @@ public class HDT_Position extends HDT_RecordWithConnector
   {
     super(xmlState, dataset, tagName);
 
-    debates = getObjList(rtDebateOfPosition);
-    largerPositions = getObjList(rtParentPosOfPos);
+    largerDebates   = getObjList(rtParentDebateOfPos);
+    largerPositions = getObjList(rtParentPosOfPos   );
 
-    arguments = getSubjList(rtPositionOfArgument);
-    subPositions = getSubjList(rtParentPosOfPos);
+    arguments    = getSubjList(rtPositionOfArgument);
+    subPositions = getSubjList(rtParentPosOfPos    );
+    subDebates   = getSubjList(rtParentPosOfDebate );
   }
 
 //---------------------------------------------------------------------------
@@ -52,20 +53,20 @@ public class HDT_Position extends HDT_RecordWithConnector
   @Override public String listName()    { return name(); }
   @Override public boolean isUnitable() { return true; }
 
-  public void setLargerPositions(List<HDT_Position> list) { updateObjectsFromList(rtParentPosOfPos, list); }
-  public void setDebates(List<HDT_Debate> list)           { updateObjectsFromList(rtDebateOfPosition, list); }
+  public void setLargerPositions(List<HDT_Position> list) { updateObjectsFromList(rtParentPosOfPos   , list); }
+  public void setLargerDebates  (List<HDT_Debate>   list) { updateObjectsFromList(rtParentDebateOfPos, list); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public HDT_Debate getDebate()
+  public HDT_Debate getLargerDebate()
   {
     HDT_Position position = this;
 
-    while (position.debates.isEmpty() && (position.largerPositions.size() > 0))
+    while (position.largerDebates.isEmpty() && (position.largerPositions.size() > 0))
       position = position.largerPositions.get(0);
 
-    return position.debates.size() > 0 ? position.debates.get(0) : null;
+    return position.largerDebates.size() > 0 ? position.largerDebates.get(0) : null;
   }
 
 //---------------------------------------------------------------------------

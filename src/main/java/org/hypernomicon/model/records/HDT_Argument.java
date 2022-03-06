@@ -126,7 +126,7 @@ public class HDT_Argument extends HDT_RecordWithConnector
 
   public HDT_Debate getDebate()
   {
-    HDT_Debate debate = findFirstHaving(positions, HDT_Position::getDebate);
+    HDT_Debate debate = findFirstHaving(positions, HDT_Position::getLargerDebate);
 
     return nullSwitch(debate, findFirstHaving(counteredArgs, HDT_Argument::getDebate));
   }

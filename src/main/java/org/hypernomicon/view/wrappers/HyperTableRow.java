@@ -47,10 +47,10 @@ public class HyperTableRow extends AbstractRow<HDT_Record, HyperTableRow>
   public HyperTableCell getCell()             { return cells.get(table.getMainColNdx()); }
   public int getID(int ndx)                   { return cells.size() > ndx ? HyperTableCell.getCellID  (cells.get(ndx)) : -1; }
   public String getText(int ndx)              { return cells.size() > ndx ? HyperTableCell.getCellText(cells.get(ndx)) : ""; }
-  public RecordType getType(int ndx)          { return cells.size() > ndx ? HyperTableCell.getCellType(cells.get(ndx)) : hdtNone; }
+  public RecordType getRecordType(int ndx)    { return cells.size() > ndx ? HyperTableCell.getCellType(cells.get(ndx)) : hdtNone; }
   public boolean getCheckboxValue(int colNdx) { return getID(colNdx) == HyperTableCell.trueCheckboxCell.getID(); }
 
-  @Override public RecordType getRecordType() { return getType(table.getMainColNdx()); }
+  @Override public RecordType getRecordType() { return getRecordType(table.getMainColNdx()); }
   @Override public int getRecordID()          { return getID(table.getMainColNdx()); }
 
   @Override public <HDT_T extends HDT_Record> HDT_T getRecord() { return HyperTableCell.getRecord(getCell()); }

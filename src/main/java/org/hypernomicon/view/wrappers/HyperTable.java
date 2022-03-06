@@ -45,6 +45,7 @@ import org.hypernomicon.view.populators.*;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonCellHandler;
 import org.hypernomicon.view.wrappers.ButtonCell.ButtonAction;
 import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
+import org.hypernomicon.view.wrappers.ReadOnlyCell.CustomAddNewGraphicProvider;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 
 import com.google.common.collect.HashBasedTable;
@@ -452,6 +453,9 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public HyperTableColumn addIconCol() {
     return addCol(new HyperTableColumn(this, hdtNone, ctIcon, null, -1));  }
 
+  public HyperTableColumn addReadOnlyColWithCustomGraphic(RecordType objType, CustomAddNewGraphicProvider graphicProvider) {
+    return addCol(new HyperTableColumn(this, objType, ctNone, null, -1, graphicProvider)); }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -611,7 +615,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 // Determine start record and object record (to be replaced) for tree selection
 
     int startID = row.getID(colNdx);
-    RecordType startType = row.getType(colNdx);
+    RecordType startType = row.getRecordType(colNdx);
     if (startID > 0)
       ui.treeSelector.setTarget(db.records(startType).getByID(startID));
     else
@@ -748,7 +752,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
     rows.forEach(row ->
     {
-      if (row.getType(primaryColNdx) == objType)
+      if (row.getRecordType(primaryColNdx) == objType)
       {
         int id = row.getID(primaryColNdx);
         if ((id > 0) || (row.getText(primaryColNdx).length() > 0))
@@ -824,7 +828,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   @SuppressWarnings("unchecked")
   public <HDT_T extends HDT_Record> List<HDT_T> saveToList(int colNdx, RecordType objType)
   {
-    return rows.stream().filter(row -> row.getType(colNdx) == objType)
+    return rows.stream().filter(row -> row.getRecordType(colNdx) == objType)
                         .map(row -> row.getID(colNdx))
                         .filter(id -> id > 0)
                         .map(id -> (HDT_T) db.records(objType).getByID(id))

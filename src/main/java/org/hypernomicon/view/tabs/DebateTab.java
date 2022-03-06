@@ -18,7 +18,10 @@
 package org.hypernomicon.view.tabs;
 
 import org.hypernomicon.view.HyperView.TextViewInfo;
+import org.hypernomicon.view.populators.RecordByTypePopulator;
+import org.hypernomicon.view.populators.RecordTypePopulator;
 import org.hypernomicon.view.wrappers.HyperTable;
+import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
 import static org.hypernomicon.App.*;
@@ -30,6 +33,7 @@ import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.io.IOException;
+import java.util.EnumSet;
 
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.records.HDT_Argument.ArgumentAuthor;
@@ -68,11 +72,26 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
     ctrlr.update(curDebate);
 
-    htParents.buildRows(curDebate.largerDebates, (row, otherDebate) -> row.setCellValue(2, otherDebate, otherDebate.name()));
+ // Populate parent records
+ // -----------------------
+
+    htParents.buildRows(curDebate.largerDebates, (row, otherDebate) ->
+    {
+      row.setCellValue(2, db.getTypeName(hdtDebate), hdtDebate);
+      row.setCellValue(3, otherDebate, otherDebate.listName());
+    });
+
+    htParents.buildRows(curDebate.largerPositions, (row, pos) ->
+    {
+      row.setCellValue(2, db.getTypeName(hdtPosition), hdtPosition);
+      row.setCellValue(3, pos, pos.listName());
+    });
+
+ // -----------------------
 
     htSubdebates.buildRows(curDebate.subDebates, (row, subDebate) -> row.setCellValue(1, subDebate, subDebate.name()));
 
-    htPositions.buildRows(curDebate.positions, (row, position) ->
+    htPositions.buildRows(curDebate.subPositions, (row, position) ->
     {
       String authStr = Authors.getShortAuthorsStr(position.getPeople().stream().map(ArgumentAuthor::getAuthObj), true, true, false);
       PositionSource ps = position.getWorkWithAuthor();
@@ -93,14 +112,25 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
   @Override protected void init()
   {
     ctrlr.init(hdtDebate, this);
-    ctrlr.tvParents.getColumns().remove(2);
-    ctrlr.tvParents.getColumns().get(2).setText("Larger Debate Name");
 
-    htParents = new HyperTable(ctrlr.tvParents, 2, true, PREF_KEY_HT_DEBATE_PARENTS);
+    htParents = new HyperTable(ctrlr.tvParents, 3, true, PREF_KEY_HT_DEBATE_PARENTS);
 
-    htParents.addActionCol(ctGoBtn, 2);
-    htParents.addActionCol(ctBrowseBtn, 2);
-    htParents.addCol(hdtDebate, ctDropDownList);
+    htParents.addActionCol(ctGoBtn, 3);
+    htParents.addActionCol(ctBrowseBtn, 3);
+
+    RecordTypePopulator rtp = new RecordTypePopulator(EnumSet.of(hdtDebate, hdtPosition));
+
+    htParents.addColAltPopulatorWithUpdateHandler(hdtNone, ctDropDownList, rtp, (row, cellVal, nextColNdx, nextPopulator) ->
+    {
+      RecordByTypePopulator rbtp = (RecordByTypePopulator)nextPopulator;
+
+      RecordType parentType = cellVal.getType();
+      rbtp.setRecordType(row, parentType);
+      rbtp.setChanged(row);
+      row.setCellValue(nextColNdx, new HyperTableCell("", parentType));
+    });
+
+    htParents.addColAltPopulator(hdtNone, ctDropDownList, new RecordByTypePopulator());
 
     htParents.addRemoveMenuItem();
     htParents.addChangeOrderMenuItem(true);
@@ -138,7 +168,8 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
   {
     if (!ctrlr.saveToRecord(curDebate)) return false;
 
-    curDebate.setLargerDebates(htParents.saveToList(2, hdtDebate));
+    curDebate.setLargerPositions(htParents.saveToList(3, hdtPosition));
+    curDebate.setLargerDebates  (htParents.saveToList(3, hdtDebate  ));
 
     db.attachOrphansToRoots();
 
@@ -157,7 +188,7 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
       case hdtPosition :
 
         HDT_Position position = db.createNewBlankRecord(hdtPosition);
-        position.debates.add(curDebate);
+        position.largerDebates.add(curDebate);
         ui.goToRecord(position, false);
         break;
 

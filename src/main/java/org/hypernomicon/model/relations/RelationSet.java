@@ -71,8 +71,10 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   private final Map<Tag, HDI_Schema> tagToSchema = new LinkedHashMap<>();
   private final Map<Tag, RecordType> tagToTargetType = new EnumMap<>(Tag.class);
   private final List<RelationChangeHandler> changeHandlers = new ArrayList<>();
+  private final Set<RelationType> cycleGroup;
 
   private static final EnumMap<RecordType, Set<RelationSet<? extends HDT_Record, ? extends HDT_Record>>> orphanTypeToRelSets = new EnumMap<>(RecordType.class);
+  private static final EnumMap<RelationType, RelationSet<? extends HDT_Record, ? extends HDT_Record>> relationSets = new EnumMap<>(RelationType.class);
   private static final EnumBasedTable<RecordType, RecordType, RelationType> typeMappings = new EnumBasedTable<>(RecordType.class, RecordType.class);
 
   private final RelationType type;
@@ -103,10 +105,31 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private static final Set<Set<RelationType>> cycleGroups;
+
+  static
+  {
+    cycleGroups = ImmutableSet.<Set<RelationType>>builder()
+      .add(EnumSet.of(rtParentDebateOfPos, rtParentPosOfDebate, rtParentDebateOfDebate, rtParentPosOfPos))
+      .build();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public void initCycleGroup()
+  {
+    if (cycleGroup != null)
+      cycleGroup.removeIf(relType -> relationSets.get(relType).subjType != objType);
+  }
+
   private RelationSet(RelationType newType) throws HDB_InternalError
   {
     boolean trackOrphans = false;
     type = newType;
+
+    relationSets.put(type, this);
+    cycleGroup = cycleGroups.stream().filter(cycleGroup -> cycleGroup.contains(type)).findAny().map(EnumSet::copyOf).orElse(null);
 
     switch (type)
     {
@@ -136,7 +159,11 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
         trackOrphans = true; break;
 
       case rtWorkOfArgument           : hasNestedItems = false; subjType = hdtArgument;      objType = hdtWork;            break;
-      case rtDebateOfPosition         : hasNestedItems = false; subjType = hdtPosition;      objType = hdtDebate;
+      case rtParentDebateOfPos        : hasNestedItems = false; subjType = hdtPosition;      objType = hdtDebate;
+
+        trackOrphans = true; break;
+
+      case rtParentPosOfDebate        : hasNestedItems = false; subjType = hdtDebate;        objType = hdtPosition;
 
         trackOrphans = true; break;
 
@@ -570,16 +597,13 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     if (affirm)
     {
-      if (obj.getType() == subj.getType())
-      {
-        if (subj.getID() == obj.getID())
-          throw new RelationCycleException(subj, obj);
-
-        cycleCheck(subj, (HDT_Subj) obj, obj);
-      }
-
       // Add the object to the object list if not already there
       if (objList.contains(obj)) return;
+
+      if (cycleGroup != null)
+        groupCycleCheck(subj, obj, obj);
+      else if (obj.getType() == subj.getType())
+        cycleCheck(subj, (HDT_Subj) obj, obj);
 
       if (ndx == -1) objList.add(obj);
       else           objList.add(ndx, obj);
@@ -626,15 +650,35 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private void cycleCheck(HDT_Subj subj, HDT_Subj obj, HDT_Obj origObj) throws RelationCycleException
+  private void cycleCheck(HDT_Subj origSubj, HDT_Subj curSubj, HDT_Obj origObj) throws RelationCycleException
   {
-    for (HDT_Obj nextObj : subjToObjList.get(obj))
-    {
-      if (nextObj == subj)
-        throw new RelationCycleException(subj, origObj);
+    if (origSubj == curSubj)
+      throw new RelationCycleException(origSubj, origObj);
 
-      cycleCheck(subj, (HDT_Subj) nextObj, origObj);
+    for (HDT_Obj nextObj : subjToObjList.get(curSubj))
+      cycleCheck(origSubj, (HDT_Subj) nextObj, origObj);
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  @SuppressWarnings("unchecked")
+  private void groupCycleCheck(HDT_Record origSubj, HDT_Obj curSubj, HDT_Record origObj) throws RelationCycleException
+  {
+    if (origSubj == curSubj)
+      throw new RelationCycleException(origSubj, origObj);
+
+    for (RelationType relType : cycleGroup)
+    {
+      RelationSet<HDT_Obj, ? extends HDT_Record> relSet = (RelationSet<HDT_Obj, ? extends HDT_Record>) relationSets.get(relType);
+      relSet.groupParentCycleCheck(origSubj, curSubj, origObj);
     }
+  }
+
+  private void groupParentCycleCheck(HDT_Record origSubj, HDT_Subj curSubj, HDT_Record origObj) throws RelationCycleException
+  {
+    for (HDT_Obj nextObj : subjToObjList.get(curSubj))
+      groupCycleCheck(origSubj, nextObj, origObj);
   }
 
 //---------------------------------------------------------------------------
@@ -742,6 +786,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 //---------------------------------------------------------------------------
 
   // Numeric code associated with each enum value should NEVER be changed.
+  // Doing so could cause query favorites to get corrupted.
 
   public static enum RelationType
   {
@@ -755,6 +800,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     rtAuthorOfWork            ( 5, tagWork                , "Work(s) by this author"),
     rtAuthorOfFile            ( 6, tagMiscFile            , "Misc. File(s) by this author"),
     rtWorkOfArgument          ( 7, tagArgument            , "Argument(s) having this work as source"),
+
     rtParentLabelOfLabel      (11, "Child Label(s)"       , "Label(s) under this parent label"),
     rtLabelOfWork             (12, tagWork                , "Work(s) having this label"),
     rtLabelOfFile             (13, tagMiscFile            , "Misc. File(s) having this label"),
@@ -767,9 +813,11 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     rtParentDebateOfDebate    (20, "Sub-Debate(s)"        , "Debate(s) under this larger debate"),
     rtParentNoteOfNote        (21, "Sub-Note(s)"          , "Note(s) under this parent note"),
     rtFolderOfNote            (22, tagNote                , "Note(s) associated with this Folder"),
-    rtDebateOfPosition        (23, tagPosition            , "Position(s) under this debate"),
+    rtParentDebateOfPos       (23, tagPosition            , "Position(s) under this debate"),
     rtParentPosOfPos          (24, "Sub-Position(s)"      , "Position(s) under this parent position"),
     rtPositionOfArgument      (25, tagArgument            , "Argument(s) concerning this position"),
+    rtParentPosOfDebate       (46, tagDebate              , "Debate(s) under this position"),
+
     rtPersonOfInv             (27, tagInvestigation       , "Investigation(s) by this person"),
     rtPictureFolderOfPerson   (28, tagPerson              , "Person(s) with pictures in this folder"),
     rtCountryOfRegion         (29, tagRegion              , "States/regions in this country"),
@@ -782,6 +830,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
     rtFolderOfMiscFile        (36, tagMiscFile            , "Misc. file(s) in this folder"),
     rtParentFolderOfFolder    (37, "Subfolder(s)"         , "Subfolder(s) of this folder"),
     rtUnited                  (38, ""                     , ""),
+
     rtTypeOfInst              (39, tagInstitution         , "Institution(s) of this type"),
     rtParentInstOfInst        (40, "Division(s)"          , "Division(s) of this institution"),
     rtInstOfPerson            (41, tagPerson              , "Person(s) in this institution"),

@@ -366,15 +366,22 @@ public final class HyperDB
 
   public void attachOrphansToRoots()
   {
-    Set<HDT_Position> orphans = getOrphans(rtParentPosOfPos, HDT_Position.class);
+    Set<HDT_Position> posOrphans = getOrphans(rtParentPosOfPos, HDT_Position.class);
 
-    getOrphans(rtDebateOfPosition, HDT_Position.class).forEach(position ->
+    getOrphans(rtParentDebateOfPos, HDT_Position.class).forEach(position ->
     {
-      if (orphans.contains(position))
-        position.debates.add(debates.getByID(1));
+      if (posOrphans.contains(position))
+        position.largerDebates.add(debates.getByID(1));
     });
 
-    getOrphans(rtParentDebateOfDebate    , HDT_Debate     .class).forEach(debate   -> debate  .largerDebates   .add(debates     .getByID(1)));
+    Set<HDT_Debate> debateOrphans = getOrphans(rtParentDebateOfDebate, HDT_Debate.class);
+
+    getOrphans(rtParentPosOfDebate, HDT_Debate.class).forEach(debate ->
+    {
+      if (debateOrphans.contains(debate))
+        debate.largerDebates.add(debates.getByID(1));
+    });
+
     getOrphans(rtParentNoteOfNote        , HDT_Note       .class).forEach(note     -> note    .parentNotes     .add(notes       .getByID(1)));
     getOrphans(rtParentLabelOfLabel      , HDT_WorkLabel  .class).forEach(label    -> label   .parentLabels    .add(workLabels  .getByID(1)));
     getOrphans(rtParentGroupOfGroup      , HDT_PersonGroup.class).forEach(group    -> group   .parentGroups    .add(personGroups.getByID(1)));
@@ -2080,6 +2087,7 @@ public final class HyperDB
         if ((relType != rtUnited) && (relType != rtNone))
           relationSets.put(relType, RelationSet.createSet(relType));
 
+      relationSets.values().forEach(relSet -> relSet.initCycleGroup());
       MainText.init();
 
   /*****************************************************************************
@@ -2100,6 +2108,7 @@ public final class HyperDB
 
       addStringItem(hdtDebate, tagName);
       addPointerMulti(hdtDebate, rtParentDebateOfDebate, tagLargerDebate);
+      addPointerMulti(hdtDebate, rtParentPosOfDebate, tagLargerPosition);
       addConnectorItem(hdtDebate, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
 
       addStringItem(hdtMiscFile, tagName);
@@ -2151,7 +2160,7 @@ public final class HyperDB
       addPointerMulti(hdtPersonGroup, rtParentGroupOfGroup, tagParentGroup);
 
       addStringItem(hdtPosition, tagName);
-      addPointerMulti(hdtPosition, rtDebateOfPosition, tagDebate);
+      addPointerMulti(hdtPosition, rtParentDebateOfPos, tagDebate);
       addPointerMulti(hdtPosition, rtParentPosOfPos, tagLargerPosition);
       addConnectorItem(hdtPosition, tagHub, tagDescription, tagDisplayRecord, tagKeyWork);
 

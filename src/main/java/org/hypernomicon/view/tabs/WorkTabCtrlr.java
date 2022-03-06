@@ -1054,8 +1054,8 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       arg -> ui.goToRecord(arg.positions.get(0), true));
 
     htArguments.addContextMenuItem("Debate Record...", HDT_Argument.class,
-      arg -> arg.positions.isEmpty() ? false : arg.positions.get(0).getDebate() != null,
-      arg -> ui.goToRecord(arg.positions.get(0).getDebate(), true));
+      arg -> arg.positions.isEmpty() ? false : arg.positions.get(0).getLargerDebate() != null,
+      arg -> ui.goToRecord(arg.positions.get(0).getLargerDebate(), true));
   }
 
 //---------------------------------------------------------------------------

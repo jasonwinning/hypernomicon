@@ -435,7 +435,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   {
     row.setCellValue(2, position, position.listName());
 
-    nullSwitch(position.getDebate(), debate ->
+    nullSwitch(position.getLargerDebate(), debate ->
     {
       addOtherToTopicTable(debate, row);
       otherToAdd.remove(debate);
