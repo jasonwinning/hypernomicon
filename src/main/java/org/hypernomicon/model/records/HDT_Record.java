@@ -61,8 +61,9 @@ public interface HDT_Record
   boolean getTagBoolean(Tag tag);
   Set<Tag> getAllTags();
   boolean isUnitable();
-  boolean hasDesc();     // this means the record has a description, but not necessarily that it is connected directly to a MainText object (true for HDT_Term)
-  boolean hasMainText(); // this means the record is directly connected to a MainText object (false for HDT_Term)
+  boolean hasDesc();     // this means the record has a description, but not necessarily that it is associated with a
+                         // specific MainText object (true for HDT_Term)
+  boolean hasMainText(); // this means the record is associated with a specific MainText object (false for HDT_Term)
   void expire();
   boolean isExpired();
   boolean isDummy();

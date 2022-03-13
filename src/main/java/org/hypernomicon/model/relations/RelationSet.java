@@ -123,6 +123,9 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
       cycleGroup.removeIf(relType -> relationSets.get(relType).subjType != objType);
   }
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private RelationSet(RelationType newType) throws HDB_InternalError
   {
     boolean trackOrphans = false;

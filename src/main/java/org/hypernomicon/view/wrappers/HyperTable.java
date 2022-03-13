@@ -84,6 +84,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Region;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
+import javafx.util.Pair;
 
 //---------------------------------------------------------------------------
 
@@ -94,6 +95,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   final private List<HyperTableColumn> cols = new ArrayList<>();
   final private ObservableList<HyperTableRow> rows = FXCollections.observableArrayList();
   final private FilteredList<HyperTableRow> filteredRows;
+  final private Map<Integer, HyperTableCell> colNdxToDefaultValue = new HashMap<>();
   final List<TableColumn<HyperTableRow, ?>> tableCols = new ArrayList<>();
 
   Consumer<? extends HDT_Record> dblClickHandler = null;
@@ -109,7 +111,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   private static final Map<String, TableView<?>> registry = new HashMap<>();
   private static final Map<String, HyperDlg> dialogs = new HashMap<>();
-  private static final Map<String, List<Double>> colWidthMap = new HashMap<>();
+  private static final Map<String, Map<? extends TableColumnBase<?, ?>, Pair<Integer, Double>>> colWidthMap = new HashMap<>();
 
 //---------------------------------------------------------------------------
 
@@ -133,6 +135,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public void addRefreshHandler(Runnable hndlr)                    { refreshHandler = hndlr; }
   public HyperTableRow selectRowByRecord(HDT_Record record)        { return nullSwitch(getRowByRecord(record), null, this::selectRow); }
   public boolean removeRowsIf(Predicate<HyperTableRow> filter)     { return rows.removeIf(filter); }
+  public void setDefaultValue(int colNdx, HyperTableCell value)    { colNdxToDefaultValue.put(colNdx, value); }
 
   @SuppressWarnings("unused")
   public <HDT_T extends HDT_Record> void setDblClickHandler(Class<HDT_T> klass, Consumer<HDT_T> hndlr) { dblClickHandler = hndlr; }
@@ -203,38 +206,53 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <RowType> void saveColWidthsForTable(List<? extends TableColumnBase<RowType, ?>> columns, String prefID, boolean rescale)
+  @SuppressWarnings("unchecked")
+  public static <RowType, ColType extends TableColumnBase<RowType, ?>> void saveColWidthsForTable(List<ColType> columns, String prefID, boolean rescale)
   {
-    int numCols = columns.size();
+    Map<ColType, Pair<Integer, Double>> oldColToPair = (Map<ColType, Pair<Integer, Double>>) colWidthMap.get(prefID);
+    Map<ColType, Double> newColToWidth = new HashMap<>();
 
-    List<Double> oldWidths = colWidthMap.get(prefID), curWidths = columns.stream()
-      .map(TableColumnBase::getWidth)
-      .map(width -> ((width > 0.0) && rescale) ? width / displayScale : width)
-      .collect(Collectors.toList());
+    columns.forEach(col ->
+    {
+      double width = col.getWidth();
+
+      if ((width > 0.0) && rescale)
+        width = width / displayScale;
+
+      newColToWidth.put(col, width);
+    });
 
     boolean save = false;
 
-    if ((oldWidths == null) || (oldWidths.size() != curWidths.size()))
+    if ((oldColToPair == null) || (oldColToPair .keySet().containsAll(newColToWidth.keySet()) == false) ||
+                                  (newColToWidth.keySet().containsAll(oldColToPair .keySet()) == false))
       save = true;
     else
     {
-      for (int ndx = 0; ndx < numCols; ndx++)
-        if ((curWidths.get(ndx) > 0.0) && (Math.abs(curWidths.get(ndx) - oldWidths.get(ndx)) >= 1.0))
+      for (ColType col : columns)
+      {
+        double newWidth = newColToWidth.get(col);
+        if ((newWidth > 0.0) && (Math.abs(newWidth - oldColToPair.get(col).getValue()) > 1.0))
           save = true;
+      }
     }
 
     if (save == false) return;
 
-    for (int ndx = 0; ndx < numCols; ndx++)
+    for (ColType col : columns)
     {
-      double width = curWidths.get(ndx);
+      double newWidth = newColToWidth.get(col);
 
-      if (width > 0.0)
+      if (newWidth > 0.0)
       {
-        double oldWidth = appPrefs.getDouble(prefID + "ColWidth" + String.valueOf(ndx + 1), -1.0);
+        int oldNdx = oldColToPair.get(col).getKey();
+        double oldWidth = oldColToPair.get(col).getValue();
 
-        if (Math.abs(width - oldWidth) >= 1.0)
-          appPrefs.putDouble(prefID + "ColWidth" + String.valueOf(ndx + 1), width);
+        if (Math.abs(newWidth - oldWidth) >= 1.0)
+        {
+          appPrefs.putDouble(prefID + "ColWidth" + String.valueOf(oldNdx + 1), newWidth);
+          oldColToPair.put(col, new Pair<>(oldNdx, newWidth));
+        }
       }
     }
   }
@@ -242,21 +260,23 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static <RowType> void loadColWidthsForTable(List<? extends TableColumnBase<RowType, ?>> columns, String prefID)
+  @SuppressWarnings("unchecked")
+  public static <RowType, ColType extends TableColumnBase<RowType, ?>> void loadColWidthsForTable(List<ColType> columns, String prefID)
   {
-    List<Double> newWidths = new ArrayList<>();
-    colWidthMap.put(prefID, newWidths);
+    Map<ColType, Pair<Integer, Double>> colToPair = (Map<ColType, Pair<Integer, Double>>) colWidthMap.get(prefID);
+    if (colToPair == null)
+      colWidthMap.put(prefID, colToPair = new HashMap<>());
+
     int numCols = columns.size();
 
     for (int ndx = 0; ndx < numCols; ndx++)
     {
+      ColType col = columns.get(ndx);
       double width = appPrefs.getDouble(prefID + "ColWidth" + String.valueOf(ndx + 1), -1.0);
-      newWidths.add(width);
+      colToPair.put(col, new Pair<>(ndx, width));
 
       if (width > 0.0)
       {
-        TableColumnBase<RowType, ?> col = columns.get(ndx);
-
         if (col.isResizable())
           col.setPrefWidth(width);
       }
@@ -495,7 +515,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     clearFilter();
 
     if (canAddRows)
-      rows.add(new HyperTableRow(cols.size(), this));
+      newRow(false);
   }
 
   public void clear()
@@ -507,16 +527,25 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  private boolean settingDefaultValue = false;
+
   public HyperTableRow newDataRow() { return newRow(true); }
 
   HyperTableRow newRow(boolean dataRow)
   {
+    if (settingDefaultValue) return null;
+
     HyperTableRow row = new HyperTableRow(cols.size(), this);
 
     if (dataRow && canAddRows)
       rows.add(dataRowCount(), row);
     else
+    {
       rows.add(row);
+      settingDefaultValue = true;
+      colNdxToDefaultValue.forEach(row::setCellValue);
+      settingDefaultValue = false;
+    }
 
     return row;
   }

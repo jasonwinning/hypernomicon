@@ -83,7 +83,8 @@ public class AboutDlgCtrlr extends HyperDlg
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
-    tabContributorsHtml = htmlStart + "Original design and development: " + anchorTag("Jason Winning", "http://jasonwinning.com") + "<br><br>" +
+    tabContributorsHtml = htmlStart + "Original design and development: " + anchorTag("Jason Winning", "http://jasonwinning.com") + "<br>" +
+                                      "Design ideas and testing: " + anchorTag("Danny Weltman", "https://dannyweltman.com/") + "<br><br>" +
         anchorTag("List at GitHub", "https://github.com/jasonwinning/hypernomicon/contributors") + "&nbsp;&nbsp;&nbsp;" +
         anchorTag("Add your name to this list!", "https://akrabat.com/the-beginners-guide-to-contributing-to-a-github-project/") +
         "</body></html>";

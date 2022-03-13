@@ -30,6 +30,18 @@ import java.util.stream.Stream;
 import org.hypernomicon.model.HyperDB;
 import org.hypernomicon.model.records.*;
 
+/**
+ * There is always one object of this class for every hub record.
+ *
+ * The reason for not simply folding this functionality into
+ * {@link org.hypernomicon.model.records.HDT_Hub HDT_Hub} is that it has to be
+ * in the same package as {@link Connector Connector}, and it is safer
+ * for both of those classes to not be in the same package as the record
+ * classes.
+ *
+ * @author  Jason Winning
+ * @since   1.0
+ */
 public class StrongLink
 {
   private boolean alreadyModifying = false;

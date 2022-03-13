@@ -35,6 +35,18 @@ import org.hypernomicon.model.HyperDB.RelationChangeHandler;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 
+/**
+ * Every record that has a main HTML description field refers to an object of
+ * this class, which stores the HTML. All such record classes are subclasses of
+ * {@link org.hypernomicon.model.records.HDT_RecordWithConnector HDT_RecordWithConnector};
+ * each record will have its own {@link Connector Connector} object, which then
+ * holds a direct reference to the MainText object. Some of those record types, but not all,
+ * also can be "united" to other records so that their {@link Connector Connector} objects will
+ * refer to the same MainText object.
+ *
+ * @author  Jason Winning
+ * @since   1.0
+ */
 public class MainText
 {
 //---------------------------------------------------------------------------

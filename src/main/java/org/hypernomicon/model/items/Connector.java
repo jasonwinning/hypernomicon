@@ -26,6 +26,22 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 
+/**
+ * Every record that has a main HTML description field has its own object of
+ * this class. Some of those record types, but not all, also can be "united"
+ * to other records so that they have the same {@link MainText MainText} object.
+ * They then still have separate Connector objects but each refers to the same
+ * {@link MainText MainText} and {@link StrongLink StrongLink} objects.
+ *
+ * The reason for not folding this functionality into the
+ * {@link org.hypernomicon.model.records.HDT_RecordWithConnector HDT_RecordWithConnector}
+ * class is that it has to be in the same package as {@link StrongLink StrongLink},
+ * and it is safer for both of those classes to not be in the same package as the
+ * record classes.
+ *
+ * @author  Jason Winning
+ * @since   1.0
+ */
 public final class Connector
 {
   //---------------------------------------------------------------------------

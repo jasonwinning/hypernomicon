@@ -143,6 +143,8 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
 
   @Override public TreeRow newRow(HDT_Record record, TreeModel<TreeRow> treeModel) { return new TreeRow(record, treeModel); }
 
+  public boolean getHasTerms() { return hasTerms; }
+
   public void saveColWidths(String prefID, boolean rescale) { HyperTable.saveColWidthsForTable(ttv.getColumns(), prefID, rescale); }
   public void loadColWidths(String prefID)                  { HyperTable.loadColWidthsForTable(ttv.getColumns(), prefID); }
 

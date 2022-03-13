@@ -51,6 +51,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
   public void expandMainBranch()                          { rootRow.treeItem.setExpanded(true); }
   Set<RecordType> getRecordTypes()                        { return Collections.unmodifiableSet(recordTypes); }
   public Set<RowType> getRowsForRecord(HDT_Record record) { return recordToRows.getRowsForRecord(record); }
+  public AbstractTreeWrapper<RowType> getTreeWrapper()    { return treeWrapper; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

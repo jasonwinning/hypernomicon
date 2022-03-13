@@ -70,6 +70,18 @@ public class RecordTypePopulator extends Populator
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
+  public HyperTableCell getChoiceByType(HyperTableRow row, RecordType type)
+  {
+    for (HyperTableCell cell : populate(nullSwitch(row, dummyRow), false))
+      if (HyperTableCell.getCellType(cell) == type)
+        return cell;
+
+    return null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
     if ((force == false) && (changed == false)) return choices;

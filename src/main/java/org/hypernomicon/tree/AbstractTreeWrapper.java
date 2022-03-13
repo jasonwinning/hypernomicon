@@ -98,11 +98,14 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
         getSelectionModel().select(item);                   // "select(item)" will instead select a *different* item (?!?!)
     }
 
-    scrollToNdx(getSelectionModel().getSelectedIndex());
+    runDelayedInFXThread(1, 100, () ->
+    {
+      scrollToNdx(getSelectionModel().getSelectedIndex());
 
-    focusOnTreeCtrl();
+      focusOnTreeCtrl();
 
-    selectingFromCB = false;
+      selectingFromCB = false;
+    });
   }
 
 //---------------------------------------------------------------------------

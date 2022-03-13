@@ -34,8 +34,8 @@ import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescriptio
 
 public abstract class HDT_RecordWithConnector extends HDT_RecordBase implements HDT_RecordWithDescription
 {
-  protected Connector connector; // If you set it to null here, this line executes immediately AFTER super constructor is called, and problems ensue.
-  private boolean alreadyModifying;
+  protected Connector connector;     //  Do not set connector to null here because this line executes immediately AFTER the
+  private boolean alreadyModifying;  //  super constructor is called, and items are initialized in the super constructor.
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

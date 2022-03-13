@@ -77,17 +77,9 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
   {
     super.updateItem(cell, empty);
 
-    if (empty)
-    {
-      setText(null);
-      setGraphic(null);
-      setTooltip(null);
-      return;
-    }
+    HyperTableRow row;
 
-    HyperTableRow row = getTableRow().getItem();
-
-    if (row == null)
+    if (empty || ((row = getTableRow().getItem()) == null))
     {
       setText("");
       setGraphic(null);

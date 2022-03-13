@@ -40,7 +40,8 @@ public class ChooseParentDlgCtrlr extends HyperDlg
   @FXML private TreeTableView<TreeRow> ttv;
   @FXML private TextField tfPath;
   @FXML private TreeTableColumn<TreeRow, HyperTreeCellValue> tcName;
-  @FXML private TreeTableColumn<TreeRow, String> tcType, tcDesc;
+  @FXML private TreeTableColumn<TreeRow, TreeRow> tcLinked;
+  @FXML private TreeTableColumn<TreeRow, String> tcDesc;
 
   private TreeWrapper popupTree;
   private static String title;
@@ -67,8 +68,10 @@ public class ChooseParentDlgCtrlr extends HyperDlg
     parent = null;
 
     tcName.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue().getNameCell()));
-    tcType.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getValue().getTypeString()));
     tcDesc.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getValue().getDescString()));
+
+    tcLinked.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue()));
+    tcLinked.setCellFactory(row -> TreeRow.typeCellFactory());
 
     popupTree.reset();
 

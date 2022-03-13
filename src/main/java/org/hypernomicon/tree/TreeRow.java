@@ -20,16 +20,22 @@ package org.hypernomicon.tree;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.util.MediaUtil.*;
+import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 
+import org.hypernomicon.model.items.Connector;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.HDT_Work;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
-import org.hypernomicon.model.records.SimpleRecordTypes.HDT_WorkType;
+import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 
+import javafx.scene.Cursor;
+import javafx.scene.control.Label;
 import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableCell;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 
 //---------------------------------------------------------------------------
 
@@ -86,23 +92,61 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  String getTypeString()
+  public static TreeTableCell<TreeRow, TreeRow> typeCellFactory()
   {
-    if (record == null) return "";
-
-    treeItem.setGraphic(getGraphic());
-
-    if (getRecordType() == hdtWork)
+    return new TreeTableCell<>()
     {
-      HDT_Work work = (HDT_Work)record;
-      return HDT_Work.addFileIndicator(nullSwitch(work.workType.get(), "Work", HDT_WorkType::name), work);
-    }
+      @Override protected void updateItem(TreeRow treeRow, boolean empty)
+      {
+        super.updateItem(treeRow, empty);
 
-    String typeName = db.getTypeName(record.getType());
-    if (record.isUnitable() && ((HDT_RecordWithConnector)record).isLinked())
-      typeName = typeName + " (linked)";
+        setText("");
 
-    return typeName;
+        if (empty || (treeRow == null) || (getTableRow().getItem() == null)) { setGraphic(null); return; }
+
+        treeRow.treeItem.setGraphic(treeRow.getGraphic());
+
+        HDT_Record rowRecord = treeRow.getRecord();
+
+        if ((rowRecord.getType() == hdtWork) || (rowRecord.getType() == hdtMiscFile))
+        {
+          String indicator = HDT_Work.getFileIndicator((HDT_RecordWithPath)rowRecord);
+
+          if (indicator.isBlank() == false)
+          {
+            if (indicator.equals("web"))
+              indicator = "Web";
+            else
+              indicator = titleCase(indicator) + " file";
+
+            super.setGraphic(new Label(indicator));
+            return;
+          }
+        }
+
+        if (rowRecord.isUnitable() == false) { setGraphic(null); return; }
+
+        HDT_RecordWithConnector uRecord = (HDT_RecordWithConnector)rowRecord;
+        if (uRecord.isLinked() == false) { setGraphic(null); return; }
+
+        TreeWrapper treeWrapper = (TreeWrapper) treeRow.getTreeWrapper();
+
+        HBox hBox = new HBox();
+        uRecord.getLink().getSpokes().map(Connector::getSpoke).filter(record -> record != uRecord).forEachOrdered(spokeRecord ->
+        {
+          if ((spokeRecord.getType() == hdtConcept) && (treeWrapper.getHasTerms() == false))
+            return;
+
+          Label label = new Label("", imgViewForRecord(spokeRecord));
+          label.setOnMouseClicked(event -> treeRow.getTreeWrapper().selectRecord(spokeRecord, 0, false));
+          label.setCursor(Cursor.HAND);
+          setToolTip(label, "Go to " + db.getTypeName(spokeRecord.getType()) + " record \"" + spokeRecord.name() + "\"");
+          hBox.getChildren().add(label);
+        });
+
+        super.setGraphic(hBox);
+      }
+    };
   }
 
 //---------------------------------------------------------------------------

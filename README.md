@@ -88,6 +88,8 @@ Hypernomicon uses [JxBrowser](https://www.teamdev.com/jxbrowser). You may not us
 
 ## Acknowledgements
 
+Thanks to [Danny Weltman](https://dannyweltman.com/) for design ideas and testing.
+
 * Icons:
 
   * [FatCow](http://www.fatcow.com/free-icons)

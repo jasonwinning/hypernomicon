@@ -517,9 +517,7 @@ public final class Util
 
       if (noCaps == false)
       {
-        if ((lastChar == ':') || (lastChar == '?') || (lastChar == '/'))
-          word = word.substring(0, 1).toUpperCase() + safeSubstring(word, 1, word.length()).toLowerCase();
-        else if (start == 0)
+        if ((lastChar == ':') || (lastChar == '?') || (lastChar == '/') || (start == 0))
           word = word.substring(0, 1).toUpperCase() + safeSubstring(word, 1, word.length()).toLowerCase();
         else if ((word.length() == 1) && endsWithDot)
           word = word.substring(0, 1).toUpperCase();

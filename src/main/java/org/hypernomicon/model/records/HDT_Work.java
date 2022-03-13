@@ -437,18 +437,36 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static String addFileIndicator(String str, HDT_Work work)
+  public static String addFileIndicator(String str, HDT_RecordWithPath record)
   {
-    if (work == null) return str;
+    if (record == null) return str;
 
+    String indicator = getFileIndicator(record);
+
+    return indicator.isBlank() ? str : new String(str + " (" + indicator + ")").trim();
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static String getFileIndicator(HDT_RecordWithPath record)
+  {
+    if (record == null) return "";
     String indicator = "";
 
-    if (work.workFiles.isEmpty() == false)
-      indicator = work.workFiles.get(0).filePath().getExtensionOnly().toLowerCase();
-    else if (work.getURL().isBlank() == false)
-      indicator = nullSwitch(db.resolveExtFilePath(work.getURL()), "web", filePath -> filePath.getExtensionOnly().toLowerCase());
+    FilePath filePath = record.filePath();
+    if (FilePath.isEmpty(filePath) == false)
+      return filePath.getExtensionOnly().toLowerCase();
 
-    return indicator.isEmpty() ? str : new String(str + " (" + indicator + ")").trim();
+    if (record.getType() == hdtWork)
+    {
+      HDT_Work work = (HDT_Work)record;
+
+      if (work.getURL().isBlank() == false)
+        return nullSwitch(db.resolveExtFilePath(work.getURL()), "web", filePath2 -> filePath2.getExtensionOnly().toLowerCase());
+    }
+
+    return indicator;
   }
 
 //---------------------------------------------------------------------------

@@ -66,7 +66,8 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @FXML private TreeTableView<TreeRow> ttv;
   @FXML private TextField tfPath;
   @FXML private TreeTableColumn<TreeRow, HyperTreeCellValue> tcName;
-  @FXML private TreeTableColumn<TreeRow, String> tcType, tcDesc;
+  @FXML private TreeTableColumn<TreeRow, TreeRow> tcLinked;
+  @FXML private TreeTableColumn<TreeRow, String> tcDesc;
   @FXML private MasterDetailPane spMain;
   @FXML private CheckBox chkShowDesc;
   @FXML private WebView webView;
@@ -129,8 +130,10 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     spMain.showDetailNodeProperty().bind(chkShowDesc.selectedProperty());
 
     tcName.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue().getNameCell()));
-    tcType.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getValue().getTypeString()));
     tcDesc.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getValue().getDescString()));
+
+    tcLinked.setCellValueFactory(row -> new SimpleObjectProperty<>(row.getValue().getValue()));
+    tcLinked.setCellFactory(row -> TreeRow.typeCellFactory());
 
     tree.addContextMenuItem("Select", HDT_Record.class,
       record -> (ui.treeSelector.getBase() != null) && (record != null) && db.isLoaded(),

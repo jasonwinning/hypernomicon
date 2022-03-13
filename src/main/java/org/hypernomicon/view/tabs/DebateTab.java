@@ -135,6 +135,8 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
     htParents.addRemoveMenuItem();
     htParents.addChangeOrderMenuItem(true);
 
+    htParents.setDefaultValue(2, rtp.getChoiceByType(null, hdtDebate));
+
     htPositions = new HyperTable(ctrlr.tvLeftChildren, 2, true, PREF_KEY_HT_DEBATE_POS);
 
     htPositions.addActionCol(ctGoNewBtn, 2);
