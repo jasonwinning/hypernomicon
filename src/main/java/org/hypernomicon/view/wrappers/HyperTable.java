@@ -22,6 +22,7 @@ import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
+import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.view.populators.Populator.CellValueType.*;
@@ -48,8 +49,6 @@ import org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType;
 import org.hypernomicon.view.wrappers.ReadOnlyCell.CustomAddNewGraphicProvider;
 import org.hypernomicon.view.populators.Populator.CellValueType;
 
-import com.google.common.collect.HashBasedTable;
-
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Collections;
@@ -74,17 +73,14 @@ import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
-import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.Region;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
-import javafx.util.Pair;
 
 //---------------------------------------------------------------------------
 
@@ -106,12 +102,8 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public boolean disableRefreshAfterCellUpdate = false,
                  autoCommitListSelections = false;
 
-  private static final Map<TableView<?>, Double> rowHeight = new HashMap<>();
-  private static final HashBasedTable<TableView<?>, Orientation, ScrollBar> sbMap = HashBasedTable.create();
-
   private static final Map<String, TableView<?>> registry = new HashMap<>();
   private static final Map<String, HyperDlg> dialogs = new HashMap<>();
-  private static final Map<String, Map<? extends TableColumnBase<?, ?>, Pair<Integer, Double>>> colWidthMap = new HashMap<>();
 
 //---------------------------------------------------------------------------
 
@@ -206,80 +198,71 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked")
   public static <RowType, ColType extends TableColumnBase<RowType, ?>> void saveColWidthsForTable(List<ColType> columns, String prefID, boolean rescale)
   {
-    Map<ColType, Pair<Integer, Double>> oldColToPair = (Map<ColType, Pair<Integer, Double>>) colWidthMap.get(prefID);
-    Map<ColType, Double> newColToWidth = new HashMap<>();
-
     columns.forEach(col ->
     {
-      double width = col.getWidth();
+      double newWidth = col.getWidth();
 
-      if ((width > 0.0) && rescale)
-        width = width / displayScale;
+      if ((newWidth > 0.0) && rescale)
+        newWidth = newWidth / displayScale;
 
-      newColToWidth.put(col, width);
+      ColumnSettings colSettings = (ColumnSettings) col.getUserData();
+
+      if ((newWidth > 0.0) && (Math.abs(newWidth - colSettings.oldWidth) >= 1.0))
+      {
+        appPrefs.putDouble(prefID + "ColWidth" + String.valueOf(colSettings.oldNdx), newWidth);
+        col.setUserData(new ColumnSettings(colSettings.oldNdx, newWidth, colSettings.defVisible));
+      }
+
+      String prefKey = prefID + "ColVisible" + String.valueOf(colSettings.oldNdx);
+      if (col.isVisible())
+      {
+        if (colSettings.defVisible) // Indicates that it was visible by default
+          appPrefs.remove(prefKey);
+        else
+          appPrefs.putBoolean(prefKey, true); // Since it was hidden by default, explicit true value needs to be saved
+      }
+      else
+        appPrefs.putBoolean(prefKey, false);
     });
-
-    boolean save = false;
-
-    if ((oldColToPair == null) || (oldColToPair .keySet().containsAll(newColToWidth.keySet()) == false) ||
-                                  (newColToWidth.keySet().containsAll(oldColToPair .keySet()) == false))
-      save = true;
-    else
-    {
-      for (ColType col : columns)
-      {
-        double newWidth = newColToWidth.get(col);
-        if ((newWidth > 0.0) && (Math.abs(newWidth - oldColToPair.get(col).getValue()) > 1.0))
-          save = true;
-      }
-    }
-
-    if (save == false) return;
-
-    for (ColType col : columns)
-    {
-      double newWidth = newColToWidth.get(col);
-
-      if (newWidth > 0.0)
-      {
-        int oldNdx = oldColToPair.get(col).getKey();
-        double oldWidth = oldColToPair.get(col).getValue();
-
-        if (Math.abs(newWidth - oldWidth) >= 1.0)
-        {
-          appPrefs.putDouble(prefID + "ColWidth" + String.valueOf(oldNdx + 1), newWidth);
-          oldColToPair.put(col, new Pair<>(oldNdx, newWidth));
-        }
-      }
-    }
   }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SuppressWarnings("unchecked")
+  private static class ColumnSettings
+  {
+    private ColumnSettings(int oldNdx, double oldWidth, boolean defVisible)
+    {
+      this.oldNdx = oldNdx;
+      this.oldWidth = oldWidth;
+      this.defVisible = defVisible;
+    }
+
+    private final int oldNdx;
+    private final double oldWidth;
+    private final boolean defVisible;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   public static <RowType, ColType extends TableColumnBase<RowType, ?>> void loadColWidthsForTable(List<ColType> columns, String prefID)
   {
-    Map<ColType, Pair<Integer, Double>> colToPair = (Map<ColType, Pair<Integer, Double>>) colWidthMap.get(prefID);
-    if (colToPair == null)
-      colWidthMap.put(prefID, colToPair = new HashMap<>());
-
     int numCols = columns.size();
 
-    for (int ndx = 0; ndx < numCols; ndx++)
+    for (int ndx = 1; ndx <= numCols; ndx++)
     {
-      ColType col = columns.get(ndx);
-      double width = appPrefs.getDouble(prefID + "ColWidth" + String.valueOf(ndx + 1), -1.0);
-      colToPair.put(col, new Pair<>(ndx, width));
+      ColType col = columns.get(ndx - 1);
+      double width = appPrefs.getDouble(prefID + "ColWidth" + String.valueOf(ndx), -1.0);
 
-      if (width > 0.0)
-      {
-        if (col.isResizable())
-          col.setPrefWidth(width);
-      }
+      col.setUserData(new ColumnSettings(ndx, width, col.isVisible()));
+
+      if ((width > 0.0) && col.isResizable())
+        col.setPrefWidth(width);
+
+      col.setVisible(appPrefs.getBoolean(prefID + "ColVisible" + String.valueOf(ndx), col.isVisible()));
     }
   }
 
@@ -868,30 +851,6 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static <RowType> ScrollBar getScrollBar(TableView<RowType> tv, Orientation o)
-  {
-    ScrollBar sb = sbMap.get(tv, o);
-    if (sb != null) return sb;
-
-    for (Node n: tv.lookupAll(".scroll-bar"))
-    {
-      if (n instanceof ScrollBar)
-      {
-        sb = (ScrollBar) n;
-        if (sb.getOrientation() == o)
-        {
-          sbMap.put(tv, o, sb);
-          return sb;
-        }
-      }
-    }
-
-    return null;
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
   public void scrollToSelection() { scrollToSelection(tv, false); }
 
   public static <RowType> void scrollToSelection(TableView<RowType> tv, boolean delay)
@@ -904,6 +863,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
   // The way this works is better than TableView.scrollTo
   // scrollTo changes the scroll position even if the row in question was already in view
+  // This algorithm is similar to TreeWrapper.scrollToNdx
 
   private static <RowType> void scrollToNdx(TableView<RowType> tv, int ndx)
   {
@@ -923,27 +883,6 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
     if      (y1 < vpTop)    sb.setValue(y1 / (dataRowsHeight - vpHeight));
     else if (y2 > vpBottom) sb.setValue((y2 - vpHeight) / (dataRowsHeight - vpHeight));
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  private static <RowType> double getRowHeight(TableView<RowType> tv)
-  {
-    Double heightObj = rowHeight.get(tv);
-    if (heightObj != null) return heightObj.doubleValue();
-
-    for (Node rowNode : tv.lookupAll(".indexed-cell"))
-    {
-      if (rowNode instanceof TableRow)
-      {
-        double height = ((Region) rowNode).getHeight();
-        rowHeight.put(tv, height);
-        return height;
-      }
-    }
-
-    return 0.0;
   }
 
 //---------------------------------------------------------------------------

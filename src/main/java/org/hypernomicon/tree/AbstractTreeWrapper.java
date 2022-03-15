@@ -22,11 +22,13 @@ import java.util.List;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.view.wrappers.DragNDropContainer;
 
+import javafx.application.Platform;
 import javafx.scene.control.Control;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TreeItem;
 
 import static org.hypernomicon.util.Util.*;
+import static org.hypernomicon.util.UIUtil.*;
 
 public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? extends HDT_Record, RowType>> extends DragNDropContainer<RowType>
 {
@@ -39,8 +41,8 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
   protected abstract void scrollToNdx(int ndx);
   protected abstract void clear();
   protected abstract List<RowType> getRowsForRecord(HDT_Record record); // should never return null
-  protected abstract void focusOnTreeCtrl();
   protected abstract void expandMainBranches();
+  protected abstract Control getControl();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -71,7 +73,7 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
 
       if ((selItem != null) && (selItem.getValue().getRecord() == record))
       {
-        focusOnTreeCtrl();
+        safeFocus(getControl());
         return;
       }
 
@@ -98,11 +100,13 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
         getSelectionModel().select(item);                   // "select(item)" will instead select a *different* item (?!?!)
     }
 
-    runDelayedInFXThread(1, 100, () ->
+    getControl().layout();
+
+    Platform.runLater(() ->
     {
       scrollToNdx(getSelectionModel().getSelectedIndex());
 
-      focusOnTreeCtrl();
+      safeFocus(getControl());
 
       selectingFromCB = false;
     });

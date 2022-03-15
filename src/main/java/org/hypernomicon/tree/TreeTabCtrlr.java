@@ -107,6 +107,9 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     ttv.getColumns().forEach(col ->
     {
+      if (col.isVisible() == false)
+        return;
+
       col.setVisible(false);
       col.setVisible(true);
     });
@@ -459,7 +462,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     new RecordTreeEdge(dlg.getParent(), child).attach(null, true);
 
-    ui.update();
+    Platform.runLater(() -> ui.update());
   }
 
 //---------------------------------------------------------------------------

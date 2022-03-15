@@ -36,6 +36,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 
 import com.google.common.collect.ImmutableList;
 
+import javafx.scene.control.Control;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -55,9 +56,9 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
   TreeModel<FileRow> getTreeModel()                                      { return treeModel; }
 
   @Override public TreeItem<FileRow> getRoot()                           { return tv.getRoot(); }
+  @Override public Control getControl()                                  { return tv; }
   @Override public void expandMainBranches()                             { treeModel.expandMainBranch(); }
   @Override public SelectionModel<TreeItem<FileRow>> getSelectionModel() { return tv.getSelectionModel(); }
-  @Override public void focusOnTreeCtrl()                                { safeFocus(tv); }
   @Override public void scrollToNdx(int ndx)                             { tv.scrollTo(ndx); }
   @Override public TreeItem<FileRow> getTreeItem(FileRow treeRow)        { return treeRow.getTreeItem(); }
   @Override public List<FileRow> getRowsForRecord(HDT_Record record)     { return ImmutableList.copyOf(treeModel.getRowsForRecord(record)); }

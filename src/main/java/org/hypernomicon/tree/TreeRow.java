@@ -104,8 +104,6 @@ public class TreeRow extends AbstractTreeRow<HDT_Record, TreeRow>
 
         if (empty || (treeRow == null) || (getTableRow().getItem() == null)) { setGraphic(null); return; }
 
-        treeRow.treeItem.setGraphic(treeRow.getGraphic());
-
         HDT_Record rowRecord = treeRow.getRecord();
 
         if ((rowRecord.getType() == hdtWork) || (rowRecord.getType() == hdtMiscFile))

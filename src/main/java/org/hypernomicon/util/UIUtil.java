@@ -36,10 +36,12 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.hypernomicon.util.PopupDialog.DialogResult;
 import org.hypernomicon.view.WindowStack;
 
+import com.google.common.collect.HashBasedTable;
 import com.teamdev.jxbrowser.chromium.internal.Environment;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.event.EventTarget;
+import javafx.geometry.Orientation;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -54,13 +56,16 @@ import javafx.scene.control.DialogPane;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.skin.ComboBoxListViewSkin;
@@ -714,6 +719,54 @@ public final class UIUtil
   }
 
   private static boolean messageDialogShowing = false;
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  private static final Map<Control, Double> rowHeight = new HashMap<>();
+  private static final HashBasedTable<Control, Orientation, ScrollBar> sbMap = HashBasedTable.create();
+
+  public static ScrollBar getScrollBar(Control ctrl, Orientation o)
+  {
+    ScrollBar sb = sbMap.get(ctrl, o);
+    if (sb != null) return sb;
+
+    for (Node n: ctrl.lookupAll(".scroll-bar"))
+    {
+      if (n instanceof ScrollBar)
+      {
+        sb = (ScrollBar) n;
+        if (sb.getOrientation() == o)
+        {
+          sbMap.put(ctrl, o, sb);
+          return sb;
+        }
+      }
+    }
+
+    return null;
+  }
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+  public static double getRowHeight(Control ctrl)
+  {
+    Double heightObj = rowHeight.get(ctrl);
+    if (heightObj != null) return heightObj.doubleValue();
+
+    for (Node rowNode : ctrl.lookupAll(".indexed-cell"))
+    {
+      if ((rowNode instanceof TableRow) || (rowNode instanceof TreeTableRow))
+      {
+        double height = ((Region) rowNode).getHeight();
+        rowHeight.put(ctrl, height);
+        return height;
+      }
+    }
+
+    return 0.0;
+  }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
