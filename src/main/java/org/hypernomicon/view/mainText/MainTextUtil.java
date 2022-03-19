@@ -30,6 +30,7 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -89,7 +90,8 @@ public final class MainTextUtil
                               TOPMOST_CLASS              = "topmostKeyWorksSpan";
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
   private static final int JS_EVENT_OPEN_RECORD         = 1,
                            JS_EVENT_OPEN_PREVIEW        = 2,
                            JS_EVENT_OPEN_URL            = 3,
@@ -105,16 +107,16 @@ public final class MainTextUtil
       .append("<script>\n\n")
       .append("var jsToJava = {};\n")
       .append("function openFile(recordType, recordID)\n{\n")
-      .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(" + String.valueOf(JS_EVENT_OPEN_FILE) + ");\n")
+      .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(").append(JS_EVENT_OPEN_FILE).append(");\n")
       .append("}\n\n")
       .append("function openRecord(recordType, recordID)\n{\n")
-      .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(" + String.valueOf(JS_EVENT_OPEN_RECORD) + ");\n")
+      .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(").append(JS_EVENT_OPEN_RECORD).append(");\n")
       .append("}\n\n")
       .append("function openPreview(recordType, recordID)\n{\n")
-      .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(" + String.valueOf(JS_EVENT_OPEN_PREVIEW) + ");\n")
+      .append("  jsToJava.recordID = recordID; jsToJava.recordType = recordType; callToJava(").append(JS_EVENT_OPEN_PREVIEW).append(");\n")
       .append("}\n\n")
       .append("function openURL(url)\n{\n")
-      .append("  jsToJava.url = url; callToJava(" + String.valueOf(JS_EVENT_OPEN_URL) + ");\n")
+      .append("  jsToJava.url = url; callToJava(").append(JS_EVENT_OPEN_URL).append(");\n")
       .append("}\n\n")
       .append("function callToJava(eventType)\n{\n")
       .append("  jsToJava.eventType = eventType;\n")
@@ -127,22 +129,22 @@ public final class MainTextUtil
       .append("  for (i=0; i<elements.length; i++)\n  {\n")
       .append("    if (elements[i].id.slice(0,3) === \"num\")\n    {\n")
       .append("      document.getElementById(\"alp\" + elements[i].id.slice(3)).open = elements[i].open;\n    }\n  }\n")
-      .append("  elements = document.getElementsByClassName('" + NUMERIC_SORTED_OUTER_CLASS + "');\n")
+      .append("  elements = document.getElementsByClassName('").append(NUMERIC_SORTED_OUTER_CLASS).append("');\n")
       .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = 'none'; }\n")
-      .append("  elements = document.getElementsByClassName('" + ALPHA_SORTED_OUTER_CLASS + "');\n")
+      .append("  elements = document.getElementsByClassName('").append(ALPHA_SORTED_OUTER_CLASS).append("');\n")
       .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = (elements[i].tagName === 'SPAN' ? 'inline' : 'block'); }\n")
-      .append("  jsToJava.sortByName = true; callToJava(" + String.valueOf(JS_EVENT_SET_SORT_KEY_METHOD) + ");\n")
+      .append("  jsToJava.sortByName = true; callToJava(").append(JS_EVENT_SET_SORT_KEY_METHOD).append(");\n")
       .append("}\n\n")
       .append("function switchTo19()\n{\n")
       .append("  var i,elements = document.getElementsByTagName('details');\n")
       .append("  for (i=0; i<elements.length; i++)\n  {\n")
       .append("    if (elements[i].id.slice(0,3) === \"alp\")\n    {\n")
       .append("      document.getElementById(\"num\" + elements[i].id.slice(3)).open = elements[i].open;\n    }\n  }\n")
-      .append("  elements = document.getElementsByClassName('" + ALPHA_SORTED_OUTER_CLASS + "');\n")
+      .append("  elements = document.getElementsByClassName('").append(ALPHA_SORTED_OUTER_CLASS).append("');\n")
       .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = 'none'; }\n")
-      .append("  elements = document.getElementsByClassName('" + NUMERIC_SORTED_OUTER_CLASS + "');\n")
+      .append("  elements = document.getElementsByClassName('").append(NUMERIC_SORTED_OUTER_CLASS).append("');\n")
       .append("  for(i=0; i<elements.length; i++) { elements[i].style.display = (elements[i].tagName === 'SPAN' ? 'inline' : 'block'); }\n")
-      .append("  jsToJava.sortByName = false; callToJava(" + String.valueOf(JS_EVENT_SET_SORT_KEY_METHOD) + ");\n")
+      .append("  jsToJava.sortByName = false; callToJava(").append(JS_EVENT_SET_SORT_KEY_METHOD).append(");\n")
       .append("}\n\n")
       .append("</script>\n\n")
       .toString();
@@ -223,7 +225,7 @@ public final class MainTextUtil
 
       case JS_EVENT_OPEN_URL :
 
-        openWebLink(String.class.cast(jsToJava.getMember("url")));
+        openWebLink((String) jsToJava.getMember("url"));
         break;
 
       case JS_EVENT_LAUNCH_FILE :
@@ -288,7 +290,7 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static enum LinkKind { none, web, keyword }
+  private enum LinkKind { none, web, keyword }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -306,7 +308,7 @@ public final class MainTextUtil
     {
       LinkKind kind = LinkKind.none;
 
-      if (safeSubstring(entirePlainText, curMatchNdx, curMatchNdx + 4).toLowerCase().equals("http"))
+      if (safeSubstring(entirePlainText, curMatchNdx, curMatchNdx + 4).equalsIgnoreCase("http"))
         kind = LinkKind.web;
       else if ((link != null) && (curMatchNdx == link.offset))
         kind = LinkKind.keyword;
@@ -402,7 +404,7 @@ public final class MainTextUtil
 
   private static String getOpenRecordParms(HDT_Record record)
   {
-    return String.valueOf(record.getType().ordinal()) + "," + record.getID();
+    return record.getType().ordinal() + "," + record.getID();
   }
 
 //---------------------------------------------------------------------------
@@ -443,26 +445,26 @@ public final class MainTextUtil
       if (work.workType.isNotNull())
         typeName = work.workType.get().listName();
 
-      String tooltip = "(" + typeName + ")";
+      StringBuilder tooltip = new StringBuilder("(").append(typeName).append(")");
 
       if (work.getAuthors().size() == 1)
-        tooltip = tooltip + " " + work.getAuthors().get(0).singleName();
+        tooltip.append(" ").append(work.getAuthors().get(0).singleName());
       else if (work.getAuthors().size() == 2)
-        tooltip = tooltip + " " + work.getAuthors().get(0).singleName() + " & " + work.getAuthors().get(1).singleName();
+        tooltip.append(" ").append(work.getAuthors().get(0).singleName()).append(" & ").append(work.getAuthors().get(1).singleName());
       else if (work.getAuthors().size() > 2)
       {
         for (int ndx = 0; ndx < (work.getAuthors().size() - 1); ndx++)
-          tooltip = tooltip + " " + work.getAuthors().get(ndx).singleName() + ",";
+          tooltip.append(" ").append(work.getAuthors().get(ndx).singleName()).append(",");
 
-        tooltip = tooltip + " & " + work.getAuthors().get(work.getAuthors().size() - 1).singleName();
+        tooltip.append(" & ").append(work.getAuthors().get(work.getAuthors().size() - 1).singleName());
       }
 
       if (work.getYear().length() > 0)
-        tooltip = tooltip + " (" + work.getYear() + ")";
+        tooltip.append(" (").append(work.getYear()).append(")");
 
-      tooltip = tooltip + " " + work.name();
+      tooltip.append(" ").append(work.name());
 
-      return htmlEscaper.escape(tooltip);
+      return htmlEscaper.escape(tooltip.toString());
     }
 
     if (record.getType() == hdtMiscFile)
@@ -477,7 +479,8 @@ public final class MainTextUtil
     }
 
     return htmlEscaper.escape("(" + typeName + ") " + record.getCBText());
-  }
+  }
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -549,16 +552,16 @@ public final class MainTextUtil
 
     boolean sortByName = db.prefs.getBoolean(PREF_KEY_KEY_WORK_SORT_BY_NAME, true);
 
-    StringBuilder secondaryHtml = new StringBuilder("<div class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\" style=\"display: " + (sortByName ? "none" : "block") + ";\"><b>Key Works:&nbsp;</b>");
+    StringBuilder secondaryHtml = new StringBuilder("<div class=\"").append(NUMERIC_SORTED_OUTER_CLASS).append("\" style=\"display: ").append(sortByName ? "none" : "block").append(";\"><b>Key Works:&nbsp;</b>");
     appendKeyWorkSpanAndBody(recordWMT, secondaryHtml, false, tagNdx, false, viewInfo);
 
-    secondaryHtml.append("</div><div class=\"" + ALPHA_SORTED_OUTER_CLASS + "\" style=\"display: " + (sortByName ? "block" : "none") + ";\"><b>Key Works:&nbsp;</b>");
+    secondaryHtml.append("</div><div class=\"").append(ALPHA_SORTED_OUTER_CLASS).append("\" style=\"display: ").append(sortByName ? "block" : "none").append(";\"><b>Key Works:&nbsp;</b>");
     appendKeyWorkSpanAndBody(recordWMT, secondaryHtml, true, tagNdx, false, viewInfo);
 
     secondaryHtml.append("</div>");
 
     if ((ultraTrim(convertToSingleLine(mainText.getPlain())).length() > 0) || mainText.getHtml().contains("&lt;" + EMBEDDED_FILE_TAG + " "))
-      secondaryHtml.append("<br>" + embeddedHtml);
+      secondaryHtml.append("<br>").append(embeddedHtml);
 
     return secondaryHtml.toString();
   }
@@ -572,7 +575,7 @@ public final class MainTextUtil
     MutableBoolean firstOne = new MutableBoolean(true);
 
     if (sortByName)
-      sortedKeys.sort(sortBasis(keyWork -> ((HDT_RecordWithAuthors<?>)keyWork.getRecord()).getShortAuthorsStr(true)));
+      sortedKeys.sort(Comparator.comparing(keyWork -> ((HDT_RecordWithAuthors<?>)keyWork.getRecord()).getShortAuthorsStr(true)));
     else
       sortedKeys.sort(null);
 
@@ -580,10 +583,12 @@ public final class MainTextUtil
     {
       if (firstOne.isFalse() || !topmost)
         innerHtml.append("<br>");
+
       firstOne.setFalse();
 
-      innerHtml.append("<a hypncon=\"true\" href=\"\" title=\"Show in Preview Window\" onclick=\"javascript:openPreview(" + getOpenRecordParms(key.getRecord()) + "); return false;\">")
-               .append("<img border=0 width=16 height=16 src=\"" + imgDataURIbyRecord(key.getRecord()) + "\"></img></a>");
+      innerHtml.append("<a hypncon=\"true\" href=\"\" title=\"Show in Preview Window\" onclick=\"javascript:openPreview(").append(getOpenRecordParms(key.getRecord())).append("); return false;\">")
+               .append("<img border=0 width=16 height=16 src=\"").append(imgDataURIbyRecord(key.getRecord())).append("\"></img></a>");
+
       String authorBibStr;
 
       switch (key.getRecord().getType())
@@ -594,12 +599,12 @@ public final class MainTextUtil
 
           authorBibStr = work.getShortAuthorsStr(true);
           if (authorBibStr.length() > 0)
-            innerHtml.append("&nbsp;<span " + NO_LINKS_ATTR + "=true>" + authorBibStr + "</span>");
+            innerHtml.append("&nbsp;<span ").append(NO_LINKS_ATTR).append("=true>").append(authorBibStr).append("</span>");
 
           if (work.getYear().length() > 0)
-            innerHtml.append("&nbsp;(" + work.getYear() + ")");
+            innerHtml.append("&nbsp;(").append(work.getYear()).append(")");
 
-          innerHtml.append("&nbsp;" + getGoToRecordAnchor(work, "", work.name()));
+          innerHtml.append("&nbsp;").append(getGoToRecordAnchor(work, "", work.name()));
 
           break;
 
@@ -609,10 +614,10 @@ public final class MainTextUtil
 
           authorBibStr = miscFile.getShortAuthorsStr(true);
           if (authorBibStr.length() > 0)
-            innerHtml.append("&nbsp;<span " + NO_LINKS_ATTR + "=true>" + authorBibStr + "</span>");
+            innerHtml.append("&nbsp;<span ").append(NO_LINKS_ATTR).append("=true>").append(authorBibStr).append("</span>");
 
-          innerHtml.append("&nbsp;" + getGoToRecordAnchor(miscFile, "", miscFile.name()) + "&nbsp;")
-                   .append("<a hypncon=\"true\" href=\"\" title=\"Jump to this record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(miscFile) + "); return false;\">" + "<img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/view-form.png") + "\"></img></a>");
+          innerHtml.append("&nbsp;").append(getGoToRecordAnchor(miscFile, "", miscFile.name())).append("&nbsp;")
+                   .append("<a hypncon=\"true\" href=\"\" title=\"Jump to this record\" onclick=\"javascript:openRecord(").append(getOpenRecordParms(miscFile)).append("); return false;\">").append("<img border=0 width=16 height=16 src=\"").append(imgDataURI("resources/images/view-form.png")).append("\"></img></a>");
 
           break;
 
@@ -628,7 +633,7 @@ public final class MainTextUtil
 
   public static int webEngineScrollPos(WebEngine theWE)
   {
-    return Integer.class.cast(theWE.executeScript("document.body.scrollTop")).intValue();
+    return (Integer) theWE.executeScript("document.body.scrollTop");
   }
 
 //---------------------------------------------------------------------------
@@ -676,7 +681,7 @@ public final class MainTextUtil
   {
     tagNdx.increment();
 
-    String span = "<span id=SKW" + tagNdx.toString() + " hypnconType=" + String.valueOf(recordWMT.getType().ordinal()) + " hypnconID=" + String.valueOf(recordWMT.getID());
+    String span = "<span id=SKW" + tagNdx + " hypnconType=" + recordWMT.getType().ordinal() + " hypnconID=" + recordWMT.getID();
 
     return span + " class=\"" + (sortByName ? ALPHA_SORTED_INNER_CLASS : NUMERIC_SORTED_INNER_CLASS) + (topmost ? " " + TOPMOST_CLASS : "") + "\">";
   }
@@ -717,7 +722,7 @@ public final class MainTextUtil
     if ((parentLabel == null) || parentLabel.subLabels.isEmpty()) return;
 
     List<HDT_WorkLabel> sortedLabels = new ArrayList<>(parentLabel.subLabels);
-    sortedLabels.sort(sortBasis(HDT_Record::name));
+    sortedLabels.sort(Comparator.comparing(HDT_Record::name));
 
     sortedLabels.forEach(label ->
     {
@@ -725,11 +730,11 @@ public final class MainTextUtil
       {
         String divitID = parentDivitID + makeElementID(label);
 
-        innerHtml.append("<br>" + detailsTag(divitID, viewInfo, false) + "<summary>");
+        innerHtml.append("<br>").append(detailsTag(divitID, viewInfo, false)).append("<summary>");
 
         appendImgTagsForLabel(label, innerHtml, true);
 
-        innerHtml.append("<b>" + getAnchorForUnitable(label) + ":</b>&nbsp;");
+        innerHtml.append("<b>").append(getAnchorForUnitable(label)).append(":</b>&nbsp;");
 
         appendKeyWorkSpanAndBody(label, innerHtml, sortByName, tagNdx, false, viewInfo);
 
@@ -745,7 +750,7 @@ public final class MainTextUtil
 
         appendImgTagsForLabel(label, innerHtml, false);
 
-        innerHtml.append("<b>" + getAnchorForUnitable(label) + ":</b>&nbsp;");
+        innerHtml.append("<b>").append(getAnchorForUnitable(label)).append(":</b>&nbsp;");
 
         appendKeyWorkSpanAndBody(label, innerHtml, sortByName, tagNdx, false, viewInfo);
 
@@ -771,7 +776,7 @@ public final class MainTextUtil
       sortedKeys.add(searchKey);
     });
 
-    sortedKeys.sort(sortByName ? String::compareToIgnoreCase : sortBasis(keyToKeyWork::get));
+    sortedKeys.sort(sortByName ? String::compareToIgnoreCase : Comparator.comparing(keyToKeyWork::get));
 
     return linkMap;
   }
@@ -796,10 +801,10 @@ public final class MainTextUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static String MARGIN_STYLE = "margin-right: 20px;",
+  static final String MARGIN_STYLE = "margin-right: 20px;",
 
-                STYLE_TAG = "<style>p { margin-top: 0em; margin-bottom: 0em; } " +
-                            "body { " + MARGIN_STYLE + " font-family: arial; font-size: 10pt; } </style>";
+                      STYLE_TAG = "<style>p { margin-top: 0em; margin-bottom: 0em; } " +
+                                  "body { " + MARGIN_STYLE + " font-family: arial; font-size: 10pt; } </style>";
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -856,44 +861,39 @@ public final class MainTextUtil
 
   private static String prepHtmlForDisplay(String str, boolean forEditor)
   {
-    if (str.indexOf("</html>") > -1)
-    {
-      if (forEditor == false)
-      {
-        MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
-        ObjectProperty<Element> elementProp = new SimpleObjectProperty<>();
-
-        HDT_MiscFile miscFile = nextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
-
-        while (miscFile != null)
-        {
-          String heightAttr = elementProp.get().attr("height"),
-                 widthAttr  = elementProp.get().attr("width");
-
-          if (heightAttr.isBlank() == false)
-            heightAttr = " height=\"" + heightAttr + "\"";
-
-          if (widthAttr.isBlank() == false)
-            widthAttr = " width=\"" + widthAttr + "\"";
-
-          String url = nullSwitch(miscFile.filePath(), "", FilePath::toURLString);
-
-          String tag = "<img src=\"" + url + "\" alt=\"\"" + heightAttr + widthAttr + "/><br>" +
-                "<a hypncon=\"true\" href=\"\" title=\"Go to this misc. file record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(miscFile) + "); return false;\">" + miscFile.name() + "</a>";
-
-          str = str.substring(0, startNdx.getValue()) + tag + safeSubstring(str, endNdx.getValue(), str.length());
-
-          startNdx.add(1);
-          miscFile = nextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
-        }
-      }
-
+    if (str.contains("</html>") == false)
+      return convertPlainMainTextToHtml(str.isEmpty() ? "<br>" : str);
+    else if (forEditor)
       return str;
+
+    MutableInt startNdx = new MutableInt(0), endNdx = new MutableInt(0);
+    ObjectProperty<Element> elementProp = new SimpleObjectProperty<>();
+
+    HDT_MiscFile miscFile = nextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
+
+    while (miscFile != null)
+    {
+      String heightAttr = elementProp.get().attr("height"),
+             widthAttr  = elementProp.get().attr("width");
+
+      if (heightAttr.isBlank() == false)
+        heightAttr = " height=\"" + heightAttr + "\"";
+
+      if (widthAttr.isBlank() == false)
+        widthAttr = " width=\"" + widthAttr + "\"";
+
+      String url = nullSwitch(miscFile.filePath(), "", FilePath::toURLString);
+
+      String tag = "<img src=\"" + url + "\" alt=\"\"" + heightAttr + widthAttr + "/><br>" +
+            "<a hypncon=\"true\" href=\"\" title=\"Go to this misc. file record\" onclick=\"javascript:openRecord(" + getOpenRecordParms(miscFile) + "); return false;\">" + miscFile.name() + "</a>";
+
+      str = str.substring(0, startNdx.getValue()) + tag + safeSubstring(str, endNdx.getValue(), str.length());
+
+      startNdx.add(1);
+      miscFile = nextEmbeddedMiscFile(str, startNdx, endNdx, elementProp);
     }
 
-    if (str.isEmpty()) str = "<br>";
-
-    return convertPlainMainTextToHtml(str);
+    return str;
   }
 
 //---------------------------------------------------------------------------
@@ -943,7 +943,7 @@ public final class MainTextUtil
 
       appPrefs.putInt(prefID, ndx);
       view.setZoom(zoomFactors.get(ndx) / 100.0);
-      ui.lblStatus.setText("Zoom: " + String.valueOf(zoomFactors.get(ndx)) + "%");
+      ui.lblStatus.setText("Zoom: " + zoomFactors.get(ndx) + "%");
     });
 
     view.setZoom(zoomFactors.get(appPrefs.getInt(prefID, zoomFactors.indexOf(100))) / 100.0);
@@ -954,7 +954,7 @@ public final class MainTextUtil
 
   static String makeElementID(HDT_Record record)
   {
-    return db.getTypeTagStr(record.getType()) + String.valueOf(record.getID());
+    return db.getTypeTagStr(record.getType()) + record.getID();
   }
 
 //---------------------------------------------------------------------------

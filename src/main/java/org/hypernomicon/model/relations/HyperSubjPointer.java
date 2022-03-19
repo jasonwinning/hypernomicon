@@ -41,7 +41,7 @@ public class HyperSubjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType exten
   public int getID()         { return nullSwitch(get(), -1, HDT_Record::getID); }
 
   @Override public int hashCode()           { return super.hashCode(); }
-  @Override public boolean equals(Object o) { return o instanceof HyperSubjPointer<?, ?> ? ((HyperSubjPointer<?, ?>) o).get() == get() : false; }
+  @Override public boolean equals(Object o) { return (o instanceof HyperSubjPointer<?, ?>) && (((HyperSubjPointer<?, ?>) o).get() == get()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

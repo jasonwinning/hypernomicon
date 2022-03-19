@@ -126,7 +126,7 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
     }
     catch (IOException e)
     {
-      messageDialog("An error occurred while trying to read the file " + filePath.toString() + ": " + e.getMessage(), mtError);
+      messageDialog("An error occurred while trying to read the file " + filePath + ": " + e.getMessage(), mtError);
       failedToLoad = true;
       return;
     }
@@ -170,7 +170,7 @@ public class ImportBibEntryDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    return (createNewWork == false) && (hcbWork.selectedID() < 1) ? falseWithErrorMessage("You must select a work record.", cbWork) : true;
+    return (createNewWork != false) || (hcbWork.selectedID() >= 1) || falseWithErrorMessage("You must select a work record.", cbWork);
   }
 
 //---------------------------------------------------------------------------

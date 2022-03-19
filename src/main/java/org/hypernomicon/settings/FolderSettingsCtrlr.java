@@ -71,7 +71,7 @@ public class FolderSettingsCtrlr implements SettingsControl
 
     rbBooks.setSelected(db.prefs.getBoolean(PREF_KEY_THESIS_FOLDER_IS_BOOKS, false));
 
-    rbBooks.selectedProperty().addListener((obs, ov, nv) -> db.prefs.putBoolean(PREF_KEY_THESIS_FOLDER_IS_BOOKS, nv.booleanValue()));
+    rbBooks.selectedProperty().addListener((obs, ov, nv) -> db.prefs.putBoolean(PREF_KEY_THESIS_FOLDER_IS_BOOKS, nv));
   }
 
 //---------------------------------------------------------------------------

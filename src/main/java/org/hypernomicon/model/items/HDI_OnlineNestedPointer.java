@@ -22,8 +22,6 @@ import static org.hypernomicon.model.HyperDB.*;
 import java.util.List;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.Exceptions.RelationCycleException;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 
@@ -62,7 +60,7 @@ public class HDI_OnlineNestedPointer extends HDI_OnlineBase<HDI_OfflineNestedPoi
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromOfflineValue(HDI_OfflineNestedPointer val, Tag tag) throws RelationCycleException
+  @Override public void setFromOfflineValue(HDI_OfflineNestedPointer val, Tag tag)
   {
     target = val.objID < 0 ? null : db.records(targetType).getByID(val.objID);
   }

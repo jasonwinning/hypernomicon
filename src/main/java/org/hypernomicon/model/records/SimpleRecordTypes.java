@@ -47,8 +47,8 @@ public class SimpleRecordTypes
   {
     AuthorsType getAuthors();
 
-    default public String getShortAuthorsStr(boolean fnis) { return Authors.getShortAuthorsStr(getAuthors().stream(), false, fnis, true); }
-    default public String getLongAuthorsStr (boolean fnis) { return Authors.getLongAuthorsStr (getAuthors().stream(),        fnis, true); }
+    default String getShortAuthorsStr(boolean fnis) { return Authors.getShortAuthorsStr(getAuthors().stream(), false, fnis, true); }
+    default String getLongAuthorsStr (boolean fnis) { return Authors.getLongAuthorsStr (getAuthors().stream(),        fnis, true); }
   }
 
   public interface HDT_RecordWithPath extends HDT_Record
@@ -122,7 +122,7 @@ public class SimpleRecordTypes
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static enum WorkTypeEnum
+  public enum WorkTypeEnum
   {
     wtNone, wtPaper, wtBook, wtWebPage, wtChapter, wtRecording, wtUnenteredSet, wtThesis
   }
@@ -134,7 +134,7 @@ public class SimpleRecordTypes
   {
     private static final EnumHashBiMap<WorkTypeEnum, Integer> enumMap = initEnumMap();
 
-    private static final EnumHashBiMap<WorkTypeEnum, Integer> initEnumMap()
+    private static EnumHashBiMap<WorkTypeEnum, Integer> initEnumMap()
     {
       EnumHashBiMap<WorkTypeEnum, Integer> map = EnumHashBiMap.create(WorkTypeEnum.class);
 

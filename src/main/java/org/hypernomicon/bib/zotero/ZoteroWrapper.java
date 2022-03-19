@@ -79,7 +79,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
   private static EnumMap<EntryType, JsonObj> templates = null;
 
-  private static enum ZoteroCmd
+  private enum ZoteroCmd
   {
     readItems , readTrash    , readTrashVersions, readChangedItemVersions,
     writeItems, readDeletions, readCollections  , readChangedCollVersions
@@ -201,7 +201,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static enum ZoteroHeader
+  public enum ZoteroHeader
   {
     Zotero_API_Version("Zotero-API-Version"),
     Zotero_API_Key("Zotero-API-Key"),
@@ -214,9 +214,9 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     None("None");
 
     final private String name;
-    private static Map<String, ZoteroHeader> headerMap = new HashMap<>();
+    final private static Map<String, ZoteroHeader> headerMap = new HashMap<>();
 
-    private ZoteroHeader(String name) { this.name = name; }
+    ZoteroHeader(String name) { this.name = name; }
 
     @Override public String toString() { return name; }
 
@@ -306,7 +306,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
           sec = parseInt(header.getValue(), -1);
           if (sec > 0)
-            backoffTime = Instant.now().plusMillis(sec * 1000);
+            backoffTime = Instant.now().plusMillis(sec * 1000L);
 
           break;
 
@@ -314,7 +314,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 
           sec = parseInt(header.getValue(), -1);
           if (sec > 0)
-            retryTime = Instant.now().plusMillis(sec * 1000);
+            retryTime = Instant.now().plusMillis(sec * 1000L);
 
           break;
 
@@ -417,7 +417,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     {
       jArr.clear();
 
-      int uploadCount = (uploadQueue.size() > 50) ? 50 : uploadQueue.size();
+      int uploadCount = Math.min(uploadQueue.size(), 50);
       for (int ndx = 0; ndx < uploadCount; ndx++)
         jArr.add(uploadQueue.get(ndx).exportJsonObjForUploadToServer(false));
 
@@ -523,7 +523,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
     {
       String keys = "";
 
-      int downloadCount = (downloadQueue.size() > 50) ? 50 : downloadQueue.size();
+      int downloadCount = Math.min(downloadQueue.size(), 50);
       for (int ndx = 0; ndx < downloadCount; ndx++)
         keys = keys + (keys.isEmpty() ? downloadQueue.get(ndx) : "," + downloadQueue.get(ndx));
 
@@ -649,11 +649,6 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
           }
         });
 
-//        it = jArr.getObj(0).getArray("collections").strIterator();
-//
-//        while (it.hasNext())
-//        {
-//          String key = it.next();
         jArr.getObj(0).getArray("collections").getStrs().forEach(key ->
         {
           if (keyToColl.containsKey(key))
@@ -697,7 +692,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
       }
       catch (HttpResponseException e)
       {
-        String msg = "An error occurred while syncing: " + String.valueOf(e.getStatusCode()) + " " + e.getMessage();
+        String msg = "An error occurred while syncing: " + e.getStatusCode() + " " + e.getMessage();
         throw new HyperDataException(msg, e);
       }
       catch (UnknownHostException e)
@@ -718,7 +713,7 @@ public class ZoteroWrapper extends LibraryWrapper<ZoteroItem, ZoteroCollection>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void loadFromDisk(FilePath filePath) throws FileNotFoundException, IOException, ParseException
+  @Override public void loadFromDisk(FilePath filePath) throws IOException, ParseException
   {
     JsonObj jMainObj = null;
     clear();

@@ -18,12 +18,7 @@
 package org.hypernomicon.dialogs;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -145,12 +140,12 @@ public class WorkDlgCtrlr extends HyperDlg
   private FilePath previewFilePath = null, origFilePath = null;
   private BibData curBD = null, origBDtoUse = null;
   private HDT_Work curWork;
-  private ObjectProperty<HDT_Folder> destFolder = new SimpleObjectProperty<>();
+  private final ObjectProperty<HDT_Folder> destFolder = new SimpleObjectProperty<>();
   private BibDataRetriever bibDataRetriever = null;
   private Ternary newEntryChoice;
   private boolean userOverrideDest = false, dontRegenerateFilename = false, previewInitialized = false;
 
-  private MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
+  private final MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
 
   private static final AsyncHttpClient httpClient = new AsyncHttpClient();
 
@@ -407,10 +402,7 @@ public class WorkDlgCtrlr extends HyperDlg
           firstRecordRow = row;
       }
 
-      if (firstRecordRow == null)
-        htAuthors.dataRowStream().findFirst().orElseThrow().setCheckboxValue(2, true);
-      else
-        firstRecordRow.setCheckboxValue(2, true);
+      Objects.requireNonNullElseGet(firstRecordRow, () -> htAuthors.dataRowStream().findFirst().orElseThrow()).setCheckboxValue(2, true);
     };
 
     htAuthors.addRemoveMenuItem(removeHandler);
@@ -950,7 +942,7 @@ public class WorkDlgCtrlr extends HyperDlg
     }
     else if (queryBD instanceof GoogleBibData)
     {
-      String isbn = GoogleBibData.class.cast(queryBD).getQueryIsbn();
+      String isbn = ((GoogleBibData) queryBD).getQueryIsbn();
       lblAutoPopulated.setText(isbn.isBlank() ?
         "Fields have been auto-populated from Google Books"
       :
@@ -1267,7 +1259,6 @@ public class WorkDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    boolean success = true;
     FilePath newFilePath;
 
     getBibDataFromGUI();
@@ -1343,6 +1334,8 @@ public class WorkDlgCtrlr extends HyperDlg
           newWorkFile = oldWorkFile;
     }
 
+    boolean success = true;
+
     try
     {
       if (rbCopy.isSelected()) // either oldWorkFile is null, or oldWorkFile != newWorkFile
@@ -1365,48 +1358,41 @@ public class WorkDlgCtrlr extends HyperDlg
           }
         }
       }
+      else if (newWorkFile == null)
+      {
+        if (origFilePath.equals(newFilePath) == false)
+        {
+          success = origFilePath.moveTo(newFilePath, true);
+          if (success)
+            db.unmapFilePath(origFilePath);
+        }
+
+        if (success)
+        {
+          newWorkFile = (HDT_WorkFile) HyperPath.createRecordAssignedToPath(hdtWorkFile, newFilePath);
+          if (newWorkFile == null)
+            return falseWithErrorMessage("Internal error #67830");
+
+          curWork.addWorkFile(newWorkFile.getID());
+        }
+      }
+      else if (oldWorkFile == newWorkFile)
+      {
+        if (origFilePath.equals(newFilePath) == false)
+        {
+          if (origFilePath.moveTo(newFilePath, true) == false) return false;
+
+          db.unmapFilePath(origFilePath);
+          newWorkFile.getPath().assign(HyperPath.getFolderFromFilePath(newFilePath.getDirOnly(), true), newFilePath.getNameOnly());
+        }
+      }
       else
       {
-        if (newWorkFile == null)
-        {
-          if (origFilePath.equals(newFilePath))
-            success = true;
-          else
-          {
-            success = origFilePath.moveTo(newFilePath, true);
-            if (success)
-              db.unmapFilePath(origFilePath);
-          }
+        if (oldWorkFile != null)
+          return falseWithErrorMessage("Unable to move the file. Reason: Cannot change assignment from one file to another that is already assigned to a different file record.");
 
-          if (success)
-          {
-            newWorkFile = (HDT_WorkFile) HyperPath.createRecordAssignedToPath(hdtWorkFile, newFilePath);
-            if (newWorkFile == null)
-              return falseWithErrorMessage("Internal error #67830");
-
-            curWork.addWorkFile(newWorkFile.getID());
-          }
-        }
-        else if (oldWorkFile == newWorkFile)
-        {
-          if (origFilePath.equals(newFilePath) == false)
-          {
-            if (origFilePath.moveTo(newFilePath, true) == false) return false;
-
-            db.unmapFilePath(origFilePath);
-            newWorkFile.getPath().assign(HyperPath.getFolderFromFilePath(newFilePath.getDirOnly(), true), newFilePath.getNameOnly());
-          }
-
-          success = true;
-        }
-        else
-        {
-          if (oldWorkFile != null)
-            return falseWithErrorMessage("Unable to move the file. Reason: Cannot change assignment from one file to another that is already assigned to a different file record.");
-
-          success = newWorkFile.getPath().moveToFolder(HyperPath.getFolderFromFilePath(newFilePath.getDirOnly(), true).getID(), true, true, newFilePath.getNameOnly().toString());
-          if (success) curWork.addWorkFile(newWorkFile.getID());
-        }
+        success = newWorkFile.getPath().moveToFolder(HyperPath.getFolderFromFilePath(newFilePath.getDirOnly(), true).getID(), true, true, newFilePath.getNameOnly().toString());
+        if (success) curWork.addWorkFile(newWorkFile.getID());
       }
     }
     catch (IOException e)

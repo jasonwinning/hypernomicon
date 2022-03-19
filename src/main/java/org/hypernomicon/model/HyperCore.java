@@ -38,7 +38,7 @@ final class HyperCore<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final class KeyIDpair implements Comparable<KeyIDpair>, Cloneable
+  private static final class KeyIDpair implements Comparable<KeyIDpair>, Cloneable
   {
     private final int id;
     private final String key;
@@ -55,14 +55,14 @@ final class HyperCore<HDT_DT extends HDT_Record>
 
 //---------------------------------------------------------------------------
 
-    @Override @SuppressWarnings("unchecked") public KeyIDpair clone()
+    @Override public KeyIDpair clone()
     {
       try { return (KeyIDpair) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }
     }
 
 //---------------------------------------------------------------------------
 
-    @Override @SuppressWarnings("unchecked") public boolean equals(Object obj)
+    @Override public boolean equals(Object obj)
     {
       if (this == obj) return true;
       if (obj == null) return false;

@@ -134,12 +134,12 @@ public class Exceptions
   {
     public HDB_InternalError(int newNum)
     {
-      super("Internal error #" + String.valueOf(newNum));
+      super("Internal error #" + newNum);
     }
 
     HDB_InternalError(int newNum, String msg)
     {
-      super("Internal error #" + String.valueOf(newNum) + ": " + msg);
+      super("Internal error #" + newNum + ": " + msg);
     }
   }
 

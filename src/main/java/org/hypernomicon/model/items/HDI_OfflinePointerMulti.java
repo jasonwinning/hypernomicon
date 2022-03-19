@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
 
@@ -65,9 +64,9 @@ public class HDI_OfflinePointerMulti extends HDI_OfflineBase
     objIDs.forEach(objID ->
     {
       if (objIDtoMaps.containsKey(objID))
-        writePointerTagWithNestedPointers(xml, tag, objID, db.records(objType).getByID(objID.intValue()).getXMLObjectName(), objIDtoMaps.get(objID));
+        writePointerTagWithNestedPointers(xml, tag, objID, db.records(objType).getByID(objID).getXMLObjectName(), objIDtoMaps.get(objID));
       else
-        writePointerTag(xml, tag, objID, hdtNone, db.records(objType).getByID(objID.intValue()).getXMLObjectName());
+        writePointerTag(xml, tag, objID, hdtNone, db.records(objType).getByID(objID).getXMLObjectName());
     });
   }
 

@@ -40,7 +40,6 @@ import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.hypernomicon.bib.authors.BibAuthor.AuthorType;
-import org.hypernomicon.bib.authors.BibAuthorsStandalone;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.util.filePath.FilePath;
 
@@ -295,13 +294,10 @@ public class PDFBibData extends BibDataStandalone
         }
         else if (safeStr(prefix).startsWith("prism"))
         {
-          if (elements.size() > 0)
-          {
-            YearType yt = YearType.getByDesc(name);
+          YearType yt = YearType.getByDesc(name);
 
-            if (yt != ytUnknown)
-              bd.setYear(elements.get(0).value, yt);
-          }
+          if (yt != ytUnknown)
+            bd.setYear(elements.get(0).value, yt);
         }
       }
 
@@ -396,7 +392,6 @@ public class PDFBibData extends BibDataStandalone
           messageDialog("An error occurred while parsing XMP data from PDF file: " +
                         nullSwitch(e.getCause(), e.getMessage(), Throwable::getMessage), mtError, true);
 
-          metadata = null;
           xmpRoot = null;
         }
       }
@@ -483,7 +478,7 @@ public class PDFBibData extends BibDataStandalone
     if (safeStr(docInfo.getAuthor()).length() > 0)
     {
       authors.clear();
-      BibAuthorsStandalone.class.cast(authors).setOneLiner(docInfo.getAuthor());
+      authors.setOneLiner(docInfo.getAuthor());
     }
 
     if (safeStr(docInfo.getTitle()).length() > 0)

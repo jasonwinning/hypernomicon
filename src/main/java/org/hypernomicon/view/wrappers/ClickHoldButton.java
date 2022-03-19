@@ -62,7 +62,7 @@ public class ClickHoldButton
 
     if ((parent instanceof Pane) && !(parent instanceof GridPane))
     {
-      List<Node> children = Pane.class.cast(parent).getChildren();
+      List<Node> children = ((Pane) parent).getChildren();
       children.add(children.indexOf(btn), btnMenu);
     }
     else

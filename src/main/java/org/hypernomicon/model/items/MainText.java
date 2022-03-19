@@ -24,14 +24,9 @@ import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.mainText.MainTextUtil.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import org.hypernomicon.model.HyperDB.RelationChangeHandler;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithPath;
 
@@ -51,7 +46,7 @@ public class MainText
 {
 //---------------------------------------------------------------------------
 
-  public static enum DisplayItemType { diKeyWorks, diDescription, diRecord }
+  public enum DisplayItemType { diKeyWorks, diDescription, diRecord }
 
 //---------------------------------------------------------------------------
 
@@ -89,7 +84,7 @@ public class MainText
 
       if (type != diRecord) return type == other.type;
 
-      return record == null ? other.record == null : record.equals(other.record);
+      return Objects.equals(record, other.record);
     }
   }
 
@@ -215,7 +210,7 @@ public class MainText
 
     if (connector.getType() == hdtWorkLabel)
     {
-      HDT_WorkLabel.class.cast(connector.getSpoke()).refreshSubjects();
+      ((HDT_WorkLabel) connector.getSpoke()).refreshSubjects();
       addDefaultItems();
     }
     else

@@ -147,7 +147,7 @@ public class RecordTreeEdge
       if (otherDetaching != null)
         otherDetaching.detach();
 
-      if ((relType == rtWorkOfMiscFile) && HDT_MiscFile.class.cast(subj).work.isNotNull())
+      if ((relType == rtWorkOfMiscFile) && ((HDT_MiscFile) subj).work.isNotNull())
         db.getObjectList(rtAuthorOfFile, subj, false).clear();
     }
     catch (RelationCycleException e)

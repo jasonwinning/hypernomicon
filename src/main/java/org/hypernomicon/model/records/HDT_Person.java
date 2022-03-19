@@ -182,7 +182,7 @@ public class HDT_Person extends HDT_RecordWithConnector implements HDT_RecordWit
     SearchKeyword hyperKey = db.getKeyByKeyword(key);
 
     if ((hyperKey != null) && (hyperKey.record != person))
-      return hyperKey.record.getType() == hdtPerson ? HDT_Person.class.cast(hyperKey.record) : null;
+      return hyperKey.record.getType() == hdtPerson ? (HDT_Person) hyperKey.record : null;
 
     for (String val : new SplitString(keys.toString(), ';'))
       if (val.trim().equalsIgnoreCase(key))

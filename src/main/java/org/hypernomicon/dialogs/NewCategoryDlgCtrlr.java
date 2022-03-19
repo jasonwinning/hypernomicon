@@ -38,7 +38,6 @@ import javafx.scene.control.TextField;
 public class NewCategoryDlgCtrlr extends HyperDlg
 {
   public HyperCB hcbRecordType, hcbCompare;
-  private RecordTypePopulator typePopulator;
 
   @FXML private ComboBox<HyperTableCell> cbRecordType, cbCompare;
   @FXML private TextField tfCompareID, tfCompareKey;
@@ -57,8 +56,7 @@ public class NewCategoryDlgCtrlr extends HyperDlg
 
   private NewCategoryDlgCtrlr init(RecordType recordType, boolean canChangeType)
   {
-    typePopulator = new RecordTypePopulator(EnumSet.of(hdtField, hdtCountry, hdtRank, hdtPersonStatus));
-    hcbRecordType = new HyperCB(cbRecordType, ctDropDownList, typePopulator);
+    hcbRecordType = new HyperCB(cbRecordType, ctDropDownList, new RecordTypePopulator(EnumSet.of(hdtField, hdtCountry, hdtRank, hdtPersonStatus)));
 
     hcbCompare = new HyperCB(cbCompare, ctDropDownList, new RecordByTypePopulator());
 

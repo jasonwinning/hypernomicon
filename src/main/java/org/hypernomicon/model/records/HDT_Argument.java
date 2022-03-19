@@ -24,6 +24,7 @@ import static org.hypernomicon.util.Util.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.hypernomicon.model.HyperDataset;
@@ -61,9 +62,9 @@ public class HDT_Argument extends HDT_RecordWithConnector
 
   public void setWorks(List<HDT_Work> list) { updateObjectsFromList(rtWorkOfArgument, list); }
 
-  public static int truePositionVerdictID  = 1,
-                    falsePositionVerdictID = 2,
-                    failsArgumentVerdictID = 101;
+  public static final int truePositionVerdictID  = 1,
+                          falsePositionVerdictID = 2,
+                          failsArgumentVerdictID = 101;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -168,17 +169,8 @@ public class HDT_Argument extends HDT_RecordWithConnector
       if (getClass() != obj.getClass()) return false;
 
       ArgumentAuthor other = (ArgumentAuthor) obj;
-      if (name == null)
-      {
-        if (other.name != null) return false;
-      }
-      else if (!name.equals(other.name)) return false;
-      if (person == null)
-      {
-        if (other.person != null) return false;
-      }
-      else if (!person.equals(other.person)) return false;
-      return true;
+
+      return Objects.equals(name, other.name) && Objects.equals(person, other.person);
     }
 
   //---------------------------------------------------------------------------

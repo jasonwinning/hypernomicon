@@ -124,7 +124,7 @@ public final class Connector
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
 
-    return record == Connector.class.cast(obj).record;
+    return record == ((Connector) obj).record;
   }
 
   //---------------------------------------------------------------------------

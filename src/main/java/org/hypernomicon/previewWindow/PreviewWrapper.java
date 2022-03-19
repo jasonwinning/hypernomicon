@@ -53,7 +53,7 @@ public class PreviewWrapper
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private class PreviewFile
+  private static class PreviewFile
   {
     private final FilePath filePath;
     private final HDT_RecordWithPath record;
@@ -250,16 +250,13 @@ public class PreviewWrapper
   private boolean useFileNavNdx(int ndx)
   {
     PreviewFile file = fileList.get(ndx);
-    if ((file != null) && (FilePath.isEmpty(file.filePath) == false))
-    {
-      if ((curPrevFile == null) || FilePath.isEmpty(curPrevFile.filePath))
-        return true;
+    if ((file == null) || FilePath.isEmpty(file.filePath))
+      return false;
 
-      if (curPrevFile.filePath.equals(file.filePath) == false)
-        return true;
-    }
+    if ((curPrevFile == null) || FilePath.isEmpty(curPrevFile.filePath))
+      return true;
 
-    return false;
+    return curPrevFile.filePath.equals(file.filePath) == false;
   }
 
 //---------------------------------------------------------------------------
@@ -420,7 +417,7 @@ public class PreviewWrapper
         curPrevFile = prevFile;
       else
       {
-        curPrevFile = new PreviewFile(filePath, (HDT_RecordWithPath)record);
+        curPrevFile = new PreviewFile(filePath, (HDT_RecordWithPath) record);
 
         fileNdx++;
         while (fileList.size() > fileNdx)
@@ -577,9 +574,9 @@ public class PreviewWrapper
     needsRefresh = false;
 
     if (forceReload)
-      jsWrapper.reloadBrowser(() -> Platform.runLater(() -> finishRefresh(forceReload, incrementNav)));
+      jsWrapper.reloadBrowser(() -> Platform.runLater(() -> finishRefresh(true, incrementNav)));
     else
-      finishRefresh(forceReload, incrementNav);
+      finishRefresh(false, incrementNav);
   }
 
   //---------------------------------------------------------------------------

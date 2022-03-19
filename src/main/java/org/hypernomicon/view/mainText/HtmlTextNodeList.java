@@ -38,7 +38,8 @@ public class HtmlTextNodeList
 
   static class HtmlTextNode
   {
-    private int startNdx, endNdx;
+    private int startNdx;
+    private final int endNdx;
     private String text;
     private TextNode textNode;
 

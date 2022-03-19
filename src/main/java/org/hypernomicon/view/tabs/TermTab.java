@@ -93,7 +93,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
   private HDT_Term curTerm;
   private HDT_Concept curConcept;
   private TabPane tpConcepts;
-  private long lastArrowKey = 0;
+  private long lastArrowKey = 0L;
   private boolean alreadyChangingTab = false, updatingGlossaries = false;
 
   @Override protected RecordType type()             { return hdtTerm; }
@@ -116,14 +116,14 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean update()
+  @Override public void update()
   {
     boolean first = true;
     for (HDT_Concept concept : curTerm.concepts)
     {
       if (first)
       {
-        ConceptTab.class.cast(tpConcepts.getTabs().get(0)).setConcept(concept);
+        ((ConceptTab) tpConcepts.getTabs().get(0)).setConcept(concept);
         first = false;
       }
       else
@@ -142,8 +142,6 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
     populateGlossaries();
 
     populateDisplayers();
-
-    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -210,7 +208,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
       oldTab.setContent(null);
       newTab.setContent(ctrlr.apDescription);
 
-      curConcept = ConceptTab.class.cast(newTab).concept;
+      curConcept = ((ConceptTab) newTab).concept;
 
       ui.viewSequence.saveViewToCurrentSlotAndTab(new HyperView<>(termTabEnum, curConcept, mainTextInfo()));
 
@@ -446,7 +444,7 @@ public class TermTab extends HyperNodeTab<HDT_Term, HDT_Concept>
 
   private ConceptTab getConceptTab(HDT_Concept concept)
   {
-    return (ConceptTab) findFirst(tpConcepts.getTabs(), tab -> ConceptTab.class.cast(tab).concept == concept);
+    return (ConceptTab) findFirst(tpConcepts.getTabs(), tab -> ((ConceptTab) tab).concept == concept);
   }
 
 //---------------------------------------------------------------------------

@@ -77,9 +77,7 @@ public class AboutDlgCtrlr extends HyperDlg
         "</head><body style='margin: 0; padding: 0; font-family: " + family + "; font-size: 10pt; color: #906f6f;' bgcolor=\"#241f24\">";
 
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
-    {
-      MainTextUtil.handleJSEvent("", webView.getEngine(), new TextViewInfo());
-    });
+      MainTextUtil.handleJSEvent("", webView.getEngine(), new TextViewInfo()));
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
@@ -126,7 +124,7 @@ public class AboutDlgCtrlr extends HyperDlg
     {
       if (newVersion.compareTo(app.getVersion()) > 0)
         nextVersionHtml = "<b><a class=download href=\"\" onclick=\"openURL('https://sourceforge.net/projects/hypernomicon/files/latest/download'); return false;\">" +
-                          "Newer version " + newVersion.toString() + " is available for download.</a></b>";
+                          "Newer version " + newVersion + " is available for download.</a></b>";
       else
         nextVersionHtml = "You have the latest version.";
 

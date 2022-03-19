@@ -26,6 +26,7 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -233,7 +234,7 @@ public class ContentsWindow extends HyperDlg
       works = new ArrayList<>(curWorkFile.works);
     }
 
-    works.sort(sortBasis(work ->
+    works.sort(Comparator.comparing(work ->
     {
       int startPage = work.getStartPageNum(curWorkFile);
       return startPage < 0 ? Integer.MAX_VALUE : startPage;

@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.RelationSet.RelationType;

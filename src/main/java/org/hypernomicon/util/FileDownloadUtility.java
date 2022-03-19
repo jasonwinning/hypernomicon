@@ -17,7 +17,6 @@
 
 package org.hypernomicon.util;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -80,7 +79,7 @@ public final class FileDownloadUtility
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-    public void saveToFile(FilePath saveFilePath) throws FileNotFoundException, IOException
+    public void saveToFile(FilePath saveFilePath) throws IOException
     {
       try (OutputStream os = Files.newOutputStream(saveFilePath.toPath()))
       {
@@ -118,7 +117,7 @@ public final class FileDownloadUtility
     {
       byte val;
 
-      if (curPosition >= lengths.get(curBufferNdx).intValue())
+      if (curPosition >= lengths.get(curBufferNdx))
       {
         curPosition = 0;
         curBufferNdx++;
@@ -199,7 +198,7 @@ public final class FileDownloadUtility
       {
         // extracts file name from URL
 
-        String origFileNameStr = fileURL.substring(fileURL.lastIndexOf("/") + 1, fileURL.length());
+        String origFileNameStr = fileURL.substring(fileURL.lastIndexOf("/") + 1);
 
         if (origFileNameStr.indexOf('?') >= 0)
           origFileNameStr = origFileNameStr.substring(0, origFileNameStr.indexOf('?'));

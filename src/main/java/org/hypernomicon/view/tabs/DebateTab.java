@@ -66,7 +66,7 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean update()
+  @Override public void update()
   {
     curDebate.addParentDisplayRecord();
 
@@ -102,8 +102,6 @@ public class DebateTab extends HyperNodeTab<HDT_Debate, HDT_Debate>
 
       row.setCellValue(2, position, position.name());
     });
-
-    return true;
   }
 
 //---------------------------------------------------------------------------

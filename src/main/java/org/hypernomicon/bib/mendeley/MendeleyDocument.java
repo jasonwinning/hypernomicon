@@ -469,12 +469,10 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
     if (authorsChanged()) return false;
 
     return Arrays.stream(BibFieldEnum.values()).allMatch(bibFieldEnum ->
-    {
-      return (bibFieldEnum == bfYear) && backupItem.getStr(bfYear).isBlank() && (StringUtils.isNumeric(getStr(bfYear)) == false) ?
+      (bibFieldEnum == bfYear) && backupItem.getStr(bfYear).isBlank() && (StringUtils.isNumeric(getStr(bfYear)) == false) ?
         true
       :
-        fieldsAreEqual(bibFieldEnum, backupItem, true);
-    });
+        fieldsAreEqual(bibFieldEnum, backupItem, true));
   }
 
 //---------------------------------------------------------------------------
@@ -495,10 +493,10 @@ public class MendeleyDocument extends BibEntry implements MendeleyEntity
 
     // Now check book editors
 
-    if (MendeleyAuthors.class.cast(backupItem.getAuthors()).ignoreEditors())
+    if (((MendeleyAuthors) backupItem.getAuthors()).ignoreEditors())
     {
       JsonArray jArr1 = jObj.getArray("editors"),
-                jArr2 = MendeleyDocument.class.cast(backupItem).jObj.getArray("editors");
+                jArr2 = ((MendeleyDocument) backupItem).jObj.getArray("editors");
 
       if ((jArr1 == null) != (jArr2 == null)) return true;
       if (jArr1 != null)

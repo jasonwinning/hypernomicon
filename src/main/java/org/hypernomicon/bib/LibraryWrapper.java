@@ -17,7 +17,6 @@
 
 package org.hypernomicon.bib;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,12 +53,12 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 {
   //---------------------------------------------------------------------------
 
-  public static enum LibraryType
+  public enum LibraryType
   {
     ltZotero("zotero", "Zotero"),
     ltMendeley("mendeley", "Mendeley");
 
-    private LibraryType(String descriptor, String userFriendlyName) { this.descriptor = descriptor; this.userFriendlyName = userFriendlyName; }
+    LibraryType(String descriptor, String userFriendlyName) { this.descriptor = descriptor; this.userFriendlyName = userFriendlyName; }
     private final String descriptor, userFriendlyName;
 
     public String getDescriptor()       { return descriptor; }
@@ -94,7 +93,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
   protected boolean didMergeDuringSync = false;
 
   public abstract SyncTask createNewSyncTask();
-  public abstract void loadFromDisk(FilePath filePath) throws FileNotFoundException, IOException, ParseException;
+  public abstract void loadFromDisk(FilePath filePath) throws IOException, ParseException;
   public abstract LibraryType type();
   public abstract EnumHashBiMap<EntryType, String> getEntryTypeMap();
   public abstract void safePrefs();
@@ -190,7 +189,7 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
 
     didMergeDuringSync = true;
 
-    return fxThreadReturnValue.booleanValue();
+    return fxThreadReturnValue;
   }
 
 //---------------------------------------------------------------------------
@@ -227,12 +226,10 @@ public abstract class LibraryWrapper<BibEntry_T extends BibEntry, BibCollection_
   public Stream<BibEntry_T> getUnsorted()
   {
     Predicate<BibEntry_T> predicate = item ->
-    {
-      return keyToTrashEntry.containsKey(item.getKey()) ?
+      keyToTrashEntry.containsKey(item.getKey()) ?
         false
       :
         item.getCollKeys(true).stream().noneMatch(keyToColl::containsKey);
-    };
 
     return keyToAllEntry.values().stream().filter(predicate);
   }

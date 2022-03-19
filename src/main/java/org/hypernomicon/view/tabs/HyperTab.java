@@ -18,17 +18,12 @@
 package org.hypernomicon.view.tabs;
 
 import static org.hypernomicon.App.*;
-import static org.hypernomicon.Const.*;
 import static org.hypernomicon.util.UIUtil.*;
-import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.tabs.HyperTab.TabEnum.*;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -52,21 +47,17 @@ import static org.hypernomicon.model.records.RecordType.*;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Control;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitMenuButton;
-import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
 
 @SuppressWarnings("unused")
 public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Record> extends Control
 {
-  public static enum TabEnum
+  public enum TabEnum
   {
     personTabEnum, instTabEnum, workTabEnum,  fileTabEnum, debateTabEnum, positionTabEnum, argumentTabEnum,
     noteTabEnum,   termTabEnum, queryTabEnum, treeTabEnum, omniTabEnum,   listTabEnum
@@ -84,7 +75,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
   protected abstract RecordType type();
 
   public abstract String recordName();
-  public abstract boolean update();
+  public abstract void update();
   public abstract void clear();
   public abstract boolean saveToRecord();
   public abstract void enable(boolean enabled);
@@ -122,7 +113,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  void baseInit(TabEnum tabEnum, Tab tab) throws IOException
+  void baseInit(TabEnum tabEnum, Tab tab)
   {
     this.tab = tab;
     this.tabEnum = tabEnum;
@@ -138,7 +129,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected static final boolean saveSearchKey(HDT_Record record, TextField tfSearchKey)
+  protected static boolean saveSearchKey(HDT_Record record, TextField tfSearchKey)
   {
     try
     {
@@ -158,7 +149,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final RecordType getRecordTypeByTabEnum(TabEnum tabEnum)
+  public static RecordType getRecordTypeByTabEnum(TabEnum tabEnum)
   {
     return nullSwitch(enumToHyperTab.get(tabEnum), hdtNone, HyperTab::type);
   }
@@ -167,16 +158,16 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  public static final <HDT_RT extends HDT_Record,
-                       HDT_CT extends HDT_Record,
-                       HyperTabType extends HyperTab<HDT_RT, HDT_CT>>
+  public static <HDT_RT extends HDT_Record,
+                 HDT_CT extends HDT_Record,
+                 HyperTabType extends HyperTab<HDT_RT, HDT_CT>>
 
     HyperTabType getHyperTab(TabEnum tabEnum) { return (HyperTabType) enumToHyperTab.get(tabEnum); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final TabEnum getTabEnumByRecordType(RecordType recordType)
+  public static TabEnum getTabEnumByRecordType(RecordType recordType)
   {
     switch (recordType)
     {
@@ -199,7 +190,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final <HDT_CT extends HDT_Record> HyperTab<? extends HDT_Record, HDT_CT> saveViewToViewsTab(HyperView<HDT_CT> hyperView)
+  public static <HDT_CT extends HDT_Record> HyperTab<? extends HDT_Record, HDT_CT> saveViewToViewsTab(HyperView<HDT_CT> hyperView)
   {
     HyperTab<? extends HDT_Record, HDT_CT> hyperTab = hyperView.getHyperTab();
     hyperTab.setView(hyperView);
@@ -209,7 +200,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final HyperTab<? extends HDT_Record, ? extends HDT_Record> getHyperTabByTab(Tab tab)
+  public static HyperTab<? extends HDT_Record, ? extends HDT_Record> getHyperTabByTab(Tab tab)
   {
     return tabToHyperTab.get(tab);
   }
@@ -217,7 +208,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final void setView(HyperView<HDT_CT> hyperView)
+  private void setView(HyperView<HDT_CT> hyperView)
   {
     view = hyperView;
     setRecord(view.getViewRecord());
@@ -236,7 +227,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
     switch (viewRecord.getType())
     {
       case hdtConcept :
-        return (HDT_RT) HDT_Concept.class.cast(viewRecord).term.get();
+        return (HDT_RT) ((HDT_Concept) viewRecord).term.get();
 
       default :
         return (HDT_RT) viewRecord;
@@ -304,7 +295,7 @@ public abstract class HyperTab<HDT_RT extends HDT_Record, HDT_CT extends HDT_Rec
 
       for (int ndx = numDef + 1; ndx <= count; ndx++)
       {
-        String indexedPrefKey = prefKey + String.valueOf(ndx);
+        String indexedPrefKey = prefKey + ndx;
 
         MenuItem item = new MenuItem(ui.webButtonMap.get(indexedPrefKey).getCaption());
         item.setOnAction(eventHndlr.apply(indexedPrefKey));

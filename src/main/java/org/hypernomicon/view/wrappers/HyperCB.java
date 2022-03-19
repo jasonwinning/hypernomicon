@@ -70,21 +70,21 @@ public class HyperCB implements CommitableWrapper
   private MutableBoolean adjusting;
   public boolean somethingWasTyped, listenForActionEvents = true, dontCreateNewRecord = false, silentMode = false;
 
-  private List<HTCListener> listeners = new ArrayList<>();
+  private final List<HTCListener> listeners = new ArrayList<>();
 
   static final Map<ComboBox<HyperTableCell>, HyperCB> cbRegistry = new HashMap<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static interface HTCListener { public void changed(HyperTableCell oldValue, HyperTableCell newValue); }
+  public interface HTCListener { void changed(HyperTableCell oldValue, HyperTableCell newValue); }
 
   public EventHandler<ActionEvent> getOnAction() { return onAction; }
   public void setChoicesChanged()                { populator.setChanged(null); }
   public ComboBox<HyperTableCell> getComboBox()  { return cb; }
   public void addListener(HTCListener listener)  { listeners.add(listener); }
   public void triggerOnAction()                  { getOnAction().handle(new ActionEvent(null, cb)); }
-  private boolean isInTable()                    { return cb == null ? false : cb.getParent() instanceof ComboBoxCell; }
+  private boolean isInTable()                    { return (cb != null) && (cb.getParent() instanceof ComboBoxCell); }
   public void addBlankEntry()                    { addEntry(-1, "", false); }
 
   public void setInnerOnAction(EventHandler<ActionEvent> onAction) { if (onAction != null) innerOnAction = onAction; }
@@ -402,7 +402,7 @@ public class HyperCB implements CommitableWrapper
 
   private void endEditModeIfInTable(ActionEvent event)
   {
-    if (isInTable()) ComboBoxCell.class.cast(cb.getParent()).commit();
+    if (isInTable()) ((ComboBoxCell) cb.getParent()).commit();
 
     if ((event != null) && (innerOnAction != null))
       innerOnAction.handle(event);  // activates the "Execute" button in the queries hyperTab

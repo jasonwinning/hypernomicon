@@ -35,7 +35,6 @@ import java.util.Map;
 
 import org.hypernomicon.HyperTask;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
-import org.hypernomicon.dialogs.NewPersonDlgCtrlr.PersonForDupCheck;
 import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.view.wrappers.HyperTable;

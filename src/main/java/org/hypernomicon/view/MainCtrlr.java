@@ -55,7 +55,6 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.previewWindow.PreviewWindow.PreviewSource;
 import org.hypernomicon.query.QueryTabCtrlr;
 import org.hypernomicon.query.ResultsRow;
-import org.hypernomicon.query.engines.QueryEngine.QueryType;
 import org.hypernomicon.settings.SettingsDlgCtrlr;
 import org.hypernomicon.settings.WebButtonSettingsCtrlr;
 import org.hypernomicon.settings.SettingsDlgCtrlr.SettingsPage;
@@ -75,7 +74,6 @@ import org.hypernomicon.view.mainText.SymbolPickerDlgCtrlr;
 import org.hypernomicon.view.populators.Populator;
 import org.hypernomicon.view.populators.RecordByTypePopulator;
 import org.hypernomicon.view.tabs.*;
-import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 import org.hypernomicon.view.wrappers.*;
 
 import java.io.BufferedOutputStream;
@@ -174,7 +172,6 @@ public final class MainCtrlr
   private HyperTable htFind;
   public final ComboBox<TreeRow> cbTreeGoTo = new ComboBox<>();
   private ComboBox<ResultsRow> cbResultGoTo = null;
-  private ClickHoldButton chbBack, chbForward;
   private CreateMenuItems createMenuItems;
   private TextField tfSelector = null;
   public final TreeSelector treeSelector = new TreeSelector();
@@ -182,7 +179,7 @@ public final class MainCtrlr
   public Tooltip ttDates;
   private boolean selectorTabChangeIsProgrammatic = false, maximized = false, internetNotCheckedYet = true, shuttingDown = false;
   private double toolBarWidth = 0.0, maxWidth = 0.0, maxHeight = 0.0;
-  private long lastImportTime = 0;
+  private long lastImportTime = 0L;
   private FilePath lastImportFilePath = null;
 
   private static final String TREE_SELECT_BTN_CAPTION = "Select";
@@ -335,8 +332,8 @@ public final class MainCtrlr
     addSelectorTab(omniTabEnum);
     addSelectorTab(listTabEnum);
 
-    chbBack    = new ClickHoldButton(btnBack   , Side.TOP);
-    chbForward = new ClickHoldButton(btnForward, Side.TOP);
+    ClickHoldButton chbBack    = new ClickHoldButton(btnBack   , Side.TOP),
+                    chbForward = new ClickHoldButton(btnForward, Side.TOP);
 
     setToolTip(btnBack   , "Click to go back, hold to see history"   );
     setToolTip(btnForward, "Click to go forward, hold to see history");
@@ -589,12 +586,10 @@ public final class MainCtrlr
 //---------------------------------------------------------------------------
 
     tfID.focusedProperty().addListener((ob, oldValue, newValue) ->
-    {
       tfID.setText((Boolean.TRUE.equals(newValue) == false) && (activeRecord() != null) ?
         String.valueOf(activeRecord().getID())
       :
-        "");
-    });
+        ""));
 
 //---------------------------------------------------------------------------
 
@@ -1664,8 +1659,7 @@ public final class MainCtrlr
 
   @FXML private void mnuToggleFavoriteClick()
   {
-    if ((activeTabEnum() == treeTabEnum) || (activeTabEnum() == queryTabEnum)) return;
-    if (cantSaveRecord()) return;
+    if ((activeTabEnum() == treeTabEnum) || (activeTabEnum() == queryTabEnum) || cantSaveRecord()) return;
 
     HDT_Record record = viewRecord();
     if (record == null) return;
@@ -1746,7 +1740,9 @@ public final class MainCtrlr
     if (showSearch(true, qtAllRecords, descOnly ? QUERY_LINKING_TO_RECORD : QUERY_MATCHING_RECORD, null,
                    new HyperTableCell("", type), new HyperTableCell(record, ""), "Mentions: " + record.listName()))
     {
-      if ((curQV.resultsBackingList.size() > 0) && (curQV.resultsBackingList.equals(List.of(record)) == false))
+      List<ResultsRow> resultRows = curQV.resultsBackingList;
+
+      if ((resultRows.size() > 0) && ((resultRows.size() != 1) || (resultRows.get(0).getRecord() != record)))
         return;
 
       lblStatus.setText("No mentioners: " + db.getTypeName(type).toLowerCase() + " \"" + record.listName() + "\"");
@@ -1839,7 +1835,7 @@ public final class MainCtrlr
     boolean success = true;
     String recordStr = db.getTypeName(record.getType()) + " \"" + record.getCBText() + "\"";
 
-    HDT_Hub hub = record.isUnitable() ? HDT_RecordWithConnector.class.cast(record).getHub() : null;
+    HDT_Hub hub = record.isUnitable() ? ((HDT_RecordWithConnector) record).getHub() : null;
     RecordState backupState = record.getRecordStateBackup(),
                 hubState = hub == null ? null : hub.getRecordStateBackup();
 
@@ -1871,10 +1867,6 @@ public final class MainCtrlr
       record.restoreTo(backupState, true);
     }
     catch (RelationCycleException | SearchKeyException | RestoreException e) { noOp(); }
-    catch (HDB_InternalError e)
-    {
-      messageDialog("Unable to restore " + recordStr + " to pre-reverting state: " + e.getMessage(), mtError);
-    }
 
     return false;
   }
@@ -1967,17 +1959,10 @@ public final class MainCtrlr
     }
 
     if (hdbExists == false)
-    {
-      return hdbPath == null ?
-        false
-      :
-        falseWithErrorMessage("Unable to load database. The file does not exist: " + hdbPath.toString());
-    }
+      return (hdbPath != null) && falseWithErrorMessage("Unable to load database. The file does not exist: " + hdbPath);
 
     if (InterProcClient.checkFolder(hdbPath) == false)
-    {
       return falseWithErrorMessage("Unable to load database: Database folder(s) are already in use by another instance of " + App.appTitle);
-    }
 
     if (internetNotCheckedYet && appPrefs.getBoolean(PREF_KEY_CHECK_INTERNET, true))
     {
@@ -2052,7 +2037,7 @@ public final class MainCtrlr
     removeDupsInStrList(mruList);
 
     for (int ndx = 0; ndx < HDB_MRU_SIZE; ndx++)
-      appPrefs.put(PREF_KEY_HDB_MRU + String.valueOf(ndx + 1), mruList.size() > ndx ? mruList.get(ndx) : "");
+      appPrefs.put(PREF_KEY_HDB_MRU + (ndx + 1), mruList.size() > ndx ? mruList.get(ndx) : "");
   }
 
 //---------------------------------------------------------------------------
@@ -2063,7 +2048,7 @@ public final class MainCtrlr
     List<String> mruList = new ArrayList<>();
 
     for (int ndx = 0; ndx < HDB_MRU_SIZE; ndx++)
-      mruList.add(appPrefs.get(PREF_KEY_HDB_MRU + String.valueOf(ndx + 1), ""));
+      mruList.add(appPrefs.get(PREF_KEY_HDB_MRU + (ndx + 1), ""));
 
     mruList.removeIf(String::isBlank);
     return mruList;
@@ -2281,8 +2266,8 @@ public final class MainCtrlr
     }
 
     tab.enable(true);
-    if (tab.update())
-      record.viewNow();
+    tab.update();
+    record.viewNow();
   }
 
 //---------------------------------------------------------------------------
@@ -2356,7 +2341,7 @@ public final class MainCtrlr
 
         tfSelector = cbGoTo.getEditor();
         hcbGoTo.clear();
-        RecordByTypePopulator.class.cast(hcbGoTo.getPopulator()).setRecordType(Populator.dummyRow, selectorType());
+        ((RecordByTypePopulator) hcbGoTo.getPopulator()).setRecordType(Populator.dummyRow, selectorType());
         if (cbGoTo.isEditable() == false) cbGoTo.setEditable(true);
 
         if (count > 0)
@@ -2683,7 +2668,7 @@ public final class MainCtrlr
   {
     if (filePathToUse != null)
     {
-      if (filePathToUse.equals(lastImportFilePath) && ((Instant.now().toEpochMilli() - lastImportTime) < 10000))
+      if (filePathToUse.equals(lastImportFilePath) && ((Instant.now().toEpochMilli() - lastImportTime) < 10000L))
         return false;
 
       if (filePathToUse.exists() == false) return false;
@@ -2880,7 +2865,7 @@ public final class MainCtrlr
     lines = ibed.getLines();
     filePath = ibed.getFilePath();
 
-    String pathStr = FilePath.isEmpty(filePath) ? "" : (" " + filePath.toString());
+    String pathStr = FilePath.isEmpty(filePath) ? "" : (" " + filePath);
 
     BibData bd = null;
     Exception ex = null;

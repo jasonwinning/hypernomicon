@@ -86,7 +86,7 @@ public class HDT_Position extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public class PositionSource
+  public static class PositionSource
   {
     public HDT_Argument argument = null;
     public HDT_Work work = null;

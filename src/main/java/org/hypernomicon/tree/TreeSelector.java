@@ -37,7 +37,6 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
 import org.hypernomicon.model.records.HDT_Term;
-import org.hypernomicon.model.relations.RelationSet.RelationType;
 
 public class TreeSelector
 {
@@ -119,8 +118,8 @@ public class TreeSelector
       this.targetType = objType;
     }
 
-    private RelationType relType;
-    private RecordType targetType;
+    private final RelationType relType;
+    private final RecordType targetType;
   }
 
 //---------------------------------------------------------------------------
@@ -158,7 +157,7 @@ public class TreeSelector
     if (select(obj, true) == false)
       return;
 
-    if ((folder != null) && HDT_Note.class.cast(subj).folder.isNull())
+    if ((folder != null) && ((HDT_Note) subj).folder.isNull())
       ui.noteHyperTab().assignFolder(folder);
   }
 

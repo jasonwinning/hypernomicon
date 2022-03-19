@@ -87,7 +87,7 @@ public class HtmlReportGenerator extends ReportGenerator
   {
     return new StringBuilder()
 
-      .append("<html><head>" + MainTextUtil.scriptContent + "<style>")
+      .append("<html><head>").append(MainTextUtil.scriptContent).append("<style>")
       .append("td.fieldName { vertical-align: text-top; text-align: right; padding-right:10px; }</style></head><body>")
       .append("<table style=\"font-size:9pt; font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,sans-serif; line-height:10pt;\">");
   }

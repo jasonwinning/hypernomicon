@@ -41,7 +41,7 @@ public class ChooseParentWorkFileDlgCtrlr extends HyperDlg
   private HyperTable htFiles;
 
   public HDT_WorkFile getWorkFile()     { return htFiles.selectedRecord(); }
-  @Override protected boolean isValid() { return htFiles.selectedRecord() == null ? falseWithWarningMessage("Select a file.") : true; }
+  @Override protected boolean isValid() { return (htFiles.selectedRecord() != null) || falseWithWarningMessage("Select a file."); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

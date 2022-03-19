@@ -175,7 +175,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
   {
     MenuItem miMove = new MenuItem();
     miMove.setText("Move this definition to a different term");
-    miMove.setOnAction(event -> TermTab.class.cast(hyperTab).moveConcept());
+    miMove.setOnAction(event -> ((TermTab) hyperTab).moveConcept());
 
     return miMove;
   }
@@ -315,7 +315,7 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
       lblMergeTerms.setOnMouseClicked(mouseEvent ->
       {
         if (mouseEvent.getButton().equals(MouseButton.PRIMARY))
-          TermTab.class.cast(hyperTab).merge();
+          ((TermTab) hyperTab).merge();
       });
     }
 
@@ -483,11 +483,8 @@ public class NodeTabCtrlr<HDT_RT extends HDT_Record, HDT_CT extends HDT_RecordWi
 
   private EventHandler<ActionEvent> searchBtnEvent(String prefKey)
   {
-    return event ->
-    {
-      ui.webButtonMap.get(prefKey).first(WebButtonField.Name, tfName.getText())
-                                  .go();
-    };
+    return event -> ui.webButtonMap.get(prefKey).first(WebButtonField.Name, tfName.getText())
+                                                .go();
   }
 
 //---------------------------------------------------------------------------

@@ -98,7 +98,6 @@ public abstract class Authors implements Iterable<Author>
     if (authors.isEmpty())
       return "";
 
-
     String eds = "";
 
     if (includeEds && authors.stream().allMatch(Author::getIsEditor))

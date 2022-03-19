@@ -53,7 +53,8 @@ public class SearchResultFileList
   private static class SearchResultFile
   {
     private final FilePath filePath;
-    private int startPage, endPage;
+    private final int startPage;
+    private int endPage;
 
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
@@ -82,10 +83,7 @@ public class SearchResultFileList
 
     private boolean overlaps(SearchResultFile other)
     {
-      return filePath.equals(other.filePath) == false ?
-        false
-      :
-        ((endPage >= other.startPage) && (other.endPage >= startPage));
+      return filePath.equals(other.filePath) && (endPage >= other.startPage) && (other.endPage >= startPage);
     }
 
   //---------------------------------------------------------------------------
@@ -93,10 +91,8 @@ public class SearchResultFileList
 
     private boolean contains(SearchResultFile other)
     {
-      return filePath.equals(other.filePath) == false ?
-        false
-      :
-        (((startPage <= other.startPage) && (endPage >= other.endPage))  ||
+      return filePath.equals(other.filePath) &&
+        (((startPage <= other.startPage) && (endPage >= other.endPage)) ||
          ((other.startPage <= startPage) && (other.endPage >= endPage)));
     }
 
@@ -105,8 +101,8 @@ public class SearchResultFileList
 
     private SearchResultFile createCombined(SearchResultFile other)
     {
-      int newStartPage = startPage < other.startPage ? startPage : other.startPage,
-          newEndPage   = endPage   > other.endPage   ? endPage   : other.endPage;
+      int newStartPage = Math.min(startPage, other.startPage),
+          newEndPage   = Math.max(endPage, other.endPage);
 
       return new SearchResultFile(filePath, newStartPage, newEndPage);
     }
@@ -202,7 +198,7 @@ public class SearchResultFileList
                   {
                     Iterators.removeIf(annots.iterator(), annot ->
                     {
-                      String subtype = COSName.class.cast(COSDictionary.class.cast(annot).getItem(COSName.SUBTYPE)).getName();
+                      String subtype = ((COSName) ((COSDictionary) annot).getItem(COSName.SUBTYPE)).getName();
 
                       return (subtype.equals("Link") == false) && (subtype.equals("Widget") == false);
                     });

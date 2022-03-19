@@ -34,7 +34,7 @@ public class BibField
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static enum BibFieldEnum
+  public enum BibFieldEnum
   {
     // MergeWorksDlgCtrlr.init assumes that bfPublisher comes after bfPubLoc
 
@@ -59,10 +59,10 @@ public class BibField
     bfVolume         ("Volume"            , bftString),      // Volume number
     bfYear           ("Year"              , bftString);      // Publication year
 
-    private BibFieldType type;
-    private String userFriendlyName;
+    private final BibFieldType type;
+    private final String userFriendlyName;
 
-    private BibFieldEnum(String userFriendlyName, BibFieldType type)
+    BibFieldEnum(String userFriendlyName, BibFieldType type)
     {
       this.type = type;
       this.userFriendlyName = userFriendlyName;
@@ -73,7 +73,7 @@ public class BibField
     public boolean isMultiLine()        { return type == BibFieldType.bftMultiString; }
   }
 
-  public static enum BibFieldType { bftString, bftMultiString, bftEntryType, bftWorkType, bftAuthor }
+  public enum BibFieldType { bftString, bftMultiString, bftEntryType, bftWorkType, bftAuthor }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

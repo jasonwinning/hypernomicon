@@ -19,6 +19,7 @@ package org.hypernomicon.view.populators;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -91,7 +92,7 @@ public class RecordTypePopulator extends Populator
     types.forEach(type ->
     {
       HyperTableCell cell = new HyperTableCell(db.getTypeName(type), type);
-      addToSortedList(choices, cell, sortBasis(HyperTableCell::getText));
+      addToSortedList(choices, cell, Comparator.comparing(HyperTableCell::getText));
     });
 
     changed = false;

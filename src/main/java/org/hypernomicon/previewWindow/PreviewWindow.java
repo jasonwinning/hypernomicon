@@ -79,7 +79,7 @@ public class PreviewWindow extends HyperDlg
   @FXML private TextField tfPath, tfPreviewPage;
   @FXML private ToggleButton btnLock, btnManager, btnOther, btnPerson, btnQueries, btnTree, btnWorks;
 
-  public static enum PreviewSource { pvsPersonTab, pvsWorkTab, pvsQueryTab, pvsManager, pvsTreeTab, pvsOther }
+  public enum PreviewSource { pvsPersonTab, pvsWorkTab, pvsQueryTab, pvsManager, pvsTreeTab, pvsOther }
 
   private static final String dialogTitle = "Work Viewer",
                               TEXT_TO_SHOW_IF_NONE = "(none)";
@@ -249,7 +249,7 @@ public class PreviewWindow extends HyperDlg
     {
       if ((oldValue == null) || (newValue == null)) return;
 
-      if (oldValue.booleanValue() && Boolean.FALSE.equals(newValue))
+      if (oldValue && Boolean.FALSE.equals(newValue))
       {
         if (tfPreviewPage.isDisabled() == false)
           curWrapper().setPreview((int) sldPreview.getValue(), true);
@@ -587,7 +587,7 @@ public class PreviewWindow extends HyperDlg
 
       if (record.getType() == hdtWork)
       {
-        String recStr = HDT_Work.class.cast(record).getCBText();
+        String recStr = ((HDT_Work) record).getCBText();
         lblRecord.setText(recStr);
         setToolTip(lblRecord, recStr);
 

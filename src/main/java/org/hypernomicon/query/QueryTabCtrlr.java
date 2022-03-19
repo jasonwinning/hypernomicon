@@ -19,7 +19,6 @@ package org.hypernomicon.query;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
@@ -61,7 +60,6 @@ import org.hypernomicon.HyperTask;
 import org.hypernomicon.App;
 import org.hypernomicon.model.Exceptions.*;
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 import org.hypernomicon.model.records.SimpleRecordTypes.HDT_RecordWithDescription;
@@ -226,7 +224,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           disableAutoShowDropdownList = true;
 
           row.setCellValue(nextColNdx, new HyperTableCell("", nextPopulator.getRecordType(row)));
-          Populator pop = VariablePopulator.class.cast(nextPopulator).getPopulator(row);
+          Populator pop = ((VariablePopulator) nextPopulator).getPopulator(row);
 
           disableAutoShowDropdownList = tempDASD;
 
@@ -317,7 +315,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         {
           textToHilite = getTextToHilite();
 
-          String mainText = curResult.hasDesc() ? HDT_RecordWithDescription.class.cast(curResult).getDesc().getHtml() : "";
+          String mainText = curResult.hasDesc() ? ((HDT_RecordWithDescription) curResult).getDesc().getHtml() : "";
 
           MainTextWrapper.setReadOnlyHTML(mainText, webView.getEngine(), new TextViewInfo(), getRecordToHilite());
 
@@ -332,7 +330,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
             previewWindow.setPreview(pvsQueryTab, miscFile.filePath(), miscFile);
           }
           else if ((curResult.getType() == hdtWorkFile) || (curResult.getType() == hdtPerson))
-            previewWindow.setPreview(pvsQueryTab, HDT_RecordWithPath.class.cast(curResult).filePath(), curResult);
+            previewWindow.setPreview(pvsQueryTab, ((HDT_RecordWithPath) curResult).filePath(), curResult);
           else
             previewWindow.clearPreview(pvsQueryTab);
         }
@@ -614,7 +612,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       {
         if (QueryType.codeToVal(row.getID(0)) == QueryType.qtReport)
         {
-          htFields.setDataRows(Arrays.asList(row));
+          htFields.setDataRows(List.of(row));
 
           executeReport(row, setCaption);
           return true;
@@ -646,11 +644,8 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           needMentionsIndex = true;
       }
 
-      if (needMentionsIndex)
-      {
-        if (db.waitUntilRebuildIsDone() == false)
-          return false;
-      }
+      if (needMentionsIndex && (db.waitUntilRebuildIsDone() == false))
+        return false;
 
       resultsTable.reset();
       webView.getEngine().loadContent("");
@@ -677,12 +672,12 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
           case QST_filteredRecords :
 
             hasFiltered = true;
-            unfilteredTypes.add(FilteredQuerySource.class.cast(source).recordType());
+            unfilteredTypes.add(((FilteredQuerySource) source).recordType());
             break;
 
           case QST_recordsByType :
 
-            unfilteredTypes.add(DatasetQuerySource.class.cast(source).recordType());
+            unfilteredTypes.add(((DatasetQuerySource) source).recordType());
             hasUnfiltered = true;
             break;
 
@@ -983,7 +978,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
         {
           for (int colNdx = 2; colNdx <= 4; colNdx++)
           {
-            if (VariablePopulator.class.cast(htFields.getPopulator(colNdx)).getRestricted(row) == false)
+            if (((VariablePopulator) htFields.getPopulator(colNdx)).getRestricted(row) == false)
             {
               String cellText = HyperTableCell.getCellText(row.getCell(colNdx));
               if (cellText.length() > 0)
@@ -1102,7 +1097,6 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
       VariablePopulator vp1 = htFields.getPopulator(2), vp2 = htFields.getPopulator(3), vp3 = htFields.getPopulator(4);
 
-      RecordType recordType, subjType, objType = hdtNone;
       RelationType relType;
       int query = row.getID(1);
       HyperTableCell op1 = row.getCell(2);
@@ -1111,7 +1105,6 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       {
         case QUERY_WHERE_RELATIVE :
 
-          objType = row.getRecordType(0);
           relType = RelationType.codeToVal(row.getID(2));
 
           switch (row.getID(3))
@@ -1129,17 +1122,15 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
         case QUERY_WHERE_FIELD :
 
-          recordType = row.getRecordType(0);
+          RecordType recordType = row.getRecordType(0), objType = hdtNone;
           HyperDataCategory cat = hdcString;
           boolean catSet = false;
 
-          Set<HDI_Schema> schemas = db.getSchemasByTag(Tag.getTagByNum(row.getID(2)));
-
-          for (HDI_Schema schema : schemas)
+          for (HDI_Schema schema : db.getSchemasByTag(Tag.getTagByNum(row.getID(2))))
           {
             relType = schema.getRelType();
 
-            subjType = relType == rtNone ? hdtNone : db.getSubjType(relType);
+            RecordType subjType = relType == rtNone ? hdtNone : db.getSubjType(relType);
 
             if ((recordType == hdtNone) || (recordType == subjType))
             {
@@ -1338,9 +1329,9 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   private ObjectProperty<ObservableList<ResultsRow>> propToUnbind = null;
   private ChangeListener<ResultsRow> cbListenerToRemove = null, tvListenerToRemove = null;
   private ComboBox<ResultsRow> cb;
-  private BooleanProperty includeEdited = new SimpleBooleanProperty(),
-                          excludeAnnots = new SimpleBooleanProperty(),
-                          entirePDF     = new SimpleBooleanProperty();
+  private final BooleanProperty includeEdited = new SimpleBooleanProperty(),
+                                excludeAnnots = new SimpleBooleanProperty(),
+                                entirePDF     = new SimpleBooleanProperty();
 
   public static HyperTask task;
   public static int curQuery;
@@ -1352,7 +1343,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   public void btnExecuteClick()                     { curQV.btnExecuteClick(true); }   // if any of the queries are unfiltered, they
                                                                                        // will all be treated as unfiltered
   @Override protected RecordType type()             { return hdtNone; }
-  @Override public boolean update()                 { curQV.refreshView(true); return true; }
+  @Override public void update()                    { curQV.refreshView(true); }
   @Override public void setRecord(HDT_Record rec)   { if (curQV != null) curQV.setRecord(rec); }
   @Override public int recordCount()                { return results().size(); }
   @Override public TextViewInfo mainTextInfo()      { return new TextViewInfo(MainTextUtil.webEngineScrollPos(webView.getEngine())); }
@@ -1415,7 +1406,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       String mainText = "";
 
       if (record.hasDesc())
-        mainText = HDT_RecordWithDescription.class.cast(record).getDesc().getHtml();
+        mainText = ((HDT_RecordWithDescription) record).getDesc().getHtml();
 
       MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo());
     });
@@ -1452,7 +1443,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   private void addFilesButton()
   {
-    ObservableList<Node> children = AnchorPane.class.cast(getTab().getContent()).getChildren();
+    ObservableList<Node> children = ((AnchorPane) getTab().getContent()).getChildren();
     ObservableList<CheckBoxOrCommand> items;
 
     if (fileBtn != null)
@@ -1589,7 +1580,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     {
       case QUERY_WITH_NAME_CONTAINING :
 
-        return record.listName().toUpperCase().indexOf(getCellText(param1).toUpperCase()) >= 0;
+        return record.listName().toUpperCase().contains(getCellText(param1).toUpperCase());
 
       case QUERY_ANY_FIELD_CONTAINS :
 
@@ -1598,7 +1589,7 @@ public class QueryTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
         String val1 = getCellText(param1).toLowerCase();
 
-        return list.stream().anyMatch(str -> str.toLowerCase().indexOf(val1) >= 0);
+        return list.stream().anyMatch(str -> str.toLowerCase().contains(val1));
 
       case QUERY_LIST_ALL :
 

@@ -112,7 +112,7 @@ public class WorkQueryEngine extends QueryEngine<HDT_Work>
       case QUERY_WORK_NEEDING_PAGE_NUMBERS :
 
         for (HDT_WorkFile workFile : work.workFiles)
-          if ((workFile.works.size() > 1) && workFile.filePath().getExtensionOnly().toLowerCase().equals("pdf"))
+          if ((workFile.works.size() > 1) && workFile.filePath().getExtensionOnly().equalsIgnoreCase("pdf"))
             if ((work.getStartPageNum(workFile) == -1) || (work.getEndPageNum(workFile) == -1))
               for (HDT_Work otherWork : workFile.works)
                 if ((otherWork != work) && (otherWork.largerWork.get() != work))

@@ -53,8 +53,8 @@ public class CharacterGrid
   private final int colCount, rowCount;
   private final SymbolHndlr symbolHndlr;
   private final SymbolCtrl[][] symbolCtrls;
+  private final Symbol[][] symbols;
 
-  private Symbol[][] symbols;
   private int ndx = 0;
   private static SymbolCtrl focusCtrl = null;
 
@@ -67,7 +67,7 @@ public class CharacterGrid
       this.codepoint = codepoint;
       this.html = safeStr(html).isBlank() ? "&#" + codepoint + ";" : html;
       this.desc = desc;
-      ch = Character.valueOf((char)codepoint);
+      ch = (char) codepoint;
     }
 
     private final Character ch;

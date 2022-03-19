@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.hypernomicon.HyperTask;
-import org.hypernomicon.model.Exceptions.TerminateTaskException;
 import org.hypernomicon.view.mainText.MainTextUtil;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
@@ -50,7 +49,7 @@ public class LicenseReportEngine extends ReportEngine
 
   @Override public boolean alwaysShowDescription() { return true; }
 
-  @Override public void generate(HyperTask task, HyperTableCell param1, HyperTableCell param2, HyperTableCell param3) throws TerminateTaskException { }
+  @Override public void generate(HyperTask task, HyperTableCell param1, HyperTableCell param2, HyperTableCell param3) { }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

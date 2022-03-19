@@ -71,7 +71,7 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean update()
+  @Override public void update()
   {
     curPosition.addParentDisplayRecord();
 
@@ -144,8 +144,6 @@ public class PositionTab extends HyperNodeTab<HDT_Position, HDT_Position>
       row.setCellValue(1, subDebate, "");
       row.setCellValue(2, subDebate, subDebate.getCBText());
     });
-
-    return true;
   }
 
 //---------------------------------------------------------------------------

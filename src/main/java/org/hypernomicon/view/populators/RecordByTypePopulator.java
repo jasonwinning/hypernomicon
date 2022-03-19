@@ -93,8 +93,8 @@ public class RecordByTypePopulator extends Populator
 
   private List<Integer> getRecent(RecordType recordType, int num)
   {
-    Instant dates[] = new Instant[num];
-    int ids[] = new int[num], pos[] = new int[num], revPos[] = new int[num];
+    Instant[] dates = new Instant[num];
+    int[] ids = new int[num], pos = new int[num], revPos = new int[num];
 
     for (int ndx = 0; ndx < num; ndx++)
     {
@@ -184,7 +184,7 @@ public class RecordByTypePopulator extends Populator
     {
       for (Integer id : getRecent(recordType, 5))
       {
-        HDT_Record record = db.records(recordType).getByID(id.intValue());
+        HDT_Record record = db.records(recordType).getByID(id);
 
         if (firstAdd)
         {

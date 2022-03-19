@@ -82,7 +82,7 @@ public final class MediaUtil
 
   public static String imgDataURI(String relativePath)
   {
-    try (BufferedInputStream stream = new BufferedInputStream(App.class.getResourceAsStream(relativePath));)
+    try (BufferedInputStream stream = new BufferedInputStream(App.class.getResourceAsStream(relativePath)))
     {
       byte[] array = new byte[stream.available()];
 
@@ -212,7 +212,7 @@ public final class MediaUtil
     {
       case hdtWork :
 
-        WorkTypeEnum workType = HDT_Work.class.cast(record).getWorkTypeEnum();
+        WorkTypeEnum workType = ((HDT_Work) record).getWorkTypeEnum();
 
         switch (workType)
         {

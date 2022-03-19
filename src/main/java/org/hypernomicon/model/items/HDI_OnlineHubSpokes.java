@@ -22,9 +22,7 @@ import static org.hypernomicon.model.records.RecordType.*;
 
 import java.util.List;
 
-import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Hub;
 
@@ -51,7 +49,7 @@ public class HDI_OnlineHubSpokes extends HDI_OnlineBase<HDI_OfflineHubSpokes>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromOfflineValue(HDI_OfflineHubSpokes val, Tag tag) throws RelationCycleException
+  @Override public void setFromOfflineValue(HDI_OfflineHubSpokes val, Tag tag)
   {
     StrongLink link = hub.getLink();
 

@@ -30,7 +30,6 @@ import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import org.hypernomicon.App;
 import org.hypernomicon.dialogs.NewArgDlgCtrlr;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.ObjectGroup;
 import org.hypernomicon.model.relations.RelationSet.RelationType;
@@ -76,7 +75,7 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean update()
+  @Override public void update()
   {
     curArgument.addParentDisplayRecord();
 
@@ -155,8 +154,6 @@ public class ArgumentTab extends HyperNodeTab<HDT_Argument, HDT_Argument>
     }
 
     updateArgCounts();
-
-    return true;
   }
 
 //---------------------------------------------------------------------------

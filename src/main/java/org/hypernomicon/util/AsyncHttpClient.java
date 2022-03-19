@@ -24,7 +24,6 @@ import org.hypernomicon.model.Exceptions.*;
 
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.function.Consumer;
 
@@ -45,8 +44,8 @@ public class AsyncHttpClient
 
   public class RequestThread extends HyperThread
   {
-    private ResponseHandler<? extends Boolean> responseHandler;
-    private Consumer<Exception> failHndlr;
+    private final ResponseHandler<? extends Boolean> responseHandler;
+    private final Consumer<Exception> failHndlr;
 
     public RequestThread(ResponseHandler<? extends Boolean> responseHandler, Consumer<Exception> failHndlr)
     {
@@ -80,7 +79,7 @@ public class AsyncHttpClient
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static enum HttpRequestType { get, post, put, patch, delete, head, options, connect, trace }
+  public enum HttpRequestType { get, post, put, patch, delete, head, options, connect, trace }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -93,7 +92,7 @@ public class AsyncHttpClient
   public boolean wasCancelledByUser() { return cancelledByUser; }
   public String lastUrl()             { return lastUrl; }
   public void clearLastUrl()          { lastUrl = ""; }
-  public boolean isRunning()          { return stopped ? false : nullSwitch(requestThread, false, RequestThread::isAlive); }
+  public boolean isRunning()          { return (stopped == false) && nullSwitch(requestThread, false, RequestThread::isAlive); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -156,9 +155,9 @@ public class AsyncHttpClient
 
       X509TrustManager trustMgr = new X509TrustManager()
       {
-        @Override public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException { return; }
-        @Override public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException { return; }
-        @Override public X509Certificate[] getAcceptedIssuers()                                                        { return null; }
+        @Override public void checkClientTrusted(X509Certificate[] chain, String authType) { return; }
+        @Override public void checkServerTrusted(X509Certificate[] chain, String authType) { return; }
+        @Override public X509Certificate[] getAcceptedIssuers()                            { return null; }
       };
 
       sc.init(null, new TrustManager[] { trustMgr }, new SecureRandom());

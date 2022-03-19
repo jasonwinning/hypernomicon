@@ -32,7 +32,7 @@ import org.hypernomicon.util.filePath.FilePath;
 
 public class PathInfo
 {
-  public static enum FileKind
+  public enum FileKind
   {
     fkFileRecord,
     fkFolderRecord,

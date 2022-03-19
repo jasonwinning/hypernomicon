@@ -31,7 +31,7 @@ import static org.hypernomicon.util.Util.*;
 
 public class CollectionTree
 {
-  static enum BibCollectionType { bctAll, bctAllAssigned, bctAllUnassigned, bctUnsorted, bctTrash, bctUser }
+  enum BibCollectionType { bctAll, bctAllAssigned, bctAllUnassigned, bctUnsorted, bctTrash, bctUser }
 
   private final TreeView<BibCollectionRow> treeView;
   private final Map<String, BibCollectionRow> keyToRow;

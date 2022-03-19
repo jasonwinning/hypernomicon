@@ -17,6 +17,7 @@
 
 package org.hypernomicon.tree;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,7 +63,7 @@ class TreeCB
       changeIsProgrammatic = true;
 
       comboBox.setItems(null);
-      rows.sort(sortBasis(row -> row.getCBText().toLowerCase()));
+      rows.sort(Comparator.comparing(row -> row.getCBText().toLowerCase()));
       comboBox.setItems(rows);
 
       changeIsProgrammatic = false;

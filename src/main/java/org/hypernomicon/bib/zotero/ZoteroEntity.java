@@ -31,7 +31,7 @@ public interface ZoteroEntity extends BibEntity
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static ZoteroEntity create(ZoteroWrapper zWrapper, JsonObj jObj)
+  static ZoteroEntity create(ZoteroWrapper zWrapper, JsonObj jObj)
   {
     JsonObj subObj = jObj.getObj("data");
 

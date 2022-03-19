@@ -45,7 +45,7 @@ public class FilenameMap<T> implements Map<String, T>
   @Override public Set<Entry<String, T>> entrySet()                  { return nameToObject.entrySet(); }
   @Override public void clear()                                      { lowerToList.clear(); nameToObject.clear(); }
   @Override public void putAll(Map<? extends String, ? extends T> m) { m.forEach(this::put); }
-  @Override public boolean containsKey(Object key)                   { return key instanceof String ? findKey((String) key).length() > 0 : false; }
+  @Override public boolean containsKey(Object key)                   { return (key instanceof String) && (findKey((String) key).length() > 0); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -96,9 +96,7 @@ public class FilenameMap<T> implements Map<String, T>
     String strKey = (String) key;
     T oldVal = get(strKey);
 
-    List<String> list = lowerToList.get(strKey.toLowerCase());
-    if (list == null)
-      lowerToList.put(strKey.toLowerCase(), list = new ArrayList<>());
+    List<String> list = lowerToList.computeIfAbsent(strKey.toLowerCase(), k -> new ArrayList<>());
 
     String realKey = findKey(strKey);
 

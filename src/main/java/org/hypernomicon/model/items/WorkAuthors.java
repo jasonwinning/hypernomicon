@@ -117,10 +117,10 @@ public class WorkAuthors extends Authors
       {
         switch (entry.getKey())
         {
-          case tagInFileName : inFileName = HDI_OfflineTernary.class.cast(entry.getValue()).get(); break;
-          case tagEditor     : editor     = HDI_OfflineBoolean.class.cast(entry.getValue()).get(); break;
-          case tagTranslator : translator = HDI_OfflineBoolean.class.cast(entry.getValue()).get(); break;
-          default            :                                                                     break;
+          case tagInFileName : inFileName = ((HDI_OfflineTernary) entry.getValue()).get(); break;
+          case tagEditor     : editor     = ((HDI_OfflineBoolean) entry.getValue()).get(); break;
+          case tagTranslator : translator = ((HDI_OfflineBoolean) entry.getValue()).get(); break;
+          default            :                                                             break;
         }
       }
     }
@@ -229,7 +229,7 @@ public class WorkAuthors extends Authors
     objGroups.forEach(objGroup ->
     {
       if (objGroup.getPrimary() != null)
-        authorList.add(new Author(work, (HDT_Person) objGroup.getPrimary()));
+        authorList.add(new Author(work, objGroup.getPrimary()));
       else
         authorList.add(new Author(work, new PersonName(objGroup.getPrimaryStr()),
                                         objGroup.getValue(tagEditor).bool,

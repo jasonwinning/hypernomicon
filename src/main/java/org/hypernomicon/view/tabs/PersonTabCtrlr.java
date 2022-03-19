@@ -37,7 +37,6 @@ import org.hypernomicon.dialogs.NewInstDlgCtrlr;
 import org.hypernomicon.dialogs.NewPersonDlgCtrlr;
 import org.hypernomicon.dialogs.PictureDlgCtrlr;
 import org.hypernomicon.dialogs.InvestigationsDlgCtrlr.InvestigationSetting;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.Authors;
 import org.hypernomicon.model.items.HyperPath;
@@ -56,7 +55,6 @@ import org.hypernomicon.view.wrappers.HyperCB;
 import org.hypernomicon.view.wrappers.HyperTable;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
-import org.hypernomicon.view.wrappers.HyperTableCell.CellSortMethod;
 
 import static java.util.Collections.*;
 
@@ -131,7 +129,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   private HyperCB hcbRank, hcbStatus, hcbField, hcbSubfield;
 
   private HDT_Person curPerson;
-  private long lastArrowKey = 0;
+  private long lastArrowKey = 0L;
   private boolean alreadyChangingName = false, alreadyChangingTab = false;
 
   public FilePath getCurPicture() { return curPicture; }
@@ -154,7 +152,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean update()
+  @Override public void update()
   {
     alreadyChangingName = true;
 
@@ -325,8 +323,6 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     lastPerson = curPerson;
 
     safeFocus(tfLast);
-
-    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -369,8 +365,8 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
         otherToAdd.add(label);
     };
 
-    if      (mentioned.getType() == hdtWork    ) HDT_Work    .class.cast(mentioned).labels.forEach(consumer);
-    else if (mentioned.getType() == hdtMiscFile) HDT_MiscFile.class.cast(mentioned).labels.forEach(consumer);
+    if      (mentioned.getType() == hdtWork    ) ((HDT_Work    ) mentioned).labels.forEach(consumer);
+    else if (mentioned.getType() == hdtMiscFile) ((HDT_MiscFile) mentioned).labels.forEach(consumer);
 
     db.keyWorkMentionerStream(mentioned).forEachOrdered(mentioner ->
     {
@@ -447,7 +443,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 
   private void addOtherToTopicTable(HDT_Record displayer, HyperTableRow row)
   {
-    row.setCellValue(1, displayer, displayer.getType() == hdtWorkLabel ? HDT_WorkLabel.class.cast(displayer).getExtendedText() : displayer.listName());
+    row.setCellValue(1, displayer, displayer.getType() == hdtWorkLabel ? ((HDT_WorkLabel) displayer).getExtendedText() : displayer.listName());
   }
 
 //---------------------------------------------------------------------------
@@ -647,16 +643,9 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
     List<Author> matchedAuthors = matchedAuthorsList.get(0);
 
     if (matchedAuthors.size() > 0)
-    {
-      NewPersonDlgCtrlr npdc = NewPersonDlgCtrlr.build(personName, tfSearchKey.getText(), true, curPerson, null, matchedAuthors);
+      return NewPersonDlgCtrlr.build(personName, tfSearchKey.getText(), true, curPerson, null, matchedAuthors).showModal();
 
-      if (npdc.showModal() == false) return false;
-    }
-    else
-    {
-      curPerson.setName(personName);
-    }
-
+    curPerson.setName(personName);
     return true;
   }
 
@@ -921,7 +910,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public class InvestigationView
+  public static class InvestigationView
   {
     private InvestigationView(HDT_Investigation record, TextField tfName, TextField tfSearchKey, MainTextWrapper textWrapper, Tab tab)
     {
@@ -1053,7 +1042,7 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
         HDT_Record record = row.getRecord();
         if ((record == null) || (record.getType() != hdtWork)) return false;
 
-        return HDT_Work.class.cast(record).investigationSet().contains(inv);
+        return ((HDT_Work) record).investigationSet().contains(inv);
       });
 
       inv.viewNow();
@@ -1215,14 +1204,12 @@ public class PersonTabCtrlr extends HyperTab<HDT_Person, HDT_Person>
   private EventHandler<ActionEvent> searchBtnEvent(String prefKey)
   {
     return event ->
-    {
       ui.webButtonMap.get(prefKey).first(WebButtonField.FirstName, tfFirst.getText())
                                   .next (WebButtonField.QueryName, tfFirst.getText())
                                   .next (WebButtonField.LastName, tfLast.getText())
                                   .next (WebButtonField.SingleName, tfLast.getText().length() > 0 ? tfLast.getText() : tfFirst.getText())
                                   .next (WebButtonField.Field, getCellText(cbField.getSelectionModel().getSelectedItem()))
                                   .go();
-    };
   }
 
 //---------------------------------------------------------------------------

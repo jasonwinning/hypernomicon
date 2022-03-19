@@ -18,7 +18,6 @@
 package org.hypernomicon.model.items;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.MainText.DisplayItemType;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.RecordType;
@@ -127,9 +126,7 @@ public class HDI_OfflineConnector extends HDI_OfflineBase
 
         if ((objType == hdtWork) || (objType == hdtMiscFile))
         {
-          Set<Integer> idSet = usedKeyWorks.get(objType);
-          if (idSet == null)
-            usedKeyWorks.put(objType, idSet = new HashSet<>());
+          Set<Integer> idSet = usedKeyWorks.computeIfAbsent(objType, k -> new HashSet<>());
 
           if (idSet.contains(objID) == false)
           {

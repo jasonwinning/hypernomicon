@@ -93,9 +93,9 @@ public class MergeWorksDlgCtrlr extends HyperDlg
   private int nextRowNdx = 4;
   private boolean creatingNewWork, previewInitialized = false;
   private Ternary newEntryChoice;
-  private MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
+  private final MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
 
-  public EntryType getEntryType()   { return nullSwitch(extraRows.get(bfEntryType), null, row -> EntryTypeCtrlr.class.cast(row).getEntryType()); }
+  public EntryType getEntryType()   { return nullSwitch(extraRows.get(bfEntryType), null, row -> ((EntryTypeCtrlr) row).getEntryType()); }
   public Ternary creatingNewEntry() { return chkNewEntry.isVisible() == false ? Ternary.Unset : (chkNewEntry.isSelected() ? Ternary.True : newEntryChoice); }
 
 //---------------------------------------------------------------------------

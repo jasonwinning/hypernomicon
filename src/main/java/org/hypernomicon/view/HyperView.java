@@ -21,7 +21,6 @@ import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.HDT_Concept;
 import org.hypernomicon.model.records.RecordType;
 import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 
 import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.view.tabs.HyperTab.*;

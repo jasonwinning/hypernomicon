@@ -87,7 +87,7 @@ public class HDT_Term extends HDT_RecordBase implements HDT_RecordWithDescriptio
   @Override public Instant getModifiedDate()
   {
     return concepts.stream().map(HDT_Concept::getModifiedDate)
-                            .reduce(super.getModifiedDate(), BinaryOperator.maxBy(Instant::compareTo)::apply);
+                            .reduce(super.getModifiedDate(), BinaryOperator.maxBy(Instant::compareTo));
   }
 
 //---------------------------------------------------------------------------

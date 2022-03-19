@@ -23,7 +23,6 @@ import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
 import org.hypernomicon.model.HyperDataset;
-import org.hypernomicon.model.Exceptions.SearchKeyException;
 
 public class HDT_Hub extends HDT_RecordWithConnector
 {
@@ -43,7 +42,7 @@ public class HDT_Hub extends HDT_RecordWithConnector
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public final void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions) throws SearchKeyException
+  @Override public final void setSearchKey(String newKey, boolean noMod, boolean rebuildMentions)
   {
     if (newKey.length() > 0)
       messageDialog("Internal error #72950", mtError);

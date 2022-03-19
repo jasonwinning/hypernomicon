@@ -37,7 +37,6 @@ import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -122,8 +121,8 @@ public class NewPersonDlgCtrlr extends HyperDlg
     {
       if (noTabUpdate) return;
 
-      Tab.class.cast(tabPane.getTabs().get(oldValue.intValue())).setContent(null);
-      Tab.class.cast(tabPane.getTabs().get(newValue.intValue())).setContent(apDup);
+      tabPane.getTabs().get(oldValue.intValue()).setContent(null);
+      tabPane.getTabs().get(newValue.intValue()).setContent(apDup);
 
       updateCurrentTab();
     });
@@ -195,10 +194,10 @@ public class NewPersonDlgCtrlr extends HyperDlg
 
     dialogStage.setOnHidden(event -> stopDupThread());
 
+    alreadyChangingName = true;
+
     if (name == null)
     {
-      alreadyChangingName = true;
-
       tfFirstName.setText(personName.getFirst());
       tfLastName.setText(personName.getLast());
 
@@ -206,21 +205,17 @@ public class NewPersonDlgCtrlr extends HyperDlg
         setSearchKey(personName);
       else
         tfSearchKey.setText(searchKey);
-
-      alreadyChangingName = false;
     }
     else
     {
-      alreadyChangingName = true;
-
       personName = new PersonName(name);
 
       tfFirstName.setText(personName.getFirst());
       tfLastName.setText(personName.getLast());
       setSearchKey(personName);
-
-      alreadyChangingName = false;
     }
+
+    alreadyChangingName = false;
 
     if (matchedAuthors.size() > 0)
       finishDupSearch();
@@ -279,7 +274,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
     private final PotentialKeySet keySet, keySetNoNicknames;
     private final String fullLCNameEngChar;
 
-    public PersonForDupCheck(PersonName name, Author author) { this(author, name, convertToEnglishChars(String.valueOf(name.getFull()))); }
+    public PersonForDupCheck(PersonName name, Author author) { this(author, name, convertToEnglishChars(name.getFull())); }
     public PersonForDupCheck(HDT_Person person)              { this(new Author(person)); }
     public PersonForDupCheck(Author author)                  { this(author, author.getName(), author.getFullName(true)); }
 
@@ -356,8 +351,6 @@ public class NewPersonDlgCtrlr extends HyperDlg
   {
     if (person1.fullLCNameEngChar.isEmpty()) return;
 
-    Set<HDT_Person> matchedPersons = new HashSet<>();
-
     HDT_Work work1 = nullSwitch(person1.author, null, Author::getWork);
 
     for (PersonForDupCheck person2 : list)
@@ -395,10 +388,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
         isMatch = true;
 
       if (isMatch)
-      {
         matchedAuthors.add(person2.author);
-        nullSwitch(person2.author.getPerson(), matchedPersons::add);
-      }
 
       if (task.isCancelled()) throw new TerminateTaskException();
 
@@ -450,7 +440,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
     lblStatus.setVisible(true);
     progressIndicator.setVisible(true);
 
-    task = createDupCheckTask(Arrays.asList(personName), Arrays.asList(origAuthor), matchedAuthorsList, this::finishDupSearch);
+    task = createDupCheckTask(List.of(personName), List.of(origAuthor), matchedAuthorsList, this::finishDupSearch);
 
     task.updateProgress(0, 1);
 
@@ -477,7 +467,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
     lblStatus.setText(matchedAuthors.size() + " potential duplicate(s) found.");
     lblStatus.setVisible(true);
 
-    Tab.class.cast(tabPane.getSelectionModel().getSelectedItem()).setContent(null);
+    tabPane.getSelectionModel().getSelectedItem().setContent(null);
 
     noTabUpdate = true;
 
@@ -495,7 +485,7 @@ public class NewPersonDlgCtrlr extends HyperDlg
       int numTabs = Math.min(20, matchedAuthors.size()); // prevent large number of tabs from being created
 
       for (int ndx = 1; ndx < numTabs; ndx++)
-        tabPane.getTabs().add(new Tab("Potential dup. #" + String.valueOf(ndx + 1)));
+        tabPane.getTabs().add(new Tab("Potential dup. #" + (ndx + 1)));
 
       if (tabPane.isVisible() == false) // Expand dialog vertically to reveal duplicate author tabs
       {

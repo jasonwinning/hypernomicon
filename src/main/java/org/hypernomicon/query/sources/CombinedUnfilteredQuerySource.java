@@ -46,7 +46,7 @@ public class CombinedUnfilteredQuerySource implements QuerySource
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public int count()                          { return types.stream().map(type -> db.records(type).size()).reduce(0, (i1, i2) -> i1 + i2); }
+  @Override public int count()                          { return types.stream().map(type -> db.records(type).size()).reduce(0, Integer::sum); }
   @Override public QuerySourceType sourceType()         { return QuerySourceType.QST_combinedUnfilteredRecords; }
   @Override public boolean containsRecord(HDT_Record r) { return types.contains(r.getType()); }
   @Override public boolean hasNext()                    { return it.hasNext(); }

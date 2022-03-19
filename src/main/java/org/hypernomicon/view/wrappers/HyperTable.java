@@ -29,7 +29,6 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 
 import org.hypernomicon.dialogs.HyperDlg;
 import org.hypernomicon.dialogs.ObjectOrderDlgCtrlr;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.Author;
 import org.hypernomicon.model.items.PersonName;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
@@ -114,7 +113,6 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
   public void clearFilter()                                        { filteredRows.setPredicate(row -> true); }
   public void setFilter(Predicate<HyperTableRow> filter)           { filteredRows.setPredicate(filter); }
   public RecordType getTypeByCol(int colNdx)                       { return cols.get(colNdx).getObjType(); }
-  public List<HyperTableCell> getSelByCol(int colNdx)              { return cols.get(colNdx).getSelectedItems(); }
   boolean getCanAddRows()                                          { return canAddRows; }
   public void setCanAddRows(boolean value)                         { canAddRows = value; tv.setEditable(value); }
   public void setOnShowMore(Runnable onShowMore)                   { this.onShowMore = onShowMore; }
@@ -155,7 +153,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface RowBuilder<T> { void buildRow(HyperTableRow row, T object); }
+  @FunctionalInterface public interface RowBuilder<T> { void buildRow(HyperTableRow row, T object); }
 
   public <T> void buildRows(Iterable<T> objs, RowBuilder<T> bldr) { objs.forEach       (obj -> bldr.buildRow(newDataRow(), obj)); }
   public <T> void buildRows(Stream<T>   objs, RowBuilder<T> bldr) { objs.forEachOrdered(obj -> bldr.buildRow(newDataRow(), obj)); }
@@ -211,11 +209,11 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
       if ((newWidth > 0.0) && (Math.abs(newWidth - colSettings.oldWidth) >= 1.0))
       {
-        appPrefs.putDouble(prefID + "ColWidth" + String.valueOf(colSettings.oldNdx), newWidth);
+        appPrefs.putDouble(prefID + "ColWidth" + colSettings.oldNdx, newWidth);
         col.setUserData(new ColumnSettings(colSettings.oldNdx, newWidth, colSettings.defVisible));
       }
 
-      String prefKey = prefID + "ColVisible" + String.valueOf(colSettings.oldNdx);
+      String prefKey = prefID + "ColVisible" + colSettings.oldNdx;
       if (col.isVisible())
       {
         if (colSettings.defVisible) // Indicates that it was visible by default
@@ -255,14 +253,14 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     for (int ndx = 1; ndx <= numCols; ndx++)
     {
       ColType col = columns.get(ndx - 1);
-      double width = appPrefs.getDouble(prefID + "ColWidth" + String.valueOf(ndx), -1.0);
+      double width = appPrefs.getDouble(prefID + "ColWidth" + ndx, -1.0);
 
       col.setUserData(new ColumnSettings(ndx, width, col.isVisible()));
 
       if ((width > 0.0) && col.isResizable())
         col.setPrefWidth(width);
 
-      col.setVisible(appPrefs.getBoolean(prefID + "ColVisible" + String.valueOf(ndx), col.isVisible()));
+      col.setVisible(appPrefs.getBoolean(prefID + "ColVisible" + ndx, col.isVisible()));
     }
   }
 
@@ -308,7 +306,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
     tv.setItems(sortedRows);
     tv.setPlaceholder(new Text(""));
 
-    tv.getColumns().forEach(tableCols::add);
+    tableCols.addAll(tv.getColumns());
 
     tv.setOnKeyPressed(event ->
     {
@@ -598,7 +596,7 @@ public class HyperTable extends HasRightClickableRows<HyperTableRow>
 
     if (row.getRecordType() == hdtGlossary)
     {
-      HDT_Term term = HDT_Term.class.cast(ui.activeRecord());
+      HDT_Term term = (HDT_Term) ui.activeRecord();
       HDT_Concept concept = nullSwitch(row.getRecord(), null, term::getConcept);
 
       ui.treeSelector.reset(concept == null ? term : concept, true);

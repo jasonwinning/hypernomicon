@@ -92,7 +92,7 @@ public class SettingsDlgCtrlr extends HyperDlg
   private final Map<SettingsPage, Tab> pageToTab = new EnumMap<>(SettingsPage.class);
   private final Map<SettingsPage, TreeItem<SettingsPage>> pageToTreeItem = new EnumMap<>(SettingsPage.class);
 
-  public static enum SettingsPage
+  public enum SettingsPage
   {
     CompGeneral("Settings applying to this computer"),
     WebSearch("Web Search Buttons"),
@@ -103,7 +103,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
     private final String caption;
 
-    private SettingsPage(String caption) { this.caption = caption; }
+    SettingsPage(String caption) { this.caption = caption; }
     @Override public String toString()   { return caption; }
   }
 
@@ -210,7 +210,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 
   private SettingsDlgCtrlr init(SettingsPage page)
   {
-    noDB = (db == null) || (db.prefs == null) || (db.isLoaded() == false);
+    noDB = (db.prefs == null) || (db.isLoaded() == false);
 
     initTree();
 
@@ -317,7 +317,7 @@ public class SettingsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static interface SettingsControl { void init(Window owner, boolean noDB); void save(); }
+  interface SettingsControl { void init(Window owner, boolean noDB); void save(); }
 
   private SettingsControl initControl(Tab tab, String fxmlName)
   {
@@ -362,7 +362,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     {
       if (newValue == null) return;
 
-      db.prefs.putBoolean(prefKey, newValue.booleanValue());
+      db.prefs.putBoolean(prefKey, newValue);
     });
   }
 
@@ -375,7 +375,7 @@ public class SettingsDlgCtrlr extends HyperDlg
     chk.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
       if (newValue != null)
-        appPrefs.putBoolean(prefKey, newValue.booleanValue());
+        appPrefs.putBoolean(prefKey, newValue);
     });
   }
 

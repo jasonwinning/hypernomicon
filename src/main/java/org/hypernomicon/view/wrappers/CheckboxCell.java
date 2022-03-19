@@ -37,7 +37,7 @@ class CheckboxCell extends TableCell<HyperTableRow, Boolean>
     this.table = table;
     chk = new CheckBox();
 
-    emptyProperty().addListener((ob, oldValue, newValue) -> chk.setVisible(newValue.booleanValue() == false));
+    emptyProperty().addListener((ob, oldValue, newValue) -> chk.setVisible(newValue == false));
 
     chk.selectedProperty().addListener((ob, oldValue, newValue) ->
     {
@@ -66,7 +66,7 @@ class CheckboxCell extends TableCell<HyperTableRow, Boolean>
     setGraphic(chk);
     chk.setSelected(val);
 
-    chk.setDisable(HyperTableCell.isEmpty((HyperTableCell)nullSwitch(getTableRow(), null, tableRow ->
+    chk.setDisable(HyperTableCell.isEmpty(nullSwitch(getTableRow(), null, tableRow ->
                                           nullSwitch(tableRow.getItem(), null, row ->
                                           row.getCell(table.getMainColNdx())))));
   }

@@ -19,7 +19,7 @@ package org.hypernomicon;
 
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.model.HyperDB.HDB_MessageType.*;
-import org.hypernomicon.model.HyperDB.HDB_MessageType;
+
 import org.hypernomicon.util.DesktopUtil;
 import org.hypernomicon.util.filePath.FilePath;
 

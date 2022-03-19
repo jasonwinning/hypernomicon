@@ -91,7 +91,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean update()
+  @Override public void update()
   {
     ctrlr.update(curNote);
 
@@ -113,8 +113,6 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     });
 
     updateMentioners();
-
-    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -140,7 +138,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
       row.setCellValue(1, mentioner, mentioner.getCBText());
 
       if (mentioner.hasDesc())
-        row.setCellValue(2, mentioner, HDT_RecordWithDescription.class.cast(mentioner).getDesc().getPlainForDisplay());
+        row.setCellValue(2, mentioner, ((HDT_RecordWithDescription) mentioner).getDesc().getPlainForDisplay());
     });
   }
 
@@ -157,7 +155,7 @@ public class NoteTab extends HyperNodeTab<HDT_Note, HDT_Note>
     {
       if (mentioner.equals(curNote)) return;
 
-      StrongLink link = HDT_RecordWithConnector.class.cast(mentioner).getLink();
+      StrongLink link = ((HDT_RecordWithConnector) mentioner).getLink();
 
       if (link == null)
       {

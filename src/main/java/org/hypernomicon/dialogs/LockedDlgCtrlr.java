@@ -27,7 +27,6 @@ import javafx.scene.control.TextArea;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hypernomicon.HyperTask.HyperThread;
 import org.hypernomicon.InterComputerMsg;
-import org.hypernomicon.model.HyperDB.HDB_MessageType;
 import org.hypernomicon.util.DesktopUtil;
 
 import static org.hypernomicon.model.HyperDB.*;
@@ -55,9 +54,9 @@ public class LockedDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  private class MessageSenderThread extends HyperThread
+  private static class MessageSenderThread extends HyperThread
   {
-    private LockedDlgCtrlr dlg;
+    private final LockedDlgCtrlr dlg;
     private InterComputerMsg sentMsg;
     private boolean done, gotResponse = false;
 
@@ -112,7 +111,7 @@ public class LockedDlgCtrlr extends HyperDlg
             else if (sentMsg.getType() == hmtEchoRequest)
             {
               done = true;
-              Platform.runLater(() -> dlg.stopTrying("Ping roundtrip completed in " + String.valueOf((Instant.now().getEpochSecond() - sentMsg.getSentTime())) + " seconds.", false));
+              Platform.runLater(() -> dlg.stopTrying("Ping roundtrip completed in " + (Instant.now().getEpochSecond() - sentMsg.getSentTime()) + " seconds.", false));
             }
           }
         }
@@ -169,7 +168,7 @@ public class LockedDlgCtrlr extends HyperDlg
   {
     this.otherCompName = otherCompName;
 
-    if (otherCompName.indexOf("::::") >= 0)
+    if (otherCompName.contains("::::"))
     {
       this.otherHostName = otherCompName.substring(0, otherCompName.indexOf("::::"));
 
@@ -213,7 +212,7 @@ public class LockedDlgCtrlr extends HyperDlg
 
   @FXML private void btnStopClick()
   {
-    stopTrying("Cancelled by user after " + String.valueOf((Instant.now().getEpochSecond() - sentTime)) + " seconds.", false);
+    stopTrying("Cancelled by user after " + (Instant.now().getEpochSecond() - sentTime) + " seconds.", false);
   }
 
 //---------------------------------------------------------------------------

@@ -38,7 +38,7 @@ public class ReadOnlyCell extends TableCell<HyperTableRow, HyperTableCell>
   private final CustomAddNewGraphicProvider graphicProvider;
   public static final int INCREMENTAL_ROWS = 20;
 
-  @FunctionalInterface public static interface CustomAddNewGraphicProvider { Node provide(HyperTableRow row); }
+  @FunctionalInterface public interface CustomAddNewGraphicProvider { Node provide(HyperTableRow row); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

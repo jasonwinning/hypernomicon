@@ -99,7 +99,7 @@ public abstract class WebButtonCtrl
 
       for (int fieldNdx = 1; fieldNdx <= fieldNum; fieldNdx++)
       {
-        String fieldName = patternNode.get("reqField" + String.valueOf(fieldNdx), "");
+        String fieldName = patternNode.get("reqField" + fieldNdx, "");
         if (fieldName.length() > 0)
           reqFields.add(WebButtonField.valueOf(fieldName));
       }
@@ -142,7 +142,7 @@ public abstract class WebButtonCtrl
 
         int fieldNdx = 1;
         for (WebButtonField field : pattern.reqFields())
-          patternNode.put("reqField" + String.valueOf(fieldNdx++), field.name());
+          patternNode.put("reqField" + fieldNdx++, field.name());
       }
     }
 

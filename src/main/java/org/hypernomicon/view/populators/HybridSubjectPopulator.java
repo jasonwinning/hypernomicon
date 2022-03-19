@@ -134,7 +134,7 @@ public class HybridSubjectPopulator extends Populator
     rowToChanged.putIfAbsent(row, true);
     rowToPop.putIfAbsent(row, standardPop);
 
-    return rowToChanged.get(row).booleanValue() ? true : rowToPop.get(row).hasChanged(row);
+    return rowToChanged.get(row) || rowToPop.get(row).hasChanged(row);
   }
 
 //---------------------------------------------------------------------------

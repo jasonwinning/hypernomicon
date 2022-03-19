@@ -53,7 +53,7 @@ public class BibDataRetriever
   private final boolean queryCrossref, queryGoogle;
   private final Set<String> alreadyCheckedIDs = new HashSet<>();
 
-  public interface RetrieveHandler { public void handle(BibData pdfBD, BibData queryBD, boolean messageShown); }
+  public interface RetrieveHandler { void handle(BibData pdfBD, BibData queryBD, boolean messageShown); }
 
   public BibDataRetriever(AsyncHttpClient httpClient, BibData workBD, List<FilePath> pdfFiles, RetrieveHandler doneHndlr)
   {
@@ -252,7 +252,7 @@ public class BibDataRetriever
 
           }, e ->
           {
-            if ((e instanceof HttpResponseException) && (HttpResponseException.class.cast(e).getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE))
+            if ((e instanceof HttpResponseException) && (((HttpResponseException) e).getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE))
             {
               searchedCrossref = true;
               messageDialog(e.getMessage(), mtError);

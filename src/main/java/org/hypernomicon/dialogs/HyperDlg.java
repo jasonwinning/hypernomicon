@@ -65,22 +65,22 @@ public abstract class HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  protected static final <T extends HyperDlg> T create(String loc, String title, boolean resizable)
+  protected static <T extends HyperDlg> T create(String loc, String title, boolean resizable)
   {
     return createUsingFullPath("dialogs/" + loc, title, resizable, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
   }
 
-  protected static final <T extends HyperDlg> T createUsingFullPath(String loc, String title, boolean resizable)
+  protected static <T extends HyperDlg> T createUsingFullPath(String loc, String title, boolean resizable)
   {
     return createUsingFullPath(loc, title, resizable, StageStyle.UTILITY, Modality.APPLICATION_MODAL);
   }
 
-  protected static final <T extends HyperDlg> T createUsingFullPath(String loc, String title, boolean resizable, StageStyle stageStyle, Modality modality)
+  protected static <T extends HyperDlg> T createUsingFullPath(String loc, String title, boolean resizable, StageStyle stageStyle, Modality modality)
   {
     try
     {
       FXMLLoader loader = new FXMLLoader(App.class.getResource(loc + ".fxml"));
-      AnchorPane mainPane = (AnchorPane) loader.load();
+      AnchorPane mainPane = loader.load();
 
       Stage dialogStage = new Stage();
       dialogStage.setTitle(title);

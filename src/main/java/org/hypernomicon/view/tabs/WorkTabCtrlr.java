@@ -146,7 +146,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
   private HDT_Work curWork, lastWork = null;
   private BibDataRetriever bibDataRetriever = null;
   private MenuItemSchema<HDT_Record, HyperTableRow> isbnSrchMenuItemSchema;
-  private MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
+  private final MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
   private final ObjectProperty<BibData> crossrefBD = new SimpleObjectProperty<>(),
                                         pdfBD      = new SimpleObjectProperty<>(),
                                         googleBD   = new SimpleObjectProperty<>();
@@ -366,12 +366,10 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       });
 
     Predicate<HDT_WorkFile> condHandler = workFile ->
-    {
-      return inNormalMode || workFile.getPath().isEmpty() || workFile.works.stream().anyMatch(work -> work.getWorkTypeEnum() != wtUnenteredSet) ?
+      inNormalMode || workFile.getPath().isEmpty() || workFile.works.stream().anyMatch(work -> work.getWorkTypeEnum() != wtUnenteredSet) ?
         false
       :
         curWork.getWorkTypeEnum() == wtUnenteredSet;
-    };
 
     htWorkFiles.addContextMenuItem("Move to a dedicated work record", HDT_WorkFile.class, condHandler, this::moveUnenteredWorkFile);
 
@@ -697,7 +695,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean update()
+  @Override public void update()
   {
     btnTree.setDisable(ui.tree().getRowsForRecord(curWork).isEmpty());
 
@@ -886,8 +884,6 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
     lastWork = curWork;
 
     safeFocus(tfTitle);
-
-    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -1054,7 +1050,7 @@ public class WorkTabCtrlr extends HyperTab<HDT_Work, HDT_Work>
       arg -> ui.goToRecord(arg.positions.get(0), true));
 
     htArguments.addContextMenuItem("Debate Record...", HDT_Argument.class,
-      arg -> arg.positions.isEmpty() ? false : arg.positions.get(0).getLargerDebate() != null,
+      arg -> (arg.positions.isEmpty() == false) && (arg.positions.get(0).getLargerDebate() != null),
       arg -> ui.goToRecord(arg.positions.get(0).getLargerDebate(), true));
   }
 

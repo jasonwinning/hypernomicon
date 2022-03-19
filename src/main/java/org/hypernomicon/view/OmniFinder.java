@@ -61,12 +61,12 @@ public class OmniFinder
   private final EnumSet<TierEnum> tierSet;
   private final EnumMap<TierEnum, ImmutableSet<RecordType>> tierToTypeSet = new EnumMap<>(TierEnum.class);
   private final Set<HDT_Record> records = new HashSet<>();
+  private final RecordType typeFilter;
 
   private String query = "";
   private Iterator<HDT_Record> source = null;
   private FinderThread finderThread = null;
   private boolean stopRequested = false, showingMore = false, incremental = true;
-  private RecordType typeFilter;
   public Runnable doneHndlr = null;
 
   public boolean noResults()  { return collEmpty(records); }
@@ -194,7 +194,7 @@ public class OmniFinder
 
       rowNdx = 0;
       startTime = System.currentTimeMillis();
-      nextInterval = 250;
+      nextInterval = 250L;
     }
 
     //---------------------------------------------------------------------------
@@ -355,10 +355,7 @@ public class OmniFinder
 
         case tierExactName:
 
-          return record.getType() == hdtPerson ?
-            false
-          :
-            record.getNameEngChar().toLowerCase().equals(queryLC);
+          return (record.getType() != hdtPerson) && record.getNameEngChar().toLowerCase().equals(queryLC);
 
         case tierKeyword:
 
@@ -386,10 +383,7 @@ public class OmniFinder
 
         case tierNameStartExact:
 
-          return record.getType() == hdtPerson ?
-            false
-          :
-            record.getNameEngChar().toLowerCase().startsWith(queryLC);
+          return (record.getType() != hdtPerson) && record.getNameEngChar().toLowerCase().startsWith(queryLC);
 
         default: return false;
       }
@@ -415,8 +409,6 @@ public class OmniFinder
 
     private void purgeBuffer()
     {
-      boolean add;
-
       if (buffer.isEmpty()) return;
 
       List<HyperTableRow> curRows = new ArrayList<>();
@@ -431,8 +423,6 @@ public class OmniFinder
                                                     new HyperTableCell("", hdtPerson, smTextSimple));
         else
           cells = cellLists.get(rowNdx);
-
-        add = true;
 
         cells.set(0, new HyperTableCell(record.getID(), "", record.getType()));
         cells.set(1, new HyperTableCell(record.getID(), record.listName(), record.getType()));
@@ -496,6 +486,14 @@ public class OmniFinder
 
             break;
 
+          case hdtConcept :
+
+            HDT_Concept concept = (HDT_Concept) record;
+            cells.set(2, new HyperTableCell(concept, "", smNumeric));
+            cells.set(3, new HyperTableCell(concept, "Glossary: " + concept.glossary.get().listName()));
+
+            break;
+
           default :
 
             cells.set(2, new HyperTableCell(record, "", smNumeric));
@@ -504,25 +502,22 @@ public class OmniFinder
             break;
         }
 
-        if (add)
+        if (showingMore)
+          curRows.add(new HyperTableRow(cells, htFind));
+        else
         {
-          if (showingMore)
-            curRows.add(new HyperTableRow(cells, htFind));
-          else
+          if (rowNdx == (ROWS_TO_SHOW - 1))  // This will be the "show more" row
           {
-            if (rowNdx == (ROWS_TO_SHOW - 1))  // This will be the "show more" row
-            {
-              cells.set(0, new HyperTableCell("", hdtNone     , smLast));
-              cells.set(1, new HyperTableCell("", hdtAuxiliary, smLast));
-              cells.set(2, new HyperTableCell("", hdtNone     , smLast));
-              cells.set(3, new HyperTableCell("", hdtNone     , smLast));
-            }
-
-            curRows.add(rows.get(rowNdx));
+            cells.set(0, new HyperTableCell("", hdtNone     , smLast));
+            cells.set(1, new HyperTableCell("", hdtAuxiliary, smLast));
+            cells.set(2, new HyperTableCell("", hdtNone     , smLast));
+            cells.set(3, new HyperTableCell("", hdtNone     , smLast));
           }
 
-          rowNdx++;
+          curRows.add(rows.get(rowNdx));
         }
+
+        rowNdx++;
       }
 
       buffer.clear();
@@ -595,7 +590,7 @@ public class OmniFinder
           }
 
           startTime = System.currentTimeMillis();
-          nextInterval = 100;
+          nextInterval = 100L;
         }
 
         if ((!done) && isMatch(record))

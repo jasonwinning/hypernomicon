@@ -113,7 +113,6 @@ public class MainTextCtrlr
 
   private HyperCB hcbType, hcbName, hcbKeyType, hcbKeyName;
   private HDT_RecordWithConnector curRecord;
-  private BooleanProperty prop = null;
   private boolean ignoreKeyEvent = false;
 
 //---------------------------------------------------------------------------
@@ -205,7 +204,7 @@ public class MainTextCtrlr
 
     hsPane.setTriggerDistance(32.0);
 
-    prop = new SimpleBooleanProperty();
+    BooleanProperty prop = new SimpleBooleanProperty();
     prop.bind(cbType.focusedProperty().or(cbName.focusedProperty()));
 
     prop.addListener((ob, oldValue, newValue) ->
@@ -663,9 +662,7 @@ public class MainTextCtrlr
       if ((id > 0) && (type != hdtNone))
       {
         nullSwitch((HDT_RecordWithPath) db.records(type).getByID(id), record ->
-        {
-          keyWorksArg.add(new KeyWork(record.getType(), record.getID(), aElement.ownText(), true));
-        });
+          keyWorksArg.add(new KeyWork(record.getType(), record.getID(), aElement.ownText(), true)));
       }
 
       aElement.remove();

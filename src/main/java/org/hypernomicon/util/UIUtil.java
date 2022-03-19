@@ -366,8 +366,8 @@ public final class UIUtil
 
     try
     {
-      Class<? extends Object> contextMenuContentClass = Class.forName("com.sun.javafx.scene.control.ContextMenuContent"),
-                              menuItemContainerClass  = Class.forName("com.sun.javafx.scene.control.ContextMenuContent$MenuItemContainer");
+      Class<?> contextMenuContentClass = Class.forName("com.sun.javafx.scene.control.ContextMenuContent"),
+               menuItemContainerClass  = Class.forName("com.sun.javafx.scene.control.ContextMenuContent$MenuItemContainer");
 
       Constructor<?> ctor = menuItemContainerClass.getDeclaredConstructor(contextMenuContentClass, MenuItem.class);
 
@@ -489,20 +489,20 @@ public final class UIUtil
       }
 
       Double val = AnchorPane.getBottomAnchor(node);
-      if ((val != null) && (val.doubleValue() > 0.0))
-        AnchorPane.setBottomAnchor(node, round(val.doubleValue() * displayScale));
+      if ((val != null) && (val > 0.0))
+        AnchorPane.setBottomAnchor(node, round(val * displayScale));
 
       val = AnchorPane.getTopAnchor(node);
-      if ((val != null) && (val.doubleValue() > 0.0))
-        AnchorPane.setTopAnchor(node, round(val.doubleValue() * displayScale));
+      if ((val != null) && (val > 0.0))
+        AnchorPane.setTopAnchor(node, round(val * displayScale));
 
       val = AnchorPane.getLeftAnchor(node);
-      if ((val != null) && (val.doubleValue() > 0.0))
-        AnchorPane.setLeftAnchor(node, round(val.doubleValue() * displayScale));
+      if ((val != null) && (val > 0.0))
+        AnchorPane.setLeftAnchor(node, round(val * displayScale));
 
       val = AnchorPane.getRightAnchor(node);
-      if ((val != null) && (val.doubleValue() > 0.0))
-        AnchorPane.setRightAnchor(node, round(val.doubleValue() * displayScale));
+      if ((val != null) && (val > 0.0))
+        AnchorPane.setRightAnchor(node, round(val * displayScale));
     }
 
     if (node instanceof GridPane)
@@ -645,7 +645,7 @@ public final class UIUtil
 
   public static boolean falseWithErrMsgCond(boolean showErrMsg, String errMsg)
   {
-    return showErrMsg ? falseWithErrorMessage(errMsg) : false;
+    return showErrMsg && falseWithErrorMessage(errMsg);
   }
 
   public static boolean falseWithErrorMessage  (String msg                  ) { return falseWithMessage(msg, mtError      , null       ); }
@@ -668,7 +668,7 @@ public final class UIUtil
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static enum MessageDialogType { mtWarning, mtError, mtInformation }
+  public enum MessageDialogType { mtWarning, mtError, mtInformation }
 
   public static void messageDialog(String msg, MessageDialogType mt)
   {
@@ -753,7 +753,7 @@ public final class UIUtil
   public static double getRowHeight(Control ctrl)
   {
     Double heightObj = rowHeight.get(ctrl);
-    if (heightObj != null) return heightObj.doubleValue();
+    if (heightObj != null) return heightObj;
 
     for (Node rowNode : ctrl.lookupAll(".indexed-cell"))
     {

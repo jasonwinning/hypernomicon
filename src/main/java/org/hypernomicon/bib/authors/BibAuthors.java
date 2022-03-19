@@ -60,7 +60,7 @@ public abstract class BibAuthors implements Iterable<BibAuthor>
   public final void add(AuthorType authorType, HDT_Person person) { add(new BibAuthor(authorType, person)); }
   public final void add(AuthorType authorType, PersonName name)   { add(new BibAuthor(authorType, name)); }
 
-  public static boolean isEmpty(BibAuthors bibAuthors) { return bibAuthors == null ? true : bibAuthors.isEmpty(); }
+  public static boolean isEmpty(BibAuthors bibAuthors) { return (bibAuthors == null) || bibAuthors.isEmpty(); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

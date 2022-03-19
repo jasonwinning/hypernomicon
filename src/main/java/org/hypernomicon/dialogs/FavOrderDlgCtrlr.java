@@ -69,7 +69,7 @@ public class FavOrderDlgCtrlr extends HyperDlg
 
     lvQuery.setCellFactory(factory);
 
-    lvQuery.setItems(new FilteredList<>(ui.mnuQueries.getItems(), item -> ui.mnuQueries.getItems().indexOf(item) >= 0));
+    lvQuery.setItems(new FilteredList<>(ui.mnuQueries.getItems(), item -> ui.mnuQueries.getItems().contains(item)));
 
     btnQueryUp.setOnAction(event -> moveQuery(-1));
     btnQueryDown.setOnAction(event -> moveQuery(1));

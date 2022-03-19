@@ -29,7 +29,7 @@ import org.hypernomicon.model.records.RecordType;
 
 public class HDI_OfflineTernary extends HDI_OfflineBase
 {
-  public static enum Ternary
+  public enum Ternary
   {
     Unset, False, True;
 

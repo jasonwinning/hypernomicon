@@ -128,7 +128,7 @@ public final class PersonName implements Comparable<PersonName>, Cloneable
   public String getLastFirst()    { return (first.length() > 0) && (last.length() > 0) ? (last + ", " + first) : (last + first); }
   public boolean isEmpty()        { return (getLast().length() + getFirst().length()) == 0; }
   public PersonName toLowerCase() { return new PersonName(first.toLowerCase(), last.toLowerCase()); }
-  public String getFull()         { return String.valueOf(first + " " + last).trim(); }
+  public String getFull()         { return (first + " " + last).trim(); }
   public String getSingle()       { return getLast().length() > 0 ? getLast() : getFirst(); }
   public PersonName toEngChar()   { return new PersonName(convertToEnglishChars(first), convertToEnglishChars(last)); }
   public String getSortKey()      { return last.isEmpty() || first.isEmpty() ? (last + first) : (last + '\u0000' + first); }

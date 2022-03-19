@@ -113,13 +113,11 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
         setupDragHandlers(row);
 
         row.setOnMouseClicked(mouseEvent ->
-        {
           nullSwitch(row.getItem(), treeRow -> nullSwitch(treeRow.treeItem, treeItem -> nullSwitch(treeRow.<HDT_Record>getRecord(), record ->
           {
             if (db.isLoaded() && mouseEvent.getButton().equals(MouseButton.PRIMARY) && (mouseEvent.getClickCount() == 2) && treeItem.isLeaf())
               ui.goToRecord(record, false);
-          })));
-        });
+          }))));
       }
 
       row.itemProperty().addListener((ob, ov, nv) ->
@@ -230,12 +228,12 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
   {
     super.reset();
 
-    debateTree.reset(HDT_Record.class.cast(db.debates   .getByID(1)));
-    noteTree  .reset(HDT_Record.class.cast(db.notes     .getByID(1)));
-    labelTree .reset(HDT_Record.class.cast(db.workLabels.getByID(1)));
+    debateTree.reset(db.debates   .getByID(1));
+    noteTree  .reset(db.notes     .getByID(1));
+    labelTree .reset(db.workLabels.getByID(1));
 
     if (hasTerms)
-      termTree.reset(HDT_Record.class.cast(db.glossaries.getByID(1)));
+      termTree.reset(db.glossaries.getByID(1));
   }
 
 //---------------------------------------------------------------------------
@@ -466,7 +464,7 @@ public class TreeWrapper extends AbstractTreeWrapper<TreeRow>
     RecordTreeEdge edge = new RecordTreeEdge(parent, child);
 
     if (edge.canDetach() == false)
-      return doDetach ? falseWithErrorMessage("Internal error #33948.") : false;
+      return doDetach && falseWithErrorMessage("Internal error #33948.");
 
     boolean rv = edge.canDetachWithoutAttaching(doDetach);
 

@@ -281,7 +281,7 @@ public class HyperPath
 
       case hdtWorkFile :
 
-        HDT_WorkFile workFile = HDT_WorkFile.class.cast(existingRecord);
+        HDT_WorkFile workFile = (HDT_WorkFile) existingRecord;
         return workFile.works.size() > 0 ?
           "The file: " + filePath + " is already in use as a work file, work record ID: " + workFile.works.get(0).getID()
         :
@@ -373,9 +373,7 @@ public class HyperPath
     if (FilePath.isEmpty(newFileName) == false)
     {
       newFileName = newFileName.getNameOnly();
-      Set<HyperPath> set = db.filenameMap.get(newFileName.toString());
-      if (set == null)
-        db.filenameMap.put(newFileName.toString(), set = Sets.newConcurrentHashSet());
+      Set<HyperPath> set = db.filenameMap.computeIfAbsent(newFileName.toString(), k -> Sets.newConcurrentHashSet());
 
       set.add(this);
     }
@@ -397,7 +395,7 @@ public class HyperPath
       if ((path == this) || path.isEmpty()) return false;
 
       HDT_Folder otherParent = path.parentFolder();
-      return otherParent == null ? false : parent == otherParent;
+      return (otherParent != null) && (parent == otherParent);
     });
   }
 
@@ -417,7 +415,7 @@ public class HyperPath
         if (hyperPath.getRecordType() != hdtPerson) return;
 
         if (val.length() > 0) val.append("; ");
-        val.append(db.getTypeName(hdtPerson) + ": " + hyperPath.getRecord().listName());
+        val.append(db.getTypeName(hdtPerson)).append(": ").append(hyperPath.getRecord().listName());
       });
     }
 
@@ -429,12 +427,12 @@ public class HyperPath
       if (relative.getType() == hdtFolder) return;
 
       if (val.length() > 0) val.append("; ");
-      val.append(db.getTypeName(relative.getType()) + ": " + relative.listName());
+      val.append(db.getTypeName(relative.getType())).append(": ").append(relative.listName());
     });
 
     if ((val.length() == 0) && (getRecordType() == hdtFolder))
     {
-      if (HDT_Folder.class.cast(getRecord()).childFolders.stream().anyMatch(subFolder -> subFolder.getPath().getRecordsString().length() > 0))
+      if (((HDT_Folder) getRecord()).childFolders.stream().anyMatch(subFolder -> subFolder.getPath().getRecordsString().length() > 0))
         return "(Subfolders have associated records)";
     }
 
@@ -448,7 +446,7 @@ public class HyperPath
   {
     if (getRecordsString().isEmpty() == false) return true;
 
-    return getRecordType() != hdtFolder ? false : db.isSpecialFolder(getRecord().getID(), true);
+    return (getRecordType() == hdtFolder) && db.isSpecialFolder(getRecord().getID(), true);
   }
 
 //---------------------------------------------------------------------------

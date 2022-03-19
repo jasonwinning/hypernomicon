@@ -215,7 +215,7 @@ public class CrossrefBibData extends BibDataStandalone
     jsonArr.getObjs().forEach(author ->
     {
       String first = author.getStrSafe("given"), last = author.getStrSafe("family");
-      if (String.valueOf(first + last).isBlank())
+      if ((first + last).isBlank())
         last = author.getStrSafe("name");
 
       authors.add(new BibAuthor(aType, new PersonName(first, last)));
@@ -367,7 +367,7 @@ public class CrossrefBibData extends BibDataStandalone
 
     }, e ->
     {
-      if ((e instanceof HttpResponseException) && (HttpResponseException.class.cast(e).getStatusCode() == HttpStatus.SC_NOT_FOUND))
+      if ((e instanceof HttpResponseException) && (((HttpResponseException) e).getStatusCode() == HttpStatus.SC_NOT_FOUND))
       {
         if (doi.endsWith("."))
         {

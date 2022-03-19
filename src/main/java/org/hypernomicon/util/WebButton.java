@@ -37,7 +37,7 @@ public class WebButton
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static enum WebButtonField
+  public enum WebButtonField
   {
     Name("Record name or title including subtitle; blank for persons"),
     SingleName("Last name of person, or first name if there is no last name"),
@@ -60,7 +60,7 @@ public class WebButton
 
   //---------------------------------------------------------------------------
 
-    private WebButtonField(String toolTip)
+    WebButtonField(String toolTip)
     {
       key = "::::" + name();
       this.toolTip = toolTip;
@@ -233,7 +233,7 @@ public class WebButton
             String first3 = String.valueOf(first1.charAt(0));
 
             for (; ndx >= 0; ndx = first1.indexOf(' ', ndx + 1))
-              first3 = first3 + String.valueOf(first1.charAt(ndx + 1));
+              first3 = first3 + first1.charAt(ndx + 1);
 
             first3 = first3.toUpperCase();
 

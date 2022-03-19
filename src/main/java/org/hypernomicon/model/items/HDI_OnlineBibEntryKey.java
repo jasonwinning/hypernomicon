@@ -20,8 +20,6 @@ package org.hypernomicon.model.items;
 import java.util.List;
 
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.Exceptions.RelationCycleException;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_Work;
 
 import static org.hypernomicon.model.HyperDB.*;
@@ -44,7 +42,7 @@ public class HDI_OnlineBibEntryKey extends HDI_OnlineBase<HDI_OfflineString>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromOfflineValue(HDI_OfflineString val, Tag tag) throws RelationCycleException
+  @Override public void setFromOfflineValue(HDI_OfflineString val, Tag tag)
   {
     set(val.get());
   }

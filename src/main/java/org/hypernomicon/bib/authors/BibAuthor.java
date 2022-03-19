@@ -25,7 +25,7 @@ import static org.hypernomicon.util.Util.*;
 
 public final class BibAuthor implements Cloneable
 {
-  public static enum AuthorType { author, editor, translator }
+  public enum AuthorType { author, editor, translator }
 
   private final PersonName name;
   private final HDT_Person person;
@@ -57,22 +57,22 @@ public final class BibAuthor implements Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public final AuthorType getType()   { return type; }
-  public final String getGiven()      { return getName().getFirst(); }
-  public final String getFamily()     { return getName().getLast(); }
-  public final PersonName getName()   { return person == null ? name : person.getName(); }
-  public final HDT_Person getPerson() { return person; }
+  public AuthorType getType()   { return type; }
+  public String getGiven()      { return getName().getFirst(); }
+  public String getFamily()     { return getName().getLast(); }
+  public PersonName getName()   { return person == null ? name : person.getName(); }
+  public HDT_Person getPerson() { return person; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public final BibAuthor clone()
+  @Override public BibAuthor clone()
   { try { return (BibAuthor) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public final int hashCode()
+  @Override public int hashCode()
   {
     final int prime = 31;
     int result = 1;
@@ -94,7 +94,7 @@ public final class BibAuthor implements Cloneable
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public final boolean equals(Object obj)
+  @Override public boolean equals(Object obj)
   {
     if (this == obj) return true;
     if (obj == null) return false;
@@ -103,28 +103,24 @@ public final class BibAuthor implements Cloneable
 
     if (type != other.type) return false;
 
-    if (person == null)
+    if (person != null) return person.equals(other.person);
+
+    if (other.person != null) return false;
+
+    String first = "", last = "", otherFirst = "", otherLast = "";
+
+    if (name != null)
     {
-      if (other.person != null) return false;
-
-      String first = "", last = "", otherFirst = "", otherLast = "";
-
-      if (name != null)
-      {
-        first = name.getFirst(); last = name.getLast();
-      }
-
-      if (other.name != null)
-      {
-        otherFirst = other.name.getFirst(); otherLast = other.name.getLast();
-      }
-
-      if (safeStr(first).equals(safeStr(otherFirst)) == false) return false;
-      if (safeStr(last).equals(safeStr(otherLast)) == false) return false;
+      first = name.getFirst(); last = name.getLast();
     }
-    else if (!person.equals(other.person)) return false;
 
-    return true;
+    if (other.name != null)
+    {
+      otherFirst = other.name.getFirst(); otherLast = other.name.getLast();
+    }
+
+    return (safeStr(first).equals(safeStr(otherFirst)) &&
+            safeStr(last ).equals(safeStr(otherLast )));
   }
 
 //---------------------------------------------------------------------------

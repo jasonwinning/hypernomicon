@@ -264,7 +264,7 @@ public class HyperObjSubList<HDT_SubjType extends HDT_Record, HDT_ObjType extend
 
   @Override public int lastIndexOf(Object o)
   {
-    for (int ndx = endNdx - 1; ndx >= startNdx; ndx++)
+    for (int ndx = endNdx - 1; ndx >= startNdx; ndx--)
       if (get(ndx) == o)
         return ndx;
 

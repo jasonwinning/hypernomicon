@@ -221,7 +221,7 @@ public final class Util
   public static boolean strListsEqual(List<String> list1, List<String> list2, boolean ignoreCase)
   {
     if ((list1 == null) != (list2 == null)) return false;
-    if ((list1 == null) && (list2 == null)) return true;
+    if (list1 == null) return true;
     if (list1.size() != list2.size()) return false;
 
     for (int ndx = 0; ndx < list1.size(); ndx++)
@@ -251,18 +251,16 @@ public final class Util
 
   public static String removeFirstParenthetical(String str)
   {
-    int pos1 = str.indexOf('('), pos2 = str.indexOf(')');
-
-    if (pos1 >= 0)
-    {
-      String result = str.substring(0, pos1).trim();
-      if (pos2 > pos1)
-        result = String.valueOf(result + " " + safeSubstring(str, pos2 + 1, str.length()).trim()).trim();
-
-      return result;
-    }
-    else
+    int pos1 = str.indexOf('(');
+    if (pos1 < 0)
       return str;
+
+    int pos2 = str.indexOf(')');
+    String result = str.substring(0, pos1).trim();
+    if (pos2 > pos1)
+      result = (result + " " + safeSubstring(str, pos2 + 1, str.length())).trim();
+
+    return result;
   }
 
 //---------------------------------------------------------------------------
@@ -593,15 +591,15 @@ public final class Util
 
   public static String safeStr(String s)           { return s == null ? "" : s; }
 
-  public static boolean collEmpty(Collection<?> c) { return c == null ? true : c.isEmpty(); }
-  public static boolean collEmpty(Map<?, ?> m)     { return m == null ? true : m.isEmpty(); }
+  public static boolean collEmpty(Collection<?> c) { return (c == null) || c.isEmpty(); }
+  public static boolean collEmpty(Map<?, ?> m)     { return (m == null) || m.isEmpty(); }
 
   public static <E> List<E> safeListOf(E e1)       { return e1 == null ? List.of() : List.of(e1); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @SafeVarargs public static <T extends Object> void removeAll(Collection<T> col, T... objs)
+  @SafeVarargs public static <T> void removeAll(Collection<T> col, T... objs)
   {
     col.removeAll(Arrays.asList(objs));
   }
@@ -701,11 +699,11 @@ public final class Util
 
   public static boolean isStringUrl(String selText)
   {
-    return (selText.indexOf("www.") > -1) || (selText.indexOf("http") > -1) ||
-           (selText.indexOf(".com") > -1) || (selText.indexOf(".htm") > -1) ||
-           (selText.indexOf(".org") > -1) || (selText.indexOf(".net") > -1) ||
-           (selText.indexOf(".us")  > -1) || (selText.indexOf(".uk")  > -1) ||
-           (selText.indexOf(".gov") > -1) || (selText.indexOf("://")  > -1) ||
+    return (selText.contains("www.")) || (selText.contains("http")) ||
+           (selText.contains(".com")) || (selText.contains(".htm")) ||
+           (selText.contains(".org")) || (selText.contains(".net")) ||
+           (selText.contains(".us" )) || (selText.contains(".uk" )) ||
+           (selText.contains(".gov")) || (selText.contains("://" )) ||
 
            (selText.matches(".*\\w/\\w.*") && selText.matches(".*\\.[a-zA-Z].*"));
   }
@@ -721,7 +719,7 @@ public final class Util
 
     if (len == 0) return 0;
 
-    char val[] = value.toCharArray();
+    char[] val = value.toCharArray();
 
     for (int i = 0; i < len; i++)
       h = 31 * h + val[i];
@@ -918,14 +916,6 @@ public final class Util
   {
     int ndx = Collections.binarySearch(list, item);
     list.add(ndx >= 0 ? ndx + 1 : ~ndx, item);
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  public static <T, R extends Comparable<R>> Comparator<T> sortBasis(Function<T, R> function)
-  {
-    return (o1, o2) -> function.apply(o1).compareTo(function.apply(o2));
   }
 
 //---------------------------------------------------------------------------

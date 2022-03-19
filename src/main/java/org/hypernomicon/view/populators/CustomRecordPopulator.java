@@ -32,12 +32,12 @@ public class CustomRecordPopulator extends Populator
 
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface PopulateHandler { List<HDT_Record> handle(HyperTableRow row, boolean force); }
+  @FunctionalInterface public interface PopulateHandler { List<HDT_Record> handle(HyperTableRow row, boolean force); }
 
 //---------------------------------------------------------------------------
 
-  private RecordType recordType;
-  private PopulateHandler handler;
+  private final RecordType recordType;
+  private final PopulateHandler handler;
 
 //---------------------------------------------------------------------------
 
@@ -59,7 +59,7 @@ public class CustomRecordPopulator extends Populator
 
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
-    return handler.handle(row, force).stream().filter(record -> filter == null ? true : filter.test(record.getID()))
+    return handler.handle(row, force).stream().filter(record -> (filter == null) || filter.test(record.getID()))
                                               .map(record -> new HyperTableCell(record, record.getCBText()))
                                               .collect(Collectors.toList());
   }

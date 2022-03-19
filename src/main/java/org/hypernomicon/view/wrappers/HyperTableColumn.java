@@ -21,13 +21,10 @@ import static org.hypernomicon.App.*;
 import static org.hypernomicon.model.HyperDB.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 import static org.hypernomicon.model.records.RecordType.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 
-import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.List;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -53,17 +50,16 @@ import javafx.scene.control.TableColumn;
 
 public class HyperTableColumn
 {
-  public static enum HyperCtrlType
+  public enum HyperCtrlType
   {
     ctNone,     ctIncremental, ctDropDownList, ctDropDown, ctEdit, ctUrlBtn,   ctBrowseBtn, ctGoBtn,
     ctGoNewBtn, ctEditNewBtn,  ctCustomBtn,    ctCheckbox, ctIcon, ctInvSelect
   }
 
-  final private TableColumn<HyperTableRow, HyperTableCell> tc;
-  final private TableColumn<HyperTableRow, Boolean> chkCol;
   final private Populator populator;
   final private RecordType objType;
   final private HyperCtrlType ctrlType;
+  final private TableColumn<HyperTableRow, ?> tc;
   final EnumMap<ButtonAction, String> tooltips = new EnumMap<>(ButtonAction.class);
   final CellUpdateHandler updateHandler;
   final private int colNdx;
@@ -123,32 +119,24 @@ public class HyperTableColumn
     this.updateHandler = updateHandler;
 
     colNdx = table.getColumns().size();
+    tc = table.getTV().getColumns().get(colNdx);
 
-    if (ctrlType == ctCheckbox)
-    {
-      chkCol = (TableColumn<HyperTableRow, Boolean>) table.getTV().getColumns().get(colNdx);
-      tc = null;
-    }
-    else
-    {
-      tc = (TableColumn<HyperTableRow, HyperTableCell>) table.getTV().getColumns().get(colNdx);
-      chkCol = null;
-    }
+    TableColumn<HyperTableRow, HyperTableCell> htcCol = ctrlType == ctCheckbox ? null : (TableColumn<HyperTableRow, HyperTableCell>) tc;
 
     switch (ctrlType)
     {
       case ctGoBtn : case ctGoNewBtn : case ctEditNewBtn : case ctBrowseBtn : case ctUrlBtn : case ctCustomBtn :
 
-        tc.setCellFactory(tableCol -> new ButtonCell(ctrlType, table, this, targetCol, btnHandler, btnCaption));
+        htcCol.setCellFactory(tableCol -> new ButtonCell(ctrlType, table, this, targetCol, btnHandler, btnCaption));
         break;
 
       case ctEdit :
 
-        tc.setEditable(true);
-        tc.setCellValueFactory(cellDataFeatures -> new SimpleObjectProperty<>(cellDataFeatures.getValue().getCell(colNdx)));
-        tc.setCellFactory(tableCol -> new TextFieldCell(table, canEditIfEmpty, isNumeric));
+        htcCol.setEditable(true);
+        htcCol.setCellValueFactory(cellDataFeatures -> new SimpleObjectProperty<>(cellDataFeatures.getValue().getCell(colNdx)));
+        htcCol.setCellFactory(tableCol -> new TextFieldCell(table, canEditIfEmpty, isNumeric));
 
-        tc.setOnEditCommit(event ->
+        htcCol.setOnEditCommit(event ->
         {
           HyperTableCell newCell = event.getNewValue().getCopyWithID(event.getOldValue().getID()); // preserve ID value
           event.getRowValue().setCellValue(colNdx, newCell);
@@ -158,8 +146,10 @@ public class HyperTableColumn
 
       case ctCheckbox :
 
-        chkCol.setEditable(true);
-        chkCol.setCellValueFactory(cellData ->
+        TableColumn<HyperTableRow, Boolean> boolCol = (TableColumn<HyperTableRow, Boolean>) tc;
+
+        boolCol.setEditable(true);
+        boolCol.setCellValueFactory(cellData ->
         {
           HyperTableCell cell = cellData.getValue().getCell(colNdx);
           int id = HyperTableCell.getCellID(cell);
@@ -167,23 +157,23 @@ public class HyperTableColumn
           return new SimpleBooleanProperty(id == 1);
         });
 
-        chkCol.setCellFactory(tableCol -> new CheckboxCell(table));
+        boolCol.setCellFactory(tableCol -> new CheckboxCell(table));
 
         break;
 
       case ctNone :
 
-        tc.setEditable(false);
-        tc.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
-        tc.setCellFactory(tableCol -> new ReadOnlyCell(table, false, graphicProvider));
+        htcCol.setEditable(false);
+        htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
+        htcCol.setCellFactory(tableCol -> new ReadOnlyCell(table, false, graphicProvider));
 
         break;
 
       case ctIcon :
 
-        tc.setEditable(false);
-        tc.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
-        tc.setCellFactory(tableCol -> new TableCell<>()
+        htcCol.setEditable(false);
+        htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
+        htcCol.setCellFactory(tableCol -> new TableCell<>()
         {
           @Override public void updateItem(HyperTableCell cell, boolean empty)
           {
@@ -217,24 +207,24 @@ public class HyperTableColumn
 
       case ctIncremental :
 
-        tc.setEditable(false);
-        tc.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
-        tc.setCellFactory(tableCol -> new ReadOnlyCell(table, true, graphicProvider));
+        htcCol.setEditable(false);
+        htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
+        htcCol.setCellFactory(tableCol -> new ReadOnlyCell(table, true, graphicProvider));
 
         break;
 
       case ctDropDownList : case ctDropDown :
 
-        tc.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
-        tc.setCellFactory(tableCol -> new ComboBoxCell(table, ctrlType, populator, onAction, dontCreateNewRecord, textHndlr));
-        tc.setOnEditStart(event -> populator.populate(event.getRowValue(), false));
+        htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
+        htcCol.setCellFactory(tableCol -> new ComboBoxCell(table, ctrlType, populator, onAction, dontCreateNewRecord, textHndlr));
+        htcCol.setOnEditStart(event -> populator.populate(event.getRowValue(), false));
 
         break;
 
       case ctInvSelect :
 
-        tc.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
-        tc.setCellFactory(tableCol -> new TableCell<>()
+        htcCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getCell(colNdx)));
+        htcCol.setCellFactory(tableCol -> new TableCell<>()
         {
           @Override public void startEdit()
           {
@@ -257,21 +247,6 @@ public class HyperTableColumn
       default :
         break;
     }
-  }
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-  List<HyperTableCell> getSelectedItems()
-  {
-    List<HyperTableCell> choices = new ArrayList<>();
-
-    tc.getTableView().getItems().forEach(row ->
-      nullSwitch(row.getRecord(colNdx), (HDT_Record record) -> choices.add(new HyperTableCell(record, record.getCBText()))));
-
-    choices.add(HyperTableCell.blankCell);
-
-    return choices;
   }
 
 //---------------------------------------------------------------------------

@@ -33,11 +33,11 @@ public class BibEntryPopulator extends Populator
 
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface PopulateHandler { List<? extends BibEntry> handle(HyperTableRow row, boolean force); }
+  @FunctionalInterface public interface PopulateHandler { List<? extends BibEntry> handle(HyperTableRow row, boolean force); }
 
 //---------------------------------------------------------------------------
 
-  private PopulateHandler handler;
+  private final PopulateHandler handler;
 
 //---------------------------------------------------------------------------
 
@@ -57,7 +57,7 @@ public class BibEntryPopulator extends Populator
   @Override public List<HyperTableCell> populate(HyperTableRow row, boolean force)
   {
     List<HyperTableCell> choices = handler.handle(row, force).stream()
-      .filter(bibEntry -> filter == null ? true : filter.test(bibEntry.numericID()))
+      .filter(bibEntry -> (filter == null) || filter.test(bibEntry.numericID()))
       .map(bibEntry -> new HyperTableCell(bibEntry.numericID(), bibEntry.getCBText(), hdtNone))
       .collect(Collectors.toCollection(ArrayList::new));
 

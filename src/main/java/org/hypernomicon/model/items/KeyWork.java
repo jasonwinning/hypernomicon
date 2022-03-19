@@ -36,7 +36,7 @@ public class KeyWork implements Comparable<KeyWork>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private abstract class RecordPointer
+  private abstract static class RecordPointer
   {
     abstract int getID();
     abstract RecordType getType();
@@ -71,7 +71,7 @@ public class KeyWork implements Comparable<KeyWork>
   //---------------------------------------------------------------------------
   //---------------------------------------------------------------------------
 
-  private class OfflineRecordPointer extends RecordPointer
+  private static class OfflineRecordPointer extends RecordPointer
   {
     private final RecordType type;
     private final int id;
@@ -93,7 +93,7 @@ public class KeyWork implements Comparable<KeyWork>
 
   }
 
-  private class OnlineRecordPointer extends RecordPointer
+  private static class OnlineRecordPointer extends RecordPointer
   {
     private final HDT_Record record;
 
@@ -144,7 +144,7 @@ public class KeyWork implements Comparable<KeyWork>
   public RecordType getRecordType()     { return recordPtr.getType(); }
   public int getRecordID()              { return recordPtr.getID(); }
   public HDT_RecordWithPath getRecord() { return (HDT_RecordWithPath) recordPtr.getRecord(); }
-  boolean isExpired()                   { return recordPtr == null ? true : recordPtr.isExpired(); }
+  boolean isExpired()                   { return (recordPtr == null) || recordPtr.isExpired(); }
   KeyWork getOnlineCopy()               { return new KeyWork(getRecordType(), getRecordID(), getSearchKey(), true); }
   KeyWork getOfflineCopy()              { return new KeyWork(getRecordType(), getRecordID(), getSearchKey(), false); }
 
@@ -182,7 +182,7 @@ public class KeyWork implements Comparable<KeyWork>
       searchKey = new SplitString(searchKey, ':').next();
     }
     else
-      searchKey = HDT_MiscFile.class.cast(recordPtr.getRecord()).name();
+      searchKey = recordPtr.getRecord().name();
   }
 
   //---------------------------------------------------------------------------
@@ -256,9 +256,9 @@ public class KeyWork implements Comparable<KeyWork>
   private int getYear()
   {
     if (recordPtr.getType() == hdtWork)
-      return parseInt(HDT_Work.class.cast(recordPtr.getRecord()).getYear(), 0);
+      return parseInt(((HDT_Work) recordPtr.getRecord()).getYear(), 0);
     else if (recordPtr.getType() == hdtMiscFile)
-      return nullSwitch(HDT_MiscFile.class.cast(recordPtr.getRecord()).work.get(), 0, work -> parseInt(work.getYear(), 0));
+      return nullSwitch(((HDT_MiscFile) recordPtr.getRecord()).work.get(), 0, work -> parseInt(work.getYear(), 0));
 
     return 0;
   }

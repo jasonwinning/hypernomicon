@@ -24,7 +24,6 @@ import static org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory.*;
 import static org.hypernomicon.util.Util.*;
 
 import org.hypernomicon.model.Exceptions.*;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.relations.RelationSet;
 
@@ -126,7 +125,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
   Tag getMainTextTag()                             { return mainTextTag; }
   void resolvePointers() throws HDB_InternalError  { core.resolvePointers(); }
   CoreAccessor getAccessor()                       { return new CoreAccessor(core); }
-  boolean idAvailable(int id)                      { return isUnstoredRecord(id, type) ? false : core.containsID(id) == false; }
+  boolean idAvailable(int id)                      { return (isUnstoredRecord(id, type) == false) && (core.containsID(id) == false); }
   public String getKeyByID(int id)                 { return core.getKeyByID(id); }
 
   public void changeRecordID(int oldID, int newID) throws HDB_InternalError { core.changeRecordID(oldID, newID); }
@@ -252,7 +251,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
 //---------------------------------------------------------------------------
 
   @SuppressWarnings("unchecked")
-  private final HDT_DT createRecord(RecordState recordState)
+  private HDT_DT createRecord(RecordState recordState)
   {
     Class<HDT_DT> klazz = (Class<HDT_DT>) recordState.type.getRecordClass();
 
@@ -298,7 +297,7 @@ public final class HyperDataset<HDT_DT extends HDT_Record>
       if (db.task.isCancelled()) throw new TerminateTaskException();
     }
 
-    xml.append(System.lineSeparator() + System.lineSeparator() + System.lineSeparator());
+    xml.append(System.lineSeparator()).append(System.lineSeparator()).append(System.lineSeparator());
   }
 
 //---------------------------------------------------------------------------

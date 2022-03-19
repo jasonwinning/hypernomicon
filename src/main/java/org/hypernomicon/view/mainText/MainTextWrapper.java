@@ -19,6 +19,7 @@ package org.hypernomicon.view.mainText;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.Predicate;
@@ -73,10 +74,10 @@ public final class MainTextWrapper
   private static String textToHilite = "",
                         lastTextToHilite = "";
 
-  private static StringBuilder jQueryContents  = new StringBuilder(),
-                               jHiliteContents = new StringBuilder();
+  private static final StringBuilder jQueryContents  = new StringBuilder(),
+                                     jHiliteContents = new StringBuilder();
 
-  private AnchorPane parentPane;
+  private final AnchorPane parentPane;
   private HDT_RecordWithConnector curRecord;
   private String html, completeHtml;
   private List<DisplayItem> displayItems;
@@ -122,7 +123,7 @@ public final class MainTextWrapper
       if (newState == Worker.State.SUCCEEDED)
       {
         if (textToHilite.length() > 0)
-          lastTextToHilite = new String(textToHilite);
+          lastTextToHilite = textToHilite;
 
         if (lastTextToHilite.length() > 0)
           hiliteText(textToHilite, we);
@@ -250,7 +251,7 @@ public final class MainTextWrapper
         mainTextWrapper.beginEditing(true);
     });
 
-    boolean noDisplayRecords = displayItems == null ? true : displayItems.stream().noneMatch(item -> item.type == DisplayItemType.diRecord);
+    boolean noDisplayRecords = (displayItems == null) || displayItems.stream().noneMatch(item -> item.type == DisplayItemType.diRecord);
 
     int keyWorksSize = keyWorks == null ? 0 : getNestedKeyWorkCount(curRecord, keyWorks);
 
@@ -268,7 +269,7 @@ public final class MainTextWrapper
 
   private boolean canEdit()
   {
-    return curRecord == null ? false : (HyperDB.isUnstoredRecord(curRecord.getID(), curRecord.getType()) == false);
+    return (curRecord != null) && (HyperDB.isUnstoredRecord(curRecord.getID(), curRecord.getType()) == false);
   }
 
 //---------------------------------------------------------------------------
@@ -299,7 +300,7 @@ public final class MainTextWrapper
   {
     string = StringEscapeUtils.escapeEcmaScript(string);
 
-    weToUse.executeScript(jQueryContents.toString() + System.lineSeparator() + jHiliteContents.toString());
+    weToUse.executeScript(jQueryContents + System.lineSeparator() + jHiliteContents);
     weToUse.executeScript("$('body').removeHighlight().highlight('" + string + "')");
     weToUse.executeScript("var els = document.getElementsByClassName('highlight'); if (typeof(els[0]) != 'undefined') els[0].scrollIntoView();");
   }
@@ -330,7 +331,7 @@ public final class MainTextWrapper
                                                   "openDivits");
     viewInfo.openDivits = new HashSet<>();
 
-    int len = Integer.class.cast(divits.getMember("length")).intValue();
+    int len = (Integer) divits.getMember("length");
     String divitID = "";
 
     for (int ndx = 0; ndx < len; ndx++)
@@ -382,7 +383,7 @@ public final class MainTextWrapper
     if (mainTextRecord.getType() == hdtWorkLabel) return (HDT_WorkLabel) mainTextRecord;
     if (mainTextRecord.getType() != hdtHub)       return null;
 
-    return HDT_Hub.class.cast(mainTextRecord).getLink().getLabel();
+    return ((HDT_Hub) mainTextRecord).getLink().getLabel();
   }
 
 //---------------------------------------------------------------------------
@@ -452,7 +453,7 @@ public final class MainTextWrapper
 
     concepts.removeIf(this::displayerIsAlreadyShowing);
 
-    concepts.sort(sortBasis(HDT_Record::getSortKey));
+    concepts.sort(Comparator.comparing(HDT_Record::getSortKey));
 
     return concepts;
   }
@@ -494,7 +495,7 @@ public final class MainTextWrapper
       doc.head().prepend(STYLE_TAG);
 
     MutableBoolean firstOpen = new MutableBoolean(doc.body().text().trim().isEmpty());
-    StringBuilder innerHtml = new StringBuilder("");
+    StringBuilder innerHtml = new StringBuilder();
     MutableInt tagNdx = new MutableInt(0);
     HDT_WorkLabel curLabel = getLabelOfRecord(curRecord);
     int keyWorksSize = getNestedKeyWorkCount(curRecord, keyWorks);
@@ -536,15 +537,15 @@ public final class MainTextWrapper
 
           if (firstOpen.isTrue())
           {
-            innerHtml.append(detailsTag(makeElementID(item.record), viewInfo, true) + "<summary><b>");
+            innerHtml.append(detailsTag(makeElementID(item.record), viewInfo, true)).append("<summary><b>");
             firstOpen.setFalse();
           }
           else
-            innerHtml.append(detailsTag(makeElementID(item.record), viewInfo, false) + "<summary><b>");
+            innerHtml.append(detailsTag(makeElementID(item.record), viewInfo, false)).append("<summary><b>");
 
-          innerHtml.append(db.getTypeName(item.record.getType()) + ": " +
-                           getKeywordLink(cbText, new KeywordLink(0, cbText.length(), new SearchKeyword(cbText, item.record)), "text-decoration: none;") +
-                           "</b></summary><br><div style=\"margin-left: 3.5em;\">");
+          innerHtml.append(db.getTypeName(item.record.getType())).append(": ")
+                   .append(getKeywordLink(cbText, new KeywordLink(0, cbText.length(), new SearchKeyword(cbText, item.record)), "text-decoration: none;"))
+                   .append("</b></summary><br><div style=\"margin-left: 3.5em;\">");
 
           String secondaryHtml = getSecondaryDisplayHtml(item.record, tagNdx, viewInfo);
 
@@ -594,7 +595,7 @@ public final class MainTextWrapper
 
       if (relRecordsHtml.length() > 0)
       {
-        innerHtml.append(relRecordsHtml + "<br>");
+        innerHtml.append(relRecordsHtml).append("<br>");
 
         if (plainText.length() > 0) innerHtml.append("<br>");
       }
@@ -615,11 +616,11 @@ public final class MainTextWrapper
     if (innerHtml.length() > 0)
       innerHtml.append("<br>");
 
-    innerHtml.append(detailsTag(KEYWORKS_DIVIT_ID, viewInfo, true) + "<summary><b>Key Works</b>&nbsp;")
-             .append("<a hypncon=\"true\" href=\"\" title=\"Turn key work details on/off\" onclick=\"javascript:callToJava(" + String.valueOf(JS_EVENT_DETAILED_KEY_WORKS) + "); return false;\"><img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/key-work-details.png") + "\"></img></a>")
-             .append("<span style=\"display: " + (sortByName ? "inline" : "none") + ";\" class=\"" + ALPHA_SORTED_OUTER_CLASS + "\"><a hypncon=\"true\" title=\"Sort by year\" href=\"\" onclick=\"javascript:switchTo19(); return false;\"><img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/sort_19.png") + "\"></img></a></span>")
-             .append("<span style=\"display: " + (sortByName ? "none" : "inline") + ";\" class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\"><a hypncon=\"true\" title=\"Sort alphabetically\" href=\"\" onclick=\"javascript:switchToAZ(); return false;\"><img border=0 width=16 height=16 src=\"" + imgDataURI("resources/images/sort_az.png") + "\"></img></a></span>")
-             .append("</summary><br><div class=\"" + NUMERIC_SORTED_OUTER_CLASS + "\" style=\"margin-left: 3.5em; display: " + (sortByName ? "none" : "block") + ";\">");
+    innerHtml.append(detailsTag(KEYWORKS_DIVIT_ID, viewInfo, true)).append("<summary><b>Key Works</b>&nbsp;")
+             .append("<a hypncon=\"true\" href=\"\" title=\"Turn key work details on/off\" onclick=\"javascript:callToJava(").append(JS_EVENT_DETAILED_KEY_WORKS).append("); return false;\"><img border=0 width=16 height=16 src=\"").append(imgDataURI("resources/images/key-work-details.png")).append("\"></img></a>")
+             .append("<span style=\"display: ").append(sortByName ? "inline" : "none").append(";\" class=\"").append(ALPHA_SORTED_OUTER_CLASS).append("\"><a hypncon=\"true\" title=\"Sort by year\" href=\"\" onclick=\"javascript:switchTo19(); return false;\"><img border=0 width=16 height=16 src=\"").append(imgDataURI("resources/images/sort_19.png")).append("\"></img></a></span>")
+             .append("<span style=\"display: ").append(sortByName ? "none" : "inline").append(";\" class=\"").append(NUMERIC_SORTED_OUTER_CLASS).append("\"><a hypncon=\"true\" title=\"Sort alphabetically\" href=\"\" onclick=\"javascript:switchToAZ(); return false;\"><img border=0 width=16 height=16 src=\"").append(imgDataURI("resources/images/sort_az.png")).append("\"></img></a></span>")
+             .append("</summary><br><div class=\"").append(NUMERIC_SORTED_OUTER_CLASS).append("\" style=\"margin-left: 3.5em; display: ").append(sortByName ? "none" : "block").append(";\">");
     appendKeyWorkSpanAndBody(curRecord, innerHtml, false, tagNdx, true, viewInfo);
 
     if ((curLabel != null) && (curLabel.subLabels.isEmpty() == false))
@@ -628,7 +629,7 @@ public final class MainTextWrapper
       appendSubLabelsKeyWorkBody(curLabel, innerHtml, false, tagNdx, viewInfo, "num" + makeElementID(curLabel));
     }
 
-    innerHtml.append("</div><div class=\"" + ALPHA_SORTED_OUTER_CLASS + "\" style=\"margin-left: 3.5em; display: " + (sortByName ? "block" : "none") + ";\">");
+    innerHtml.append("</div><div class=\"").append(ALPHA_SORTED_OUTER_CLASS).append("\" style=\"margin-left: 3.5em; display: ").append(sortByName ? "block" : "none").append(";\">");
     appendKeyWorkSpanAndBody(curRecord, innerHtml, true, tagNdx, true, viewInfo);
 
     if ((curLabel != null) && (curLabel.subLabels.isEmpty() == false))

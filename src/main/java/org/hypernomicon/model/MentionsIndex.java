@@ -54,7 +54,7 @@ class MentionsIndex
 {
   private final BidiOneToManyRecordMap mentionedInDescToMentioners   = new BidiOneToManyRecordMap(),
                                        mentionedAnywhereToMentioners = new BidiOneToManyRecordMap();
-  private final Set<HDT_Record> removedRecords = Collections.newSetFromMap(new ConcurrentHashMap<HDT_Record, Boolean>());
+  private final Set<HDT_Record> removedRecords = Collections.newSetFromMap(new ConcurrentHashMap<>());
   private final List<Runnable> ndxCompleteHandlers;
   private final KeywordLinkList linkList = new KeywordLinkList();
   private final EnumSet<RecordType> types;
@@ -220,7 +220,7 @@ class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  class RebuildThread extends HyperThread
+  static class RebuildThread extends HyperThread
   {
     RebuildThread(HyperTask task)
     {
@@ -234,7 +234,7 @@ class MentionsIndex
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  boolean startRebuild()
+  void startRebuild()
   {
     stopRebuild();
 
@@ -253,7 +253,7 @@ class MentionsIndex
         });
       }
 
-      @Override protected Boolean call() throws Exception
+      @Override protected Boolean call()
       {
         updateMessage("The requested operation will be performed after indexing has completed...");
 
@@ -295,15 +295,12 @@ class MentionsIndex
     };
 
     task.progressProperty().addListener((ob, oldValue, newValue) ->
-    {
       Platform.runLater(newValue.doubleValue() == 1.0 ?
         () -> ui.updateProgress("", -1.0)
       :
-        () -> ui.updateProgress("Indexing:", ctr / total));
-    });
+        () -> ui.updateProgress("Indexing:", ctr / total)));
 
     thread = new RebuildThread(task);
-    return true;
   }
 
 //---------------------------------------------------------------------------

@@ -36,11 +36,11 @@ import static org.hypernomicon.model.records.RecordType.*;
 import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.view.wrappers.HyperTableCell.*;
 import static org.hypernomicon.view.wrappers.HyperTableColumn.HyperCtrlType.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -83,7 +83,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean update()
+  @Override public void update()
   {
     Map<HDT_Person, Set<HDT_Institution>> peopleMap = new HashMap<>();
 
@@ -131,7 +131,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
         row.setCellValue(2, person.field.get(), person.field.get().name());
 
       List<HDT_Institution> instList = new ArrayList<>(peopleMap.get(person));
-      instList.sort(sortBasis(HDT_Record::name));
+      instList.sort(Comparator.comparing(HDT_Record::name));
 
       String instStr = instList.stream().map(HDT_Institution::name).reduce((name1, name2) -> name1 + ", " + name2).orElse("");
       int instID = instList.isEmpty() ? -1 : instList.get(0).getID();
@@ -144,8 +144,6 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     htPersons.getTV().getSortOrder().setAll(List.of(htPersons.getTV().getColumns().get(0)));
 
     safeFocus(tfName);
-
-    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -175,7 +173,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
     inst.persons.forEach(person ->
     {
       if (peopleMap.containsKey(person) == false)
-        peopleMap.put(person, new HashSet<HDT_Institution>());
+        peopleMap.put(person, new HashSet<>());
 
       peopleMap.get(person).add(nearestChildInst);
     });
@@ -362,7 +360,6 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
       {
         HDT_Institution subInst = subInstID < 1 ? db.createNewBlankRecord(hdtInstitution) : db.institutions.getByID(subInstID);
 
-        subInstID = subInst.getID();
         subInst.setName(row.getText(0));
         subInst.parentInst.setID(curInst.getID());
         subInst.instType.setID(row.getID(1));
@@ -403,10 +400,7 @@ public class InstTabCtrlr extends HyperTab<HDT_Institution, HDT_Institution>
 
     HDT_Country country = instToCheck.country.get();
 
-    return (country != null) && (country != baseInst.country.get()) ?
-      true
-    :
-      hasSubInstWithDifferentLocation(instToCheck, baseInst);
+    return ((country != null) && (country != baseInst.country.get())) || hasSubInstWithDifferentLocation(instToCheck, baseInst);
   }
 
 //---------------------------------------------------------------------------

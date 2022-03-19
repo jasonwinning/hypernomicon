@@ -64,9 +64,7 @@ public class WebButtonTable extends WebButtonCtrl
     ht.addTextEditCol(hdtNone, true, false);
     ht.addColAltPopulatorWithUpdateHandler(hdtNone, HyperCtrlType.ctDropDownList, Populator.create(cvtSrchBtnPreset, presetCells),
                                            (row, cellVal, nextColNdx, nextPopulator) ->
-    {
-      row.setCellValue(0, nullSwitch(htcToWebButton(cellVal), "", WebButton::getCaption), hdtNone);
-    });
+                                             row.setCellValue(0, nullSwitch(htcToWebButton(cellVal), "", WebButton::getCaption), hdtNone));
 
     ht.addCustomActionCol(-1, "Advanced", (row, colNdx) ->
     {
@@ -82,7 +80,7 @@ public class WebButtonTable extends WebButtonCtrl
           if (webButton.getName().startsWith(CUSTOM_NAME))
             nextCustomNum = parseInt(webButton.getName().substring(CUSTOM_NAME.length()), 1) + 1;
 
-        WebButton webBtn = new WebButton(CUSTOM_NAME + String.valueOf(nextCustomNum), row.getText(0));
+        WebButton webBtn = new WebButton(CUSTOM_NAME + nextCustomNum, row.getText(0));
 
         dlg.getPatterns(webBtn);
         webBtnList.add(webBtn);
@@ -101,7 +99,7 @@ public class WebButtonTable extends WebButtonCtrl
 
     for (int ndx = 1; ndx <= count; ndx++)
     {
-      WebButton webBtn = ui.webButtonMap.get(prefKey + String.valueOf(ndx));
+      WebButton webBtn = ui.webButtonMap.get(prefKey + ndx);
 
       ht.newDataRow().setCellValue(1, new HyperTableCell(webBtn.getName(), hdtNone));
     }
@@ -148,15 +146,15 @@ public class WebButtonTable extends WebButtonCtrl
       if (webBtn != null)
       {
         if (webBtn.getName().startsWith(CUSTOM_NAME))
-          webBtn.setName(CUSTOM_NAME + String.valueOf(++customNdx));
+          webBtn.setName(CUSTOM_NAME + ++customNdx);
 
-        saveToPrefNode(node, prefKey + String.valueOf(++ndx), webBtn);
+        saveToPrefNode(node, prefKey + ++ndx, webBtn);
       }
     }
 
     while (ndx < defaults.size())
     {
-      saveToPrefNode(node, prefKey + String.valueOf(ndx + 1), defaults.get(ndx));
+      saveToPrefNode(node, prefKey + (ndx + 1), defaults.get(ndx));
       ndx++;
     }
 
@@ -173,10 +171,10 @@ public class WebButtonTable extends WebButtonCtrl
     int count = node.getInt(prefKey + "Count", defaults.size());
 
     for (int ndx = 1; ndx <= defaults.size(); ndx++)
-      ui.webButtonMap.put(prefKey + String.valueOf(ndx), defaults.get(ndx - 1));
+      ui.webButtonMap.put(prefKey + ndx, defaults.get(ndx - 1));
 
     for (int ndx = 1; ndx <= count; ndx++)
-      WebButtonBar.loadPref(node, srchList, prefKey + String.valueOf(ndx), numCustom);
+      WebButtonBar.loadPref(node, srchList, prefKey + ndx, numCustom);
   }
 
 //---------------------------------------------------------------------------

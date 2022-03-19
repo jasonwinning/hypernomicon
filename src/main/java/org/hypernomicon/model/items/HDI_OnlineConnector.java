@@ -28,9 +28,7 @@ import static org.hypernomicon.model.items.MainText.DisplayItemType.*;
 import static org.hypernomicon.model.HyperDB.Tag.*;
 
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
-import org.hypernomicon.model.Exceptions.RelationCycleException;
 import org.hypernomicon.model.HDI_Schema;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordState;
 import org.hypernomicon.model.records.HDT_RecordWithConnector;
@@ -67,7 +65,7 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void setFromOfflineValue(HDI_OfflineConnector val, Tag tag) throws RelationCycleException
+  @Override public void setFromOfflineValue(HDI_OfflineConnector val, Tag tag)
   {
     MainText mainText = connector.getMainText();
 
@@ -165,12 +163,10 @@ public class HDI_OnlineConnector extends HDI_OnlineBase<HDI_OfflineConnector>
         val.displayItems.clear();
 
         mainText.displayItems.forEach(displayItem ->
-        {
           val.displayItems.add(displayItem.type == diRecord ?
             new DisplayItem(displayItem.record.getID(), displayItem.record.getType())
           :
-            new DisplayItem(displayItem.type));
-        });
+            new DisplayItem(displayItem.type)));
 
         break;
 

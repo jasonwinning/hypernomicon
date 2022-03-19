@@ -54,7 +54,7 @@ public class AutoCompleteCB implements EventHandler<KeyEvent>
 {
   private final ComboBox<HyperTableCell> cb;
   private final HyperCB hcb;
-  private boolean limitToChoices;
+  private final boolean limitToChoices;
   private HyperTableCell startValue;
 
 //---------------------------------------------------------------------------

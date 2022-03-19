@@ -46,11 +46,11 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
 
 //---------------------------------------------------------------------------
 
-  public static enum ButtonAction { baEdit, baNew, baGo, baWeb, baBrowse, baCustom, baNone }
+  public enum ButtonAction { baEdit, baNew, baGo, baWeb, baBrowse, baCustom, baNone }
 
 //---------------------------------------------------------------------------
 
-  @FunctionalInterface public static interface ButtonCellHandler { void handle(HyperTableRow row, int colNdx); }
+  @FunctionalInterface public interface ButtonCellHandler { void handle(HyperTableRow row, int colNdx); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -86,7 +86,7 @@ public class ButtonCell extends TableCell<HyperTableRow, HyperTableCell>
   {
     btn.setOnAction(event ->
     {
-      HyperTableRow row = HyperTableRow.class.cast(getTableRow().getItem());
+      HyperTableRow row = getTableRow().getItem();
 
       if (handler != null)
         handler.handle(row, colNdxOfTarget);

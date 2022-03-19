@@ -36,7 +36,6 @@ import static java.util.Collections.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.security.DigestInputStream;
 import java.security.DigestOutputStream;
@@ -49,6 +48,7 @@ import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -116,7 +116,6 @@ import org.hypernomicon.model.records.*;
 import org.hypernomicon.model.records.HDT_RecordBase.HyperDataCategory;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.*;
-import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.util.BidiOneToManyMainTextMap;
 import org.hypernomicon.util.CryptoUtil;
 import org.hypernomicon.util.DesktopUtil;
@@ -194,7 +193,7 @@ public final class HyperDB
   public Instant getCreationDate()                              { return dbCreationDate; }
   public RecordType getSubjType(RelationType relType)           { return relationSets.get(relType).getSubjType(); }
   public RecordType getObjType(RelationType relType)            { return relationSets.get(relType).getObjType(); }
-  public boolean relationIsMulti(RelationType relType)          { return relTypeToIsMulti.get(relType).booleanValue(); }
+  public boolean relationIsMulti(RelationType relType)          { return relTypeToIsMulti.get(relType); }
   public String getTagStr(Tag tag)                              { return tagToStr.get(tag); }
   public String getTagHeader(Tag tag)                           { return tagToHeader.getOrDefault(tag, ""); }
   public List<HDT_Record> getInitialNavList()                   { return unmodifiableList(initialNavList); }
@@ -649,10 +648,7 @@ public final class HyperDB
       return false;
 
     FilePath newRootFilePath = new FilePath(appPrefs.get(PREF_KEY_SOURCE_PATH, userWorkingDir()));
-    boolean dbChanged = false;
-
-    if (FilePath.isEmpty(rootFilePath) || (rootFilePath.equals(newRootFilePath) == false))
-      dbChanged = true;
+    boolean dbChanged = FilePath.isEmpty(rootFilePath) || (rootFilePath.equals(newRootFilePath) == false);
 
     close(null);
 
@@ -941,12 +937,12 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void linkZoteroLibrary(String bibEncApiKey, String bibUserID) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
+  public void linkZoteroLibrary(String bibEncApiKey, String bibUserID) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
   {
     linkBibLibrary(LibraryType.ltZotero, bibEncApiKey, bibUserID, "", "");
   }
 
-  public void linkMendeleyLibrary(String bibEncAccessToken, String bibEncRefreshToken) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
+  public void linkMendeleyLibrary(String bibEncAccessToken, String bibEncRefreshToken) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
   {
     linkBibLibrary(LibraryType.ltMendeley, "", "", bibEncAccessToken, bibEncRefreshToken);
   }
@@ -954,7 +950,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void linkBibLibrary(LibraryType libType, String bibEncApiKey, String bibUserID, String bibEncAccessToken, String bibEncRefreshToken) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
+  private void linkBibLibrary(LibraryType libType, String bibEncApiKey, String bibUserID, String bibEncAccessToken, String bibEncRefreshToken) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
   {
     if (bibLibrary != null)
       throw new HDB_InternalError(21174);
@@ -977,7 +973,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private void loadBibLibrary(LibraryType libType, String bibEncApiKey, String bibUserID, String bibEncAccessToken, String bibEncRefreshToken) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
+  private void loadBibLibrary(LibraryType libType, String bibEncApiKey, String bibUserID, String bibEncAccessToken, String bibEncRefreshToken) throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, IOException, ParseException, HDB_InternalError
   {
     if (bibLibrary != null)
       throw new HDB_InternalError(21173);
@@ -1017,7 +1013,7 @@ public final class HyperDB
   {
     if (isUnstoredRecord(id, type)) return true;
 
-    return type == hdtFolder ? isSpecialFolder(id, checkSubfolders) : false;
+    return (type == hdtFolder) && isSpecialFolder(id, checkSubfolders);
   }
 
 //---------------------------------------------------------------------------
@@ -1038,7 +1034,7 @@ public final class HyperDB
         (id == topicalFolder  .getID()))
       return true;
 
-    return checkSubfolders ? folders.getByID(id).childFolders.stream().anyMatch(folder -> folder.isSpecial(true)) : false;
+    return checkSubfolders && folders.getByID(id).childFolders.stream().anyMatch(folder -> folder.isSpecial(true));
   }
 
 //---------------------------------------------------------------------------
@@ -1188,9 +1184,7 @@ public final class HyperDB
 
   private void addRootFolder()
   {
-    Set<HyperPath> set = filenameMap.get(rootFilePath.getNameOnly().toString());
-    if (set == null)
-      filenameMap.put(rootFilePath.getNameOnly().toString(), set = Sets.newConcurrentHashSet());
+    Set<HyperPath> set = filenameMap.computeIfAbsent(rootFilePath.getNameOnly().toString(), k -> Sets.newConcurrentHashSet());
 
     set.add(getRootFolder().getPath());
   }
@@ -1586,7 +1580,7 @@ public final class HyperDB
   private void readNestedItem(RecordState xmlRecord, Map<Tag, HDI_OfflineBase> nestedItems, RelationType relationType, HDX_Element hdxElement, XMLEventReader eventReader) throws XMLStreamException, HyperDataException, InvalidItemException
   {
     boolean notDone = eventReader.hasNext();
-    String nodeText = "";
+    StringBuilder nodeText = new StringBuilder();
 
     if (nestedItems.isEmpty())
       initNestedItems(xmlRecord, nestedItems, relationType);
@@ -1608,7 +1602,7 @@ public final class HyperDB
 
         case XMLStreamConstants.CHARACTERS :
 
-          nodeText = nodeText + event.asCharacters().getData();
+          nodeText.append(event.asCharacters().getData());
           break;
 
         case XMLStreamConstants.END_DOCUMENT :
@@ -1625,7 +1619,7 @@ public final class HyperDB
 
     if (item == null) throw new InvalidItemException(xmlRecord.id, xmlRecord.type, "(nested) " + getTagStr(hdxElement.tag));
 
-    item.setFromXml(hdxElement.tag, nodeText, hdxElement.objType, hdxElement.objID, null);
+    item.setFromXml(hdxElement.tag, nodeText.toString(), hdxElement.objType, hdxElement.objID, null);
   }
 
 //---------------------------------------------------------------------------
@@ -1645,7 +1639,7 @@ public final class HyperDB
         return;
     }
 
-    addToSortedList(initialNavList, record, sortBasis(HDT_Record::getViewDate));
+    addToSortedList(initialNavList, record, Comparator.comparing(HDT_Record::getViewDate));
 
     while (initialNavList.size() > INITIAL_NAV_LIST_SIZE)
       initialNavList.remove(0);
@@ -1681,7 +1675,7 @@ public final class HyperDB
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static enum HDB_MessageType
+  public enum HDB_MessageType
   {
     hmtNone,
     hmtEchoRequest,
@@ -1778,24 +1772,24 @@ public final class HyperDB
       createNewRecordFromState(recordState, bringOnline);
 
       recordState = new RecordState(hdtDebate, 1, "", "", "", "");
-      HDI_OfflineString.class.cast(recordState.items.get(tagName)).set("All debates");
+      ((HDI_OfflineString) recordState.items.get(tagName)).set("All debates");
       createNewRecordFromState(recordState, bringOnline);
 
       recordState = new RecordState(hdtNote, 1, "", "", "", "");
-      HDI_OfflineString.class.cast(recordState.items.get(tagName)).set("All notes");
+      ((HDI_OfflineString) recordState.items.get(tagName)).set("All notes");
       createNewRecordFromState(recordState, bringOnline);
 
       recordState = new RecordState(hdtWorkLabel, 1, "", "", "", "");
-      HDI_OfflineString.class.cast(recordState.items.get(tagText)).set("All labels");
+      ((HDI_OfflineString) recordState.items.get(tagText)).set("All labels");
       createNewRecordFromState(recordState, bringOnline);
 
       recordState = new RecordState(hdtPersonGroup, 1, "", "", "", "");
-      HDI_OfflineString.class.cast(recordState.items.get(tagName)).set("All groups");
+      ((HDI_OfflineString) recordState.items.get(tagName)).set("All groups");
       createNewRecordFromState(recordState, bringOnline);
 
       recordState = new RecordState(hdtGlossary, 1, "", "", "", "");
-      HDI_OfflineString.class.cast(recordState.items.get(tagName)).set("General");
-      HDI_OfflineBoolean.class.cast(recordState.items.get(tagActive)).set(true);
+      ((HDI_OfflineString) recordState.items.get(tagName)).set("General");
+      ((HDI_OfflineBoolean) recordState.items.get(tagActive)).set(true);
       createNewRecordFromState(recordState, bringOnline);
 
       dbCloseHandlers.forEach(Runnable::run);
@@ -1877,8 +1871,8 @@ public final class HyperDB
   private void createSpecialFolderRecord(int id, String name, String prefKey) throws DuplicateRecordException, RelationCycleException, HDB_InternalError, SearchKeyException, RestoreException
   {
     RecordState recordState = new RecordState(hdtFolder, id, "", "", "", "");
-    HDI_OfflinePath.class.cast(recordState.items.get(tagFileName)).setFileName(name);
-    HDI_OfflinePath.class.cast(recordState.items.get(tagParentFolder)).setFolderID(ROOT_FOLDER_ID);
+    ((HDI_OfflinePath) recordState.items.get(tagFileName)).setFileName(name);
+    ((HDI_OfflinePath) recordState.items.get(tagParentFolder)).setFolderID(ROOT_FOLDER_ID);
     createNewRecordFromState(recordState, true);
     prefs.putInt(prefKey, recordState.id);
   }
@@ -2087,7 +2081,7 @@ public final class HyperDB
         if ((relType != rtUnited) && (relType != rtNone))
           relationSets.put(relType, RelationSet.createSet(relType));
 
-      relationSets.values().forEach(relSet -> relSet.initCycleGroup());
+      relationSets.values().forEach(RelationSet::initCycleGroup);
       MainText.init();
 
   /*****************************************************************************
@@ -2249,7 +2243,7 @@ public final class HyperDB
           schema = new HDI_Schema(dataCat, relType, tags);
 
           if (relType != rtNone)
-            relTypeToIsMulti.put(relType, Boolean.valueOf((dataCat == hdcPointerMulti) || (dataCat == hdcAuthors)));
+            relTypeToIsMulti.put(relType, (dataCat == hdcPointerMulti) || (dataCat == hdcAuthors));
 
           break;
 
@@ -2320,7 +2314,7 @@ public final class HyperDB
     NOTE_FILE_NAME = "Notes.xml",
     HUB_FILE_NAME = "Hubs.xml";
 
-  public static enum Tag
+  public enum Tag
   {
     tagNone,           tagPerson,       tagPersonStatus, tagInstitution,     tagInstitutionType, tagRegion,         tagCountry,      tagRank,
     tagInvestigation,  tagDebate,       tagArgument,     tagTerm,            tagConcept,         tagWork,           tagWorkType,     tagWorkLabel,
@@ -2334,7 +2328,7 @@ public final class HyperDB
     tagCreationDate,   tagModifiedDate, tagViewDate,     tagDisplayRecord,   tagKeyWork,         tagLinkedRecord,   tagParentInst,   tagHub,
     tagPictureFolder,  tagPast,         tagMainText;
 
-    static EnumHashBiMap<Tag, Integer> tagToNum = EnumHashBiMap.create(Tag.class);
+    final static EnumHashBiMap<Tag, Integer> tagToNum = EnumHashBiMap.create(Tag.class);
 
     public int getNum()                    { return tagToNum.get(this); }
     public static Tag getTagByNum(int num) { return tagToNum.inverse().get(num); }
@@ -2493,7 +2487,7 @@ public final class HyperDB
   {
     return nullSwitch(keyWorkIndex.get(record),
                       Stream.empty(),
-                      set -> set.stream().map(mentioner -> mentioner.mainSpoke()));
+                      set -> set.stream().map(HDT_RecordWithConnector::mainSpoke));
   }
 
 //---------------------------------------------------------------------------

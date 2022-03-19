@@ -174,7 +174,7 @@ public class FileDlgCtrlr extends HyperDlg
 
       if (curFileRecord != null)
       {
-        hcbType.addAndSelectEntry(HDT_MiscFile.class.cast(curFileRecord).fileType, HDT_Record::getCBText);
+        hcbType.addAndSelectEntry(((HDT_MiscFile) curFileRecord).fileType, HDT_Record::getCBText);
 
         tfRecordName.setText(curFileRecord.name());
       }
@@ -403,15 +403,10 @@ public class FileDlgCtrlr extends HyperDlg
       {
         if (rbCopy.isSelected())
           success = srcFilePath.copyTo(destFilePath, true);
-        else
+        else if (srcFilePath.equals(destFilePath) == false)
         {
-          if (srcFilePath.equals(destFilePath))
-            success = true;
-          else
-          {
-            success = srcFilePath.moveTo(destFilePath, true);
-            if (success) db.unmapFilePath(srcFilePath);
-          }
+          success = srcFilePath.moveTo(destFilePath, true);
+          if (success) db.unmapFilePath(srcFilePath);
         }
       }
       catch (IOException e)
@@ -419,25 +414,20 @@ public class FileDlgCtrlr extends HyperDlg
         return falseWithErrorMessage("Unable to " + (rbCopy.isSelected() ? "copy" : "move") + " the file. Reason: " + e.getMessage());
       }
     }
-    else
+    else if (srcFilePath.equals(destFilePath) == false)
     {
-      if (srcFilePath.equals(destFilePath))
-        success = true;
-      else
+      try
       {
-        try
-        {
-          success = srcFilePath.renameTo(fileName.toString());
+        success = srcFilePath.renameTo(fileName.toString());
 
-          if (success == false)
-            messageDialog("Unable to rename the file.", mtError);
-          else
-            db.unmapFilePath(srcFilePath);
-        }
-        catch (IOException e)
-        {
-          return falseWithErrorMessage("Unable to rename the file: " + e.getMessage());
-        }
+        if (success == false)
+          messageDialog("Unable to rename the file.", mtError);
+        else
+          db.unmapFilePath(srcFilePath);
+      }
+      catch (IOException e)
+      {
+        return falseWithErrorMessage("Unable to rename the file: " + e.getMessage());
       }
     }
 
@@ -455,7 +445,7 @@ public class FileDlgCtrlr extends HyperDlg
     else
     {
       if (recordType == hdtWorkFile)
-        HDT_WorkFile.class.cast(curFileRecord).setName(tfRecordName.getText());
+        ((HDT_WorkFile) curFileRecord).setName(tfRecordName.getText());
 
       HDT_Folder folder = HyperPath.getFolderFromFilePath(destFilePath.getDirOnly(), true);
       if (folder == null)

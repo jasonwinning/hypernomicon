@@ -23,6 +23,7 @@ import static org.hypernomicon.model.relations.RelationSet.RelationType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.hypernomicon.model.HyperDataset;
@@ -94,8 +95,8 @@ public class HDT_MiscFile extends HDT_RecordWithConnector implements HDT_RecordW
 
   public List<HDT_Person> authorRecords()
   {
-    return getAuthors().stream().filter(author -> author.getPerson() != null)
-                                .map(Author::getPerson)
+    return getAuthors().stream().map(Author::getPerson)
+                                .filter(Objects::nonNull)
                                 .collect(Collectors.toList());
   }
 

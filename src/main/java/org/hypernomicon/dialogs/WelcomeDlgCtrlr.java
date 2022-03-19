@@ -86,7 +86,7 @@ public class WelcomeDlgCtrlr extends HyperDlg
     {
       if (mru.isBlank()) continue;
 
-      String mruCaption = mru.length() <= 50 ? mru : mru.substring(0, 30) + "..." + mru.substring(mru.length() - 20, mru.length());
+      String mruCaption = mru.length() <= 50 ? mru : mru.substring(0, 30) + "..." + mru.substring(mru.length() - 20);
 
       Hyperlink hl = new Hyperlink(mruCaption);
       apRecent.getChildren().add(hl);

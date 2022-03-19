@@ -20,7 +20,6 @@ package org.hypernomicon.util.prefs;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.prefs.AbstractPreferences;
-import java.util.prefs.BackingStoreException;
 
 import static org.hypernomicon.util.Util.*;
 
@@ -30,8 +29,8 @@ class TransientPreferences extends AbstractPreferences
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private Map<String, TransientPreferences> children = new LinkedHashMap<>();
-  private Map<String, String>               values   = new LinkedHashMap<>();
+  private final Map<String, TransientPreferences> children = new LinkedHashMap<>();
+  private final Map<String, String>               values   = new LinkedHashMap<>();
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -45,12 +44,12 @@ class TransientPreferences extends AbstractPreferences
   @Override protected String getSpi(String key)             { return safeStr(values.get(key)); }
   @Override protected void removeSpi(String key)            { values.remove(key); }
 
-  @Override protected void removeNodeSpi       () throws BackingStoreException { values.clear(); }
-  @Override protected String[] keysSpi         () throws BackingStoreException { return values  .keySet().toArray(new String[values  .size()]); }
-  @Override protected String[] childrenNamesSpi() throws BackingStoreException { return children.keySet().toArray(new String[children.size()]); }
+  @Override protected void removeNodeSpi       () { values.clear(); }
+  @Override protected String[] keysSpi         () { return values  .keySet().toArray(new String[0]); }
+  @Override protected String[] childrenNamesSpi() { return children.keySet().toArray(new String[0]); }
 
-  @Override protected void syncSpi             () throws BackingStoreException { /* not used */ }
-  @Override protected void flushSpi            () throws BackingStoreException { /* not used */ }
+  @Override protected void syncSpi             () { /* not used */ }
+  @Override protected void flushSpi            () { /* not used */ }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

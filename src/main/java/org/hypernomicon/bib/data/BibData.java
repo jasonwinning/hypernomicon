@@ -17,7 +17,6 @@
 
 package org.hypernomicon.bib.data;
 
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +45,7 @@ public abstract class BibData
 
   private static final Map<String, YearType> descToYearType = new HashMap<>();
 
-  public static enum YearType
+  public enum YearType
   {
     ytUnknown(""),
     ytCreated("created"),
@@ -61,7 +60,7 @@ public abstract class BibData
 
     final String desc;
 
-    private YearType(String desc) { this.desc = desc; descToYearType.put(desc, this); }
+    YearType(String desc) { this.desc = desc; descToYearType.put(desc, this); }
 
     public static YearType getByDesc(String desc) { return descToYearType.getOrDefault(desc, ytUnknown); }
 
@@ -99,11 +98,11 @@ public abstract class BibData
 
 //---------------------------------------------------------------------------
 
-  public void setTitle(String newTitle) { setMultiStr(bfTitle, Arrays.asList(newTitle)); }
+  public void setTitle(String newTitle) { setMultiStr(bfTitle, List.of(newTitle)); }
   protected void addISBN(String newStr) { matchISBN(newStr).forEach(isbn -> addStr(bfISBNs, isbn)); }
   public void addISSN(String newStr)    { matchISSN(newStr).forEach(issn -> addStr(bfISSNs, issn)); }
 
-  public static boolean isEmpty(BibData bd) { return bd == null ? true : EnumSet.allOf(BibFieldEnum.class).stream().noneMatch(bd::fieldNotEmpty); }
+  public static boolean isEmpty(BibData bd) { return (bd == null) || EnumSet.allOf(BibFieldEnum.class).stream().noneMatch(bd::fieldNotEmpty); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

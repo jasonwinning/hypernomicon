@@ -164,14 +164,14 @@ public class FilePath implements Comparable<FilePath>
 
   public boolean deletePromptOnFail(boolean noExistOK)
   {
-    StringBuilder errorSB = new StringBuilder("");
+    StringBuilder errorSB = new StringBuilder();
 
     while (deleteReturnsBoolean(noExistOK, errorSB) == false)
     {
       String msgStr = errorSB.length() > 0 ?
-        "Attempt to delete file failed: \"" + errorSB.toString() + System.lineSeparator() + System.lineSeparator() + "Try again?"
+        "Attempt to delete file failed: \"" + errorSB + System.lineSeparator() + System.lineSeparator() + "Try again?"
       :
-        "Attempt to delete file failed: \"" + toString() + "\". Try again?";
+        "Attempt to delete file failed: \"" + this + "\". Try again?";
 
       if (confirmDialog(msgStr) == false)
         return false;
@@ -371,18 +371,18 @@ public class FilePath implements Comparable<FilePath>
     {
       Files.walkFileTree(getDirOnly().toPath(), new SimpleFileVisitor<>()
       {
-        @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws FileNotFoundException, IOException
+        @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
         {
           set.add(new FilePath(file));
           return FileVisitResult.CONTINUE;
         }
 
-        @Override public FileVisitResult visitFileFailed(Path file, IOException e) throws IOException
+        @Override public FileVisitResult visitFileFailed(Path file, IOException e)
         {
           return FileVisitResult.SKIP_SUBTREE;
         }
 
-        @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws FileNotFoundException, IOException
+        @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
         {
           set.add(new FilePath(dir));
           return FileVisitResult.CONTINUE;
@@ -442,7 +442,7 @@ public class FilePath implements Comparable<FilePath>
     {
       Files.walkFileTree(getDirOnly().toPath(), new SimpleFileVisitor<>()
       {
-        @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws FileNotFoundException, IOException
+        @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
         {
           if (new FilePath(file).canObtainLock() == false)
             throw new IOException("Unable to obtain lock for file: " + file.toString());
@@ -450,12 +450,12 @@ public class FilePath implements Comparable<FilePath>
           return FileVisitResult.CONTINUE;
         }
 
-        @Override public FileVisitResult visitFileFailed(Path file, IOException e) throws IOException
+        @Override public FileVisitResult visitFileFailed(Path file, IOException e)
         {
           return FileVisitResult.SKIP_SUBTREE;
         }
 
-        @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws FileNotFoundException, IOException
+        @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException
         {
           FileUtils.touch(dir.toFile());
 
@@ -480,7 +480,7 @@ public class FilePath implements Comparable<FilePath>
     if (equals(subFilePath)) return true;
 
     FilePath parent = subFilePath.getParent();
-    return FilePath.isEmpty(parent) ? false : isSubpath(parent);
+    return (FilePath.isEmpty(parent) == false) && isSubpath(parent);
   }
 
 //---------------------------------------------------------------------------
@@ -525,7 +525,7 @@ public class FilePath implements Comparable<FilePath>
 
     Files.walkFileTree(getDirOnly().toPath(), new SimpleFileVisitor<>()
     {
-      @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+      @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
       {
         if (new FilePath(file).isDirectory() == false)
           hasFiles.setTrue();
@@ -533,12 +533,12 @@ public class FilePath implements Comparable<FilePath>
         return FileVisitResult.CONTINUE;
       }
 
-      @Override public FileVisitResult visitFileFailed(Path file, IOException e) throws IOException
+      @Override public FileVisitResult visitFileFailed(Path file, IOException e)
       {
         return FileVisitResult.SKIP_SUBTREE;
       }
 
-      @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException
+      @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
       {
         return FileVisitResult.CONTINUE;
       }

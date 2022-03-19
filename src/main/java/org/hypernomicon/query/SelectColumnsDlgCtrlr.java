@@ -40,7 +40,7 @@ public class SelectColumnsDlgCtrlr extends HyperDlg
   static class TypeCheckBox extends CheckBox
   {
     private TypeCheckBox(String caption) { super(caption); }
-    private List<CheckBox> children = new ArrayList<>();
+    private final List<CheckBox> children = new ArrayList<>();
   }
 
 //---------------------------------------------------------------------------

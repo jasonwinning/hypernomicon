@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Predicate;
@@ -243,9 +244,7 @@ public class BibManager extends HyperDlg
     htRelatives.addDefaultMenuItems();
 
     webView.getEngine().titleProperty().addListener((ob, oldValue, newValue) ->
-    {
-      MainTextUtil.handleJSEvent("", webView.getEngine(), new TextViewInfo());
-    });
+      MainTextUtil.handleJSEvent("", webView.getEngine(), new TextViewInfo()));
 
     webView.setOnContextMenuRequested(event -> setHTMLContextMenu());
 
@@ -514,7 +513,7 @@ public class BibManager extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static enum BibEntryRelation { Parent, Sibling, Child }
+  public enum BibEntryRelation { Parent, Sibling, Child }
 
   private static final List<EntryType> childTypes  = Arrays.asList(etBookChapter, etEncyclopediaArticle, etConferencePaper, etDictionaryEntry),
                                        parentTypes = Arrays.asList(etBook, etConferenceProceedings);
@@ -891,7 +890,7 @@ public class BibManager extends HyperDlg
 
     List<EntryType> choices = new ArrayList<>(map.keySet());
 
-    choices.sort(sortBasis(EntryType::getUserFriendlyName));
+    choices.sort(Comparator.comparing(EntryType::getUserFriendlyName));
 
     cb.setItems(null);
     cb.setItems(FXCollections.observableList(choices));

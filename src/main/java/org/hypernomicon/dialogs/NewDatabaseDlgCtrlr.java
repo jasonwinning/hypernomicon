@@ -102,7 +102,7 @@ public class NewDatabaseDlgCtrlr extends HyperDlg
       return falseWithErrorMessage("An error occurred while trying to create the directories: " + e.getMessage());
     }
 
-    return success ? true : falseWithErrorMessage("An error occurred while trying to create the directories.");
+    return success || falseWithErrorMessage("An error occurred while trying to create the directories.");
   }
 
 //---------------------------------------------------------------------------

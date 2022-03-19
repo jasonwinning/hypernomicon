@@ -35,9 +35,6 @@ public abstract class AbstractTreeRow<HDT_T extends HDT_Record, RowType extends 
 
 //---------------------------------------------------------------------------
 
-  protected abstract ImageView getGraphic();
-
-  final TreeModel<RowType> getTreeModel()                { return treeModel; }
   final AbstractTreeWrapper<RowType> getTreeWrapper()    { return treeModel.getTreeWrapper(); }
   @Override public final TreeItem<RowType> getTreeItem() { return treeItem; }
 

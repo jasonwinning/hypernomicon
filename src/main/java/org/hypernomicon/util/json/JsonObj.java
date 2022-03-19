@@ -33,7 +33,7 @@ import org.json.simple.parser.JSONParser;
 
 public class JsonObj implements Cloneable
 {
-  public static enum JsonNodeType { OBJECT, STRING, ARRAY, BOOLEAN, INTEGER, NONE }
+  public enum JsonNodeType { OBJECT, STRING, ARRAY, BOOLEAN, INTEGER, NONE }
 
   public static final JSONParser jsonParser = new JSONParser();
 
@@ -87,7 +87,7 @@ public class JsonObj implements Cloneable
     return obj instanceof String ?
       parseBoolean(getStr(key))
     :
-      (obj instanceof Boolean ? ((Boolean)obj).booleanValue() : def);
+      (obj instanceof Boolean ? (Boolean) obj : def);
   }
 
 //---------------------------------------------------------------------------

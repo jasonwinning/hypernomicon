@@ -23,10 +23,10 @@ public interface Magnitude<T extends Comparable<? super T>> extends Comparable<T
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public default boolean isLessThan            (T o) { return this.compareTo(o) <  0; }
-  public default boolean isLessThanOrEqualTo   (T o) { return this.compareTo(o) <= 0; }
-  public default boolean isGreaterThan         (T o) { return this.compareTo(o) >  0; }
-  public default boolean isGreaterThanOrEqualTo(T o) { return this.compareTo(o) >= 0; }
+  default boolean isLessThan            (T o) { return this.compareTo(o) <  0; }
+  default boolean isLessThanOrEqualTo   (T o) { return this.compareTo(o) <= 0; }
+  default boolean isGreaterThan         (T o) { return this.compareTo(o) >  0; }
+  default boolean isGreaterThanOrEqualTo(T o) { return this.compareTo(o) >= 0; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -192,7 +192,7 @@ public class SelectWorkDlgCtrlr extends HyperDlg
 
       HDT_Work work = db.works.getByID(id);
 
-      return HDT_Work.isUnenteredSet(work) ? false : work.getBibEntryKey().isBlank();
+      return (HDT_Work.isUnenteredSet(work) == false) && work.getBibEntryKey().isBlank();
     });
 
     hcbWork = new HyperCB(cbWork, ctDropDownList, workPop);
@@ -343,12 +343,10 @@ public class SelectWorkDlgCtrlr extends HyperDlg
         }
 
         if (author == null) author = findFirstHaving(bdToUse.getAuthors(), bibAuthor ->
-        {
-          return bibAuthor.getPerson() != null ?
+          bibAuthor.getPerson() != null ?
             bibAuthor.getPerson()
           :
-            HDT_Person.lookUpByName(bibAuthor.getName());
-        });
+            HDT_Person.lookUpByName(bibAuthor.getName()));
 
         List<String> titleList = bdToUse.getMultiStr(BibFieldEnum.bfTitle);
         if (titleList.isEmpty() == false)
@@ -421,12 +419,10 @@ public class SelectWorkDlgCtrlr extends HyperDlg
     hcbWork.clear();
 
     if ((author == null) && (work != null)) author = findFirstHaving(work.getBibData().getAuthors(), bibAuthor ->
-    {
-      return bibAuthor.getPerson() != null ?
+      bibAuthor.getPerson() != null ?
         bibAuthor.getPerson()
       :
-        HDT_Person.lookUpByName(bibAuthor.getName());
-    });
+        HDT_Person.lookUpByName(bibAuthor.getName()));
 
     hcbAuthor.addAndSelectEntryOrBlank(author, HDT_Record::getCBText);
 

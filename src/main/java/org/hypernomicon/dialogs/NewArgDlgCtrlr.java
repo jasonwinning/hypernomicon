@@ -67,7 +67,7 @@ public class NewArgDlgCtrlr extends HyperDlg
   private HDT_Argument argument;
   private HyperCB hcbPerson, hcbVerdict, hcbWork;
   private boolean revising = false, programmaticWorkChange = false, programmaticVerdictChange = false;
-  private MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
+  private final MutableBoolean alreadyChangingTitle = new MutableBoolean(false);
   private String argName1 = "", argName2 = "", argName3 = "", argName4 = "", argName5 = "", argName6 = "", argName7 = "", argName8 = "";
 
   public HDT_Argument getArgument() { return argument; }
@@ -223,7 +223,7 @@ public class NewArgDlgCtrlr extends HyperDlg
     if (target.getType() != hdtPosition)
       return;
 
-    if ((newSelected != null) && newSelected.booleanValue())
+    if (Boolean.TRUE.equals(newSelected))
     {
       programmaticVerdictChange = true;
       hcbVerdict.selectID(proArg ? HDT_Argument.truePositionVerdictID : HDT_Argument.falsePositionVerdictID);

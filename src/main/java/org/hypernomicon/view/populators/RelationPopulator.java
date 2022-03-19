@@ -24,11 +24,11 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.model.relations.RelationSet.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 
 import org.hypernomicon.model.records.RecordType;
-import org.hypernomicon.model.relations.RelationSet.RelationType;
 import org.hypernomicon.view.wrappers.HyperTableCell;
 import org.hypernomicon.view.wrappers.HyperTableRow;
 
@@ -57,7 +57,7 @@ public class RelationPopulator extends Populator
     relTypes.forEach(relType ->
     {
       HyperTableCell cell = new HyperTableCell(relType.getCode(), relType.getTitle(), objType);
-      addToSortedList(cells, cell, sortBasis(HyperTableCell::getText));
+      addToSortedList(cells, cell, Comparator.comparing(HyperTableCell::getText));
     });
 
     return cells;

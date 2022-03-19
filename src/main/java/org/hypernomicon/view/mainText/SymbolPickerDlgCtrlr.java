@@ -100,7 +100,7 @@ public class SymbolPickerDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  static interface SymbolHndlr { public void handle(Symbol symbol); }
+  interface SymbolHndlr { void handle(Symbol symbol); }
 
   private boolean programmaticChange = false;
 
@@ -238,22 +238,17 @@ public class SymbolPickerDlgCtrlr extends HyperDlg
 
     cbFont.setTooltip(new Tooltip("Set the font that characters will be displayed in"));
 
-    cbFont.setCellFactory(param ->
+    cbFont.setCellFactory(param -> new ListCell<>()
     {
-      final ListCell<String> cell = new ListCell<>()
+      @Override public void updateItem(String item, boolean empty)
       {
-        @Override public void updateItem(String item, boolean empty)
+        super.updateItem(item, empty);
+        if (item != null)
         {
-          super.updateItem(item, empty);
-          if (item != null)
-          {
-            setText(item);
-            setFont(Font.font(item, 12.0));
-          }
+          setText(item);
+          setFont(Font.font(item, 12.0));
         }
-      };
-
-      return cell;
+      }
     });
 
     Platform.runLater(() ->

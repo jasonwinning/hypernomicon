@@ -23,7 +23,7 @@ import org.hypernomicon.model.records.HDT_Record;
 
 public interface QuerySource extends Iterator<HDT_Record>
 {
-  public static enum QuerySourceType
+  enum QuerySourceType
   {
     QST_allRecords,
     QST_recordsByType,

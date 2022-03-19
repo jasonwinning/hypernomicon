@@ -57,7 +57,7 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
 
   public final HDT_Record selectedRecord()
   {
-    return nullSwitch(selectedItem(), (HDT_Record)null, treeItem -> nullSwitch(treeItem.getValue(), null, RowType::getRecord));
+    return nullSwitch(selectedItem(), null, treeItem -> nullSwitch(treeItem.getValue(), null, RowType::getRecord));
   }
 
 //---------------------------------------------------------------------------
@@ -115,7 +115,7 @@ public abstract class AbstractTreeWrapper<RowType extends AbstractTreeRow<? exte
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final void showItem(TreeItem<RowType> item)
+  private void showItem(TreeItem<RowType> item)
   {
     nullSwitch(item.getParent(), this::showItem);
     item.setExpanded(true);

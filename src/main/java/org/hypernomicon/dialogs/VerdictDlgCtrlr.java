@@ -79,7 +79,7 @@ public class VerdictDlgCtrlr extends HyperDlg
 
   @Override protected boolean isValid()
   {
-    return hcbVerdict.selectedID() > 0 ? true : falseWithErrorMessage("You must select a verdict.", cbVerdict);
+    return (hcbVerdict.selectedID() > 0) || falseWithErrorMessage("You must select a verdict.", cbVerdict);
   }
 
 //---------------------------------------------------------------------------

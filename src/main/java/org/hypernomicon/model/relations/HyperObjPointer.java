@@ -53,7 +53,7 @@ public class HyperObjPointer<HDT_SubjType extends HDT_Record, HDT_ObjType extend
   public boolean setID(int newID) { return set(newID < 1 ? null : (HDT_ObjType) db.records(relSet.getObjType()).getByID(newID)); }
 
   @Override public int hashCode()           { return super.hashCode(); }
-  @Override public boolean equals(Object o) { return o instanceof HyperObjPointer<?, ?> ? ((HyperObjPointer<?, ?>) o).get() == get() : false; }
+  @Override public boolean equals(Object o) { return (o instanceof HyperObjPointer<?, ?>) && (((HyperObjPointer<?, ?>) o).get() == get()); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

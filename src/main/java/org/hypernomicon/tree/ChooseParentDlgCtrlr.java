@@ -63,7 +63,7 @@ public class ChooseParentDlgCtrlr extends HyperDlg
 
   private ChooseParentDlgCtrlr init(HDT_Record child)
   {
-    popupTree = new TreeWrapper(ttv, false, new ComboBox<TreeRow>(), true);
+    popupTree = new TreeWrapper(ttv, false, new ComboBox<>(), true);
     this.child = child;
     parent = null;
 

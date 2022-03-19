@@ -44,7 +44,7 @@ public final class WindowStack
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static interface WindowWrapper
+  private interface WindowWrapper
   {
     Modality getModality();
     boolean isStage();
@@ -142,7 +142,7 @@ public final class WindowStack
 
     windows.descendingIterator().forEachRemaining(window ->
     {
-      Stage curStage = StageWrapper.class.cast(window).stage;
+      Stage curStage = ((StageWrapper) window).stage;
       if (stage != curStage)
         curStage.toFront();
     });
@@ -161,7 +161,7 @@ public final class WindowStack
 
     ui.getMenuBar().getMenus().forEach(menu -> menu.getItems().forEach(item ->
     {
-      itemsDisabled.put(item, Boolean.valueOf(item.isDisable()));
+      itemsDisabled.put(item, item.isDisable());
       item.setDisable(true);
     }));
   }
@@ -171,7 +171,7 @@ public final class WindowStack
 
   public Stage getOutermostStage()
   {
-    return findFirst(windows, WindowWrapper::isStage, window -> StageWrapper.class.cast(window).stage);
+    return findFirst(windows, WindowWrapper::isStage, window -> ((StageWrapper) window).stage);
   }
 
 //---------------------------------------------------------------------------
@@ -189,7 +189,7 @@ public final class WindowStack
 
     if (focusingWindow.isStage() == false) return;
 
-    Stage stage = StageWrapper.class.cast(focusingWindow).stage;
+    Stage stage = ((StageWrapper) focusingWindow).stage;
 
     focusStage(stage);
 

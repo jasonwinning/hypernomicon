@@ -43,7 +43,7 @@ public abstract class HyperTask extends Task<Boolean>
 
 //---------------------------------------------------------------------------
 
-  private static ConcurrentHashMap<String, Integer> threadNameBaseToNum = new ConcurrentHashMap<>();
+  private static final ConcurrentHashMap<String, Integer> threadNameBaseToNum = new ConcurrentHashMap<>();
 
   private static synchronized String newThreadName(String base)
   {

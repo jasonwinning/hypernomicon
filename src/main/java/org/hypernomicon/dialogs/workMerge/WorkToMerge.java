@@ -55,7 +55,7 @@ public class WorkToMerge
   public List<ObjectGroup> getAuthorGroups(HDT_Work work) { return htAuthors.getAuthorGroups(work, 0, -1, 2, 3); }
   public HDT_WorkType getWorkType()                       { return hcbType.selectedRecord(); }
   public BibData getBibData()                             { return bibData; }
-  public boolean hasField(BibFieldEnum bibFieldEnum)      { return bibData == null ? false : bibData.fieldNotEmpty(bibFieldEnum); }
+  public boolean hasField(BibFieldEnum bibFieldEnum)      { return (bibData != null) && bibData.fieldNotEmpty(bibFieldEnum); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

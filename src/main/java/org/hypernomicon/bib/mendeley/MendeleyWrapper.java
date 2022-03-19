@@ -79,7 +79,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 
   static final EnumHashBiMap<EntryType, String> entryTypeMap = initTypeMap();
 
-  private static enum MendeleyCmd
+  private enum MendeleyCmd
   {
     readFolders,
     readDocuments,
@@ -106,16 +106,16 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static enum MendeleyHeader
+  public enum MendeleyHeader
   {
     Mendeley_Count("Mendeley-Count"),
     Link("Link"),
     None("None");
 
     final private String name;
-    private static Map<String, MendeleyHeader> map = new HashMap<>();
+    final private static Map<String, MendeleyHeader> map = new HashMap<>();
 
-    private MendeleyHeader(String name) { this.name = name; }
+    MendeleyHeader(String name) { this.name = name; }
 
     @Override public String toString() { return name; }
 
@@ -575,7 +575,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
       }
       catch (HttpResponseException e)
       {
-        String msg = "An error occurred while syncing: " + String.valueOf(e.getStatusCode()) + " " + e.getMessage();
+        String msg = "An error occurred while syncing: " + e.getStatusCode() + " " + e.getMessage();
         throw new HyperDataException(msg, e);
       }
       catch (UnknownHostException e)
@@ -596,7 +596,7 @@ public class MendeleyWrapper extends LibraryWrapper<MendeleyDocument, MendeleyFo
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public void loadFromDisk(FilePath filePath) throws FileNotFoundException, IOException, ParseException
+  @Override public void loadFromDisk(FilePath filePath) throws IOException, ParseException
   {
     JsonObj jMainObj = null;
     clear();

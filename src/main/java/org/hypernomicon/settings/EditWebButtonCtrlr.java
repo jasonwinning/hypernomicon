@@ -39,7 +39,7 @@ public class EditWebButtonCtrlr
   @FXML private Button btnUp, btnDown, btnDelete;
   @FXML private TextField tfPattern;
 
-  private EnumMap<WebButtonField, CheckBox> fieldToChk = new EnumMap<>(WebButtonField.class);
+  private final EnumMap<WebButtonField, CheckBox> fieldToChk = new EnumMap<>(WebButtonField.class);
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

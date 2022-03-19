@@ -49,7 +49,6 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.hypernomicon.HyperTask.HyperThread;
-import org.hypernomicon.model.HyperDB.HDB_MessageType;
 import org.hypernomicon.model.items.HyperPath;
 import org.hypernomicon.model.PathInfo;
 import org.hypernomicon.model.PathInfo.FileKind;
@@ -68,7 +67,7 @@ public class FolderTreeWatcher
 {
   static class WatcherEvent
   {
-    static enum WatcherEventKind { wekRename, wekDelete, wekCreate, wekModify }
+    enum WatcherEventKind { wekRename, wekDelete, wekCreate, wekModify }
 
     private final WatcherEventKind kind;
     private final PathInfo oldPathInfo, newPathInfo;
@@ -303,13 +302,13 @@ public class FolderTreeWatcher
 
               runOutsideFXThread(() -> { for (int ndx = 0; ndx <= 10; ndx++)
               {
-                long size = 0;
+                long size = 0L;
 
                 try { size = newPath.size(); }
                 catch (NoSuchFileException e) { noOp(); }
                 catch (IOException e)         { return; }
 
-                if (size > 0)
+                if (size > 0L)
                 {
                   doImport(newPath);
                   return;
@@ -530,7 +529,7 @@ public class FolderTreeWatcher
   public void disable()       { stop(); disabled = true; }
   public void enable()        { disabled = false; }
   public boolean isDisabled() { return disabled; }
-  public boolean isRunning()  { return stopped ? false : nullSwitch(watcherThread, false, WatcherThread::isAlive); }
+  public boolean isRunning()  { return (stopped == false) && nullSwitch(watcherThread, false, WatcherThread::isAlive); }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -589,7 +588,7 @@ public class FolderTreeWatcher
       /**
        * Invoked for a file in a directory.
        */
-      @Override public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException
+      @Override public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)
       {
         Objects.requireNonNull(path);
         Objects.requireNonNull(attrs);

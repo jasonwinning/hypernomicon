@@ -18,11 +18,11 @@
 package org.hypernomicon.fileManager;
 
 import static org.hypernomicon.model.HyperDB.*;
-import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.MediaUtil.*;
 import static org.hypernomicon.util.UIUtil.*;
 import static org.hypernomicon.util.UIUtil.MessageDialogType.*;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.hypernomicon.model.items.HyperPath;
@@ -125,7 +125,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
       tv.setRoot(null);
     }
 
-    tv.setRoot(new TreeItem<FileRow>(null));
+    tv.setRoot(new TreeItem<>(null));
     tv.setShowRoot(false);
 
     treeModel.clear();
@@ -170,7 +170,7 @@ public class FolderTreeWrapper extends AbstractTreeWrapper<FileRow>
   {
     nodeItem.getChildren().forEach(this::sortNode);
 
-    nodeItem.getChildren().sort(sortBasis(TreeItem::getValue));
+    nodeItem.getChildren().sort(Comparator.comparing(TreeItem::getValue));
   }
 
 //---------------------------------------------------------------------------

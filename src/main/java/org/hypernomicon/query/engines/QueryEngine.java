@@ -40,7 +40,7 @@ public abstract class QueryEngine<HDT_T extends HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static enum QueryType
+  public enum QueryType
   {
     qtAllRecords    (1,  "Any records"           , hdtNone         ),
     qtPersons       (2,  "Person records"        , hdtPerson       ),
@@ -63,10 +63,9 @@ public abstract class QueryEngine<HDT_T extends HDT_Record>
     private final String caption;
     private final RecordType recordType;
     private static final Map<Integer, QueryType> codeToValMap = new HashMap<>();
-    private static final EnumMap<QueryType, RecordType> queryTypeToRecordType;
     private static final EnumMap<RecordType, QueryType> recordTypeToQueryType;
 
-    private QueryType(int code, String caption, RecordType recordType)
+    QueryType(int code, String caption, RecordType recordType)
     {
       this.code = code;
       this.caption = caption;
@@ -75,12 +74,10 @@ public abstract class QueryEngine<HDT_T extends HDT_Record>
 
     static
     {
-      queryTypeToRecordType = new EnumMap<>(QueryType.class);
       recordTypeToQueryType = new EnumMap<>(RecordType.class);
 
       EnumSet.allOf(QueryType.class).forEach(type ->
       {
-        queryTypeToRecordType.put(type, type.recordType);
         if (type != qtReport)
           recordTypeToQueryType.put(type.recordType, type);
       });

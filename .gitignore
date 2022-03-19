@@ -4,8 +4,10 @@
 sh.exe.stackdump
 .classpath
 .project
+.idea
 target
 bin
 pom2.xml
 *.bak
 *.log
+*.iml

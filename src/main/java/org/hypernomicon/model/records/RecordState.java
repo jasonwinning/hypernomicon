@@ -150,7 +150,7 @@ public class RecordState
         item.writeToXml(tag, xml);
     });
 
-    xml.append("</record>" + System.lineSeparator() + System.lineSeparator());
+    xml.append("</record>").append(System.lineSeparator()).append(System.lineSeparator());
   }
 
 //---------------------------------------------------------------------------
@@ -169,8 +169,8 @@ public class RecordState
     if (sortKeyAttr.length() > 0)
       sortKeyAttrXML = " sort_key=" + QUOTE + xmlAttributeEscaper.escape(sortKeyAttr) + QUOTE;
 
-    xml.append("<record type=" + QUOTE + db.getTypeTagStr(type) + QUOTE + " id=" + QUOTE + id + QUOTE)
-       .append(sortKeyAttrXML + searchKeyAttr + listNameAttr + ">" + xmlContentEscaper.escape(nameToUse) + "</record>")
+    xml.append("<record type=").append(QUOTE).append(db.getTypeTagStr(type)).append(QUOTE).append(" id=").append(QUOTE).append(id).append(QUOTE)
+       .append(sortKeyAttrXML).append(searchKeyAttr).append(listNameAttr).append(">").append(xmlContentEscaper.escape(nameToUse)).append("</record>")
        .append(System.lineSeparator());
   }
 
@@ -192,15 +192,15 @@ public class RecordState
     if (sortKeyAttrXML.length() > 0)
       sortKeyAttrXML = " sort_key=" + QUOTE + xmlAttributeEscaper.escape(sortKeyAttrXML) + QUOTE;
 
-    xml.append("<record type=" + QUOTE + typeName + QUOTE)
-       .append(" id=" + QUOTE + id + QUOTE + sortKeyAttrXML + searchKeyAttr + ">")
+    xml.append("<record type=").append(QUOTE).append(typeName).append(QUOTE)
+       .append(" id=").append(QUOTE).append(id).append(QUOTE).append(sortKeyAttrXML).append(searchKeyAttr).append(">")
        .append(System.lineSeparator());
 
     if (creationDate == null) return;
 
-    xml.append("  <creation_date>" + dateTimeToIso8601offset(creationDate) + "</creation_date>"); xml.append(System.lineSeparator())
-       .append("  <modified_date>" + dateTimeToIso8601offset(modifiedDate) + "</modified_date>"); xml.append(System.lineSeparator())
-       .append("  <view_date>"     + dateTimeToIso8601offset(viewDate)     + "</view_date>"    ); xml.append(System.lineSeparator());
+    xml.append("  <creation_date>").append(dateTimeToIso8601offset(creationDate)).append("</creation_date>").append(System.lineSeparator())
+       .append("  <modified_date>").append(dateTimeToIso8601offset(modifiedDate)).append("</modified_date>").append(System.lineSeparator())
+       .append("  <view_date>"    ).append(dateTimeToIso8601offset(viewDate    )).append("</view_date>"    ).append(System.lineSeparator());
   }
 
 //---------------------------------------------------------------------------

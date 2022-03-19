@@ -28,8 +28,6 @@ import org.json.simple.parser.ParseException;
 
 import com.google.common.collect.Lists;
 
-import org.hypernomicon.util.json.JsonObj.JsonNodeType;
-
 import static org.hypernomicon.util.Util.*;
 import static org.hypernomicon.util.json.JsonObj.*;
 

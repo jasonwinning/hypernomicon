@@ -36,13 +36,10 @@ import com.teamdev.jxbrowser.chromium.BrowserException;
 import com.teamdev.jxbrowser.chromium.BrowserPreferences;
 import com.teamdev.jxbrowser.chromium.DialogParams;
 import com.teamdev.jxbrowser.chromium.JSArray;
-import com.teamdev.jxbrowser.chromium.JSFunction;
 import com.teamdev.jxbrowser.chromium.JSObject;
 import com.teamdev.jxbrowser.chromium.JSValue;
 import com.teamdev.jxbrowser.chromium.LoggerProvider;
-import com.teamdev.jxbrowser.chromium.ProtocolHandler;
 import com.teamdev.jxbrowser.chromium.ProtocolService;
-import com.teamdev.jxbrowser.chromium.URLRequest;
 import com.teamdev.jxbrowser.chromium.URLResponse;
 import com.teamdev.jxbrowser.chromium.events.ConsoleEvent.Level;
 import com.teamdev.jxbrowser.chromium.events.FinishLoadingEvent;
@@ -94,7 +91,7 @@ public class PDFJSWrapper
 
 //---------------------------------------------------------------------------
 
-  static enum PDFJSCommand
+  enum PDFJSCommand
   {
     pjsOpen,
     pjsClose,
@@ -433,7 +430,7 @@ public class PDFJSWrapper
 
     String pathStr = App.class.getResource("resources/pdfjs/web").toExternalForm();
 
-    if ((pathStr.indexOf("file:/") >= 0) && !(pathStr.indexOf("file:///") >= 0))
+    if (pathStr.contains("file:/") && (pathStr.contains("file:///") == false))
       pathStr = pathStr.replace("file:/", "file:///");
 
     String baseTag = "<base href=\"" + pathStr + "/\" />";
@@ -450,38 +447,35 @@ public class PDFJSWrapper
   {
     ProtocolService protocolService = browser.getContext().getProtocolService();
 
-    protocolService.setProtocolHandler(protocol, new ProtocolHandler()
+    protocolService.setProtocolHandler(protocol, request ->
     {
-      @Override public URLResponse onRequest(URLRequest request)
+      URLResponse response = new URLResponse();
+      //response.getHeaders().setHeader("Access-Control-Allow-Origin", "*");
+      URL path = null;
+
+      try
       {
-        URLResponse response = new URLResponse();
-        //response.getHeaders().setHeader("Access-Control-Allow-Origin", "*");
-        URL path = null;
+        String pathStr = request.getURL();
 
-        try
-        {
-          String pathStr = request.getURL();
+        while (pathStr.matches(".*file:\\/[^/].*"))
+          pathStr = pathStr.replaceFirst("file:\\/", "file:///");
 
-          while (pathStr.matches(".*file:\\/[^/].*"))
-            pathStr = pathStr.replaceFirst("file:\\/", "file:///");
-
-          path = new URL(pathStr);
-        }
-        catch (Exception e) { return null; }
-
-        try (InputStream inputStream = path.openStream(); DataInputStream stream = new DataInputStream(inputStream))
-        {
-          byte[] data = new byte[stream.available()];
-          stream.readFully(data);
-          response.setData(data);
-          String mimeType = getMimeType(path.toString());
-          response.getHeaders().setHeader("Content-Type", mimeType);
-          return response;
-        }
-        catch (Exception e) { noOp(); }
-
-        return null;
+        path = new URL(pathStr);
       }
+      catch (Exception e) { return null; }
+
+      try (InputStream inputStream = path.openStream(); DataInputStream stream = new DataInputStream(inputStream))
+      {
+        byte[] data = new byte[stream.available()];
+        stream.readFully(data);
+        response.setData(data);
+        String mimeType = getMimeType(path.toString());
+        response.getHeaders().setHeader("Content-Type", mimeType);
+        return response;
+      }
+      catch (Exception e) { noOp(); }
+
+      return null;
     });
   }
 
@@ -664,7 +658,7 @@ public class PDFJSWrapper
       }
 
       browser.executeJavaScript("openPdfFile(\"" + file.toURLString() + "\", " +
-                                                   String.valueOf(initialPage) + ", " +
+                                                   initialPage + ", " +
                                                    appPrefs.getInt(PREF_KEY_PDFJS_SIDEBAR_VIEW, SidebarView_NONE) + ");");
       ready = false;
     };
@@ -729,7 +723,7 @@ public class PDFJSWrapper
     else if (val.isStringObject()) { printIndented("\"" + val.asStringObject().getStringValue() + "\"", indent); }
     else if (val.isString      ()) { printIndented("\"" + val.asString().getStringValue() + "\"", indent); }
     else if (val.isUndefined   ()) { printIndented("UNDEFINED", indent); }
-    else if (val.isFunction    ()) { printIndented(JSFunction.class.cast(val.asFunction()).toJSONString(), indent); }
+    else if (val.isFunction    ()) { printIndented(val.asFunction().toJSONString(), indent); }
 
     else if (val.isArray())
     {
@@ -757,7 +751,7 @@ public class PDFJSWrapper
     {
       Object obj = val.asJavaObject();
 
-      printIndented(obj.getClass().getName() + ": " + obj.toString(), indent);
+      printIndented(obj.getClass().getName() + ": " + obj, indent);
     }
 
     else printIndented("NONE OF THE ABOVE", indent);

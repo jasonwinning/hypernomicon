@@ -75,7 +75,7 @@ public final class Author implements Cloneable, Comparable<Author>
   public String getNameLastFirst()                { return getNameLastFirst(false); }
   public HDT_Person getPerson()                   { return person; }
   public HDT_Work getWork()                       { return work; }
-  public boolean outOfDate()                      { return work == null ? false : work.getAuthors().stream().noneMatch(this::equals); }
+  public boolean outOfDate()                      { return (work != null) && work.getAuthors().stream().noneMatch(this::equals); }
   String getBibName()                             { return getName().getBibName(); }
   private PersonName getName(boolean engChar)     { return person == null ? (engChar ? nameEngChar : name) : person.getName(engChar); }
   private String getSortKey()                     { return person == null ? nameEngChar.getSortKey() : person.getSortKey(); }
@@ -116,9 +116,8 @@ public final class Author implements Cloneable, Comparable<Author>
 
     if ((person != other.person) || (work != other.work)) return false;
 
-    if ((person == null) && (other.person == null))
-      if (name.equals(other.name) == false)
-        return false;
+    if ((person == null) && (name.equals(other.name) == false))
+      return false;
 
     return (getInFileName() == other.getInFileName()) &&
            (getIsEditor  () == other.getIsEditor  ()) &&

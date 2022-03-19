@@ -89,8 +89,8 @@ public class StrongLink
 
   public Stream<Connector> getSpokes()
   {
-    return List.of(hdtDebate, hdtPosition, hdtConcept, hdtNote, hdtWorkLabel).stream().map(this::getSpoke)
-                                                                                      .filter(Objects::nonNull);
+    return Stream.of(hdtDebate, hdtPosition, hdtConcept, hdtNote, hdtWorkLabel).map(this::getSpoke)
+                                                                               .filter(Objects::nonNull);
   }
 
 //---------------------------------------------------------------------------
@@ -132,7 +132,6 @@ public class StrongLink
       if (spoke != null) return spoke;
 
       spoke = getConcept();
-      if (spoke != null) return spoke;
     }
     else
     {
@@ -140,10 +139,9 @@ public class StrongLink
       if (spoke != null) return spoke;
 
       spoke = getNote();
-      if (spoke != null) return spoke;
     }
 
-    return getLabel();
+    return spoke != null ? spoke : getLabel();
   }
 
 //---------------------------------------------------------------------------

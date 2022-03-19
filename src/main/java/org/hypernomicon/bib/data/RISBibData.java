@@ -22,7 +22,6 @@ import static org.hypernomicon.bib.data.BibData.YearType.*;
 import static org.hypernomicon.bib.data.EntryType.*;
 import static org.hypernomicon.util.Util.*;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,7 +31,7 @@ import org.hypernomicon.model.items.PersonName;
 
 public class RISBibData extends BibDataStandalone
 {
-  private class RISException extends Exception { private static final long serialVersionUID = -5457122244377661495L; }
+  private static class RISException extends Exception { private static final long serialVersionUID = -5457122244377661495L; }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -59,7 +58,7 @@ public class RISBibData extends BibDataStandalone
         String tag = m.group(1),
                val = m.group(2).trim();
 
-        if ( ! (gotType || tag.equals("TY")))
+        if ((gotType == false) && (tag.equals("TY") == false))
           throw new RISException();
 
         switch (tag)
@@ -177,10 +176,10 @@ public class RISBibData extends BibDataStandalone
     else
     {
       containerTitle = safeStr(t2);
-      setMultiStr(bfTitle, Arrays.asList(safeStr(singleTitle)));
+      setMultiStr(bfTitle, List.of(safeStr(singleTitle)));
     }
 
-    setMultiStr(bfContainerTitle, Arrays.asList(safeStr(containerTitle)));
+    setMultiStr(bfContainerTitle, List.of(safeStr(containerTitle)));
   }
 
 //---------------------------------------------------------------------------

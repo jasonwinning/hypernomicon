@@ -19,7 +19,6 @@ package org.hypernomicon.view;
 
 import org.hypernomicon.model.records.*;
 import org.hypernomicon.view.tabs.HyperTab;
-import org.hypernomicon.view.tabs.HyperTab.TabEnum;
 import org.hypernomicon.view.wrappers.ClickHoldButton;
 
 import com.google.common.collect.Iterators;
@@ -49,7 +48,7 @@ public class HyperViewSequence
 //---------------------------------------------------------------------------
 
   private int curNdx = -1;
-  private long lastArrowKey = 0;
+  private long lastArrowKey = 0L;
   private final List<HyperView<? extends HDT_Record>> slots = new ArrayList<>();
   private final TabPane tabPane;
   private boolean alreadyChangingTab = false;
@@ -126,9 +125,9 @@ public class HyperViewSequence
 
   // Get updated View object from the Tab and store it in current slot
 
-  private void saveViewFromUItoCurrentSlotAndTab(boolean okToAddSlotIfNeeded)
+  private void saveViewFromUItoCurrentSlotAndTab()
   {
-    if (slots.isEmpty() && (okToAddSlotIfNeeded == false)) return;
+    if (slots.isEmpty()) return;
 
     HyperTab<? extends HDT_Record, ? extends HDT_Record> hyperTab = tabOfViewInCurrentSlot();
 
@@ -148,7 +147,7 @@ public class HyperViewSequence
 
   void stepForward()
   {
-    saveViewFromUItoCurrentSlotAndTab(false);
+    saveViewFromUItoCurrentSlotAndTab();
     goForward(false);
     showCurrentViewInUI();
   }
@@ -158,7 +157,7 @@ public class HyperViewSequence
 
   void stepBack()
   {
-    saveViewFromUItoCurrentSlotAndTab(false);
+    saveViewFromUItoCurrentSlotAndTab();
 
     if (--curNdx < 0)
       curNdx = 0;
@@ -186,7 +185,7 @@ public class HyperViewSequence
   void saveViewFromUItoSlotAdvanceCursorAndLoadNewViewToUI(HyperView<? extends HDT_Record> hyperView)
   {
     // Save the view from UI to the current slot in the sequence (unless there is no current slot),
-    saveViewFromUItoCurrentSlotAndTab(false);
+    saveViewFromUItoCurrentSlotAndTab();
 
     // Determine whether we were already on a record tab that previously had a record
     boolean advance = true;
@@ -389,7 +388,7 @@ public class HyperViewSequence
     {
       if (ui.cantSaveRecord()) return;
 
-      saveViewFromUItoCurrentSlotAndTab(false);
+      saveViewFromUItoCurrentSlotAndTab();
       curNdx = ndx;
       showCurrentViewInUI();
     });

@@ -45,7 +45,7 @@ public class InternetCheckDlgCtrlr extends HyperDlg
   {
     return ((InternetCheckDlgCtrlr) create("InternetCheckDlg", appTitle, true)).checkInternet();
   }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
@@ -63,7 +63,7 @@ public class InternetCheckDlgCtrlr extends HyperDlg
   {
     okClicked = false;
 
-    task = new HyperTask("CheckForInternet") { @Override protected Boolean call() throws Exception
+    task = new HyperTask("CheckForInternet") { @Override protected Boolean call()
     {
       HttpURLConnection con;
       try

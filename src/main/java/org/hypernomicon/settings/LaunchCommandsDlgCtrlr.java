@@ -53,14 +53,14 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  public static enum LaunchCommandTypeEnum
+  public enum LaunchCommandTypeEnum
   {
     appleScript("appleScript", "AppleScript"),
     opSysCmdAndArgs("opSysCmdAndArgs", "Operating system command and arguments");
 
-    private String prefVal, name;
+    final private String prefVal, name;
 
-    private LaunchCommandTypeEnum(String prefVal, String name)
+    LaunchCommandTypeEnum(String prefVal, String name)
     {
       this.prefVal = prefVal;
       this.name = name;
@@ -75,7 +75,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 
 //---------------------------------------------------------------------------
 
-  private static enum OperatingSystemEnum
+  private enum OperatingSystemEnum
   {
     windows, mac, linux, other;
 
@@ -272,7 +272,7 @@ public class LaunchCommandsDlgCtrlr extends HyperDlg
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private static List<Preset> presets = List.of(
+  private static final List<Preset> presets = List.of(
 
     new Preset(OperatingSystemEnum.windows, "Adobe Acrobat", opSysCmdAndArgs, PREF_KEY_PDF_READER_COMMANDS,
                appPathVar + "\n" +

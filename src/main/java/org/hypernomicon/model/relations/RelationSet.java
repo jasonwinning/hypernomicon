@@ -20,8 +20,6 @@ package org.hypernomicon.model.relations;
 import org.hypernomicon.model.HDI_Schema;
 import org.hypernomicon.model.Exceptions.HDB_InternalError;
 import org.hypernomicon.model.Exceptions.RelationCycleException;
-import org.hypernomicon.model.HyperDB.RelationChangeHandler;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.items.HDI_OfflineTernary.Ternary;
 import org.hypernomicon.model.records.*;
@@ -33,6 +31,7 @@ import com.google.common.collect.ArrayListMultimap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -83,11 +82,11 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   public RecordType getObjType()                          { return objType; }
   public RecordType getSubjType()                         { return subjType; }
-  public HDI_Schema getSchema(Tag tag)                    { return tagToSchema == null ? null : tagToSchema.get(tag); }
+  public HDI_Schema getSchema(Tag tag)                    { return tagToSchema.get(tag); }
   public Collection<HDI_Schema> getSchemas()              { return tagToSchema.values(); }
   public RecordType getTargetType(Tag tag)                { return tagToTargetType.get(tag); }
   public boolean getHasNestedItems()                      { return hasNestedItems; }
-  public Set<Tag> getNestedTags()                         { return tagToSchema == null ? new HashSet<>() : new HashSet<>(tagToSchema.keySet()); }
+  public Set<Tag> getNestedTags()                         { return new HashSet<>(tagToSchema.keySet()); }
   public void addChangeHandler(RelationChangeHandler rch) { changeHandlers.add(rch); }
   public Set<HDT_Subj> getOrphans()                       { return ImmutableSet.copyOf(orphans); } // Make a new copy of the set to prevent concurrent modification exception
   private void addObjAndMod(HDT_Subj subj, HDT_Obj obj)   { new HyperObjList<>(this, subj, true).add(obj); }
@@ -229,9 +228,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     if (trackOrphans)
     {
-      Set<RelationSet<? extends HDT_Record, ? extends HDT_Record>> relSets = orphanTypeToRelSets.get(subjType);
-      if (relSets == null)
-        orphanTypeToRelSets.put(subjType, relSets = new HashSet<>());
+      Set<RelationSet<? extends HDT_Record, ? extends HDT_Record>> relSets = orphanTypeToRelSets.computeIfAbsent(subjType, k -> new HashSet<>());
 
       relSets.add(this);
     }
@@ -467,7 +464,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     List<HDT_Obj> origList = subjToObjList.get(subj);
 
-    list.sort(sortBasis(og -> origList.indexOf(og.getPrimary())));
+    list.sort(Comparator.comparing(og -> origList.indexOf(og.getPrimary())));
 
     return list;
   }
@@ -791,7 +788,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
   // Numeric code associated with each enum value should NEVER be changed.
   // Doing so could cause query favorites to get corrupted.
 
-  public static enum RelationType
+  public enum RelationType
   {
  // rtObjectOfSubject
 
@@ -843,8 +840,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     private final int code;
     private final String title, subjTitle;
-    private Tag subjTag;
-    private static final Map<Integer, RelationType> codeToVal;
+    private final Tag subjTag;
+    private final static Map<Integer, RelationType> codeToVal;
 
   //---------------------------------------------------------------------------
 
@@ -856,7 +853,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   //---------------------------------------------------------------------------
 
-    private RelationType(int code, Tag subjTag, String title)
+    RelationType(int code, Tag subjTag, String title)
     {
       this.code = code;
       this.subjTag = subjTag;
@@ -866,7 +863,7 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
   //---------------------------------------------------------------------------
 
-    private RelationType(int code, String subjTitle, String title)
+    RelationType(int code, String subjTitle, String title)
     {
       this.code = code;
       this.subjTag = tagNone;
@@ -921,8 +918,8 @@ public final class RelationSet<HDT_Subj extends HDT_Record, HDT_Obj extends HDT_
 
     if (existingValueList.size() != newValueList.size()) return;
 
-    if ((newValueList     .stream().allMatch(existingValueList::contains) == false) ||
-        (existingValueList.stream().allMatch(newValueList     ::contains) == false))
+    if ((existingValueList.containsAll(newValueList     ) == false) ||
+        (newValueList     .containsAll(existingValueList) == false))
       return;
 
     for (int ndx = 0; ndx < existingValueList.size(); ndx++)

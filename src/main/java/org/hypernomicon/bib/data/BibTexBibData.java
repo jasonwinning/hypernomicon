@@ -85,10 +85,10 @@ public class BibTexBibData extends BibDataStandalone
       {
         case "address"   : setStr(bfPubLoc, val); break;
         case "author"    : addBibTexAuthor(val, AuthorType.author); break;
-        case "booktitle" : setMultiStr(bfContainerTitle, Arrays.asList(val)); break;
+        case "booktitle" : setMultiStr(bfContainerTitle, List.of(val)); break;
         case "edition"   : setStr(bfEdition, val); break;
         case "editor"    : addBibTexAuthor(val, AuthorType.editor); break;
-        case "journal"   : setMultiStr(bfContainerTitle, Arrays.asList(val)); break;
+        case "journal"   : setMultiStr(bfContainerTitle, List.of(val)); break;
         case "language"  : setStr(bfLanguage, val); break;
         case "note"      : addStr(bfMisc, val); break;
         case "number"    : setStr(bfIssue, val); break;

@@ -31,7 +31,7 @@ import org.hypernomicon.model.records.HDT_Work;
 
 public final class HyperTableCell implements Comparable<HyperTableCell>, Cloneable
 {
-  public static enum CellSortMethod
+  public enum CellSortMethod
   {
     smStandard, smTextSimple, smNumeric, smLast, smWork
   }
@@ -41,8 +41,8 @@ public final class HyperTableCell implements Comparable<HyperTableCell>, Cloneab
                                      blankCell = new HyperTableCell("", hdtNone);
 
   private int id;
-  private String text;
-  private RecordType type;
+  private final String text;
+  private final RecordType type;
   private CellSortMethod sortMethod = smStandard;
 
   public int getID()          { return id; }
@@ -55,7 +55,7 @@ public final class HyperTableCell implements Comparable<HyperTableCell>, Cloneab
   public static int getCellID(HyperTableCell cell)               { return cell == null ? -1 : cell.id; }
   public static String getCellText(HyperTableCell cell)          { return cell == null ? "" : safeStr(cell.text); }
   public static RecordType getCellType(HyperTableCell cell)      { return (cell == null) || (cell.type == null) ? hdtNone : cell.type; }
-  public static boolean isEmpty(HyperTableCell cell)             { return cell == null ? true : cell.equals(HyperTableCell.blankCell); }
+  public static boolean isEmpty(HyperTableCell cell)             { return (cell == null) || cell.equals(HyperTableCell.blankCell); }
 
   @Override public HyperTableCell clone()
   { try { return (HyperTableCell) super.clone(); } catch (CloneNotSupportedException ex) { throw new RuntimeException(ex); }}
@@ -107,8 +107,7 @@ public final class HyperTableCell implements Comparable<HyperTableCell>, Cloneab
         return false;
 
       if ((id < 0) && (other.id < 0))
-        if (safeStr(text).isEmpty() && safeStr(other.text).isEmpty())
-          return true;
+        return safeStr(text).isEmpty() && safeStr(other.text).isEmpty();
 
       return false;
     }

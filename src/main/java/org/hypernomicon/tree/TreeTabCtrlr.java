@@ -74,7 +74,6 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
   final private SetMultimap<RecordType, MenuItemSchema<? extends HDT_Record, TreeRow>> recordTypeToSchemas = LinkedHashMultimap.create();
 
-  private TreeModel<TreeRow> debateTree, termTree, labelTree, noteTree;
   private boolean useViewInfo = false;
   private String lastTextHilited = "";
 
@@ -97,12 +96,12 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean update()
+  @Override public void update()
   {
     if (db.isLoaded() == false)
     {
       tree.clear();
-      return true;
+      return;
     }
 
     ttv.getColumns().forEach(col ->
@@ -115,7 +114,6 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
     });
 
     tree.sort();
-    return true;
   }
 
 //---------------------------------------------------------------------------
@@ -124,11 +122,6 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   @Override protected void init()
   {
     tree = new TreeWrapper(ttv, true, ui.cbTreeGoTo, false);
-
-    debateTree = tree.debateTree;
-    termTree   = tree.termTree;
-    labelTree  = tree.labelTree;
-    noteTree   = tree.noteTree;
 
     spMain.showDetailNodeProperty().bind(chkShowDesc.selectedProperty());
 
@@ -200,7 +193,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     addCreateNewSchema(tree.addContextMenuItem("Create new term in this glossary", HDT_Glossary.class,
       glossary -> db.isLoaded(),
-      glossary -> createTerm(glossary)));
+      this::createTerm));
 
     addCreateNewSchema(tree.addContextMenuItem("Create new glossary under this glossary", HDT_Glossary.class,
       glossary -> db.isLoaded(),
@@ -217,7 +210,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
       if (record == null) return;
 
       if (record.hasDesc())
-        mainText = HDT_RecordWithDescription.class.cast(record).getDesc().getHtml();
+        mainText = ((HDT_RecordWithDescription) record).getDesc().getHtml();
 
       MainTextUtil.handleJSEvent(MainTextUtil.prepHtmlForDisplay(mainText), webView.getEngine(), new TextViewInfo());
     });
@@ -307,6 +300,11 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
 
     db.addDeleteHandler(tree::removeRecord);
 
+    TreeModel<TreeRow> debateTree = tree.debateTree,
+                       termTree   = tree.termTree,
+                       labelTree  = tree.labelTree,
+                       noteTree   = tree.noteTree;
+
     noteTree.addKeyWorkRelation(hdtNote, true);
     termTree.addKeyWorkRelation(hdtConcept, true);
     debateTree.addKeyWorkRelation(hdtDebate, true);
@@ -347,7 +345,7 @@ public class TreeTabCtrlr extends HyperTab<HDT_Record, HDT_Record>
   public List<MenuItem> getCreateMenuItems()
   {
     List<MenuItem> items = new ArrayList<>();
-    TreeRow row = nullSwitch(tree.selectedItem(), null, TreeItem<TreeRow>::getValue);
+    TreeRow row = nullSwitch(tree.selectedItem(), null, TreeItem::getValue);
     if (row == null) return items;
 
     Set<MenuItemSchema<? extends HDT_Record, TreeRow>> schemas = recordTypeToSchemas.get(row.getRecordType());

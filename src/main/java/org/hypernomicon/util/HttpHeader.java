@@ -27,10 +27,10 @@ import org.apache.http.Header;
 
 public enum HttpHeader
 {
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-  
+
   Accept(ACCEPT),
   Accept_Charset(ACCEPT_CHARSET),
   Accept_Encoding(ACCEPT_ENCODING),
@@ -123,18 +123,18 @@ public enum HttpHeader
   X_User_IP(X_USER_IP),
   X_XSS_Protection(X_XSS_PROTECTION),
   None("None");
-  
+
 //---------------------------------------------------------------------------
 
   final private String name;
-  private static Map<String, HttpHeader> map = new HashMap<>();
+  final private static Map<String, HttpHeader> map = new HashMap<>();
 
 //---------------------------------------------------------------------------
 
-  private HttpHeader(String name) { this.name = name; }
+  HttpHeader(String name) { this.name = name; }
 
   @Override public String toString() { return name; }
-  
+
 //---------------------------------------------------------------------------
 
   static
@@ -146,7 +146,7 @@ public enum HttpHeader
 //---------------------------------------------------------------------------
 
   public static HttpHeader get(Header header) { return map.getOrDefault(header.getName().toLowerCase(), None); }
-  
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

@@ -124,7 +124,7 @@ public class WorkFileNamingSettingsCtrlr implements SettingsControl
     {
       if (newValue == null) return;
 
-      db.prefs.putBoolean(prefKey, newValue.booleanValue());
+      db.prefs.putBoolean(prefKey, newValue);
       refreshExample();
     });
   }

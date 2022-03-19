@@ -41,7 +41,7 @@ public abstract class BibFieldRow
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final BibFieldRow create(BibFieldEnum bibFieldEnum, BibData bd1, BibData bd2, BibData bd3, BibData bd4) throws IOException
+  public static BibFieldRow create(BibFieldEnum bibFieldEnum, BibData bd1, BibData bd2, BibData bd3, BibData bd4) throws IOException
   {
     FXMLLoader loader;
 

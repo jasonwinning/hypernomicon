@@ -94,7 +94,7 @@ public enum EntryType
   private static final Map<String, EntryType> nameToType;
   private final String userFriendlyName;
 
-  private EntryType(String userFriendlyName) { this.userFriendlyName = userFriendlyName; }
+  EntryType(String userFriendlyName) { this.userFriendlyName = userFriendlyName; }
 
   static
   {

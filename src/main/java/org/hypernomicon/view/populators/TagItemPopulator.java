@@ -22,6 +22,7 @@ import static org.hypernomicon.view.populators.Populator.CellValueType.*;
 import static org.hypernomicon.util.Util.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -62,7 +63,7 @@ public class TagItemPopulator extends Populator
     tags.forEach(tag ->
     {
       HyperTableCell cell = new HyperTableCell(tag.getNum(), db.getTagHeader(tag), recordType);
-      addToSortedList(choices, cell, sortBasis(HyperTableCell::getText));
+      addToSortedList(choices, cell, Comparator.comparing(HyperTableCell::getText));
     });
 
     return choices;

@@ -19,6 +19,7 @@ package org.hypernomicon.tree;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -118,8 +119,8 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public void reset(HDT_Record rootRecord)
-  {
+  public <T extends HDT_Record> void reset(T rootRecord) // Use of generic type is to prevent "not applicable for argument"
+  {                                                      // build errors that are not really errors
     clear();
 
     rootRow = treeWrapper.newRow(rootRecord, this);
@@ -208,7 +209,7 @@ public class TreeModel<RowType extends AbstractTreeRow<? extends HDT_Record, Row
 
   private void insertTreeItem(List<TreeItem<RowType>> list, RowType newRow)
   {
-    addToSortedList(list, treeWrapper.getTreeItem(newRow), sortBasis(TreeItem::getValue));
+    addToSortedList(list, treeWrapper.getTreeItem(newRow), Comparator.comparing(TreeItem::getValue));
   }
 
 //---------------------------------------------------------------------------

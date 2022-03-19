@@ -33,7 +33,7 @@ import javafx.scene.layout.AnchorPane;
 
 public class ReportTable
 {
-  private TableView<HyperTableRow> tv;
+  private final TableView<HyperTableRow> tv;
   private ReportEngine reportEngine = null;
   final private QueryView qv;
 

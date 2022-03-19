@@ -31,7 +31,7 @@ import javafx.scene.control.TextField;
 
 public class RenameDlgCtrlr extends HyperDlg
 {
-  public static enum NameType
+  public enum NameType
   {
     ntRecord,
     ntFile,

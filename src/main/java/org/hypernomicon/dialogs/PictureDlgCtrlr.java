@@ -831,13 +831,11 @@ public class PictureDlgCtrlr extends HyperDlg
     }
 
     final FilePath curFile = personHyperTab.getCurPicture();
-    final String curFileName = FilePath.isEmpty(curFile) ? "" : curFile.getNameOnly().toString();
 
     FilePath newFileSrc = null,
              newFileDest = getDestFilePath(tfName.getText());
 
-    String newFileSrcName = "",
-           newFileDestName = tfName.getText();
+    String newFileDestName = tfName.getText();
 
   //---------------------------------------------------------------------------
   // Perform checks before deleting previous image
@@ -882,14 +880,12 @@ public class PictureDlgCtrlr extends HyperDlg
     else if (rbCurrent.isSelected())
     {
       newFileSrc = curFile;
-      newFileSrcName = curFileName;
     }
     else // (rbFile.isSelected())
     {
       newFileSrc = new FilePath(tfFile.getText());
-      newFileSrcName = newFileSrc.getNameOnly().toString();
 
-      if (FilePath.isEmpty(newFileSrc) || newFileSrcName.isBlank())
+      if (FilePath.isEmpty(newFileSrc) || newFileSrc.getNameOnly().toString().isBlank())
         return falseWithErrorMessage("Please specify a file from the local file system.", tfFile);
 
       if (newFileSrc.exists() == false)

@@ -31,7 +31,6 @@ import org.hypernomicon.model.HyperDataset;
 import org.hypernomicon.model.SearchKeys.SearchKeyword;
 import org.hypernomicon.model.items.*;
 import org.hypernomicon.model.Exceptions.*;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.records.SimpleRecordTypes.*;
 import org.hypernomicon.model.relations.HyperObjList;
 import org.hypernomicon.model.relations.HyperObjPointer;
@@ -53,7 +52,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 {
 //---------------------------------------------------------------------------
 
-  public static enum HyperDataCategory
+  public enum HyperDataCategory
   {
     hdcPointerSingle, hdcPointerMulti, hdcNestedPointer,
     hdcString,        hdcConnector,    hdcBoolean,
@@ -162,7 +161,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final void initItems()
+  private void initItems()
   {
     Collection<HDI_Schema> schemas = db.getSchemasByRecordType(type);
     if (schemas == null) return;
@@ -283,7 +282,7 @@ public abstract class HDT_RecordBase implements HDT_Record
       }
 
       if (this.getType() == hdtTerm)
-        HDT_Term.class.cast(this).throwExceptionIfConceptIDsChanged(backupState);
+        ((HDT_Term) this).throwExceptionIfConceptIDsChanged(backupState);
     }
 
     online = true;
@@ -376,7 +375,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private final String updateString(String dest, String val)
+  private String updateString(String dest, String val)
   {
     val = safeStr(val);
     if (dest.replace("\r", "").equalsIgnoreCase(val.replace("\r", "")) == false)
@@ -446,7 +445,10 @@ public abstract class HDT_RecordBase implements HDT_Record
 
       for (int ndx = 0; ndx < newGroups.size(); ndx++)
         if (newGroups.get(ndx).equals(oldGroups.get(ndx)) == false)
+        {
           theSame = false;
+          break;
+        }
 
       if (theSame) return;
     }
@@ -534,7 +536,7 @@ public abstract class HDT_RecordBase implements HDT_Record
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static final String makeSortKeyByType(String base, RecordType type)
+  public static String makeSortKeyByType(String base, RecordType type)
   {
     switch (type)
     {
@@ -549,7 +551,7 @@ public abstract class HDT_RecordBase implements HDT_Record
       default :
 
         if (base.toLowerCase().startsWith("the "))
-          base = base.substring(4, base.length());
+          base = base.substring(4);
     }
 
     return convertToEnglishChars(base).toLowerCase().replace("\"", "").replace("'", "").replace("(", "").replace(")", "").trim();

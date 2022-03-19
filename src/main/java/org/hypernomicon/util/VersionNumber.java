@@ -30,7 +30,7 @@ public class VersionNumber implements Magnitude<VersionNumber>
 {
   private final List<Integer> parts;
   private final int minParts;
-  public static int minimumParts = 2;
+  public static final int minimumParts = 2;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

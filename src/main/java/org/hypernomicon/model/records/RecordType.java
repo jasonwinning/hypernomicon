@@ -71,7 +71,7 @@ public enum RecordType
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private <T extends HDT_Record> RecordType(Class<T> klass)
+  <T extends HDT_Record> RecordType(Class<T> klass)
   {
     this.klass = klass;
     simple = HDT_SimpleRecord.class.isAssignableFrom(klass);

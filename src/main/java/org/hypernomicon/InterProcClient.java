@@ -46,9 +46,9 @@ public class InterProcClient
 
   private static class AppInstance
   {
-    private String instanceID;
-    private int portNum;
-    private FilePath dbPath;
+    private final String instanceID;
+    private final int portNum;
+    private final FilePath dbPath;
 
     private AppInstance(String instanceID, int portNum, FilePath dbPath)
     {
@@ -61,7 +61,7 @@ public class InterProcClient
 
     @Override public String toString()
     {
-      return instanceID + ";" + String.valueOf(portNum) + ";" + dbPath;
+      return instanceID + ";" + portNum + ";" + dbPath;
     }
 
   //---------------------------------------------------------------------------

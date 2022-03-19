@@ -72,7 +72,7 @@ public final class DesktopUtil
 //      if (exec(false, false, sb, "gvfs-open" , pathStr)) return true;
     }
 
-    return falseWithErrorMessage("Unable to open the file: " + pathStr + (sb.length() > 0 ? "\n" + sb.toString() : "") + ".");
+    return falseWithErrorMessage("Unable to open the file: " + pathStr + (sb.length() > 0 ? "\n" + sb : "") + ".");
   }
 
 //---------------------------------------------------------------------------
@@ -179,7 +179,7 @@ public final class DesktopUtil
       return falseWithErrMsgCond(showErrMsg, "An error occurred while trying to start application: " + e.getMessage());
     }
 
-    return exitValue == 0 ? true : falseWithErrMsgCond(showErrMsg, "An error occurred while trying to start application: " + errorSB.toString());
+    return (exitValue == 0) || falseWithErrMsgCond(showErrMsg, "An error occurred while trying to start application: " + errorSB);
   }
 
 //---------------------------------------------------------------------------
@@ -218,7 +218,7 @@ public final class DesktopUtil
       return;
     }
 
-    if (url.indexOf(":") == -1)
+    if (url.contains(":") == false)
       url = "http://" + url;
 
     if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC)
@@ -257,7 +257,7 @@ public final class DesktopUtil
 
     String readerPath = appPrefs.get(PREF_KEY_PDF_READER, "");
 
-    if ((filePath.getExtensionOnly().toLowerCase().equals("pdf") == false) || readerPath.isEmpty())
+    if ((filePath.getExtensionOnly().equalsIgnoreCase("pdf") == false) || readerPath.isEmpty())
     {
       openFile(filePath);
       return;
@@ -347,12 +347,12 @@ public final class DesktopUtil
       if (SystemUtils.IS_OS_WINDOWS)
       {
         output = execReadToString("wmic csproduct get UUID");
-        uuid = output.substring(output.indexOf("\n"), output.length()).trim();
+        uuid = output.substring(output.indexOf("\n")).trim();
       }
       else if (SystemUtils.IS_OS_MAC)
       {
         output = execReadToString("system_profiler SPHardwareDataType | awk '/UUID/ { print $3; }'");
-        uuid = output.substring(output.indexOf("UUID: "), output.length()).replace("UUID: ", "");
+        uuid = output.substring(output.indexOf("UUID: ")).replace("UUID: ", "");
       }
       else if (SystemUtils.IS_OS_LINUX)
       {

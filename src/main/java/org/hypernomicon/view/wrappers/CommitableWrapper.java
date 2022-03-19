@@ -29,7 +29,7 @@ import static org.hypernomicon.util.Util.*;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  public static void commitWrapper(Node node)
+  static void commitWrapper(Node node)
   {
     if (node == null) return;
 

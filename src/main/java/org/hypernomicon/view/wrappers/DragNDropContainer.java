@@ -84,7 +84,7 @@ public abstract class DragNDropContainer<RowType extends AbstractTreeRow<? exten
 
   final protected void dragReset()
   {
-    dragMilliCtr = 0;
+    dragMilliCtr = 0L;
     lastDragX = -1;
     lastDragY = -1;
   }

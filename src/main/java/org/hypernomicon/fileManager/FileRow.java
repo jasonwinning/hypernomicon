@@ -69,7 +69,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 
   @SuppressWarnings("unchecked")
   @Override public <HDT_T extends HDT_RecordWithPath> HDT_T getRecord() { return (HDT_T) hyperPath.getRecord(); }
-  
+
   @Override public int hashCode() { return hyperPath == null ? 0 : nullSwitch(hyperPath.getFileName(), 0, FilePath::hashCode); }
 
 //---------------------------------------------------------------------------
@@ -87,21 +87,21 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 
   FileCellValue<Long> getSizeCellValue()
   {
-    long size = 0;
+    long size = 0L;
     FilePath filePath = hyperPath.filePath();
 
     if (FilePath.isEmpty(filePath) == false)
     {
-      if (filePath.isDirectory()) return new FileCellValue<>("", Long.valueOf(0));
+      if (filePath.isDirectory()) return new FileCellValue<>("", 0L);
 
       try                   { size = filePath.size(); }
-      catch (IOException e) { return new FileCellValue<>("", Long.valueOf(-1)); }
+      catch (IOException e) { return new FileCellValue<>("", (long) -1); }
 
-      if (size >= 1000)
-        return new FileCellValue<>(numberFormat.format(size / 1000) + " KB", Long.valueOf(size));
+      if (size >= 1000L)
+        return new FileCellValue<>(numberFormat.format(size / 1000L) + " KB", size);
     }
 
-    return new FileCellValue<>(String.valueOf(size) + " bytes", Long.valueOf(size));
+    return new FileCellValue<>(size + " bytes", size);
   }
 
 //---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public ImageView getGraphic()
+  ImageView getGraphic()
   {
     if (graphic != null) return graphic;
 
@@ -139,7 +139,7 @@ public class FileRow extends AbstractTreeRow<HDT_RecordWithPath, FileRow>
 
   boolean rename(String newName)
   {
-    if (isDirectory() && (HDT_Folder.class.cast(getRecord()).renameTo(newName) == false))
+    if (isDirectory() && (((HDT_Folder) getRecord()).renameTo(newName) == false))
       return false;
 
     getTreeItem().setValue(this);

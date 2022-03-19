@@ -88,7 +88,7 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  @Override public boolean update()
+  @Override public void update()
   {
     btnTree.setDisable(ui.tree().getRowsForRecord(curMiscFile).isEmpty());
 
@@ -117,8 +117,6 @@ public class FileTabCtrlr extends HyperTab<HDT_MiscFile, HDT_MiscFile>
     htLabels.buildRows(curMiscFile.labels, (row, label) -> row.setCellValue(2, label, label.getExtendedText()));
 
     safeFocus(tfName);
-
-    return true;
   }
 
 //---------------------------------------------------------------------------

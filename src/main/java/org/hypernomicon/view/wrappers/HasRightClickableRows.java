@@ -115,7 +115,7 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final private void setAllExpanded(TreeItem<RowType> item, boolean expanded)
+  private void setAllExpanded(TreeItem<RowType> item, boolean expanded)
   {
     item.setExpanded(expanded);
 
@@ -125,7 +125,7 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final private <HDT_T extends HDT_Record> RowMenuItem createContextMenuItem(MenuItemSchema<HDT_T, RowType> schema, RowType row, ContextMenu rowMenu)
+  private <HDT_T extends HDT_Record> RowMenuItem createContextMenuItem(MenuItemSchema<HDT_T, RowType> schema, RowType row, ContextMenu rowMenu)
   {
     RowMenuItem newItem = new RowMenuItem(schema);
 
@@ -157,7 +157,7 @@ public abstract class HasRightClickableRows<RowType extends AbstractRow<? extend
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  final private <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addSchema(MenuItemSchema<HDT_T, RowType> schema)
+  private <HDT_T extends HDT_Record> MenuItemSchema<HDT_T, RowType> addSchema(MenuItemSchema<HDT_T, RowType> schema)
   {
     contextMenuSchemata.add(schema);
     return schema;

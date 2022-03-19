@@ -451,10 +451,10 @@ public class ZoteroItem extends BibEntry implements ZoteroEntity
 
     // Now check book editors
 
-    if (ZoteroAuthors.class.cast(backupItem.getAuthors()).ignoreEditors())
+    if (((ZoteroAuthors) backupItem.getAuthors()).ignoreEditors())
     {
       JsonArray creatorsArr1 = jData.getArray("creators"),
-                creatorsArr2 = ZoteroItem.class.cast(backupItem).jData.getArray("creators");
+                creatorsArr2 = ((ZoteroItem) backupItem).jData.getArray("creators");
 
       if ((creatorsArr1 == null) != (creatorsArr2 == null)) return true;
       if (creatorsArr1 != null)

@@ -44,7 +44,7 @@ public class GoogleBibData extends BibDataStandalone
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-  private String queryIsbn;
+  private final String queryIsbn;
 
   public String getQueryIsbn() { return safeStr(queryIsbn); }
 

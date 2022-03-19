@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.hypernomicon.HyperTask.HyperThread;
-import org.hypernomicon.model.HyperDB.Tag;
 import org.hypernomicon.model.items.HDI_OnlinePointerMulti;
 import org.hypernomicon.model.records.HDT_Record;
 import org.hypernomicon.model.records.RecordType;
@@ -139,9 +138,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
     addDefaultMenuItems();
 
     addContextMenuItem("Remove from query results", HDT_Record.class, record ->
-    {
-      tv.getItems().removeAll(new ArrayList<>(tv.getSelectionModel().getSelectedItems()));
-    });
+      tv.getItems().removeAll(new ArrayList<>(tv.getSelectionModel().getSelectedItems())));
   }
 
 //---------------------------------------------------------------------------
@@ -163,7 +160,7 @@ public final class ResultsTable extends HasRightClickableRows<ResultsRow>
     colGroups.add(generalGroup = new ColumnGroup());
 
     ResultColumn<Integer> intCol = new ResultColumn<>("ID");
-    intCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordIDStr(), str -> Integer.valueOf(parseInt(str, -1))));
+    intCol.setCellValueFactory(cellData -> getCustomCellValue(cellData.getValue().getRecordIDStr(), str -> parseInt(str, -1)));
     generalGroup.add(new ColumnGroupItem(intCol, tv, -1));
 
     ResultColumn<String> strCol = new ResultColumn<>("Name");

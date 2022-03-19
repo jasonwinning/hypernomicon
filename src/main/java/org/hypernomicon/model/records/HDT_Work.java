@@ -206,7 +206,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
   public static boolean isUnenteredSet(HDT_Work work)
   {
-    return work == null ? false : work.getWorkTypeEnum() == WorkTypeEnum.wtUnenteredSet;
+    return (work != null) && (work.getWorkTypeEnum() == WorkTypeEnum.wtUnenteredSet);
   }
 
 //---------------------------------------------------------------------------
@@ -313,7 +313,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
       return;
     }
 
-    if ((workFiles.size() != largerWork.workFiles.size()) || (workFiles.stream().allMatch(largerWork.workFiles::contains) == false))
+    if ((workFiles.size() != largerWork.workFiles.size()) || (largerWork.workFiles.containsAll(workFiles) == false))
     {
       String msg = workFiles.size() == 1 ? " file is " : " files are ";
       if (confirmDialog("Currently, " + workFiles.size() + msg + "attached to the child work. Replace with parent work file(s)?"))
@@ -443,7 +443,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
     String indicator = getFileIndicator(record);
 
-    return indicator.isBlank() ? str : new String(str + " (" + indicator + ")").trim();
+    return indicator.isBlank() ? str : (str + " (" + indicator + ")").trim();
   }
 
 //---------------------------------------------------------------------------
@@ -490,8 +490,7 @@ public class HDT_Work extends HDT_RecordWithConnector implements HDT_RecordWithP
 
     List<String> curISBNs = getISBNs();
 
-    if (allIsbns.stream().allMatch(curISBNs::contains) &&
-        curISBNs.stream().allMatch(allIsbns::contains))
+    if (curISBNs.containsAll(allIsbns) && allIsbns.containsAll(curISBNs))
       return;
 
     String isbnStr = allIsbns.stream().reduce((s1, s2) -> s1 + "; " + s2).orElse("");

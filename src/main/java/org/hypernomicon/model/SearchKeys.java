@@ -234,23 +234,11 @@ public final class SearchKeys
 
   private void addKeyword(SearchKeyword keyword)
   {
-    Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.get(keyword.record);
-
-    if (keywordStrToKeywordObj == null)
-    {
-      keywordStrToKeywordObj = Collections.synchronizedMap(new LinkedHashMap<String, SearchKeyword>());
-      recordToKeywordStrToKeywordObj.put(keyword.record, keywordStrToKeywordObj);
-    }
+    Map<String, SearchKeyword> keywordStrToKeywordObj = recordToKeywordStrToKeywordObj.computeIfAbsent(keyword.record, k -> Collections.synchronizedMap(new LinkedHashMap<>()));
 
     keywordStrToKeywordObj.put(keyword.text.toLowerCase(), keyword);
 
-    keywordStrToKeywordObj = prefixStrToKeywordStrToKeywordObj.get(keyword.getPrefix());
-
-    if (keywordStrToKeywordObj == null)
-    {
-      keywordStrToKeywordObj = Collections.synchronizedMap(new LinkedHashMap<String, SearchKeyword>());
-      prefixStrToKeywordStrToKeywordObj.put(keyword.getPrefix(), keywordStrToKeywordObj);
-    }
+    keywordStrToKeywordObj = prefixStrToKeywordStrToKeywordObj.computeIfAbsent(keyword.getPrefix(), k -> Collections.synchronizedMap(new LinkedHashMap<>()));
 
     keywordStrToKeywordObj.put(keyword.text.toLowerCase(), keyword);
   }
